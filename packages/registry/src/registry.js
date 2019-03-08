@@ -9,6 +9,10 @@ export class Registry {
 
   register(key, value) {
     if (this._keys.includes(key)) {
+      throw new Error(`Key already registered (key: '${key}')`);
+    }
+
+    if (value.$registry !== undefined) {
       throw new Error(`Item already registered (key: '${key}')`);
     }
 
