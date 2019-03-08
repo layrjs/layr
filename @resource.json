@@ -1,3 +1,6 @@
 {
-  "@import": "medmain/js-repository#^0.1.0"
+  "@import": "medmain/js-repository#^0.1.0",
+  "model": {
+    "@include": "./packages/model"
+  }
 }

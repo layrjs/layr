@@ -1,0 +1,9 @@
+{
+  "@import": "medmain/npm-package#^0.1.0",
+  "name": "@superstore/model",
+  "version": "0.1.0",
+  "description": "Base class providing typed properties, validation and serialization",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/medmain/superstore.git"
+}
