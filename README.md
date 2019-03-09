@@ -1,4 +1,5 @@
 <h1 align="center">
+	<br>
 	<img src="branding/superstore-logo.svg" width="300" alt="Superstore — A database abstraction layer that feels just right">
 	<br>
 	<br>
