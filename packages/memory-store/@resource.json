@@ -1,0 +1,12 @@
+{
+  "@import": "medmain/npm-package#^0.1.0",
+  "name": "@superstore/memory-store",
+  "version": "0.1.0",
+  "description": "A simple store that uses the memory",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/medmain/superstore.git",
+  "tests": {
+    "@include": "./tests"
+  }
+}

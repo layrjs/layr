@@ -5,5 +5,8 @@
   },
   "registry": {
     "@include": "./packages/registry"
+  },
+  "memoryStore": {
+    "@include": "./packages/memory-store"
   }
 }
