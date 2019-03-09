@@ -108,6 +108,44 @@ describe('@superstore/model', () => {
     });
   });
 
+  test('Cloning', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('Date') releasedOn;
+
+      @field('TechnicalSpecs') technicalSpecs;
+    }
+
+    class TechnicalSpecs extends Model {
+      @field('string') aspectRatio;
+    }
+
+    const registry = new Registry({Movie, TechnicalSpecs});
+
+    const movie = new registry.Movie({
+      title: 'Inception',
+      releasedOn: new Date(Date.UTC(2010, 6, 16)),
+      technicalSpecs: new registry.TechnicalSpecs({aspectRatio: '2.39:1'})
+    });
+
+    const clone = movie.clone();
+
+    expect(clone instanceof registry.Movie).toBe(true);
+    expect(clone).not.toBe(movie);
+    expect(clone.serialize()).toEqual(movie.serialize());
+
+    expect(clone.title).toBe('Inception');
+
+    expect(clone.releasedOn instanceof Date).toBe(true);
+    expect(clone.releasedOn).not.toBe(movie.releasedOn);
+    expect(clone.releasedOn.toISOString()).toBe('2010-07-16T00:00:00.000Z');
+
+    expect(clone.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    expect(clone.technicalSpecs).not.toBe(movie.technicalSpecs);
+    expect(clone.technicalSpecs.aspectRatio).toBe('2.39:1');
+  });
+
   test('Composition', () => {
     class Movie extends Model {
       @field('string') title;
