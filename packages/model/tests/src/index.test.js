@@ -48,6 +48,29 @@ describe('@superstore/model', () => {
     expect(movie3.isRestricted).toBeUndefined(); // Default values are not set on deserialization
   });
 
+  test('Date field', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('Date') releasedOn;
+    }
+
+    const movie1 = new Movie({title: 'Inception', releasedOn: new Date(Date.UTC(2010, 6, 16))});
+    expect(movie1.title).toBe('Inception');
+    expect(movie1.releasedOn.getUTCFullYear()).toBe(2010);
+    expect(movie1.releasedOn.getUTCMonth()).toBe(6);
+    expect(movie1.releasedOn.getUTCDate()).toBe(16);
+
+    const movie2 = new Movie({
+      title: {_type: 'string', _value: 'The Matrix'},
+      releasedOn: {_type: 'Date', _value: '1999-03-31T00:00:00.000Z'}
+    });
+    expect(movie2.title).toBe('The Matrix');
+    expect(movie2.releasedOn.getUTCFullYear()).toBe(1999);
+    expect(movie2.releasedOn.getUTCMonth()).toBe(2);
+    expect(movie2.releasedOn.getUTCDate()).toBe(31);
+  });
+
   test('Composition', () => {
     class Movie extends Model {
       @field('string') title;
@@ -118,6 +141,10 @@ describe('@superstore/model', () => {
 
     movie.owner = new registry.User({email: 'hi@domain.com'});
     expect(movie.owner.email).toBe('hi@domain.com');
+    expect(movie.owner instanceof registry.User).toBe(true);
+
+    movie.owner = {_type: 'User', _value: {email: 'bonjour@domaine.fr'}};
+    expect(movie.owner.email).toBe('bonjour@domaine.fr');
     expect(movie.owner instanceof registry.User).toBe(true);
 
     movie.owner = new registry.Organization({name: 'Nice Inc.'});

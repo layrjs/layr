@@ -16,13 +16,23 @@ export class Field {
     }
   }
 
-  normalize(value, parent, options) {
+  cast(value, parent, options) {
     if (value === undefined) {
       return undefined;
     }
 
     if (value === null) {
       return null;
+    }
+
+    if (typeof value === 'object' && value._type !== undefined) {
+      const builtInType = builtInTypes[value._type];
+      if (builtInType) {
+        value = value._value;
+        if (builtInType.create) {
+          value = builtInType.create(value);
+        }
+      }
     }
 
     const builtInType = builtInTypes[this.type];
@@ -61,6 +71,14 @@ const builtInTypes = {
   object: {
     checkType(value) {
       return isPlainObject(value);
+    }
+  },
+  Date: {
+    checkType(value) {
+      return value instanceof Date;
+    },
+    create(value) {
+      return new Date(value);
     }
   }
 };

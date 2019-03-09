@@ -130,7 +130,7 @@ export class Model {
   }
 
   _setFieldValue(field, value, options) {
-    value = field.normalize(value, this, options);
+    value = field.cast(value, this, options);
 
     if (!Object.prototype.hasOwnProperty.call(this, '_fieldValues')) {
       this._fieldValues = Object.create(this._fieldValues || null);
