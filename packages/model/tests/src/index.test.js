@@ -1,3 +1,5 @@
+import {Registry} from '@superstore/registry';
+
 import {Model, field} from '../../..';
 
 describe('@superstore/model', () => {
@@ -18,11 +20,57 @@ describe('@superstore/model', () => {
     expect(movie.year).toBe(1999);
 
     expect(() => {
+      movie.year = '1999'; // Type mismatch
+    }).toThrow();
+
+    expect(() => {
       return new Movie({unknownField: 'abc'}); // Cannot set an undefined field
     }).toThrow();
   });
 
-  test('Model inheritance', () => {
+  test('Default values', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('boolean') isRestricted = false;
+    }
+
+    const movie1 = new Movie();
+    expect(movie1.title).toBeUndefined();
+    expect(movie1.isRestricted).toBe(false);
+
+    const movie2 = new Movie({title: 'Inception', isRestricted: true});
+    expect(movie2.title).toBe('Inception');
+    expect(movie2.isRestricted).toBe(true);
+
+    const movie3 = Movie.deserialize({title: 'Inception'});
+    expect(movie3.title).toBe('Inception');
+    expect(movie3.isRestricted).toBeUndefined(); // Default values are not set on deserialization
+  });
+
+  test('Composition', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('TechnicalSpecs') technicalSpecs;
+    }
+
+    class TechnicalSpecs extends Model {
+      @field('string') aspectRatio;
+    }
+
+    const registry = new Registry({Movie, TechnicalSpecs});
+
+    const technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.39:1'});
+    const movie = new registry.Movie({technicalSpecs});
+    expect(movie.technicalSpecs).toBe(technicalSpecs);
+
+    movie.technicalSpecs = {aspectRatio: '2.35:1'};
+    expect(movie.technicalSpecs.aspectRatio).toBe('2.35:1');
+    expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+  });
+
+  test('Inheritance', () => {
     class Item extends Model {
       @field('string') id;
     }
@@ -42,21 +90,42 @@ describe('@superstore/model', () => {
     }).toThrow();
   });
 
-  test('Model nesting', () => {
+  test('Polymorphism', () => {
     class Movie extends Model {
       @field('string') title;
 
-      @field('TechnicalSpecs') technicalSpecs;
+      @field('Identity') owner;
     }
 
-    class TechnicalSpecs extends Model {
-      @field('string') aspectRatio;
+    class Identity extends Model {}
+
+    class User extends Identity {
+      @field('string') email;
     }
 
-    const movie = new Movie({
-      title: 'Inception',
-      technicalSpecs: new TechnicalSpecs({aspectRatio: '2.39:1'})
-    });
-    expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
+    class Organization extends Identity {
+      @field('string') name;
+    }
+
+    class Actor extends Model {
+      @field('string') fullName;
+    }
+
+    const registry = new Registry({Movie, Identity, User, Organization, Actor});
+
+    const movie = new registry.Movie({title: 'Inception'});
+    expect(movie.title).toBe('Inception');
+
+    movie.owner = new registry.User({email: 'hi@domain.com'});
+    expect(movie.owner.email).toBe('hi@domain.com');
+    expect(movie.owner instanceof registry.User).toBe(true);
+
+    movie.owner = new registry.Organization({name: 'Nice Inc.'});
+    expect(movie.owner.name).toBe('Nice Inc.');
+    expect(movie.owner instanceof registry.Organization).toBe(true);
+
+    expect(() => {
+      movie.owner = new registry.Actor({fullName: 'Leonardo DiCaprio'}); // Actor is not an Identity
+    }).toThrow();
   });
 });

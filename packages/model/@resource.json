@@ -6,6 +6,10 @@
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/medmain/superstore.git",
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "@superstore/registry": "^0.1.0"
+  },
   "tests": {
     "@include": "./tests"
   }

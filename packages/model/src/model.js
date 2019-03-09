@@ -3,13 +3,40 @@ import {inspect} from 'util';
 import {Field} from './field';
 
 export class Model {
-  constructor(object, {deserialize} = {}) {
+  constructor(object, options) {
     if (object !== undefined) {
-      this._applyObject(object);
+      if (typeof object !== 'object') {
+        throw new Error(
+          `Type mismatch (model: '${
+            this.constructor.name
+          }', expected type: 'object', provided type: '${typeof object}')`
+        );
+      }
+
+      if (object._type !== undefined) {
+        const ObjectModel = this.constructor._getModel(object._type);
+        object = new ObjectModel(object._value, options);
+      }
+
+      if (object instanceof Model) {
+        if (!(object instanceof this.constructor)) {
+          throw new Error(
+            `Type mismatch (expected type: '${this.constructor.name}', provided type: '${
+              object.constructor.name
+            }')`
+          );
+        }
+        return object;
+      }
+
+      for (const [name, value] of Object.entries(object)) {
+        const field = this.constructor.getField(name);
+        this._setFieldValue(field, value, options);
+      }
     }
 
-    if (!deserialize) {
-      this._applyDefaults();
+    if (!options?.deserialize) {
+      this._applyDefaults(options);
     }
   }
 
@@ -21,14 +48,7 @@ export class Model {
     return this.constructor.deserialize(this.serialize());
   }
 
-  _applyObject(object) {
-    for (const [name, value] of Object.entries(object)) {
-      const field = this.constructor.getField(name);
-      this._setFieldValue(field, value);
-    }
-  }
-
-  _applyDefaults() {
+  _applyDefaults(options) {
     this.constructor.forEachField(field => {
       let value = field.default;
       if (value === undefined) {
@@ -37,13 +57,13 @@ export class Model {
       if (this._getFieldValue(field) !== undefined) {
         return;
       }
-      if (typeof value === 'function') {
+      while (typeof value === 'function') {
         value = value.call(this);
       }
       if (value === undefined) {
         return;
       }
-      this._setFieldValue(field, value);
+      this._setFieldValue(field, value, options);
     });
   }
 
@@ -109,13 +129,31 @@ export class Model {
     return this._fieldValues?.[field.name];
   }
 
-  _setFieldValue(field, value) {
+  _setFieldValue(field, value, options) {
+    value = field.normalize(value, this, options);
+
     if (!Object.prototype.hasOwnProperty.call(this, '_fieldValues')) {
       this._fieldValues = Object.create(this._fieldValues || null);
     }
     this._fieldValues[field.name] = value;
 
     return value;
+  }
+
+  static _getModel(name) {
+    const registry = this._getRegistry();
+    const Model = registry[name];
+    if (Model === undefined) {
+      throw new Error(`Model not found (name: '${name}')`);
+    }
+    return Model;
+  }
+
+  static _getRegistry() {
+    if (!this.$registry) {
+      throw new Error(`Registry not found (model: ${this.name})`);
+    }
+    return this.$registry;
   }
 }
 
