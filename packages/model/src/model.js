@@ -14,8 +14,9 @@ export class Model {
       }
 
       if (object._type !== undefined) {
-        const ObjectModel = this.constructor._getModel(object._type);
-        object = new ObjectModel(object._value, options);
+        const {_type: type, ...value} = object;
+        const ObjectModel = this.constructor._getModel(type);
+        object = new ObjectModel(value, options);
       }
 
       if (object instanceof Model) {
@@ -31,17 +32,37 @@ export class Model {
 
       for (const [name, value] of Object.entries(object)) {
         const field = this.constructor.getField(name);
-        this._setFieldValue(field, value, options);
+        if (field) {
+          this._setFieldValue(field, value, options);
+        } else {
+          // Silently ignore undefined fields
+        }
       }
     }
 
-    if (!options?.deserialize) {
+    if (!options?.ignoreDefaults) {
       this._applyDefaults(options);
     }
   }
 
+  serialize() {
+    const result = {_type: this.constructor.name};
+    this.constructor.forEachField(field => {
+      let value = this._getFieldValue(field);
+      value = field.serialize(value);
+      if (value !== undefined) {
+        result[field.name] = value;
+      }
+    });
+    return result;
+  }
+
+  toJSON() {
+    return this.serialize();
+  }
+
   static deserialize(object) {
-    return new this(object, {deserialize: true});
+    return new this(object, {ignoreDefaults: true});
   }
 
   clone() {
@@ -97,11 +118,7 @@ export class Model {
   }
 
   static getField(name) {
-    const field = this._fields?.[name];
-    if (!field) {
-      throw new Error(`Field not found (name: '${name}')`);
-    }
-    return field;
+    return this._fields?.[name];
   }
 
   static setField(name, type, options) {
@@ -130,7 +147,7 @@ export class Model {
   }
 
   _setFieldValue(field, value, options) {
-    value = field.cast(value, this, options);
+    value = field.deserialize(value, this, options);
 
     if (!Object.prototype.hasOwnProperty.call(this, '_fieldValues')) {
       this._fieldValues = Object.create(this._fieldValues || null);

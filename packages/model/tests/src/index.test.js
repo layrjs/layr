@@ -23,9 +23,9 @@ describe('@superstore/model', () => {
       movie.year = '1999'; // Type mismatch
     }).toThrow();
 
-    expect(() => {
-      return new Movie({unknownField: 'abc'}); // Cannot set an undefined field
-    }).toThrow();
+    const anotherMovie = new Movie({title: 'Forrest Gump', unknownField: 'abc'});
+    expect(anotherMovie.title).toBe('Forrest Gump');
+    expect(anotherMovie.unknownField).toBeUndefined(); // Silently ignore undefined fields
   });
 
   test('Default values', () => {
@@ -69,6 +69,43 @@ describe('@superstore/model', () => {
     expect(movie2.releasedOn.getUTCFullYear()).toBe(1999);
     expect(movie2.releasedOn.getUTCMonth()).toBe(2);
     expect(movie2.releasedOn.getUTCDate()).toBe(31);
+  });
+
+  test('Serialization', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('Date') releasedOn;
+
+      @field('TechnicalSpecs') technicalSpecs;
+    }
+
+    class TechnicalSpecs extends Model {
+      @field('string') aspectRatio;
+    }
+
+    const registry = new Registry({Movie, TechnicalSpecs});
+
+    const movie = new registry.Movie();
+    expect(movie.serialize()).toEqual({_type: 'Movie'});
+
+    movie.title = 'Inception';
+    expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception'});
+
+    movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
+    });
+
+    movie.technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.39:1'});
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+    });
   });
 
   test('Composition', () => {
@@ -143,7 +180,7 @@ describe('@superstore/model', () => {
     expect(movie.owner.email).toBe('hi@domain.com');
     expect(movie.owner instanceof registry.User).toBe(true);
 
-    movie.owner = {_type: 'User', _value: {email: 'bonjour@domaine.fr'}};
+    movie.owner = {_type: 'User', email: 'bonjour@domaine.fr'};
     expect(movie.owner.email).toBe('bonjour@domaine.fr');
     expect(movie.owner instanceof registry.User).toBe(true);
 

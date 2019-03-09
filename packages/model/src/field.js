@@ -16,7 +16,35 @@ export class Field {
     }
   }
 
-  cast(value, parent, options) {
+  serialize(value) {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (value === null) {
+      return null;
+    }
+
+    const builtInType = builtInTypes[this.type];
+    if (builtInType) {
+      if (builtInType.serialize) {
+        value = {_type: this.type, _value: builtInType.serialize(value)};
+      }
+      return value;
+    }
+
+    if (value.serialize) {
+      return value.serialize();
+    }
+
+    if (value.toJSON) {
+      return value.toJSON();
+    }
+
+    throw new Error(`Couldn't find a serializer (model: '${value.constructor?.name}')`);
+  }
+
+  deserialize(value, parent, options) {
     if (value === undefined) {
       return undefined;
     }
@@ -29,8 +57,8 @@ export class Field {
       const builtInType = builtInTypes[value._type];
       if (builtInType) {
         value = value._value;
-        if (builtInType.create) {
-          value = builtInType.create(value);
+        if (builtInType.deserialize) {
+          value = builtInType.deserialize(value);
         }
       }
     }
@@ -77,7 +105,10 @@ const builtInTypes = {
     checkType(value) {
       return value instanceof Date;
     },
-    create(value) {
+    serialize(value) {
+      return value.toISOString();
+    },
+    deserialize(value) {
       return new Date(value);
     }
   }
