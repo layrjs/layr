@@ -1,7 +1,9 @@
+import isEmpty from 'lodash/isEmpty';
+
 export class MemoryStore {
   _collections = {};
 
-  get({_type, _id}, {return: returnFields} = {}) {
+  get({_type, _id}, {return: returnFields = true} = {}) {
     validateType(_type);
     validateId(_id);
 
@@ -11,26 +13,44 @@ export class MemoryStore {
       return undefined;
     }
 
-    if (returnFields === undefined) {
-      return {_type, _id, ...document};
+    const result = {_type, _id};
+
+    if (returnFields === false) {
+      return result;
     }
 
-    const result = {};
-    for (const [name, value] of Object.entries(returnFields)) {
-      if (!value) {
+    for (const [name, value] of Object.entries(document)) {
+      const returnField = typeof returnFields === 'object' ? returnFields[name] : true;
+
+      if (returnField === undefined || returnField === false) {
         continue;
       }
-      if (name === '_type') {
-        result._type = _type;
-      } else if (name === '_id') {
-        result._id = _id;
-      } else {
-        const fieldValue = document[name];
-        if (fieldValue !== undefined) {
-          result[name] = fieldValue;
+
+      if (typeof value !== 'object') {
+        if (returnField !== true) {
+          throw new Error(
+            `Type mismatch (field name: '${name})', expected type: 'object', actual type: '${typeof value}'`
+          );
         }
+        result[name] = value;
+        continue;
       }
+
+      const subdocument = value;
+
+      if (subdocument._id === undefined) {
+        if (returnField !== true) {
+          throw new Error(
+            `It is not possible to partially return nested documents (field name: '${name})'`
+          );
+        }
+        result[name] = subdocument;
+        continue;
+      }
+
+      result[name] = this.get(subdocument, {return: returnField});
     }
+
     return result;
   }
 
@@ -51,11 +71,33 @@ export class MemoryStore {
     }
 
     for (const [name, value] of Object.entries(changes)) {
-      if (value !== undefined) {
-        document[name] = value;
-      } else {
+      if (value === undefined) {
         delete document[name];
+        continue;
       }
+
+      if (typeof value !== 'object') {
+        document[name] = value;
+        continue;
+      }
+
+      const subdocument = value;
+
+      if (subdocument._id === undefined) {
+        document[name] = subdocument;
+        continue;
+      }
+
+      const {_type, _id, ...changes} = subdocument;
+
+      validateType(_type);
+      validateId(_id);
+
+      if (!isEmpty(changes)) {
+        this.set(subdocument);
+      }
+
+      document[name] = {_type, _id};
     }
   }
 
@@ -76,7 +118,6 @@ function validateType(_type) {
   if (typeof _type !== 'string') {
     throw new Error(`'_type' must be a string (provided type: ${typeof _type}`);
   }
-
   if (_type === '') {
     throw new Error(`'_type' cannot be empty`);
   }
@@ -86,7 +127,6 @@ function validateId(_id) {
   if (typeof _id !== 'string') {
     throw new Error(`'_id' must be a string (provided type: ${typeof _id}`);
   }
-
   if (_id === '') {
     throw new Error(`'_id' cannot be empty`);
   }

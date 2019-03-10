@@ -11,7 +11,9 @@ describe('@superstore/memory-store', () => {
     let movie = store.get({_type: 'Movie', _id: 'abc123'});
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception', genre: 'action'});
     movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}}); // Partial read
-    expect(movie).toEqual({title: 'Inception'});
+    expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: false}); // Existence check
+    expect(movie).toEqual({_type: 'Movie', _id: 'abc123'});
     movie = store.get({_type: 'Movie', _id: 'xyz123'}); // Missing document
     expect(movie).toBeUndefined();
     movie = store.get({_type: 'Person', _id: 'xyz123'}); // Missing collection
@@ -32,7 +34,48 @@ describe('@superstore/memory-store', () => {
     expect(hasBeenDeleted).toBe(false);
   });
 
-  test.skip('References', () => {
+  test('Nesting documents', () => {
+    const store = new MemoryStore();
+
+    store.set({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      technicalSpecs: {_type: 'TechnicalSpecs', runtime: 120, aspectRatio: '2.39:1'}
+    });
+
+    let movie = store.get({_type: 'Movie', _id: 'abc123'});
+    expect(movie).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      technicalSpecs: {_type: 'TechnicalSpecs', runtime: 120, aspectRatio: '2.39:1'}
+    });
+
+    // We cannot partially return nested documents
+    expect(() => {
+      movie = store.get(
+        {_type: 'Movie', _id: 'abc123'},
+        {return: {technicalSpecs: {runtime: true}}}
+      );
+    }).toThrow();
+
+    // We cannot partially modify nested documents
+    store.set({
+      _type: 'Movie',
+      _id: 'abc123',
+      technicalSpecs: {_type: 'TechnicalSpecs', runtime: 130}
+    });
+    movie = store.get({_type: 'Movie', _id: 'abc123'});
+    expect(movie).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      technicalSpecs: {_type: 'TechnicalSpecs', runtime: 130} // 'aspectRatio' is gone
+    });
+  });
+
+  test('Referencing documents', () => {
     const store = new MemoryStore();
 
     // Let's set both a 'Movie' and a 'Person'
@@ -57,23 +100,21 @@ describe('@superstore/memory-store', () => {
     });
 
     // Will fetch 'Movie' only
-    movie = store.get(
-      {_type: 'Movie', _id: 'abc123'},
-      {return: {_id: true, title: true, director: {_id: true}}}
-    );
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, director: {}}});
     expect(movie).toEqual({
+      _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
-      director: {_id: 'xyz123'}
+      director: {_type: 'Person', _id: 'xyz123'}
     });
 
-    // The director can be modified through its parent 'Movie'
+    // The director can be modified through its 'Movie' parent
     store.set({
       _type: 'Movie',
       _id: 'abc123',
       director: {_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'}
     });
-    person = store.get({_type: 'Person', _id: 'xyz123'}, {return: {fullName: true}});
-    expect(person).toEqual({fullName: 'C. Nolan'});
+    person = store.get({_type: 'Person', _id: 'xyz123'});
+    expect(person).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'});
   });
 });
