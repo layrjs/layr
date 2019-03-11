@@ -41,13 +41,23 @@ export class Model {
     }
   }
 
-  serialize() {
+  serialize({excludeUnchangedFields, includeFields, includeUndefinedFields} = {}) {
     const result = {_type: this.constructor.getName()};
     this.constructor.forEachField(field => {
-      let value = this._getFieldValue(field);
-      value = field.serialize(value);
-      if (value !== undefined) {
-        result[field.serializedName || field.name] = value;
+      if (
+        (includeFields && includeFields.includes(field.name)) ||
+        !excludeUnchangedFields ||
+        this._fieldIsChanged(field)
+      ) {
+        let value = this._getFieldValue(field);
+        value = field.serialize(value, {
+          excludeUnchangedFields,
+          includeFields,
+          includeUndefinedFields
+        });
+        if (value !== undefined) {
+          result[field.serializedName || field.name] = value;
+        }
       }
     });
     return result;
@@ -106,6 +116,7 @@ export class Model {
       return this._getFieldValue(field);
     };
     descriptor.set = function (val) {
+      this._saveFieldValue(field);
       return this._setFieldValue(field, val);
     };
 
@@ -157,13 +168,45 @@ export class Model {
 
   _setFieldValue(field, value, options) {
     value = field.deserialize(value, this, options);
-
-    if (!Object.prototype.hasOwnProperty.call(this, '_fieldValues')) {
-      this._fieldValues = Object.create(this._fieldValues || null);
+    if (this._fieldValues === undefined) {
+      this._fieldValues = {};
     }
     this._fieldValues[field.name] = value;
-
     return value;
+  }
+
+  _saveFieldValue(field) {
+    if (this._savedFieldValues === undefined) {
+      this._savedFieldValues = {};
+    }
+    this._savedFieldValues[field.name] = this._getFieldValue(field);
+  }
+
+  _fieldIsChanged(field) {
+    return (
+      this._savedFieldValues &&
+      Object.prototype.hasOwnProperty.call(this._savedFieldValues, field.name)
+    );
+  }
+
+  commit() {
+    if (this.isChanged()) {
+      this._savedFieldValues = undefined;
+    }
+  }
+
+  rollback() {
+    if (!this.isChanged()) {
+      return;
+    }
+    for (const [name, value] of Object.entries(this._savedFieldValues)) {
+      this._fieldValues[name] = value;
+    }
+    this._savedFieldValues = undefined;
+  }
+
+  isChanged() {
+    return this._savedFieldValues !== undefined;
   }
 
   static getName() {

@@ -19,9 +19,9 @@ export class Field {
     }
   }
 
-  serialize(value) {
+  serialize(value, {excludeUnchangedFields, includeFields, includeUndefinedFields} = {}) {
     if (value === undefined) {
-      return undefined;
+      return includeUndefinedFields ? {_type: 'undefined'} : undefined;
     }
 
     if (value === null) {
@@ -37,7 +37,7 @@ export class Field {
     }
 
     if (value.serialize) {
-      return value.serialize();
+      return value.serialize({excludeUnchangedFields, includeFields, includeUndefinedFields});
     }
 
     if (value.toJSON) {
@@ -58,6 +58,10 @@ export class Field {
     }
 
     if (typeof value === 'object' && value._type !== undefined) {
+      if (value._type === 'undefined') {
+        return undefined;
+      }
+
       const builtInType = builtInTypes[value._type];
       if (builtInType) {
         value = value._value;
