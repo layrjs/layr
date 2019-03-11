@@ -44,13 +44,24 @@ describe('@superstore/document', () => {
     // movie = store.get({_type: 'Person', _id: 'xyz123'}); // Missing collection
     // expect(movie).toBeUndefined();
 
-    // // Update
-    // store.set({_type: 'Movie', _id: 'abc123', title: 'The Matrix', year: undefined});
-    // movie = store.get({_type: 'Movie', _id: 'abc123'});
-    // expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'The Matrix'});
-    // expect(Object.keys(movie).includes('year')).toBe(false); // 'year' has been deleted
+    // Update
+
+    movie.title = 'The Matrix';
+    await movie.save();
+    movie = await registry.Movie.get(id);
+    expect(movie.id).toBe(id);
+    expect(movie.title).toBe('The Matrix');
+    expect(movie.year).toBe(2010);
+
+    movie.year = undefined;
+    await movie.save();
+    movie = await registry.Movie.get(id);
+    expect(movie.id).toBe(id);
+    expect(movie.title).toBe('The Matrix');
+    expect(movie.year).toBeUndefined();
 
     // // Remove
+    //
     // let hasBeenDeleted = store.delete({_type: 'Movie', _id: 'abc123'});
     // expect(hasBeenDeleted).toBe(true);
     // movie = store.get({_type: 'Movie', _id: 'abc123'});

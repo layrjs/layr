@@ -2,11 +2,12 @@ import {Model, field} from '@superstore/model';
 import cuid from 'cuid';
 
 export class Document extends Model {
-  @field('string', {serializedName: '_id'}) id;
+  @field('string', {serializedName: '_id'}) id = this.constructor.generateId();
 
   static async get(id, {throwIfNotFound = true} = {}) {
     validateId(id);
     const store = this._getStore();
+
     const serializedDocument = await store.get({_type: this.getName(), _id: id});
     if (!serializedDocument) {
       if (throwIfNotFound) {
@@ -14,14 +15,33 @@ export class Document extends Model {
       }
       return undefined;
     }
-    return this.deserialize(serializedDocument);
+
+    const document = this.deserialize(serializedDocument);
+    document._isPersisted = true;
+
+    await document.afterLoad();
+
+    return document;
   }
 
   async save() {
     const store = this.constructor._getStore();
+
     await this.beforeSave();
-    const serializedDocument = this.serialize();
+
+    const options = this._isPersisted ?
+      {
+        excludeUnchangedFields: true,
+        includeFields: ['id'],
+        includeUndefinedFields: true
+      } :
+      undefined;
+    const serializedDocument = this.serialize(options);
+
     await store.set(serializedDocument);
+    this.commit();
+    this._isPersisted = true;
+
     await this.afterSave();
   }
 
@@ -30,9 +50,7 @@ export class Document extends Model {
   }
 
   async beforeSave() {
-    if (this.id === undefined) {
-      this.id = this.constructor.generateId();
-    }
+    // NOOP
   }
 
   async afterSave() {
