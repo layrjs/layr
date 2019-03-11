@@ -87,8 +87,8 @@ describe('@superstore/memory-store', () => {
     });
 
     // The director can be fetched from 'Person'
-    let person = store.get({_type: 'Person', _id: 'xyz123'});
-    expect(person).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'Christopher Nolan'});
+    let director = store.get({_type: 'Person', _id: 'xyz123'});
+    expect(director).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'Christopher Nolan'});
 
     // Will fetch both 'Movie' and 'Person'
     let movie = store.get({_type: 'Movie', _id: 'abc123'});
@@ -122,7 +122,7 @@ describe('@superstore/memory-store', () => {
       _id: 'abc123',
       director: {_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'}
     });
-    person = store.get({_type: 'Person', _id: 'xyz123'});
-    expect(person).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'});
+    director = store.get({_type: 'Person', _id: 'xyz123'});
+    expect(director).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'});
   });
 });

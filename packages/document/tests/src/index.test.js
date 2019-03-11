@@ -1,7 +1,7 @@
 import {Registry} from '@superstore/registry';
 import {MemoryStore} from '@superstore/memory-store';
 
-import {Document, field} from '../../..';
+import {Document, Model, field} from '../../..';
 
 describe('@superstore/document', () => {
   test('CRUD operations', async () => {
@@ -16,11 +16,11 @@ describe('@superstore/document', () => {
 
     // Create
 
-    let movie = await new registry.Movie({title: 'Inception', year: 2010});
-    await movie.save();
+    let movie = new registry.Movie({title: 'Inception', year: 2010});
     const id = movie.id; // An 'id' should have been generated automatically
     expect(typeof id === 'string').toBe(true);
     expect(id !== '').toBe(true);
+    await movie.save();
 
     // Read
 
@@ -68,87 +68,87 @@ describe('@superstore/document', () => {
     expect(movie).toBeUndefined();
   });
 
-  // test('Nesting documents', () => {
-  //   const store = new MemoryStore();
+  test('Nesting documents', async () => {
+    class Movie extends Document {
+      @field('string') title;
 
-  //   store.set({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     title: 'Inception',
-  //     technicalSpecs: {_type: 'TechnicalSpecs', runtime: 120, aspectRatio: '2.39:1'}
-  //   });
+      @field('TechnicalSpecs') technicalSpecs;
+    }
 
-  //   let movie = store.get({_type: 'Movie', _id: 'abc123'});
-  //   expect(movie).toEqual({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     title: 'Inception',
-  //     technicalSpecs: {_type: 'TechnicalSpecs', runtime: 120, aspectRatio: '2.39:1'}
-  //   });
+    class TechnicalSpecs extends Model {
+      @field('string') aspectRatio;
+    }
 
-  //   // We cannot partially return nested documents
-  //   expect(() => {
-  //     movie = store.get(
-  //       {_type: 'Movie', _id: 'abc123'},
-  //       {return: {technicalSpecs: {runtime: true}}}
-  //     );
-  //   }).toThrow();
+    const store = new MemoryStore();
+    const registry = new Registry({Movie, TechnicalSpecs, store});
 
-  //   // We cannot partially modify nested documents
-  //   store.set({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     technicalSpecs: {_type: 'TechnicalSpecs', runtime: 130}
-  //   });
-  //   movie = store.get({_type: 'Movie', _id: 'abc123'});
-  //   expect(movie).toEqual({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     title: 'Inception',
-  //     technicalSpecs: {_type: 'TechnicalSpecs', runtime: 130} // 'aspectRatio' is gone
-  //   });
-  // });
+    let movie = new registry.Movie({title: 'Inception', technicalSpecs: {aspectRatio: '2.39:1'}});
+    const id = movie.id;
+    await movie.save();
+    movie = await registry.Movie.get(id);
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(id);
+    expect(movie.title).toBe('Inception');
+    expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
+  });
 
-  // test('Referencing documents', () => {
-  //   const store = new MemoryStore();
+  test('Referencing documents', async () => {
+    class Movie extends Document {
+      @field('string') title;
 
-  //   // Let's set both a 'Movie' and a 'Person'
-  //   store.set({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     title: 'Inception',
-  //     director: {_type: 'Person', _id: 'xyz123', fullName: 'Christopher Nolan'}
-  //   });
+      @field('Person') director;
+    }
 
-  //   // The director can be fetched from 'Person'
-  //   let person = store.get({_type: 'Person', _id: 'xyz123'});
-  //   expect(person).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'Christopher Nolan'});
+    class Person extends Document {
+      @field('string') fullName;
+    }
 
-  //   // Will fetch both 'Movie' and 'Person'
-  //   let movie = store.get({_type: 'Movie', _id: 'abc123'});
-  //   expect(movie).toEqual({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     title: 'Inception',
-  //     director: {_type: 'Person', _id: 'xyz123', fullName: 'Christopher Nolan'}
-  //   });
+    const store = new MemoryStore();
+    const registry = new Registry({Movie, Person, store});
 
-  //   // Will fetch 'Movie' only
-  //   movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, director: {}}});
-  //   expect(movie).toEqual({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     title: 'Inception',
-  //     director: {_type: 'Person', _id: 'xyz123'}
-  //   });
+    // Let's create both a 'Movie' and a 'Person'
+    let movie = new registry.Movie({title: 'Inception', director: {fullName: 'Christopher Nolan'}});
+    const movieId = movie.id;
+    const directorId = movie.director.id;
+    await movie.save();
 
-  //   // The director can be modified through its 'Movie' parent
-  //   store.set({
-  //     _type: 'Movie',
-  //     _id: 'abc123',
-  //     director: {_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'}
-  //   });
-  //   person = store.get({_type: 'Person', _id: 'xyz123'});
-  //   expect(person).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'});
-  // });
+    // The director can be fetched from 'Person'
+    let director = await registry.Person.get(directorId);
+    expect(director instanceof registry.Person).toBe(true);
+    expect(director.id).toBe(directorId);
+    expect(director.fullName).toBe('Christopher Nolan');
+
+    // Will fetch both 'Movie' and 'Person'
+    movie = await registry.Movie.get(movieId);
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director instanceof registry.Person).toBe(true);
+    expect(movie.director.id).toBe(directorId);
+    expect(movie.director.fullName).toBe('Christopher Nolan');
+
+    // Will fetch 'Movie' only
+    movie = await registry.Movie.get(movieId, {return: {title: true}});
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director).toBeUndefined();
+
+    // Will fetch 'Movie' and director's id
+    movie = await registry.Movie.get(movieId, {return: {title: true, director: {}}});
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director instanceof registry.Person).toBe(true);
+    expect(movie.director.id).toBe(directorId);
+    expect(movie.director.fullName).toBeUndefined();
+
+    // // The director can be modified through its 'Movie' parent
+    movie.director.fullName = 'C. Nolan';
+    movie.touch('director'); // For now, it is necessary to specify when a nested document has been modified
+    await movie.save();
+    director = await registry.Person.get(directorId);
+    expect(director.fullName).toBe('C. Nolan');
+  });
 });

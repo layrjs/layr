@@ -209,6 +209,14 @@ export class Model {
     return this._savedFieldValues !== undefined;
   }
 
+  touch(name) {
+    const field = this.constructor.getField(name);
+    if (!field) {
+      throw new Error(`Field not found (name: '${name}', model: '${this.constructor.getName()}')`);
+    }
+    this._saveFieldValue(field);
+  }
+
   static getName() {
     return this.name;
   }
