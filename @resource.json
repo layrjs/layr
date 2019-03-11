@@ -6,7 +6,23 @@
   "registry": {
     "@include": "./packages/registry"
   },
+  "document": {
+    "@include": "./packages/document"
+  },
   "memoryStore": {
     "@include": "./packages/memory-store"
+  },
+  "link": {
+    "@type": "method",
+    "@run": [
+      "(@import shell/bash) run \"npm-link ./packages/model\"",
+      "(@import shell/bash) run \"npm-link ./packages/model/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/registry\"",
+      "(@import shell/bash) run \"npm-link ./packages/registry/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/document\"",
+      "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/memory-store\"",
+      "(@import shell/bash) run \"npm-link ./packages/memory-store/tests\""
+    ]
   }
 }

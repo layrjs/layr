@@ -100,6 +100,14 @@ describe('@superstore/memory-store', () => {
     });
 
     // Will fetch 'Movie' only
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
+    expect(movie).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception'
+    });
+
+    // Will fetch 'Movie' and director's id
     movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, director: {}}});
     expect(movie).toEqual({
       _type: 'Movie',

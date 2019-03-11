@@ -7,9 +7,7 @@ export class Model {
     if (object !== undefined) {
       if (typeof object !== 'object') {
         throw new Error(
-          `Type mismatch (model: '${
-            this.constructor.name
-          }', expected type: 'object', provided type: '${typeof object}')`
+          `Type mismatch (model: '${this.constructor.getName()}', expected type: 'object', provided type: '${typeof object}')`
         );
       }
 
@@ -22,16 +20,14 @@ export class Model {
       if (object instanceof Model) {
         if (!(object instanceof this.constructor)) {
           throw new Error(
-            `Type mismatch (expected type: '${this.constructor.name}', provided type: '${
-              object.constructor.name
-            }')`
+            `Type mismatch (expected type: '${this.constructor.getName()}', provided type: '${object.constructor.getName()}')`
           );
         }
         return object;
       }
 
       for (const [name, value] of Object.entries(object)) {
-        const field = this.constructor.getField(name);
+        const field = this.constructor.getField(name, {deserialize: options?.deserialize});
         if (field) {
           this._setFieldValue(field, value, options);
         } else {
@@ -40,18 +36,18 @@ export class Model {
       }
     }
 
-    if (!options?.ignoreDefaults) {
+    if (!options?.deserialize) {
       this._applyDefaults(options);
     }
   }
 
   serialize() {
-    const result = {_type: this.constructor.name};
+    const result = {_type: this.constructor.getName()};
     this.constructor.forEachField(field => {
       let value = this._getFieldValue(field);
       value = field.serialize(value);
       if (value !== undefined) {
-        result[field.name] = value;
+        result[field.serializedName || field.name] = value;
       }
     });
     return result;
@@ -62,7 +58,7 @@ export class Model {
   }
 
   static deserialize(object) {
-    return new this(object, {ignoreDefaults: true});
+    return new this(object, {deserialize: true});
   }
 
   clone() {
@@ -117,8 +113,17 @@ export class Model {
     delete descriptor.writable;
   }
 
-  static getField(name) {
-    return this._fields?.[name];
+  static getField(name, options) {
+    if (!options?.deserialize) {
+      return this._fields?.[name];
+    }
+
+    return this.forEachField(field => {
+      if (field.serializedName) {
+        return field.serializedName === name ? field : undefined;
+      }
+      return field.name === name ? field : undefined;
+    });
   }
 
   static setField(name, type, options) {
@@ -137,7 +142,11 @@ export class Model {
   static forEachField(func) {
     if (this._fields) {
       for (const field of Object.values(this._fields)) {
-        func(field);
+        const result = func(field);
+        if (result !== undefined) {
+          // Early return if the function returned something
+          return result;
+        }
       }
     }
   }
@@ -157,6 +166,10 @@ export class Model {
     return value;
   }
 
+  static getName() {
+    return this.name;
+  }
+
   static _getModel(name) {
     const registry = this._getRegistry();
     const Model = registry[name];
@@ -168,7 +181,7 @@ export class Model {
 
   static _getRegistry() {
     if (!this.$registry) {
-      throw new Error(`Registry not found (model: ${this.name})`);
+      throw new Error(`Registry not found (model: ${this.getName()})`);
     }
     return this.$registry;
   }

@@ -73,6 +73,8 @@ describe('@superstore/model', () => {
 
   test('Serialization', () => {
     class Movie extends Model {
+      @field('string', {serializedName: '_id'}) id;
+
       @field('string') title;
 
       @field('Date') releasedOn;
@@ -89,12 +91,16 @@ describe('@superstore/model', () => {
     const movie = new registry.Movie();
     expect(movie.serialize()).toEqual({_type: 'Movie'});
 
+    movie.id = 'abc123';
+    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc123'});
+
     movie.title = 'Inception';
-    expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
+      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
     });
@@ -102,6 +108,23 @@ describe('@superstore/model', () => {
     movie.technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.39:1'});
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+    });
+
+    expect(
+      registry.Movie.deserialize({
+        _type: 'Movie',
+        _id: 'abc123',
+        title: 'Inception',
+        releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+      }).serialize()
+    ).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}

@@ -14,6 +14,9 @@ export class Field {
     if (options.default !== undefined) {
       this.default = options.default;
     }
+    if (options.serializedName !== undefined) {
+      this.serializedName = options.serializedName;
+    }
   }
 
   serialize(value) {
@@ -41,7 +44,8 @@ export class Field {
       return value.toJSON();
     }
 
-    throw new Error(`Couldn't find a serializer (model: '${value.constructor?.name}')`);
+    const name = value.constructor?.getName ? value.constructor.getName() : value.constructor?.name;
+    throw new Error(`Couldn't find a serializer (model: '${name}')`);
   }
 
   deserialize(value, parent, options) {
