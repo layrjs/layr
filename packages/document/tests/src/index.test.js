@@ -85,12 +85,17 @@ describe('@superstore/document', () => {
     let movie = new registry.Movie({title: 'Inception', technicalSpecs: {aspectRatio: '2.39:1'}});
     const id = movie.id;
     await movie.save();
+
     movie = await registry.Movie.get(id);
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('Inception');
     expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
+
+    await movie.delete();
+    movie = await registry.Movie.get(id, {throwIfNotFound: false});
+    expect(movie).toBeUndefined();
   });
 
   test('Referencing documents', async () => {
@@ -109,7 +114,7 @@ describe('@superstore/document', () => {
 
     // Let's create both a 'Movie' and a 'Person'
     let movie = new registry.Movie({title: 'Inception', director: {fullName: 'Christopher Nolan'}});
-    const movieId = movie.id;
+    let movieId = movie.id;
     const directorId = movie.director.id;
     await movie.save();
 
@@ -150,5 +155,25 @@ describe('@superstore/document', () => {
     await movie.save();
     director = await registry.Person.get(directorId);
     expect(director.fullName).toBe('C. Nolan');
+
+    // Will delete the 'Movie' only
+    await movie.delete();
+    movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
+    expect(movie).toBeUndefined();
+    director = await registry.Person.get(directorId, {throwIfNotFound: false});
+    expect(director instanceof registry.Person).toBe(true);
+    expect(director.id).toBe(directorId);
+
+    // Let's recreate the movie so we can test cascaded delete
+    movie = new registry.Movie({title: 'Inception', director});
+    movieId = movie.id;
+    await movie.save();
+
+    // Will delete both the 'Movie' and its director
+    await movie.delete({cascade: true});
+    movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
+    expect(movie).toBeUndefined();
+    director = await registry.Person.get(directorId, {throwIfNotFound: false});
+    expect(director).toBeUndefined();
   });
 });

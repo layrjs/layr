@@ -19,7 +19,10 @@ export class Field {
     }
   }
 
-  serialize(value, {excludeUnchangedFields, includeFields, includeUndefinedFields} = {}) {
+  serialize(
+    value,
+    {includeFields, includeChangedFields, includeUndefinedFields, includeFieldsOfType} = {}
+  ) {
     if (value === undefined) {
       return includeUndefinedFields ? {_type: 'undefined'} : undefined;
     }
@@ -36,8 +39,13 @@ export class Field {
       return value;
     }
 
-    if (value.serialize) {
-      return value.serialize({excludeUnchangedFields, includeFields, includeUndefinedFields});
+    if (value.isOfType && value.isOfType('Model')) {
+      return value.serialize({
+        includeFields,
+        includeChangedFields,
+        includeUndefinedFields,
+        includeFieldsOfType
+      });
     }
 
     if (value.toJSON) {

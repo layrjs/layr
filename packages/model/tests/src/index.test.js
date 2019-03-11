@@ -204,29 +204,37 @@ describe('@superstore/model', () => {
       releasedOn: new Date(Date.UTC(2010, 6, 16))
     });
 
-    expect(movie.serialize({excludeUnchangedFields: true})).toEqual({_type: 'Movie'});
+    expect(movie.serialize({includeFields: false, includeChangedFields: true})).toEqual({
+      _type: 'Movie'
+    });
 
     movie.title = 'The Matrix';
-    expect(movie.serialize({excludeUnchangedFields: true})).toEqual({
+    expect(movie.serialize({includeFields: false, includeChangedFields: true})).toEqual({
       _type: 'Movie',
       title: 'The Matrix'
     });
 
     movie.releasedOn = undefined;
-    expect(movie.serialize({excludeUnchangedFields: true})).toEqual({
+    expect(movie.serialize({includeFields: false, includeChangedFields: true})).toEqual({
       _type: 'Movie',
       title: 'The Matrix'
     });
-    expect(movie.serialize({excludeUnchangedFields: true, includeUndefinedFields: true})).toEqual({
+    expect(
+      movie.serialize({
+        includeFields: false,
+        includeChangedFields: true,
+        includeUndefinedFields: true
+      })
+    ).toEqual({
       _type: 'Movie',
       title: 'The Matrix',
       releasedOn: {_type: 'undefined'}
     });
     expect(
       movie.serialize({
-        excludeUnchangedFields: true,
-        includeUndefinedFields: true,
-        includeFields: ['id']
+        includeFields: ['id'],
+        includeChangedFields: true,
+        includeUndefinedFields: true
       })
     ).toEqual({
       _type: 'Movie',

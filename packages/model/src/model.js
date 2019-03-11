@@ -17,8 +17,8 @@ export class Model {
         object = new ObjectModel(value, options);
       }
 
-      if (object instanceof Model) {
-        if (!(object instanceof this.constructor)) {
+      if (object.isOfType && object.isOfType('Model')) {
+        if (!object.isOfType(this.constructor.getName())) {
           throw new Error(
             `Type mismatch (expected type: '${this.constructor.getName()}', provided type: '${object.constructor.getName()}')`
           );
@@ -41,19 +41,26 @@ export class Model {
     }
   }
 
-  serialize({excludeUnchangedFields, includeFields, includeUndefinedFields} = {}) {
+  serialize({
+    includeFields = true,
+    includeChangedFields,
+    includeUndefinedFields,
+    includeFieldsOfType
+  } = {}) {
     const result = {_type: this.constructor.getName()};
     this.constructor.forEachField(field => {
+      let value = this._getFieldValue(field);
       if (
-        (includeFields && includeFields.includes(field.name)) ||
-        !excludeUnchangedFields ||
-        this._fieldIsChanged(field)
+        includeFields === true ||
+        (Array.isArray(includeFields) && includeFields.includes(field.name)) ||
+        (includeChangedFields && this._fieldIsChanged(field)) ||
+        (includeFieldsOfType && value.isOfType && value.isOfType(includeFieldsOfType))
       ) {
-        let value = this._getFieldValue(field);
         value = field.serialize(value, {
-          excludeUnchangedFields,
           includeFields,
-          includeUndefinedFields
+          includeChangedFields,
+          includeUndefinedFields,
+          includeFieldsOfType
         });
         if (value !== undefined) {
           result[field.serializedName || field.name] = value;
@@ -219,6 +226,17 @@ export class Model {
 
   static getName() {
     return this.name;
+  }
+
+  isOfType(name) {
+    let Model = this.constructor;
+    while (Model) {
+      if (Model.name === name) {
+        return true;
+      }
+      Model = Object.getPrototypeOf(Model);
+    }
+    return false;
   }
 
   static _getModel(name) {

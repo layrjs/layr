@@ -37,11 +37,11 @@ export class Document extends Model {
 
     await this.beforeSave();
 
-    let options;
+    let options; // TODO: Make sure it properly work with referenced documents
     if (this._isPersisted) {
       options = {
-        excludeUnchangedFields: true,
         includeFields: ['id'],
+        includeChangedFields: true,
         includeUndefinedFields: true
       };
     }
@@ -62,7 +62,7 @@ export class Document extends Model {
     // NOOP
   }
 
-  async delete() {
+  async delete({cascade} = {}) {
     const store = this.constructor._getStore();
 
     await this.beforeDelete();
@@ -75,7 +75,11 @@ export class Document extends Model {
       );
     }
 
-    await store.delete({_type: this.constructor.getName(), _id: this.id});
+    const serializedDocument = this.serialize({
+      includeFields: ['id'],
+      includeFieldsOfType: cascade ? 'Document' : undefined
+    });
+    await store.delete(serializedDocument);
     this._isPersisted = false;
 
     await this.afterDelete();
