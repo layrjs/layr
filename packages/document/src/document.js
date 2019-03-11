@@ -4,11 +4,15 @@ import cuid from 'cuid';
 export class Document extends Model {
   @field('string', {serializedName: '_id'}) id = this.constructor.generateId();
 
-  static async get(id, {throwIfNotFound = true} = {}) {
+  static async get(id, {return: returnFields, throwIfNotFound = true} = {}) {
     validateId(id);
     const store = this._getStore();
 
-    const serializedDocument = await store.get({_type: this.getName(), _id: id});
+    let options;
+    if (returnFields !== undefined) {
+      options = {return: returnFields}; // TODO: Take into account the 'serializedName' field option
+    }
+    const serializedDocument = await store.get({_type: this.getName(), _id: id}, options);
     if (!serializedDocument) {
       if (throwIfNotFound) {
         throw new Error(`Document not found (model: '${this.getName()}', id: '${id}')`);
@@ -33,13 +37,14 @@ export class Document extends Model {
 
     await this.beforeSave();
 
-    const options = this._isPersisted ?
-      {
+    let options;
+    if (this._isPersisted) {
+      options = {
         excludeUnchangedFields: true,
         includeFields: ['id'],
         includeUndefinedFields: true
-      } :
-      undefined;
+      };
+    }
     const serializedDocument = this.serialize(options);
 
     await store.set(serializedDocument);

@@ -35,14 +35,15 @@ describe('@superstore/document', () => {
       registry.Movie.get('missing-id', {throwIfNotFound: false})
     ).resolves.toBeUndefined();
 
-    // movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}}); // Partial read
-    // expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
-    // movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: false}); // Existence check
-    // expect(movie).toEqual({_type: 'Movie', _id: 'abc123'});
-    // movie = store.get({_type: 'Movie', _id: 'xyz123'}); // Missing document
-    // expect(movie).toBeUndefined();
-    // movie = store.get({_type: 'Person', _id: 'xyz123'}); // Missing collection
-    // expect(movie).toBeUndefined();
+    movie = await registry.Movie.get(id, {return: {title: true}}); // Partial read
+    expect(movie.id).toBe(id);
+    expect(movie.title).toBe('Inception');
+    expect(movie.year).toBeUndefined();
+
+    movie = await registry.Movie.get(id, {return: false}); // Existence check
+    expect(movie.id).toBe(id);
+    expect(movie.title).toBeUndefined();
+    expect(movie.year).toBeUndefined();
 
     // Update
 
