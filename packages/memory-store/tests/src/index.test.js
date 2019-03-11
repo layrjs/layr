@@ -26,12 +26,12 @@ describe('@superstore/memory-store', () => {
     expect(Object.keys(movie).includes('genre')).toBe(false); // 'genre' has been deleted
 
     // Delete
-    let hasBeenDeleted = store.delete({_type: 'Movie', _id: 'abc123'});
-    expect(hasBeenDeleted).toBe(true);
+    let deleteResult = store.delete({_type: 'Movie', _id: 'abc123'});
+    expect(deleteResult).toEqual({_type: 'Movie', _id: 'abc123'});
     movie = store.get({_type: 'Movie', _id: 'abc123'});
     expect(movie).toBeUndefined();
-    hasBeenDeleted = store.delete({_type: 'Movie', _id: 'abc123'});
-    expect(hasBeenDeleted).toBe(false);
+    deleteResult = store.delete({_type: 'Movie', _id: 'abc123'});
+    expect(deleteResult).toEqual({});
   });
 
   test('Nesting documents', () => {
@@ -124,5 +124,21 @@ describe('@superstore/memory-store', () => {
     });
     director = store.get({_type: 'Person', _id: 'xyz123'});
     expect(director).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'C. Nolan'});
+
+    // Will delete both the 'Movie' and its director
+    const deleteResult = store.delete({
+      _type: 'Movie',
+      _id: 'abc123',
+      director: {_type: 'Person', _id: 'xyz123'}
+    });
+    expect(deleteResult).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      director: {_type: 'Person', _id: 'xyz123'}
+    });
+    movie = store.get({_type: 'Movie', _id: 'abc123'});
+    expect(movie).toBeUndefined();
+    director = store.get({_type: 'Person', _id: 'xyz123'});
+    expect(director).toBeUndefined();
   });
 });

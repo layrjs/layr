@@ -26,10 +26,10 @@ export class MemoryStore {
         continue;
       }
 
-      if (typeof value !== 'object') {
+      if (typeof value !== 'object' || value === null) {
         if (returnField !== true) {
           throw new Error(
-            `Type mismatch (field name: '${name})', expected type: 'object', actual type: '${typeof value}'`
+            `Type mismatch (field name: '${name})', expected value: 'true', actual type: '${typeof returnField}'`
           );
         }
         result[name] = value;
@@ -76,7 +76,7 @@ export class MemoryStore {
         continue;
       }
 
-      if (typeof value !== 'object') {
+      if (typeof value !== 'object' || value === null) {
         document[name] = value;
         continue;
       }
@@ -101,16 +101,42 @@ export class MemoryStore {
     }
   }
 
-  delete({_type, _id}) {
+  delete({_type, _id, ...referencedDocuments}) {
     validateType(_type);
     validateId(_id);
 
+    const result = {};
+
+    // Let's handle the referenced documents first
+    for (const [name, referencedDocument] of Object.entries(referencedDocuments)) {
+      if (referencedDocument === undefined) {
+        continue;
+      }
+
+      if (referencedDocument === null) {
+        throw new Error(
+          `Type mismatch (field name: '${name})', expected type: 'object', actual type: 'null'`
+        );
+      }
+
+      if (typeof referencedDocument !== 'object') {
+        throw new Error(
+          `Type mismatch (field name: '${name})', expected type: 'object', actual type: '${typeof referencedDocument}'`
+        );
+      }
+
+      result[name] = this.delete(referencedDocument);
+    }
+
     const document = this._collections[_type]?.[_id];
     if (document === undefined) {
-      return false;
+      return result;
     }
+
+    // Delete the specified document
     delete this._collections[_type][_id];
-    return true;
+
+    return {_type, _id, ...result};
   }
 }
 
