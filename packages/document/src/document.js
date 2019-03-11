@@ -24,6 +24,10 @@ export class Document extends Model {
     return document;
   }
 
+  async afterLoad() {
+    // NOOP
+  }
+
   async save() {
     const store = this.constructor._getStore();
 
@@ -45,15 +49,38 @@ export class Document extends Model {
     await this.afterSave();
   }
 
-  async afterLoad() {
-    // NOOP
-  }
-
   async beforeSave() {
     // NOOP
   }
 
   async afterSave() {
+    // NOOP
+  }
+
+  async delete() {
+    const store = this.constructor._getStore();
+
+    await this.beforeDelete();
+
+    if (!this._isPersisted) {
+      throw new Error(
+        `Cannot delete a non-persisted document (model: '${this.constructor.getName()}', id: '${
+          this.id
+        }')`
+      );
+    }
+
+    await store.delete({_type: this.constructor.getName(), _id: this.id});
+    this._isPersisted = false;
+
+    await this.afterDelete();
+  }
+
+  async beforeDelete() {
+    // NOOP
+  }
+
+  async afterDelete() {
     // NOOP
   }
 

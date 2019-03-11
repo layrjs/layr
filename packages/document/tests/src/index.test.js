@@ -60,14 +60,11 @@ describe('@superstore/document', () => {
     expect(movie.title).toBe('The Matrix');
     expect(movie.year).toBeUndefined();
 
-    // // Remove
-    //
-    // let hasBeenDeleted = store.delete({_type: 'Movie', _id: 'abc123'});
-    // expect(hasBeenDeleted).toBe(true);
-    // movie = store.get({_type: 'Movie', _id: 'abc123'});
-    // expect(movie).toBeUndefined();
-    // hasBeenDeleted = store.delete({_type: 'Movie', _id: 'abc123'});
-    // expect(hasBeenDeleted).toBe(false);
+    // Delete
+
+    await movie.delete();
+    movie = await registry.Movie.get(id, {throwIfNotFound: false});
+    expect(movie).toBeUndefined();
   });
 
   // test('Nesting documents', () => {

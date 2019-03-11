@@ -25,7 +25,7 @@ describe('@superstore/memory-store', () => {
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'The Matrix'});
     expect(Object.keys(movie).includes('genre')).toBe(false); // 'genre' has been deleted
 
-    // Remove
+    // Delete
     let hasBeenDeleted = store.delete({_type: 'Movie', _id: 'abc123'});
     expect(hasBeenDeleted).toBe(true);
     movie = store.get({_type: 'Movie', _id: 'abc123'});
