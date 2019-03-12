@@ -151,7 +151,6 @@ describe('@superstore/document', () => {
 
     // // The director can be modified through its 'Movie' parent
     movie.director.fullName = 'C. Nolan';
-    movie.touch('director'); // For now, it is necessary to specify when a nested document has been modified
     await movie.save();
     director = await registry.Person.get(directorId);
     expect(director.fullName).toBe('C. Nolan');
@@ -266,7 +265,6 @@ describe('@superstore/document', () => {
     expect(movie.director.afterDeleteCount).toBe(0);
 
     movie.director.fullName = 'C. Nolan';
-    movie.touch('director');
     await movie.save();
     expect(movie.afterLoadCount).toBe(1);
     expect(movie.beforeSaveCount).toBe(1);

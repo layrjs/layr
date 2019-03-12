@@ -55,7 +55,7 @@ export class Model {
       if (
         includeFields === true ||
         (Array.isArray(includeFields) && includeFields.includes(field.name)) ||
-        (includeChangedFields && this._fieldIsChanged(field)) ||
+        (includeChangedFields && this.fieldIsChanged(field)) ||
         (includeFieldsOfType && value?.isOfType && value.isOfType(includeFieldsOfType))
       ) {
         value = field.serializeValue(value, {
@@ -170,6 +170,19 @@ export class Model {
     }
   }
 
+  forEachSubmodel(func) {
+    return this.constructor.forEachField(field => {
+      const value = this._getFieldValue(field);
+      if (value?.isOfType && value.isOfType('Model')) {
+        const result = func(value);
+        if (result !== undefined) {
+          // Early return if the function returned something
+          return result;
+        }
+      }
+    });
+  }
+
   _getFieldValue(field) {
     return this._fieldValues?.[field.name];
   }
@@ -193,39 +206,53 @@ export class Model {
     this._savedFieldValues[field.name] = this._getFieldValue(field);
   }
 
-  _fieldIsChanged(field) {
-    return (
-      this._savedFieldValues &&
-      Object.prototype.hasOwnProperty.call(this._savedFieldValues, field.name)
-    );
-  }
-
   commit() {
-    if (this.isChanged()) {
-      this._savedFieldValues = undefined;
-    }
+    this._savedFieldValues = undefined;
+
+    this.forEachSubmodel(submodel => {
+      submodel.commit();
+    });
   }
 
   rollback() {
-    if (!this.isChanged()) {
-      return;
+    if (this._savedFieldValues !== undefined) {
+      for (const [name, value] of Object.entries(this._savedFieldValues)) {
+        this._fieldValues[name] = value;
+      }
+      this._savedFieldValues = undefined;
     }
-    for (const [name, value] of Object.entries(this._savedFieldValues)) {
-      this._fieldValues[name] = value;
-    }
-    this._savedFieldValues = undefined;
+
+    this.forEachSubmodel(submodel => {
+      submodel.rollback();
+    });
   }
 
   isChanged() {
-    return this._savedFieldValues !== undefined;
+    return this._isChanged() === true;
   }
 
-  touch(name) {
-    const field = this.constructor.getField(name);
-    if (!field) {
-      throw new Error(`Field not found (name: '${name}', model: '${this.constructor.getName()}')`);
+  _isChanged() {
+    if (this._savedFieldValues !== undefined) {
+      return true;
     }
-    this._saveFieldValue(field);
+
+    return this.forEachSubmodel(submodel => submodel._isChanged());
+  }
+
+  fieldIsChanged(field) {
+    if (
+      this._savedFieldValues &&
+      Object.prototype.hasOwnProperty.call(this._savedFieldValues, field.name)
+    ) {
+      return true;
+    }
+
+    const value = this._getFieldValue(field);
+    if (value?.isOfType && value.isOfType('Model')) {
+      return value.isChanged();
+    }
+
+    return false;
   }
 
   static getName() {
