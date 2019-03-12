@@ -17,6 +17,9 @@ export class Field {
     if (options.serializedName !== undefined) {
       this.serializedName = options.serializedName;
     }
+    if (options.isOwned !== undefined) {
+      this.isOwned = options.isOwned;
+    }
   }
 
   createValue(value, parent, {isDeserializing}) {
@@ -60,7 +63,7 @@ export class Field {
 
   serializeValue(
     value,
-    {includeFields, includeChangedFields, includeUndefinedFields, includeFieldsOfType} = {}
+    {includeFields, includeChangedFields, includeUndefinedFields, includeOwnedFields} = {}
   ) {
     if (value === undefined) {
       return includeUndefinedFields ? {_type: 'undefined'} : undefined;
@@ -83,7 +86,7 @@ export class Field {
         includeFields,
         includeChangedFields,
         includeUndefinedFields,
-        includeFieldsOfType
+        includeOwnedFields
       });
     }
 

@@ -54,34 +54,37 @@ export class Document extends Model {
     await this.forEachSubdocument(async document => await document.afterSave());
   }
 
-  async delete({cascade} = {}) {
-    await this.beforeDelete({cascade});
+  async delete() {
+    await this.beforeDelete();
 
     const serializedDocument = this.serialize({
       includeFields: ['id'],
-      includeFieldsOfType: cascade ? 'Document' : undefined
+      includeOwnedFields: true
     });
     const store = this.constructor._getStore();
     await store.delete(serializedDocument);
 
-    await this.afterDelete({cascade});
+    await this.afterDelete();
   }
 
-  async beforeDelete({cascade}) {
-    if (cascade) {
-      await this.forEachSubdocument(async document => await document.beforeDelete({cascade}));
-    }
+  async beforeDelete() {
+    await this.forEachSubdocument(async document => await document.beforeDelete(), {
+      limitToOwned: true
+    });
   }
 
-  async afterDelete({cascade}) {
-    if (cascade) {
-      await this.forEachSubdocument(async document => await document.afterDelete({cascade}));
-    }
+  async afterDelete() {
+    await this.forEachSubdocument(async document => await document.afterDelete(), {
+      limitToOwned: true
+    });
   }
 
-  async forEachSubdocument(func) {
+  async forEachSubdocument(func, {limitToOwned} = {}) {
     const documents = [];
     this.constructor.forEachField(field => {
+      if (limitToOwned && !field.isOwned) {
+        return;
+      }
       const value = this[field.name];
       if (value?.isOfType && value.isOfType('Document')) {
         documents.push(value);

@@ -47,22 +47,22 @@ export class Model {
     includeFields = true,
     includeChangedFields,
     includeUndefinedFields,
-    includeFieldsOfType
+    includeOwnedFields
   } = {}) {
     const result = {_type: this.constructor.getName()};
     this.constructor.forEachField(field => {
-      let value = this._getFieldValue(field);
       if (
         includeFields === true ||
         (Array.isArray(includeFields) && includeFields.includes(field.name)) ||
         (includeChangedFields && this.fieldIsChanged(field)) ||
-        (includeFieldsOfType && value?.isOfType && value.isOfType(includeFieldsOfType))
+        (includeOwnedFields && field.isOwned)
       ) {
+        let value = this._getFieldValue(field);
         value = field.serializeValue(value, {
           includeFields,
           includeChangedFields,
           includeUndefinedFields,
-          includeFieldsOfType
+          includeOwnedFields
         });
         if (value !== undefined) {
           result[field.serializedName || field.name] = value;
