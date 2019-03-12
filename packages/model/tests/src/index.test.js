@@ -96,8 +96,11 @@ describe('@superstore/model', () => {
       @field('string') title;
     }
 
-    const movie = new Movie({title: 'Inception'});
-    expect(movie.isChanged()).toBe(false);
+    let movie = new Movie({title: 'Inception'});
+    expect(movie.isChanged()).toBe(true); // Models created with `new' are considered as changed
+
+    movie = Movie.deserialize({title: 'Inception'});
+    expect(movie.isChanged()).toBe(false); // Deserialized models are considered as unchanged
 
     movie.title = 'The Matrix';
     expect(movie.isChanged()).toBe(true);
@@ -198,8 +201,8 @@ describe('@superstore/model', () => {
 
     // Serialization options
 
-    movie = new registry.Movie({
-      id: 'abc123',
+    movie = registry.Movie.deserialize({
+      _id: 'abc123',
       title: 'Inception',
       releasedOn: new Date(Date.UTC(2010, 6, 16))
     });

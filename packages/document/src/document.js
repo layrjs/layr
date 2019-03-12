@@ -21,7 +21,6 @@ export class Document extends Model {
     }
 
     const document = this.deserialize(serializedDocument);
-    document._isPersisted = true;
 
     await document.afterLoad();
 
@@ -35,20 +34,14 @@ export class Document extends Model {
   async save() {
     await this.beforeSave();
 
-    let options; // TODO: Make sure it properly work with referenced documents
-    if (this._isPersisted) {
-      options = {
-        includeFields: ['id'],
-        includeChangedFields: true,
-        includeUndefinedFields: true
-      };
-    }
-    const serializedDocument = this.serialize(options);
-
     const store = this.constructor._getStore();
+    const serializedDocument = this.serialize({
+      includeFields: ['id'],
+      includeChangedFields: true,
+      includeUndefinedFields: true
+    });
     await store.set(serializedDocument);
     this.commit();
-    this._isPersisted = true;
 
     await this.afterSave();
   }
@@ -64,21 +57,12 @@ export class Document extends Model {
   async delete({cascade} = {}) {
     await this.beforeDelete({cascade});
 
-    if (!this._isPersisted) {
-      throw new Error(
-        `Cannot delete a non-persisted document (model: '${this.constructor.getName()}', id: '${
-          this.id
-        }')`
-      );
-    }
-
     const serializedDocument = this.serialize({
       includeFields: ['id'],
       includeFieldsOfType: cascade ? 'Document' : undefined
     });
     const store = this.constructor._getStore();
     await store.delete(serializedDocument);
-    this._isPersisted = false;
 
     await this.afterDelete({cascade});
   }

@@ -19,44 +19,7 @@ export class Field {
     }
   }
 
-  serialize(
-    value,
-    {includeFields, includeChangedFields, includeUndefinedFields, includeFieldsOfType} = {}
-  ) {
-    if (value === undefined) {
-      return includeUndefinedFields ? {_type: 'undefined'} : undefined;
-    }
-
-    if (value === null) {
-      return null;
-    }
-
-    const builtInType = builtInTypes[this.type];
-    if (builtInType) {
-      if (builtInType.serialize) {
-        value = {_type: this.type, _value: builtInType.serialize(value)};
-      }
-      return value;
-    }
-
-    if (value.isOfType && value.isOfType('Model')) {
-      return value.serialize({
-        includeFields,
-        includeChangedFields,
-        includeUndefinedFields,
-        includeFieldsOfType
-      });
-    }
-
-    if (value.toJSON) {
-      return value.toJSON();
-    }
-
-    const name = value.constructor?.getName ? value.constructor.getName() : value.constructor?.name;
-    throw new Error(`Couldn't find a serializer (model: '${name}')`);
-  }
-
-  deserialize(value, parent, options) {
+  createValue(value, parent, {isDeserializing}) {
     if (value === undefined) {
       return undefined;
     }
@@ -92,7 +55,44 @@ export class Field {
     }
 
     const Model = parent.constructor._getModel(this.type);
-    return new Model(value, options);
+    return new Model(value, {isDeserializing});
+  }
+
+  serializeValue(
+    value,
+    {includeFields, includeChangedFields, includeUndefinedFields, includeFieldsOfType} = {}
+  ) {
+    if (value === undefined) {
+      return includeUndefinedFields ? {_type: 'undefined'} : undefined;
+    }
+
+    if (value === null) {
+      return null;
+    }
+
+    const builtInType = builtInTypes[this.type];
+    if (builtInType) {
+      if (builtInType.serialize) {
+        value = {_type: this.type, _value: builtInType.serialize(value)};
+      }
+      return value;
+    }
+
+    if (value.isOfType && value.isOfType('Model')) {
+      return value.serialize({
+        includeFields,
+        includeChangedFields,
+        includeUndefinedFields,
+        includeFieldsOfType
+      });
+    }
+
+    if (value.toJSON) {
+      return value.toJSON();
+    }
+
+    const name = value.constructor?.getName ? value.constructor.getName() : value.constructor?.name;
+    throw new Error(`Couldn't find a serializer (model: '${name}')`);
   }
 }
 

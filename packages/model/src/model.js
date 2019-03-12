@@ -3,7 +3,7 @@ import {inspect} from 'util';
 import {Field} from './field';
 
 export class Model {
-  constructor(object, options) {
+  constructor(object, {isDeserializing} = {}) {
     if (object !== undefined) {
       if (typeof object !== 'object') {
         throw new Error(
@@ -14,7 +14,7 @@ export class Model {
       if (object._type !== undefined) {
         const {_type: type, ...value} = object;
         const ObjectModel = this.constructor._getModel(type);
-        object = new ObjectModel(value, options);
+        object = new ObjectModel(value, {isDeserializing});
       }
 
       if (object.isOfType && object.isOfType('Model')) {
@@ -27,17 +27,19 @@ export class Model {
       }
 
       for (const [name, value] of Object.entries(object)) {
-        const field = this.constructor.getField(name, {deserialize: options?.deserialize});
+        const field = isDeserializing ?
+          this.constructor.getFieldBySerializedName(name) :
+          this.constructor.getField(name);
         if (field) {
-          this._setFieldValue(field, value, options);
+          this._setFieldValue(field, value, {isDeserializing});
         } else {
           // Silently ignore undefined fields
         }
       }
     }
 
-    if (!options?.deserialize) {
-      this._applyDefaults(options);
+    if (!isDeserializing) {
+      this._applyDefaults();
     }
   }
 
@@ -56,7 +58,7 @@ export class Model {
         (includeChangedFields && this._fieldIsChanged(field)) ||
         (includeFieldsOfType && value?.isOfType && value.isOfType(includeFieldsOfType))
       ) {
-        value = field.serialize(value, {
+        value = field.serializeValue(value, {
           includeFields,
           includeChangedFields,
           includeUndefinedFields,
@@ -75,14 +77,14 @@ export class Model {
   }
 
   static deserialize(object) {
-    return new this(object, {deserialize: true});
+    return new this(object, {isDeserializing: true});
   }
 
   clone() {
     return this.constructor.deserialize(this.serialize());
   }
 
-  _applyDefaults(options) {
+  _applyDefaults() {
     this.constructor.forEachField(field => {
       let value = field.default;
       if (value === undefined) {
@@ -97,7 +99,7 @@ export class Model {
       if (value === undefined) {
         return;
       }
-      this._setFieldValue(field, value, options);
+      this._setFieldValue(field, value);
     });
   }
 
@@ -123,7 +125,6 @@ export class Model {
       return this._getFieldValue(field);
     };
     descriptor.set = function (val) {
-      this._saveFieldValue(field);
       return this._setFieldValue(field, val);
     };
 
@@ -131,11 +132,11 @@ export class Model {
     delete descriptor.writable;
   }
 
-  static getField(name, options) {
-    if (!options?.deserialize) {
-      return this._fields?.[name];
-    }
+  static getField(name) {
+    return this._fields?.[name];
+  }
 
+  static getFieldBySerializedName(name) {
     return this.forEachField(field => {
       if (field.serializedName) {
         return field.serializedName === name ? field : undefined;
@@ -173,8 +174,11 @@ export class Model {
     return this._fieldValues?.[field.name];
   }
 
-  _setFieldValue(field, value, options) {
-    value = field.deserialize(value, this, options);
+  _setFieldValue(field, value, {isDeserializing} = {}) {
+    if (!isDeserializing) {
+      this._saveFieldValue(field);
+    }
+    value = field.createValue(value, this, {isDeserializing});
     if (this._fieldValues === undefined) {
       this._fieldValues = {};
     }
