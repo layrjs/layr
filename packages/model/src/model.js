@@ -54,7 +54,7 @@ export class Model {
         includeFields === true ||
         (Array.isArray(includeFields) && includeFields.includes(field.name)) ||
         (includeChangedFields && this._fieldIsChanged(field)) ||
-        (includeFieldsOfType && value.isOfType && value.isOfType(includeFieldsOfType))
+        (includeFieldsOfType && value?.isOfType && value.isOfType(includeFieldsOfType))
       ) {
         value = field.serialize(value, {
           includeFields,

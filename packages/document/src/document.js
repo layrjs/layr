@@ -6,8 +6,8 @@ export class Document extends Model {
 
   static async get(id, {return: returnFields, throwIfNotFound = true} = {}) {
     validateId(id);
-    const store = this._getStore();
 
+    const store = this._getStore();
     let options;
     if (returnFields !== undefined) {
       options = {return: returnFields}; // TODO: Take into account the 'serializedName' field option
@@ -29,12 +29,10 @@ export class Document extends Model {
   }
 
   async afterLoad() {
-    // NOOP
+    await this.forEachSubdocument(async document => await document.afterLoad());
   }
 
   async save() {
-    const store = this.constructor._getStore();
-
     await this.beforeSave();
 
     let options; // TODO: Make sure it properly work with referenced documents
@@ -47,6 +45,7 @@ export class Document extends Model {
     }
     const serializedDocument = this.serialize(options);
 
+    const store = this.constructor._getStore();
     await store.set(serializedDocument);
     this.commit();
     this._isPersisted = true;
@@ -55,17 +54,15 @@ export class Document extends Model {
   }
 
   async beforeSave() {
-    // NOOP
+    await this.forEachSubdocument(async document => await document.beforeSave());
   }
 
   async afterSave() {
-    // NOOP
+    await this.forEachSubdocument(async document => await document.afterSave());
   }
 
   async delete({cascade} = {}) {
-    const store = this.constructor._getStore();
-
-    await this.beforeDelete();
+    await this.beforeDelete({cascade});
 
     if (!this._isPersisted) {
       throw new Error(
@@ -79,18 +76,37 @@ export class Document extends Model {
       includeFields: ['id'],
       includeFieldsOfType: cascade ? 'Document' : undefined
     });
+    const store = this.constructor._getStore();
     await store.delete(serializedDocument);
     this._isPersisted = false;
 
-    await this.afterDelete();
+    await this.afterDelete({cascade});
   }
 
-  async beforeDelete() {
-    // NOOP
+  async beforeDelete({cascade}) {
+    if (cascade) {
+      await this.forEachSubdocument(async document => await document.beforeDelete({cascade}));
+    }
   }
 
-  async afterDelete() {
-    // NOOP
+  async afterDelete({cascade}) {
+    if (cascade) {
+      await this.forEachSubdocument(async document => await document.afterDelete({cascade}));
+    }
+  }
+
+  async forEachSubdocument(func) {
+    const documents = [];
+    this.constructor.forEachField(field => {
+      const value = this[field.name];
+      if (value?.isOfType && value.isOfType('Document')) {
+        documents.push(value);
+      }
+    });
+
+    for (const document of documents) {
+      await func(document);
+    }
   }
 
   static generateId() {

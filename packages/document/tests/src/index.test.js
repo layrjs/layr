@@ -68,7 +68,7 @@ describe('@superstore/document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test('Nesting documents', async () => {
+  test('Nesting models', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -98,7 +98,7 @@ describe('@superstore/document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test('Referencing documents', async () => {
+  test('Nesting documents', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -175,5 +175,120 @@ describe('@superstore/document', () => {
     expect(movie).toBeUndefined();
     director = await registry.Person.get(directorId, {throwIfNotFound: false});
     expect(director).toBeUndefined();
+  });
+
+  test('Hooks', async () => {
+    class HookedDocument extends Document {
+      afterLoadCount = 0;
+
+      beforeSaveCount = 0;
+
+      afterSaveCount = 0;
+
+      beforeDeleteCount = 0;
+
+      afterDeleteCount = 0;
+
+      async afterLoad(options) {
+        await super.afterLoad(options);
+        this.afterLoadCount++;
+      }
+
+      async beforeSave(options) {
+        await super.beforeSave(options);
+        this.beforeSaveCount++;
+      }
+
+      async afterSave(options) {
+        await super.afterSave(options);
+        this.afterSaveCount++;
+      }
+
+      async beforeDelete(options) {
+        await super.beforeDelete(options);
+        this.beforeDeleteCount++;
+      }
+
+      async afterDelete(options) {
+        await super.afterDelete(options);
+        this.afterDeleteCount++;
+      }
+    }
+
+    class Movie extends HookedDocument {
+      @field('string') title;
+
+      @field('Person') director;
+    }
+
+    class Person extends HookedDocument {
+      @field('string') fullName;
+    }
+
+    const store = new MemoryStore();
+    const registry = new Registry({Movie, Person, store});
+
+    let movie = new registry.Movie({title: 'Inception', director: {fullName: 'Christopher Nolan'}});
+    const movieId = movie.id;
+    expect(movie.afterLoadCount).toBe(0);
+    expect(movie.beforeSaveCount).toBe(0);
+    expect(movie.afterSaveCount).toBe(0);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.director.afterLoadCount).toBe(0);
+    expect(movie.director.beforeSaveCount).toBe(0);
+    expect(movie.director.afterSaveCount).toBe(0);
+    expect(movie.director.beforeDeleteCount).toBe(0);
+    expect(movie.director.afterDeleteCount).toBe(0);
+
+    await movie.save();
+    expect(movie.afterLoadCount).toBe(0);
+    expect(movie.beforeSaveCount).toBe(1);
+    expect(movie.afterSaveCount).toBe(1);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.director.afterLoadCount).toBe(0);
+    expect(movie.director.beforeSaveCount).toBe(1);
+    expect(movie.director.afterSaveCount).toBe(1);
+    expect(movie.director.beforeDeleteCount).toBe(0);
+    expect(movie.director.afterDeleteCount).toBe(0);
+
+    movie = await registry.Movie.get(movieId);
+    expect(movie.afterLoadCount).toBe(1);
+    expect(movie.beforeSaveCount).toBe(0);
+    expect(movie.afterSaveCount).toBe(0);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.director.afterLoadCount).toBe(1);
+    expect(movie.director.beforeSaveCount).toBe(0);
+    expect(movie.director.afterSaveCount).toBe(0);
+    expect(movie.director.beforeDeleteCount).toBe(0);
+    expect(movie.director.afterDeleteCount).toBe(0);
+
+    movie.director.fullName = 'C. Nolan';
+    movie.touch('director');
+    await movie.save();
+    expect(movie.afterLoadCount).toBe(1);
+    expect(movie.beforeSaveCount).toBe(1);
+    expect(movie.afterSaveCount).toBe(1);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.director.afterLoadCount).toBe(1);
+    expect(movie.director.beforeSaveCount).toBe(1);
+    expect(movie.director.afterSaveCount).toBe(1);
+    expect(movie.director.beforeDeleteCount).toBe(0);
+    expect(movie.director.afterDeleteCount).toBe(0);
+
+    await movie.delete({cascade: true});
+    expect(movie.afterLoadCount).toBe(1);
+    expect(movie.beforeSaveCount).toBe(1);
+    expect(movie.afterSaveCount).toBe(1);
+    expect(movie.beforeDeleteCount).toBe(1);
+    expect(movie.afterDeleteCount).toBe(1);
+    expect(movie.director.afterLoadCount).toBe(1);
+    expect(movie.director.beforeSaveCount).toBe(1);
+    expect(movie.director.afterSaveCount).toBe(1);
+    expect(movie.director.beforeDeleteCount).toBe(1);
+    expect(movie.director.afterDeleteCount).toBe(1);
   });
 });
