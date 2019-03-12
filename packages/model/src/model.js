@@ -260,6 +260,10 @@ export class Model {
   }
 
   isOfType(name) {
+    if (name === 'Model') {
+      return true; // Optimization
+    }
+
     let Model = this.constructor;
     while (Model) {
       if (Model.name === name) {

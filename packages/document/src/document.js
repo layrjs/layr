@@ -97,6 +97,10 @@ export class Document extends Model {
     return cuid();
   }
 
+  isOfType(name) {
+    return name === 'Document' ? true : super.isOfType(name); // Optimization
+  }
+
   static _getStore() {
     const registry = this._getRegistry();
     if (!registry.store) {
