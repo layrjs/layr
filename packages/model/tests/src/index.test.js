@@ -278,7 +278,7 @@ describe('@superstore/model', () => {
       ]
     });
 
-    // Serialization options
+    // Serialization filter
 
     movie = registry.Movie.deserialize({
       _id: 'abc123',
@@ -286,42 +286,54 @@ describe('@superstore/model', () => {
       releasedOn: new Date(Date.UTC(2010, 6, 16))
     });
 
-    expect(movie.serialize({includeFields: false, includeChangedFields: true})).toEqual({
+    expect(movie.serialize({filter: (field, model) => model.fieldIsChanged(field)})).toEqual({
       _type: 'Movie'
     });
 
     movie.title = 'The Matrix';
-    expect(movie.serialize({includeFields: false, includeChangedFields: true})).toEqual({
+    expect(movie.serialize({filter: (field, model) => model.fieldIsChanged(field)})).toEqual({
       _type: 'Movie',
       title: 'The Matrix'
     });
 
-    movie.releasedOn = undefined;
-    expect(movie.serialize({includeFields: false, includeChangedFields: true})).toEqual({
-      _type: 'Movie',
-      title: 'The Matrix'
-    });
     expect(
       movie.serialize({
-        includeFields: false,
-        includeChangedFields: true,
-        includeUndefinedFields: true
-      })
-    ).toEqual({
-      _type: 'Movie',
-      title: 'The Matrix',
-      releasedOn: {_type: 'undefined'}
-    });
-    expect(
-      movie.serialize({
-        includeFields: ['id'],
-        includeChangedFields: true,
-        includeUndefinedFields: true
+        filter: (field, model) => field.name === 'id' || model.fieldIsChanged(field)
       })
     ).toEqual({
       _type: 'Movie',
       _id: 'abc123',
-      title: 'The Matrix',
+      title: 'The Matrix'
+    });
+
+    // Serialization of 'undefined'
+
+    movie = new registry.Movie({id: 'abc123', title: 'Inception'});
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception'
+    });
+
+    movie.releasedOn = undefined;
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      releasedOn: {_type: 'undefined'}
+    });
+
+    expect(
+      registry.Movie.deserialize({
+        _type: 'Movie',
+        _id: 'abc123',
+        title: 'Inception',
+        releasedOn: {_type: 'undefined'}
+      }).serialize()
+    ).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
       releasedOn: {_type: 'undefined'}
     });
   });

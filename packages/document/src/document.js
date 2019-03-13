@@ -37,9 +37,7 @@ export class Document extends Model {
 
     const store = this.constructor._getStore();
     const serializedDocument = this.serialize({
-      includeFields: ['id'],
-      includeChangedFields: true,
-      includeUndefinedFields: true
+      filter: (field, model) => field.name === 'id' || model.fieldIsChanged(field)
     });
     await store.set(serializedDocument);
     this.commit();
@@ -59,8 +57,7 @@ export class Document extends Model {
     await this.beforeDelete();
 
     const serializedDocument = this.serialize({
-      includeFields: ['id'],
-      includeOwnedFields: true
+      filter: field => field.name === 'id' || field.isOwned
     });
     const store = this.constructor._getStore();
     await store.delete(serializedDocument);

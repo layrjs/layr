@@ -33,7 +33,7 @@ export class Field {
   }
 
   createValue(value, parent, {isDeserializing}) {
-    if (value === undefined) {
+    if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
       return undefined;
     }
 
@@ -52,26 +52,16 @@ export class Field {
     );
   }
 
-  serializeValue(
-    value,
-    {includeFields, includeChangedFields, includeUndefinedFields, includeOwnedFields}
-  ) {
+  serializeValue(value, {filter}) {
     if (value === undefined) {
-      return includeUndefinedFields ? {_type: 'undefined'} : undefined;
+      return {_type: 'undefined'};
     }
 
     if (value === null) {
       return null;
     }
 
-    return mapFromOneOrMany(value, value =>
-      this.scalar.serializeValue(value, {
-        includeFields,
-        includeChangedFields,
-        includeUndefinedFields,
-        includeOwnedFields
-      })
-    );
+    return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, {filter}));
   }
 }
 
@@ -84,7 +74,7 @@ class Scalar {
   }
 
   createValue(value, parent, {fieldName, isDeserializing}) {
-    if (value === undefined) {
+    if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
       return undefined;
     }
 
@@ -93,10 +83,6 @@ class Scalar {
     }
 
     if (typeof value === 'object' && value._type !== undefined) {
-      if (value._type === 'undefined') {
-        return undefined;
-      }
-
       const builtInType = builtInTypes[value._type];
       if (builtInType) {
         value = value._value;
@@ -122,12 +108,9 @@ class Scalar {
     return new Model(value, {isDeserializing});
   }
 
-  serializeValue(
-    value,
-    {includeFields, includeChangedFields, includeUndefinedFields, includeOwnedFields}
-  ) {
+  serializeValue(value, {filter}) {
     if (value === undefined) {
-      return includeUndefinedFields ? {_type: 'undefined'} : undefined;
+      return {_type: 'undefined'};
     }
 
     if (value === null) {
@@ -143,12 +126,7 @@ class Scalar {
     }
 
     if (value.isOfType && value.isOfType('Model')) {
-      return value.serialize({
-        includeFields,
-        includeChangedFields,
-        includeUndefinedFields,
-        includeOwnedFields
-      });
+      return value.serialize({filter});
     }
 
     if (value.toJSON) {

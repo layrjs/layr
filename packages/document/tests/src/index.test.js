@@ -195,11 +195,11 @@ describe('@superstore/document', () => {
     expect(director.id).toBe(directorId);
   });
 
-  test('Arrays of nested document', async () => {
+  test('Arrays of referenced document', async () => {
     class Movie extends Document {
       @field('string') title;
 
-      @field('Person[]', {isOwned: true}) actors;
+      @field('Person[]') actors;
     }
 
     class Person extends Document {
@@ -265,14 +265,14 @@ describe('@superstore/document', () => {
     actor = await registry.Person.get(actorIds[0]);
     expect(actor.fullName).toBe('L. DiCaprio');
 
-    // Will delete both the movie and its actors
+    // Will delete the movie but not its actors
     await movie.delete();
     movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
-    actor = await registry.Person.get(actorIds[0], {throwIfNotFound: false});
-    expect(actor).toBeUndefined();
-    actor = await registry.Person.get(actorIds[1], {throwIfNotFound: false});
-    expect(actor).toBeUndefined();
+    actor = await registry.Person.get(actorIds[0]);
+    expect(actor.id).toBe(actorIds[0]);
+    actor = await registry.Person.get(actorIds[1]);
+    expect(actor.id).toBe(actorIds[1]);
   });
 
   test('Hooks', async () => {

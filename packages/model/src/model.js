@@ -44,31 +44,18 @@ export class Model {
     }
   }
 
-  serialize({
-    includeFields = true,
-    includeChangedFields,
-    includeUndefinedFields,
-    includeOwnedFields
-  } = {}) {
+  serialize({filter} = {}) {
     const result = {_type: this.constructor.getName()};
     this.constructor.forEachField(field => {
-      if (
-        includeFields === true ||
-        (Array.isArray(includeFields) && includeFields.includes(field.name)) ||
-        (includeChangedFields && this.fieldIsChanged(field)) ||
-        (includeOwnedFields && field.isOwned)
-      ) {
-        let value = this._getFieldValue(field);
-        value = field.serializeValue(value, {
-          includeFields,
-          includeChangedFields,
-          includeUndefinedFields,
-          includeOwnedFields
-        });
-        if (value !== undefined) {
-          result[field.serializedName || field.name] = value;
-        }
+      if (!this._fieldHasBeenSet(field)) {
+        return;
       }
+      if (filter && !filter(field, this)) {
+        return;
+      }
+      let value = this._getFieldValue(field);
+      value = field.serializeValue(value, {filter});
+      result[field.serializedName || field.name] = value;
     });
     return result;
   }
@@ -196,6 +183,10 @@ export class Model {
     }
     this._fieldValues[field.name] = value;
     return value;
+  }
+
+  _fieldHasBeenSet(field) {
+    return this._fieldValues && Object.prototype.hasOwnProperty.call(this._fieldValues, field.name);
   }
 
   _saveFieldValue(field) {
