@@ -20,35 +20,50 @@ export class MemoryStore {
     }
 
     for (const [name, value] of Object.entries(document)) {
-      const returnField = typeof returnFields === 'object' ? returnFields[name] : true;
+      let returnField = typeof returnFields === 'object' ? returnFields[name] : true;
 
       if (returnField === undefined || returnField === false) {
         continue;
       }
 
-      if (typeof value !== 'object' || value === null) {
-        if (returnField !== true) {
-          throw new Error(
-            `Type mismatch (field name: '${name})', expected value: 'true', actual type: '${typeof returnField}'`
-          );
-        }
-        result[name] = value;
-        continue;
+      if (Array.isArray(value) && !(returnField === true || Array.isArray(returnField))) {
+        throw new Error(
+          `Type mismatch (field: '${name}', expected: 'Boolean' or 'Array', provided: '${typeof returnField}')`
+        );
       }
 
-      const subdocument = value;
-
-      if (subdocument._id === undefined) {
-        if (returnField !== true) {
+      if (Array.isArray(returnField)) {
+        if (!Array.isArray(value)) {
           throw new Error(
-            `It is not possible to partially return nested documents (field name: '${name})'`
+            `Type mismatch (field: '${name}', expected: 'Boolean' or 'Object', provided: 'Array')`
           );
         }
-        result[name] = subdocument;
-        continue;
+        returnField = returnField[0];
       }
 
-      result[name] = this.get(subdocument, {return: returnField});
+      result[name] = callOneOrMany(value, value => {
+        if (typeof value !== 'object' || value === null) {
+          if (returnField !== true) {
+            throw new Error(
+              `Type mismatch (field name: '${name})', expected: 'Boolean', provided: '${typeof returnField}'`
+            );
+          }
+          return value;
+        }
+
+        const subdocument = value;
+
+        if (subdocument._id === undefined) {
+          if (returnField !== true) {
+            throw new Error(
+              `It is not possible to partially return nested documents (field name: '${name})'`
+            );
+          }
+          return subdocument;
+        }
+
+        return this.get(subdocument, {return: returnField});
+      });
     }
 
     return result;
@@ -76,28 +91,28 @@ export class MemoryStore {
         continue;
       }
 
-      if (typeof value !== 'object' || value === null) {
-        document[name] = value;
-        continue;
-      }
+      document[name] = callOneOrMany(value, value => {
+        if (typeof value !== 'object' || value === null) {
+          return value;
+        }
 
-      const subdocument = value;
+        const subdocument = value;
 
-      if (subdocument._id === undefined) {
-        document[name] = subdocument;
-        continue;
-      }
+        if (subdocument._id === undefined) {
+          return subdocument;
+        }
 
-      const {_type, _id, ...changes} = subdocument;
+        const {_type, _id, ...changes} = subdocument;
 
-      validateType(_type);
-      validateId(_id);
+        validateType(_type);
+        validateId(_id);
 
-      if (!isEmpty(changes)) {
-        this.set(subdocument);
-      }
+        if (!isEmpty(changes)) {
+          this.set(subdocument);
+        }
 
-      document[name] = {_type, _id};
+        return {_type, _id};
+      });
     }
   }
 
@@ -115,17 +130,19 @@ export class MemoryStore {
 
       if (referencedDocument === null) {
         throw new Error(
-          `Type mismatch (field name: '${name})', expected type: 'object', actual type: 'null'`
+          `Type mismatch (field name: '${name})', expected: 'object', provided: 'null'`
         );
       }
 
-      if (typeof referencedDocument !== 'object') {
-        throw new Error(
-          `Type mismatch (field name: '${name})', expected type: 'object', actual type: '${typeof referencedDocument}'`
-        );
-      }
+      result[name] = callOneOrMany(referencedDocument, referencedDocument => {
+        if (typeof referencedDocument !== 'object') {
+          throw new Error(
+            `Type mismatch (field name: '${name})', expected: 'object', provided: '${typeof referencedDocument}'`
+          );
+        }
 
-      result[name] = this.delete(referencedDocument);
+        return this.delete(referencedDocument);
+      });
     }
 
     const document = this._collections[_type]?.[_id];
@@ -142,7 +159,7 @@ export class MemoryStore {
 
 function validateType(_type) {
   if (typeof _type !== 'string') {
-    throw new Error(`'_type' must be a string (provided type: ${typeof _type}`);
+    throw new Error(`'_type' must be a string (provided: ${typeof _type}`);
   }
   if (_type === '') {
     throw new Error(`'_type' cannot be empty`);
@@ -151,9 +168,17 @@ function validateType(_type) {
 
 function validateId(_id) {
   if (typeof _id !== 'string') {
-    throw new Error(`'_id' must be a string (provided type: ${typeof _id}`);
+    throw new Error(`'_id' must be a string (provided: ${typeof _id}`);
   }
   if (_id === '') {
     throw new Error(`'_id' cannot be empty`);
   }
+}
+
+function callOneOrMany(value, func) {
+  if (Array.isArray(value)) {
+    const values = value;
+    return values.map(value => func(value));
+  }
+  return func(value);
 }

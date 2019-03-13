@@ -73,6 +73,8 @@ describe('@superstore/memory-store', () => {
       title: 'Inception',
       technicalSpecs: {_type: 'TechnicalSpecs', runtime: 130} // 'aspectRatio' is gone
     });
+
+    store.delete({_type: 'Movie', _id: 'abc123'});
   });
 
   test('Referencing documents', () => {
@@ -140,5 +142,90 @@ describe('@superstore/memory-store', () => {
     expect(movie).toBeUndefined();
     director = store.get({_type: 'Person', _id: 'xyz123'});
     expect(director).toBeUndefined();
+  });
+
+  test('Arrays', () => {
+    const store = new MemoryStore();
+
+    // Let's set both a 'Movie' and a 'Person'
+    store.set({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      genres: ['action', 'adventure', 'sci-fi'],
+      actors: [
+        {_type: 'Person', _id: 'xyz123', fullName: 'Leonardo DiCaprio'},
+        {_type: 'Person', _id: 'xyz456', fullName: 'Joseph Gordon-Levitt'}
+      ]
+    });
+
+    // The actors can be fetched from 'Person'
+    let actor = store.get({_type: 'Person', _id: 'xyz123'});
+    expect(actor).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'Leonardo DiCaprio'});
+    actor = store.get({_type: 'Person', _id: 'xyz456'});
+    expect(actor).toEqual({_type: 'Person', _id: 'xyz456', fullName: 'Joseph Gordon-Levitt'});
+
+    // Will fetch both 'Movie' and 'Person'
+    let movie = store.get({_type: 'Movie', _id: 'abc123'});
+    expect(movie).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      genres: ['action', 'adventure', 'sci-fi'],
+      actors: [
+        {_type: 'Person', _id: 'xyz123', fullName: 'Leonardo DiCaprio'},
+        {_type: 'Person', _id: 'xyz456', fullName: 'Joseph Gordon-Levitt'}
+      ]
+    });
+
+    // Will fetch 'Movie' only
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
+    expect(movie).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception'
+    });
+
+    // Will fetch 'Movie' and actors' id
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, actors: [{}]}});
+    expect(movie).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      actors: [{_type: 'Person', _id: 'xyz123'}, {_type: 'Person', _id: 'xyz456'}]
+    });
+
+    // Everything can be modified through 'Movie'
+    store.set({
+      _type: 'Movie',
+      _id: 'abc123',
+      genres: ['action', 'sci-fi'],
+      actors: [
+        {_type: 'Person', _id: 'xyz123', fullName: 'L. DiCaprio'},
+        {_type: 'Person', _id: 'xyz456', fullName: 'J. Gordon-Levitt'}
+      ]
+    });
+    actor = store.get({_type: 'Person', _id: 'xyz123'});
+    expect(actor).toEqual({_type: 'Person', _id: 'xyz123', fullName: 'L. DiCaprio'});
+    actor = store.get({_type: 'Person', _id: 'xyz456'});
+    expect(actor).toEqual({_type: 'Person', _id: 'xyz456', fullName: 'J. Gordon-Levitt'});
+
+    // Will delete both the 'Movie' and its actors
+    const deleteResult = store.delete({
+      _type: 'Movie',
+      _id: 'abc123',
+      actors: [{_type: 'Person', _id: 'xyz123'}, {_type: 'Person', _id: 'xyz456'}]
+    });
+    expect(deleteResult).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      actors: [{_type: 'Person', _id: 'xyz123'}, {_type: 'Person', _id: 'xyz456'}]
+    });
+    movie = store.get({_type: 'Movie', _id: 'abc123'});
+    expect(movie).toBeUndefined();
+    actor = store.get({_type: 'Person', _id: 'xyz123'});
+    expect(actor).toBeUndefined();
+    actor = store.get({_type: 'Person', _id: 'xyz456'});
+    expect(actor).toBeUndefined();
   });
 });
