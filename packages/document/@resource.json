@@ -9,7 +9,8 @@
   "dependencies": {
     "cuid": "^2.1.6",
     "lodash": "^4.17.11",
-    "@superstore/model": "^0.1.0"
+    "@superstore/model": "^0.1.0",
+    "@superstore/util": "^0.1.0"
   },
   "tests": {
     "@include": "./tests"

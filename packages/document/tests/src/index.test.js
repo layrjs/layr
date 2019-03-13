@@ -152,7 +152,7 @@ describe('@superstore/document', () => {
     expect(movie.trailer.id).toBe(trailerId);
     expect(movie.trailer.url).toBeUndefined();
 
-    // // The trailer can be modified through its parent movie
+    // The trailer can be modified through its parent movie
     movie.trailer.url = 'https://www.youtube.com/watch?v=8hP9D6kZseM';
     await movie.save();
     trailer = await registry.Trailer.get(trailerId);
@@ -193,6 +193,86 @@ describe('@superstore/document', () => {
     const director = await registry.Person.get(directorId);
     expect(director instanceof registry.Person).toBe(true); // But the director is still there
     expect(director.id).toBe(directorId);
+  });
+
+  test('Arrays of nested document', async () => {
+    class Movie extends Document {
+      @field('string') title;
+
+      @field('Person[]', {isOwned: true}) actors;
+    }
+
+    class Person extends Document {
+      @field('string') fullName;
+    }
+
+    const store = new MemoryStore();
+    const registry = new Registry({Movie, Person, store});
+
+    // Let's create both a 'Movie' and some 'Person'
+    let movie = new registry.Movie({
+      title: 'Inception',
+      actors: [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}]
+    });
+    const movieId = movie.id;
+    const actorIds = movie.actors.map(actor => actor.id);
+    await movie.save();
+
+    // The actors can be fetched directly from the 'Person' collection
+    let actor = await registry.Person.get(actorIds[0]);
+    expect(actor instanceof registry.Person).toBe(true);
+    expect(actor.id).toBe(actorIds[0]);
+    expect(actor.fullName).toBe('Leonardo DiCaprio');
+    actor = await registry.Person.get(actorIds[1]);
+    expect(actor instanceof registry.Person).toBe(true);
+    expect(actor.id).toBe(actorIds[1]);
+    expect(actor.fullName).toBe('Joseph Gordon-Levitt');
+
+    // Will fetch both 'Movie' and 'Person' documents
+    movie = await registry.Movie.get(movieId);
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.actors[0] instanceof registry.Person).toBe(true);
+    expect(movie.actors[0].id).toBe(actorIds[0]);
+    expect(movie.actors[0].fullName).toBe('Leonardo DiCaprio');
+    expect(movie.actors[1] instanceof registry.Person).toBe(true);
+    expect(movie.actors[1].id).toBe(actorIds[1]);
+    expect(movie.actors[1].fullName).toBe('Joseph Gordon-Levitt');
+
+    // Will fetch 'Movie' document only
+    movie = await registry.Movie.get(movieId, {return: {title: true}});
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.actors).toBeUndefined();
+
+    // Will fetch 'Movie' document and the ids of the actors
+    movie = await registry.Movie.get(movieId, {return: {title: true, actors: [{}]}});
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.actors[0] instanceof registry.Person).toBe(true);
+    expect(movie.actors[0].id).toBe(actorIds[0]);
+    expect(movie.actors[0].fullName).toBeUndefined();
+    expect(movie.actors[1] instanceof registry.Person).toBe(true);
+    expect(movie.actors[1].id).toBe(actorIds[1]);
+    expect(movie.actors[1].fullName).toBeUndefined();
+
+    // An actor can be modified through its parent movie
+    movie.actors[0].fullName = 'L. DiCaprio';
+    await movie.save();
+    actor = await registry.Person.get(actorIds[0]);
+    expect(actor.fullName).toBe('L. DiCaprio');
+
+    // Will delete both the movie and its actors
+    await movie.delete();
+    movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
+    expect(movie).toBeUndefined();
+    actor = await registry.Person.get(actorIds[0], {throwIfNotFound: false});
+    expect(actor).toBeUndefined();
+    actor = await registry.Person.get(actorIds[1], {throwIfNotFound: false});
+    expect(actor).toBeUndefined();
   });
 
   test('Hooks', async () => {

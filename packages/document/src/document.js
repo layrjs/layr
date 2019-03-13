@@ -1,4 +1,5 @@
 import {Model, field} from '@superstore/model';
+import {callWithOneOrMany} from '@superstore/util';
 import cuid from 'cuid';
 
 export class Document extends Model {
@@ -86,8 +87,12 @@ export class Document extends Model {
         return;
       }
       const value = this[field.name];
-      if (value?.isOfType && value.isOfType('Document')) {
-        documents.push(value);
+      if (value !== undefined) {
+        callWithOneOrMany(value, value => {
+          if (value?.isOfType && value.isOfType('Document')) {
+            documents.push(value);
+          }
+        });
       }
     });
 
