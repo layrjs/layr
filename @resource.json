@@ -12,6 +12,9 @@
   "memoryStore": {
     "@include": "./packages/memory-store"
   },
+  "util": {
+    "@include": "./packages/util"
+  },
   "link": {
     "@type": "method",
     "@run": [
@@ -22,7 +25,9 @@
       "(@import shell/bash) run \"npm-link ./packages/document\"",
       "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/memory-store\"",
-      "(@import shell/bash) run \"npm-link ./packages/memory-store/tests\""
+      "(@import shell/bash) run \"npm-link ./packages/memory-store/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/util\"",
+      "(@import shell/bash) run \"npm-link ./packages/util/tests\""
     ]
   }
 }

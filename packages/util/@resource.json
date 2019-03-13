@@ -1,15 +1,11 @@
 {
   "@import": "medmain/npm-package#^0.1.0",
-  "name": "@superstore/memory-store",
+  "name": "@superstore/util",
   "version": "0.1.0",
-  "description": "A simple store that uses the memory",
+  "description": "A few utility functions shared among Superstore's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/medmain/superstore.git",
-  "dependencies": {
-    "lodash": "^4.17.11",
-    "@superstore/util": "^0.1.0"
-  },
   "tests": {
     "@include": "./tests"
   }

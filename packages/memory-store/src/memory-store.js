@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
+import {callOneOrMany} from '@superstore/util';
 
 export class MemoryStore {
   _collections = {};
@@ -173,12 +174,4 @@ function validateId(_id) {
   if (_id === '') {
     throw new Error(`'_id' cannot be empty`);
   }
-}
-
-function callOneOrMany(value, func) {
-  if (Array.isArray(value)) {
-    const values = value;
-    return values.map(value => func(value));
-  }
-  return func(value);
 }
