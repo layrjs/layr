@@ -1,3 +1,14 @@
+export function callWithOneOrMany(value, func) {
+  if (Array.isArray(value)) {
+    const values = value;
+    for (const value of values) {
+      func(value);
+    }
+    return;
+  }
+  func(value);
+}
+
 export function mapFromOneOrMany(value, func) {
   if (Array.isArray(value)) {
     const values = value;

@@ -1,6 +1,20 @@
-import {mapFromOneOrMany, findFromOneOrMany} from '../../..';
+import {callWithOneOrMany, mapFromOneOrMany, findFromOneOrMany} from '../../..';
 
 describe('@superstore/util', () => {
+  test('callWithOneOrMany()', () => {
+    let results = [];
+    callWithOneOrMany('aaa', value => {
+      results.push(value.toUpperCase());
+    });
+    expect(results).toEqual(['AAA']);
+
+    results = [];
+    callWithOneOrMany(['aaa', 'bbb', 'ccc'], value => {
+      results.push(value.toUpperCase());
+    });
+    expect(results).toEqual(['AAA', 'BBB', 'CCC']);
+  });
+
   test('mapFromOneOrMany()', () => {
     const result = mapFromOneOrMany('aaa', value => value.toUpperCase());
     expect(result).toBe('AAA');
