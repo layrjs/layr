@@ -1,5 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
-import {callOneOrMany} from '@superstore/util';
+import {mapFromOneOrMany} from '@superstore/util';
 
 export class MemoryStore {
   _collections = {};
@@ -42,7 +42,7 @@ export class MemoryStore {
         returnField = returnField[0];
       }
 
-      result[name] = callOneOrMany(value, value => {
+      result[name] = mapFromOneOrMany(value, value => {
         if (typeof value !== 'object' || value === null) {
           if (returnField !== true) {
             throw new Error(
@@ -92,7 +92,7 @@ export class MemoryStore {
         continue;
       }
 
-      document[name] = callOneOrMany(value, value => {
+      document[name] = mapFromOneOrMany(value, value => {
         if (typeof value !== 'object' || value === null) {
           return value;
         }
@@ -135,7 +135,7 @@ export class MemoryStore {
         );
       }
 
-      result[name] = callOneOrMany(referencedDocument, referencedDocument => {
+      result[name] = mapFromOneOrMany(referencedDocument, referencedDocument => {
         if (typeof referencedDocument !== 'object') {
           throw new Error(
             `Type mismatch (field name: '${name})', expected: 'object', provided: '${typeof referencedDocument}'`
