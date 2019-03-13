@@ -1,5 +1,6 @@
 import isEmpty from 'lodash/isEmpty';
 import {mapFromOneOrMany} from '@superstore/util';
+import assert from 'assert';
 
 export class MemoryStore {
   _collections = {};
@@ -43,7 +44,9 @@ export class MemoryStore {
       }
 
       result[name] = mapFromOneOrMany(value, value => {
-        if (typeof value !== 'object' || value === null) {
+        assert(value !== null, `The 'null' value is not allowed (field: '${name}')`);
+
+        if (typeof value !== 'object') {
           if (returnField !== true) {
             throw new Error(
               `Type mismatch (field name: '${name})', expected: 'Boolean', provided: '${typeof returnField}'`
@@ -86,14 +89,18 @@ export class MemoryStore {
       collection[_id] = document;
     }
 
-    for (const [name, value] of Object.entries(changes)) {
+    for (let [name, value] of Object.entries(changes)) {
+      value = normalizeValue(value, {fieldName: name});
+
       if (value === undefined) {
         delete document[name];
         continue;
       }
 
       document[name] = mapFromOneOrMany(value, value => {
-        if (typeof value !== 'object' || value === null) {
+        value = normalizeValue(value, {fieldName: name});
+
+        if (typeof value !== 'object') {
           return value;
         }
 
@@ -174,4 +181,16 @@ function validateId(_id) {
   if (_id === '') {
     throw new Error(`'_id' cannot be empty`);
   }
+}
+
+function normalizeValue(value, {fieldName}) {
+  if (value === null) {
+    throw new Error(`The 'null' value is not allowed (field: '${fieldName}')`);
+  }
+
+  if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
+    return undefined;
+  }
+
+  return value;
 }

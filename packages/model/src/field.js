@@ -33,12 +33,10 @@ export class Field {
   }
 
   createValue(value, parent, {isDeserializing}) {
-    if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
-      return undefined;
-    }
+    value = normalizeValue(value, {fieldName: this.name});
 
-    if (value === null) {
-      return null;
+    if (value === undefined) {
+      return undefined;
     }
 
     if (this.isArray && !Array.isArray(value)) {
@@ -53,14 +51,6 @@ export class Field {
   }
 
   serializeValue(value, {filter}) {
-    if (value === undefined) {
-      return {_type: 'undefined'};
-    }
-
-    if (value === null) {
-      return null;
-    }
-
     return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, {filter}));
   }
 }
@@ -74,12 +64,10 @@ class Scalar {
   }
 
   createValue(value, parent, {fieldName, isDeserializing}) {
-    if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
-      return undefined;
-    }
+    value = normalizeValue(value, {fieldName});
 
-    if (value === null) {
-      return null;
+    if (value === undefined) {
+      return undefined;
     }
 
     if (typeof value === 'object' && value._type !== undefined) {
@@ -111,10 +99,6 @@ class Scalar {
   serializeValue(value, {filter}) {
     if (value === undefined) {
       return {_type: 'undefined'};
-    }
-
-    if (value === null) {
-      return null;
     }
 
     const builtInType = builtInTypes[this.type];
@@ -171,3 +155,15 @@ const builtInTypes = {
     }
   }
 };
+
+function normalizeValue(value, {fieldName}) {
+  if (value === null) {
+    throw new Error(`The 'null' value is not allowed (field: '${fieldName}')`);
+  }
+
+  if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
+    return undefined;
+  }
+
+  return value;
+}
