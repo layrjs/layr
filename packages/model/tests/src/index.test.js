@@ -35,17 +35,17 @@ describe('@superstore/model', () => {
       @field('boolean') isRestricted = false;
     }
 
-    const movie1 = new Movie();
-    expect(movie1.title).toBeUndefined();
-    expect(movie1.isRestricted).toBe(false);
+    let movie = new Movie();
+    expect(movie.title).toBeUndefined();
+    expect(movie.isRestricted).toBe(false);
 
-    const movie2 = new Movie({title: 'Inception', isRestricted: true});
-    expect(movie2.title).toBe('Inception');
-    expect(movie2.isRestricted).toBe(true);
+    movie = new Movie({title: 'Inception', isRestricted: true});
+    expect(movie.title).toBe('Inception');
+    expect(movie.isRestricted).toBe(true);
 
-    const movie3 = Movie.deserialize({title: 'Inception'});
-    expect(movie3.title).toBe('Inception');
-    expect(movie3.isRestricted).toBeUndefined(); // Default values are not set on deserialization
+    movie = Movie.deserialize({title: 'Inception'});
+    expect(movie.title).toBe('Inception');
+    expect(movie.isRestricted).toBeUndefined(); // Default values are not set on deserialization
   });
 
   test('Date field', () => {
@@ -55,20 +55,57 @@ describe('@superstore/model', () => {
       @field('Date') releasedOn;
     }
 
-    const movie1 = new Movie({title: 'Inception', releasedOn: new Date(Date.UTC(2010, 6, 16))});
-    expect(movie1.title).toBe('Inception');
-    expect(movie1.releasedOn.getUTCFullYear()).toBe(2010);
-    expect(movie1.releasedOn.getUTCMonth()).toBe(6);
-    expect(movie1.releasedOn.getUTCDate()).toBe(16);
+    let movie = new Movie({title: 'Inception', releasedOn: new Date(Date.UTC(2010, 6, 16))});
+    expect(movie.title).toBe('Inception');
+    expect(movie.releasedOn.getUTCFullYear()).toBe(2010);
+    expect(movie.releasedOn.getUTCMonth()).toBe(6);
+    expect(movie.releasedOn.getUTCDate()).toBe(16);
 
-    const movie2 = new Movie({
+    movie = new Movie({
       title: {_type: 'string', _value: 'The Matrix'},
       releasedOn: {_type: 'Date', _value: '1999-03-31T00:00:00.000Z'}
     });
-    expect(movie2.title).toBe('The Matrix');
-    expect(movie2.releasedOn.getUTCFullYear()).toBe(1999);
-    expect(movie2.releasedOn.getUTCMonth()).toBe(2);
-    expect(movie2.releasedOn.getUTCDate()).toBe(31);
+    expect(movie.title).toBe('The Matrix');
+    expect(movie.releasedOn.getUTCFullYear()).toBe(1999);
+    expect(movie.releasedOn.getUTCMonth()).toBe(2);
+    expect(movie.releasedOn.getUTCDate()).toBe(31);
+  });
+
+  test('Array field', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('string[]') genres;
+
+      @field('Person[]') actors;
+    }
+
+    class Person extends Model {
+      @field('string') fullName;
+    }
+
+    const registry = new Registry({Movie, Person});
+
+    let movie = new registry.Movie({
+      title: 'Inception',
+      genres: ['action', 'adventure', 'sci-fi'],
+      actors: [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}]
+    });
+    expect(movie.title).toBe('Inception');
+    expect(movie.genres).toEqual(['action', 'adventure', 'sci-fi']);
+    expect(movie.actors.length).toBe(2);
+    expect(movie.actors[0].fullName).toBe('Leonardo DiCaprio');
+    expect(movie.actors[1].fullName).toBe('Joseph Gordon-Levitt');
+
+    movie = new registry.Movie({
+      title: {_type: 'string', _value: 'The Matrix'},
+      genres: [{_type: 'string', _value: 'action'}, {_type: 'string', _value: 'sci-fi'}],
+      actors: [{_type: 'Person', fullName: 'Leonardo DiCaprio'}]
+    });
+    expect(movie.title).toBe('The Matrix');
+    expect(movie.genres).toEqual(['action', 'sci-fi']);
+    expect(movie.actors.length).toBe(1);
+    expect(movie.actors[0].fullName).toBe('Leonardo DiCaprio');
   });
 
   test('Inheritance', () => {
@@ -146,14 +183,22 @@ describe('@superstore/model', () => {
 
       @field('Date') releasedOn;
 
+      @field('string[]') genres;
+
       @field('TechnicalSpecs') technicalSpecs;
+
+      @field('Person[]') actors;
     }
 
     class TechnicalSpecs extends Model {
       @field('string') aspectRatio;
     }
 
-    const registry = new Registry({Movie, TechnicalSpecs});
+    class Person extends Model {
+      @field('string') fullName;
+    }
+
+    const registry = new Registry({Movie, TechnicalSpecs, Person});
 
     // Simple serialization
 
@@ -174,13 +219,37 @@ describe('@superstore/model', () => {
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
     });
 
-    movie.technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.39:1'});
+    movie.genres = ['action', 'adventure', 'sci-fi'];
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      genres: ['action', 'adventure', 'sci-fi']
+    });
+
+    movie.technicalSpecs = {aspectRatio: '2.39:1'};
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+    });
+
+    movie.actors = [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}];
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      genres: ['action', 'adventure', 'sci-fi'],
+      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+      actors: [
+        {_type: 'Person', fullName: 'Leonardo DiCaprio'},
+        {_type: 'Person', fullName: 'Joseph Gordon-Levitt'}
+      ]
     });
 
     expect(
@@ -189,14 +258,24 @@ describe('@superstore/model', () => {
         _id: 'abc123',
         title: 'Inception',
         releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+        genres: ['action', 'adventure', 'sci-fi'],
+        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+        actors: [
+          {_type: 'Person', fullName: 'Leonardo DiCaprio'},
+          {_type: 'Person', fullName: 'Joseph Gordon-Levitt'}
+        ]
       }).serialize()
     ).toEqual({
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+      genres: ['action', 'adventure', 'sci-fi'],
+      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+      actors: [
+        {_type: 'Person', fullName: 'Leonardo DiCaprio'},
+        {_type: 'Person', fullName: 'Joseph Gordon-Levitt'}
+      ]
     });
 
     // Serialization options

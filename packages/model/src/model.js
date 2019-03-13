@@ -1,4 +1,5 @@
 import {inspect} from 'util';
+import {findFromOneOrMany} from '@superstore/util';
 
 import {Field} from './field';
 
@@ -7,7 +8,7 @@ export class Model {
     if (object !== undefined) {
       if (typeof object !== 'object') {
         throw new Error(
-          `Type mismatch (model: '${this.constructor.getName()}', expected type: 'object', provided type: '${typeof object}')`
+          `Type mismatch (model: '${this.constructor.getName()}', expected: 'object', provided: '${typeof object}')`
         );
       }
 
@@ -20,7 +21,7 @@ export class Model {
       if (object.isOfType && object.isOfType('Model')) {
         if (!object.isOfType(this.constructor.getName())) {
           throw new Error(
-            `Type mismatch (expected type: '${this.constructor.getName()}', provided type: '${object.constructor.getName()}')`
+            `Type mismatch (expected: '${this.constructor.getName()}', provided: '${object.constructor.getName()}')`
           );
         }
         return object;
@@ -173,13 +174,11 @@ export class Model {
   forEachSubmodel(func) {
     return this.constructor.forEachField(field => {
       const value = this._getFieldValue(field);
-      if (value?.isOfType && value.isOfType('Model')) {
-        const result = func(value);
-        if (result !== undefined) {
-          // Early return if the function returned something
-          return result;
+      return findFromOneOrMany(value, value => {
+        if (value?.isOfType && value.isOfType('Model')) {
+          return func(value) !== undefined;
         }
-      }
+      });
     });
   }
 
@@ -248,8 +247,15 @@ export class Model {
     }
 
     const value = this._getFieldValue(field);
-    if (value?.isOfType && value.isOfType('Model')) {
-      return value.isChanged();
+    if (value !== undefined) {
+      const changedValue = findFromOneOrMany(value, value => {
+        if (value?.isOfType && value.isOfType('Model')) {
+          return value.isChanged();
+        }
+      });
+      if (changedValue !== undefined) {
+        return true;
+      }
     }
 
     return false;

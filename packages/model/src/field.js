@@ -1,4 +1,5 @@
 import isPlainObject from 'lodash/isPlainObject';
+import {mapFromOneOrMany} from '@superstore/util';
 
 export class Field {
   constructor(name, type, options = {}) {
@@ -11,6 +12,15 @@ export class Field {
 
     this.name = name;
     this.type = type;
+
+    const isArray = type.endsWith('[]');
+    if (isArray) {
+      this.scalar = new Scalar(type.slice(0, -2));
+      this.isArray = isArray;
+    } else {
+      this.scalar = new Scalar(type);
+    }
+
     if (options.default !== undefined) {
       this.default = options.default;
     }
@@ -23,6 +33,57 @@ export class Field {
   }
 
   createValue(value, parent, {isDeserializing}) {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (value === null) {
+      return null;
+    }
+
+    if (this.isArray && !Array.isArray(value)) {
+      throw new Error(
+        `Type mismatch (field: '${this.name}', expected: 'Array', provided: '${typeof value}')`
+      );
+    }
+
+    return mapFromOneOrMany(value, value =>
+      this.scalar.createValue(value, parent, {fieldName: this.name, isDeserializing})
+    );
+  }
+
+  serializeValue(
+    value,
+    {includeFields, includeChangedFields, includeUndefinedFields, includeOwnedFields}
+  ) {
+    if (value === undefined) {
+      return includeUndefinedFields ? {_type: 'undefined'} : undefined;
+    }
+
+    if (value === null) {
+      return null;
+    }
+
+    return mapFromOneOrMany(value, value =>
+      this.scalar.serializeValue(value, {
+        includeFields,
+        includeChangedFields,
+        includeUndefinedFields,
+        includeOwnedFields
+      })
+    );
+  }
+}
+
+class Scalar {
+  constructor(type) {
+    if (typeof type !== 'string' || !type) {
+      throw new Error("'type' parameter is missing or invalid");
+    }
+    this.type = type;
+  }
+
+  createValue(value, parent, {fieldName, isDeserializing}) {
     if (value === undefined) {
       return undefined;
     }
@@ -49,9 +110,9 @@ export class Field {
     if (builtInType) {
       if (!builtInType.checkType(value)) {
         throw new Error(
-          `Type mismatch (field: '${this.name}', expected type: '${
+          `Type mismatch (field: '${fieldName}', expected: '${
             this.type
-          }', provided type: '${typeof value}')`
+          }', provided: '${typeof value}')`
         );
       }
       return value;
@@ -63,7 +124,7 @@ export class Field {
 
   serializeValue(
     value,
-    {includeFields, includeChangedFields, includeUndefinedFields, includeOwnedFields} = {}
+    {includeFields, includeChangedFields, includeUndefinedFields, includeOwnedFields}
   ) {
     if (value === undefined) {
       return includeUndefinedFields ? {_type: 'undefined'} : undefined;
