@@ -1,8 +1,12 @@
 import isPlainObject from 'lodash/isPlainObject';
 import {mapFromOneOrMany} from '@superstore/util';
+import isEmpty from 'lodash/isEmpty';
+import compact from 'lodash/compact';
+
+import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field {
-  constructor(name, type, options = {}) {
+  constructor(name, type, {default: defaultValue, validators = [], isOwned, serializedName} = {}) {
     if (typeof name !== 'string' || !name) {
       throw new Error("'name' parameter is missing or invalid");
     }
@@ -10,25 +14,57 @@ export class Field {
       throw new Error("'type' parameter is missing or invalid");
     }
 
+    if (!Array.isArray(validators)) {
+      throw new Error(`'validators' option must be an array (field: '${name}')`);
+    }
+    validators = validators.map(validator =>
+      mapFromOneOrMany(validator, validator => normalizeValidator(validator, {fieldName: name}))
+    );
+
     this.name = name;
+    this.serializedName = serializedName || name;
     this.type = type;
 
+    let scalarType;
+    let scalarIsOptional;
+    let scalarValidators;
     const isArray = type.endsWith('[]');
+
     if (isArray) {
-      this.scalar = new Scalar(type.slice(0, -2));
-      this.isArray = isArray;
+      if (type.includes('?')) {
+        throw new Error(`An array type cannot be optional (field: '${name}')`);
+      }
+      scalarType = type.slice(0, -2);
+      const index = validators.findIndex(validator => Array.isArray(validator));
+      if (index !== -1) {
+        scalarValidators = validators[index];
+        validators.splice(index, 1);
+      } else {
+        scalarValidators = [];
+      }
     } else {
-      this.scalar = new Scalar(type);
+      scalarType = type;
+      scalarValidators = validators;
+      validators = [];
+      if (scalarType.endsWith('?')) {
+        scalarIsOptional = true;
+        scalarType = scalarType.slice(0, -1);
+      }
     }
 
-    if (options.default !== undefined) {
-      this.default = options.default;
+    this.scalar = new Scalar(scalarType, {
+      isOptional: scalarIsOptional,
+      validators: scalarValidators
+    });
+    this.validators = validators;
+    this.isArray = isArray;
+
+    if (defaultValue !== undefined) {
+      this.default = defaultValue;
     }
-    if (options.serializedName !== undefined) {
-      this.serializedName = options.serializedName;
-    }
-    if (options.isOwned !== undefined) {
-      this.isOwned = options.isOwned;
+
+    if (isOwned !== undefined) {
+      this.isOwned = isOwned;
     }
   }
 
@@ -53,14 +89,32 @@ export class Field {
   serializeValue(value, {filter}) {
     return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, {filter}));
   }
+
+  validateValue(value) {
+    if (this.isArray) {
+      const values = value;
+      let failedValidators = runValidators(values, this.validators);
+      const failedScalarValidators = values.map(value => this.scalar.validateValue(value));
+      if (!isEmpty(compact(failedScalarValidators))) {
+        if (!failedValidators) {
+          failedValidators = [];
+        }
+        failedValidators.push(failedScalarValidators);
+      }
+      return failedValidators;
+    }
+    return this.scalar.validateValue(value);
+  }
 }
 
 class Scalar {
-  constructor(type) {
+  constructor(type, {isOptional, validators}) {
     if (typeof type !== 'string' || !type) {
       throw new Error("'type' parameter is missing or invalid");
     }
     this.type = type;
+    this.isOptional = isOptional;
+    this.validators = validators;
   }
 
   createValue(value, parent, {fieldName, isDeserializing}) {
@@ -119,6 +173,19 @@ class Scalar {
 
     const name = value.constructor?.getName ? value.constructor.getName() : value.constructor?.name;
     throw new Error(`Couldn't find a serializer (model: '${name}')`);
+  }
+
+  validateValue(value) {
+    if (value === undefined) {
+      if (!this.isOptional) {
+        return [REQUIRED_VALIDATOR_NAME];
+      }
+      return undefined;
+    }
+    if (value.isOfType && value.isOfType('Model')) {
+      return value.getFailedValidators();
+    }
+    return runValidators(value, this.validators);
   }
 }
 

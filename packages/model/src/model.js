@@ -1,47 +1,48 @@
 import {inspect} from 'util';
 import {findFromOneOrMany} from '@superstore/util';
+import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';
 
 export class Model {
-  constructor(object, {isDeserializing} = {}) {
-    if (object !== undefined) {
-      if (typeof object !== 'object') {
+  constructor(object = {}, {isDeserializing} = {}) {
+    if (typeof object !== 'object') {
+      throw new Error(
+        `Type mismatch (model: '${this.constructor.getName()}', expected: 'object', provided: '${typeof object}')`
+      );
+    }
+
+    if (object._type !== undefined) {
+      const {_type: type, ...value} = object;
+      const ObjectModel = this.constructor._getModel(type);
+      object = new ObjectModel(value, {isDeserializing});
+    }
+
+    if (object.isOfType && object.isOfType('Model')) {
+      if (!object.isOfType(this.constructor.getName())) {
         throw new Error(
-          `Type mismatch (model: '${this.constructor.getName()}', expected: 'object', provided: '${typeof object}')`
+          `Type mismatch (expected: '${this.constructor.getName()}', provided: '${object.constructor.getName()}')`
         );
       }
+      return object;
+    }
 
-      if (object._type !== undefined) {
-        const {_type: type, ...value} = object;
-        const ObjectModel = this.constructor._getModel(type);
-        object = new ObjectModel(value, {isDeserializing});
-      }
+    this._fieldValues = {};
+    this._savedFieldValues = {};
 
-      if (object.isOfType && object.isOfType('Model')) {
-        if (!object.isOfType(this.constructor.getName())) {
-          throw new Error(
-            `Type mismatch (expected: '${this.constructor.getName()}', provided: '${object.constructor.getName()}')`
-          );
-        }
-        return object;
-      }
-
-      for (const [name, value] of Object.entries(object)) {
-        const field = isDeserializing ?
-          this.constructor.getFieldBySerializedName(name) :
-          this.constructor.getField(name);
-        if (field) {
-          this._setFieldValue(field, value, {isDeserializing});
+    this.constructor.forEachField(field => {
+      const name = isDeserializing ? field.serializedName : field.name;
+      if (Object.prototype.hasOwnProperty.call(object, name)) {
+        const value = object[name];
+        this._setFieldValue(field, value, {isDeserializing});
+      } else if (!isDeserializing) {
+        if (field.default !== undefined) {
+          this._applyFieldDefault(field);
         } else {
-          // Silently ignore undefined fields
+          this._initializeFieldValue(field);
         }
       }
-    }
-
-    if (!isDeserializing) {
-      this._applyDefaults();
-    }
+    });
   }
 
   serialize({filter} = {}) {
@@ -55,7 +56,7 @@ export class Model {
       }
       let value = this._getFieldValue(field);
       value = field.serializeValue(value, {filter});
-      result[field.serializedName || field.name] = value;
+      result[field.serializedName] = value;
     });
     return result;
   }
@@ -70,25 +71,6 @@ export class Model {
 
   clone() {
     return this.constructor.deserialize(this.serialize());
-  }
-
-  _applyDefaults() {
-    this.constructor.forEachField(field => {
-      let value = field.default;
-      if (value === undefined) {
-        return;
-      }
-      if (this._getFieldValue(field) !== undefined) {
-        return;
-      }
-      while (typeof value === 'function') {
-        value = value.call(this);
-      }
-      if (value === undefined) {
-        return;
-      }
-      this._setFieldValue(field, value);
-    });
   }
 
   [inspect.custom]() {
@@ -122,15 +104,6 @@ export class Model {
 
   static getField(name) {
     return this._fields?.[name];
-  }
-
-  static getFieldBySerializedName(name) {
-    return this.forEachField(field => {
-      if (field.serializedName) {
-        return field.serializedName === name ? field : undefined;
-      }
-      return field.name === name ? field : undefined;
-    });
   }
 
   static setField(name, type, options) {
@@ -169,8 +142,14 @@ export class Model {
     });
   }
 
+  _initializeFieldValue(field) {
+    if (field.isArray) {
+      this._fieldValues[field.name] = [];
+    }
+  }
+
   _getFieldValue(field) {
-    return this._fieldValues?.[field.name];
+    return this._fieldValues[field.name];
   }
 
   _setFieldValue(field, value, {isDeserializing} = {}) {
@@ -178,11 +157,16 @@ export class Model {
       this._saveFieldValue(field);
     }
     value = field.createValue(value, this, {isDeserializing});
-    if (this._fieldValues === undefined) {
-      this._fieldValues = {};
-    }
     this._fieldValues[field.name] = value;
     return value;
+  }
+
+  _applyFieldDefault(field) {
+    let value = field.default;
+    while (typeof value === 'function') {
+      value = value.call(this);
+    }
+    this._setFieldValue(field, value);
   }
 
   _fieldHasBeenSet(field) {
@@ -190,14 +174,11 @@ export class Model {
   }
 
   _saveFieldValue(field) {
-    if (this._savedFieldValues === undefined) {
-      this._savedFieldValues = {};
-    }
     this._savedFieldValues[field.name] = this._getFieldValue(field);
   }
 
   commit() {
-    this._savedFieldValues = undefined;
+    this._savedFieldValues = {};
 
     this.forEachSubmodel(submodel => {
       submodel.commit();
@@ -205,12 +186,10 @@ export class Model {
   }
 
   rollback() {
-    if (this._savedFieldValues !== undefined) {
-      for (const [name, value] of Object.entries(this._savedFieldValues)) {
-        this._fieldValues[name] = value;
-      }
-      this._savedFieldValues = undefined;
+    for (const [name, value] of Object.entries(this._savedFieldValues)) {
+      this._fieldValues[name] = value;
     }
+    this._savedFieldValues = {};
 
     this.forEachSubmodel(submodel => {
       submodel.rollback();
@@ -222,7 +201,7 @@ export class Model {
   }
 
   _isChanged() {
-    if (this._savedFieldValues !== undefined) {
+    if (!isEmpty(this._savedFieldValues)) {
       return true;
     }
 
@@ -230,10 +209,7 @@ export class Model {
   }
 
   fieldIsChanged(field) {
-    if (
-      this._savedFieldValues &&
-      Object.prototype.hasOwnProperty.call(this._savedFieldValues, field.name)
-    ) {
+    if (Object.prototype.hasOwnProperty.call(this._savedFieldValues, field.name)) {
       return true;
     }
 
@@ -250,6 +226,42 @@ export class Model {
     }
 
     return false;
+  }
+
+  validate() {
+    const failedValidators = this.getFailedValidators();
+    if (failedValidators) {
+      const error = new Error(
+        `Model validation failed (model: '${this.constructor.getName()}', failedValidators: ${JSON.stringify(
+          failedValidators
+        )})`
+      );
+      error.failedValidators = failedValidators;
+      throw error;
+    }
+    return true;
+  }
+
+  isValid() {
+    return this.getFailedValidators() === undefined;
+  }
+
+  getFailedValidators() {
+    let result;
+    this.constructor.forEachField(field => {
+      // if (!this._fieldHasBeenSet(field)) {
+      //   return;
+      // }
+      const value = this._getFieldValue(field);
+      const failedValidators = field.validateValue(value);
+      if (!isEmpty(failedValidators)) {
+        if (!result) {
+          result = {};
+        }
+        result[field.name] = failedValidators;
+      }
+    });
+    return result;
   }
 
   static getName() {

@@ -12,6 +12,7 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
+    "fn-name": "^2.0.1",
     "lodash": "^4.17.11",
     "@superstore/util": "^0.1.0"
   },

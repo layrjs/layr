@@ -1,6 +1,8 @@
 import {Registry} from '@superstore/registry';
 
-import {Model, field} from '../../..';
+import {Model, field, validators, createValidator} from '../../..';
+
+const {notEmpty, maxLength, greaterThanOrEqual} = validators;
 
 describe('@superstore/model', () => {
   test('Simple model', () => {
@@ -86,7 +88,11 @@ describe('@superstore/model', () => {
 
     const registry = new Registry({Movie, Person});
 
-    let movie = new registry.Movie({
+    let movie = new registry.Movie();
+    expect(movie.genres).toEqual([]);
+    expect(movie.actors).toEqual([]);
+
+    movie = new registry.Movie({
       title: 'Inception',
       genres: ['action', 'adventure', 'sci-fi'],
       actors: [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}]
@@ -126,6 +132,74 @@ describe('@superstore/model', () => {
         @field('string') id; // Cannot add a property that already exists
       };
     }).toThrow();
+  });
+
+  test('Validation', () => {
+    class Movie extends Model {
+      @field('string', {validators: [notEmpty(), maxLength(40)]}) title;
+
+      @field('number?', {validators: [greaterThanOrEqual(1900)]}) year;
+
+      @field('string[]', {validators: [maxLength(3), [notEmpty()]]}) genres;
+
+      @field('string?', {
+        validators: [
+          createValidator(
+            'startsWithUpperCase',
+            value => value.slice(0, 1) === value.slice(0, 1).toUpperCase()
+          )
+        ]
+      })
+      director;
+    }
+
+    let movie = new Movie();
+    expect(movie.getFailedValidators()).toEqual({title: ['required()']});
+    movie.title = '';
+    expect(movie.getFailedValidators()).toEqual({title: ['notEmpty()']});
+    movie.title = '12345678901234567890123456789012345678901';
+    expect(movie.getFailedValidators()).toEqual({title: ['maxLength(40)']});
+    movie.title = '1234567890123456789012345678901234567890';
+    expect(movie.getFailedValidators()).toBeUndefined();
+
+    movie.year = 1899;
+    expect(movie.getFailedValidators()).toEqual({year: ['greaterThanOrEqual(1900)']});
+    movie.year = 1900;
+    expect(movie.getFailedValidators()).toBeUndefined();
+
+    movie.genres = ['action', 'adventure', 'sci-fi', 'drama'];
+    expect(movie.getFailedValidators()).toEqual({genres: ['maxLength(3)']});
+    movie.genres = ['action', '', 'sci-fi'];
+    expect(movie.getFailedValidators()).toEqual({genres: [[undefined, ['notEmpty()'], undefined]]});
+    movie.genres = ['action', 'adventure', 'sci-fi'];
+    expect(movie.getFailedValidators()).toBeUndefined();
+
+    movie.director = 'christopher nolan';
+    expect(movie.getFailedValidators()).toEqual({director: ['startsWithUpperCase()']});
+    movie.director = 'Christopher Nolan';
+    expect(movie.getFailedValidators()).toBeUndefined();
+
+    movie = new Movie({
+      title: '',
+      year: 1899,
+      genres: ['action', 'adventure', '', 'drama'],
+      director: 'christopher nolan'
+    });
+    expect(movie.getFailedValidators()).toEqual({
+      title: ['notEmpty()'],
+      year: ['greaterThanOrEqual(1900)'],
+      genres: ['maxLength(3)', [undefined, undefined, ['notEmpty()'], undefined]],
+      director: ['startsWithUpperCase()']
+    });
+
+    expect(movie.isValid()).toBe(false);
+    expect(() => {
+      movie.validate();
+    }).toThrow();
+
+    movie = new Movie({title: 'Inception'});
+    expect(movie.isValid()).toBe(true);
+    expect(movie.validate()).toBe(true);
   });
 
   test('Commit and rollback', () => {
@@ -202,21 +276,32 @@ describe('@superstore/model', () => {
 
     // Simple serialization
 
-    let movie = new registry.Movie();
+    let movie = registry.Movie.deserialize();
     expect(movie.serialize()).toEqual({_type: 'Movie'});
 
+    movie = new registry.Movie();
+    expect(movie.serialize()).toEqual({_type: 'Movie', genres: [], actors: []});
+
     movie.id = 'abc123';
-    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc123'});
+    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc123', genres: [], actors: []});
 
     movie.title = 'Inception';
-    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      _id: 'abc123',
+      title: 'Inception',
+      genres: [],
+      actors: []
+    });
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
-      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      genres: [],
+      actors: []
     });
 
     movie.genres = ['action', 'adventure', 'sci-fi'];
@@ -225,7 +310,8 @@ describe('@superstore/model', () => {
       _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-      genres: ['action', 'adventure', 'sci-fi']
+      genres: ['action', 'adventure', 'sci-fi'],
+      actors: []
     });
 
     movie.technicalSpecs = {aspectRatio: '2.39:1'};
@@ -235,7 +321,8 @@ describe('@superstore/model', () => {
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
-      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+      actors: []
     });
 
     movie.actors = [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}];
@@ -312,7 +399,9 @@ describe('@superstore/model', () => {
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       _id: 'abc123',
-      title: 'Inception'
+      title: 'Inception',
+      genres: [],
+      actors: []
     });
 
     movie.releasedOn = undefined;
@@ -320,7 +409,9 @@ describe('@superstore/model', () => {
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
-      releasedOn: {_type: 'undefined'}
+      releasedOn: {_type: 'undefined'},
+      genres: [],
+      actors: []
     });
 
     expect(
