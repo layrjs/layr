@@ -1,6 +1,7 @@
 <p align="center">
 	<img src="branding/storable-logo.svg" width="200" alt="Storable — A database abstraction layer that feels just right">
 	<br>
+	<br>
 </p>
 
 > A database abstraction layer that feels just right.
