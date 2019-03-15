@@ -1,9 +1,9 @@
-# @superstore/document
+# @storable/document
 
-Base class inheriting from @superstore/model and adding persistence capabilities.
+Base class inheriting from @storable/model and adding persistence capabilities.
 
 ## Installation
 
 ```
-npm install @superstore/document
+npm install @storable/document
 ```

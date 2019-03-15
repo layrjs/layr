@@ -1,5 +1,5 @@
-import {Model, field} from '@superstore/model';
-import {callWithOneOrMany} from '@superstore/util';
+import {Model, field} from '@storable/model';
+import {callWithOneOrMany} from '@storable/util';
 import cuid from 'cuid';
 
 export class Document extends Model {

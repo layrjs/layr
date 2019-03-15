@@ -1,5 +1,5 @@
 import isPlainObject from 'lodash/isPlainObject';
-import {mapFromOneOrMany} from '@superstore/util';
+import {mapFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 

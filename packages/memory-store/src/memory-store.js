@@ -1,5 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
-import {mapFromOneOrMany} from '@superstore/util';
+import {mapFromOneOrMany} from '@storable/util';
 import assert from 'assert';
 
 export class MemoryStore {

@@ -1,9 +1,9 @@
-import {Registry} from '@superstore/registry';
-import {MemoryStore} from '@superstore/memory-store';
+import {Registry} from '@storable/registry';
+import {MemoryStore} from '@storable/memory-store';
 
 import {Document, Model, field} from '../../..';
 
-describe('@superstore/document', () => {
+describe('@storable/document', () => {
   test('CRUD operations', async () => {
     class Movie extends Document {
       @field('string') title;

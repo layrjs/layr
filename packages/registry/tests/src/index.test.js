@@ -1,6 +1,6 @@
 import {Registry} from '../../..';
 
-describe('@superstore/registry', () => {
+describe('@storable/registry', () => {
   test('Simple registry', () => {
     class Item {}
     class Movie extends Item {}

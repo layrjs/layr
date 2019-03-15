@@ -1,5 +1,5 @@
 import {inspect} from 'util';
-import {findFromOneOrMany} from '@superstore/util';
+import {findFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';

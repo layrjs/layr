@@ -1,7 +1,7 @@
 {
   "@import": "1place/jest#^0.1.0",
   "dependencies": {
-    "@superstore/memory-store": "^0.1.0",
-    "@superstore/registry": "^0.1.0"
+    "@storable/memory-store": "^0.1.0",
+    "@storable/registry": "^0.1.0"
   }
 }

@@ -1,10 +1,10 @@
-import {Registry} from '@superstore/registry';
+import {Registry} from '@storable/registry';
 
 import {Model, field, validators, createValidator} from '../../..';
 
 const {notEmpty, maxLength, greaterThanOrEqual} = validators;
 
-describe('@superstore/model', () => {
+describe('@storable/model', () => {
   test('Simple model', () => {
     class Movie extends Model {
       @field('string') title;

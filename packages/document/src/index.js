@@ -1,3 +1,3 @@
-export {Model, field} from '@superstore/model';
+export {Model, field} from '@storable/model';
 
 export {Document} from './document';

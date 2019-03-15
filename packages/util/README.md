@@ -1,9 +1,9 @@
-# @superstore/util
+# @storable/util
 
-A few utility functions shared among Superstore's packages.
+A few utility functions shared among Storable's packages.
 
 ## Installation
 
 ```
-npm install @superstore/util
+npm install @storable/util
 ```

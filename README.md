@@ -1,7 +1,7 @@
-<h1 align="center">
-	<img src="branding/superstore-logo.svg" width="300" alt="Superstore — A database abstraction layer that feels just right">
+<p align="center">
+	<img src="branding/storable-logo.svg" width="200" alt="Storable — A database abstraction layer that feels just right">
 	<br>
-</h1>
+</p>
 
 > A database abstraction layer that feels just right.
 
@@ -24,3 +24,11 @@ run . @build
 ```bash
 run . @lint
 ```
+
+## Logo
+
+Wooden box by Hea Poh Lin from the Noun Project.
+
+## License
+
+MIT

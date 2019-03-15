@@ -1,10 +1,10 @@
 {
-  "name": "@superstore/memory-store",
+  "name": "@storable/memory-store",
   "version": "0.1.0",
   "description": "A simple store that uses the memory",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/superstore.git",
+  "repository": "https://github.com/medmain/storable.git",
   "files": [
     "dist"
   ],
@@ -13,7 +13,7 @@
   "browser": "dist/browser/esm",
   "dependencies": {
     "lodash": "^4.17.11",
-    "@superstore/util": "^0.1.0"
+    "@storable/util": "^0.1.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

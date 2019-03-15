@@ -1,6 +1,6 @@
 import {MemoryStore} from '../../..';
 
-describe('@superstore/memory-store', () => {
+describe('@storable/memory-store', () => {
   test('CRUD operations', () => {
     const store = new MemoryStore();
 

@@ -1,10 +1,10 @@
 {
-  "name": "@superstore/document",
+  "name": "@storable/document",
   "version": "0.1.0",
-  "description": "Base class inheriting from @superstore/model and adding persistence capabilities",
+  "description": "Base class inheriting from @storable/model and adding persistence capabilities",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/superstore.git",
+  "repository": "https://github.com/medmain/storable.git",
   "files": [
     "dist"
   ],
@@ -14,8 +14,8 @@
   "dependencies": {
     "cuid": "^2.1.6",
     "lodash": "^4.17.11",
-    "@superstore/model": "^0.1.0",
-    "@superstore/util": "^0.1.0"
+    "@storable/model": "^0.1.0",
+    "@storable/util": "^0.1.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

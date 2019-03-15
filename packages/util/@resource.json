@@ -1,11 +1,11 @@
 {
   "@import": "medmain/npm-package#^0.1.0",
-  "name": "@superstore/util",
+  "name": "@storable/util",
   "version": "0.1.0",
-  "description": "A few utility functions shared among Superstore's packages",
+  "description": "A few utility functions shared among Storable's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/superstore.git",
+  "repository": "https://github.com/medmain/storable.git",
   "tests": {
     "@include": "./tests"
   }

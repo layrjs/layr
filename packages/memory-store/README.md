@@ -1,9 +1,9 @@
-# @superstore/memory-store
+# @storable/memory-store
 
 A simple store that uses the memory.
 
 ## Installation
 
 ```
-npm install @superstore/memory-store
+npm install @storable/memory-store
 ```
