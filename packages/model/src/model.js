@@ -51,7 +51,7 @@ export class Model {
       if (!this._fieldHasBeenSet(field)) {
         return;
       }
-      if (filter && !filter(field, this)) {
+      if (filter && !filter(this, field)) {
         return;
       }
       let value = this._getFieldValue(field);

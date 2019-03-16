@@ -373,19 +373,19 @@ describe('@storable/model', () => {
       releasedOn: new Date(Date.UTC(2010, 6, 16))
     });
 
-    expect(movie.serialize({filter: (field, model) => model.fieldIsChanged(field)})).toEqual({
+    expect(movie.serialize({filter: (model, field) => model.fieldIsChanged(field)})).toEqual({
       _type: 'Movie'
     });
 
     movie.title = 'The Matrix';
-    expect(movie.serialize({filter: (field, model) => model.fieldIsChanged(field)})).toEqual({
+    expect(movie.serialize({filter: (model, field) => model.fieldIsChanged(field)})).toEqual({
       _type: 'Movie',
       title: 'The Matrix'
     });
 
     expect(
       movie.serialize({
-        filter: (field, model) => field.name === 'id' || model.fieldIsChanged(field)
+        filter: (model, field) => field.name === 'id' || model.fieldIsChanged(field)
       })
     ).toEqual({
       _type: 'Movie',
