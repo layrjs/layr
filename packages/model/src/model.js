@@ -27,6 +27,8 @@ export class Model {
       return object;
     }
 
+    this._isNew = isDeserializing ? object._isNew : true;
+
     this._fieldValues = {};
     this._savedFieldValues = {};
 
@@ -35,7 +37,10 @@ export class Model {
       if (Object.prototype.hasOwnProperty.call(object, name)) {
         const value = object[name];
         this._setFieldValue(field, value, {isDeserializing});
-      } else if (!isDeserializing) {
+        return;
+      }
+
+      if (this._isNew) {
         if (field.default !== undefined) {
           this._applyFieldDefault(field);
         } else {
@@ -46,7 +51,14 @@ export class Model {
   }
 
   serialize({filter} = {}) {
-    const result = {_type: this.constructor.getName()};
+    const result = {};
+
+    if (this._isNew) {
+      result._isNew = true;
+    }
+
+    result._type = this.constructor.getName();
+
     this.constructor.forEachField(field => {
       if (!this._fieldHasBeenSet(field)) {
         return;
@@ -58,6 +70,7 @@ export class Model {
       value = field.serializeValue(value, {filter});
       result[field.serializedName] = value;
     });
+
     return result;
   }
 

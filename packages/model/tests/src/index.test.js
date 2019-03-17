@@ -280,13 +280,20 @@ describe('@storable/model', () => {
     expect(movie.serialize()).toEqual({_type: 'Movie'});
 
     movie = new registry.Movie();
-    expect(movie.serialize()).toEqual({_type: 'Movie', genres: [], actors: []});
+    expect(movie.serialize()).toEqual({_isNew: true, _type: 'Movie', genres: [], actors: []});
 
     movie.id = 'abc123';
-    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc123', genres: [], actors: []});
+    expect(movie.serialize()).toEqual({
+      _isNew: true,
+      _type: 'Movie',
+      _id: 'abc123',
+      genres: [],
+      actors: []
+    });
 
     movie.title = 'Inception';
     expect(movie.serialize()).toEqual({
+      _isNew: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
@@ -296,6 +303,7 @@ describe('@storable/model', () => {
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
     expect(movie.serialize()).toEqual({
+      _isNew: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
@@ -306,6 +314,7 @@ describe('@storable/model', () => {
 
     movie.genres = ['action', 'adventure', 'sci-fi'];
     expect(movie.serialize()).toEqual({
+      _isNew: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
@@ -316,26 +325,28 @@ describe('@storable/model', () => {
 
     movie.technicalSpecs = {aspectRatio: '2.39:1'};
     expect(movie.serialize()).toEqual({
+      _isNew: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
-      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+      technicalSpecs: {_isNew: true, _type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
       actors: []
     });
 
     movie.actors = [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}];
     expect(movie.serialize()).toEqual({
+      _isNew: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
-      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+      technicalSpecs: {_isNew: true, _type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
       actors: [
-        {_type: 'Person', fullName: 'Leonardo DiCaprio'},
-        {_type: 'Person', fullName: 'Joseph Gordon-Levitt'}
+        {_isNew: true, _type: 'Person', fullName: 'Leonardo DiCaprio'},
+        {_isNew: true, _type: 'Person', fullName: 'Joseph Gordon-Levitt'}
       ]
     });
 
@@ -397,6 +408,7 @@ describe('@storable/model', () => {
 
     movie = new registry.Movie({id: 'abc123', title: 'Inception'});
     expect(movie.serialize()).toEqual({
+      _isNew: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
@@ -406,6 +418,7 @@ describe('@storable/model', () => {
 
     movie.releasedOn = undefined;
     expect(movie.serialize()).toEqual({
+      _isNew: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',

@@ -73,7 +73,7 @@ export class MemoryStore {
     return result;
   }
 
-  set({_type, _id, ...changes}) {
+  set({_isNew, _type, _id, ...changes}) {
     validateType(_type);
     validateId(_id);
 
@@ -85,8 +85,13 @@ export class MemoryStore {
 
     let document = collection[_id];
     if (document === undefined) {
+      if (!_isNew) {
+        throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
+      }
       document = {};
       collection[_id] = document;
+    } else if (_isNew) {
+      throw new Error(`Document already exists (collection: '${_type}', id: '${_id}')`);
     }
 
     for (let [name, value] of Object.entries(changes)) {
@@ -104,19 +109,17 @@ export class MemoryStore {
           return value;
         }
 
-        const subdocument = value;
+        const {_isNew, _type, _id, ...changes} = value;
 
-        if (subdocument._id === undefined) {
-          return subdocument;
+        if (_id === undefined) {
+          return {_type, ...changes};
         }
-
-        const {_type, _id, ...changes} = subdocument;
 
         validateType(_type);
         validateId(_id);
 
-        if (!isEmpty(changes)) {
-          this.set(subdocument);
+        if (_isNew || !isEmpty(changes)) {
+          this.set({_isNew, _type, _id, ...changes});
         }
 
         return {_type, _id};
