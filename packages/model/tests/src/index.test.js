@@ -227,6 +227,24 @@ describe('@storable/model', () => {
     expect(movie.isChanged()).toBe(false);
   });
 
+  test('isNew()', () => {
+    class Movie extends Model {
+      @field('string') title;
+    }
+
+    let movie = new Movie({title: 'Inception'});
+    expect(movie.isNew()).toBe(true);
+
+    movie.markAsNotNew();
+    expect(movie.isNew()).toBe(false);
+
+    movie = Movie.deserialize({title: 'Inception'});
+    expect(movie.isNew()).toBe(false);
+
+    movie = Movie.deserialize({_isNew: true, title: 'Inception'});
+    expect(movie.isNew()).toBe(true);
+  });
+
   test('Composition', () => {
     class Movie extends Model {
       @field('string') title;

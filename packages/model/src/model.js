@@ -27,7 +27,7 @@ export class Model {
       return object;
     }
 
-    this._isNew = isDeserializing ? object._isNew : true;
+    const isNew = isDeserializing ? object._isNew : true;
 
     this._fieldValues = {};
     this._savedFieldValues = {};
@@ -40,7 +40,7 @@ export class Model {
         return;
       }
 
-      if (this._isNew) {
+      if (isNew) {
         if (field.default !== undefined) {
           this._applyFieldDefault(field);
         } else {
@@ -48,12 +48,16 @@ export class Model {
         }
       }
     });
+
+    if (isNew) {
+      this.markAsNew();
+    }
   }
 
   serialize({filter} = {}) {
     const result = {};
 
-    if (this._isNew) {
+    if (this.isNew()) {
       result._isNew = true;
     }
 
@@ -239,6 +243,18 @@ export class Model {
     }
 
     return false;
+  }
+
+  isNew() {
+    return this._isNew === true;
+  }
+
+  markAsNew() {
+    this._isNew = true;
+  }
+
+  markAsNotNew() {
+    this._isNew = false;
   }
 
   validate() {

@@ -50,6 +50,7 @@ export class Document extends Model {
   }
 
   async afterSave() {
+    this.markAsNotNew();
     await this.forEachSubdocument(async document => await document.afterSave());
   }
 
