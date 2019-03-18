@@ -79,14 +79,14 @@ describe('@storable/model', () => {
 
       @field('string[]') genres;
 
-      @field('Person[]') actors;
+      @field('Actor[]') actors;
     }
 
-    class Person extends Model {
+    class Actor extends Model {
       @field('string') fullName;
     }
 
-    const registry = new Registry({Movie, Person});
+    const registry = new Registry({Movie, Actor});
 
     let movie = new registry.Movie();
     expect(movie.genres).toEqual([]);
@@ -106,7 +106,7 @@ describe('@storable/model', () => {
     movie = new registry.Movie({
       title: {_type: 'string', _value: 'The Matrix'},
       genres: [{_type: 'string', _value: 'action'}, {_type: 'string', _value: 'sci-fi'}],
-      actors: [{_type: 'Person', fullName: 'Leonardo DiCaprio'}]
+      actors: [{_type: 'Actor', fullName: 'Leonardo DiCaprio'}]
     });
     expect(movie.title).toBe('The Matrix');
     expect(movie.genres).toEqual(['action', 'sci-fi']);
@@ -279,18 +279,18 @@ describe('@storable/model', () => {
 
       @field('TechnicalSpecs') technicalSpecs;
 
-      @field('Person[]') actors;
+      @field('Actor[]') actors;
     }
 
     class TechnicalSpecs extends Model {
       @field('string') aspectRatio;
     }
 
-    class Person extends Model {
+    class Actor extends Model {
       @field('string') fullName;
     }
 
-    const registry = new Registry({Movie, TechnicalSpecs, Person});
+    const registry = new Registry({Movie, TechnicalSpecs, Actor});
 
     // Simple serialization
 
@@ -363,8 +363,8 @@ describe('@storable/model', () => {
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_isNew: true, _type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
       actors: [
-        {_isNew: true, _type: 'Person', fullName: 'Leonardo DiCaprio'},
-        {_isNew: true, _type: 'Person', fullName: 'Joseph Gordon-Levitt'}
+        {_isNew: true, _type: 'Actor', fullName: 'Leonardo DiCaprio'},
+        {_isNew: true, _type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
       ]
     });
 
@@ -377,8 +377,8 @@ describe('@storable/model', () => {
         genres: ['action', 'adventure', 'sci-fi'],
         technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
         actors: [
-          {_type: 'Person', fullName: 'Leonardo DiCaprio'},
-          {_type: 'Person', fullName: 'Joseph Gordon-Levitt'}
+          {_type: 'Actor', fullName: 'Leonardo DiCaprio'},
+          {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
         ]
       }).serialize()
     ).toEqual({
@@ -389,8 +389,8 @@ describe('@storable/model', () => {
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
       actors: [
-        {_type: 'Person', fullName: 'Leonardo DiCaprio'},
-        {_type: 'Person', fullName: 'Joseph Gordon-Levitt'}
+        {_type: 'Actor', fullName: 'Leonardo DiCaprio'},
+        {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
       ]
     });
 

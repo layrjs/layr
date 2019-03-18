@@ -54,7 +54,7 @@ export class Model {
     }
   }
 
-  serialize({filter} = {}) {
+  serialize({filter, _level = 0} = {}) {
     const result = {};
 
     if (this.isNew()) {
@@ -71,7 +71,7 @@ export class Model {
         return;
       }
       let value = this._getFieldValue(field);
-      value = field.serializeValue(value, {filter});
+      value = field.serializeValue(value, {filter, _level});
       result[field.serializedName] = value;
     });
 
@@ -148,11 +148,19 @@ export class Model {
     }
   }
 
+  static canBeSubmodel() {
+    return true;
+  }
+
+  static fieldValueIsSubmodel(value) {
+    return value?.isOfType && value.isOfType('Model') && value.constructor.canBeSubmodel();
+  }
+
   forEachSubmodel(func) {
     return this.constructor.forEachField(field => {
       const value = this._getFieldValue(field);
       return findFromOneOrMany(value, value => {
-        if (value?.isOfType && value.isOfType('Model')) {
+        if (this.constructor.fieldValueIsSubmodel(value)) {
           return func(value) !== undefined;
         }
       });
@@ -233,7 +241,7 @@ export class Model {
     const value = this._getFieldValue(field);
     if (value !== undefined) {
       const changedValue = findFromOneOrMany(value, value => {
-        if (value?.isOfType && value.isOfType('Model')) {
+        if (this.constructor.fieldValueIsSubmodel(value)) {
           return value.isChanged();
         }
       });
@@ -278,9 +286,6 @@ export class Model {
   getFailedValidators() {
     let result;
     this.constructor.forEachField(field => {
-      // if (!this._fieldHasBeenSet(field)) {
-      //   return;
-      // }
       const value = this._getFieldValue(field);
       const failedValidators = field.validateValue(value);
       if (!isEmpty(failedValidators)) {

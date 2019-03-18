@@ -6,7 +6,7 @@ import compact from 'lodash/compact';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field {
-  constructor(name, type, {default: defaultValue, validators = [], isOwned, serializedName} = {}) {
+  constructor(name, type, {default: defaultValue, validators = [], serializedName} = {}) {
     if (typeof name !== 'string' || !name) {
       throw new Error("'name' parameter is missing or invalid");
     }
@@ -62,10 +62,6 @@ export class Field {
     if (defaultValue !== undefined) {
       this.default = defaultValue;
     }
-
-    if (isOwned !== undefined) {
-      this.isOwned = isOwned;
-    }
   }
 
   createValue(value, parent, {isDeserializing}) {
@@ -86,8 +82,8 @@ export class Field {
     );
   }
 
-  serializeValue(value, {filter}) {
-    return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, {filter}));
+  serializeValue(value, {filter, _level}) {
+    return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, {filter, _level}));
   }
 
   validateValue(value) {
@@ -150,7 +146,7 @@ class Scalar {
     return new Model(value, {isDeserializing});
   }
 
-  serializeValue(value, {filter}) {
+  serializeValue(value, {filter, _level}) {
     if (value === undefined) {
       return {_type: 'undefined'};
     }
@@ -164,7 +160,7 @@ class Scalar {
     }
 
     if (value.isOfType && value.isOfType('Model')) {
-      return value.serialize({filter});
+      return value.serialize({filter, _level: _level + 1});
     }
 
     if (value.toJSON) {
@@ -183,7 +179,9 @@ class Scalar {
       return undefined;
     }
     if (value.isOfType && value.isOfType('Model')) {
-      return value.getFailedValidators();
+      return value.constructor.fieldValueIsSubmodel(value) ?
+        value.getFailedValidators() :
+        undefined;
     }
     return runValidators(value, this.validators);
   }

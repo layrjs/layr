@@ -1,5 +1,4 @@
-import isEmpty from 'lodash/isEmpty';
-import {mapFromOneOrMany} from '@storable/util';
+import {getFromOneOrMany, mapFromOneOrMany} from '@storable/util';
 import assert from 'assert';
 
 export class MemoryStore {
@@ -9,73 +8,93 @@ export class MemoryStore {
     validateType(_type);
     validateId(_id);
 
-    const document = this._collections[_type]?.[_id];
+    let document = this._collections[_type]?.[_id];
 
     if (document === undefined) {
+      // Document not found
       return undefined;
     }
 
-    const result = {_type, _id};
+    document = this._getFields(document, returnFields, {rootType: _type, rootId: _id});
 
-    if (returnFields === false) {
-      return result;
-    }
+    return {_type, _id, ...document};
+  }
+
+  _getFields(document, documentReturnFields, {rootType, rootId}) {
+    const result = {};
 
     for (const [name, value] of Object.entries(document)) {
-      let returnField = typeof returnFields === 'object' ? returnFields[name] : true;
+      let returnFields =
+        typeof documentReturnFields === 'object' ?
+          documentReturnFields[name] :
+          documentReturnFields;
 
-      if (returnField === undefined || returnField === false) {
+      if (returnFields === undefined || returnFields === false) {
         continue;
       }
 
-      if (Array.isArray(value) && !(returnField === true || Array.isArray(returnField))) {
+      if (Array.isArray(value) && !(returnFields === true || Array.isArray(returnFields))) {
         throw new Error(
-          `Type mismatch (field: '${name}', expected: 'Boolean' or 'Array', provided: '${typeof returnField}')`
+          `Type mismatch (collection: '${rootType}', id: '${rootId}', field: '${name}', expected: 'Boolean' or 'Array', provided: '${typeof returnFields}')`
         );
       }
 
-      if (Array.isArray(returnField)) {
+      if (Array.isArray(returnFields)) {
         if (!Array.isArray(value)) {
           throw new Error(
-            `Type mismatch (field: '${name}', expected: 'Boolean' or 'Object', provided: 'Array')`
+            `Type mismatch (collection: '${rootType}', id: '${rootId}', field: '${name}', expected: 'Boolean' or 'Object', provided: 'Array')`
           );
         }
-        returnField = returnField[0];
+        returnFields = returnFields[0];
       }
 
       result[name] = mapFromOneOrMany(value, value => {
-        assert(value !== null, `The 'null' value is not allowed (field: '${name}')`);
+        assert(
+          value !== null,
+          `The 'null' value is not allowed (collection: '${rootType}', id: '${rootId}', field: '${name}')`
+        );
 
-        if (typeof value !== 'object') {
-          if (returnField !== true) {
+        if (isPrimitive(value, {fieldName: name, rootType, rootId})) {
+          if (returnFields !== true) {
             throw new Error(
-              `Type mismatch (field name: '${name})', expected: 'Boolean', provided: '${typeof returnField}'`
+              `Type mismatch (collection: '${rootType}', id: '${rootId}', field: '${name})', expected: 'Boolean', provided: '${typeof returnFields}'`
             );
           }
-          return value;
+          return serializeValue(value);
         }
 
-        const subdocument = value;
-
-        if (subdocument._id === undefined) {
-          if (returnField !== true) {
-            throw new Error(
-              `It is not possible to partially return nested documents (field name: '${name})'`
-            );
-          }
-          return subdocument;
+        if (isReference(value, {fieldName: name, rootType, rootId})) {
+          const {_type, _id} = value;
+          // Let's fetch the referenced document
+          const document = this.get({_type, _id}, {return: returnFields});
+          return {_type, _id, _ref: true, ...document};
         }
 
-        return this.get(subdocument, {return: returnField});
+        // The value is a submodel or a subdocument
+        let {_type, _id, ...document} = value;
+        let result = {_type};
+        if (_id !== undefined) {
+          // The value is a subdocument
+          result._id = _id;
+        }
+        document = this._getFields(document, returnFields, {rootType, rootId});
+        result = {...result, ...document};
+        return result;
       });
     }
 
     return result;
   }
 
-  set({_isNew, _type, _id, ...changes}) {
+  set({_isNew, _type, _id, _ref, ...fields}) {
     validateType(_type);
     validateId(_id);
+
+    if (_ref !== undefined) {
+      throw new Error(
+        `The '_ref' attribute cannot be specified at the root of a document (collection: '${_type}', id: '${_id}')`
+      );
+    }
 
     let collection = this._collections[_type];
     if (collection === undefined) {
@@ -94,83 +113,66 @@ export class MemoryStore {
       throw new Error(`Document already exists (collection: '${_type}', id: '${_id}')`);
     }
 
-    for (let [name, value] of Object.entries(changes)) {
-      value = normalizeValue(value, {fieldName: name});
+    this._setFields(document, fields, {rootType: _type, rootId: _id});
+  }
+
+  _setFields(document, fields, {rootType, rootId}) {
+    for (let [name, value] of Object.entries(fields)) {
+      value = deserializeValue(value, {fieldName: name});
 
       if (value === undefined) {
         delete document[name];
         continue;
       }
 
-      document[name] = mapFromOneOrMany(value, value => {
-        value = normalizeValue(value, {fieldName: name});
+      document[name] = mapFromOneOrMany(value, (value, index) => {
+        value = deserializeValue(value, {fieldName: name});
 
-        if (typeof value !== 'object') {
+        if (isPrimitive(value, {fieldName: name, rootType, rootId})) {
           return value;
         }
 
-        const {_isNew, _type, _id, ...changes} = value;
-
-        if (_id === undefined) {
-          return {_type, ...changes};
+        if (isReference(value, {fieldName: name, rootType, rootId})) {
+          const {_type, _id, _ref} = value;
+          return {_type, _id, _ref};
         }
 
+        // The value is a submodel or subdocument
+        const {_isNew, _type, _id, ...fields} = value;
         validateType(_type);
-        validateId(_id);
-
-        if (_isNew || !isEmpty(changes)) {
-          this.set({_isNew, _type, _id, ...changes});
+        const submodel = {};
+        if (!_isNew) {
+          // TODO: We shouldn't read the existing submodel
+          const previousSubmodel = getFromOneOrMany(document[name], index);
+          Object.assign(submodel, previousSubmodel);
         }
-
-        return {_type, _id};
+        submodel._type = _type;
+        if (_id !== undefined) {
+          // The value is a subdocument
+          validateId(_id);
+          submodel._id = _id;
+        }
+        this._setFields(submodel, fields, {rootType, rootId});
+        return submodel;
       });
     }
   }
 
-  delete({_type, _id, ...referencedDocuments}) {
+  delete({_type, _id}) {
     validateType(_type);
     validateId(_id);
-
-    const result = {};
-
-    // Let's handle the referenced documents first
-    for (const [name, referencedDocument] of Object.entries(referencedDocuments)) {
-      if (referencedDocument === undefined) {
-        continue;
-      }
-
-      if (referencedDocument === null) {
-        throw new Error(
-          `Type mismatch (field name: '${name})', expected: 'object', provided: 'null'`
-        );
-      }
-
-      result[name] = mapFromOneOrMany(referencedDocument, referencedDocument => {
-        if (typeof referencedDocument !== 'object') {
-          throw new Error(
-            `Type mismatch (field name: '${name})', expected: 'object', provided: '${typeof referencedDocument}'`
-          );
-        }
-
-        return this.delete(referencedDocument);
-      });
-    }
-
     const document = this._collections[_type]?.[_id];
     if (document === undefined) {
-      return result;
+      return false;
     }
-
-    // Delete the specified document
     delete this._collections[_type][_id];
-
-    return {_type, _id, ...result};
+    return true;
   }
 }
 
 function validateType(_type) {
   if (typeof _type !== 'string') {
-    throw new Error(`'_type' must be a string (provided: ${typeof _type}`);
+    throw new Error(`'_type' must be a string (provided: ${typeof _type})`);
   }
   if (_type === '') {
     throw new Error(`'_type' cannot be empty`);
@@ -179,21 +181,77 @@ function validateType(_type) {
 
 function validateId(_id) {
   if (typeof _id !== 'string') {
-    throw new Error(`'_id' must be a string (provided: ${typeof _id}`);
+    throw new Error(`'_id' must be a string (provided: ${typeof _id})`);
   }
   if (_id === '') {
     throw new Error(`'_id' cannot be empty`);
   }
 }
 
-function normalizeValue(value, {fieldName}) {
+function serializeValue(value) {
+  if (value instanceof Date) {
+    return {_type: 'Date', _value: value.toISOString()};
+  }
+  return value;
+}
+
+function deserializeValue(value, {fieldName}) {
   if (value === null) {
     throw new Error(`The 'null' value is not allowed (field: '${fieldName}')`);
   }
 
-  if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
+  if (value === undefined) {
     return undefined;
   }
 
+  if (typeof value === 'object' && value._type === 'undefined') {
+    return undefined;
+  }
+
+  if (typeof value === 'object' && value._type === 'Date') {
+    return new Date(value._value);
+  }
+
   return value;
+}
+
+function isPrimitive(value, {fieldName, rootType, rootId}) {
+  if (typeof value !== 'object' || value instanceof Date) {
+    return true;
+  }
+
+  if (value._type === undefined) {
+    // The value is a plain object
+    const {_isNew, _id, _ref} = value;
+    if (_isNew !== undefined || _id !== undefined || _ref !== undefined) {
+      throw new Error(
+        `A plain object value cannot include a reserved attribute (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
+      );
+    }
+    return true;
+  }
+
+  // The value is a submodel, a subdocument or a reference
+  return false;
+}
+
+function isReference(value, {fieldName, rootType, rootId}) {
+  if (isPrimitive(value, {fieldName, rootType, rootId})) {
+    return false;
+  }
+
+  const {_isNew, _type, _id, _ref} = value;
+  if (_ref === true) {
+    validateType(_type);
+    validateId(_id);
+    if (_isNew !== undefined) {
+      throw new Error(
+        `A reference cannot include the '_isNew' attribute (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
+      );
+    }
+    return true;
+  }
+
+  // The value is a submodel or a subdocument
+  return false;
 }

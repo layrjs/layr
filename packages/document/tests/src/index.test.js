@@ -1,7 +1,7 @@
 import {Registry} from '@storable/registry';
 import {MemoryStore} from '@storable/memory-store';
 
-import {Document, Model, field} from '../../..';
+import {Document, Subdocument, Model, field} from '../../..';
 
 describe('@storable/document', () => {
   test('CRUD operations', async () => {
@@ -98,15 +98,17 @@ describe('@storable/document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test('Nesting documents', async () => {
+  test('Subdocuments', async () => {
     class Movie extends Document {
       @field('string') title;
 
-      @field('Trailer', {isOwned: true}) trailer;
+      @field('Trailer') trailer;
     }
 
-    class Trailer extends Document {
+    class Trailer extends Subdocument {
       @field('string') url;
+
+      @field('number') duration;
     }
 
     const store = new MemoryStore();
@@ -115,19 +117,17 @@ describe('@storable/document', () => {
     // Let's create both a 'Movie' and a 'Trailer'
     let movie = new registry.Movie({
       title: 'Inception',
-      trailer: {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0'}
+      trailer: {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0', duration: 30}
     });
     const movieId = movie.id;
+    expect(typeof movieId === 'string').toBe(true);
+    expect(movieId !== '').toBe(true);
     const trailerId = movie.trailer.id;
+    expect(typeof trailerId === 'string').toBe(true);
+    expect(trailerId !== '').toBe(true);
     await movie.save();
 
-    // The trailer can be fetched from the 'Trailer' collection
-    let trailer = await registry.Trailer.get(trailerId);
-    expect(trailer instanceof registry.Trailer).toBe(true);
-    expect(trailer.id).toBe(trailerId);
-    expect(trailer.url).toBe('https://www.youtube.com/watch?v=YoHD9XEInc0');
-
-    // Will fetch both 'Movie' and 'Trailer' documents
+    // Will fetch both the 'Movie' document and its 'Trailer' subdocument
     movie = await registry.Movie.get(movieId);
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
@@ -135,15 +135,16 @@ describe('@storable/document', () => {
     expect(movie.trailer instanceof registry.Trailer).toBe(true);
     expect(movie.trailer.id).toBe(trailerId);
     expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=YoHD9XEInc0');
+    expect(movie.trailer.duration).toBe(30);
 
-    // Will fetch 'Movie' document only
+    // Will fetch the 'Movie' document only
     movie = await registry.Movie.get(movieId, {return: {title: true}});
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
     expect(movie.trailer).toBeUndefined();
 
-    // Will fetch 'Movie' document and trailer's id
+    // Will fetch the 'Movie' document and the id of its trailer
     movie = await registry.Movie.get(movieId, {return: {title: true, trailer: {}}});
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
@@ -152,91 +153,136 @@ describe('@storable/document', () => {
     expect(movie.trailer.id).toBe(trailerId);
     expect(movie.trailer.url).toBeUndefined();
 
-    // The trailer can be modified through its parent movie
+    // The trailer can be partially modified
     movie.trailer.url = 'https://www.youtube.com/watch?v=8hP9D6kZseM';
     await movie.save();
-    trailer = await registry.Trailer.get(trailerId);
-    expect(trailer.url).toBe('https://www.youtube.com/watch?v=8hP9D6kZseM');
+    movie = await registry.Movie.get(movieId);
+    expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=8hP9D6kZseM');
+    expect(movie.trailer.duration).toBe(30);
 
-    // Will delete both the movie and its trailer
+    // The trailer can be fully replaced
+    movie.trailer = {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0'};
+    const newTrailerId = movie.trailer.id;
+    expect(typeof newTrailerId === 'string').toBe(true);
+    expect(newTrailerId !== '').toBe(true);
+    expect(newTrailerId).not.toBe(trailerId); // The trailer got a new id
+    await movie.save();
+    movie = await registry.Movie.get(movieId);
+    expect(movie.trailer.id).toBe(newTrailerId);
+    expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=YoHD9XEInc0');
+    expect(movie.trailer.duration).toBeUndefined();
+
+    // Will delete both the movie document and its trailer subdocument
     await movie.delete();
     movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
-    trailer = await registry.Trailer.get(trailerId, {throwIfNotFound: false});
-    expect(trailer).toBeUndefined();
   });
 
-  test('Referencing documents', async () => {
-    // Except for deletion, referenced documents behave like nested documents
-
+  test('Referenced documents', async () => {
     class Movie extends Document {
       @field('string') title;
 
-      @field('Person') director;
+      @field('Director') director;
     }
 
-    class Person extends Document {
+    class Director extends Document {
       @field('string') fullName;
     }
 
     const store = new MemoryStore();
-    const registry = new Registry({Movie, Person, store});
+    const registry = new Registry({Movie, Director, store});
 
     let movie = new registry.Movie({title: 'Inception', director: {fullName: 'Christopher Nolan'}});
     const movieId = movie.id;
     const directorId = movie.director.id;
+    await movie.director.save();
     await movie.save();
 
+    // The directory has been saved independently
+    let director = await registry.Director.get(directorId);
+    expect(director instanceof registry.Director).toBe(true);
+    expect(director.id).toBe(directorId);
+    expect(director.fullName).toBe('Christopher Nolan');
+
+    // Will fetch both the 'Movie' and its director
+    movie = await registry.Movie.get(movieId);
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director instanceof registry.Director).toBe(true);
+    expect(movie.director.id).toBe(directorId);
+    expect(movie.director.fullName).toBe('Christopher Nolan');
+
+    // The director can be replaced
+    let newDirector = new registry.Director({fullName: 'C. Nolan'});
+    const newDirectorId = newDirector.id;
+    expect(newDirectorId).not.toBe(directorId);
+    await newDirector.save();
+    movie.director = newDirector;
+    await movie.save();
+    movie = await registry.Movie.get(movieId);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director.id).toBe(newDirectorId);
+    expect(movie.director.fullName).toBe('C. Nolan');
+
+    // Let's delete everything
     await movie.delete();
     movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
     expect(movie).toBeUndefined(); // The movie is gone
-    const director = await registry.Person.get(directorId);
-    expect(director instanceof registry.Person).toBe(true); // But the director is still there
-    expect(director.id).toBe(directorId);
+    newDirector = await registry.Director.get(newDirectorId);
+    expect(newDirector instanceof registry.Director).toBe(true); // But the director is still there
+    expect(newDirector.id).toBe(newDirectorId);
+    await newDirector.delete(); // So let's delete it
+    director = await registry.Director.get(directorId); // Let's also delete the first director
+    await director.delete();
   });
 
   test('Arrays of referenced document', async () => {
     class Movie extends Document {
       @field('string') title;
 
-      @field('Person[]') actors;
+      @field('Actor[]') actors;
     }
 
-    class Person extends Document {
+    class Actor extends Document {
       @field('string') fullName;
     }
 
     const store = new MemoryStore();
-    const registry = new Registry({Movie, Person, store});
+    const registry = new Registry({Movie, Actor, store});
 
-    // Let's create both a 'Movie' and some 'Person'
+    // Let's create both a 'Movie' and some 'Actor'
     let movie = new registry.Movie({
       title: 'Inception',
       actors: [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}]
     });
     const movieId = movie.id;
     const actorIds = movie.actors.map(actor => actor.id);
+    for (const actor of movie.actors) {
+      await actor.save();
+    }
     await movie.save();
 
-    // The actors can be fetched directly from the 'Person' collection
-    let actor = await registry.Person.get(actorIds[0]);
-    expect(actor instanceof registry.Person).toBe(true);
+    // The actors can be fetched directly from the 'Actor' collection
+    let actor = await registry.Actor.get(actorIds[0]);
+    expect(actor instanceof registry.Actor).toBe(true);
     expect(actor.id).toBe(actorIds[0]);
     expect(actor.fullName).toBe('Leonardo DiCaprio');
-    actor = await registry.Person.get(actorIds[1]);
-    expect(actor instanceof registry.Person).toBe(true);
+    actor = await registry.Actor.get(actorIds[1]);
+    expect(actor instanceof registry.Actor).toBe(true);
     expect(actor.id).toBe(actorIds[1]);
     expect(actor.fullName).toBe('Joseph Gordon-Levitt');
 
-    // Will fetch both 'Movie' and 'Person' documents
+    // Will fetch both 'Movie' and 'Actor' documents
     movie = await registry.Movie.get(movieId);
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
-    expect(movie.actors[0] instanceof registry.Person).toBe(true);
+    expect(movie.actors[0] instanceof registry.Actor).toBe(true);
     expect(movie.actors[0].id).toBe(actorIds[0]);
     expect(movie.actors[0].fullName).toBe('Leonardo DiCaprio');
-    expect(movie.actors[1] instanceof registry.Person).toBe(true);
+    expect(movie.actors[1] instanceof registry.Actor).toBe(true);
     expect(movie.actors[1].id).toBe(actorIds[1]);
     expect(movie.actors[1].fullName).toBe('Joseph Gordon-Levitt');
 
@@ -252,74 +298,78 @@ describe('@storable/document', () => {
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
-    expect(movie.actors[0] instanceof registry.Person).toBe(true);
+    expect(movie.actors[0] instanceof registry.Actor).toBe(true);
     expect(movie.actors[0].id).toBe(actorIds[0]);
     expect(movie.actors[0].fullName).toBeUndefined();
-    expect(movie.actors[1] instanceof registry.Person).toBe(true);
+    expect(movie.actors[1] instanceof registry.Actor).toBe(true);
     expect(movie.actors[1].id).toBe(actorIds[1]);
     expect(movie.actors[1].fullName).toBeUndefined();
 
     // An actor can be modified through its parent movie
     movie.actors[0].fullName = 'L. DiCaprio';
-    await movie.save();
-    actor = await registry.Person.get(actorIds[0]);
+    await movie.actors[0].save();
+    actor = await registry.Actor.get(actorIds[0]);
     expect(actor.fullName).toBe('L. DiCaprio');
 
-    // Will delete the movie but not its actors
+    // Will delete the movie and its actors
+    for (const actor of movie.actors) {
+      await actor.delete();
+    }
     await movie.delete();
     movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
-    actor = await registry.Person.get(actorIds[0]);
-    expect(actor.id).toBe(actorIds[0]);
-    actor = await registry.Person.get(actorIds[1]);
-    expect(actor.id).toBe(actorIds[1]);
+    actor = await registry.Actor.get(actorIds[0], {throwIfNotFound: false});
+    expect(actor).toBeUndefined();
+    actor = await registry.Actor.get(actorIds[1], {throwIfNotFound: false});
+    expect(actor).toBeUndefined();
   });
 
   test('Hooks', async () => {
-    class HookedDocument extends Document {
-      afterLoadCount = 0;
+    const HookMixin = Base =>
+      class extends Base {
+        afterLoadCount = 0;
 
-      beforeSaveCount = 0;
+        beforeSaveCount = 0;
 
-      afterSaveCount = 0;
+        afterSaveCount = 0;
 
-      beforeDeleteCount = 0;
+        beforeDeleteCount = 0;
 
-      afterDeleteCount = 0;
+        afterDeleteCount = 0;
 
-      async afterLoad(options) {
-        await super.afterLoad(options);
-        this.afterLoadCount++;
-      }
+        async afterLoad(options) {
+          await super.afterLoad(options);
+          this.afterLoadCount++;
+        }
 
-      async beforeSave(options) {
-        await super.beforeSave(options);
-        this.beforeSaveCount++;
-      }
+        async beforeSave(options) {
+          await super.beforeSave(options);
+          this.beforeSaveCount++;
+        }
 
-      async afterSave(options) {
-        await super.afterSave(options);
-        this.afterSaveCount++;
-      }
+        async afterSave(options) {
+          await super.afterSave(options);
+          this.afterSaveCount++;
+        }
 
-      async beforeDelete(options) {
-        await super.beforeDelete(options);
-        this.beforeDeleteCount++;
-      }
+        async beforeDelete(options) {
+          await super.beforeDelete(options);
+          this.beforeDeleteCount++;
+        }
 
-      async afterDelete(options) {
-        await super.afterDelete(options);
-        this.afterDeleteCount++;
-      }
-    }
+        async afterDelete(options) {
+          await super.afterDelete(options);
+          this.afterDeleteCount++;
+        }
+      };
 
-    class Movie extends HookedDocument {
+    class Movie extends HookMixin(Document) {
       @field('string') title;
 
-      @field('Trailer', {isOwned: true}) trailer;
+      @field('Trailer') trailer;
     }
 
-    class Trailer extends HookedDocument {
+    class Trailer extends HookMixin(Subdocument) {
       @field('string') url;
     }
 
