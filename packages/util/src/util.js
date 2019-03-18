@@ -1,3 +1,17 @@
+export function getFromOneOrMany(value, index) {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (index !== undefined) {
+    const values = value;
+    if (!Array.isArray(value)) {
+      throw new Error('Expected an array');
+    }
+    return values[index];
+  }
+  return value;
+}
+
 export function callWithOneOrMany(value, func) {
   if (Array.isArray(value)) {
     const values = value;
