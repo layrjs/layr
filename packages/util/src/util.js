@@ -24,12 +24,44 @@ export function callWithOneOrMany(value, func) {
   func(value);
 }
 
+export async function callWithOneOrManyAsync(value, func) {
+  if (Array.isArray(value)) {
+    const values = value;
+    for (let index = 0; index < values.length; index++) {
+      const value = values[index];
+      await func(value, index);
+    }
+    return;
+  }
+  await func(value);
+}
+
 export function mapFromOneOrMany(value, func) {
   if (Array.isArray(value)) {
     const values = value;
-    return values.map((value, index) => func(value, index));
+    const results = [];
+    for (let index = 0; index < values.length; index++) {
+      const value = values[index];
+      const result = func(value, index);
+      results.push(result);
+    }
+    return results;
   }
   return func(value);
+}
+
+export async function mapFromOneOrManyAsync(value, func) {
+  if (Array.isArray(value)) {
+    const values = value;
+    const results = [];
+    for (let index = 0; index < values.length; index++) {
+      const value = values[index];
+      const result = await func(value, index);
+      results.push(result);
+    }
+    return results;
+  }
+  return await func(value);
 }
 
 export function findFromOneOrMany(value, func) {
@@ -44,4 +76,18 @@ export function findFromOneOrMany(value, func) {
     return undefined;
   }
   return func(value) ? value : undefined;
+}
+
+export async function findFromOneOrManyAsync(value, func) {
+  if (Array.isArray(value)) {
+    const values = value;
+    for (let index = 0; index < values.length; index++) {
+      const value = values[index];
+      if (await func(value, index)) {
+        return value;
+      }
+    }
+    return undefined;
+  }
+  return (await func(value)) ? value : undefined;
 }
