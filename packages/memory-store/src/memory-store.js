@@ -1,23 +1,25 @@
-import {getFromOneOrMany, mapFromOneOrMany} from '@storable/util';
+import {getFromOneOrMany, callWithOneOrMany, mapFromOneOrMany} from '@storable/util';
 import assert from 'assert';
 
 export class MemoryStore {
   _collections = {};
 
-  get({_type, _id}, {return: returnFields = true} = {}) {
-    validateType(_type);
-    validateId(_id);
+  get(document, {return: returnFields = true} = {}) {
+    return mapFromOneOrMany(document, ({_type, _id}) => {
+      validateType(_type);
+      validateId(_id);
 
-    let document = this._collections[_type]?.[_id];
+      let document = this._collections[_type]?.[_id];
 
-    if (document === undefined) {
-      // Document not found
-      return undefined;
-    }
+      if (document === undefined) {
+        // Document not found
+        return undefined;
+      }
 
-    document = this._getFields(document, returnFields, {rootType: _type, rootId: _id});
+      document = this._getFields(document, returnFields, {rootType: _type, rootId: _id});
 
-    return {_type, _id, ...document};
+      return {_type, _id, ...document};
+    });
   }
 
   _getFields(document, documentReturnFields, {rootType, rootId}) {
@@ -86,34 +88,36 @@ export class MemoryStore {
     return result;
   }
 
-  set({_isNew, _type, _id, _ref, ...fields}) {
-    validateType(_type);
-    validateId(_id);
+  set(document) {
+    return callWithOneOrMany(document, ({_isNew, _type, _id, _ref, ...fields}) => {
+      validateType(_type);
+      validateId(_id);
 
-    if (_ref !== undefined) {
-      throw new Error(
-        `The '_ref' attribute cannot be specified at the root of a document (collection: '${_type}', id: '${_id}')`
-      );
-    }
-
-    let collection = this._collections[_type];
-    if (collection === undefined) {
-      collection = {};
-      this._collections[_type] = collection;
-    }
-
-    let document = collection[_id];
-    if (document === undefined) {
-      if (!_isNew) {
-        throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
+      if (_ref !== undefined) {
+        throw new Error(
+          `The '_ref' attribute cannot be specified at the root of a document (collection: '${_type}', id: '${_id}')`
+        );
       }
-      document = {};
-      collection[_id] = document;
-    } else if (_isNew) {
-      throw new Error(`Document already exists (collection: '${_type}', id: '${_id}')`);
-    }
 
-    this._setFields(document, fields, {rootType: _type, rootId: _id});
+      let collection = this._collections[_type];
+      if (collection === undefined) {
+        collection = {};
+        this._collections[_type] = collection;
+      }
+
+      let document = collection[_id];
+      if (document === undefined) {
+        if (!_isNew) {
+          throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
+        }
+        document = {};
+        collection[_id] = document;
+      } else if (_isNew) {
+        throw new Error(`Document already exists (collection: '${_type}', id: '${_id}')`);
+      }
+
+      this._setFields(document, fields, {rootType: _type, rootId: _id});
+    });
   }
 
   _setFields(document, fields, {rootType, rootId}) {
@@ -158,15 +162,17 @@ export class MemoryStore {
     }
   }
 
-  delete({_type, _id}) {
-    validateType(_type);
-    validateId(_id);
-    const document = this._collections[_type]?.[_id];
-    if (document === undefined) {
-      return false;
-    }
-    delete this._collections[_type][_id];
-    return true;
+  delete(document) {
+    return mapFromOneOrMany(document, ({_type, _id}) => {
+      validateType(_type);
+      validateId(_id);
+      const document = this._collections[_type]?.[_id];
+      if (document === undefined) {
+        return false;
+      }
+      delete this._collections[_type][_id];
+      return true;
+    });
   }
 }
 
