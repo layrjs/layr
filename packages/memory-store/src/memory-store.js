@@ -174,6 +174,40 @@ export class MemoryStore {
       return true;
     });
   }
+
+  find({_type, ...filter}, {sort, skip, limit, return: returnFields = true} = {}) {
+    validateType(_type);
+
+    let results = [];
+
+    const collection = this._collections[_type];
+
+    if (collection === undefined) {
+      return results;
+    }
+
+    for (let [_id, document] of Object.entries(collection)) {
+      if (!Object.entries(filter).every(([name, value]) => document[name] === value)) {
+        continue;
+      }
+      document = this._getFields(document, returnFields, {rootType: _type, rootId: _id});
+      results.push({_type, _id, ...document});
+    }
+
+    if (sort !== undefined) {
+      throw new Error(`The 'sort' option is not implemented yet`);
+    }
+
+    if (skip !== undefined) {
+      results = results.slice(skip);
+    }
+
+    if (limit !== undefined) {
+      results = results.slice(0, limit);
+    }
+
+    return results;
+  }
 }
 
 function validateType(_type) {

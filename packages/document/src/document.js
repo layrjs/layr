@@ -62,13 +62,10 @@ export class Document extends BaseDocument {
 
     const store = this._getStore();
 
-    let options;
-    if (returnFields !== undefined) {
-      options = {return: returnFields}; // TODO: Take into account the 'serializedName' field option
-    }
-
     let serializedDocument = mapFromOneOrMany(id, id => ({_type: this.getName(), _id: id}));
-    serializedDocument = await store.get(serializedDocument, options);
+    serializedDocument = await store.get(serializedDocument, {
+      return: returnFields // TODO: Take into account the 'serializedName' field option
+    });
 
     callWithOneOrMany(serializedDocument, (serializedDocument, index) => {
       if (!serializedDocument && throwIfNotFound) {
@@ -110,10 +107,34 @@ export class Document extends BaseDocument {
     await this.beforeDelete();
 
     const store = this.constructor._getStore();
-    const serializedDocument = this._serializeId();
+    const serializedDocument = this._serializeTypeAndId();
     await store.delete(serializedDocument);
 
     await this.afterDelete();
+  }
+
+  static async find({filter, sort, skip, limit, return: returnFields} = {}) {
+    const store = this._getStore();
+
+    const serializedDocuments = await store.find(
+      {...this._serializeType(), ...filter},
+      {
+        sort,
+        skip,
+        limit,
+        return: returnFields // TODO: Take into account the 'serializedName' field option
+      }
+    );
+
+    const documents = serializedDocuments.map(serializedDocument =>
+      this.deserialize(serializedDocument)
+    );
+
+    for (const document of documents) {
+      await document.afterLoad();
+    }
+
+    return documents;
   }
 
   serialize({filter, _level = 0} = {}) {
@@ -134,12 +155,20 @@ export class Document extends BaseDocument {
     return super.serialize({filter, _level});
   }
 
+  static _serializeType() {
+    return {_type: this.getName()};
+  }
+
   _serializeId() {
-    return {_type: this.constructor.getName(), _id: this.id};
+    return {_id: this.id};
+  }
+
+  _serializeTypeAndId() {
+    return {...this.constructor._serializeType(), ...this._serializeId()};
   }
 
   _serializeReference() {
-    return {...this._serializeId(), _ref: true};
+    return {...this._serializeTypeAndId(), _ref: true};
   }
 
   static canBeSubmodel() {

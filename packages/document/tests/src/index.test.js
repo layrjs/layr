@@ -441,23 +441,58 @@ describe('@storable/document', () => {
     expect(movie.trailer.beforeDeleteCount).toBe(1);
     expect(movie.trailer.afterDeleteCount).toBe(1);
   });
-  test('Multi get()', async () => {
+
+  test('Finding documents', async () => {
     class Movie extends Document {
       @field('string') title;
+
+      @field('string') genre;
+
+      @field('string') country;
     }
 
     const store = new MemoryStore();
     const registry = new Registry({Movie, store});
 
-    const movie1 = new registry.Movie({title: 'Inception'});
-    await movie1.save();
-    const movie2 = new registry.Movie({title: 'The Matrix'});
-    await movie2.save();
+    await new registry.Movie({
+      id: 'movie1',
+      title: 'Inception',
+      genre: 'action',
+      country: 'USA'
+    }).save();
+    await new registry.Movie({
+      id: 'movie2',
+      title: 'Forrest Gump',
+      genre: 'drama',
+      country: 'USA'
+    }).save();
+    await new registry.Movie({
+      id: 'movie3',
+      title: 'Léon',
+      genre: 'action',
+      country: 'France'
+    }).save();
 
-    const movies = await registry.Movie.get([movie1.id, movie2.id]);
-    expect(movies[0].id).toBe(movie1.id);
-    expect(movies[0].title).toBe('Inception');
-    expect(movies[1].id).toBe(movie2.id);
-    expect(movies[1].title).toBe('The Matrix');
+    let movies = await registry.Movie.find();
+    expect(movies.map(movie => movie.id)).toEqual(['movie1', 'movie2', 'movie3']);
+
+    movies = await registry.Movie.find({filter: {genre: 'action'}});
+    expect(movies.map(movie => movie.id)).toEqual(['movie1', 'movie3']);
+
+    movies = await registry.Movie.find({filter: {genre: 'action', country: 'France'}});
+    expect(movies.map(movie => movie.id)).toEqual(['movie3']);
+
+    movies = await registry.Movie.find({filter: {genre: 'adventure'}});
+    expect(movies.map(movie => movie.id)).toEqual([]);
+
+    movies = await registry.Movie.find({skip: 1, limit: 1});
+    expect(movies.map(movie => movie.id)).toEqual(['movie2']);
+
+    movies = await registry.Movie.find({return: {title: true}});
+    expect(movies.map(movie => movie.serialize())).toEqual([
+      {_type: 'Movie', _id: 'movie1', title: 'Inception'},
+      {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},
+      {_type: 'Movie', _id: 'movie3', title: 'Léon'}
+    ]);
   });
 });
