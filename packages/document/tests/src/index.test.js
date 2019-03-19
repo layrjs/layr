@@ -441,4 +441,23 @@ describe('@storable/document', () => {
     expect(movie.trailer.beforeDeleteCount).toBe(1);
     expect(movie.trailer.afterDeleteCount).toBe(1);
   });
+  test('Multi get()', async () => {
+    class Movie extends Document {
+      @field('string') title;
+    }
+
+    const store = new MemoryStore();
+    const registry = new Registry({Movie, store});
+
+    const movie1 = new registry.Movie({title: 'Inception'});
+    await movie1.save();
+    const movie2 = new registry.Movie({title: 'The Matrix'});
+    await movie2.save();
+
+    const movies = await registry.Movie.get([movie1.id, movie2.id]);
+    expect(movies[0].id).toBe(movie1.id);
+    expect(movies[0].title).toBe('Inception');
+    expect(movies[1].id).toBe(movie2.id);
+    expect(movies[1].title).toBe('The Matrix');
+  });
 });

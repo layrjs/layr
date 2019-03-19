@@ -1,5 +1,10 @@
 import {Model, field} from '@storable/model';
-import {callWithOneOrMany} from '@storable/util';
+import {
+  getFromOneOrMany,
+  callWithOneOrMany,
+  callWithOneOrManyAsync,
+  mapFromOneOrMany
+} from '@storable/util';
 import cuid from 'cuid';
 
 class BaseDocument extends Model {
@@ -51,24 +56,37 @@ class BaseDocument extends Model {
 
 export class Document extends BaseDocument {
   static async get(id, {return: returnFields, throwIfNotFound = true} = {}) {
-    validateId(id);
+    callWithOneOrMany(id, id => {
+      validateId(id);
+    });
 
     const store = this._getStore();
+
     let options;
     if (returnFields !== undefined) {
       options = {return: returnFields}; // TODO: Take into account the 'serializedName' field option
     }
-    const serializedDocument = await store.get({_type: this.getName(), _id: id}, options);
-    if (!serializedDocument) {
-      if (throwIfNotFound) {
-        throw new Error(`Document not found (model: '${this.getName()}', id: '${id}')`);
+
+    let serializedDocument = mapFromOneOrMany(id, id => ({_type: this.getName(), _id: id}));
+    serializedDocument = await store.get(serializedDocument, options);
+
+    callWithOneOrMany(serializedDocument, (serializedDocument, index) => {
+      if (!serializedDocument && throwIfNotFound) {
+        throw new Error(
+          `Document not found (model: '${this.getName()}', id: '${getFromOneOrMany(id, index)}')`
+        );
       }
-      return undefined;
-    }
+    });
 
-    const document = this.deserialize(serializedDocument);
+    const document = mapFromOneOrMany(serializedDocument, serializedDocument =>
+      serializedDocument ? this.deserialize(serializedDocument) : undefined
+    );
 
-    await document.afterLoad();
+    await callWithOneOrManyAsync(document, async document => {
+      if (document) {
+        await document.afterLoad();
+      }
+    });
 
     return document;
   }
