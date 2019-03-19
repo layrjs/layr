@@ -1,6 +1,6 @@
 {
   "name": "@storable/memory-store",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple store that uses the memory",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

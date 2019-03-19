@@ -1,6 +1,6 @@
 {
   "name": "@storable/registry",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A registry to bring together models, stores, or whatever you want",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@storable/util",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A few utility functions shared among Storable's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
