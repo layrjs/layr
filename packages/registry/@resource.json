@@ -1,11 +1,15 @@
 {
   "@import": "medmain/npm-package#^0.1.0",
   "name": "@storable/registry",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A registry to bring together models, stores, or whatever you want",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/medmain/storable.git",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "@deepr/runtime": "^0.2.0"
+  },
   "tests": {
     "@include": "./tests"
   }

@@ -1,8 +1,8 @@
-import isPlainObject from 'lodash/isPlainObject';
 import {mapFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 
+import {createValue, serializeValue, normalizeValue} from './serialization';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field {
@@ -64,7 +64,7 @@ export class Field {
     }
   }
 
-  createValue(value, parent, {isDeserializing}) {
+  createValue(value, {registry, isDeserializing}) {
     value = normalizeValue(value, {fieldName: this.name});
 
     if (value === undefined) {
@@ -78,7 +78,7 @@ export class Field {
     }
 
     return mapFromOneOrMany(value, value =>
-      this.scalar.createValue(value, parent, {fieldName: this.name, isDeserializing})
+      this.scalar.createValue(value, {registry, fieldName: this.name, isDeserializing})
     );
   }
 
@@ -113,62 +113,12 @@ class Scalar {
     this.validators = validators;
   }
 
-  createValue(value, parent, {fieldName, isDeserializing}) {
-    value = normalizeValue(value, {fieldName});
-
-    if (value === undefined) {
-      return undefined;
-    }
-
-    if (typeof value === 'object' && value._type !== undefined) {
-      const builtInType = builtInTypes[value._type];
-      if (builtInType) {
-        value = value._value;
-        if (builtInType.deserialize) {
-          value = builtInType.deserialize(value);
-        }
-      }
-    }
-
-    const builtInType = builtInTypes[this.type];
-    if (builtInType) {
-      if (!builtInType.checkType(value)) {
-        throw new Error(
-          `Type mismatch (field: '${fieldName}', expected: '${
-            this.type
-          }', provided: '${typeof value}')`
-        );
-      }
-      return value;
-    }
-
-    const Model = parent.constructor._getModel(this.type);
-    return new Model(value, {isDeserializing});
+  createValue(value, {registry, fieldName, isDeserializing}) {
+    return createValue(value, {expectedType: this.type, registry, fieldName, isDeserializing});
   }
 
   serializeValue(value, {filter, _level}) {
-    if (value === undefined) {
-      return {_type: 'undefined'};
-    }
-
-    const builtInType = builtInTypes[this.type];
-    if (builtInType) {
-      if (builtInType.serialize) {
-        value = {_type: this.type, _value: builtInType.serialize(value)};
-      }
-      return value;
-    }
-
-    if (value.isOfType && value.isOfType('Model')) {
-      return value.serialize({filter, _level: _level + 1});
-    }
-
-    if (value.toJSON) {
-      return value.toJSON();
-    }
-
-    const name = value.constructor?.getName ? value.constructor.getName() : value.constructor?.name;
-    throw new Error(`Couldn't find a serializer (model: '${name}')`);
+    return serializeValue(value, {filter, _level});
   }
 
   validateValue(value) {
@@ -185,50 +135,4 @@ class Scalar {
     }
     return runValidators(value, this.validators);
   }
-}
-
-const builtInTypes = {
-  boolean: {
-    checkType(value) {
-      return typeof value === 'boolean';
-    }
-  },
-  number: {
-    checkType(value) {
-      return typeof value === 'number';
-    }
-  },
-  string: {
-    checkType(value) {
-      return typeof value === 'string';
-    }
-  },
-  object: {
-    checkType(value) {
-      return isPlainObject(value);
-    }
-  },
-  Date: {
-    checkType(value) {
-      return value instanceof Date;
-    },
-    serialize(value) {
-      return value.toISOString();
-    },
-    deserialize(value) {
-      return new Date(value);
-    }
-  }
-};
-
-function normalizeValue(value, {fieldName}) {
-  if (value === null) {
-    throw new Error(`The 'null' value is not allowed (field: '${fieldName}')`);
-  }
-
-  if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
-    return undefined;
-  }
-
-  return value;
 }

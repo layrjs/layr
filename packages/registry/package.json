@@ -1,6 +1,6 @@
 {
   "name": "@storable/registry",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A registry to bring together models, stores, or whatever you want",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -11,6 +11,10 @@
   "main": "dist/node/cjs",
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "@deepr/runtime": "^0.2.0"
+  },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
     "properties": [

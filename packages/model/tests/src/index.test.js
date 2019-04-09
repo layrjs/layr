@@ -37,15 +37,17 @@ describe('@storable/model', () => {
       @field('boolean') isRestricted = false;
     }
 
-    let movie = new Movie();
+    const registry = new Registry({Movie});
+
+    let movie = new registry.Movie();
     expect(movie.title).toBeUndefined();
     expect(movie.isRestricted).toBe(false);
 
-    movie = new Movie({title: 'Inception', isRestricted: true});
+    movie = new registry.Movie({title: 'Inception', isRestricted: true});
     expect(movie.title).toBe('Inception');
     expect(movie.isRestricted).toBe(true);
 
-    movie = Movie.deserialize({title: 'Inception'});
+    movie = registry.Movie.deserialize({title: 'Inception'});
     expect(movie.title).toBe('Inception');
     expect(movie.isRestricted).toBeUndefined(); // Default values are not set on deserialization
   });
@@ -207,10 +209,12 @@ describe('@storable/model', () => {
       @field('string') title;
     }
 
-    let movie = new Movie({title: 'Inception'});
+    const registry = new Registry({Movie});
+
+    let movie = new registry.Movie({title: 'Inception'});
     expect(movie.isChanged()).toBe(true); // Models created with `new' are considered as changed
 
-    movie = Movie.deserialize({title: 'Inception'});
+    movie = registry.Movie.deserialize({title: 'Inception'});
     expect(movie.isChanged()).toBe(false); // Deserialized models are considered as unchanged
 
     movie.title = 'The Matrix';
@@ -232,16 +236,18 @@ describe('@storable/model', () => {
       @field('string') title;
     }
 
-    let movie = new Movie({title: 'Inception'});
+    const registry = new Registry({Movie});
+
+    let movie = new registry.Movie({title: 'Inception'});
     expect(movie.isNew()).toBe(true);
 
     movie.markAsNotNew();
     expect(movie.isNew()).toBe(false);
 
-    movie = Movie.deserialize({title: 'Inception'});
+    movie = registry.Movie.deserialize({title: 'Inception'});
     expect(movie.isNew()).toBe(false);
 
-    movie = Movie.deserialize({_isNew: true, title: 'Inception'});
+    movie = registry.Movie.deserialize({_isNew: true, title: 'Inception'});
     expect(movie.isNew()).toBe(true);
   });
 

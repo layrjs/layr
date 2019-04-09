@@ -4,10 +4,18 @@ export class Registry {
   constructor(items) {
     this._keys = [];
     this._items = {};
-    this._registerItems(items);
+    this.register(items);
   }
 
-  register(key, value) {
+  register(items) {
+    if (items !== undefined) {
+      for (const [key, value] of Object.entries(items)) {
+        this._register(key, value);
+      }
+    }
+  }
+
+  _register(key, value) {
     if (this._keys.includes(key)) {
       throw new Error(`Key already registered (key: '${key}')`);
     }
@@ -17,20 +25,20 @@ export class Registry {
     }
 
     this._keys.push(key);
-    this._register(key, value);
+    this.__register(key, value);
 
     Object.defineProperty(this, key, {
       get() {
         let value = this._items[key];
         if (!Object.prototype.hasOwnProperty.call(this._items, key)) {
-          value = this._register(key, value);
+          value = this.__register(key, value);
         }
         return value;
       }
     });
   }
 
-  _register(key, value) {
+  __register(key, value) {
     const forkedValue = forkValue(value);
     Object.defineProperty(forkedValue, '$registry', {value: this});
     this._items[key] = forkedValue;
@@ -41,16 +49,8 @@ export class Registry {
     const forkedRegistry = Object.create(this);
     forkedRegistry._keys = [...this._keys];
     forkedRegistry._items = Object.create(this._items);
-    forkedRegistry._registerItems(items);
+    forkedRegistry.register(items);
     return forkedRegistry;
-  }
-
-  _registerItems(items) {
-    if (items !== undefined) {
-      for (const [key, value] of Object.entries(items)) {
-        this.register(key, value);
-      }
-    }
   }
 
   [inspect.custom]() {

@@ -1,11 +1,11 @@
 import {Registry} from '@storable/registry';
 import {MemoryStore} from '@storable/memory-store';
 
-import {Document, Subdocument, Model, field} from '../../..';
+import {LocalDocument, Subdocument, Model, field} from '../../..';
 
-describe('@storable/document', () => {
+describe('Local documents', () => {
   test('CRUD operations', async () => {
-    class Movie extends Document {
+    class Movie extends LocalDocument {
       @field('string') title;
 
       @field('number') year;
@@ -69,7 +69,7 @@ describe('@storable/document', () => {
   });
 
   test('Nesting models', async () => {
-    class Movie extends Document {
+    class Movie extends LocalDocument {
       @field('string') title;
 
       @field('TechnicalSpecs') technicalSpecs;
@@ -99,7 +99,7 @@ describe('@storable/document', () => {
   });
 
   test('Subdocuments', async () => {
-    class Movie extends Document {
+    class Movie extends LocalDocument {
       @field('string') title;
 
       @field('Trailer') trailer;
@@ -179,13 +179,13 @@ describe('@storable/document', () => {
   });
 
   test('Referenced documents', async () => {
-    class Movie extends Document {
+    class Movie extends LocalDocument {
       @field('string') title;
 
       @field('Director') director;
     }
 
-    class Director extends Document {
+    class Director extends LocalDocument {
       @field('string') fullName;
     }
 
@@ -239,13 +239,13 @@ describe('@storable/document', () => {
   });
 
   test('Arrays of referenced document', async () => {
-    class Movie extends Document {
+    class Movie extends LocalDocument {
       @field('string') title;
 
       @field('Actor[]') actors;
     }
 
-    class Actor extends Document {
+    class Actor extends LocalDocument {
       @field('string') fullName;
     }
 
@@ -363,7 +363,7 @@ describe('@storable/document', () => {
         }
       };
 
-    class Movie extends HookMixin(Document) {
+    class Movie extends HookMixin(LocalDocument) {
       @field('string') title;
 
       @field('Trailer') trailer;
@@ -443,7 +443,7 @@ describe('@storable/document', () => {
   });
 
   test('Finding documents', async () => {
-    class Movie extends Document {
+    class Movie extends LocalDocument {
       @field('string') title;
 
       @field('string') genre;

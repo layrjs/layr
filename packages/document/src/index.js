@@ -1,3 +1,5 @@
-export {Model, field} from '@storable/model';
+export * from '@storable/model';
 
-export {Document, Subdocument} from './document';
+export {LocalDocument} from './local-document';
+export {RemoteDocument} from './remote-document';
+export {Subdocument} from './subdocument';

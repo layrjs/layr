@@ -12,21 +12,6 @@ export class Model {
       );
     }
 
-    if (object._type !== undefined) {
-      const {_type: type, ...value} = object;
-      const ObjectModel = this.constructor._getModel(type);
-      object = new ObjectModel(value, {isDeserializing});
-    }
-
-    if (object.isOfType && object.isOfType('Model')) {
-      if (!object.isOfType(this.constructor.getName())) {
-        throw new Error(
-          `Type mismatch (expected: '${this.constructor.getName()}', provided: '${object.constructor.getName()}')`
-        );
-      }
-      return object;
-    }
-
     const isNew = isDeserializing ? object._isNew : true;
 
     this._fieldValues = {};
@@ -53,6 +38,8 @@ export class Model {
       this.markAsNew();
     }
   }
+
+  // === Serialization ===
 
   serialize({filter, _level = 0} = {}) {
     const result = {};
@@ -86,20 +73,7 @@ export class Model {
     return new this(object, {isDeserializing: true});
   }
 
-  clone() {
-    return this.constructor.deserialize(this.serialize());
-  }
-
-  [inspect.custom]() {
-    const object = {};
-    this.constructor.forEachField(field => {
-      const value = this._getFieldValue(field);
-      if (value !== undefined) {
-        object[field.name] = value;
-      }
-    });
-    return object;
-  }
+  // === Core ===
 
   static defineField(name, type, options, descriptor) {
     if (descriptor.initializer) {
@@ -181,7 +155,8 @@ export class Model {
     if (!isDeserializing) {
       this._saveFieldValue(field);
     }
-    value = field.createValue(value, this, {isDeserializing});
+    const registry = this.constructor._getRegistry({throwIfNotFound: false});
+    value = field.createValue(value, {registry, isDeserializing});
     this._fieldValues[field.name] = value;
     return value;
   }
@@ -265,6 +240,15 @@ export class Model {
     this._isNew = false;
   }
 
+  static _getRegistry({throwIfNotFound = true} = {}) {
+    if (!this.$registry && throwIfNotFound) {
+      throw new Error(`Registry not found (model: ${this.getName()})`);
+    }
+    return this.$registry;
+  }
+
+  // === Validation ===
+
   validate() {
     const failedValidators = this.getFailedValidators();
     if (failedValidators) {
@@ -298,8 +282,89 @@ export class Model {
     return result;
   }
 
+  // === Remote invocation ===
+
+  static defineRemoteMethod(name, descriptor) {
+    descriptor.value = async function (...args) {
+      return this.callRemote(name, ...args);
+    };
+    delete descriptor.initializer;
+    delete descriptor.writable;
+  }
+
+  static async callRemote(methodName, ...args) {
+    const remoteRegistry = this._getRemoteRegistry();
+    const {result} = await remoteRegistry.invokeQuery({
+      [`${this.getName()}=>`]: {
+        [`${methodName}=>result`]: {
+          '([])': args
+        }
+      }
+    });
+    return result;
+  }
+
+  async callRemote(methodName, ...args) {
+    const remoteRegistry = this.constructor._getRemoteRegistry();
+    const {result, changes} = await remoteRegistry.invokeQuery({
+      '<=': this,
+      [`${methodName}=>result`]: {
+        '([])': args
+      },
+      '=>changes': true
+    });
+    this.assign(changes);
+    return result;
+  }
+
   static getName() {
     return this.name;
+  }
+
+  // === Utilities ===
+
+  clone() {
+    return this.constructor.deserialize(this.serialize());
+  }
+
+  assign(object) {
+    if (object === undefined) {
+      // NOOP
+    } else if (object.isOfType && object.isOfType('Model')) {
+      this._assignOther(object);
+    } else {
+      this._assignObject(object);
+    }
+  }
+
+  _assignObject(object) {
+    for (const [name, value] of Object.entries(object)) {
+      const field = this.constructor.getField(name);
+      if (field) {
+        this._setFieldValue(field, value);
+      }
+    }
+  }
+
+  _assignOther(other) {
+    this.constructor.forEachField(field => {
+      const otherField = other.constructor.getField(field.name);
+      if (otherField && other._fieldHasBeenSet(otherField)) {
+        const value = other._getFieldValue(otherField);
+        this._setFieldValue(field, value);
+      }
+    });
+  }
+
+  [inspect.custom]() {
+    const object = {};
+    this.constructor.forEachField(field => {
+      const value = this._getFieldValue(field);
+      if (value !== undefined) {
+        object[field.name] = value;
+      }
+    });
+    return object;
   }
 
   isOfType(name) {
@@ -317,25 +382,29 @@ export class Model {
     return false;
   }
 
-  static _getModel(name) {
+  static _getRemoteRegistry() {
     const registry = this._getRegistry();
-    const Model = registry[name];
-    if (Model === undefined) {
-      throw new Error(`Model not found (name: '${name}')`);
+    if (!registry.remoteRegistry) {
+      throw new Error(`Remote registry not found (model: ${this.name})`);
     }
-    return Model;
-  }
-
-  static _getRegistry() {
-    if (!this.$registry) {
-      throw new Error(`Registry not found (model: ${this.getName()})`);
-    }
-    return this.$registry;
+    return registry.remoteRegistry;
   }
 }
+
+// === Decorators ===
 
 export function field(type, options) {
   return function (target, name, descriptor) {
     target.constructor.defineField(name, type, options, descriptor);
+  };
+}
+
+export function remoteMethod() {
+  return function (target, name, descriptor) {
+    if (!(typeof target === 'function')) {
+      // The target is the prototype
+      target = target.constructor;
+    }
+    target.defineRemoteMethod(name, descriptor);
   };
 }

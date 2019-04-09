@@ -1,7 +1,7 @@
 import {Registry} from '../../..';
 
-describe('@storable/registry', () => {
-  test('Simple registry', () => {
+describe('Local registry', () => {
+  test('Basic use', () => {
     class Item {}
     class Movie extends Item {}
 
@@ -18,11 +18,11 @@ describe('@storable/registry', () => {
     expect(movie instanceof registry.Item).toBe(true);
     expect(movie.constructor.$registry).toBe(registry);
 
-    registry.register('user', {id: 'abc123'});
+    registry.register({user: {id: 'abc123'}});
     expect(registry.user.id).toEqual('abc123');
 
     expect(() => {
-      registry.register('user', {id: 'xyz123'}); // Cannot register an item with a key that has already been registered
+      registry.register({user: {id: 'xyz123'}}); // Cannot register an item with a key that has already been registered
     }).toThrow();
 
     expect(() => {
@@ -33,11 +33,11 @@ describe('@storable/registry', () => {
     expect(anotherRegistry.Movie.$registry).toBe(anotherRegistry);
 
     expect(() => {
-      anotherRegistry.register('user', registry.user); // Cannot register an already registered item
+      anotherRegistry.register({user: registry.user}); // Cannot register an already registered item
     }).toThrow();
   });
 
-  test('Forked repository', () => {
+  test('Forking', () => {
     const store = {};
     class Item {}
     class Movie extends Item {}
