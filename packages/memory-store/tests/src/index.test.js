@@ -8,7 +8,7 @@ describe('@storable/memory-store', () => {
     expect(() => {
       store.set({_type: 'Movie', _id: 'abc123', title: 'The Matrix'});
     }).toThrow(); // The document doesn't exist yet so 'isNew' is required
-    store.set({_isNew: true, _type: 'Movie', _id: 'abc123', title: 'Inception', genre: 'action'});
+    store.set({_new: true, _type: 'Movie', _id: 'abc123', title: 'Inception', genre: 'action'});
 
     // Read
     let movie = store.get({_type: 'Movie', _id: 'abc123'});
@@ -28,7 +28,7 @@ describe('@storable/memory-store', () => {
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'The Matrix'});
     expect(Object.keys(movie).includes('genre')).toBe(false); // 'genre' has been deleted
     expect(() => {
-      store.set({_isNew: true, _type: 'Movie', _id: 'abc123', title: 'Inception'});
+      store.set({_new: true, _type: 'Movie', _id: 'abc123', title: 'Inception'});
     }).toThrow(); // The document already exists so 'isNew' should be not be passed
 
     // Delete
@@ -44,12 +44,12 @@ describe('@storable/memory-store', () => {
     const store = new MemoryStore();
 
     store.set({
-      _isNew: true,
+      _new: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
       technicalSpecs: {
-        _isNew: true,
+        _new: true,
         _type: 'TechnicalSpecs',
         _id: 'xyz789',
         runtime: 120,
@@ -95,13 +95,13 @@ describe('@storable/memory-store', () => {
 
     // Let's set a movie and a director
     store.set({
-      _isNew: true,
+      _new: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
       director: {_type: 'Director', _id: 'xyz123', _ref: true}
     });
-    store.set({_isNew: true, _type: 'Director', _id: 'xyz123', fullName: 'Christopher Nolan'});
+    store.set({_new: true, _type: 'Director', _id: 'xyz123', fullName: 'Christopher Nolan'});
 
     // The director can be fetched from 'Director'
     let director = store.get({_type: 'Director', _id: 'xyz123'});
@@ -153,7 +153,7 @@ describe('@storable/memory-store', () => {
 
     // Let's set a movie and some actors
     store.set({
-      _isNew: true,
+      _new: true,
       _type: 'Movie',
       _id: 'abc123',
       title: 'Inception',
@@ -163,8 +163,8 @@ describe('@storable/memory-store', () => {
         {_type: 'Actor', _id: 'xyz456', _ref: true}
       ]
     });
-    store.set({_isNew: true, _type: 'Actor', _id: 'xyz123', fullName: 'Leonardo DiCaprio'});
-    store.set({_isNew: true, _type: 'Actor', _id: 'xyz456', fullName: 'Joseph Gordon-Levitt'});
+    store.set({_new: true, _type: 'Actor', _id: 'xyz123', fullName: 'Leonardo DiCaprio'});
+    store.set({_new: true, _type: 'Actor', _id: 'xyz456', fullName: 'Joseph Gordon-Levitt'});
 
     // The actors can be fetched directly
     let actor = store.get({_type: 'Actor', _id: 'xyz123'});
@@ -215,8 +215,8 @@ describe('@storable/memory-store', () => {
 
     // Create
     store.set([
-      {_isNew: true, _type: 'Movie', _id: 'abc123', title: 'Inception'},
-      {_isNew: true, _type: 'Movie', _id: 'abc456', title: 'The Matrix'}
+      {_new: true, _type: 'Movie', _id: 'abc123', title: 'Inception'},
+      {_new: true, _type: 'Movie', _id: 'abc456', title: 'The Matrix'}
     ]);
 
     // Read
@@ -251,7 +251,7 @@ describe('@storable/memory-store', () => {
 
     store.set([
       {
-        _isNew: true,
+        _new: true,
         _type: 'Movie',
         _id: 'movie1',
         title: 'Inception',
@@ -259,7 +259,7 @@ describe('@storable/memory-store', () => {
         country: 'USA'
       },
       {
-        _isNew: true,
+        _new: true,
         _type: 'Movie',
         _id: 'movie2',
         title: 'Forrest Gump',
@@ -267,7 +267,7 @@ describe('@storable/memory-store', () => {
         country: 'USA'
       },
       {
-        _isNew: true,
+        _new: true,
         _type: 'Movie',
         _id: 'movie3',
         title: 'Léon',

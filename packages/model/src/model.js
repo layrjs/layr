@@ -12,7 +12,7 @@ export class Model {
       );
     }
 
-    const isNew = isDeserializing ? object._isNew : true;
+    const isNew = isDeserializing ? object._new : true;
 
     this._fieldValues = {};
     this._savedFieldValues = {};
@@ -45,7 +45,7 @@ export class Model {
     const result = {};
 
     if (this.isNew()) {
-      result._isNew = true;
+      result._new = true;
     }
 
     result._type = this.constructor.getName();
@@ -229,15 +229,15 @@ export class Model {
   }
 
   isNew() {
-    return this._isNew === true;
+    return this._new === true;
   }
 
   markAsNew() {
-    this._isNew = true;
+    this._new = true;
   }
 
   markAsNotNew() {
-    this._isNew = false;
+    this._new = false;
   }
 
   static _getRegistry({throwIfNotFound = true} = {}) {

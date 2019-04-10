@@ -89,7 +89,7 @@ export class MemoryStore {
   }
 
   set(document) {
-    return callWithOneOrMany(document, ({_isNew, _type, _id, _ref, ...fields}) => {
+    return callWithOneOrMany(document, ({_new, _type, _id, _ref, ...fields}) => {
       validateType(_type);
       validateId(_id);
 
@@ -107,12 +107,12 @@ export class MemoryStore {
 
       let document = collection[_id];
       if (document === undefined) {
-        if (!_isNew) {
+        if (!_new) {
           throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
         }
         document = {};
         collection[_id] = document;
-      } else if (_isNew) {
+      } else if (_new) {
         throw new Error(`Document already exists (collection: '${_type}', id: '${_id}')`);
       }
 
@@ -142,10 +142,10 @@ export class MemoryStore {
         }
 
         // The value is a submodel or subdocument
-        const {_isNew, _type, _id, ...fields} = value;
+        const {_new, _type, _id, ...fields} = value;
         validateType(_type);
         const submodel = {};
-        if (!_isNew) {
+        if (!_new) {
           // TODO: We shouldn't read the existing submodel
           const previousSubmodel = getFromOneOrMany(document[name], index);
           Object.assign(submodel, previousSubmodel);
@@ -262,8 +262,8 @@ function isPrimitive(value, {fieldName, rootType, rootId}) {
 
   if (value._type === undefined) {
     // The value is a plain object
-    const {_isNew, _id, _ref} = value;
-    if (_isNew !== undefined || _id !== undefined || _ref !== undefined) {
+    const {_new, _id, _ref} = value;
+    if (_new !== undefined || _id !== undefined || _ref !== undefined) {
       throw new Error(
         `A plain object value cannot include a reserved attribute (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
       );
@@ -280,13 +280,13 @@ function isReference(value, {fieldName, rootType, rootId}) {
     return false;
   }
 
-  const {_isNew, _type, _id, _ref} = value;
+  const {_new, _type, _id, _ref} = value;
   if (_ref === true) {
     validateType(_type);
     validateId(_id);
-    if (_isNew !== undefined) {
+    if (_new !== undefined) {
       throw new Error(
-        `A reference cannot include the '_isNew' attribute (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
+        `A reference cannot include the '_new' attribute (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
       );
     }
     return true;
