@@ -3,6 +3,10 @@ import {callWithOneOrMany, callWithOneOrManyAsync} from '@storable/util';
 import {Document} from './document';
 
 export class RemoteDocument extends Document {
+  _serializeReference() {
+    return {...super._serializeReference(), _remote: true};
+  }
+
   static async get(id, options) {
     callWithOneOrMany(id, id => {
       this.validateId(id);

@@ -66,10 +66,16 @@ export class MemoryStore {
         }
 
         if (isReference(value, {fieldName: name, rootType, rootId})) {
-          const {_type, _id} = value;
-          // Let's fetch the referenced document
-          const document = this.get({_type, _id}, {return: returnFields});
-          return {_type, _id, _ref: true, ...document};
+          const {_type, _id, _ref, _remote} = value;
+          let result = {_type, _id, _ref};
+          if (_remote) {
+            result._remote = true;
+          } else {
+            // Let's fetch the referenced document
+            const document = this.get({_type, _id}, {return: returnFields});
+            result = {...result, ...document};
+          }
+          return result;
         }
 
         // The value is a submodel or a subdocument
@@ -137,8 +143,12 @@ export class MemoryStore {
         }
 
         if (isReference(value, {fieldName: name, rootType, rootId})) {
-          const {_type, _id, _ref} = value;
-          return {_type, _id, _ref};
+          const {_type, _id, _ref, _remote} = value;
+          const reference = {_type, _id, _ref};
+          if (_remote) {
+            reference._remote = true;
+          }
+          return reference;
         }
 
         // The value is a submodel or subdocument

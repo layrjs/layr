@@ -3,7 +3,7 @@ import {BaseDocument} from './base-document';
 export class Document extends BaseDocument {
   serialize({_isDeep, _isFinal, ...otherOptions} = {}) {
     if (_isDeep && _isFinal) {
-      // It is a referenced document
+      // We are about to store a referenced document in the database
       return this._serializeReference();
     }
     return super.serialize({_isDeep, _isFinal, ...otherOptions});
