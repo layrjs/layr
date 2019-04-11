@@ -1,12 +1,12 @@
 import {BaseDocument} from './base-document';
 
 export class Document extends BaseDocument {
-  serialize({_isDeep, ...otherOptions} = {}) {
-    if (_isDeep) {
+  serialize({_isDeep, _isFinal, ...otherOptions} = {}) {
+    if (_isDeep && _isFinal) {
       // It is a referenced document
       return this._serializeReference();
     }
-    return super.serialize({_isDeep, ...otherOptions});
+    return super.serialize({_isDeep, _isFinal, ...otherOptions});
   }
 
   static _serializeType() {

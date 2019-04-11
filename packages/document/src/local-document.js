@@ -48,7 +48,7 @@ export class LocalDocument extends Document {
     //     return model.fieldIsChanged(field);
     //   }
     // });
-    const serializedDocument = this.serialize();
+    const serializedDocument = this.serialize({_isFinal: true});
     await store.set(serializedDocument);
     this.commit();
 
