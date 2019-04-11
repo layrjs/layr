@@ -41,7 +41,7 @@ export class Model {
 
   // === Serialization ===
 
-  serialize({filter, _level = 0} = {}) {
+  serialize({filter, ...otherOptions} = {}) {
     const result = {};
 
     if (this.isNew()) {
@@ -58,7 +58,7 @@ export class Model {
         return;
       }
       let value = this._getFieldValue(field);
-      value = field.serializeValue(value, {filter, _level});
+      value = field.serializeValue(value, {filter, ...otherOptions, _isDeep: true});
       result[field.serializedName] = value;
     });
 

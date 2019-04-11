@@ -109,20 +109,23 @@ describe('Remote documents', () => {
   });
 
   test('Finding documents', async () => {
-    await new registry.Movie({
-      id: 'movie1',
+    await registry.Movie.deserialize({
+      _new: true,
+      _id: 'movie1',
       title: 'Inception',
       genre: 'action',
       country: 'USA'
     }).save();
-    await new registry.Movie({
-      id: 'movie2',
+    await registry.Movie.deserialize({
+      _new: true,
+      _id: 'movie2',
       title: 'Forrest Gump',
       genre: 'drama',
       country: 'USA'
     }).save();
-    await new registry.Movie({
-      id: 'movie3',
+    await registry.Movie.deserialize({
+      _new: true,
+      _id: 'movie3',
       title: 'Léon',
       genre: 'action',
       country: 'France'

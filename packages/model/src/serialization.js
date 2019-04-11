@@ -1,8 +1,8 @@
 import isPlainObject from 'lodash/isPlainObject';
 import omit from 'lodash/omit';
 
-export function serialize(value, {filter} = {}) {
-  let result = serializeValue(value, {filter});
+export function serialize(value, options) {
+  let result = serializeValue(value, options);
   if (result !== value) {
     // serializeValue() did the job
     return result;
@@ -15,13 +15,13 @@ export function serialize(value, {filter} = {}) {
 
   if (Array.isArray(value)) {
     // The value is an array
-    return value.map(item => serialize(item, {filter}));
+    return value.map(item => serialize(item, options));
   }
 
   // The value is a plain object
   result = {};
   for (const [key, val] of Object.entries(value)) {
-    result[key] = serialize(val, {filter});
+    result[key] = serialize(val, options);
   }
   return result;
 }
@@ -107,7 +107,7 @@ export function createValue(value, {expectedType, registry, fieldName, isDeseria
   return value;
 }
 
-export function serializeValue(value, {filter, _level} = {}) {
+export function serializeValue(value, options) {
   if (value === undefined) {
     return {_type: 'undefined'};
   }
@@ -117,7 +117,7 @@ export function serializeValue(value, {filter, _level} = {}) {
   }
 
   if (value.isOfType && value.isOfType('Model')) {
-    return value.serialize({filter, _level: _level + 1});
+    return value.serialize(options);
   }
 
   return value;

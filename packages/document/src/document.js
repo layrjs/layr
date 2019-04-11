@@ -1,22 +1,12 @@
 import {BaseDocument} from './base-document';
 
 export class Document extends BaseDocument {
-  serialize({filter, _level = 0} = {}) {
-    if (_level > 0) {
+  serialize({_isDeep, ...otherOptions} = {}) {
+    if (_isDeep) {
       // It is a referenced document
       return this._serializeReference();
     }
-    if (filter) {
-      const originalFilter = filter;
-      filter = (model, field) => {
-        if (field.name === 'id') {
-          // The 'id' field cannot be filtered out
-          return true;
-        }
-        return originalFilter(model, field);
-      };
-    }
-    return super.serialize({filter, _level});
+    return super.serialize({_isDeep, ...otherOptions});
   }
 
   static _serializeType() {
@@ -24,7 +14,7 @@ export class Document extends BaseDocument {
   }
 
   _serializeId() {
-    return {_id: this.id};
+    return {_id: this._id};
   }
 
   _serializeTypeAndId() {

@@ -82,8 +82,8 @@ export class Field {
     );
   }
 
-  serializeValue(value, {filter, _level}) {
-    return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, {filter, _level}));
+  serializeValue(value, options) {
+    return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, options));
   }
 
   validateValue(value) {
@@ -117,8 +117,8 @@ class Scalar {
     return createValue(value, {expectedType: this.type, registry, fieldName, isDeserializing});
   }
 
-  serializeValue(value, {filter, _level}) {
-    return serializeValue(value, {filter, _level});
+  serializeValue(value, options) {
+    return serializeValue(value, options);
   }
 
   validateValue(value) {
