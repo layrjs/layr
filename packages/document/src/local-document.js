@@ -15,9 +15,7 @@ export class LocalDocument extends Document {
 
     const store = this._getStore();
     let serializedDocument = mapFromOneOrMany(id, id => ({_type: this.getName(), _id: id}));
-    serializedDocument = await store.get(serializedDocument, {
-      return: returnFields // TODO: Take into account the 'serializedName' field option
-    });
+    serializedDocument = await store.get(serializedDocument, {return: returnFields});
 
     callWithOneOrMany(serializedDocument, (serializedDocument, index) => {
       if (!serializedDocument && throwIfNotFound) {
@@ -76,7 +74,7 @@ export class LocalDocument extends Document {
         sort,
         skip,
         limit,
-        return: returnFields // TODO: Take into account the 'serializedName' field option
+        return: returnFields
       }
     );
 

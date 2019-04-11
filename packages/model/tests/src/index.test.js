@@ -275,8 +275,6 @@ describe('@storable/model', () => {
 
   test('Serialization', () => {
     class Movie extends Model {
-      @field('string', {serializedName: '_id'}) id;
-
       @field('string') title;
 
       @field('Date') releasedOn;
@@ -306,20 +304,10 @@ describe('@storable/model', () => {
     movie = new registry.Movie();
     expect(movie.serialize()).toEqual({_new: true, _type: 'Movie', genres: [], actors: []});
 
-    movie.id = 'abc123';
-    expect(movie.serialize()).toEqual({
-      _new: true,
-      _type: 'Movie',
-      _id: 'abc123',
-      genres: [],
-      actors: []
-    });
-
     movie.title = 'Inception';
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       genres: [],
       actors: []
@@ -329,7 +317,6 @@ describe('@storable/model', () => {
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: [],
@@ -340,7 +327,6 @@ describe('@storable/model', () => {
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
@@ -351,7 +337,6 @@ describe('@storable/model', () => {
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
@@ -363,7 +348,6 @@ describe('@storable/model', () => {
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
@@ -377,7 +361,6 @@ describe('@storable/model', () => {
     expect(
       registry.Movie.deserialize({
         _type: 'Movie',
-        _id: 'abc123',
         title: 'Inception',
         releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
         genres: ['action', 'adventure', 'sci-fi'],
@@ -389,7 +372,6 @@ describe('@storable/model', () => {
       }).serialize()
     ).toEqual({
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
@@ -403,7 +385,6 @@ describe('@storable/model', () => {
     // Serialization filter
 
     movie = registry.Movie.deserialize({
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: new Date(Date.UTC(2010, 6, 16))
     });
@@ -418,23 +399,12 @@ describe('@storable/model', () => {
       title: 'The Matrix'
     });
 
-    expect(
-      movie.serialize({
-        filter: (model, field) => field.name === 'id' || model.fieldIsChanged(field)
-      })
-    ).toEqual({
-      _type: 'Movie',
-      _id: 'abc123',
-      title: 'The Matrix'
-    });
-
     // Serialization of 'undefined'
 
-    movie = new registry.Movie({id: 'abc123', title: 'Inception'});
+    movie = new registry.Movie({title: 'Inception'});
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       genres: [],
       actors: []
@@ -444,7 +414,6 @@ describe('@storable/model', () => {
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'undefined'},
       genres: [],
@@ -454,13 +423,11 @@ describe('@storable/model', () => {
     expect(
       registry.Movie.deserialize({
         _type: 'Movie',
-        _id: 'abc123',
         title: 'Inception',
         releasedOn: {_type: 'undefined'}
       }).serialize()
     ).toEqual({
       _type: 'Movie',
-      _id: 'abc123',
       title: 'Inception',
       releasedOn: {_type: 'undefined'}
     });

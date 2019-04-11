@@ -6,7 +6,7 @@ import {createValue, serializeValue, normalizeValue} from './serialization';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field {
-  constructor(name, type, {default: defaultValue, validators = [], serializedName} = {}) {
+  constructor(name, type, {default: defaultValue, validators = []} = {}) {
     if (typeof name !== 'string' || !name) {
       throw new Error("'name' parameter is missing or invalid");
     }
@@ -22,7 +22,6 @@ export class Field {
     );
 
     this.name = name;
-    this.serializedName = serializedName || name;
     this.type = type;
 
     let scalarType;

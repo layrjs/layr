@@ -18,9 +18,8 @@ export class Model {
     this._savedFieldValues = {};
 
     this.constructor.forEachField(field => {
-      const name = isDeserializing ? field.serializedName : field.name;
-      if (Object.prototype.hasOwnProperty.call(object, name)) {
-        const value = object[name];
+      if (Object.prototype.hasOwnProperty.call(object, field.name)) {
+        const value = object[field.name];
         this._setFieldValue(field, value, {isDeserializing});
         return;
       }
@@ -59,7 +58,7 @@ export class Model {
       }
       let value = this._getFieldValue(field);
       value = field.serializeValue(value, {filter, ...otherOptions, _isDeep: true});
-      result[field.serializedName] = value;
+      result[field.name] = value;
     });
 
     return result;
