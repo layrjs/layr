@@ -66,16 +66,7 @@ export class MemoryStore {
         }
 
         if (isReference(value, {fieldName: name, rootType, rootId})) {
-          const {_type, _id, _ref, _remote} = value;
-          let result = {_type, _id, _ref};
-          if (_remote) {
-            result._remote = true;
-          } else {
-            // Let's fetch the referenced document
-            const document = this.get({_type, _id}, {return: returnFields});
-            result = {...result, ...document};
-          }
-          return result;
+          return value;
         }
 
         // The value is a submodel or a subdocument
@@ -143,12 +134,7 @@ export class MemoryStore {
         }
 
         if (isReference(value, {fieldName: name, rootType, rootId})) {
-          const {_type, _id, _ref, _remote} = value;
-          const reference = {_type, _id, _ref};
-          if (_remote) {
-            reference._remote = true;
-          }
-          return reference;
+          return value;
         }
 
         // The value is a submodel or subdocument
@@ -286,17 +272,14 @@ function isPrimitive(value, {fieldName, rootType, rootId}) {
 }
 
 function isReference(value, {fieldName, rootType, rootId}) {
-  if (isPrimitive(value, {fieldName, rootType, rootId})) {
-    return false;
-  }
-
-  const {_new, _type, _id, _ref} = value;
+  // IMPORTANT: Make sure to call isPrimitive() before isReference()
+  const {_type, _id, _ref, _remote, ...fields} = value;
   if (_ref === true) {
     validateType(_type);
     validateId(_id);
-    if (_new !== undefined) {
+    if (Object.keys(fields).length) {
       throw new Error(
-        `A reference cannot include the '_new' attribute (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
+        `A reference cannot include fields (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
       );
     }
     return true;

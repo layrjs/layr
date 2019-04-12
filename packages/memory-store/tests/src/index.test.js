@@ -107,17 +107,8 @@ describe('@storable/memory-store', () => {
     let director = store.get({_type: 'Director', _id: 'xyz123'});
     expect(director).toEqual({_type: 'Director', _id: 'xyz123', fullName: 'Christopher Nolan'});
 
-    // Will fetch both the movie and its director
-    let movie = store.get({_type: 'Movie', _id: 'abc123'});
-    expect(movie).toEqual({
-      _type: 'Movie',
-      _id: 'abc123',
-      title: 'Inception',
-      director: {_type: 'Director', _id: 'xyz123', _ref: true, fullName: 'Christopher Nolan'}
-    });
-
     // Will fetch the movie only
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
+    let movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
     expect(movie).toEqual({
       _type: 'Movie',
       _id: 'abc123',
@@ -125,7 +116,7 @@ describe('@storable/memory-store', () => {
     });
 
     // Will fetch the movie and the id of its director
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, director: {}}});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, director: true}});
     expect(movie).toEqual({
       _type: 'Movie',
       _id: 'abc123',
@@ -172,25 +163,12 @@ describe('@storable/memory-store', () => {
     actor = store.get({_type: 'Actor', _id: 'xyz456'});
     expect(actor).toEqual({_type: 'Actor', _id: 'xyz456', fullName: 'Joseph Gordon-Levitt'});
 
-    // Will fetch both the movie and its actors
-    let movie = store.get({_type: 'Movie', _id: 'abc123'});
-    expect(movie).toEqual({
-      _type: 'Movie',
-      _id: 'abc123',
-      title: 'Inception',
-      genres: ['action', 'adventure', 'sci-fi'],
-      actors: [
-        {_type: 'Actor', _id: 'xyz123', _ref: true, fullName: 'Leonardo DiCaprio'},
-        {_type: 'Actor', _id: 'xyz456', _ref: true, fullName: 'Joseph Gordon-Levitt'}
-      ]
-    });
-
     // Will fetch the movie only
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
+    let movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
 
     // Will fetch the movie and the id of the actors
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, actors: [{}]}});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, actors: [true]}});
     expect(movie).toEqual({
       _type: 'Movie',
       _id: 'abc123',
