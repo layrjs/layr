@@ -121,12 +121,12 @@ export class Model {
     }
   }
 
-  static canBeSubmodel() {
-    return true;
+  static fieldValueIsSubmodel(value) {
+    return value?.isOfType && !value.isOfType('Entity');
   }
 
-  static fieldValueIsSubmodel(value) {
-    return value?.isOfType && value.isOfType('Model') && value.constructor.canBeSubmodel();
+  static fieldValueIsNestedEntity(value) {
+    return value?.isOfType && value.isOfType('Entity');
   }
 
   forEachSubmodel(func) {
@@ -135,6 +135,47 @@ export class Model {
       return findFromOneOrMany(value, value => {
         if (this.constructor.fieldValueIsSubmodel(value)) {
           return func(value) !== undefined;
+        }
+      });
+    });
+  }
+
+  forEachNestedEntity(func, {fields: rootFields = true} = {}) {
+    return this.constructor.forEachField(field => {
+      let fields = typeof rootFields === 'object' ? rootFields[fields.name] : rootFields;
+
+      if (fields === undefined || fields === false) {
+        return;
+      }
+
+      const value = this._getFieldValue(field);
+
+      if (Array.isArray(value) && !(fields === true || Array.isArray(fields))) {
+        throw new Error(
+          `Type mismatch in forEachNestedEntity() 'fields' option (model: '${this.constructor.getName()}', field: '${
+            field.name
+          }', expected: 'Boolean' or 'Array', provided: '${typeof fields}')`
+        );
+      }
+
+      if (Array.isArray(fields)) {
+        if (!Array.isArray(value)) {
+          throw new Error(
+            `Type mismatch in forEachNestedEntity() 'fields' option (model: '${this.constructor.getName()}', field: '${
+              field.name
+            }', expected: 'Boolean' or 'Object', provided: 'Array')`
+          );
+        }
+        fields = fields[0];
+      }
+
+      return findFromOneOrMany(value, value => {
+        if (this.constructor.fieldValueIsNestedEntity(value)) {
+          return func(value, {fields}) !== undefined;
+        }
+
+        if (value?.isOfType && value.isOfType('Model')) {
+          return value.forEachNestedEntity(func, {fields}) !== undefined;
         }
       });
     });
