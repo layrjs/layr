@@ -51,7 +51,7 @@ export function deserialize(value, {expectedType, registry} = {}) {
   return result;
 }
 
-export function createValue(value, {expectedType, registry, fieldName, isDeserializing} = {}) {
+export function createValue(value, {expectedType, registry, isDeserializing, fieldName} = {}) {
   value = normalizeValue(value, {fieldName});
 
   if (value === undefined) {
@@ -109,7 +109,7 @@ export function createValue(value, {expectedType, registry, fieldName, isDeseria
 
 export function serializeValue(value, options) {
   if (value === undefined) {
-    return {_type: 'undefined'};
+    return undefined;
   }
 
   if (value instanceof Date) {
@@ -126,10 +126,6 @@ export function serializeValue(value, options) {
 export function normalizeValue(value, {fieldName}) {
   if (value === null) {
     throw new Error(`The 'null' value is not allowed (field: '${fieldName}')`);
-  }
-
-  if (value === undefined || (typeof value === 'object' && value._type === 'undefined')) {
-    return undefined;
   }
 
   return value;

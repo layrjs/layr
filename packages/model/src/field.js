@@ -77,12 +77,16 @@ export class Field {
     }
 
     return mapFromOneOrMany(value, value =>
-      this.scalar.createValue(value, {registry, fieldName: this.name, isDeserializing})
+      this.scalar.createValue(value, {registry, isDeserializing, fieldName: this.name})
     );
   }
 
   serializeValue(value, options) {
-    return mapFromOneOrMany(value, value => this.scalar.serializeValue(value, options));
+    const result = mapFromOneOrMany(value, value => this.scalar.serializeValue(value, options));
+    if (this.isArray && !result?.length) {
+      return undefined; // Empty arrays are serialized as 'undefined'
+    }
+    return result;
   }
 
   validateValue(value) {
@@ -112,8 +116,8 @@ class Scalar {
     this.validators = validators;
   }
 
-  createValue(value, {registry, fieldName, isDeserializing}) {
-    return createValue(value, {expectedType: this.type, registry, fieldName, isDeserializing});
+  createValue(value, {registry, isDeserializing, fieldName}) {
+    return createValue(value, {expectedType: this.type, registry, isDeserializing, fieldName});
   }
 
   serializeValue(value, options) {

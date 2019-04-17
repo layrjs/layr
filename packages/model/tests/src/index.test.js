@@ -298,19 +298,17 @@ describe('@storable/model', () => {
 
     // Simple serialization
 
-    let movie = registry.Movie.deserialize();
-    expect(movie.serialize()).toEqual({_type: 'Movie'});
-
-    movie = new registry.Movie();
-    expect(movie.serialize()).toEqual({_new: true, _type: 'Movie', genres: [], actors: []});
+    let movie = new registry.Movie();
+    expect(movie.serialize()).toEqual({
+      _new: true,
+      _type: 'Movie'
+    });
 
     movie.title = 'Inception';
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      title: 'Inception',
-      genres: [],
-      actors: []
+      title: 'Inception'
     });
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
@@ -318,9 +316,7 @@ describe('@storable/model', () => {
       _new: true,
       _type: 'Movie',
       title: 'Inception',
-      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-      genres: [],
-      actors: []
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
     });
 
     movie.genres = ['action', 'adventure', 'sci-fi'];
@@ -329,8 +325,7 @@ describe('@storable/model', () => {
       _type: 'Movie',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-      genres: ['action', 'adventure', 'sci-fi'],
-      actors: []
+      genres: ['action', 'adventure', 'sci-fi']
     });
 
     movie.technicalSpecs = {aspectRatio: '2.39:1'};
@@ -340,8 +335,11 @@ describe('@storable/model', () => {
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
-      technicalSpecs: {_new: true, _type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
-      actors: []
+      technicalSpecs: {
+        _new: true,
+        _type: 'TechnicalSpecs',
+        aspectRatio: '2.39:1'
+      }
     });
 
     movie.actors = [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}];
@@ -351,26 +349,42 @@ describe('@storable/model', () => {
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
-      technicalSpecs: {_new: true, _type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+      technicalSpecs: {
+        _new: true,
+        _type: 'TechnicalSpecs',
+        aspectRatio: '2.39:1'
+      },
       actors: [
         {_new: true, _type: 'Actor', fullName: 'Leonardo DiCaprio'},
         {_new: true, _type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
       ]
     });
 
-    expect(
-      registry.Movie.deserialize({
-        _type: 'Movie',
-        title: 'Inception',
-        releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-        genres: ['action', 'adventure', 'sci-fi'],
-        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
-        actors: [
-          {_type: 'Actor', fullName: 'Leonardo DiCaprio'},
-          {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
-        ]
-      }).serialize()
-    ).toEqual({
+    // Deserialization
+
+    movie = registry.Movie.deserialize();
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie'
+    });
+
+    movie = registry.Movie.deserialize({title: 'Inception'});
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception'
+    });
+
+    movie = registry.Movie.deserialize({
+      _type: 'Movie',
+      title: 'Inception',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      genres: ['action', 'adventure', 'sci-fi'],
+      technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+      actors: [
+        {_type: 'Actor', fullName: 'Leonardo DiCaprio'},
+        {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
+      ]
+    });
+    expect(movie.serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
@@ -401,35 +415,29 @@ describe('@storable/model', () => {
 
     // Serialization of 'undefined'
 
-    movie = new registry.Movie({title: 'Inception'});
+    movie = registry.Movie.deserialize({title: 'Inception'});
     expect(movie.serialize()).toEqual({
-      _new: true,
       _type: 'Movie',
-      title: 'Inception',
-      genres: [],
-      actors: []
+      title: 'Inception'
     });
 
     movie.releasedOn = undefined;
     expect(movie.serialize()).toEqual({
-      _new: true,
       _type: 'Movie',
       title: 'Inception',
-      releasedOn: {_type: 'undefined'},
-      genres: [],
-      actors: []
+      _undefined: ['releasedOn']
     });
 
     expect(
       registry.Movie.deserialize({
         _type: 'Movie',
         title: 'Inception',
-        releasedOn: {_type: 'undefined'}
+        _undefined: ['releasedOn']
       }).serialize()
     ).toEqual({
       _type: 'Movie',
       title: 'Inception',
-      releasedOn: {_type: 'undefined'}
+      _undefined: ['releasedOn']
     });
   });
 

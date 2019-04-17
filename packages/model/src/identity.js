@@ -15,8 +15,8 @@ export class Identity extends Model {
   }
 
   serialize(options) {
-    const {_type, ...fields} = super.serialize(options);
-    return {_type, _id: this._id, ...fields};
+    const {_new, _type, ...fields} = super.serialize(options);
+    return {_new, _type, _id: this._id, ...fields};
   }
 
   [inspect.custom]() {
