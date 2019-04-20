@@ -1,6 +1,6 @@
 import {callWithOneOrMany, mapFromOneOrMany, findFromOneOrMany} from '../../..';
 
-describe('@storable/util', () => {
+describe('Utilities', () => {
   test('callWithOneOrMany()', () => {
     let results = [];
     callWithOneOrMany('aaa', value => {

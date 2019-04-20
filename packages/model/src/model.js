@@ -1,41 +1,53 @@
 import {inspect} from 'util';
-import {findFromOneOrMany} from '@storable/util';
+import {FieldMask, findFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';
 
 export class Model {
-  constructor(object = {}, {isDeserializing} = {}) {
+  static create(object, options) {
+    return new this(object, options);
+  }
+
+  constructor(object, options) {
+    this._activeFields = new Set();
+    this._fieldValues = {};
+    this._savedFieldValues = {};
+
+    this.initialize(object, options);
+  }
+
+  initialize(object = {}, {fields, isDeserializing} = {}) {
     if (typeof object !== 'object') {
       throw new Error(
         `Type mismatch (model: '${this.constructor.getName()}', expected: 'object', provided: '${typeof object}')`
       );
     }
 
-    const isNew = isDeserializing ? object._new : true;
+    const rootFields = fields !== undefined ? new FieldMask(fields) : undefined;
 
-    this._activeFields = new Set();
-    this._fieldValues = {};
-    this._savedFieldValues = {};
+    const isNew = isDeserializing ? Boolean(object._new) : true;
 
     this.constructor.forEachField(field => {
-      if (!isNew) {
-        if (
-          !(
-            Object.prototype.hasOwnProperty.call(object, field.name) ||
-            object._undefined?.includes(field.name)
-          )
-        ) {
+      let fields;
+      if (rootFields) {
+        fields = rootFields.get(field.name);
+        if (!fields) {
           return;
         }
+      } else if (
+        !(
+          isNew ||
+          Object.prototype.hasOwnProperty.call(object, field.name) ||
+          object._undefined?.includes(field.name)
+        )
+      ) {
+        return;
       }
 
-      this.activateField(field);
-
       const value = object[field.name];
-      if (value !== undefined) {
-        this._setFieldValue(field, value, {isDeserializing});
-      } else if (isNew) {
+      this._setFieldValue(field, value, {fields, isDeserializing});
+      if (value === undefined && isNew) {
         this._applyFieldDefault(field);
       }
     });
@@ -81,7 +93,7 @@ export class Model {
   // === Serialization ===
 
   serialize({filter, ...otherOptions} = {}) {
-    const fields = {};
+    const definedFields = {};
 
     const isNew = this.isNew();
 
@@ -97,7 +109,7 @@ export class Model {
       let value = this._getFieldValue(field);
       value = field.serializeValue(value, {filter, ...otherOptions, _isDeep: true});
       if (value !== undefined) {
-        fields[field.name] = value;
+        definedFields[field.name] = value;
       } else if (!isNew) {
         undefinedFields.push(field.name);
       }
@@ -106,7 +118,7 @@ export class Model {
     return {
       ...(isNew && {_new: true}),
       _type: this.constructor.getName(),
-      ...fields,
+      ...definedFields,
       ...(undefinedFields?.length && {_undefined: undefinedFields})
     };
   }
@@ -115,8 +127,8 @@ export class Model {
     return this.serialize();
   }
 
-  static deserialize(object) {
-    return new this(object, {isDeserializing: true});
+  static deserialize(object, {fields} = {}) {
+    return this.create(object, {fields, isDeserializing: true});
   }
 
   // === Core ===
@@ -169,6 +181,21 @@ export class Model {
 
   fieldIsActive(field) {
     return this._activeFields.has(field.name);
+  }
+
+  fieldsAreActive(fields) {
+    const rootFields = new FieldMask(fields);
+    const result = this.constructor.forEachField(field => {
+      const fields = rootFields.get(field.name);
+      if (!fields) {
+        return;
+      }
+      if (!this.fieldIsActive(field)) {
+        return false;
+      }
+      // TODO: Check submodels
+    });
+    return result !== false;
   }
 
   static forEachField(func) {
@@ -261,12 +288,12 @@ export class Model {
     return value;
   }
 
-  _setFieldValue(field, value, {isDeserializing} = {}) {
+  _setFieldValue(field, value, {fields, isDeserializing} = {}) {
     if (!isDeserializing) {
       this._saveFieldValue(field);
     }
     const registry = this.constructor._getRegistry({throwIfNotFound: false});
-    value = field.createValue(value, {registry, isDeserializing});
+    value = field.createValue(value, {registry, fields, isDeserializing});
     this._fieldValues[field.name] = value;
     this.activateField(field);
     return value;
@@ -484,39 +511,3 @@ export function remoteMethod() {
     target.defineRemoteMethod(name, descriptor);
   };
 }
-
-// function normalizeFieldsOption(fields, {isDeep} = {}) {
-//   if (fields === undefined) {
-//     return !isDeep;
-//   }
-
-//   if (typeof fields === 'boolean') {
-//     return fields;
-//   }
-
-//   if (Array.isArray(fields)) {
-//     if (!isDeep) {
-//       throw new Error(`An array cannot be the root of a 'fields' option`);
-//     }
-//     if (fields.length !== 1) {
-//       throw new Error(`An array in a 'fields' option must contain exactly one item`);
-//     }
-//     const result = normalizeFieldsOption(fields[0]);
-//     return result !== false ? [result] : false;
-//   }
-
-//   if (typeof fields === 'object') {
-//     const result = {};
-//     for (const [name, value] of Object.entries(fields)) {
-//       const result = normalizeFieldsOption(value, {isDeep: true});
-//       if (result !== false) {
-//         result[name] = result;
-//       }
-//     }
-//     return result;
-//   }
-
-//   throw new Error(
-//     `Type mismatch found in a 'fields' option. Expected: 'true', array or object, but received '${typeof fields}'`
-//   );
-// }

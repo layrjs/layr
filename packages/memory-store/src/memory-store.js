@@ -1,53 +1,43 @@
-import {getFromOneOrMany, callWithOneOrMany, mapFromOneOrMany} from '@storable/util';
+import {FieldMask, getFromOneOrMany, mapFromOneOrMany} from '@storable/util';
 import assert from 'assert';
 
 export class MemoryStore {
   _collections = {};
 
-  get(document, {return: returnFields = true} = {}) {
-    return mapFromOneOrMany(document, ({_type, _id}) => {
+  get(documents, {fields, throwIfNotFound = true} = {}) {
+    if (!Array.isArray(documents)) {
+      return this.get([documents], {fields, throwIfNotFound})[0];
+    }
+
+    fields = new FieldMask(fields);
+
+    return documents.map(({_type, _id}) => {
       validateType(_type);
       validateId(_id);
 
       let document = this._collections[_type]?.[_id];
 
       if (document === undefined) {
-        // Document not found
+        if (throwIfNotFound) {
+          throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
+        }
         return undefined;
       }
 
-      document = this._getFields(document, returnFields, {rootType: _type, rootId: _id});
+      document = this._getFields(document, fields, {rootType: _type, rootId: _id});
 
       return {_type, _id, ...document};
     });
   }
 
-  _getFields(document, documentReturnFields, {rootType, rootId}) {
+  _getFields(document, rootFields, {rootType, rootId}) {
     const result = {};
 
     for (const [name, value] of Object.entries(document)) {
-      let returnFields =
-        typeof documentReturnFields === 'object' ?
-          documentReturnFields[name] :
-          documentReturnFields;
+      const fields = rootFields.get(name);
 
-      if (returnFields === undefined || returnFields === false) {
+      if (!fields) {
         continue;
-      }
-
-      if (Array.isArray(value) && !(returnFields === true || Array.isArray(returnFields))) {
-        throw new Error(
-          `Type mismatch (collection: '${rootType}', id: '${rootId}', field: '${name}', expected: 'Boolean' or 'Array', provided: '${typeof returnFields}')`
-        );
-      }
-
-      if (Array.isArray(returnFields)) {
-        if (!Array.isArray(value)) {
-          throw new Error(
-            `Type mismatch (collection: '${rootType}', id: '${rootId}', field: '${name}', expected: 'Boolean' or 'Object', provided: 'Array')`
-          );
-        }
-        returnFields = returnFields[0];
       }
 
       result[name] = mapFromOneOrMany(value, value => {
@@ -57,11 +47,6 @@ export class MemoryStore {
         );
 
         if (isPrimitive(value, {fieldName: name, rootType, rootId})) {
-          if (returnFields !== true) {
-            throw new Error(
-              `Type mismatch (collection: '${rootType}', id: '${rootId}', field: '${name})', expected: 'Boolean', provided: '${typeof returnFields}'`
-            );
-          }
           return serializeValue(value);
         }
 
@@ -76,7 +61,7 @@ export class MemoryStore {
           // The value is a subdocument
           result._id = _id;
         }
-        document = this._getFields(document, returnFields, {rootType, rootId});
+        document = this._getFields(document, fields, {rootType, rootId});
         result = {...result, ...document};
         return result;
       });
@@ -85,14 +70,23 @@ export class MemoryStore {
     return result;
   }
 
-  set(document) {
-    return callWithOneOrMany(document, ({_new, _type, _id, _ref, ...fields}) => {
+  set(documents) {
+    if (!Array.isArray(documents)) {
+      this.set([documents]);
+      return;
+    }
+
+    documents.forEach(({_new, _type, _id, _ref, _remote, ...fields}) => {
       validateType(_type);
       validateId(_id);
-
       if (_ref !== undefined) {
         throw new Error(
           `The '_ref' attribute cannot be specified at the root of a document (collection: '${_type}', id: '${_id}')`
+        );
+      }
+      if (_remote !== undefined) {
+        throw new Error(
+          `The '_remote' attribute cannot be specified at the root of a document (collection: '${_type}', id: '${_id}')`
         );
       }
 
@@ -117,14 +111,9 @@ export class MemoryStore {
     });
   }
 
-  _setFields(document, fields, {rootType, rootId}) {
-    for (let [name, value] of Object.entries(fields)) {
+  _setFields(document, {_undefined: undefinedFields, ...definedFields}, {rootType, rootId}) {
+    for (let [name, value] of Object.entries(definedFields)) {
       value = deserializeValue(value, {fieldName: name});
-
-      if (value === undefined) {
-        delete document[name];
-        continue;
-      }
 
       document[name] = mapFromOneOrMany(value, (value, index) => {
         value = deserializeValue(value, {fieldName: name});
@@ -140,12 +129,7 @@ export class MemoryStore {
         // The value is a submodel or subdocument
         const {_new, _type, _id, ...fields} = value;
         validateType(_type);
-        const submodel = {};
-        if (!_new) {
-          // TODO: We shouldn't read the existing submodel
-          const previousSubmodel = getFromOneOrMany(document[name], index);
-          Object.assign(submodel, previousSubmodel);
-        }
+        const submodel = _new ? {} : getFromOneOrMany(document[name], index);
         submodel._type = _type;
         if (_id !== undefined) {
           // The value is a subdocument
@@ -156,14 +140,27 @@ export class MemoryStore {
         return submodel;
       });
     }
+
+    if (undefinedFields) {
+      for (const name of undefinedFields) {
+        delete document[name];
+      }
+    }
   }
 
-  delete(document) {
-    return mapFromOneOrMany(document, ({_type, _id}) => {
+  delete(documents, {throwIfNotFound = true} = {}) {
+    if (!Array.isArray(documents)) {
+      return this.delete([documents], {throwIfNotFound})[0];
+    }
+
+    return documents.map(({_type, _id}) => {
       validateType(_type);
       validateId(_id);
       const document = this._collections[_type]?.[_id];
       if (document === undefined) {
+        if (throwIfNotFound) {
+          throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
+        }
         return false;
       }
       delete this._collections[_type][_id];
@@ -171,8 +168,10 @@ export class MemoryStore {
     });
   }
 
-  find({_type, ...filter}, {sort, skip, limit, return: returnFields = true} = {}) {
+  // TODO: find() should return ids only?
+  find({_type, ...filter}, {sort, skip, limit, fields} = {}) {
     validateType(_type);
+    fields = new FieldMask(fields);
 
     let results = [];
 
@@ -186,7 +185,7 @@ export class MemoryStore {
       if (!Object.entries(filter).every(([name, value]) => document[name] === value)) {
         continue;
       }
-      document = this._getFields(document, returnFields, {rootType: _type, rootId: _id});
+      document = this._getFields(document, fields, {rootType: _type, rootId: _id});
       results.push({_type, _id, ...document});
     }
 
@@ -237,11 +236,7 @@ function deserializeValue(value, {fieldName}) {
   }
 
   if (value === undefined) {
-    return undefined;
-  }
-
-  if (typeof value === 'object' && value._type === 'undefined') {
-    return undefined;
+    throw new Error(`The 'undefined' value is not allowed (field: '${fieldName}')`);
   }
 
   if (typeof value === 'object' && value._type === 'Date') {
@@ -258,8 +253,14 @@ function isPrimitive(value, {fieldName, rootType, rootId}) {
 
   if (value._type === undefined) {
     // The value is a plain object
-    const {_new, _id, _ref} = value;
-    if (_new !== undefined || _id !== undefined || _ref !== undefined) {
+    const {_new, _id, _ref, _remote, _undefined} = value;
+    if (
+      _new !== undefined ||
+      _id !== undefined ||
+      _ref !== undefined ||
+      _remote !== undefined ||
+      _undefined !== undefined
+    ) {
       throw new Error(
         `A plain object value cannot include a reserved attribute (collection: '${rootType}', id: '${rootId}', field: '${fieldName}')`
       );

@@ -1,93 +1,49 @@
-import {
-  getFromOneOrMany,
-  callWithOneOrMany,
-  callWithOneOrManyAsync,
-  mapFromOneOrMany
-} from '@storable/util';
-
 import {Document} from './document';
 
 export class LocalDocument extends Document {
-  static async get(id, {return: returnFields, throwIfNotFound = true} = {}) {
-    callWithOneOrMany(id, id => {
-      this.validateId(id);
-    });
-
+  static async _load(documents, {fields, throwIfNotFound}) {
     const store = this._getStore();
-    let serializedDocument = mapFromOneOrMany(id, id => ({_type: this.getName(), _id: id}));
-    serializedDocument = await store.get(serializedDocument, {return: returnFields});
-
-    callWithOneOrMany(serializedDocument, (serializedDocument, index) => {
-      if (!serializedDocument && throwIfNotFound) {
-        throw new Error(
-          `Document not found (model: '${this.getName()}', id: '${getFromOneOrMany(id, index)}')`
-        );
-      }
-    });
-
-    const document = mapFromOneOrMany(serializedDocument, serializedDocument =>
-      serializedDocument ? this.deserialize(serializedDocument) : undefined
-    );
-
-    await callWithOneOrManyAsync(document, async document => {
-      if (document) {
-        await document.afterLoad();
-      }
-    });
-
-    return document;
+    documents = documents.map(document => document._serializeTypeAndId());
+    documents = await store.get(documents, {fields, throwIfNotFound});
+    return documents.map(document => document && this.deserialize(document, {fields}));
   }
 
-  async save() {
-    await this.beforeSave();
-
+  async _save() {
     const store = this.constructor._getStore();
-    // TODO: Save only the changed fields
-    // const serializedDocument = this.serialize({
-    //   filter: (model, field) => {
-    //     return model.fieldIsChanged(field);
-    //   }
-    // });
     const serializedDocument = this.serialize({_isFinal: true});
     await store.set(serializedDocument);
-    this.commit();
-
-    await this.afterSave();
   }
 
-  async delete() {
-    await this.beforeDelete();
-
+  async _delete() {
     const store = this.constructor._getStore();
     const serializedDocument = this._serializeTypeAndId();
     await store.delete(serializedDocument);
-
-    await this.afterDelete();
   }
 
-  static async find({filter, sort, skip, limit, return: returnFields} = {}) {
+  static async _find({filter, sort, skip, limit, fields}) {
     const store = this._getStore();
-
-    const serializedDocuments = await store.find(
+    let documents = await store.find(
       {...this._serializeType(), ...filter},
-      {
-        sort,
-        skip,
-        limit,
-        return: returnFields
-      }
+      {sort, skip, limit, fields}
     );
-
-    const documents = serializedDocuments.map(serializedDocument =>
-      this.deserialize(serializedDocument)
-    );
-
-    for (const document of documents) {
-      await document.afterLoad();
-    }
-
+    documents = documents.map(document => this.deserialize(document, {fields}));
     return documents;
   }
+
+  // static async _loadReferencedDocuments(document, {return: fields}) {
+  //   // const referencedDocuments = {
+  //   //   Director: {
+  //   //     abc123: {fullName: true}
+  //   //   }
+  //   // };
+  //   const referencedDocuments = {};
+
+  //   callWithOneOrMany(document, document => {
+  //     document.forEachNestedEntity((referencedDocument, {fields}) => {
+
+  //     }, {fields});
+  //   });
+  // }
 
   isOfType(name) {
     return name === 'LocalDocument' ? true : super.isOfType(name); // Optimization

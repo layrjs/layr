@@ -1,42 +1,51 @@
 import {MemoryStore} from '../../..';
 
-describe('@storable/memory-store', () => {
+describe('MemoryStore', () => {
   test('CRUD operations', () => {
     const store = new MemoryStore();
 
     // Create
     expect(() => {
       store.set({_type: 'Movie', _id: 'abc123', title: 'The Matrix'});
-    }).toThrow(); // The document doesn't exist yet so 'isNew' is required
+    }).toThrow(/Document not found/); // The document doesn't exist yet so 'isNew' is required
     store.set({_new: true, _type: 'Movie', _id: 'abc123', title: 'Inception', genre: 'action'});
 
     // Read
     let movie = store.get({_type: 'Movie', _id: 'abc123'});
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception', genre: 'action'});
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}}); // Partial read
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: {title: true}}); // Partial read
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: false}); // Existence check
+
+    // Existence check
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: false, throwIfNotFound: false});
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123'});
-    movie = store.get({_type: 'Movie', _id: 'xyz123'}); // Missing document
+
+    // Missing document
+    movie = store.get({_type: 'Movie', _id: 'xyz123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
-    movie = store.get({_type: 'Director', _id: 'xyz123'}); // Missing collection
+    expect(() => {
+      store.get({_type: 'Movie', _id: 'xyz123'});
+    }).toThrow(/Document not found/);
+
+    // Missing collection
+    movie = store.get({_type: 'Director', _id: 'xyz123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
 
     // Update
-    store.set({_type: 'Movie', _id: 'abc123', title: 'The Matrix', genre: undefined});
+    store.set({_type: 'Movie', _id: 'abc123', title: 'The Matrix', _undefined: ['genre']});
     movie = store.get({_type: 'Movie', _id: 'abc123'});
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'The Matrix'});
     expect(Object.keys(movie).includes('genre')).toBe(false); // 'genre' has been deleted
     expect(() => {
       store.set({_new: true, _type: 'Movie', _id: 'abc123', title: 'Inception'});
-    }).toThrow(); // The document already exists so 'isNew' should be not be passed
+    }).toThrow(/Document already exists/); // The document already exists so 'isNew' should be not be passed
 
     // Delete
     let result = store.delete({_type: 'Movie', _id: 'abc123'});
     expect(result).toBe(true);
-    movie = store.get({_type: 'Movie', _id: 'abc123'});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
-    result = store.delete({_type: 'Movie', _id: 'abc123'});
+    result = store.delete({_type: 'Movie', _id: 'abc123'}, {throwIfNotFound: false});
     expect(result).toBe(false);
   });
 
@@ -66,7 +75,7 @@ describe('@storable/memory-store', () => {
     });
 
     // We can partially return nested documents
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {technicalSpecs: {runtime: true}}});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: {technicalSpecs: {runtime: true}}});
     expect(movie).toEqual({
       _type: 'Movie',
       _id: 'abc123',
@@ -108,7 +117,7 @@ describe('@storable/memory-store', () => {
     expect(director).toEqual({_type: 'Director', _id: 'xyz123', fullName: 'Christopher Nolan'});
 
     // Will fetch the movie only
-    let movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
+    let movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: {title: true}});
     expect(movie).toEqual({
       _type: 'Movie',
       _id: 'abc123',
@@ -116,7 +125,7 @@ describe('@storable/memory-store', () => {
     });
 
     // Will fetch the movie and the id of its director
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, director: true}});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: {title: true, director: true}});
     expect(movie).toEqual({
       _type: 'Movie',
       _id: 'abc123',
@@ -127,7 +136,7 @@ describe('@storable/memory-store', () => {
     // Let's delete the movie
     let result = store.delete({_type: 'Movie', _id: 'abc123'});
     expect(result).toBe(true);
-    movie = store.get({_type: 'Movie', _id: 'abc123'});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined(); // The movie is gone
     // But the director is still there
     director = store.get({_type: 'Director', _id: 'xyz123'});
@@ -135,7 +144,7 @@ describe('@storable/memory-store', () => {
     // So let's delete it
     result = store.delete({_type: 'Director', _id: 'xyz123'});
     expect(result).toBe(true);
-    director = store.get({_type: 'Director', _id: 'xyz123'});
+    director = store.get({_type: 'Director', _id: 'xyz123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined(); // The director is gone
   });
 
@@ -164,11 +173,11 @@ describe('@storable/memory-store', () => {
     expect(actor).toEqual({_type: 'Actor', _id: 'xyz456', fullName: 'Joseph Gordon-Levitt'});
 
     // Will fetch the movie only
-    let movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true}});
+    let movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: {title: true}});
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
 
     // Will fetch the movie and the id of the actors
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {return: {title: true, actors: [true]}});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: {title: true, actors: [true]}});
     expect(movie).toEqual({
       _type: 'Movie',
       _id: 'abc123',
@@ -218,9 +227,13 @@ describe('@storable/memory-store', () => {
     // Delete
     let result = store.delete([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}]);
     expect(result).toEqual([true, true]);
-    movies = store.get([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}]);
+    movies = store.get([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}], {
+      throwIfNotFound: false
+    });
     expect(movies).toEqual([undefined, undefined]);
-    result = store.delete([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}]);
+    result = store.delete([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}], {
+      throwIfNotFound: false
+    });
     expect(result).toEqual([false, false]);
   });
 
@@ -269,7 +282,7 @@ describe('@storable/memory-store', () => {
     movies = store.find({_type: 'Movie'}, {skip: 1, limit: 1});
     expect(movies.map(movie => movie._id)).toEqual(['movie2']);
 
-    movies = store.find({_type: 'Movie'}, {return: {title: true}});
+    movies = store.find({_type: 'Movie'}, {fields: {title: true}});
     expect(movies).toEqual([
       {_type: 'Movie', _id: 'movie1', title: 'Inception'},
       {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},

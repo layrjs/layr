@@ -63,7 +63,7 @@ export class Field {
     }
   }
 
-  createValue(value, {registry, isDeserializing}) {
+  createValue(value, {registry, fields, isDeserializing}) {
     value = normalizeValue(value, {fieldName: this.name});
 
     if (value === undefined) {
@@ -77,7 +77,7 @@ export class Field {
     }
 
     return mapFromOneOrMany(value, value =>
-      this.scalar.createValue(value, {registry, isDeserializing, fieldName: this.name})
+      this.scalar.createValue(value, {registry, fields, isDeserializing, fieldName: this.name})
     );
   }
 
@@ -116,8 +116,14 @@ class Scalar {
     this.validators = validators;
   }
 
-  createValue(value, {registry, isDeserializing, fieldName}) {
-    return createValue(value, {expectedType: this.type, registry, isDeserializing, fieldName});
+  createValue(value, {registry, fields, isDeserializing, fieldName}) {
+    return createValue(value, {
+      expectedType: this.type,
+      registry,
+      fields,
+      isDeserializing,
+      fieldName
+    });
   }
 
   serializeValue(value, options) {

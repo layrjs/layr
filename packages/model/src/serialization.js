@@ -51,7 +51,10 @@ export function deserialize(value, {expectedType, registry} = {}) {
   return result;
 }
 
-export function createValue(value, {expectedType, registry, isDeserializing, fieldName} = {}) {
+export function createValue(
+  value,
+  {expectedType, registry, fields, isDeserializing, fieldName} = {}
+) {
   value = normalizeValue(value, {fieldName});
 
   if (value === undefined) {
@@ -69,7 +72,7 @@ export function createValue(value, {expectedType, registry, isDeserializing, fie
       }
     } else {
       const Model = getModel(registry, type);
-      value = new Model(value, {isDeserializing});
+      value = Model.create(value, {fields, isDeserializing});
     }
   }
 
@@ -103,7 +106,7 @@ export function createValue(value, {expectedType, registry, isDeserializing, fie
   }
 
   const Model = getModel(registry, expectedType);
-  value = new Model(value, {isDeserializing});
+  value = Model.create(value, {fields, isDeserializing});
   return value;
 }
 

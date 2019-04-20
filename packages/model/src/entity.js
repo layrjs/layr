@@ -1,18 +1,27 @@
 import {Identity} from './identity';
 
 export class Entity extends Identity {
-  constructor(object, options) {
-    super(object, options);
-
-    if (options?.isDeserializing) {
-      const entity = this.constructor.getEntity(this._id);
+  static create(object, options) {
+    const id = object?._id;
+    if (id !== undefined) {
+      const entity = this.getEntity(id);
       if (entity) {
-        entity.assign(this);
+        entity.initialize(object, options);
         return entity;
       }
     }
 
+    return super.create(object, options);
+  }
+
+  constructor(object, options) {
+    super(object, options);
+
     this.constructor.setEntity(this._id, this);
+  }
+
+  release() {
+    this.constructor.setEntity(this._id, undefined);
   }
 
   serialize({_isDeep, _isFinal, ...otherOptions} = {}) {

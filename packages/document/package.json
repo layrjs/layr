@@ -12,7 +12,6 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "cuid": "^2.1.6",
     "lodash": "^4.17.11",
     "@storable/model": "^0.1.0",
     "@storable/util": "^0.1.0"
