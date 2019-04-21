@@ -26,15 +26,13 @@ export class Document extends BaseDocument(Entity) {
     fields = new FieldMask(fields);
 
     const incompleteDocuments = documents.filter(document => !document.fieldsAreActive(fields));
+
     if (!incompleteDocuments.length) {
       return documents;
     }
 
-    const documentFields = this.filterReferenceFields(fields);
-    const loadedDocuments = await this._load(incompleteDocuments, {
-      fields: documentFields,
-      throwIfNotFound
-    });
+    const loadedDocuments = await this._load(incompleteDocuments, {fields, throwIfNotFound});
+
     for (const loadedDocument of loadedDocuments) {
       if (loadedDocument) {
         await loadedDocument.afterLoad();
@@ -42,8 +40,8 @@ export class Document extends BaseDocument(Entity) {
     }
 
     documents = documents.map(document => {
-      if (incompleteDocuments.some(incompleteDocument => incompleteDocument.id === document.id)) {
-        if (!loadedDocuments.some(loadedDocument => loadedDocument?.id === document.id)) {
+      if (incompleteDocuments.some(incompleteDocument => incompleteDocument._id === document._id)) {
+        if (!loadedDocuments.some(loadedDocument => loadedDocument?._id === document._id)) {
           return undefined;
         }
       }
@@ -57,33 +55,65 @@ export class Document extends BaseDocument(Entity) {
     return (await this.constructor.load([this], {fields, throwIfNotFound}))[0];
   }
 
-  async save() {
-    await this.beforeSave();
-    await this._save();
-    await this.afterSave();
-    return this;
+  static async save(documents, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
+    if (!Array.isArray(documents)) {
+      return (await this.save([documents], {throwIfNotFound, throwIfAlreadyExists}))[0];
+    }
+
+    for (const document of documents) {
+      await document.beforeSave();
+    }
+
+    documents = await this._save(documents, {throwIfNotFound, throwIfAlreadyExists});
+
+    for (const document of documents) {
+      await document.afterSave();
+    }
+
+    return documents;
   }
 
-  async delete() {
-    await this.beforeDelete();
-    await this._delete();
-    this.release();
-    await this.afterDelete();
+  async save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
+    return (await this.constructor.save([this], {throwIfNotFound, throwIfAlreadyExists}))[0];
+  }
+
+  static async delete(documents, {throwIfNotFound = true} = {}) {
+    if (!Array.isArray(documents)) {
+      return (await this.delete([documents], {throwIfNotFound}))[0];
+    }
+
+    for (const document of documents) {
+      await document.beforeDelete();
+    }
+
+    documents = await this._delete(documents, {throwIfNotFound});
+
+    for (const document of documents) {
+      if (document) {
+        await document.afterDelete();
+      }
+    }
+
+    for (const document of documents) {
+      if (document) {
+        document.release();
+      }
+    }
+
+    return documents;
+  }
+
+  async delete({throwIfNotFound = true} = {}) {
+    return (await this.constructor.delete([this], {throwIfNotFound}))[0];
   }
 
   static async find({filter, sort, skip, limit, fields} = {}) {
     fields = new FieldMask(fields);
-    const documentFields = this.filterReferenceFields(fields);
-    const documents = await this._find({filter, sort, skip, limit, fields: documentFields});
+    const documents = await this._find({filter, sort, skip, limit, fields});
     for (const document of documents) {
       await document.afterLoad();
     }
     return documents;
-  }
-
-  static filterReferenceFields(fields) {
-    // TODO
-    return fields;
   }
 
   isOfType(name) {

@@ -70,13 +70,12 @@ export class MemoryStore {
     return result;
   }
 
-  set(documents) {
+  set(documents, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
     if (!Array.isArray(documents)) {
-      this.set([documents]);
-      return;
+      return this.set([documents], {throwIfNotFound, throwIfAlreadyExists})[0];
     }
 
-    documents.forEach(({_new, _type, _id, _ref, _remote, ...fields}) => {
+    return documents.map(({_new, _type, _id, _ref, _remote, ...fields}) => {
       validateType(_type);
       validateId(_id);
       if (_ref !== undefined) {
@@ -99,15 +98,23 @@ export class MemoryStore {
       let document = collection[_id];
       if (document === undefined) {
         if (!_new) {
-          throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
+          if (throwIfNotFound) {
+            throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
+          }
+          return undefined;
         }
         document = {};
         collection[_id] = document;
       } else if (_new) {
-        throw new Error(`Document already exists (collection: '${_type}', id: '${_id}')`);
+        if (throwIfAlreadyExists) {
+          throw new Error(`Document already exists (collection: '${_type}', id: '${_id}')`);
+        }
+        return undefined;
       }
 
       this._setFields(document, fields, {rootType: _type, rootId: _id});
+
+      return {_type, _id};
     });
   }
 
@@ -161,10 +168,10 @@ export class MemoryStore {
         if (throwIfNotFound) {
           throw new Error(`Document not found (collection: '${_type}', id: '${_id}')`);
         }
-        return false;
+        return undefined;
       }
       delete this._collections[_type][_id];
-      return true;
+      return {_type, _id};
     });
   }
 

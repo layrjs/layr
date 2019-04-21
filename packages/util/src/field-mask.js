@@ -15,9 +15,13 @@ export class FieldMask {
       fields = fields[0];
     }
     if (fields === false || fields === undefined) {
-      return undefined;
+      return false;
     }
     return new FieldMask(fields);
+  }
+
+  toJSON() {
+    return this._fields;
   }
 }
 

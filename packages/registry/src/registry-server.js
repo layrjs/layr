@@ -20,10 +20,10 @@ export class RegistryServer {
     }
     debug(`→ invokeQuery(%o)`, query);
     let result = await invokeQuery(registry, query);
+    debug(`← %o`, result);
     if (this.serializer) {
       result = this.serializer(result);
     }
-    debug(`← %o`, result);
     return result;
   }
 }

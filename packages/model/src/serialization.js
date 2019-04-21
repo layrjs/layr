@@ -18,6 +18,11 @@ export function serialize(value, options) {
     return value.map(item => serialize(item, options));
   }
 
+  // The value is an object
+  if (typeof value.toJSON === 'function') {
+    return value.toJSON();
+  }
+
   // The value is a plain object
   result = {};
   for (const [key, val] of Object.entries(value)) {

@@ -24,12 +24,11 @@ export class Entity extends Identity {
     this.constructor.setEntity(this._id, undefined);
   }
 
-  serialize({_isDeep, _isFinal, ...otherOptions} = {}) {
-    if (_isDeep && _isFinal) {
-      // We are about to store a referenced document in the database
+  serialize({_isDeep, ...otherOptions} = {}) {
+    if (_isDeep) {
       return this._serializeReference();
     }
-    return super.serialize({_isDeep, _isFinal, ...otherOptions});
+    return super.serialize({_isDeep, ...otherOptions});
   }
 
   static _serializeType() {

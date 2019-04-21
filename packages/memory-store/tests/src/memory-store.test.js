@@ -42,11 +42,11 @@ describe('MemoryStore', () => {
 
     // Delete
     let result = store.delete({_type: 'Movie', _id: 'abc123'});
-    expect(result).toBe(true);
+    expect(result).toEqual({_type: 'Movie', _id: 'abc123'});
     movie = store.get({_type: 'Movie', _id: 'abc123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
     result = store.delete({_type: 'Movie', _id: 'abc123'}, {throwIfNotFound: false});
-    expect(result).toBe(false);
+    expect(result).toBeUndefined();
   });
 
   test('Nesting documents', () => {
@@ -135,7 +135,7 @@ describe('MemoryStore', () => {
 
     // Let's delete the movie
     let result = store.delete({_type: 'Movie', _id: 'abc123'});
-    expect(result).toBe(true);
+    expect(result).toEqual({_type: 'Movie', _id: 'abc123'});
     movie = store.get({_type: 'Movie', _id: 'abc123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined(); // The movie is gone
     // But the director is still there
@@ -143,7 +143,7 @@ describe('MemoryStore', () => {
     expect(director).toEqual({_type: 'Director', _id: 'xyz123', fullName: 'Christopher Nolan'});
     // So let's delete it
     result = store.delete({_type: 'Director', _id: 'xyz123'});
-    expect(result).toBe(true);
+    expect(result).toEqual({_type: 'Director', _id: 'xyz123'});
     director = store.get({_type: 'Director', _id: 'xyz123'}, {throwIfNotFound: false});
     expect(movie).toBeUndefined(); // The director is gone
   });
@@ -190,11 +190,11 @@ describe('MemoryStore', () => {
 
     // Let's delete everything
     let result = store.delete({_type: 'Movie', _id: 'abc123'});
-    expect(result).toBe(true);
+    expect(result).toEqual({_type: 'Movie', _id: 'abc123'});
     result = store.delete({_type: 'Actor', _id: 'xyz123'});
-    expect(result).toBe(true);
+    expect(result).toEqual({_type: 'Actor', _id: 'xyz123'});
     result = store.delete({_type: 'Actor', _id: 'xyz456'});
-    expect(result).toBe(true);
+    expect(result).toEqual({_type: 'Actor', _id: 'xyz456'});
   });
 
   test('Multi CRUD operations', () => {
@@ -226,7 +226,7 @@ describe('MemoryStore', () => {
 
     // Delete
     let result = store.delete([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}]);
-    expect(result).toEqual([true, true]);
+    expect(result).toEqual([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}]);
     movies = store.get([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}], {
       throwIfNotFound: false
     });
@@ -234,7 +234,7 @@ describe('MemoryStore', () => {
     result = store.delete([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'abc456'}], {
       throwIfNotFound: false
     });
-    expect(result).toEqual([false, false]);
+    expect(result).toEqual([undefined, undefined]);
   });
 
   test('Finding documents', () => {
@@ -287,6 +287,12 @@ describe('MemoryStore', () => {
       {_type: 'Movie', _id: 'movie1', title: 'Inception'},
       {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},
       {_type: 'Movie', _id: 'movie3', title: 'Léon'}
+    ]);
+
+    store.delete([
+      {_type: 'Movie', _id: 'movie1'},
+      {_type: 'Movie', _id: 'movie2'},
+      {_type: 'Movie', _id: 'movie3'}
     ]);
   });
 });

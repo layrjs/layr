@@ -442,14 +442,13 @@ export class Model {
 
   async callRemote(methodName, ...args) {
     const remoteRegistry = this.constructor._getRemoteRegistry();
-    const {result, changes} = await remoteRegistry.invokeQuery({
+    const {result} = await remoteRegistry.invokeQuery({
       '<=': this,
       [`${methodName}=>result`]: {
         '([])': args
       },
       '=>changes': true
     });
-    this.assign(changes);
     return result;
   }
 

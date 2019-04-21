@@ -18,10 +18,10 @@ export class RegistryClient {
     }
     debug(`→ invokeQuery(%o)`, query);
     let result = await this.remoteRegistry.invokeQuery(query);
+    debug(`← %o`, result);
     if (this.deserializer) {
       result = this.deserializer(result, {registry: this.$registry});
     }
-    debug(`← %o`, result);
     return result;
   }
 }

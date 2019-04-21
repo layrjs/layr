@@ -3,30 +3,44 @@ import {Document} from './document';
 export class LocalDocument extends Document {
   static async _load(documents, {fields, throwIfNotFound}) {
     const store = this._getStore();
-    documents = documents.map(document => document._serializeTypeAndId());
-    documents = await store.get(documents, {fields, throwIfNotFound});
-    return documents.map(document => document && this.deserialize(document, {fields}));
+    let serializedDocuments = documents.map(document => document._serializeTypeAndId());
+    serializedDocuments = await store.get(serializedDocuments, {fields, throwIfNotFound});
+    documents = serializedDocuments.map(
+      serializedDocument => serializedDocument && this.deserialize(serializedDocument, {fields})
+    );
+    return documents;
   }
 
-  async _save() {
-    const store = this.constructor._getStore();
-    const serializedDocument = this.serialize({_isFinal: true});
-    await store.set(serializedDocument);
+  static async _save(documents, {throwIfNotFound, throwIfAlreadyExists}) {
+    const store = this._getStore();
+    let serializedDocuments = documents.map(document => document.serialize());
+    serializedDocuments = await store.set(serializedDocuments, {
+      throwIfNotFound,
+      throwIfAlreadyExists
+    });
+    documents = serializedDocuments.map(
+      serializedDocument => serializedDocument && this.deserialize(serializedDocument)
+    );
+    return documents;
   }
 
-  async _delete() {
-    const store = this.constructor._getStore();
-    const serializedDocument = this._serializeTypeAndId();
-    await store.delete(serializedDocument);
+  static async _delete(documents, {throwIfNotFound}) {
+    const store = this._getStore();
+    let serializedDocuments = documents.map(document => document._serializeTypeAndId());
+    serializedDocuments = await store.delete(serializedDocuments, {throwIfNotFound});
+    documents = serializedDocuments.map(
+      serializedDocument => serializedDocument && this.deserialize(serializedDocument)
+    );
+    return documents;
   }
 
   static async _find({filter, sort, skip, limit, fields}) {
     const store = this._getStore();
-    let documents = await store.find(
+    const serializedDocuments = await store.find(
       {...this._serializeType(), ...filter},
       {sort, skip, limit, fields}
     );
-    documents = documents.map(document => this.deserialize(document, {fields}));
+    const documents = serializedDocuments.map(document => this.deserialize(document, {fields}));
     return documents;
   }
 

@@ -5,16 +5,16 @@ export class RemoteDocument extends Document {
     return {...super._serializeReference(), _remote: true};
   }
 
-  static async _get(id, options) {
-    return await this.callRemote('get', id, options);
+  static async _load(documents, options) {
+    return await this.callRemote('load', documents, options);
   }
 
-  async _save() {
-    await this.callRemote('save');
+  static async _save(documents, options) {
+    return await this.callRemote('save', documents, options);
   }
 
-  async _delete() {
-    await this.callRemote('delete');
+  static async _delete(documents, options) {
+    return await this.callRemote('delete', documents, options);
   }
 
   static async _find(options) {
