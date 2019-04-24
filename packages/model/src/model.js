@@ -1,5 +1,5 @@
 import {inspect} from 'util';
-import {FieldMask, findFromOneOrMany} from '@storable/util';
+import {FieldMask, callWithOneOrMany, findFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';
@@ -185,17 +185,64 @@ export class Model {
 
   fieldsAreActive(fields) {
     const rootFields = new FieldMask(fields);
+
     const result = this.constructor.forEachField(field => {
       const fields = rootFields.get(field.name);
       if (!fields) {
         return;
       }
+
       if (!this.fieldIsActive(field)) {
         return false;
       }
-      // TODO: Check submodels
+
+      const value = this._getFieldValue(field);
+      if (value !== undefined) {
+        const incompleteValue = findFromOneOrMany(value, value => {
+          if (this.constructor.fieldValueIsSubmodel(value)) {
+            return !value.fieldsAreActive(fields);
+          }
+        });
+        if (incompleteValue !== undefined) {
+          return false;
+        }
+      }
     });
+
     return result !== false;
+  }
+
+  static filterEntityFields(fields) {
+    fields = new FieldMask(fields);
+    fields = this._filterEntityFields(fields);
+    return new FieldMask(fields);
+  }
+
+  static _filterEntityFields(rootFields) {
+    const filteredFields = {};
+
+    this.forEachField(field => {
+      const fields = rootFields.get(field.name);
+      if (!fields) {
+        return;
+      }
+
+      if (field.scalar.isPrimitiveType()) {
+        filteredFields[field.name] = true;
+        return;
+      }
+
+      const Model = field.scalar.getModel(this._getRegistry());
+
+      if (Model.prototype.isOfType('Entity')) {
+        filteredFields[field.name] = {};
+        return;
+      }
+
+      filteredFields[field.name] = Model._filterEntityFields(fields);
+    });
+
+    return filteredFields;
   }
 
   static forEachField(func) {
@@ -229,55 +276,40 @@ export class Model {
   forEachSubmodel(func) {
     return this.forEachField(field => {
       const value = this._getFieldValue(field);
-      return findFromOneOrMany(value, value => {
+      return callWithOneOrMany(value, value => {
         if (this.constructor.fieldValueIsSubmodel(value)) {
-          return func(value) !== undefined;
+          return func(value);
         }
       });
     });
   }
 
-  // forEachNestedEntity(func, {fields: rootFields = true} = {}) {
-  //   // TODO: Remove 'fields' option?
-  //   return this.forEachField(field => {
-  //     let fields = typeof rootFields === 'object' ? rootFields[fields.name] : rootFields;
+  forEachNestedEntityDeep(func, {fields} = {}) {
+    const rootFields = new FieldMask(fields);
 
-  //     if (fields === undefined || fields === false) {
-  //       return;
-  //     }
+    return this.constructor.forEachField(field => {
+      const fields = rootFields.get(field.name);
+      if (!fields) {
+        return;
+      }
 
-  //     const value = this._getFieldValue(field);
+      const value = this._getFieldValue(field);
+      if (value !== undefined) {
+        return callWithOneOrMany(value, value => {
+          if (this.constructor.fieldValueIsNestedEntity(value)) {
+            const result = func(value, {fields});
+            if (result !== undefined) {
+              return result;
+            }
+          }
 
-  //     if (Array.isArray(value) && !(fields === true || Array.isArray(fields))) {
-  //       throw new Error(
-  //         `Type mismatch in forEachNestedEntity() 'fields' option (model: '${this.constructor.getName()}', field: '${
-  //           field.name
-  //         }', expected: 'Boolean' or 'Array', provided: '${typeof fields}')`
-  //       );
-  //     }
-
-  //     if (Array.isArray(fields)) {
-  //       if (!Array.isArray(value)) {
-  //         throw new Error(
-  //           `Type mismatch in forEachNestedEntity() 'fields' option (model: '${this.constructor.getName()}', field: '${
-  //             field.name
-  //           }', expected: 'Boolean' or 'Object', provided: 'Array')`
-  //         );
-  //       }
-  //       fields = fields[0];
-  //     }
-
-  //     return findFromOneOrMany(value, value => {
-  //       if (this.constructor.fieldValueIsNestedEntity(value)) {
-  //         return func(value, {fields}) !== undefined;
-  //       }
-
-  //       if (value?.isOfType && value.isOfType('Model')) {
-  //         return value.forEachNestedEntity(func, {fields}) !== undefined;
-  //       }
-  //     });
-  //   });
-  // }
+          if (value?.isOfType && value.isOfType('Model')) {
+            return value.forEachNestedEntityDeep(func, {fields});
+          }
+        });
+      }
+    });
+  }
 
   _getFieldValue(field) {
     let value = this._fieldValues[field.name];

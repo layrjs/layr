@@ -6,7 +6,7 @@ export class RemoteDocument extends Document {
   }
 
   static async _load(documents, options) {
-    return await this.callRemote('load', documents, options);
+    return await this.callRemote('load', documents, {populate: false, ...options});
   }
 
   static async _save(documents, options) {
@@ -18,7 +18,7 @@ export class RemoteDocument extends Document {
   }
 
   static async _find(options) {
-    return await this.callRemote('find', options);
+    return await this.callRemote('find', {populate: false, ...options});
   }
 
   isOfType(name) {

@@ -4,9 +4,9 @@ import {FieldMask} from '@storable/util';
 import {BaseDocument} from './base-document';
 
 export class Document extends BaseDocument(Entity) {
-  static async get(ids, {fields, throwIfNotFound = true} = {}) {
+  static async get(ids, {fields, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(ids)) {
-      return (await this.get([ids], {fields, throwIfNotFound}))[0];
+      return (await this.get([ids], {fields, populate, throwIfNotFound}))[0];
     }
 
     for (const id of ids) {
@@ -14,16 +14,28 @@ export class Document extends BaseDocument(Entity) {
     }
 
     let documents = ids.map(id => this.deserialize({_id: id}));
-    documents = await this.load(documents, {fields, throwIfNotFound});
+    documents = await this.load(documents, {fields, populate, throwIfNotFound});
     return documents;
   }
 
-  static async load(documents, {fields, throwIfNotFound = true} = {}) {
+  static async load(documents, {fields, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
-      return (await this.load([documents], {fields, throwIfNotFound}))[0];
+      return (await this.load([documents], {fields, populate, throwIfNotFound}))[0];
     }
 
     fields = new FieldMask(fields);
+
+    documents = await this._loadRootDocuments(documents, {fields, throwIfNotFound});
+
+    if (populate) {
+      await this.populate(documents, {fields, throwIfNotFound});
+    }
+
+    return documents;
+  }
+
+  static async _loadRootDocuments(documents, {fields, throwIfNotFound}) {
+    fields = this.filterEntityFields(fields);
 
     const incompleteDocuments = documents.filter(document => !document.fieldsAreActive(fields));
 
@@ -31,17 +43,17 @@ export class Document extends BaseDocument(Entity) {
       return documents;
     }
 
-    const loadedDocuments = await this._load(incompleteDocuments, {fields, throwIfNotFound});
+    let loadedDocuments = await this._load(incompleteDocuments, {fields, throwIfNotFound});
+
+    loadedDocuments = loadedDocuments.filter(loadedDocument => loadedDocument);
 
     for (const loadedDocument of loadedDocuments) {
-      if (loadedDocument) {
-        await loadedDocument.afterLoad();
-      }
+      await loadedDocument.afterLoad();
     }
 
     documents = documents.map(document => {
       if (incompleteDocuments.some(incompleteDocument => incompleteDocument._id === document._id)) {
-        if (!loadedDocuments.some(loadedDocument => loadedDocument?._id === document._id)) {
+        if (!loadedDocuments.some(loadedDocument => loadedDocument._id === document._id)) {
           return undefined;
         }
       }
@@ -51,8 +63,65 @@ export class Document extends BaseDocument(Entity) {
     return documents;
   }
 
-  async load({fields, throwIfNotFound = true} = {}) {
-    return (await this.constructor.load([this], {fields, throwIfNotFound}))[0];
+  async load({fields, populate = true, throwIfNotFound = true} = {}) {
+    return (await this.constructor.load([this], {fields, populate, throwIfNotFound}))[0];
+  }
+
+  static async populate(documents, {fields, throwIfNotFound = true} = {}) {
+    if (!Array.isArray(documents)) {
+      return (await this.populate([documents], {fields, throwIfNotFound}))[0];
+    }
+
+    fields = new FieldMask(fields);
+
+    let didLoad;
+    do {
+      didLoad = await this._populate(documents, {fields, throwIfNotFound});
+    } while (didLoad);
+  }
+
+  static async _populate(documents, {fields, throwIfNotFound}) {
+    const documentsByClass = new Map();
+
+    for (const document of documents) {
+      if (!document) {
+        continue;
+      }
+
+      document.forEachNestedEntityDeep(
+        (document, {fields}) => {
+          if (document.fieldsAreActive(fields)) {
+            return;
+          }
+
+          const klass = document.constructor;
+          let entry = documentsByClass.get(klass);
+          if (!entry) {
+            entry = {documents: [], fields: undefined};
+            documentsByClass.set(klass, entry);
+          }
+          if (!entry.documents.includes(document)) {
+            entry.documents.push(document);
+          }
+          entry.fields = FieldMask.merge(entry.fields, fields);
+        },
+        {fields}
+      );
+    }
+
+    if (!documentsByClass.size) {
+      return false;
+    }
+
+    for (const [klass, {documents, fields}] of documentsByClass.entries()) {
+      await klass.load(documents, {fields, populate: false, throwIfNotFound});
+    }
+
+    return true;
+  }
+
+  async populate({fields, throwIfNotFound = true} = {}) {
+    return (await this.constructor.populate([this], {fields, throwIfNotFound}))[0];
   }
 
   static async save(documents, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
@@ -107,12 +176,28 @@ export class Document extends BaseDocument(Entity) {
     return (await this.constructor.delete([this], {throwIfNotFound}))[0];
   }
 
-  static async find({filter, sort, skip, limit, fields} = {}) {
+  static async find({
+    filter,
+    sort,
+    skip,
+    limit,
+    fields,
+    populate = true,
+    throwIfNotFound = true
+  } = {}) {
     fields = new FieldMask(fields);
-    const documents = await this._find({filter, sort, skip, limit, fields});
+
+    const documentFields = this.filterEntityFields(fields);
+    const documents = await this._find({filter, sort, skip, limit, fields: documentFields});
+
+    if (populate) {
+      await this.populate(documents, {fields, throwIfNotFound});
+    }
+
     for (const document of documents) {
       await document.afterLoad();
     }
+
     return documents;
   }
 

@@ -69,11 +69,11 @@ export function createValue(
   const type = typeof value === 'object' ? value._type : undefined;
   if (type) {
     value = omit(value, '_type');
-    const builtInType = builtInTypes[type];
-    if (builtInType) {
+    const primitiveType = primitiveTypes[type];
+    if (primitiveType) {
       value = value._value;
-      if (builtInType.deserialize) {
-        value = builtInType.deserialize(value);
+      if (primitiveType.deserialize) {
+        value = primitiveType.deserialize(value);
       }
     } else {
       const Model = getModel(registry, type);
@@ -85,9 +85,9 @@ export function createValue(
     return value;
   }
 
-  const builtInType = builtInTypes[expectedType];
-  if (builtInType) {
-    if (!builtInType.checkType(value)) {
+  const primitiveType = primitiveTypes[expectedType];
+  if (primitiveType) {
+    if (!primitiveType.checkType(value)) {
       throw new Error(
         `Type mismatch (field: '${fieldName}', expected: '${expectedType}', provided: '${typeof value}')`
       );
@@ -139,7 +139,7 @@ export function normalizeValue(value, {fieldName}) {
   return value;
 }
 
-const builtInTypes = {
+const primitiveTypes = {
   boolean: {
     checkType(value) {
       return typeof value === 'boolean';
@@ -170,7 +170,11 @@ const builtInTypes = {
   }
 };
 
-function getModel(registry, name) {
+export function isPrimitiveType(type) {
+  return type in primitiveTypes;
+}
+
+export function getModel(registry, name) {
   const Model = registry?.[name];
   if (Model === undefined) {
     throw new Error(`Model not found (name: '${name}')`);

@@ -57,7 +57,7 @@ describe('LocalDocument', () => {
     expect(movie2.year).toBe(2010); // And now we have the 'year'
 
     otherRegistry = rootRegistry.fork();
-    movie = await otherRegistry.Movie.get(id, {fields: false}); // Existence check
+    movie = await otherRegistry.Movie.get(id, {fields: {}}); // Existence check
     expect(movie.id).toBe(id);
     expect(movie.title).toBeUndefined();
     expect(movie.year).toBeUndefined();
@@ -102,6 +102,8 @@ describe('LocalDocument', () => {
     }
 
     class TechnicalSpecs extends Model {
+      @field('boolean') color;
+
       @field('string') aspectRatio;
     }
 
@@ -109,7 +111,10 @@ describe('LocalDocument', () => {
     const rootRegistry = new Registry({Movie, TechnicalSpecs, store});
 
     let registry = rootRegistry.fork();
-    let movie = new registry.Movie({title: 'Inception', technicalSpecs: {aspectRatio: '2.39:1'}});
+    let movie = new registry.Movie({
+      title: 'Inception',
+      technicalSpecs: {color: true, aspectRatio: '2.39:1'}
+    });
     const id = movie.id;
     await movie.save();
 
@@ -119,6 +124,17 @@ describe('LocalDocument', () => {
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('Inception');
     expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    expect(movie.technicalSpecs.color).toBe(true);
+    expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
+
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(id, {fields: {title: true, technicalSpecs: {color: true}}});
+    expect(movie.title).toBe('Inception');
+    expect(movie.technicalSpecs.color).toBe(true);
+    expect(movie.technicalSpecs.aspectRatio).toBeUndefined();
+    await movie.load({fields: {technicalSpecs: {color: true, aspectRatio: true}}}); // TODO: Since the 'color' field has already been loaded, we shouldn't have to specify it again
+    expect(movie.title).toBe('Inception');
+    expect(movie.technicalSpecs.color).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
 
     registry = rootRegistry.fork();
@@ -434,7 +450,7 @@ describe('LocalDocument', () => {
     }
   });
 
-  test.skip('Referenced documents', async () => {
+  test('Referenced documents', async () => {
     class Movie extends LocalDocument {
       @field('string') title;
 
@@ -446,21 +462,24 @@ describe('LocalDocument', () => {
     }
 
     const store = new MemoryStore();
-    const registry = new Registry({Movie, Director, store});
+    const rootRegistry = new Registry({Movie, Director, store});
 
+    let registry = rootRegistry.fork();
     let movie = new registry.Movie({title: 'Inception', director: {fullName: 'Christopher Nolan'}});
     const movieId = movie.id;
     const directorId = movie.director.id;
     await movie.director.save();
     await movie.save();
 
-    // The director has been saved independently
+    // The director can be fetched independently
+    registry = rootRegistry.fork();
     let director = await registry.Director.get(directorId);
     expect(director instanceof registry.Director).toBe(true);
     expect(director.id).toBe(directorId);
     expect(director.fullName).toBe('Christopher Nolan');
 
     // Will fetch both the 'Movie' and its director
+    registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId);
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
@@ -469,13 +488,34 @@ describe('LocalDocument', () => {
     expect(movie.director.id).toBe(directorId);
     expect(movie.director.fullName).toBe('Christopher Nolan');
 
+    // Will fetch the 'Movie' only
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(movieId, {fields: {title: true}});
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director).toBeUndefined();
+
+    // Will fetch the 'Movie' and its director's id
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(movieId, {fields: {title: true, director: {}}});
+    expect(movie instanceof registry.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director instanceof registry.Director).toBe(true);
+    expect(movie.director.id).toBe(directorId);
+    expect(movie.director.fullName).toBeUndefined();
+
     // The director can be replaced
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(movieId);
     let newDirector = new registry.Director({fullName: 'C. Nolan'});
     const newDirectorId = newDirector.id;
     expect(newDirectorId).not.toBe(directorId);
     await newDirector.save();
     movie.director = newDirector;
     await movie.save();
+    registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
@@ -483,18 +523,23 @@ describe('LocalDocument', () => {
     expect(movie.director.fullName).toBe('C. Nolan');
 
     // Let's delete everything
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(movieId);
     await movie.delete();
+    registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
     expect(movie).toBeUndefined(); // The movie is gone
+    registry = rootRegistry.fork();
     newDirector = await registry.Director.get(newDirectorId);
     expect(newDirector instanceof registry.Director).toBe(true); // But the director is still there
     expect(newDirector.id).toBe(newDirectorId);
     await newDirector.delete(); // So let's delete it
-    director = await registry.Director.get(directorId); // Let's also delete the first director
+    registry = rootRegistry.fork();
+    director = await registry.Director.get(directorId); // Let's also delete the director
     await director.delete();
   });
 
-  test.skip('Arrays of referenced document', async () => {
+  test('Arrays of referenced document', async () => {
     class Movie extends LocalDocument {
       @field('string') title;
 
@@ -506,9 +551,10 @@ describe('LocalDocument', () => {
     }
 
     const store = new MemoryStore();
-    const registry = new Registry({Movie, Actor, store});
+    const rootRegistry = new Registry({Movie, Actor, store});
 
     // Let's create both a 'Movie' and some 'Actor'
+    let registry = rootRegistry.fork();
     let movie = new registry.Movie({
       title: 'Inception',
       actors: [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}]
@@ -521,6 +567,7 @@ describe('LocalDocument', () => {
     await movie.save();
 
     // The actors can be fetched directly from the 'Actor' collection
+    registry = rootRegistry.fork();
     let actor = await registry.Actor.get(actorIds[0]);
     expect(actor instanceof registry.Actor).toBe(true);
     expect(actor.id).toBe(actorIds[0]);
@@ -531,10 +578,12 @@ describe('LocalDocument', () => {
     expect(actor.fullName).toBe('Joseph Gordon-Levitt');
 
     // Will fetch both 'Movie' and 'Actor' documents
+    registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId);
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
+    expect(movie.actors).toHaveLength(2);
     expect(movie.actors[0] instanceof registry.Actor).toBe(true);
     expect(movie.actors[0].id).toBe(actorIds[0]);
     expect(movie.actors[0].fullName).toBe('Leonardo DiCaprio');
@@ -543,13 +592,15 @@ describe('LocalDocument', () => {
     expect(movie.actors[1].fullName).toBe('Joseph Gordon-Levitt');
 
     // Will fetch 'Movie' document only
+    registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId, {fields: {title: true}});
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
-    expect(movie.actors).toBeUndefined();
+    expect(movie.actors).toHaveLength(0);
 
     // Will fetch 'Movie' document and the ids of the actors
+    registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId, {fields: {title: true, actors: [{}]}});
     expect(movie instanceof registry.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
@@ -562,16 +613,22 @@ describe('LocalDocument', () => {
     expect(movie.actors[1].fullName).toBeUndefined();
 
     // An actor can be modified through its parent movie
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(movieId);
     movie.actors[0].fullName = 'L. DiCaprio';
     await movie.actors[0].save();
+    registry = rootRegistry.fork();
     actor = await registry.Actor.get(actorIds[0]);
     expect(actor.fullName).toBe('L. DiCaprio');
 
-    // Will delete the movie and its actors
+    // Let's delete the movie and its actors
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(movieId);
     for (const actor of movie.actors) {
       await actor.delete();
     }
     await movie.delete();
+    registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
     actor = await registry.Actor.get(actorIds[0], {throwIfNotFound: false});

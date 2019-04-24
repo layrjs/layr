@@ -85,7 +85,7 @@ describe('RemoteDocument', () => {
       expect(movie.genre).toBeUndefined();
 
       registry = rootRegistry.fork();
-      movie = await registry.Movie.get(id, {fields: false}); // Existence check
+      movie = await registry.Movie.get(id, {fields: {}}); // Existence check
       expect(movie.id).toBe(id);
       expect(movie.title).toBeUndefined();
       expect(movie.genre).toBeUndefined();

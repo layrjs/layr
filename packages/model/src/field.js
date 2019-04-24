@@ -2,7 +2,13 @@ import {mapFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 
-import {createValue, serializeValue, normalizeValue} from './serialization';
+import {
+  createValue,
+  serializeValue,
+  normalizeValue,
+  isPrimitiveType,
+  getModel
+} from './serialization';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field {
@@ -143,5 +149,13 @@ class Scalar {
         undefined;
     }
     return runValidators(value, this.validators);
+  }
+
+  isPrimitiveType() {
+    return isPrimitiveType(this.type);
+  }
+
+  getModel(registry) {
+    return getModel(registry, this.type);
   }
 }
