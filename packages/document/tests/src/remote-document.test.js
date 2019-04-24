@@ -4,7 +4,7 @@ import {MemoryStore} from '@storable/memory-store';
 import {RemoteDocument, LocalDocument, field, remoteMethod, serialize, deserialize} from '../../..';
 
 describe('RemoteDocument', () => {
-  describe('All remote', () => {
+  describe('One remote registry', () => {
     const BaseMovie = Parent =>
       class extends Parent {
         @field('string') title;
@@ -201,14 +201,21 @@ describe('RemoteDocument', () => {
     });
   });
 
-  describe.skip('Local and remote', () => {
+  describe('Multiple remote registries', () => {
+    const BaseMovie = Parent =>
+      class extends Parent {
+        @field('string') title;
+
+        @field('Director') director;
+      };
+
     const BaseDirector = Parent =>
       class extends Parent {
         @field('string') fullName;
       };
 
-    const registryServer = (() => {
-      // Backend
+    const directorServer = (() => {
+      // Director backend
 
       class Director extends BaseDirector(LocalDocument) {}
 
@@ -220,24 +227,49 @@ describe('RemoteDocument', () => {
       });
     })();
 
+    const movieServer = (() => {
+      // Movie backend
+
+      class Movie extends BaseMovie(LocalDocument) {}
+
+      class Director extends BaseDirector(RemoteDocument) {
+        static remoteRegistry = 'directorClient';
+      }
+
+      const store = new MemoryStore();
+      const directorClient = new RegistryClient(directorServer, {
+        serializer: serialize,
+        deserializer: deserialize
+      });
+      const registry = new Registry({Movie, Director, store, directorClient});
+      return new RegistryServer(registry, {
+        serializer: serialize,
+        deserializer: deserialize
+      });
+    })();
+
     // Frontend
 
-    class Movie extends LocalDocument {
-      @field('string') title;
-
-      @field('Director') director;
+    class Movie extends BaseMovie(RemoteDocument) {
+      static remoteRegistry = 'movieClient';
     }
 
-    class Director extends BaseDirector(RemoteDocument) {}
+    class Director extends BaseDirector(RemoteDocument) {
+      static remoteRegistry = 'directorClient';
+    }
 
-    const store = new MemoryStore();
-    const remoteRegistry = new RegistryClient(registryServer, {
+    const movieClient = new RegistryClient(movieServer, {
       serializer: serialize,
       deserializer: deserialize
     });
-    const registry = new Registry({Movie, Director, store, remoteRegistry});
+    const directorClient = new RegistryClient(directorServer, {
+      serializer: serialize,
+      deserializer: deserialize
+    });
+    const rootRegistry = new Registry({Movie, Director, movieClient, directorClient});
 
-    test('Referencing remote documents', async () => {
+    test('Handling documents', async () => {
+      let registry = rootRegistry.fork();
       let movie = new registry.Movie({
         title: 'Inception',
         director: {fullName: 'Christopher Nolan'}
@@ -248,19 +280,31 @@ describe('RemoteDocument', () => {
       await movie.save();
 
       // We can fetch the director only
-      const director = await registry.Director.get(directorId);
+      registry = rootRegistry.fork();
+      let director = await registry.Director.get(directorId);
       expect(director instanceof registry.Director).toBe(true);
       expect(director.id).toBe(directorId);
       expect(director.fullName).toBe('Christopher Nolan');
 
-      // Fetching the movie should fetch the director automatically
+      // We can fetch both the movie and its director
+      registry = rootRegistry.fork();
       movie = await registry.Movie.get(movieId);
       expect(movie instanceof registry.Movie).toBe(true);
       expect(movie.id).toBe(movieId);
       expect(movie.title).toBe('Inception');
       expect(movie.director instanceof registry.Director).toBe(true);
       expect(movie.director.id).toBe(directorId);
-      // expect(movie.director.fullName).toBe('Christopher Nolan');
+      expect(movie.director.fullName).toBe('Christopher Nolan');
+
+      registry = rootRegistry.fork();
+      movie = await registry.Movie.get(movieId);
+      await movie.director.delete();
+      await movie.delete();
+      registry = rootRegistry.fork();
+      movie = await registry.Movie.get(movieId, {throwIfNotFound: false});
+      expect(movie).toBeUndefined();
+      director = await registry.Director.get(directorId, {throwIfNotFound: false});
+      expect(director).toBeUndefined();
     });
   });
 });

@@ -5,6 +5,8 @@ import isEmpty from 'lodash/isEmpty';
 import {Field} from './field';
 
 export class Model {
+  static remoteRegistry = 'remoteRegistry';
+
   static create(object, options) {
     return new this(object, options);
   }
@@ -518,10 +520,13 @@ export class Model {
 
   static _getRemoteRegistry() {
     const registry = this._getRegistry();
-    if (!registry.remoteRegistry) {
-      throw new Error(`Remote registry not found (model: ${this.name})`);
+    const remoteRegistry = registry[this.remoteRegistry];
+    if (!remoteRegistry) {
+      throw new Error(
+        `Remote registry not found (model: ${this.name}, remoteRegistry: ${this.remoteRegistry})`
+      );
     }
-    return registry.remoteRegistry;
+    return remoteRegistry;
   }
 }
 
