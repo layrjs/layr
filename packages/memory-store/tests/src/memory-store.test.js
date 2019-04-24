@@ -17,7 +17,7 @@ describe('MemoryStore', () => {
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123', title: 'Inception'});
 
     // Existence check
-    movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: false, throwIfNotFound: false});
+    movie = store.get({_type: 'Movie', _id: 'abc123'}, {fields: {}, throwIfNotFound: false});
     expect(movie).toEqual({_type: 'Movie', _id: 'abc123'});
 
     // Missing document

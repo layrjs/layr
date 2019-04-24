@@ -11,6 +11,9 @@
   "main": "dist/node/cjs",
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
+  "dependencies": {
+    "lodash": "^4.17.11"
+  },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
     "properties": [
