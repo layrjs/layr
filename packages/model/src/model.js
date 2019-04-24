@@ -5,8 +5,6 @@ import isEmpty from 'lodash/isEmpty';
 import {Field} from './field';
 
 export class Model {
-  static remoteRegistry = 'remoteRegistry';
-
   static create(object, options) {
     return new this(object, options);
   }
@@ -454,6 +452,8 @@ export class Model {
 
   // === Remote invocation ===
 
+  static remoteRegistry = 'remoteRegistry';
+
   static defineRemoteMethod(name, descriptor) {
     descriptor.value = async function (...args) {
       return this.callRemote(name, ...args);
@@ -486,11 +486,22 @@ export class Model {
     return result;
   }
 
-  static getName() {
-    return this.name;
+  static _getRemoteRegistry() {
+    const registry = this._getRegistry();
+    const remoteRegistry = registry[this.remoteRegistry];
+    if (!remoteRegistry) {
+      throw new Error(
+        `Remote registry not found (model: ${this.name}, remoteRegistry: ${this.remoteRegistry})`
+      );
+    }
+    return remoteRegistry;
   }
 
   // === Utilities ===
+
+  static getName() {
+    return this.name;
+  }
 
   [inspect.custom]() {
     const object = {};
@@ -516,17 +527,6 @@ export class Model {
       Model = Object.getPrototypeOf(Model);
     }
     return false;
-  }
-
-  static _getRemoteRegistry() {
-    const registry = this._getRegistry();
-    const remoteRegistry = registry[this.remoteRegistry];
-    if (!remoteRegistry) {
-      throw new Error(
-        `Remote registry not found (model: ${this.name}, remoteRegistry: ${this.remoteRegistry})`
-      );
-    }
-    return remoteRegistry;
   }
 }
 

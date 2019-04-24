@@ -1,6 +1,8 @@
 import {Document} from './document';
 
 export class LocalDocument extends Document {
+  static store = 'store';
+
   static async _load(documents, {fields, throwIfNotFound}) {
     const store = this._getStore();
     let serializedDocuments = documents.map(document => document._serializeTypeAndId());
@@ -50,9 +52,10 @@ export class LocalDocument extends Document {
 
   static _getStore() {
     const registry = this._getRegistry();
-    if (!registry.store) {
-      throw new Error(`Store not found (model: ${this.name})`);
+    const store = registry[this.store];
+    if (!store) {
+      throw new Error(`Store not found (model: ${this.name}, store: ${this.store})`);
     }
-    return registry.store;
+    return store;
   }
 }
