@@ -240,138 +240,6 @@ describe('LocalDocument', () => {
     expect(movie).toBeUndefined();
   });
 
-  test('Hooks', async () => {
-    const HookMixin = Base =>
-      class extends Base {
-        afterLoadCount = 0;
-
-        beforeSaveCount = 0;
-
-        afterSaveCount = 0;
-
-        beforeDeleteCount = 0;
-
-        afterDeleteCount = 0;
-
-        async afterLoad(options) {
-          await super.afterLoad(options);
-          this.afterLoadCount++;
-        }
-
-        async beforeSave(options) {
-          await super.beforeSave(options);
-          this.beforeSaveCount++;
-        }
-
-        async afterSave(options) {
-          await super.afterSave(options);
-          this.afterSaveCount++;
-        }
-
-        async beforeDelete(options) {
-          await super.beforeDelete(options);
-          this.beforeDeleteCount++;
-        }
-
-        async afterDelete(options) {
-          await super.afterDelete(options);
-          this.afterDeleteCount++;
-        }
-      };
-
-    class Movie extends HookMixin(LocalDocument) {
-      @field('string') title;
-
-      @field('Trailer') trailer;
-    }
-
-    class Trailer extends HookMixin(Subdocument) {
-      @field('string') url;
-    }
-
-    const store = new MemoryStore();
-    const rootRegistry = new Registry({Movie, Trailer, store});
-
-    let registry = rootRegistry.fork();
-    let movie = new registry.Movie({
-      title: 'Inception',
-      trailer: {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0'}
-    });
-    const movieId = movie.id;
-    expect(movie.afterLoadCount).toBe(0);
-    expect(movie.beforeSaveCount).toBe(0);
-    expect(movie.afterSaveCount).toBe(0);
-    expect(movie.beforeDeleteCount).toBe(0);
-    expect(movie.afterDeleteCount).toBe(0);
-    expect(movie.trailer.afterLoadCount).toBe(0);
-    expect(movie.trailer.beforeSaveCount).toBe(0);
-    expect(movie.trailer.afterSaveCount).toBe(0);
-    expect(movie.trailer.beforeDeleteCount).toBe(0);
-    expect(movie.trailer.afterDeleteCount).toBe(0);
-
-    await movie.save();
-    expect(movie.afterLoadCount).toBe(0);
-    expect(movie.beforeSaveCount).toBe(1);
-    expect(movie.afterSaveCount).toBe(1);
-    expect(movie.beforeDeleteCount).toBe(0);
-    expect(movie.afterDeleteCount).toBe(0);
-    expect(movie.trailer.afterLoadCount).toBe(0);
-    expect(movie.trailer.beforeSaveCount).toBe(1);
-    expect(movie.trailer.afterSaveCount).toBe(1);
-    expect(movie.trailer.beforeDeleteCount).toBe(0);
-    expect(movie.trailer.afterDeleteCount).toBe(0);
-
-    registry = rootRegistry.fork();
-    movie = await registry.Movie.get(movieId);
-    expect(movie.afterLoadCount).toBe(1);
-    expect(movie.beforeSaveCount).toBe(0);
-    expect(movie.afterSaveCount).toBe(0);
-    expect(movie.beforeDeleteCount).toBe(0);
-    expect(movie.afterDeleteCount).toBe(0);
-    expect(movie.trailer.afterLoadCount).toBe(1);
-    expect(movie.trailer.beforeSaveCount).toBe(0);
-    expect(movie.trailer.afterSaveCount).toBe(0);
-    expect(movie.trailer.beforeDeleteCount).toBe(0);
-    expect(movie.trailer.afterDeleteCount).toBe(0);
-
-    movie = await registry.Movie.get(movieId);
-    expect(movie.afterLoadCount).toBe(1); // Since the movie was in the entity map, 'afterLoad' has not been called a second time
-    expect(movie.beforeSaveCount).toBe(0);
-    expect(movie.afterSaveCount).toBe(0);
-    expect(movie.beforeDeleteCount).toBe(0);
-    expect(movie.afterDeleteCount).toBe(0);
-    expect(movie.trailer.afterLoadCount).toBe(1);
-    expect(movie.trailer.beforeSaveCount).toBe(0);
-    expect(movie.trailer.afterSaveCount).toBe(0);
-    expect(movie.trailer.beforeDeleteCount).toBe(0);
-    expect(movie.trailer.afterDeleteCount).toBe(0);
-
-    movie.trailer.url = 'https://www.youtube.com/watch?v=8hP9D6kZseM';
-    await movie.save();
-    expect(movie.afterLoadCount).toBe(1);
-    expect(movie.beforeSaveCount).toBe(1);
-    expect(movie.afterSaveCount).toBe(1);
-    expect(movie.beforeDeleteCount).toBe(0);
-    expect(movie.afterDeleteCount).toBe(0);
-    expect(movie.trailer.afterLoadCount).toBe(1);
-    expect(movie.trailer.beforeSaveCount).toBe(1);
-    expect(movie.trailer.afterSaveCount).toBe(1);
-    expect(movie.trailer.beforeDeleteCount).toBe(0);
-    expect(movie.trailer.afterDeleteCount).toBe(0);
-
-    await movie.delete();
-    expect(movie.afterLoadCount).toBe(1);
-    expect(movie.beforeSaveCount).toBe(1);
-    expect(movie.afterSaveCount).toBe(1);
-    expect(movie.beforeDeleteCount).toBe(1);
-    expect(movie.afterDeleteCount).toBe(1);
-    expect(movie.trailer.afterLoadCount).toBe(1);
-    expect(movie.trailer.beforeSaveCount).toBe(1);
-    expect(movie.trailer.afterSaveCount).toBe(1);
-    expect(movie.trailer.beforeDeleteCount).toBe(1);
-    expect(movie.trailer.afterDeleteCount).toBe(1);
-  });
-
   test('Finding documents', async () => {
     class Movie extends LocalDocument {
       @field('string') title;
@@ -448,6 +316,42 @@ describe('LocalDocument', () => {
       const movie = await registry.Movie.get(id);
       await movie.delete();
     }
+  });
+
+  test('Reloading documents', async () => {
+    class Movie extends LocalDocument {
+      @field('string') title;
+
+      @field('number') year;
+    }
+
+    const store = new MemoryStore();
+    const rootRegistry = new Registry({Movie, store});
+
+    const registry = rootRegistry.fork();
+    const movie = new registry.Movie({title: 'Inception', year: 2010});
+    const id = movie.id;
+    await movie.save();
+
+    const otherRegistry = rootRegistry.fork();
+    const otherMovie = await otherRegistry.Movie.get(id);
+    expect(otherMovie).not.toBe(movie);
+    expect(otherMovie.title).toBe('Inception');
+    expect(otherMovie.year).toBe(2010);
+
+    movie.title = 'The Matrix';
+    movie.year = 1999;
+    await movie.save();
+
+    await otherMovie.load();
+    expect(otherMovie.title).toBe('Inception'); // The movie has not been reloaded
+    expect(otherMovie.year).toBe(2010);
+
+    await otherMovie.reload();
+    expect(otherMovie.title).toBe('The Matrix'); // The movie has not been reloaded
+    expect(otherMovie.year).toBe(1999);
+
+    await movie.delete();
   });
 
   test('Referenced documents', async () => {
@@ -635,5 +539,137 @@ describe('LocalDocument', () => {
     expect(actor).toBeUndefined();
     actor = await registry.Actor.get(actorIds[1], {throwIfNotFound: false});
     expect(actor).toBeUndefined();
+  });
+
+  test('Hooks', async () => {
+    const HookMixin = Base =>
+      class extends Base {
+        afterLoadCount = 0;
+
+        beforeSaveCount = 0;
+
+        afterSaveCount = 0;
+
+        beforeDeleteCount = 0;
+
+        afterDeleteCount = 0;
+
+        async afterLoad(options) {
+          await super.afterLoad(options);
+          this.afterLoadCount++;
+        }
+
+        async beforeSave(options) {
+          await super.beforeSave(options);
+          this.beforeSaveCount++;
+        }
+
+        async afterSave(options) {
+          await super.afterSave(options);
+          this.afterSaveCount++;
+        }
+
+        async beforeDelete(options) {
+          await super.beforeDelete(options);
+          this.beforeDeleteCount++;
+        }
+
+        async afterDelete(options) {
+          await super.afterDelete(options);
+          this.afterDeleteCount++;
+        }
+      };
+
+    class Movie extends HookMixin(LocalDocument) {
+      @field('string') title;
+
+      @field('Trailer') trailer;
+    }
+
+    class Trailer extends HookMixin(Subdocument) {
+      @field('string') url;
+    }
+
+    const store = new MemoryStore();
+    const rootRegistry = new Registry({Movie, Trailer, store});
+
+    let registry = rootRegistry.fork();
+    let movie = new registry.Movie({
+      title: 'Inception',
+      trailer: {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0'}
+    });
+    const movieId = movie.id;
+    expect(movie.afterLoadCount).toBe(0);
+    expect(movie.beforeSaveCount).toBe(0);
+    expect(movie.afterSaveCount).toBe(0);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.trailer.afterLoadCount).toBe(0);
+    expect(movie.trailer.beforeSaveCount).toBe(0);
+    expect(movie.trailer.afterSaveCount).toBe(0);
+    expect(movie.trailer.beforeDeleteCount).toBe(0);
+    expect(movie.trailer.afterDeleteCount).toBe(0);
+
+    await movie.save();
+    expect(movie.afterLoadCount).toBe(0);
+    expect(movie.beforeSaveCount).toBe(1);
+    expect(movie.afterSaveCount).toBe(1);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.trailer.afterLoadCount).toBe(0);
+    expect(movie.trailer.beforeSaveCount).toBe(1);
+    expect(movie.trailer.afterSaveCount).toBe(1);
+    expect(movie.trailer.beforeDeleteCount).toBe(0);
+    expect(movie.trailer.afterDeleteCount).toBe(0);
+
+    registry = rootRegistry.fork();
+    movie = await registry.Movie.get(movieId);
+    expect(movie.afterLoadCount).toBe(1);
+    expect(movie.beforeSaveCount).toBe(0);
+    expect(movie.afterSaveCount).toBe(0);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.trailer.afterLoadCount).toBe(1);
+    expect(movie.trailer.beforeSaveCount).toBe(0);
+    expect(movie.trailer.afterSaveCount).toBe(0);
+    expect(movie.trailer.beforeDeleteCount).toBe(0);
+    expect(movie.trailer.afterDeleteCount).toBe(0);
+
+    movie = await registry.Movie.get(movieId);
+    expect(movie.afterLoadCount).toBe(1); // Since the movie was in the entity map, 'afterLoad' has not been called a second time
+    expect(movie.beforeSaveCount).toBe(0);
+    expect(movie.afterSaveCount).toBe(0);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.trailer.afterLoadCount).toBe(1);
+    expect(movie.trailer.beforeSaveCount).toBe(0);
+    expect(movie.trailer.afterSaveCount).toBe(0);
+    expect(movie.trailer.beforeDeleteCount).toBe(0);
+    expect(movie.trailer.afterDeleteCount).toBe(0);
+
+    movie.trailer.url = 'https://www.youtube.com/watch?v=8hP9D6kZseM';
+    await movie.save();
+    expect(movie.afterLoadCount).toBe(1);
+    expect(movie.beforeSaveCount).toBe(1);
+    expect(movie.afterSaveCount).toBe(1);
+    expect(movie.beforeDeleteCount).toBe(0);
+    expect(movie.afterDeleteCount).toBe(0);
+    expect(movie.trailer.afterLoadCount).toBe(1);
+    expect(movie.trailer.beforeSaveCount).toBe(1);
+    expect(movie.trailer.afterSaveCount).toBe(1);
+    expect(movie.trailer.beforeDeleteCount).toBe(0);
+    expect(movie.trailer.afterDeleteCount).toBe(0);
+
+    await movie.delete();
+    expect(movie.afterLoadCount).toBe(1);
+    expect(movie.beforeSaveCount).toBe(1);
+    expect(movie.afterSaveCount).toBe(1);
+    expect(movie.beforeDeleteCount).toBe(1);
+    expect(movie.afterDeleteCount).toBe(1);
+    expect(movie.trailer.afterLoadCount).toBe(1);
+    expect(movie.trailer.beforeSaveCount).toBe(1);
+    expect(movie.trailer.afterSaveCount).toBe(1);
+    expect(movie.trailer.beforeDeleteCount).toBe(1);
+    expect(movie.trailer.afterDeleteCount).toBe(1);
   });
 });

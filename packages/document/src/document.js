@@ -4,7 +4,7 @@ import {FieldMask} from '@storable/util';
 import {BaseDocument} from './base-document';
 
 export class Document extends BaseDocument(Entity) {
-  static async get(ids, {fields, populate = true, throwIfNotFound = true} = {}) {
+  static async get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(ids)) {
       return (await this.get([ids], {fields, populate, throwIfNotFound}))[0];
     }
@@ -14,18 +14,18 @@ export class Document extends BaseDocument(Entity) {
     }
 
     let documents = ids.map(id => this.deserialize({_id: id}));
-    documents = await this.load(documents, {fields, populate, throwIfNotFound});
+    documents = await this.load(documents, {fields, reload, populate, throwIfNotFound});
     return documents;
   }
 
-  static async load(documents, {fields, populate = true, throwIfNotFound = true} = {}) {
+  static async load(documents, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
-      return (await this.load([documents], {fields, populate, throwIfNotFound}))[0];
+      return (await this.load([documents], {fields, reload, populate, throwIfNotFound}))[0];
     }
 
     fields = new FieldMask(fields);
 
-    documents = await this._loadRootDocuments(documents, {fields, throwIfNotFound});
+    documents = await this._loadRootDocuments(documents, {fields, reload, throwIfNotFound});
 
     if (populate) {
       await this.populate(documents, {fields, throwIfNotFound});
@@ -34,16 +34,22 @@ export class Document extends BaseDocument(Entity) {
     return documents;
   }
 
-  static async _loadRootDocuments(documents, {fields, throwIfNotFound}) {
+  static async reload(documents, {fields, populate = true, throwIfNotFound = true} = {}) {
+    return await this.load(documents, {fields, reload: true, populate, throwIfNotFound});
+  }
+
+  static async _loadRootDocuments(documents, {fields, reload, throwIfNotFound}) {
     fields = this.filterEntityFields(fields);
 
-    const incompleteDocuments = documents.filter(document => !document.fieldsAreActive(fields));
+    const documentsToLoad = reload ?
+      documents :
+      documents.filter(document => !document.fieldsAreActive(fields));
 
-    if (!incompleteDocuments.length) {
+    if (!documentsToLoad.length) {
       return documents;
     }
 
-    let loadedDocuments = await this._load(incompleteDocuments, {fields, throwIfNotFound});
+    let loadedDocuments = await this._load(documentsToLoad, {fields, throwIfNotFound});
 
     loadedDocuments = loadedDocuments.filter(loadedDocument => loadedDocument);
 
@@ -52,7 +58,7 @@ export class Document extends BaseDocument(Entity) {
     }
 
     documents = documents.map(document => {
-      if (incompleteDocuments.some(incompleteDocument => incompleteDocument._id === document._id)) {
+      if (documentsToLoad.some(incompleteDocument => incompleteDocument._id === document._id)) {
         if (!loadedDocuments.some(loadedDocument => loadedDocument._id === document._id)) {
           return undefined;
         }
@@ -63,8 +69,12 @@ export class Document extends BaseDocument(Entity) {
     return documents;
   }
 
-  async load({fields, populate = true, throwIfNotFound = true} = {}) {
-    return (await this.constructor.load([this], {fields, populate, throwIfNotFound}))[0];
+  async load({fields, reload, populate = true, throwIfNotFound = true} = {}) {
+    return (await this.constructor.load([this], {fields, reload, populate, throwIfNotFound}))[0];
+  }
+
+  async reload({fields, populate = true, throwIfNotFound = true} = {}) {
+    return await this.load({fields, reload: true, populate, throwIfNotFound});
   }
 
   static async populate(documents, {fields, throwIfNotFound = true} = {}) {

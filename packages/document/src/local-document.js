@@ -44,21 +44,6 @@ export class LocalDocument extends Document {
     return documents;
   }
 
-  // static async _loadReferencedDocuments(document, {return: fields}) {
-  //   // const referencedDocuments = {
-  //   //   Director: {
-  //   //     abc123: {fullName: true}
-  //   //   }
-  //   // };
-  //   const referencedDocuments = {};
-
-  //   callWithOneOrMany(document, document => {
-  //     document.forEachNestedEntity((referencedDocument, {fields}) => {
-
-  //     }, {fields});
-  //   });
-  // }
-
   isOfType(name) {
     return name === 'LocalDocument' ? true : super.isOfType(name); // Optimization
   }
