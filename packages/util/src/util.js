@@ -17,11 +17,14 @@ export function callWithOneOrMany(value, func) {
     const values = value;
     for (let index = 0; index < values.length; index++) {
       const value = values[index];
-      func(value, index);
+      const result = func(value, index);
+      if (result !== undefined) {
+        return result;
+      }
     }
     return;
   }
-  func(value);
+  return func(value);
 }
 
 export async function callWithOneOrManyAsync(value, func) {
@@ -29,11 +32,14 @@ export async function callWithOneOrManyAsync(value, func) {
     const values = value;
     for (let index = 0; index < values.length; index++) {
       const value = values[index];
-      await func(value, index);
+      const result = await func(value, index);
+      if (result !== undefined) {
+        return result;
+      }
     }
     return;
   }
-  await func(value);
+  return await func(value);
 }
 
 export function mapFromOneOrMany(value, func) {
