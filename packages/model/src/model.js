@@ -5,8 +5,22 @@ import isEmpty from 'lodash/isEmpty';
 import {Field} from './field';
 
 export class Model {
-  static create(object, options) {
-    return new this(object, options);
+  static create(object, {previousInstance, isDeserializing, ...otherOptions} = {}) {
+    if (isDeserializing) {
+      const existingInstance = this._findExistingInstance(object, {previousInstance});
+      if (existingInstance) {
+        existingInstance.initialize(object, {isDeserializing, ...otherOptions});
+        return existingInstance;
+      }
+    }
+
+    return new this(object, {isDeserializing, ...otherOptions});
+  }
+
+  static _findExistingInstance(object, {previousInstance}) {
+    if (previousInstance?.constructor === this) {
+      return previousInstance;
+    }
   }
 
   constructor(object, options) {
@@ -324,8 +338,9 @@ export class Model {
     if (!isDeserializing) {
       this._saveFieldValue(field);
     }
+    const previousValue = this._fieldValues[field.name];
     const registry = this.constructor._getRegistry({throwIfNotFound: false});
-    value = field.createValue(value, {registry, fields, isDeserializing});
+    value = field.createValue(value, {previousValue, registry, fields, isDeserializing});
     this._fieldValues[field.name] = value;
     this.activateField(field);
     return value;

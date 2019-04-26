@@ -132,7 +132,7 @@ describe('LocalDocument', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.technicalSpecs.color).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBeUndefined();
-    await movie.load({fields: {technicalSpecs: {color: true, aspectRatio: true}}}); // TODO: Since the 'color' field has already been loaded, we shouldn't have to specify it again
+    await movie.load({fields: {technicalSpecs: {aspectRatio: true}}});
     expect(movie.title).toBe('Inception');
     expect(movie.technicalSpecs.color).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');

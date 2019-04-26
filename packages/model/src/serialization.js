@@ -58,7 +58,7 @@ export function deserialize(value, {expectedType, registry} = {}) {
 
 export function createValue(
   value,
-  {expectedType, registry, fields, isDeserializing, fieldName} = {}
+  {expectedType, previousValue, registry, fields, isDeserializing, fieldName} = {}
 ) {
   value = normalizeValue(value, {fieldName});
 
@@ -77,7 +77,7 @@ export function createValue(
       }
     } else {
       const Model = getModel(registry, type);
-      value = Model.create(value, {fields, isDeserializing});
+      value = Model.create(value, {previousInstance: previousValue, fields, isDeserializing});
     }
   }
 
@@ -111,7 +111,7 @@ export function createValue(
   }
 
   const Model = getModel(registry, expectedType);
-  value = Model.create(value, {fields, isDeserializing});
+  value = Model.create(value, {previousInstance: previousValue, fields, isDeserializing});
   return value;
 }
 

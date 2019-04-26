@@ -1,17 +1,14 @@
 import {Identity} from './identity';
 
 export class Entity extends Identity {
-  static create(object, options) {
+  static _findExistingInstance(object, {previousInstance: _previousInstance}) {
     const id = object?._id;
     if (id !== undefined) {
       const entity = this.getEntity(id);
       if (entity) {
-        entity.initialize(object, options);
         return entity;
       }
     }
-
-    return super.create(object, options);
   }
 
   constructor(object, options) {
