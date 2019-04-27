@@ -1,24 +1,10 @@
 import {Identity} from './identity';
 
 export class Entity extends Identity {
-  static _findExistingInstance(object, {previousInstance: _previousInstance}) {
-    const id = object?._id;
-    if (id !== undefined) {
-      const entity = this.getEntity(id);
-      if (entity) {
-        return entity;
-      }
-    }
-  }
-
   constructor(object, options) {
     super(object, options);
 
     this.constructor.setEntity(this._id, this);
-  }
-
-  release() {
-    this.constructor.setEntity(this._id, undefined);
   }
 
   serialize({_isDeep, ...otherOptions} = {}) {
@@ -44,6 +30,16 @@ export class Entity extends Identity {
     return {...this._serializeTypeAndId(), _ref: true};
   }
 
+  static _findExistingInstance(object, {previousInstance: _previousInstance}) {
+    const id = object?._id;
+    if (id !== undefined) {
+      const entity = this.getEntity(id);
+      if (entity) {
+        return entity;
+      }
+    }
+  }
+
   static getEntity(id) {
     return this._entities?.[id];
   }
@@ -53,6 +49,10 @@ export class Entity extends Identity {
       this._entities = Object.create(this._entities || {});
     }
     this._entities[id] = entity;
+  }
+
+  release() {
+    this.constructor.setEntity(this._id, undefined);
   }
 
   isOfType(name) {

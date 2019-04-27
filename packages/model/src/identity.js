@@ -5,21 +5,10 @@ import {findFromOneOrMany} from '@storable/util';
 import {Model} from './model';
 
 export class Identity extends Model {
-  static _findExistingInstance(object, {previousInstance}) {
-    const foundInstance = findFromOneOrMany(
-      previousInstance,
-      previousInstance =>
-        previousInstance?.constructor === this && previousInstance._id === object?._id
-    );
-    if (foundInstance) {
-      return foundInstance;
-    }
-  }
-
   constructor(object, options) {
     super(object, options);
 
-    if (options?.isDeserializing) {
+    if (options?.deserialize) {
       this._id = object?._id;
     } else {
       this._id = this.constructor.generateId();
@@ -31,8 +20,15 @@ export class Identity extends Model {
     return {...(_new && {_new}), _type, _id: this._id, ...fields};
   }
 
-  [inspect.custom]() {
-    return {id: this._id, ...super[inspect.custom]()};
+  static _findExistingInstance(object, {previousInstance}) {
+    const foundInstance = findFromOneOrMany(
+      previousInstance,
+      previousInstance =>
+        previousInstance?.constructor === this && previousInstance._id === object?._id
+    );
+    if (foundInstance) {
+      return foundInstance;
+    }
   }
 
   get id() {
@@ -50,6 +46,10 @@ export class Identity extends Model {
     if (id === '') {
       throw new Error(`'id' cannot be empty`);
     }
+  }
+
+  [inspect.custom]() {
+    return {id: this._id, ...super[inspect.custom]()};
   }
 
   isOfType(name) {

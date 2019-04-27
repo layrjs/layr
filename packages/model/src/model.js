@@ -5,26 +5,16 @@ import isEmpty from 'lodash/isEmpty';
 import {Field} from './field';
 
 export class Model {
-  static create(object, {previousInstance, isDeserializing, ...otherOptions} = {}) {
-    if (isDeserializing) {
+  static create(object, {previousInstance, deserialize, ...otherOptions} = {}) {
+    if (deserialize) {
       const existingInstance = this._findExistingInstance(object, {previousInstance});
       if (existingInstance) {
-        existingInstance.initialize(object, {isDeserializing, ...otherOptions});
+        existingInstance._initialize(object, {deserialize, ...otherOptions});
         return existingInstance;
       }
     }
 
-    return new this(object, {isDeserializing, ...otherOptions});
-  }
-
-  static _findExistingInstance(object, {previousInstance}) {
-    if (
-      previousInstance !== undefined &&
-      !Array.isArray(previousInstance) &&
-      previousInstance.constructor === this
-    ) {
-      return previousInstance;
-    }
+    return new this(object, {deserialize, ...otherOptions});
   }
 
   constructor(object, options) {
@@ -32,10 +22,10 @@ export class Model {
     this._fieldValues = {};
     this._savedFieldValues = {};
 
-    this.initialize(object, options);
+    this._initialize(object, options);
   }
 
-  initialize(object = {}, {fields, isDeserializing} = {}) {
+  _initialize(object = {}, {fields, deserialize} = {}) {
     if (typeof object !== 'object') {
       throw new Error(
         `Type mismatch (model: '${this.constructor.getName()}', expected: 'object', provided: '${typeof object}')`
@@ -44,7 +34,7 @@ export class Model {
 
     const rootFields = fields !== undefined ? new FieldMask(fields) : undefined;
 
-    const isNew = isDeserializing ? Boolean(object._new) : true;
+    const isNew = deserialize ? Boolean(object._new) : true;
 
     this.constructor.forEachField(field => {
       let fields;
@@ -64,7 +54,7 @@ export class Model {
       }
 
       const value = object[field.name];
-      this._setFieldValue(field, value, {fields, isDeserializing});
+      this._setFieldValue(field, value, {fields, deserialize});
       if (value === undefined && isNew) {
         this._applyFieldDefault(field);
       }
@@ -146,11 +136,21 @@ export class Model {
   }
 
   static deserialize(object, options) {
-    return this.create(object, {...options, isDeserializing: true});
+    return this.create(object, {...options, deserialize: true});
   }
 
   deserialize(object, options) {
     return this.constructor.deserialize(object, {...options, previousInstance: this});
+  }
+
+  static _findExistingInstance(object, {previousInstance}) {
+    if (
+      previousInstance !== undefined &&
+      !Array.isArray(previousInstance) &&
+      previousInstance.constructor === this
+    ) {
+      return previousInstance;
+    }
   }
 
   // === Core ===
@@ -342,13 +342,13 @@ export class Model {
     return value;
   }
 
-  _setFieldValue(field, value, {fields, isDeserializing} = {}) {
-    if (!isDeserializing) {
+  _setFieldValue(field, value, {fields, deserialize} = {}) {
+    if (!deserialize) {
       this._saveFieldValue(field);
     }
     const previousValue = this._fieldValues[field.name];
     const registry = this.constructor._getRegistry({throwIfNotFound: false});
-    value = field.createValue(value, {previousValue, registry, fields, isDeserializing});
+    value = field.createValue(value, {previousValue, registry, fields, deserialize});
     this._fieldValues[field.name] = value;
     this.activateField(field);
     return value;

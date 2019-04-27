@@ -32,7 +32,7 @@ export function serialize(value, options) {
 }
 
 export function deserialize(value, {expectedType, registry} = {}) {
-  let result = createValue(value, {expectedType, registry, isDeserializing: true});
+  let result = createValue(value, {expectedType, registry, deserialize: true});
   if (result !== value) {
     // createValue() did the job
     return result;
@@ -58,7 +58,7 @@ export function deserialize(value, {expectedType, registry} = {}) {
 
 export function createValue(
   value,
-  {expectedType, previousValue, registry, fields, isDeserializing, fieldName} = {}
+  {expectedType, previousValue, registry, fields, deserialize, fieldName} = {}
 ) {
   value = normalizeValue(value, {fieldName});
 
@@ -77,7 +77,7 @@ export function createValue(
       }
     } else {
       const Model = getModel(registry, type);
-      value = Model.create(value, {previousInstance: previousValue, fields, isDeserializing});
+      value = Model.create(value, {previousInstance: previousValue, fields, deserialize});
     }
   }
 
@@ -111,7 +111,7 @@ export function createValue(
   }
 
   const Model = getModel(registry, expectedType);
-  value = Model.create(value, {previousInstance: previousValue, fields, isDeserializing});
+  value = Model.create(value, {previousInstance: previousValue, fields, deserialize});
   return value;
 }
 
