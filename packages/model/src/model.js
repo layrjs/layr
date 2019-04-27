@@ -18,7 +18,11 @@ export class Model {
   }
 
   static _findExistingInstance(object, {previousInstance}) {
-    if (previousInstance?.constructor === this) {
+    if (
+      previousInstance !== undefined &&
+      !Array.isArray(previousInstance) &&
+      previousInstance.constructor === this
+    ) {
       return previousInstance;
     }
   }
@@ -141,8 +145,12 @@ export class Model {
     return this.serialize();
   }
 
-  static deserialize(object, {fields} = {}) {
-    return this.create(object, {fields, isDeserializing: true});
+  static deserialize(object, options) {
+    return this.create(object, {...options, isDeserializing: true});
+  }
+
+  deserialize(object, options) {
+    return this.constructor.deserialize(object, {...options, previousInstance: this});
   }
 
   // === Core ===

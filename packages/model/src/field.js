@@ -76,38 +76,54 @@ export class Field {
       return undefined;
     }
 
-    if (this.isArray) {
-      if (!Array.isArray(value)) {
-        throw new Error(
-          `Type mismatch (field: '${this.name}', expected: 'Array', provided: '${typeof value}')`
-        );
-      }
+    // if (this.isArray) {
+    //   if (!Array.isArray(value)) {
+    //     throw new Error(
+    //       `Type mismatch (field: '${this.name}', expected: 'Array', provided: '${typeof value}')`
+    //     );
+    //   }
 
-      const items = value;
-      const previousItems = previousValue;
-      const createdItems = [];
-      for (let index = 0; index < items.length; index++) {
-        const item = items[index];
-        const previousItem = previousItems?.[index];
-        const createdItem = this.scalar.createValue(item, {
-          previousValue: previousItem,
-          registry,
-          fields,
-          isDeserializing,
-          fieldName: this.name
-        });
-        createdItems.push(createdItem);
-      }
-      return createdItems;
+    //   const items = value;
+    //   const previousItems = previousValue;
+    //   const createdItems = [];
+    //   for (let index = 0; index < items.length; index++) {
+    //     const item = items[index];
+    //     const previousItem = previousItems?.[index];
+    //     const createdItem = this.scalar.createValue(item, {
+    //       previousValue: previousItem,
+    //       registry,
+    //       fields,
+    //       isDeserializing,
+    //       fieldName: this.name
+    //     });
+    //     createdItems.push(createdItem);
+    //   }
+    //   return createdItems;
+    // }
+
+    // return this.scalar.createValue(value, {
+    //   previousValue,
+    //   registry,
+    //   fields,
+    //   isDeserializing,
+    //   fieldName: this.name
+    // });
+
+    if (this.isArray && !Array.isArray(value)) {
+      throw new Error(
+        `Type mismatch (field: '${this.name}', expected: 'Array', provided: '${typeof value}')`
+      );
     }
 
-    return this.scalar.createValue(value, {
-      previousValue,
-      registry,
-      fields,
-      isDeserializing,
-      fieldName: this.name
-    });
+    return mapFromOneOrMany(value, value =>
+      this.scalar.createValue(value, {
+        previousValue,
+        registry,
+        fields,
+        isDeserializing,
+        fieldName: this.name
+      })
+    );
   }
 
   serializeValue(value, options) {

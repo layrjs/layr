@@ -1,12 +1,18 @@
 import {inspect} from 'util';
 import cuid from 'cuid';
+import {findFromOneOrMany} from '@storable/util';
 
 import {Model} from './model';
 
 export class Identity extends Model {
   static _findExistingInstance(object, {previousInstance}) {
-    if (previousInstance?.constructor === this && previousInstance._id === object?._id) {
-      return previousInstance;
+    const foundInstance = findFromOneOrMany(
+      previousInstance,
+      previousInstance =>
+        previousInstance?.constructor === this && previousInstance._id === object?._id
+    );
+    if (foundInstance) {
+      return foundInstance;
     }
   }
 
