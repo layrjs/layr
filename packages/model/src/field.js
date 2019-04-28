@@ -101,11 +101,13 @@ export class Field {
     return result;
   }
 
-  validateValue(value) {
+  validateValue(value, {filter}) {
     if (this.isArray) {
       const values = value;
       let failedValidators = runValidators(values, this.validators);
-      const failedScalarValidators = values.map(value => this.scalar.validateValue(value));
+      const failedScalarValidators = values.map(value =>
+        this.scalar.validateValue(value, {filter})
+      );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
           failedValidators = [];
@@ -114,7 +116,7 @@ export class Field {
       }
       return failedValidators;
     }
-    return this.scalar.validateValue(value);
+    return this.scalar.validateValue(value, {filter});
   }
 }
 
@@ -143,7 +145,7 @@ class Scalar {
     return serializeValue(value, options);
   }
 
-  validateValue(value) {
+  validateValue(value, {filter}) {
     if (value === undefined) {
       if (!this.isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
@@ -152,7 +154,7 @@ class Scalar {
     }
     if (value.isOfType && value.isOfType('Model')) {
       return value.constructor.fieldValueIsSubmodel(value) ?
-        value.getFailedValidators() :
+        value.getFailedValidators({filter}) :
         undefined;
     }
     return runValidators(value, this.validators);

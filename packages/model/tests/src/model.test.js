@@ -22,8 +22,8 @@ describe('Model', () => {
     expect(movie.year).toBe(1999);
 
     expect(() => {
-      movie.year = '1999'; // Type mismatch
-    }).toThrow();
+      movie.year = '1999';
+    }).toThrow(/Type mismatch/);
 
     const anotherMovie = new Movie({title: 'Forrest Gump', unknownField: 'abc'});
     expect(anotherMovie.title).toBe('Forrest Gump');
@@ -133,7 +133,7 @@ describe('Model', () => {
       return class Actor extends Item {
         @field('string') id; // Cannot add a property that already exists
       };
-    }).toThrow();
+    }).toThrow(/Field already exists/);
   });
 
   test('Validation', () => {
@@ -197,11 +197,11 @@ describe('Model', () => {
     expect(movie.isValid()).toBe(false);
     expect(() => {
       movie.validate();
-    }).toThrow();
+    }).toThrow(/Model validation failed/);
 
     movie = new Movie({title: 'Inception'});
     expect(movie.isValid()).toBe(true);
-    expect(movie.validate()).toBe(true);
+    expect(() => movie.validate()).not.toThrow();
   });
 
   test('Commit and rollback', () => {
@@ -275,13 +275,13 @@ describe('Model', () => {
 
   test('Serialization', () => {
     class Movie extends Model {
-      @field('string') title;
+      @field('string?') title;
 
-      @field('Date') releasedOn;
+      @field('Date?') releasedOn;
 
       @field('string[]') genres;
 
-      @field('TechnicalSpecs') technicalSpecs;
+      @field('TechnicalSpecs?') technicalSpecs;
 
       @field('Actor[]') actors;
     }
@@ -519,6 +519,6 @@ describe('Model', () => {
 
     expect(() => {
       movie.owner = new registry.Actor({fullName: 'Leonardo DiCaprio'}); // Actor is not an Identity
-    }).toThrow();
+    }).toThrow(/Type mismatch/);
   });
 });

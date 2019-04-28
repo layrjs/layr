@@ -8,7 +8,7 @@ describe('LocalDocument', () => {
     class Movie extends LocalDocument {
       @field('string') title;
 
-      @field('number') year;
+      @field('number?') year;
     }
 
     const store = new MemoryStore();
@@ -157,7 +157,7 @@ describe('LocalDocument', () => {
     class Trailer extends Subdocument {
       @field('string') url;
 
-      @field('number') duration;
+      @field('number?') duration;
     }
 
     const store = new MemoryStore();
@@ -219,7 +219,7 @@ describe('LocalDocument', () => {
     // The trailer can be fully replaced
     registry = rootRegistry.fork();
     movie = await registry.Movie.get(movieId);
-    movie.trailer = {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0'};
+    movie.trailer = {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0', duration: 45};
     const newTrailerId = movie.trailer.id;
     expect(typeof newTrailerId === 'string').toBe(true);
     expect(newTrailerId !== '').toBe(true);
@@ -229,7 +229,7 @@ describe('LocalDocument', () => {
     movie = await registry.Movie.get(movieId);
     expect(movie.trailer.id).toBe(newTrailerId);
     expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=YoHD9XEInc0');
-    expect(movie.trailer.duration).toBeUndefined();
+    expect(movie.trailer.duration).toBe(45);
 
     // Will delete both the movie document and its trailer subdocument
     registry = rootRegistry.fork();

@@ -9,9 +9,9 @@ describe('RemoteDocument', () => {
       class extends Parent {
         @field('string') title;
 
-        @field('string') genre;
+        @field('string?') genre;
 
-        @field('string') country;
+        @field('string?') country;
 
         @field('number') score = 0;
       };

@@ -100,7 +100,11 @@ export class Model {
 
   // === Serialization ===
 
-  serialize({filter, ...otherOptions} = {}) {
+  serialize({filter, _isDeep, ...otherOptions} = {}) {
+    if (!_isDeep) {
+      this.validate({filter});
+    }
+
     const definedFields = {};
 
     const isNew = this.isNew();
@@ -110,18 +114,18 @@ export class Model {
       undefinedFields = [];
     }
 
-    this.forEachField(field => {
-      if (filter && !filter(this, field)) {
-        return;
-      }
-      let value = this._getFieldValue(field);
-      value = field.serializeValue(value, {filter, ...otherOptions, _isDeep: true});
-      if (value !== undefined) {
-        definedFields[field.name] = value;
-      } else if (!isNew) {
-        undefinedFields.push(field.name);
-      }
-    });
+    this.forEachField(
+      field => {
+        let value = this._getFieldValue(field);
+        value = field.serializeValue(value, {filter, ...otherOptions, _isDeep: true});
+        if (value !== undefined) {
+          definedFields[field.name] = value;
+        } else if (!isNew) {
+          undefinedFields.push(field.name);
+        }
+      },
+      {filter}
+    );
 
     return {
       ...(isNew && {_new: true}),
@@ -279,9 +283,12 @@ export class Model {
     }
   }
 
-  forEachField(func) {
+  forEachField(func, {filter} = {}) {
     return this.constructor.forEachField(field => {
       if (this.fieldIsActive(field)) {
+        if (filter && !filter(this, field)) {
+          return;
+        }
         return func(field);
       }
     });
@@ -440,8 +447,8 @@ export class Model {
 
   // === Validation ===
 
-  validate() {
-    const failedValidators = this.getFailedValidators();
+  validate({filter} = {}) {
+    const failedValidators = this.getFailedValidators({filter});
     if (failedValidators) {
       const error = new Error(
         `Model validation failed (model: '${this.constructor.getName()}', failedValidators: ${JSON.stringify(
@@ -451,25 +458,27 @@ export class Model {
       error.failedValidators = failedValidators;
       throw error;
     }
-    return true;
   }
 
-  isValid() {
-    return this.getFailedValidators() === undefined;
+  isValid({filter} = {}) {
+    return this.getFailedValidators({filter}) === undefined;
   }
 
-  getFailedValidators() {
+  getFailedValidators({filter} = {}) {
     let result;
-    this.forEachField(field => {
-      const value = this._getFieldValue(field);
-      const failedValidators = field.validateValue(value);
-      if (!isEmpty(failedValidators)) {
-        if (!result) {
-          result = {};
+    this.forEachField(
+      field => {
+        const value = this._getFieldValue(field);
+        const failedValidators = field.validateValue(value, {filter});
+        if (!isEmpty(failedValidators)) {
+          if (!result) {
+            result = {};
+          }
+          result[field.name] = failedValidators;
         }
-        result[field.name] = failedValidators;
-      }
-    });
+      },
+      {filter}
+    );
     return result;
   }
 
