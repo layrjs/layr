@@ -55,7 +55,7 @@ export class Model {
 
       const value = object[field.name];
       this._setFieldValue(field, value, {fields, deserialize});
-      if (value === undefined && isNew) {
+      if (isNew && value === undefined) {
         this._applyFieldDefault(field);
       }
     });
@@ -95,12 +95,12 @@ export class Model {
   }
 
   clone() {
-    return this.constructor.deserialize(this.serialize());
+    return this.constructor.deserialize(this.serialize({includeUnchangedFields: true}));
   }
 
   // === Serialization ===
 
-  serialize({filter, _isDeep, ...otherOptions} = {}) {
+  serialize({includeUnchangedFields, filter, _isDeep, ...otherOptions} = {}) {
     if (!_isDeep) {
       this.validate({filter});
     }
@@ -116,8 +116,19 @@ export class Model {
 
     this.forEachField(
       field => {
+        if (!(includeUnchangedFields || this.fieldIsChanged(field))) {
+          return;
+        }
+
         let value = this._getFieldValue(field);
-        value = field.serializeValue(value, {filter, ...otherOptions, _isDeep: true});
+
+        value = field.serializeValue(value, {
+          includeUnchangedFields,
+          filter,
+          ...otherOptions,
+          _isDeep: true
+        });
+
         if (value !== undefined) {
           definedFields[field.name] = value;
         } else if (!isNew) {
@@ -372,7 +383,7 @@ export class Model {
   }
 
   _saveFieldValue(field) {
-    this._savedFieldValues[field.name] = this._getFieldValue(field);
+    this._savedFieldValues[field.name] = this._fieldValues[field.name];
   }
 
   commit() {

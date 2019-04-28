@@ -363,12 +363,12 @@ describe('Model', () => {
     // Deserialization
 
     movie = registry.Movie.deserialize();
-    expect(movie.serialize()).toEqual({
+    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
       _type: 'Movie'
     });
 
     movie = registry.Movie.deserialize({title: 'Inception'});
-    expect(movie.serialize()).toEqual({
+    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
@@ -384,7 +384,7 @@ describe('Model', () => {
         {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
       ]
     });
-    expect(movie.serialize()).toEqual({
+    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
@@ -403,12 +403,22 @@ describe('Model', () => {
       releasedOn: new Date(Date.UTC(2010, 6, 16))
     });
 
-    expect(movie.serialize({filter: (model, field) => model.fieldIsChanged(field)})).toEqual({
+    expect(
+      movie.serialize({
+        includeUnchangedFields: true,
+        filter: (model, field) => model.fieldIsChanged(field)
+      })
+    ).toEqual({
       _type: 'Movie'
     });
 
     movie.title = 'The Matrix';
-    expect(movie.serialize({filter: (model, field) => model.fieldIsChanged(field)})).toEqual({
+    expect(
+      movie.serialize({
+        includeUnchangedFields: true,
+        filter: (model, field) => model.fieldIsChanged(field)
+      })
+    ).toEqual({
       _type: 'Movie',
       title: 'The Matrix'
     });
@@ -416,13 +426,13 @@ describe('Model', () => {
     // Serialization of 'undefined'
 
     movie = registry.Movie.deserialize({title: 'Inception'});
-    expect(movie.serialize()).toEqual({
+    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
 
     movie.releasedOn = undefined;
-    expect(movie.serialize()).toEqual({
+    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       _undefined: ['releasedOn']
@@ -433,7 +443,7 @@ describe('Model', () => {
         _type: 'Movie',
         title: 'Inception',
         _undefined: ['releasedOn']
-      }).serialize()
+      }).serialize({includeUnchangedFields: true})
     ).toEqual({
       _type: 'Movie',
       title: 'Inception',
@@ -466,7 +476,7 @@ describe('Model', () => {
 
     expect(clone instanceof registry.Movie).toBe(true);
     expect(clone).not.toBe(movie);
-    expect(clone.serialize()).toEqual(movie.serialize());
+    expect(clone.serialize({includeUnchangedFields: true})).toEqual(movie.serialize());
 
     expect(clone.title).toBe('Inception');
 

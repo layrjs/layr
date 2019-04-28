@@ -253,23 +253,20 @@ describe('LocalDocument', () => {
     const rootRegistry = new Registry({Movie, store});
 
     let registry = rootRegistry.fork();
-    const movie1 = await registry.Movie.deserialize({
-      _new: true,
-      _id: 'movie1',
+    const movie1 = await new registry.Movie({
+      id: 'movie1',
       title: 'Inception',
       genre: 'action',
       country: 'USA'
     }).save();
-    const movie2 = await registry.Movie.deserialize({
-      _new: true,
-      _id: 'movie2',
+    const movie2 = await new registry.Movie({
+      id: 'movie2',
       title: 'Forrest Gump',
       genre: 'drama',
       country: 'USA'
     }).save();
-    const movie3 = await registry.Movie.deserialize({
-      _new: true,
-      _id: 'movie3',
+    const movie3 = await new registry.Movie({
+      id: 'movie3',
       title: 'Léon',
       genre: 'action',
       country: 'France'
@@ -305,7 +302,7 @@ describe('LocalDocument', () => {
 
     registry = rootRegistry.fork();
     movies = await registry.Movie.find({fields: {title: true}});
-    expect(movies.map(movie => movie.serialize())).toEqual([
+    expect(movies.map(movie => movie.serialize({includeUnchangedFields: true}))).toEqual([
       {_type: 'Movie', _id: 'movie1', title: 'Inception'},
       {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},
       {_type: 'Movie', _id: 'movie3', title: 'Léon'}

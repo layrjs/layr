@@ -3,7 +3,7 @@ import {MemoryStore} from '@storable/memory-store';
 
 import {RemoteDocument, LocalDocument, field, remoteMethod, serialize, deserialize} from '../../..';
 
-describe('RemoteDocument', () => {
+describe.skip('RemoteDocument', () => {
   describe('One remote registry', () => {
     const BaseMovie = Parent =>
       class extends Parent {

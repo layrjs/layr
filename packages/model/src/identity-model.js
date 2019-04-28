@@ -8,11 +8,8 @@ export class IdentityModel extends Model {
   constructor(object, options) {
     super(object, options);
 
-    if (options?.deserialize) {
-      this._id = object?._id;
-    } else {
-      this._id = this.constructor.generateId();
-    }
+    const idKey = options?.deserialize ? '_id' : 'id';
+    this._id = object?.[idKey] || this.constructor.generateId();
   }
 
   serialize(options) {
