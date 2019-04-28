@@ -1,10 +1,10 @@
 import {Registry} from '@storable/registry';
 
-import {Identity, field} from '../../..';
+import {IdentityModel, field} from '../../..';
 
-describe('Identity', () => {
+describe('IdentityModel', () => {
   test('id', () => {
-    class Movie extends Identity {}
+    class Movie extends IdentityModel {}
 
     let movie = new Movie();
     const id = movie.id; // An 'id' should have been generated automatically
@@ -19,13 +19,13 @@ describe('Identity', () => {
   });
 
   test('Identity mapping', () => {
-    class Movie extends Identity {
+    class Movie extends IdentityModel {
       @field('string') title;
 
       @field('Actor[]') actors;
     }
 
-    class Actor extends Identity {
+    class Actor extends IdentityModel {
       @field('string') fullName;
 
       @field('number') popularity;

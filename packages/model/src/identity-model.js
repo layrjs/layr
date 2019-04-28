@@ -4,7 +4,7 @@ import {findFromOneOrMany} from '@storable/util';
 
 import {Model} from './model';
 
-export class Identity extends Model {
+export class IdentityModel extends Model {
   constructor(object, options) {
     super(object, options);
 
@@ -53,6 +53,6 @@ export class Identity extends Model {
   }
 
   isOfType(name) {
-    return name === 'Identity' ? true : super.isOfType(name); // Optimization
+    return name === 'IdentityModel' ? true : super.isOfType(name); // Optimization
   }
 }
