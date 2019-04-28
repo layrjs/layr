@@ -1,6 +1,6 @@
-import {Document} from './document';
+import {AbstractDocument} from './abstract-document';
 
-export class RemoteDocument extends Document {
+export class RemoteDocument extends AbstractDocument {
   _serializeReference() {
     return {...super._serializeReference(), _remote: true};
   }

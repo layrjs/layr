@@ -3,7 +3,7 @@ import {FieldMask} from '@storable/util';
 
 import {BaseDocument} from './base-document';
 
-export class Document extends BaseDocument(EntityModel) {
+export class AbstractDocument extends BaseDocument(EntityModel) {
   static async get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(ids)) {
       return (await this.get([ids], {fields, populate, throwIfNotFound}))[0];
@@ -212,6 +212,6 @@ export class Document extends BaseDocument(EntityModel) {
   }
 
   isOfType(name) {
-    return name === 'Document' ? true : super.isOfType(name); // Optimization
+    return name === 'AbstractDocument' ? true : super.isOfType(name); // Optimization
   }
 }

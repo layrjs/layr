@@ -1,6 +1,6 @@
-import {Document} from './document';
+import {AbstractDocument} from './abstract-document';
 
-export class LocalDocument extends Document {
+export class LocalDocument extends AbstractDocument {
   static store = 'store';
 
   static async _load(documents, {fields, throwIfNotFound}) {
