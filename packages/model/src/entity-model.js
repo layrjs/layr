@@ -1,6 +1,6 @@
 import {IdentityModel} from './identity-model';
 
-export class Entity extends IdentityModel {
+export class EntityModel extends IdentityModel {
   constructor(object, options) {
     super(object, options);
 
@@ -56,6 +56,6 @@ export class Entity extends IdentityModel {
   }
 
   isOfType(name) {
-    return name === 'Entity' ? true : super.isOfType(name); // Optimization
+    return name === 'EntityModel' ? true : super.isOfType(name); // Optimization
   }
 }

@@ -1,9 +1,9 @@
-import {Entity} from '@storable/model';
+import {EntityModel} from '@storable/model';
 import {FieldMask} from '@storable/util';
 
 import {BaseDocument} from './base-document';
 
-export class Document extends BaseDocument(Entity) {
+export class Document extends BaseDocument(EntityModel) {
   static async get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(ids)) {
       return (await this.get([ids], {fields, populate, throwIfNotFound}))[0];

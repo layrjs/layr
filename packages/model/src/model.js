@@ -260,7 +260,7 @@ export class Model {
 
       const Model = field.scalar.getModel(this._getRegistry());
 
-      if (Model.prototype.isOfType('Entity')) {
+      if (Model.prototype.isOfType('EntityModel')) {
         filteredFields[field.name] = {};
         return;
       }
@@ -295,11 +295,11 @@ export class Model {
   }
 
   static fieldValueIsSubmodel(value) {
-    return value?.isOfType && !value.isOfType('Entity');
+    return value?.isOfType && !value.isOfType('EntityModel');
   }
 
   static fieldValueIsNestedEntity(value) {
-    return value?.isOfType && value.isOfType('Entity');
+    return value?.isOfType && value.isOfType('EntityModel');
   }
 
   forEachSubmodel(func) {

@@ -1,8 +1,8 @@
-import {Entity, field} from '../../..';
+import {EntityModel, field} from '../../..';
 
-describe('Entity', () => {
+describe('EntityModel', () => {
   test('Identity mapping', () => {
-    class Movie extends Entity {
+    class Movie extends EntityModel {
       constructor(object, options) {
         super(object, options);
         this.counter = 0;
