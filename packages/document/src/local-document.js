@@ -8,7 +8,8 @@ export class LocalDocument extends AbstractDocument {
     let serializedDocuments = documents.map(document => document._serializeTypeAndId());
     serializedDocuments = await store.get(serializedDocuments, {fields, throwIfNotFound});
     documents = serializedDocuments.map(
-      serializedDocument => serializedDocument && this.deserialize(serializedDocument, {fields})
+      serializedDocument =>
+        serializedDocument && this.deserialize(serializedDocument, {fields, source: 'store'})
     );
     return documents;
   }
@@ -21,7 +22,8 @@ export class LocalDocument extends AbstractDocument {
       throwIfAlreadyExists
     });
     documents = serializedDocuments.map(
-      serializedDocument => serializedDocument && this.deserialize(serializedDocument)
+      serializedDocument =>
+        serializedDocument && this.deserialize(serializedDocument, {source: 'store'})
     );
     return documents;
   }
@@ -31,7 +33,8 @@ export class LocalDocument extends AbstractDocument {
     let serializedDocuments = documents.map(document => document._serializeTypeAndId());
     serializedDocuments = await store.delete(serializedDocuments, {throwIfNotFound});
     documents = serializedDocuments.map(
-      serializedDocument => serializedDocument && this.deserialize(serializedDocument)
+      serializedDocument =>
+        serializedDocument && this.deserialize(serializedDocument, {source: 'store'})
     );
     return documents;
   }
@@ -42,7 +45,9 @@ export class LocalDocument extends AbstractDocument {
       {...this._serializeType(), ...filter},
       {sort, skip, limit, fields}
     );
-    const documents = serializedDocuments.map(document => this.deserialize(document, {fields}));
+    const documents = serializedDocuments.map(document =>
+      this.deserialize(document, {fields, source: 'store'})
+    );
     return documents;
   }
 

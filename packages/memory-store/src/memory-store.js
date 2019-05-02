@@ -114,7 +114,7 @@ export class MemoryStore {
 
       this._setFields(document, fields, {rootType: _type, rootId: _id});
 
-      return {_type, _id};
+      return {_type, _id, ...fields};
     });
   }
 

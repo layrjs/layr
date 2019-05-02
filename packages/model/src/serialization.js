@@ -31,8 +31,8 @@ export function serialize(value, options) {
   return result;
 }
 
-export function deserialize(value, {expectedType, registry} = {}) {
-  let result = createValue(value, {expectedType, registry, deserialize: true});
+export function deserialize(value, {source, expectedType, registry} = {}) {
+  let result = createValue(value, {expectedType, registry, deserialize: true, source});
   if (result !== value) {
     // createValue() did the job
     return result;
@@ -45,20 +45,20 @@ export function deserialize(value, {expectedType, registry} = {}) {
 
   if (Array.isArray(value)) {
     // The value is an array
-    return value.map(item => deserialize(item, {expectedType, registry}));
+    return value.map(item => deserialize(item, {source, expectedType, registry}));
   }
 
   // The value is a plain object
   result = {};
   for (const [key, val] of Object.entries(value)) {
-    result[key] = deserialize(val, {expectedType, registry});
+    result[key] = deserialize(val, {source, expectedType, registry});
   }
   return result;
 }
 
 export function createValue(
   value,
-  {expectedType, previousValue, registry, fields, deserialize, fieldName} = {}
+  {expectedType, previousValue, registry, fields, deserialize, source, fieldName} = {}
 ) {
   value = normalizeValue(value, {fieldName});
 
@@ -77,7 +77,7 @@ export function createValue(
       }
     } else {
       const Model = getModel(registry, type);
-      value = Model.create(value, {previousInstance: previousValue, fields, deserialize});
+      value = Model.create(value, {previousInstance: previousValue, fields, deserialize, source});
     }
   }
 
@@ -111,7 +111,7 @@ export function createValue(
   }
 
   const Model = getModel(registry, expectedType);
-  value = Model.create(value, {previousInstance: previousValue, fields, deserialize});
+  value = Model.create(value, {previousInstance: previousValue, fields, deserialize, source});
   return value;
 }
 

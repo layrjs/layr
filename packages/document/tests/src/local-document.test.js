@@ -302,7 +302,7 @@ describe('LocalDocument', () => {
 
     registry = rootRegistry.fork();
     movies = await registry.Movie.find({fields: {title: true}});
-    expect(movies.map(movie => movie.serialize({includeUnchangedFields: true}))).toEqual([
+    expect(movies.map(movie => movie.serialize())).toEqual([
       {_type: 'Movie', _id: 'movie1', title: 'Inception'},
       {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},
       {_type: 'Movie', _id: 'movie3', title: 'Léon'}

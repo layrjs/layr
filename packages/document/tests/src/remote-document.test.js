@@ -3,7 +3,7 @@ import {MemoryStore} from '@storable/memory-store';
 
 import {RemoteDocument, LocalDocument, field, remoteMethod, serialize, deserialize} from '../../..';
 
-describe.skip('RemoteDocument', () => {
+describe('RemoteDocument', () => {
   describe('One remote registry', () => {
     const BaseMovie = Parent =>
       class extends Parent {
@@ -21,6 +21,7 @@ describe.skip('RemoteDocument', () => {
 
       class Movie extends BaseMovie(LocalDocument) {
         async upvote() {
+          await this.load({fields: {score: true}});
           const previousScore = this.score;
           this.score++;
           await this.save();
@@ -60,7 +61,9 @@ describe.skip('RemoteDocument', () => {
       let registry = rootRegistry.fork();
       let movie = new registry.Movie({title: 'Inception', genre: 'action'});
       const id = movie.id;
+      expect(movie.getFieldSource('title')).toBe(registry);
       await movie.save();
+      expect(movie.getFieldSource('title')).toBe(registryServer);
 
       // Read
 
@@ -69,7 +72,9 @@ describe.skip('RemoteDocument', () => {
       expect(movie instanceof registry.Movie).toBe(true);
       expect(movie.id).toBe(id);
       expect(movie.title).toBe('Inception');
+      expect(movie.getFieldSource('title')).toBe(registryServer);
       expect(movie.genre).toBe('action');
+      expect(movie.getFieldSource('genre')).toBe(registryServer);
 
       registry = rootRegistry.fork();
       await expect(registry.Movie.get('missing-id')).rejects.toThrow();
@@ -94,22 +99,31 @@ describe.skip('RemoteDocument', () => {
 
       registry = rootRegistry.fork();
       movie = await registry.Movie.get(id);
+      expect(movie.getFieldSource('title')).toBe(registryServer);
       movie.title = 'The Matrix';
+      expect(movie.getFieldSource('title')).toBe(registry);
       await movie.save();
+      expect(movie.getFieldSource('title')).toBe(registryServer);
+      registry = rootRegistry.fork();
       movie = await registry.Movie.get(id);
       expect(movie.id).toBe(id);
       expect(movie.title).toBe('The Matrix');
+      expect(movie.getFieldSource('title')).toBe(registryServer);
       expect(movie.genre).toBe('action');
 
       registry = rootRegistry.fork();
       movie = await registry.Movie.get(id);
+      expect(movie.getFieldSource('genre')).toBe(registryServer);
       movie.genre = undefined;
+      expect(movie.getFieldSource('genre')).toBe(registry);
       await movie.save();
+      expect(movie.getFieldSource('genre')).toBe(registryServer);
       registry = rootRegistry.fork();
       movie = await registry.Movie.get(id);
       expect(movie.id).toBe(id);
       expect(movie.title).toBe('The Matrix');
       expect(movie.genre).toBeUndefined();
+      expect(movie.getFieldSource('genre')).toBe(registryServer);
 
       // Delete
 

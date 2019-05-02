@@ -69,7 +69,7 @@ export class Field {
     }
   }
 
-  createValue(value, {previousValue, registry, fields, deserialize}) {
+  createValue(value, {previousValue, registry, fields, deserialize, source}) {
     value = normalizeValue(value, {fieldName: this.name});
 
     if (value === undefined) {
@@ -88,6 +88,7 @@ export class Field {
         registry,
         fields,
         deserialize,
+        source,
         fieldName: this.name
       })
     );
@@ -130,13 +131,14 @@ class Scalar {
     this.validators = validators;
   }
 
-  createValue(value, {previousValue, registry, fields, deserialize, fieldName}) {
+  createValue(value, {previousValue, registry, fields, deserialize, source, fieldName}) {
     return createValue(value, {
       expectedType: this.type,
       previousValue,
       registry,
       fields,
       deserialize,
+      source,
       fieldName
     });
   }

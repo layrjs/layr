@@ -20,12 +20,13 @@ export class Model {
   constructor(object, options) {
     this._activeFields = new Set();
     this._fieldValues = {};
+    this._fieldSources = {};
     this._savedFieldValues = {};
 
     this._initialize(object, options);
   }
 
-  _initialize(object = {}, {fields, deserialize} = {}) {
+  _initialize(object = {}, {fields, deserialize, source} = {}) {
     if (typeof object !== 'object') {
       throw new Error(
         `Type mismatch (model: '${this.constructor.getName()}', expected: 'object', provided: '${typeof object}')`
@@ -54,7 +55,7 @@ export class Model {
       }
 
       const value = object[field.name];
-      this._setFieldValue(field, value, {fields, deserialize});
+      this._setFieldValue(field, value, {fields, deserialize, source});
       if (isNew && value === undefined) {
         this._applyFieldDefault(field);
       }
@@ -77,7 +78,7 @@ export class Model {
 
   _assignObject(object) {
     for (const [name, value] of Object.entries(object)) {
-      const field = this.constructor.getField(name);
+      const field = this.constructor.getField(name, {throwIfNotFound: false});
       if (field) {
         this._setFieldValue(field, value);
       }
@@ -86,7 +87,7 @@ export class Model {
 
   _assignOther(other) {
     other.forEachField(otherField => {
-      const field = this.constructor.getField(otherField.name);
+      const field = this.constructor.getField(otherField.name, {throwIfNotFound: false});
       if (field) {
         const value = other._getFieldValue(otherField);
         this._setFieldValue(field, value);
@@ -95,35 +96,33 @@ export class Model {
   }
 
   clone() {
-    return this.constructor.deserialize(this.serialize({includeUnchangedFields: true}));
+    return this.constructor.deserialize(this.serialize());
   }
 
   // === Serialization ===
 
-  serialize({includeUnchangedFields, filter, _isDeep, ...otherOptions} = {}) {
+  serialize({target, filter, _isDeep, ...otherOptions} = {}) {
     if (!_isDeep) {
       this.validate({filter});
     }
 
-    const definedFields = {};
-
     const isNew = this.isNew();
-
+    const definedFields = {};
     let undefinedFields;
-    if (!isNew) {
-      undefinedFields = [];
-    }
 
     this.forEachField(
       field => {
-        if (!(includeUnchangedFields || this.fieldIsChanged(field))) {
-          return;
+        if (target !== undefined) {
+          const source = this._getFieldSource(field);
+          if (target === source) {
+            return;
+          }
         }
 
         let value = this._getFieldValue(field);
 
         value = field.serializeValue(value, {
-          includeUnchangedFields,
+          target,
           filter,
           ...otherOptions,
           _isDeep: true
@@ -131,7 +130,10 @@ export class Model {
 
         if (value !== undefined) {
           definedFields[field.name] = value;
-        } else if (!isNew) {
+        } else {
+          if (!undefinedFields) {
+            undefinedFields = [];
+          }
           undefinedFields.push(field.name);
         }
       },
@@ -142,7 +144,7 @@ export class Model {
       ...(isNew && {_new: true}),
       _type: this.constructor.getName(),
       ...definedFields,
-      ...(undefinedFields?.length && {_undefined: undefinedFields})
+      ...(undefinedFields && {_undefined: undefinedFields})
     };
   }
 
@@ -188,14 +190,25 @@ export class Model {
     delete descriptor.writable;
   }
 
-  static getField(name) {
-    return this._fields?.[name];
+  static getField(name, {throwIfNotFound = true} = {}) {
+    const field = this._fields?.[name];
+    if (field) {
+      return field;
+    }
+    if (throwIfNotFound) {
+      throw new Error(`Field not found (name: '${name}'), model: ${this.getName()}`);
+    }
   }
 
-  getField(name) {
-    const field = this.constructor.getField(name);
-    if (field && this.fieldIsActive(field)) {
-      return field;
+  getField(name, {throwIfNotFound = true} = {}) {
+    const field = this.constructor.getField(name, {throwIfNotFound});
+    if (field) {
+      if (this.fieldIsActive(field)) {
+        return field;
+      }
+      if (throwIfNotFound) {
+        throw new Error(`Field not active (name: '${name}'), model: ${this.getName()}`);
+      }
     }
   }
 
@@ -360,16 +373,33 @@ export class Model {
     return value;
   }
 
-  _setFieldValue(field, value, {fields, deserialize} = {}) {
+  _setFieldValue(field, value, {fields, deserialize, source} = {}) {
     if (!deserialize) {
       this._saveFieldValue(field);
     }
     const previousValue = this._fieldValues[field.name];
     const registry = this.constructor._getRegistry({throwIfNotFound: false});
-    value = field.createValue(value, {previousValue, registry, fields, deserialize});
+    value = field.createValue(value, {previousValue, registry, fields, deserialize, source});
     this._fieldValues[field.name] = value;
+    this._setFieldSource(field, source !== undefined ? source : registry);
     this.activateField(field);
     return value;
+  }
+
+  getFieldSource(name) {
+    return this._getFieldSource(this.getField(name));
+  }
+
+  _getFieldSource(field) {
+    return this._fieldSources[field.name];
+  }
+
+  setFieldSource(name, source) {
+    return this._setFieldSource(this.getField(name), source);
+  }
+
+  _setFieldSource(field, source) {
+    this._fieldSources[field.name] = source;
   }
 
   _applyFieldDefault(field) {
@@ -506,26 +536,30 @@ export class Model {
   }
 
   static async callRemote(methodName, ...args) {
+    const registry = this._getRegistry();
     const remoteRegistry = this._getRemoteRegistry();
-    const {result} = await remoteRegistry.invokeQuery({
+    const query = {
       [`${this.getName()}=>`]: {
         [`${methodName}=>result`]: {
           '([])': args
         }
       }
-    });
+    };
+    const {result} = await remoteRegistry.invokeQuery(query, {source: registry});
     return result;
   }
 
   async callRemote(methodName, ...args) {
+    const registry = this.constructor._getRegistry();
     const remoteRegistry = this.constructor._getRemoteRegistry();
-    const {result} = await remoteRegistry.invokeQuery({
+    const query = {
       '<=': this,
       [`${methodName}=>result`]: {
         '([])': args
       },
       '=>changes': true
-    });
+    };
+    const {result} = await remoteRegistry.invokeQuery(query, {source: registry});
     return result;
   }
 

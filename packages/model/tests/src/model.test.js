@@ -277,6 +277,8 @@ describe('Model', () => {
     class Movie extends Model {
       @field('string?') title;
 
+      @field('string?') country;
+
       @field('Date?') releasedOn;
 
       @field('string[]') genres;
@@ -301,14 +303,25 @@ describe('Model', () => {
     let movie = new registry.Movie();
     expect(movie.serialize()).toEqual({
       _new: true,
-      _type: 'Movie'
+      _type: 'Movie',
+      _undefined: ['title', 'country', 'releasedOn', 'genres', 'technicalSpecs', 'actors']
     });
 
     movie.title = 'Inception';
     expect(movie.serialize()).toEqual({
       _new: true,
       _type: 'Movie',
-      title: 'Inception'
+      title: 'Inception',
+      _undefined: ['country', 'releasedOn', 'genres', 'technicalSpecs', 'actors']
+    });
+
+    movie.country = 'USA';
+    expect(movie.serialize()).toEqual({
+      _new: true,
+      _type: 'Movie',
+      title: 'Inception',
+      country: 'USA',
+      _undefined: ['releasedOn', 'genres', 'technicalSpecs', 'actors']
     });
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
@@ -316,7 +329,9 @@ describe('Model', () => {
       _new: true,
       _type: 'Movie',
       title: 'Inception',
-      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
+      country: 'USA',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      _undefined: ['genres', 'technicalSpecs', 'actors']
     });
 
     movie.genres = ['action', 'adventure', 'sci-fi'];
@@ -324,8 +339,10 @@ describe('Model', () => {
       _new: true,
       _type: 'Movie',
       title: 'Inception',
+      country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-      genres: ['action', 'adventure', 'sci-fi']
+      genres: ['action', 'adventure', 'sci-fi'],
+      _undefined: ['technicalSpecs', 'actors']
     });
 
     movie.technicalSpecs = {aspectRatio: '2.39:1'};
@@ -333,13 +350,15 @@ describe('Model', () => {
       _new: true,
       _type: 'Movie',
       title: 'Inception',
+      country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {
         _new: true,
         _type: 'TechnicalSpecs',
         aspectRatio: '2.39:1'
-      }
+      },
+      _undefined: ['actors']
     });
 
     movie.actors = [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}];
@@ -347,6 +366,7 @@ describe('Model', () => {
       _new: true,
       _type: 'Movie',
       title: 'Inception',
+      country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {
@@ -363,12 +383,12 @@ describe('Model', () => {
     // Deserialization
 
     movie = registry.Movie.deserialize();
-    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
+    expect(movie.serialize()).toEqual({
       _type: 'Movie'
     });
 
     movie = registry.Movie.deserialize({title: 'Inception'});
-    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
+    expect(movie.serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
@@ -376,6 +396,7 @@ describe('Model', () => {
     movie = registry.Movie.deserialize({
       _type: 'Movie',
       title: 'Inception',
+      country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
@@ -384,9 +405,10 @@ describe('Model', () => {
         {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
       ]
     });
-    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
+    expect(movie.serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
+      country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
@@ -400,25 +422,15 @@ describe('Model', () => {
 
     movie = registry.Movie.deserialize({
       title: 'Inception',
-      releasedOn: new Date(Date.UTC(2010, 6, 16))
+      country: 'USA'
     });
 
-    expect(
-      movie.serialize({
-        includeUnchangedFields: true,
-        filter: (model, field) => model.fieldIsChanged(field)
-      })
-    ).toEqual({
+    expect(movie.serialize({filter: (model, field) => model.fieldIsChanged(field)})).toEqual({
       _type: 'Movie'
     });
 
     movie.title = 'The Matrix';
-    expect(
-      movie.serialize({
-        includeUnchangedFields: true,
-        filter: (model, field) => model.fieldIsChanged(field)
-      })
-    ).toEqual({
+    expect(movie.serialize({filter: (model, field) => model.fieldIsChanged(field)})).toEqual({
       _type: 'Movie',
       title: 'The Matrix'
     });
@@ -426,29 +438,49 @@ describe('Model', () => {
     // Serialization of 'undefined'
 
     movie = registry.Movie.deserialize({title: 'Inception'});
-    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
+    expect(movie.serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
 
-    movie.releasedOn = undefined;
-    expect(movie.serialize({includeUnchangedFields: true})).toEqual({
+    movie.country = undefined;
+    expect(movie.serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
-      _undefined: ['releasedOn']
+      _undefined: ['country']
     });
 
     expect(
       registry.Movie.deserialize({
         _type: 'Movie',
         title: 'Inception',
-        _undefined: ['releasedOn']
-      }).serialize({includeUnchangedFields: true})
+        _undefined: ['country']
+      }).serialize()
     ).toEqual({
       _type: 'Movie',
       title: 'Inception',
-      _undefined: ['releasedOn']
+      _undefined: ['country']
     });
+
+    // Serialization using 'source' and 'target'
+
+    movie = registry.Movie.deserialize({title: 'Inception'}, {source: 'backend'});
+    expect(movie.getFieldSource('title')).toBe('backend');
+    expect(movie.serialize({target: 'backend'})).toEqual({_type: 'Movie'});
+    expect(movie.serialize({target: registry})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.serialize({target: 'other'})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception'});
+
+    movie.country = 'USA';
+    expect(movie.getFieldSource('country')).toBe(registry);
+    expect(movie.serialize({target: 'backend'})).toEqual({_type: 'Movie', country: 'USA'});
+    expect(movie.serialize({target: registry})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.serialize({target: 'other'})).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      country: 'USA'
+    });
+    expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
   });
 
   test('Cloning', () => {
@@ -476,7 +508,7 @@ describe('Model', () => {
 
     expect(clone instanceof registry.Movie).toBe(true);
     expect(clone).not.toBe(movie);
-    expect(clone.serialize({includeUnchangedFields: true})).toEqual(movie.serialize());
+    expect(clone.serialize()).toEqual(movie.serialize());
 
     expect(clone.title).toBe('Inception');
 
