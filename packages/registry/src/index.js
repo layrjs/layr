@@ -1,3 +1,4 @@
-export {Registry} from './registry';
-export {RegistryClient} from './registry-client';
-export {RegistryServer} from './registry-server';
+export * from './registry';
+export * from './registerable';
+export * from './serializable';
+export * from './registry-proxy';
