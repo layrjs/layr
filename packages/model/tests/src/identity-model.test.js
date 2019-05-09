@@ -6,16 +6,21 @@ describe('IdentityModel', () => {
   test('id', () => {
     class Movie extends IdentityModel {}
 
-    let movie = new Movie();
+    const registry = new Registry('frontend', {register: {Movie}});
+
+    let movie = new registry.Movie();
     const id = movie.id; // An 'id' should have been generated automatically
     expect(typeof id === 'string').toBe(true);
     expect(id !== '').toBe(true);
+    expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, _id: id});
 
-    expect(movie.serialize()).toEqual({_new: true, _type: 'Movie', _id: id});
-
-    movie = Movie.deserialize({_id: 'abc123'});
+    movie = new registry.Movie({id: 'abc123'});
     expect(movie.id).toBe('abc123');
-    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc123'});
+    expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, _id: 'abc123'});
+
+    movie = registry.Movie.deserialize({_id: 'abc456'});
+    expect(movie.id).toBe('abc456');
+    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc456'});
   });
 
   test('Identity mapping', () => {
@@ -31,7 +36,7 @@ describe('IdentityModel', () => {
       @field('number') popularity;
     }
 
-    const registry = new Registry({Movie, Actor});
+    const registry = new Registry('frontend', {register: {Movie, Actor}});
 
     const movie = registry.Movie.deserialize({
       _type: 'Movie',

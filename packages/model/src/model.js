@@ -1,41 +1,25 @@
 import {inspect} from 'util';
+import {Registerable, Serializable} from '@storable/registry';
 import {FieldMask, callWithOneOrMany, findFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';
 
-export class Model {
-  static create(object, {previousInstance, deserialize, ...otherOptions} = {}) {
-    if (deserialize) {
-      const existingInstance = this._findExistingInstance(object, {previousInstance});
-      if (existingInstance) {
-        existingInstance._initialize(object, {deserialize, ...otherOptions});
-        return existingInstance;
-      }
-    }
+export class Model extends Serializable(Registerable()) {
+  constructor(object = {}, {fields, deserialize, ...options} = {}) {
+    super(object, {deserialize, ...options});
 
-    return new this(object, {deserialize, ...otherOptions});
-  }
-
-  constructor(object, options) {
     this._activeFields = new Set();
     this._fieldValues = {};
     this._fieldSources = {};
     this._savedFieldValues = {};
+    this._modelInitialized = true;
 
-    this._initialize(object, options);
-  }
-
-  _initialize(object = {}, {fields, deserialize, source} = {}) {
-    if (typeof object !== 'object') {
-      throw new Error(
-        `Type mismatch (model: '${this.constructor.getName()}', expected: 'object', provided: '${typeof object}')`
-      );
+    if (deserialize) {
+      return;
     }
 
     const rootFields = fields !== undefined ? new FieldMask(fields) : undefined;
-
-    const isNew = deserialize ? Boolean(object._new) : true;
 
     this.constructor.forEachField(field => {
       let fields;
@@ -44,26 +28,18 @@ export class Model {
         if (!fields) {
           return;
         }
-      } else if (
-        !(
-          isNew ||
-          Object.prototype.hasOwnProperty.call(object, field.name) ||
-          object._undefined?.includes(field.name)
-        )
-      ) {
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(object, field.name)) {
+        const defaultValue = field.getDefaultValue(this);
+        this._setFieldValue(field, defaultValue);
         return;
       }
 
-      const value = object[field.name];
-      this._setFieldValue(field, value, {fields, deserialize, source});
-      if (isNew && value === undefined) {
-        this._applyFieldDefault(field);
-      }
+      let value = object[field.name];
+      value = field.createValue(this, value, {fields});
+      this._setFieldValue(field, value);
     });
-
-    if (isNew) {
-      this.markAsNew();
-    }
   }
 
   assign(object) {
@@ -101,14 +77,12 @@ export class Model {
 
   // === Serialization ===
 
-  serialize({target, filter, _isDeep, ...otherOptions} = {}) {
+  serialize({target, fieldFilter, _isDeep, ...otherOptions} = {}) {
     if (!_isDeep) {
-      this.validate({filter});
+      this.validate({fieldFilter});
     }
 
-    const isNew = this.isNew();
-    const definedFields = {};
-    let undefinedFields;
+    const fields = {};
 
     this.forEachField(
       field => {
@@ -120,52 +94,52 @@ export class Model {
         }
 
         let value = this._getFieldValue(field);
-
-        value = field.serializeValue(value, {
+        value = field.serializeValue(this, value, {
           target,
-          filter,
-          ...otherOptions,
-          _isDeep: true
+          fieldFilter,
+          _isDeep: true,
+          ...otherOptions
         });
-
-        if (value !== undefined) {
-          definedFields[field.name] = value;
-        } else {
-          if (!undefinedFields) {
-            undefinedFields = [];
-          }
-          undefinedFields.push(field.name);
-        }
+        fields[field.name] = value;
       },
-      {filter}
+      {filter: fieldFilter}
     );
 
-    return {
-      ...(isNew && {_new: true}),
-      _type: this.constructor.getName(),
-      ...definedFields,
-      ...(undefinedFields && {_undefined: undefinedFields})
-    };
+    return {...super.serialize({target, _isDeep, ...otherOptions}), ...fields};
   }
 
-  toJSON() {
-    return this.serialize();
+  static deserialize(object, {source, previousInstance} = {}) {
+    const instance = this.getInstance(object, previousInstance);
+    if (instance) {
+      instance.deserialize(object, {source});
+      return instance;
+    }
+    return super.deserialize(object, {source});
   }
 
-  static deserialize(object, options) {
-    return this.create(object, {...options, deserialize: true});
+  deserialize(object = {}, {source} = {}) {
+    super.deserialize(object);
+
+    const isNew = this.isNew();
+
+    this.constructor.forEachField(field => {
+      if (!Object.prototype.hasOwnProperty.call(object, field.name)) {
+        if (isNew) {
+          const defaultValue = field.getDefaultValue(this);
+          this._setFieldValue(field, defaultValue);
+        }
+        return;
+      }
+
+      let value = object[field.name];
+      const previousValue = this._getFieldValue(field, {throwIfNotActive: false});
+      value = field.deserializeValue(this, value, {source, previousValue});
+      this._setFieldValue(field, value, {source});
+    });
   }
 
-  deserialize(object, options) {
-    return this.constructor.deserialize(object, {...options, previousInstance: this});
-  }
-
-  static _findExistingInstance(object, {previousInstance}) {
-    if (
-      previousInstance !== undefined &&
-      !Array.isArray(previousInstance) &&
-      previousInstance.constructor === this
-    ) {
+  static getInstance(object, previousInstance) {
+    if (previousInstance?.constructor === this) {
       return previousInstance;
     }
   }
@@ -196,18 +170,20 @@ export class Model {
       return field;
     }
     if (throwIfNotFound) {
-      throw new Error(`Field not found (name: '${name}'), model: ${this.getName()}`);
+      throw new Error(`Field not found (name: '${name}'), model: ${this.getRegisteredName()}`);
     }
   }
 
   getField(name, {throwIfNotFound = true} = {}) {
     const field = this.constructor.getField(name, {throwIfNotFound});
     if (field) {
-      if (this.fieldIsActive(field)) {
+      if (this._fieldIsActive(field)) {
         return field;
       }
       if (throwIfNotFound) {
-        throw new Error(`Field not active (name: '${name}'), model: ${this.getName()}`);
+        throw new Error(
+          `Field not active (name: '${name}'), model: ${this.constructor.getRegisteredName()}`
+        );
       }
     }
   }
@@ -225,15 +201,15 @@ export class Model {
     return field;
   }
 
-  activateField(field) {
+  _activateField(field) {
     this._activeFields.add(field.name);
   }
 
-  fieldIsActive(field) {
+  _fieldIsActive(field) {
     return this._activeFields.has(field.name);
   }
 
-  fieldsAreActive(fields) {
+  _fieldsAreActive(fields) {
     const rootFields = new FieldMask(fields);
 
     const result = this.constructor.forEachField(field => {
@@ -242,7 +218,7 @@ export class Model {
         return;
       }
 
-      if (!this.fieldIsActive(field)) {
+      if (!this._fieldIsActive(field)) {
         return false;
       }
 
@@ -250,7 +226,7 @@ export class Model {
       if (value !== undefined) {
         const incompleteValue = findFromOneOrMany(value, value => {
           if (this.constructor.fieldValueIsSubmodel(value)) {
-            return !value.fieldsAreActive(fields);
+            return !value._fieldsAreActive(fields);
           }
         });
         if (incompleteValue !== undefined) {
@@ -309,8 +285,8 @@ export class Model {
 
   forEachField(func, {filter} = {}) {
     return this.constructor.forEachField(field => {
-      if (this.fieldIsActive(field)) {
-        if (filter && !filter(this, field)) {
+      if (this._fieldIsActive(field)) {
+        if (filter && !filter.call(this, field)) {
           return;
         }
         return func(field);
@@ -364,25 +340,32 @@ export class Model {
     });
   }
 
-  _getFieldValue(field) {
-    let value = this._fieldValues[field.name];
-    if (value === undefined && field.isArray) {
-      value = [];
-      this._fieldValues[field.name] = value;
+  _getFieldValue(field, {throwIfNotActive = true} = {}) {
+    if (!this._fieldIsActive(field)) {
+      if (throwIfNotActive) {
+        throw new Error(
+          `Field not active (name: '${field.name}'), model: ${this.constructor.getRegisteredName()}`
+        );
+      }
+      return undefined;
     }
+
+    const value = this._fieldValues[field.name];
+    // if (value === undefined && field.isArray) {
+    //   value = [];
+    //   this._fieldValues[field.name] = value;
+    // }
     return value;
   }
 
-  _setFieldValue(field, value, {fields, deserialize, source} = {}) {
-    if (!deserialize) {
-      this._saveFieldValue(field);
-    }
-    const previousValue = this._fieldValues[field.name];
-    const registry = this.constructor._getRegistry({throwIfNotFound: false});
-    value = field.createValue(value, {previousValue, registry, fields, deserialize, source});
+  _setFieldValue(field, value, {source = this.constructor.getRegistry().getName()} = {}) {
+    field.checkValue(this, value);
+    // if (!deserialize) {
+    //   this._saveFieldValue(field);
+    // }
     this._fieldValues[field.name] = value;
-    this._setFieldSource(field, source !== undefined ? source : registry);
-    this.activateField(field);
+    this._setFieldSource(field, source);
+    this._activateField(field);
     return value;
   }
 
@@ -400,16 +383,6 @@ export class Model {
 
   _setFieldSource(field, source) {
     this._fieldSources[field.name] = source;
-  }
-
-  _applyFieldDefault(field) {
-    let value = field.default;
-    while (typeof value === 'function') {
-      value = value.call(this);
-    }
-    if (value !== undefined) {
-      this._setFieldValue(field, value);
-    }
   }
 
   _saveFieldValue(field) {
@@ -467,32 +440,20 @@ export class Model {
     return false;
   }
 
-  isNew() {
-    return this._new === true;
-  }
-
-  markAsNew() {
-    this._new = true;
-  }
-
-  markAsNotNew() {
-    this._new = false;
-  }
-
   static _getRegistry({throwIfNotFound = true} = {}) {
     if (!this.$registry && throwIfNotFound) {
-      throw new Error(`Registry not found (model: ${this.getName()})`);
+      throw new Error(`Registry not found (model: ${this.getRegisteredName()})`);
     }
     return this.$registry;
   }
 
   // === Validation ===
 
-  validate({filter} = {}) {
-    const failedValidators = this.getFailedValidators({filter});
+  validate({fieldFilter} = {}) {
+    const failedValidators = this.getFailedValidators({fieldFilter});
     if (failedValidators) {
       const error = new Error(
-        `Model validation failed (model: '${this.constructor.getName()}', failedValidators: ${JSON.stringify(
+        `Model validation failed (model: '${this.constructor.getRegisteredName()}', failedValidators: ${JSON.stringify(
           failedValidators
         )})`
       );
@@ -501,16 +462,16 @@ export class Model {
     }
   }
 
-  isValid({filter} = {}) {
-    return this.getFailedValidators({filter}) === undefined;
+  isValid({fieldFilter} = {}) {
+    return this.getFailedValidators({fieldFilter}) === undefined;
   }
 
-  getFailedValidators({filter} = {}) {
+  getFailedValidators({fieldFilter} = {}) {
     let result;
     this.forEachField(
       field => {
         const value = this._getFieldValue(field);
-        const failedValidators = field.validateValue(value, {filter});
+        const failedValidators = field.validateValue(value, {fieldFilter});
         if (!isEmpty(failedValidators)) {
           if (!result) {
             result = {};
@@ -518,7 +479,7 @@ export class Model {
           result[field.name] = failedValidators;
         }
       },
-      {filter}
+      {fieldFilter}
     );
     return result;
   }
@@ -539,7 +500,7 @@ export class Model {
     const registry = this._getRegistry();
     const remoteRegistry = this._getRemoteRegistry();
     const query = {
-      [`${this.getName()}=>`]: {
+      [`${this.getRegisteredName()}=>`]: {
         [`${methodName}=>result`]: {
           '([])': args
         }
@@ -575,10 +536,6 @@ export class Model {
   }
 
   // === Utilities ===
-
-  static getName() {
-    return this.name;
-  }
 
   [inspect.custom]() {
     const object = {};

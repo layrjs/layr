@@ -5,27 +5,38 @@ import {findFromOneOrMany} from '@storable/util';
 import {Model} from './model';
 
 export class IdentityModel extends Model {
-  constructor(object, options) {
-    super(object, options);
+  constructor(object = {}, {deserialize, ...options} = {}) {
+    super(object, {deserialize, ...options});
 
-    const idKey = options?.deserialize ? '_id' : 'id';
-    this._id = object?.[idKey] || this.constructor.generateId();
+    if (deserialize) {
+      return;
+    }
+
+    let id = object.id;
+    if (id !== undefined) {
+      this.constructor.validateId(id);
+    } else {
+      id = this.constructor.generateId();
+    }
+    this._id = id;
   }
 
   serialize(options) {
-    const {_new, _type, ...fields} = super.serialize(options);
-    return {...(_new && {_new}), _type, _id: this._id, ...fields};
+    const {_type, _new, ...fields} = super.serialize(options);
+    return {_type, ...(_new && {_new}), _id: this._id, ...fields};
   }
 
-  static _findExistingInstance(object, {previousInstance}) {
-    const foundInstance = findFromOneOrMany(
+  deserialize(object = {}, options) {
+    super.deserialize(object, options);
+    this._id = object._id;
+  }
+
+  static getInstance(object, previousInstance) {
+    return findFromOneOrMany(
       previousInstance,
       previousInstance =>
         previousInstance?.constructor === this && previousInstance._id === object?._id
     );
-    if (foundInstance) {
-      return foundInstance;
-    }
   }
 
   get id() {

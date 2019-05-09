@@ -1,14 +1,8 @@
 import {mapFromOneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
+import isPlainObject from 'lodash/isPlainObject';
 
-import {
-  createValue,
-  serializeValue,
-  normalizeValue,
-  isPrimitiveType,
-  getModel
-} from './serialization';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field {
@@ -69,11 +63,9 @@ export class Field {
     }
   }
 
-  createValue(value, {previousValue, registry, fields, deserialize, source}) {
-    value = normalizeValue(value, {fieldName: this.name});
-
+  checkValue(parent, value) {
     if (value === undefined) {
-      return undefined;
+      return;
     }
 
     if (this.isArray && !Array.isArray(value)) {
@@ -83,31 +75,41 @@ export class Field {
     }
 
     return mapFromOneOrMany(value, value =>
-      this.scalar.createValue(value, {
-        previousValue,
-        registry,
-        fields,
-        deserialize,
-        source,
-        fieldName: this.name
-      })
+      this.scalar.checkValue(parent, value, {fieldName: this.name})
     );
   }
 
-  serializeValue(value, options) {
-    const result = mapFromOneOrMany(value, value => this.scalar.serializeValue(value, options));
-    if (this.isArray && !result?.length) {
-      return undefined; // Empty arrays are serialized as 'undefined'
+  createValue(parent, value, {fields}) {
+    if (value === undefined) {
+      return undefined;
     }
+    return mapFromOneOrMany(value, value =>
+      this.scalar.createValue(parent, value, {fields, fieldName: this.name})
+    );
+  }
+
+  serializeValue(parent, value, options) {
+    const result = mapFromOneOrMany(value, value =>
+      this.scalar.serializeValue(parent, value, options)
+    );
+    // if (this.isArray && !result?.length) {
+    //   return undefined; // Empty arrays are serialized as 'undefined'
+    // }
     return result;
   }
 
-  validateValue(value, {filter}) {
+  deserializeValue(parent, value, {source, previousValue}) {
+    return mapFromOneOrMany(value, value =>
+      this.scalar.deserializeValue(parent, value, {source, previousValue, fieldName: this.name})
+    );
+  }
+
+  validateValue(value, {fieldFilter}) {
     if (this.isArray) {
       const values = value;
       let failedValidators = runValidators(values, this.validators);
       const failedScalarValidators = values.map(value =>
-        this.scalar.validateValue(value, {filter})
+        this.scalar.validateValue(value, {fieldFilter})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -117,7 +119,21 @@ export class Field {
       }
       return failedValidators;
     }
-    return this.scalar.validateValue(value, {filter});
+    return this.scalar.validateValue(value, {fieldFilter});
+  }
+
+  getDefaultValue(parent) {
+    let value = this.default;
+
+    while (typeof value === 'function') {
+      value = value.call(parent);
+    }
+
+    if (value === undefined && this.isArray) {
+      return [];
+    }
+
+    return value;
   }
 }
 
@@ -131,23 +147,88 @@ class Scalar {
     this.validators = validators;
   }
 
-  createValue(value, {previousValue, registry, fields, deserialize, source, fieldName}) {
-    return createValue(value, {
-      expectedType: this.type,
-      previousValue,
-      registry,
-      fields,
-      deserialize,
-      source,
-      fieldName
-    });
+  checkValue(parent, value, {fieldName}) {
+    const primitiveType = getPrimitiveType(this.type);
+    if (primitiveType) {
+      if (!primitiveType.check(value)) {
+        throw new Error(
+          `Type mismatch (field: '${fieldName}', expected: '${
+            this.type
+          }', provided: '${typeof value}')`
+        );
+      }
+      return;
+    }
+
+    const Model = parent.constructor.getRegistry().get(this.type);
+    if (!(value instanceof Model)) {
+      throw new Error(
+        `Type mismatch (field: '${fieldName}', expected: '${this.type}', provided: '${
+          value.constructor.name
+        }')`
+      );
+    }
   }
 
-  serializeValue(value, options) {
-    return serializeValue(value, options);
+  createValue(parent, value, {fields}) {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    const primitiveType = getPrimitiveType(this.type);
+    if (primitiveType) {
+      return value;
+    }
+
+    const Model = parent.constructor.getRegistry().get(this.type);
+    return new Model(value, {fields});
   }
 
-  validateValue(value, {filter}) {
+  serializeValue(parent, value, options) {
+    if (value === undefined) {
+      // In case the data is transported via JSON, we will lost all the 'undefined' values.
+      // We don't want that because 'undefined' might mean that a field has been deleted.
+      // So, we replace all 'undefined' values by 'null'.
+      return null;
+    }
+
+    const primitiveType = getPrimitiveType(this.type);
+    if (primitiveType) {
+      if (primitiveType.serialize) {
+        return primitiveType.serialize(value);
+      }
+      return value;
+    }
+
+    return value.serialize(options);
+  }
+
+  deserializeValue(parent, value, {source, previousValue, fieldName}) {
+    if (value === undefined) {
+      throw new Error(`Cannot deserialize 'undefined' (field: '${fieldName}')`);
+    }
+
+    if (value === null) {
+      return undefined;
+    }
+
+    const primitiveType = getPrimitiveType(this.type);
+    if (primitiveType) {
+      if (primitiveType.deserialize) {
+        return primitiveType.deserialize(value);
+      }
+      return value;
+    }
+
+    const type = value._type;
+    if (!type) {
+      throw new Error(`Cannot determine the type of a value (field: '${fieldName}')`);
+    }
+    const Model = parent.constructor.getRegistry().get(type);
+    return Model.deserialize(value, {source, previousInstance: previousValue});
+  }
+
+  validateValue(value, {fieldFilter}) {
     if (value === undefined) {
       if (!this.isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
@@ -156,17 +237,47 @@ class Scalar {
     }
     if (value.isOfType && value.isOfType('Model')) {
       return value.constructor.fieldValueIsSubmodel(value) ?
-        value.getFailedValidators({filter}) :
+        value.getFailedValidators({fieldFilter}) :
         undefined;
     }
     return runValidators(value, this.validators);
   }
+}
 
-  isPrimitiveType() {
-    return isPrimitiveType(this.type);
+const _primitiveTypes = {
+  boolean: {
+    check(value) {
+      return typeof value === 'boolean';
+    }
+  },
+  number: {
+    check(value) {
+      return typeof value === 'number';
+    }
+  },
+  string: {
+    check(value) {
+      return typeof value === 'string';
+    }
+  },
+  object: {
+    check(value) {
+      return isPlainObject(value);
+    }
+  },
+  Date: {
+    check(value) {
+      return value instanceof Date;
+    },
+    serialize(date) {
+      return {_type: 'Date', _value: date.toISOString()};
+    },
+    deserialize(object) {
+      return new Date(object._value);
+    }
   }
+};
 
-  getModel(registry) {
-    return getModel(registry, this.type);
-  }
+function getPrimitiveType(type) {
+  return _primitiveTypes[type];
 }

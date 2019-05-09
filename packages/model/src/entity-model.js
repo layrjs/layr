@@ -4,7 +4,7 @@ export class EntityModel extends IdentityModel {
   constructor(object, options) {
     super(object, options);
 
-    this.constructor.setEntity(this._id, this);
+    this.constructor.setInstance(this);
   }
 
   serialize({_isDeep, ...otherOptions} = {}) {
@@ -14,30 +14,31 @@ export class EntityModel extends IdentityModel {
     return super.serialize({_isDeep, ...otherOptions});
   }
 
-  static _serializeType() {
-    return {_type: this.getName()};
-  }
+  // static _serializeType() {
+  //   return {_type: this.getRegisteredName()};
+  // }
 
-  _serializeId() {
-    return {_id: this._id};
-  }
+  // _serializeId() {
+  //   return {_id: this._id};
+  // }
 
-  _serializeTypeAndId() {
-    return {...this.constructor._serializeType(), ...this._serializeId()};
-  }
+  // _serializeTypeAndId() {
+  //   return {...this.constructor._serializeType(), ...this._serializeId()};
+  // }
 
   _serializeReference() {
-    return {...this._serializeTypeAndId(), _ref: true};
+    return {...this.serialize({fieldFilter: () => false}), _ref: true};
   }
 
-  static _findExistingInstance(object, {previousInstance: _previousInstance}) {
+  static getInstance(object, _previousInstance) {
     const id = object?._id;
     if (id !== undefined) {
-      const entity = this.getEntity(id);
-      if (entity) {
-        return entity;
-      }
+      return this.getEntity(id);
     }
+  }
+
+  static setInstance(instance) {
+    this.setEntity(instance._id, instance);
   }
 
   static getEntity(id) {
@@ -51,9 +52,9 @@ export class EntityModel extends IdentityModel {
     this._entities[id] = entity;
   }
 
-  release() {
-    this.constructor.setEntity(this._id, undefined);
-  }
+  // release() {
+  //   this.constructor.setEntity(this._id, undefined);
+  // }
 
   isOfType(name) {
     return name === 'EntityModel' ? true : super.isOfType(name); // Optimization
