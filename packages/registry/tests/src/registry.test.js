@@ -72,8 +72,8 @@ describe('Registry', () => {
 
   test('Serialization', () => {
     class Movie extends Serializable(Registerable()) {
-      initialize({title, ...object} = {}, options) {
-        super.initialize(object, options);
+      constructor({title, ...object} = {}, options) {
+        super(object, options);
         this.title = title;
       }
 
@@ -82,6 +82,11 @@ describe('Registry', () => {
           ...super.serialize(options),
           title: this.title
         };
+      }
+
+      deserialize({title, ...object} = {}, options) {
+        super.deserialize(object, options);
+        this.title = title;
       }
     }
 

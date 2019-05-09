@@ -1,13 +1,10 @@
 export const Serializable = (Base = Object) =>
   class Serializable extends Base {
-    constructor(object, options) {
+    constructor(object, {deserialize, ...options} = {}) {
       super(object, options);
-      this.initialize(object, options);
-      this.constructor.saveInstance(this);
-    }
-
-    initialize(object, {_isDeserializing} = {}) {
-      this._isNew = _isDeserializing ? Boolean(object?._new) : true;
+      if (!deserialize) {
+        this._isNew = true;
+      }
     }
 
     isNew() {
@@ -33,25 +30,14 @@ export const Serializable = (Base = Object) =>
       return this.serialize();
     }
 
-    static deserialize(object, {previousInstance, ...options} = {}) {
-      const existingInstance = this.loadInstance(object, {previousInstance});
-      if (existingInstance) {
-        existingInstance.initialize(object, {_isDeserializing: true, ...options});
-        return existingInstance;
-      }
-
-      return new this(object, {...options, _isDeserializing: true});
+    static deserialize(object, options) {
+      const instance = new this(object, {deserialize: true, ...options});
+      instance.deserialize(object, options);
+      return instance;
     }
 
-    static loadInstance(_object, {previousInstance} = {}) {
-      // Override this method to implement the identity map
-      if (previousInstance?.constructor === this) {
-        return previousInstance;
-      }
-    }
-
-    static saveInstance(_instance) {
-      // Override this method to implement the identity map
+    deserialize(object, _options) {
+      this._isNew = Boolean(object?._new);
     }
   };
 

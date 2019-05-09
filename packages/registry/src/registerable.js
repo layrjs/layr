@@ -1,6 +1,6 @@
 export const Registerable = (Base = Object) =>
   class Registerable extends Base {
-    // === Class methods ===
+    // === Class registration ===
 
     static getRegisteredName() {
       return this._registeredName;
@@ -45,7 +45,7 @@ export const Registerable = (Base = Object) =>
       };
     }
 
-    // === Instance methods ===
+    // === Instance registration ===
 
     getRegisteredName() {
       return this.constructor.getRegisteredName.call(this);

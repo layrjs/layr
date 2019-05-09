@@ -4,11 +4,11 @@ describe('Remote registry', () => {
   test('Remote call', async () => {
     const BaseMath = Base =>
       class BaseMath extends Base {
-        initialize({a, b, lastResult, ...object} = {}, options) {
-          super.initialize(object, options);
+        constructor({a, b, ...object} = {}, options) {
+          super(object, options);
           this.a = a;
           this.b = b;
-          this.lastResult = lastResult;
+          this.constructor.setInstance(this);
         }
 
         serialize(options) {
@@ -20,13 +20,28 @@ describe('Remote registry', () => {
           };
         }
 
+        static deserialize(object, options) {
+          const instance = this.getInstance(object);
+          if (instance) {
+            instance.deserialize(object, options);
+            return instance;
+          }
+          return super.deserialize(object, options);
+        }
+
+        deserialize({a, b, lastResult} = {}) {
+          this.a = a;
+          this.b = b;
+          this.lastResult = lastResult;
+        }
+
         // Let's simulate an identity map
 
-        static loadInstance() {
+        static getInstance(_object) {
           return this._instance;
         }
 
-        static saveInstance(instance) {
+        static setInstance(instance) {
           this._instance = instance;
         }
       };
