@@ -21,8 +21,8 @@ export class Field {
       mapFromOneOrMany(validator, validator => normalizeValidator(validator, {fieldName: name}))
     );
 
-    this.name = name;
-    this.type = type;
+    this._name = name;
+    this._type = type;
 
     let scalarType;
     let scalarIsOptional;
@@ -51,14 +51,13 @@ export class Field {
       }
     }
 
-    this.scalar = new Scalar(scalarType, {
+    this._scalar = new Scalar(scalarType, {
       isOptional: scalarIsOptional,
       validators: scalarValidators
     });
-    this.validators = validators;
-    this.isArray = isArray;
-    this.default = defaultValue;
-
+    this._validators = validators;
+    this._isArray = isArray;
+    this._default = defaultValue;
     this._parent = undefined;
     this._value = undefined;
     this._source = undefined;
@@ -68,6 +67,14 @@ export class Field {
     const forkedField = Object.create(this);
     forkedField._parent = parent;
     return forkedField;
+  }
+
+  getName() {
+    return this._name;
+  }
+
+  getType() {
+    return this._type;
   }
 
   getValue() {
@@ -86,14 +93,14 @@ export class Field {
       return;
     }
 
-    if (this.isArray && !Array.isArray(value)) {
+    if (this._isArray && !Array.isArray(value)) {
       throw new Error(
-        `Type mismatch (field: '${this.name}', expected: 'Array', provided: '${typeof value}')`
+        `Type mismatch (field: '${this._name}', expected: 'Array', provided: '${typeof value}')`
       );
     }
 
     return mapFromOneOrMany(value, value =>
-      this.scalar.checkValue(this._parent, value, {fieldName: this.name})
+      this._scalar.checkValue(this._parent, value, {fieldName: this._name})
     );
   }
 
@@ -108,7 +115,7 @@ export class Field {
   createValue(value, {fields} = {}) {
     return this.setValue(
       mapFromOneOrMany(value, value =>
-        this.scalar.createValue(this._parent, value, {fields, fieldName: this.name})
+        this._scalar.createValue(this._parent, value, {fields, fieldName: this._name})
       )
     );
   }
@@ -123,17 +130,17 @@ export class Field {
 
     const value = this.getValue();
     return mapFromOneOrMany(value, value =>
-      this.scalar.serializeValue(this._parent, value, {target, ...otherOptions})
+      this._scalar.serializeValue(this._parent, value, {target, ...otherOptions})
     );
   }
 
   deserializeValue(value, {source, previousValue} = {}) {
     return this.setValue(
       mapFromOneOrMany(value, value =>
-        this.scalar.deserializeValue(this._parent, value, {
+        this._scalar.deserializeValue(this._parent, value, {
           source,
           previousValue,
-          fieldName: this.name
+          fieldName: this._name
         })
       ),
       {source}
@@ -142,11 +149,11 @@ export class Field {
 
   validateValue({fieldFilter} = {}) {
     const value = this.getValue();
-    if (this.isArray) {
+    if (this._isArray) {
       const values = value;
-      let failedValidators = runValidators(values, this.validators);
+      let failedValidators = runValidators(values, this._validators);
       const failedScalarValidators = values.map(value =>
-        this.scalar.validateValue(this._parent, value, {fieldFilter})
+        this._scalar.validateValue(this._parent, value, {fieldFilter})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -156,17 +163,17 @@ export class Field {
       }
       return failedValidators;
     }
-    return this.scalar.validateValue(this._parent, value, {fieldFilter});
+    return this._scalar.validateValue(this._parent, value, {fieldFilter});
   }
 
   getDefaultValue() {
-    let value = this.default;
+    let value = this._default;
 
     while (typeof value === 'function') {
       value = value.call(this._parent);
     }
 
-    if (value === undefined && this.isArray) {
+    if (value === undefined && this._isArray) {
       return [];
     }
 
@@ -179,28 +186,28 @@ class Scalar {
     if (typeof type !== 'string' || !type) {
       throw new Error("'type' parameter is missing or invalid");
     }
-    this.type = type;
-    this.isOptional = isOptional;
-    this.validators = validators;
+    this._type = type;
+    this._isOptional = isOptional;
+    this._validators = validators;
   }
 
   checkValue(parent, value, {fieldName}) {
-    const primitiveType = getPrimitiveType(this.type);
+    const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       if (!primitiveType.check(value)) {
         throw new Error(
           `Type mismatch (field: '${fieldName}', expected: '${
-            this.type
+            this._type
           }', provided: '${typeof value}')`
         );
       }
       return;
     }
 
-    const Model = parent.constructor.getRegistry().get(this.type);
+    const Model = parent.constructor.getRegistry().get(this._type);
     if (!(value instanceof Model)) {
       throw new Error(
-        `Type mismatch (field: '${fieldName}', expected: '${this.type}', provided: '${
+        `Type mismatch (field: '${fieldName}', expected: '${this._type}', provided: '${
           value.constructor.name
         }')`
       );
@@ -212,12 +219,12 @@ class Scalar {
       return undefined;
     }
 
-    const primitiveType = getPrimitiveType(this.type);
+    const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       return value;
     }
 
-    const Model = parent.constructor.getRegistry().get(this.type);
+    const Model = parent.constructor.getRegistry().get(this._type);
     return new Model(value, {fields});
   }
 
@@ -229,7 +236,7 @@ class Scalar {
       return null;
     }
 
-    const primitiveType = getPrimitiveType(this.type);
+    const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       if (primitiveType.serialize) {
         return primitiveType.serialize(value);
@@ -249,7 +256,7 @@ class Scalar {
       return undefined;
     }
 
-    const primitiveType = getPrimitiveType(this.type);
+    const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       if (primitiveType.deserialize) {
         return primitiveType.deserialize(value);
@@ -267,7 +274,7 @@ class Scalar {
 
   validateValue(parent, value, {fieldFilter}) {
     if (value === undefined) {
-      if (!this.isOptional) {
+      if (!this._isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
       }
       return undefined;
@@ -277,7 +284,7 @@ class Scalar {
         value.getFailedValidators({fieldFilter}) :
         undefined;
     }
-    return runValidators(value, this.validators);
+    return runValidators(value, this._validators);
   }
 }
 

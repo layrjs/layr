@@ -151,6 +151,30 @@ describe('Model', () => {
     expect(movie.title).toBe('Inception');
   });
 
+  test('Composition', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('TechnicalSpecs') technicalSpecs;
+    }
+
+    class TechnicalSpecs extends Model {
+      @field('string') aspectRatio;
+    }
+
+    const registry = new Registry('frontend', {register: {Movie, TechnicalSpecs}});
+
+    const movie = new registry.Movie({technicalSpecs: {aspectRatio: '2.39:1'}});
+    expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
+
+    const technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.35:1'});
+    expect(technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    expect(technicalSpecs.aspectRatio).toBe('2.35:1');
+    movie.technicalSpecs = technicalSpecs;
+    expect(movie.technicalSpecs).toBe(technicalSpecs);
+  });
+
   test('Validation', () => {
     class Movie extends Model {
       @field('string', {validators: [notEmpty(), maxLength(40)]}) title;
@@ -268,9 +292,13 @@ describe('Model', () => {
     expect(movie.isNew()).toBe(true);
   });
 
-  test('Composition', () => {
+  test('assign()', () => {
     class Movie extends Model {
       @field('string') title;
+
+      @field('number') year;
+
+      @field('string[]') genres;
 
       @field('TechnicalSpecs') technicalSpecs;
     }
@@ -281,15 +309,25 @@ describe('Model', () => {
 
     const registry = new Registry('frontend', {register: {Movie, TechnicalSpecs}});
 
-    const movie = new registry.Movie({technicalSpecs: {aspectRatio: '2.39:1'}});
+    const movie = new registry.Movie();
+
+    movie.assign({title: 'Inception', year: 2010});
+    expect(movie.title).toBe('Inception');
+    expect(movie.year).toBe(2010);
+
+    movie.assign({genres: ['action', 'drama']});
+    expect(movie.genres).toEqual(['action', 'drama']);
+
+    movie.assign({technicalSpecs: {aspectRatio: '2.39:1'}});
     expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
 
-    const technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.35:1'});
-    expect(technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
-    expect(technicalSpecs.aspectRatio).toBe('2.35:1');
-    movie.technicalSpecs = technicalSpecs;
-    expect(movie.technicalSpecs).toBe(technicalSpecs);
+    const movie2 = new registry.Movie();
+    movie2.assign(movie);
+    expect(movie2.title).toBe('Inception');
+    expect(movie2.year).toBe(2010);
+    expect(movie2.genres).toEqual(['action', 'drama']);
+    expect(movie2.technicalSpecs).toBe(movie.technicalSpecs);
   });
 
   test('Serialization', () => {
@@ -480,7 +518,7 @@ describe('Model', () => {
     expect(
       movie.serialize({
         fieldFilter(field) {
-          return field.name === 'title';
+          return field.getName() === 'title';
         }
       })
     ).toEqual({

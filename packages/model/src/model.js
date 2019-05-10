@@ -21,55 +21,64 @@ export class Model extends Serializable(Registerable()) {
     const rootFields = fields !== undefined ? new FieldMask(fields) : undefined;
 
     for (let field of this.constructor.getFields()) {
+      const name = field.getName();
+
       let fields;
       if (rootFields) {
-        fields = rootFields.get(field.name);
+        fields = rootFields.get(name);
         if (!fields) {
           continue;
         }
       }
 
-      field = this.setField(field.name);
+      field = this.setField(name);
 
-      if (!Object.prototype.hasOwnProperty.call(object, field.name)) {
+      if (!Object.prototype.hasOwnProperty.call(object, name)) {
         const defaultValue = field.getDefaultValue();
         field.setValue(defaultValue);
         continue;
       }
 
-      const value = object[field.name];
+      const value = object[name];
       field.createValue(value, {fields});
     }
   }
 
-  // assign(object) {
-  //   if (object === undefined) {
-  //     // NOOP
-  //   } else if (object.isOfType && object.isOfType('Model')) {
-  //     this._assignOther(object);
-  //   } else {
-  //     this._assignObject(object);
-  //   }
-  // }
+  assign(object) {
+    if (object === undefined) {
+      // NOOP
+    } else if (Model.isModel(object)) {
+      this._assignOther(object);
+    } else if (typeof object === 'object') {
+      this._assignObject(object);
+    } else {
+      throw new Error(
+        `Type mismatch (expected: 'Model' or 'Object', received: '${typeof object}')`
+      );
+    }
+  }
 
-  // _assignObject(object) {
-  //   for (const [name, value] of Object.entries(object)) {
-  //     const field = this.constructor.getField(name, {throwIfNotFound: false});
-  //     if (field) {
-  //       this._setFieldValue(field, value);
-  //     }
-  //   }
-  // }
+  _assignObject(object) {
+    for (const [name, value] of Object.entries(object)) {
+      let field = this.constructor.getField(name, {throwIfNotFound: false});
+      if (field) {
+        field = this.setField(name);
+        field.createValue(value);
+      }
+    }
+  }
 
-  // _assignOther(other) {
-  //   other.forEachField(otherField => {
-  //     const field = this.constructor.getField(otherField.name, {throwIfNotFound: false});
-  //     if (field) {
-  //       const value = other._getFieldValue(otherField);
-  //       this._setFieldValue(field, value);
-  //     }
-  //   });
-  // }
+  _assignOther(other) {
+    for (const otherField of other.getFields()) {
+      const name = otherField.getName();
+      const value = otherField.getValue();
+      let field = this.constructor.getField(name, {throwIfNotFound: false});
+      if (field) {
+        field = this.setField(name);
+        field.setValue(value);
+      }
+    }
+  }
 
   clone() {
     return this.constructor.deserialize(this.serialize());
@@ -85,6 +94,7 @@ export class Model extends Serializable(Registerable()) {
     const fields = {};
 
     for (const field of this.getFields({filter: fieldFilter})) {
+      const name = field.getName();
       const value = field.serializeValue({
         target,
         fieldFilter,
@@ -92,7 +102,7 @@ export class Model extends Serializable(Registerable()) {
         ...otherOptions
       });
       if (value !== undefined) {
-        fields[field.name] = value;
+        fields[name] = value;
       }
     }
 
@@ -114,17 +124,19 @@ export class Model extends Serializable(Registerable()) {
     const isNew = this.isNew();
 
     for (let field of this.constructor.getFields()) {
-      if (!Object.prototype.hasOwnProperty.call(object, field.name)) {
+      const name = field.getName();
+
+      if (!Object.prototype.hasOwnProperty.call(object, name)) {
         if (isNew) {
-          field = this.setField(field.name);
+          field = this.setField(name);
           const defaultValue = field.getDefaultValue();
           field.setValue(defaultValue);
         }
         continue;
       }
 
-      field = this.setField(field.name);
-      const value = object[field.name];
+      field = this.setField(name);
+      const value = object[name];
       const previousValue = field.getValue();
       field.deserializeValue(value, {source, previousValue});
     }
@@ -251,24 +263,26 @@ export class Model extends Serializable(Registerable()) {
     const filteredFields = {};
 
     for (const field of this.getFields()) {
-      const fields = rootFields.get(field.name);
+      const name = field.getName();
+
+      const fields = rootFields.get(name);
       if (!fields) {
         continue;
       }
 
       if (field.scalar.isPrimitiveType()) {
-        filteredFields[field.name] = true;
+        filteredFields[name] = true;
         continue;
       }
 
       const Model = field.scalar.getModel(this._getRegistry());
 
       if (Model.prototype.isOfType('EntityModel')) {
-        filteredFields[field.name] = {};
+        filteredFields[name] = {};
         continue;
       }
 
-      filteredFields[field.name] = Model._filterEntityFields(fields);
+      filteredFields[name] = Model._filterEntityFields(fields);
     }
 
     return filteredFields;
@@ -320,7 +334,9 @@ export class Model extends Serializable(Registerable()) {
     const rootFields = new FieldMask(fields);
 
     return this.constructor.forEachField(field => {
-      const fields = rootFields.get(field.name);
+      const name = field.getName();
+
+      const fields = rootFields.get(name);
       if (!fields) {
         return;
       }
@@ -420,79 +436,24 @@ export class Model extends Serializable(Registerable()) {
   getFailedValidators({fieldFilter} = {}) {
     let result;
     for (const field of this.getFields({filter: fieldFilter})) {
+      const name = field.getName();
       const failedValidators = field.validateValue({fieldFilter});
       if (!isEmpty(failedValidators)) {
         if (!result) {
           result = {};
         }
-        result[field.name] = failedValidators;
+        result[name] = failedValidators;
       }
     }
     return result;
   }
 
-  // // === Remote invocation ===
-
-  // static remoteRegistry = 'remoteRegistry';
-
-  // static defineRemoteMethod(name, descriptor) {
-  //   descriptor.value = async function (...args) {
-  //     return this.callRemote(name, ...args);
-  //   };
-  //   delete descriptor.initializer;
-  //   delete descriptor.writable;
-  // }
-
-  // static async callRemote(methodName, ...args) {
-  //   const registry = this._getRegistry();
-  //   const remoteRegistry = this._getRemoteRegistry();
-  //   const query = {
-  //     [`${this.getRegisteredName()}=>`]: {
-  //       [`${methodName}=>result`]: {
-  //         '([])': args
-  //       }
-  //     }
-  //   };
-  //   const {result} = await remoteRegistry.invokeQuery(query, {source: registry});
-  //   return result;
-  // }
-
-  // async callRemote(methodName, ...args) {
-  //   const registry = this.constructor._getRegistry();
-  //   const remoteRegistry = this.constructor._getRemoteRegistry();
-  //   const query = {
-  //     '<=': this,
-  //     [`${methodName}=>result`]: {
-  //       '([])': args
-  //     },
-  //     '=>changes': true
-  //   };
-  //   const {result} = await remoteRegistry.invokeQuery(query, {source: registry});
-  //   return result;
-  // }
-
-  // static _getRemoteRegistry() {
-  //   const registry = this._getRegistry();
-  //   const remoteRegistry = registry[this.remoteRegistry];
-  //   if (!remoteRegistry) {
-  //     throw new Error(
-  //       `Remote registry not found (model: ${this.name}, remoteRegistry: ${this.remoteRegistry})`
-  //     );
-  //   }
-  //   return remoteRegistry;
-  // }
-
   // === Utilities ===
 
-  [inspect.custom]() {
-    const object = {};
-    for (const field of this.getFields()) {
-      const value = field.getValue();
-      if (value !== undefined) {
-        object[field.name] = value;
-      }
-    }
-    return object;
+  static _isModel = true;
+
+  static isModel(object) {
+    return object?.constructor._isModel === true;
   }
 
   isOfType(name) {
@@ -508,6 +469,18 @@ export class Model extends Serializable(Registerable()) {
       Model = Object.getPrototypeOf(Model);
     }
     return false;
+  }
+
+  [inspect.custom]() {
+    const object = {};
+    for (const field of this.getFields()) {
+      const name = field.getName();
+      const value = field.getValue();
+      if (value !== undefined) {
+        object[name] = value;
+      }
+    }
+    return object;
   }
 }
 
