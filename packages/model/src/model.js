@@ -12,7 +12,6 @@ export class Model extends Serializable(Registerable()) {
     super(object, {deserialize, ...options});
 
     this._fields = new Map();
-    // this._savedFieldValues = {};
 
     if (deserialize) {
       return;
@@ -148,7 +147,7 @@ export class Model extends Serializable(Registerable()) {
     }
   }
 
-  // === Core ===
+  // === Fields ===
 
   static defineField(name, type, options, descriptor) {
     if (descriptor.initializer) {
@@ -359,61 +358,6 @@ export class Model extends Serializable(Registerable()) {
     });
   }
 
-  // _saveFieldValue(field) {
-  //   this._savedFieldValues[field.name] = this._fieldValues[field.name];
-  // }
-
-  // commit() {
-  //   this._savedFieldValues = {};
-
-  //   this.forEachSubmodel(submodel => {
-  //     submodel.commit();
-  //   });
-  // }
-
-  // rollback() {
-  //   for (const [name, value] of Object.entries(this._savedFieldValues)) {
-  //     this._fieldValues[name] = value;
-  //   }
-  //   this._savedFieldValues = {};
-
-  //   this.forEachSubmodel(submodel => {
-  //     submodel.rollback();
-  //   });
-  // }
-
-  // isChanged() {
-  //   return this._isChanged() === true;
-  // }
-
-  // _isChanged() {
-  //   if (!isEmpty(this._savedFieldValues)) {
-  //     return true;
-  //   }
-
-  //   return this.forEachSubmodel(submodel => submodel._isChanged());
-  // }
-
-  // fieldIsChanged(field) {
-  //   if (Object.prototype.hasOwnProperty.call(this._savedFieldValues, field.name)) {
-  //     return true;
-  //   }
-
-  //   const value = this._getFieldValue(field);
-  //   if (value !== undefined) {
-  //     const changedValue = findFromOneOrMany(value, value => {
-  //       if (this.constructor.fieldValueIsSubmodel(value)) {
-  //         return value.isChanged();
-  //       }
-  //     });
-  //     if (changedValue !== undefined) {
-  //       return true;
-  //     }
-  //   }
-
-  //   return false;
-  // }
-
   // === Validation ===
 
   validate({fieldFilter} = {}) {
@@ -491,13 +435,3 @@ export function field(type, options) {
     target.constructor.defineField(name, type, options, descriptor);
   };
 }
-
-// export function remoteMethod() {
-//   return function (target, name, descriptor) {
-//     if (!(typeof target === 'function')) {
-//       // The target is the prototype
-//       target = target.constructor;
-//     }
-//     target.defineRemoteMethod(name, descriptor);
-//   };
-// }
