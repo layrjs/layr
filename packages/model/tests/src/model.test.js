@@ -518,14 +518,14 @@ describe('Model', () => {
     // Serialization using 'source' and 'target'
 
     movie = registry.Movie.deserialize({title: 'Inception'}, {source: 'backend'});
-    expect(movie.getFieldSource('title')).toBe('backend');
+    expect(movie.getField('title').getSource()).toBe('backend');
     expect(movie.serialize({target: 'backend'})).toEqual({_type: 'Movie'});
     expect(movie.serialize({target: 'frontend'})).toEqual({_type: 'Movie', title: 'Inception'});
     expect(movie.serialize({target: 'other'})).toEqual({_type: 'Movie', title: 'Inception'});
     expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception'});
 
     movie.country = 'USA';
-    expect(movie.getFieldSource('country')).toBe('frontend');
+    expect(movie.getField('country').getSource()).toBe('frontend');
     expect(movie.serialize({target: 'backend'})).toEqual({_type: 'Movie', country: 'USA'});
     expect(movie.serialize({target: 'frontend'})).toEqual({_type: 'Movie', title: 'Inception'});
     expect(movie.serialize({target: 'other'})).toEqual({

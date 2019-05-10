@@ -57,13 +57,31 @@ export class Field {
     });
     this.validators = validators;
     this.isArray = isArray;
+    this.default = defaultValue;
 
-    if (defaultValue !== undefined) {
-      this.default = defaultValue;
-    }
+    this._parent = undefined;
+    this._value = undefined;
+    this._source = undefined;
   }
 
-  checkValue(parent, value) {
+  fork(parent) {
+    const forkedField = Object.create(this);
+    forkedField._parent = parent;
+    return forkedField;
+  }
+
+  getValue() {
+    return this._value;
+  }
+
+  setValue(value, {source} = {}) {
+    this.checkValue(value);
+    this._value = value;
+    this._source = source;
+    return value;
+  }
+
+  checkValue(value) {
     if (value === undefined) {
       return;
     }
@@ -75,41 +93,60 @@ export class Field {
     }
 
     return mapFromOneOrMany(value, value =>
-      this.scalar.checkValue(parent, value, {fieldName: this.name})
+      this.scalar.checkValue(this._parent, value, {fieldName: this.name})
     );
   }
 
-  createValue(parent, value, {fields}) {
-    if (value === undefined) {
-      return undefined;
+  getSource() {
+    let source = this._source;
+    if (!source) {
+      source = this._parent.constructor.getRegistry().getName();
     }
+    return source;
+  }
+
+  createValue(value, {fields} = {}) {
+    return this.setValue(
+      mapFromOneOrMany(value, value =>
+        this.scalar.createValue(this._parent, value, {fields, fieldName: this.name})
+      )
+    );
+  }
+
+  serializeValue({target, ...otherOptions} = {}) {
+    if (target !== undefined) {
+      const source = this.getSource();
+      if (target === source) {
+        return undefined;
+      }
+    }
+
+    const value = this.getValue();
     return mapFromOneOrMany(value, value =>
-      this.scalar.createValue(parent, value, {fields, fieldName: this.name})
+      this.scalar.serializeValue(this._parent, value, {target, ...otherOptions})
     );
   }
 
-  serializeValue(parent, value, options) {
-    const result = mapFromOneOrMany(value, value =>
-      this.scalar.serializeValue(parent, value, options)
-    );
-    // if (this.isArray && !result?.length) {
-    //   return undefined; // Empty arrays are serialized as 'undefined'
-    // }
-    return result;
-  }
-
-  deserializeValue(parent, value, {source, previousValue}) {
-    return mapFromOneOrMany(value, value =>
-      this.scalar.deserializeValue(parent, value, {source, previousValue, fieldName: this.name})
+  deserializeValue(value, {source, previousValue} = {}) {
+    return this.setValue(
+      mapFromOneOrMany(value, value =>
+        this.scalar.deserializeValue(this._parent, value, {
+          source,
+          previousValue,
+          fieldName: this.name
+        })
+      ),
+      {source}
     );
   }
 
-  validateValue(value, {fieldFilter}) {
+  validateValue({fieldFilter} = {}) {
+    const value = this.getValue();
     if (this.isArray) {
       const values = value;
       let failedValidators = runValidators(values, this.validators);
       const failedScalarValidators = values.map(value =>
-        this.scalar.validateValue(value, {fieldFilter})
+        this.scalar.validateValue(this._parent, value, {fieldFilter})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -119,14 +156,14 @@ export class Field {
       }
       return failedValidators;
     }
-    return this.scalar.validateValue(value, {fieldFilter});
+    return this.scalar.validateValue(this._parent, value, {fieldFilter});
   }
 
-  getDefaultValue(parent) {
+  getDefaultValue() {
     let value = this.default;
 
     while (typeof value === 'function') {
-      value = value.call(parent);
+      value = value.call(this._parent);
     }
 
     if (value === undefined && this.isArray) {
@@ -228,7 +265,7 @@ class Scalar {
     return Model.deserialize(value, {source, previousInstance: previousValue});
   }
 
-  validateValue(value, {fieldFilter}) {
+  validateValue(parent, value, {fieldFilter}) {
     if (value === undefined) {
       if (!this.isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
