@@ -1,6 +1,34 @@
-import {callWithOneOrMany, mapFromOneOrMany, findFromOneOrMany} from '../../..';
+import {
+  oneOrMany,
+  getFromOneOrMany,
+  callWithOneOrMany,
+  mapFromOneOrMany,
+  findFromOneOrMany
+} from '../../..';
 
-describe('Utilities', () => {
+describe('One or many', () => {
+  test('oneOrMany()', () => {
+    let results = [];
+    for (const value of oneOrMany('aaa')) {
+      results.push(value.toUpperCase());
+    }
+    expect(results).toEqual(['AAA']);
+
+    results = [];
+    for (const value of oneOrMany(['aaa', 'bbb', 'ccc'])) {
+      results.push(value.toUpperCase());
+    }
+    expect(results).toEqual(['AAA', 'BBB', 'CCC']);
+  });
+
+  test('getFromOneOrMany()', () => {
+    expect(getFromOneOrMany('aaa')).toBe('aaa');
+    expect(() => getFromOneOrMany('aaa', 1)).toThrow(/Expected an array/);
+
+    expect(getFromOneOrMany(['aaa', 'bbb'], 1)).toBe('bbb');
+    expect(() => getFromOneOrMany(['aaa', 'bbb'])).toThrow(/Expected an index/);
+  });
+
   test('callWithOneOrMany()', () => {
     let results = [];
     callWithOneOrMany('aaa', value => {
