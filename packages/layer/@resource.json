@@ -1,8 +1,8 @@
 {
   "@import": "medmain/npm-package#^0.1.0",
-  "name": "@storable/registry",
+  "name": "@storable/layer",
   "version": "0.1.2",
-  "description": "A registry to bring together models, stores, or whatever you want",
+  "description": "The root of your backend, frontend, UI, or whatever layer you want",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/medmain/storable.git",

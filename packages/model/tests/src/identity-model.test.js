@@ -1,4 +1,4 @@
-import {Registry} from '@storable/registry';
+import {Layer} from '@storable/layer';
 
 import {IdentityModel, field} from '../../..';
 
@@ -6,19 +6,19 @@ describe('IdentityModel', () => {
   test('id', () => {
     class Movie extends IdentityModel {}
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    let movie = new registry.Movie();
+    let movie = new layer.Movie();
     const id = movie.id; // An 'id' should have been generated automatically
     expect(typeof id === 'string').toBe(true);
     expect(id !== '').toBe(true);
     expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, _id: id});
 
-    movie = new registry.Movie({id: 'abc123'});
+    movie = new layer.Movie({id: 'abc123'});
     expect(movie.id).toBe('abc123');
     expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, _id: 'abc123'});
 
-    movie = registry.Movie.deserialize({_id: 'abc456'});
+    movie = layer.Movie.deserialize({_id: 'abc456'});
     expect(movie.id).toBe('abc456');
     expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc456'});
   });
@@ -36,9 +36,9 @@ describe('IdentityModel', () => {
       @field('number') popularity;
     }
 
-    const registry = new Registry('frontend', {register: {Movie, Actor}});
+    const layer = new Layer('frontend', {register: {Movie, Actor}});
 
-    const movie = registry.Movie.deserialize({
+    const movie = layer.Movie.deserialize({
       _type: 'Movie',
       _id: 'm1',
       title: 'Inception',

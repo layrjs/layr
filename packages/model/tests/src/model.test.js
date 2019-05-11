@@ -1,4 +1,4 @@
-import {Registry} from '@storable/registry';
+import {Layer} from '@storable/layer';
 
 import {Model, field, validators, createValidator} from '../../..';
 
@@ -12,10 +12,10 @@ describe('Model', () => {
       @field('number') year;
     }
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    let movie = new registry.Movie({title: 'Inception', year: 2010});
-    expect(movie instanceof registry.Movie).toBe(true);
+    let movie = new layer.Movie({title: 'Inception', year: 2010});
+    expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.title).toBe('Inception');
     expect(movie.year).toBe(2010);
 
@@ -24,7 +24,7 @@ describe('Model', () => {
     movie.year = 1999;
     expect(movie.year).toBe(1999);
 
-    movie = new registry.Movie({title: 'Forrest Gump', unknownField: 'abc'});
+    movie = new layer.Movie({title: 'Forrest Gump', unknownField: 'abc'});
     expect(movie.title).toBe('Forrest Gump');
     expect(movie.unknownField).toBeUndefined(); // Silently ignore undefined fields
   });
@@ -36,9 +36,9 @@ describe('Model', () => {
       @field('Date') releasedOn;
     }
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    const movie = new registry.Movie({
+    const movie = new layer.Movie({
       title: 'Inception',
       releasedOn: new Date(Date.UTC(2010, 6, 16))
     });
@@ -61,13 +61,13 @@ describe('Model', () => {
       @field('string') fullName;
     }
 
-    const registry = new Registry('frontend', {register: {Movie, Actor}});
+    const layer = new Layer('frontend', {register: {Movie, Actor}});
 
-    let movie = new registry.Movie();
+    let movie = new layer.Movie();
     expect(movie.genres).toEqual([]);
     expect(movie.actors).toEqual([]);
 
-    movie = new registry.Movie({
+    movie = new layer.Movie({
       title: 'Inception',
       genres: ['action', 'adventure', 'sci-fi'],
       actors: [{fullName: 'Leonardo DiCaprio'}, {fullName: 'Joseph Gordon-Levitt'}]
@@ -75,9 +75,9 @@ describe('Model', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.genres).toEqual(['action', 'adventure', 'sci-fi']);
     expect(movie.actors.length).toBe(2);
-    expect(movie.actors[0] instanceof registry.Actor).toBe(true);
+    expect(movie.actors[0] instanceof layer.Actor).toBe(true);
     expect(movie.actors[0].fullName).toBe('Leonardo DiCaprio');
-    expect(movie.actors[1] instanceof registry.Actor).toBe(true);
+    expect(movie.actors[1] instanceof layer.Actor).toBe(true);
     expect(movie.actors[1].fullName).toBe('Joseph Gordon-Levitt');
   });
 
@@ -90,9 +90,9 @@ describe('Model', () => {
       @field('string[]') genres;
     }
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    const movie = new registry.Movie();
+    const movie = new layer.Movie();
 
     expect(() => {
       movie.title = 123;
@@ -118,13 +118,13 @@ describe('Model', () => {
       @field('boolean') isRestricted = false;
     }
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    let movie = new registry.Movie();
+    let movie = new layer.Movie();
     expect(movie.title).toBeUndefined();
     expect(movie.isRestricted).toBe(false);
 
-    movie = new registry.Movie({title: 'Inception', isRestricted: true});
+    movie = new layer.Movie({title: 'Inception', isRestricted: true});
     expect(movie.title).toBe('Inception');
     expect(movie.isRestricted).toBe(true);
   });
@@ -144,9 +144,9 @@ describe('Model', () => {
       };
     }).toThrow(/Field already exists/);
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    const movie = new registry.Movie({id: 'abc123', title: 'Inception'});
+    const movie = new layer.Movie({id: 'abc123', title: 'Inception'});
     expect(movie.id).toBe('abc123');
     expect(movie.title).toBe('Inception');
   });
@@ -162,14 +162,14 @@ describe('Model', () => {
       @field('string') aspectRatio;
     }
 
-    const registry = new Registry('frontend', {register: {Movie, TechnicalSpecs}});
+    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs}});
 
-    const movie = new registry.Movie({technicalSpecs: {aspectRatio: '2.39:1'}});
-    expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    const movie = new layer.Movie({technicalSpecs: {aspectRatio: '2.39:1'}});
+    expect(movie.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
 
-    const technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.35:1'});
-    expect(technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    const technicalSpecs = new layer.TechnicalSpecs({aspectRatio: '2.35:1'});
+    expect(technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
     expect(technicalSpecs.aspectRatio).toBe('2.35:1');
     movie.technicalSpecs = technicalSpecs;
     expect(movie.technicalSpecs).toBe(technicalSpecs);
@@ -194,9 +194,9 @@ describe('Model', () => {
       director;
     }
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    let movie = new registry.Movie();
+    let movie = new layer.Movie();
     expect(movie.getFailedValidators()).toEqual({title: ['required()']});
     movie.title = '';
     expect(movie.getFailedValidators()).toEqual({title: ['notEmpty()']});
@@ -222,7 +222,7 @@ describe('Model', () => {
     movie.director = 'Christopher Nolan';
     expect(movie.getFailedValidators()).toBeUndefined();
 
-    movie = new registry.Movie({
+    movie = new layer.Movie({
       title: '',
       year: 1899,
       genres: ['action', 'adventure', '', 'drama'],
@@ -240,7 +240,7 @@ describe('Model', () => {
       movie.validate();
     }).toThrow(/Model validation failed/);
 
-    movie = new registry.Movie({title: 'Inception'});
+    movie = new layer.Movie({title: 'Inception'});
     expect(movie.isValid()).toBe(true);
     expect(() => movie.validate()).not.toThrow();
   });
@@ -250,12 +250,12 @@ describe('Model', () => {
   //     @field('string') title;
   //   }
 
-  //   const registry = new Registry('frontend', {register: {Movie}});
+  //   const layer = new Layer('frontend', {register: {Movie}});
 
-  //   let movie = new registry.Movie({title: 'Inception'});
+  //   let movie = new layer.Movie({title: 'Inception'});
   //   expect(movie.isChanged()).toBe(true); // Models created with `new' are considered as changed
 
-  //   movie = registry.Movie.deserialize({title: 'Inception'});
+  //   movie = layer.Movie.deserialize({title: 'Inception'});
   //   expect(movie.isChanged()).toBe(false); // Deserialized models are considered as unchanged
 
   //   movie.title = 'The Matrix';
@@ -277,18 +277,18 @@ describe('Model', () => {
       @field('string') title;
     }
 
-    const registry = new Registry('frontend', {register: {Movie}});
+    const layer = new Layer('frontend', {register: {Movie}});
 
-    let movie = new registry.Movie({title: 'Inception'});
+    let movie = new layer.Movie({title: 'Inception'});
     expect(movie.isNew()).toBe(true);
 
     movie.markAsNotNew();
     expect(movie.isNew()).toBe(false);
 
-    movie = registry.Movie.deserialize({title: 'Inception'});
+    movie = layer.Movie.deserialize({title: 'Inception'});
     expect(movie.isNew()).toBe(false);
 
-    movie = registry.Movie.deserialize({_new: true, title: 'Inception'});
+    movie = layer.Movie.deserialize({_new: true, title: 'Inception'});
     expect(movie.isNew()).toBe(true);
   });
 
@@ -307,9 +307,9 @@ describe('Model', () => {
       @field('string') aspectRatio;
     }
 
-    const registry = new Registry('frontend', {register: {Movie, TechnicalSpecs}});
+    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs}});
 
-    const movie = new registry.Movie();
+    const movie = new layer.Movie();
 
     movie.assign({title: 'Inception', year: 2010});
     expect(movie.title).toBe('Inception');
@@ -319,10 +319,10 @@ describe('Model', () => {
     expect(movie.genres).toEqual(['action', 'drama']);
 
     movie.assign({technicalSpecs: {aspectRatio: '2.39:1'}});
-    expect(movie.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    expect(movie.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
 
-    const movie2 = new registry.Movie();
+    const movie2 = new layer.Movie();
     movie2.assign(movie);
     expect(movie2.title).toBe('Inception');
     expect(movie2.year).toBe(2010);
@@ -353,11 +353,11 @@ describe('Model', () => {
       @field('string') fullName;
     }
 
-    const registry = new Registry('frontend', {register: {Movie, TechnicalSpecs, Actor}});
+    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs, Actor}});
 
     // Simple serialization
 
-    let movie = new registry.Movie();
+    let movie = new layer.Movie();
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       _new: true,
@@ -417,7 +417,7 @@ describe('Model', () => {
       actors: []
     });
 
-    movie.technicalSpecs = new registry.TechnicalSpecs({aspectRatio: '2.39:1'});
+    movie.technicalSpecs = new layer.TechnicalSpecs({aspectRatio: '2.39:1'});
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       _new: true,
@@ -430,8 +430,8 @@ describe('Model', () => {
     });
 
     movie.actors = [
-      new registry.Actor({fullName: 'Leonardo DiCaprio'}),
-      new registry.Actor({fullName: 'Joseph Gordon-Levitt'})
+      new layer.Actor({fullName: 'Leonardo DiCaprio'}),
+      new layer.Actor({fullName: 'Joseph Gordon-Levitt'})
     ];
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
@@ -449,12 +449,12 @@ describe('Model', () => {
 
     // Deserialization
 
-    movie = registry.Movie.deserialize();
+    movie = layer.Movie.deserialize();
     expect(movie.serialize()).toEqual({
       _type: 'Movie'
     });
 
-    movie = registry.Movie.deserialize({_new: true});
+    movie = layer.Movie.deserialize({_new: true});
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       _new: true,
@@ -466,13 +466,13 @@ describe('Model', () => {
       actors: []
     });
 
-    movie = registry.Movie.deserialize({title: 'Inception'});
+    movie = layer.Movie.deserialize({title: 'Inception'});
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
 
-    movie = registry.Movie.deserialize({_new: true, title: 'Inception'});
+    movie = layer.Movie.deserialize({_new: true, title: 'Inception'});
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       _new: true,
@@ -484,7 +484,7 @@ describe('Model', () => {
       actors: []
     });
 
-    movie = registry.Movie.deserialize({
+    movie = layer.Movie.deserialize({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA',
@@ -511,7 +511,7 @@ describe('Model', () => {
 
     // Serialization using a fieldFilter
 
-    movie = registry.Movie.deserialize({
+    movie = layer.Movie.deserialize({
       title: 'Inception',
       country: 'USA'
     });
@@ -528,7 +528,7 @@ describe('Model', () => {
 
     // Serialization of 'undefined'
 
-    movie = registry.Movie.deserialize({title: 'Inception'});
+    movie = layer.Movie.deserialize({title: 'Inception'});
     expect(movie.serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception'
@@ -542,7 +542,7 @@ describe('Model', () => {
     });
 
     expect(
-      registry.Movie.deserialize({
+      layer.Movie.deserialize({
         _type: 'Movie',
         title: 'Inception',
         country: null
@@ -555,7 +555,7 @@ describe('Model', () => {
 
     // Serialization using 'source' and 'target'
 
-    movie = registry.Movie.deserialize({title: 'Inception'}, {source: 'backend'});
+    movie = layer.Movie.deserialize({title: 'Inception'}, {source: 'backend'});
     expect(movie.getField('title').getSource()).toBe('backend');
     expect(movie.serialize({target: 'backend'})).toEqual({_type: 'Movie'});
     expect(movie.serialize({target: 'frontend'})).toEqual({_type: 'Movie', title: 'Inception'});
@@ -587,9 +587,9 @@ describe('Model', () => {
       @field('string') aspectRatio;
     }
 
-    const registry = new Registry('frontend', {register: {Movie, TechnicalSpecs}});
+    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs}});
 
-    const movie = new registry.Movie({
+    const movie = new layer.Movie({
       title: 'Inception',
       releasedOn: new Date(Date.UTC(2010, 6, 16)),
       technicalSpecs: {aspectRatio: '2.39:1'}
@@ -597,7 +597,7 @@ describe('Model', () => {
 
     const clone = movie.clone();
 
-    expect(clone instanceof registry.Movie).toBe(true);
+    expect(clone instanceof layer.Movie).toBe(true);
     expect(clone).not.toBe(movie);
     expect(clone.serialize()).toEqual(movie.serialize());
 
@@ -607,7 +607,7 @@ describe('Model', () => {
     expect(clone.releasedOn).not.toBe(movie.releasedOn);
     expect(clone.releasedOn.toISOString()).toBe('2010-07-16T00:00:00.000Z');
 
-    expect(clone.technicalSpecs instanceof registry.TechnicalSpecs).toBe(true);
+    expect(clone.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
     expect(clone.technicalSpecs).not.toBe(movie.technicalSpecs);
     expect(clone.technicalSpecs.aspectRatio).toBe('2.39:1');
   });
@@ -633,23 +633,23 @@ describe('Model', () => {
       @field('string') fullName;
     }
 
-    const registry = new Registry('frontend', {
+    const layer = new Layer('frontend', {
       register: {Movie, Identity, User, Organization, Actor}
     });
 
-    const movie = new registry.Movie({title: 'Inception'});
+    const movie = new layer.Movie({title: 'Inception'});
     expect(movie.title).toBe('Inception');
 
-    movie.owner = new registry.User({email: 'hi@domain.com'});
-    expect(movie.owner instanceof registry.User).toBe(true);
+    movie.owner = new layer.User({email: 'hi@domain.com'});
+    expect(movie.owner instanceof layer.User).toBe(true);
     expect(movie.owner.email).toBe('hi@domain.com');
 
-    movie.owner = new registry.Organization({name: 'Nice Inc.'});
-    expect(movie.owner instanceof registry.Organization).toBe(true);
+    movie.owner = new layer.Organization({name: 'Nice Inc.'});
+    expect(movie.owner instanceof layer.Organization).toBe(true);
     expect(movie.owner.name).toBe('Nice Inc.');
 
     expect(() => {
-      movie.owner = new registry.Actor({fullName: 'Leonardo DiCaprio'}); // Actor is not an Identity
+      movie.owner = new layer.Actor({fullName: 'Leonardo DiCaprio'}); // Actor is not an Identity
     }).toThrow(/Type mismatch/);
   });
 });

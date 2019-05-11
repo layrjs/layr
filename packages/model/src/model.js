@@ -1,5 +1,5 @@
 import {inspect} from 'util';
-import {Registerable, Serializable} from '@storable/registry';
+import {Registerable, Serializable} from '@storable/layer';
 import {FieldMask, callWithOneOrMany, oneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 
@@ -294,7 +294,7 @@ export class Model extends Serializable(Registerable()) {
         continue;
       }
 
-      const Model = field.scalar.getModel(this._getRegistry());
+      const Model = field.scalar.getModel(this._getLayer());
 
       if (Model.prototype.isOfType('EntityModel')) {
         filteredFields[name] = {};

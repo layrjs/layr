@@ -107,7 +107,7 @@ export class Field {
   getSource() {
     let source = this._source;
     if (!source) {
-      source = this._parent.constructor.getRegistry().getName();
+      source = this._parent.constructor.getLayer().getName();
     }
     return source;
   }
@@ -204,7 +204,7 @@ class Scalar {
       return;
     }
 
-    const Model = parent.constructor.getRegistry().get(this._type);
+    const Model = parent.constructor.getLayer().get(this._type);
     if (!(value instanceof Model)) {
       throw new Error(
         `Type mismatch (field: '${fieldName}', expected: '${this._type}', provided: '${
@@ -224,7 +224,7 @@ class Scalar {
       return value;
     }
 
-    const Model = parent.constructor.getRegistry().get(this._type);
+    const Model = parent.constructor.getLayer().get(this._type);
     return new Model(value, {fields});
   }
 
@@ -268,7 +268,7 @@ class Scalar {
     if (!type) {
       throw new Error(`Cannot determine the type of a value (field: '${fieldName}')`);
     }
-    const Model = parent.constructor.getRegistry().get(type);
+    const Model = parent.constructor.getLayer().get(type);
     return Model.deserialize(value, {source, previousInstance: previousValue});
   }
 

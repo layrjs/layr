@@ -3,8 +3,8 @@
   "model": {
     "@include": "./packages/model"
   },
-  "registry": {
-    "@include": "./packages/registry"
+  "layer": {
+    "@include": "./packages/layer"
   },
   "document": {
     "@include": "./packages/document"
@@ -20,8 +20,8 @@
     "@run": [
       "(@import shell/bash) run \"npm-link ./packages/model\"",
       "(@import shell/bash) run \"npm-link ./packages/model/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/registry\"",
-      "(@import shell/bash) run \"npm-link ./packages/registry/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/layer\"",
+      "(@import shell/bash) run \"npm-link ./packages/layer/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/document\"",
       "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/memory-store\"",

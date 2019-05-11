@@ -10,21 +10,21 @@ export const Registerable = (Base = Object) =>
       this._registeredName = registeredName;
     }
 
-    static getRegistry({throwIfNotFound = true} = {}) {
-      if (this._registry) {
-        return this._registry;
+    static getLayer({throwIfNotFound = true} = {}) {
+      if (this._layer) {
+        return this._layer;
       }
       if (throwIfNotFound) {
-        throw new Error(`Registry not found`);
+        throw new Error(`Layer not found`);
       }
     }
 
-    static setRegistry(registry) {
-      Object.defineProperty(this, '_registry', {value: registry});
+    static setLayer(layer) {
+      Object.defineProperty(this, '_layer', {value: layer});
     }
 
-    static async callRemote(methodName, ...args) {
-      const registry = this.getRegistry();
+    static async callParent(methodName, ...args) {
+      const layer = this.getLayer();
       const query = {
         [`${this.getRegisteredName()}=>`]: {
           [`${methodName}=>result`]: {
@@ -32,7 +32,7 @@ export const Registerable = (Base = Object) =>
           }
         }
       };
-      const {result} = await registry.sendQuery(query);
+      const {result} = await layer.sendQuery(query);
       return result;
     }
 
@@ -55,16 +55,16 @@ export const Registerable = (Base = Object) =>
       this.constructor.setRegisteredName.call(this, registeredName);
     }
 
-    getRegistry(options) {
-      return this.constructor.getRegistry.call(this, options);
+    getLayer(options) {
+      return this.constructor.getLayer.call(this, options);
     }
 
-    setRegistry(registry) {
-      this.constructor.setRegistry.call(this, registry);
+    setLayer(layer) {
+      this.constructor.setLayer.call(this, layer);
     }
 
-    async callRemote(methodName, ...args) {
-      const registry = this.constructor.getRegistry();
+    async callParent(methodName, ...args) {
+      const layer = this.constructor.getLayer();
       const query = {
         '<=': this,
         [`${methodName}=>result`]: {
@@ -72,7 +72,7 @@ export const Registerable = (Base = Object) =>
         },
         '=>changes': true
       };
-      const {result} = await registry.sendQuery(query);
+      const {result} = await layer.sendQuery(query);
       return result;
     }
 
@@ -82,13 +82,13 @@ export const Registerable = (Base = Object) =>
   };
 
 export function isRegisterable(value) {
-  return typeof value?.getRegistry === 'function';
+  return typeof value?.getLayer === 'function';
 }
 
-export function remoteMethod() {
+export function parentMethod() {
   return function (target, name, descriptor) {
     descriptor.value = async function (...args) {
-      return await this.callRemote(name, ...args);
+      return await this.callParent(name, ...args);
     };
     delete descriptor.initializer;
     delete descriptor.writable;

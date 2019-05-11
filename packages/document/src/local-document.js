@@ -56,8 +56,8 @@ export class LocalDocument extends AbstractDocument {
   }
 
   static _getStore() {
-    const registry = this._getRegistry();
-    const store = registry[this.store];
+    const layer = this._getLayer();
+    const store = layer[this.store];
     if (!store) {
       throw new Error(`Store not found (model: ${this.name}, store: ${this.store})`);
     }

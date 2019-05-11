@@ -1,4 +1,4 @@
-export * from './registry';
+export * from './layer';
 export * from './registerable';
 export * from './serializable';
-export * from './registry-proxy';
+export * from './layer-proxy';

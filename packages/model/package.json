@@ -15,7 +15,7 @@
     "cuid": "^2.1.6",
     "fn-name": "^2.0.1",
     "lodash": "^4.17.11",
-    "@storable/registry": "^0.1.2",
+    "@storable/layer": "^0.1.2",
     "@storable/util": "^0.1.0"
   },
   "@managed": {

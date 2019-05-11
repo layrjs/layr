@@ -1,7 +1,7 @@
-import {Registry, Registerable, Serializable, RegistryProxy, remoteMethod} from '../../..';
+import {Layer, Registerable, Serializable, LayerProxy, parentMethod} from '../../..';
 
-describe('Remote registry', () => {
-  test('Remote call', async () => {
+describe('Parent layer', () => {
+  test('Parent call', async () => {
     const BaseMath = Base =>
       class BaseMath extends Base {
         constructor({a, b, ...object} = {}, options) {
@@ -61,32 +61,32 @@ describe('Remote registry', () => {
         }
       }
 
-      const registry = new Registry('backend', {register: {Math}, allowQuerySources: ['frontend']});
+      const layer = new Layer('backend', {register: {Math}, allowQuerySources: ['frontend']});
 
-      return new RegistryProxy(registry);
+      return new LayerProxy(layer);
     })();
 
     // Frontend
 
     class Math extends BaseMath(Serializable(Registerable())) {
-      @remoteMethod() static sum;
+      @parentMethod() static sum;
 
-      @remoteMethod() sum;
+      @parentMethod() sum;
     }
 
-    const registry = new Registry('frontend', {register: {Math}, remoteRegistry: backendProxy});
+    const layer = new Layer('frontend', {register: {Math}, parentLayer: backendProxy});
 
-    expect(await registry.Math.sum(1, 2)).toBe(3);
+    expect(await layer.Math.sum(1, 2)).toBe(3);
 
-    const math = new registry.Math({a: 2, b: 3});
+    const math = new layer.Math({a: 2, b: 3});
     const result = await math.sum();
     expect(result).toBe(5);
     expect(math.lastResult).toBe(5);
 
-    const databaseRegistry = new Registry('database', {
+    const databaseLayer = new Layer('database', {
       register: {Math},
-      remoteRegistry: backendProxy
+      parentLayer: backendProxy
     });
-    await expect(databaseRegistry.Math.sum(1, 2)).rejects.toThrow(/Query source not allowed/);
+    await expect(databaseLayer.Math.sum(1, 2)).rejects.toThrow(/Query source not allowed/);
   });
 });

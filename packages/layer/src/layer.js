@@ -9,16 +9,16 @@ const debug = debugModule('storable');
 // To display the debug log, set this environment:
 // DEBUG=storable DEBUG_DEPTH=10
 
-export class Registry {
+export class Layer {
   constructor(
     name,
-    {register: registerables, remoteRegistry, allowQuerySources: allowedQuerySources = ['*']} = {}
+    {register: registerables, parentLayer, allowQuerySources: allowedQuerySources = ['*']} = {}
   ) {
     this._registeredNames = [];
     this._registerables = {};
 
     this.setName(name);
-    this.setRemoteRegistry(remoteRegistry);
+    this.setParentLayer(parentLayer);
     this.allowQuerySources(allowedQuerySources);
     this.register(registerables);
   }
@@ -29,7 +29,7 @@ export class Registry {
 
   setName(name) {
     if (typeof name !== 'string' || name === '') {
-      throw new Error(`Expected a non-empty string for the name of the registry`);
+      throw new Error(`Expected a non-empty string for the name of the layer`);
     }
 
     this._name = name;
@@ -43,7 +43,7 @@ export class Registry {
     }
     if (throwIfNotFound) {
       throw new Error(
-        `Item not found in the registry (registry name: '${this.getName()}', item name: '${name}')`
+        `Item not found in the layer (layer name: '${this.getName()}', item name: '${name}')`
       );
     }
   }
@@ -61,7 +61,7 @@ export class Registry {
       throw new Error(`Expected a registerable`);
     }
 
-    if (registerable.getRegistry({throwIfNotFound: false})) {
+    if (registerable.getLayer({throwIfNotFound: false})) {
       throw new Error(`Registerable already registered (name: '${name}')`);
     }
 
@@ -88,7 +88,7 @@ export class Registry {
 
   __register(name, registerable) {
     const forkedRegisterable = registerable.fork();
-    forkedRegisterable.setRegistry(this);
+    forkedRegisterable.setLayer(this);
     this._registerables[name] = forkedRegisterable;
     return forkedRegisterable;
   }
@@ -96,11 +96,11 @@ export class Registry {
   // === Forking ===
 
   fork({register: registerables} = {}) {
-    const forkedRegistry = Object.create(this);
-    forkedRegistry._registeredNames = [...this._registeredNames];
-    forkedRegistry._registerables = Object.create(this._registerables);
-    forkedRegistry.register(registerables);
-    return forkedRegistry;
+    const forkedLayer = Object.create(this);
+    forkedLayer._registeredNames = [...this._registeredNames];
+    forkedLayer._registerables = Object.create(this._registerables);
+    forkedLayer.register(registerables);
+    return forkedLayer;
   }
 
   // === Serialization ===
@@ -202,30 +202,30 @@ export class Registry {
     return deserializedObject;
   }
 
-  // === Remote registry ===
+  // === Parent layer ===
 
-  getRemoteRegistry({throwIfNotFound = true} = {}) {
-    if (this._remoteRegistry) {
-      return this._remoteRegistry;
+  getParentLayer({throwIfNotFound = true} = {}) {
+    if (this._parentLayer) {
+      return this._parentLayer;
     }
     if (throwIfNotFound) {
-      throw new Error(`Remote registry not found`);
+      throw new Error(`Parent layer not found`);
     }
   }
 
-  setRemoteRegistry(remoteRegistry) {
-    this._remoteRegistry = remoteRegistry;
+  setParentLayer(parentLayer) {
+    this._parentLayer = parentLayer;
   }
 
   async sendQuery(query) {
-    const remoteRegistry = this.getRemoteRegistry();
+    const parentLayer = this.getParentLayer();
     const source = this.getName();
-    const target = remoteRegistry.getName();
+    const target = parentLayer.getName();
 
     let result;
     query = this.serialize(query, {target});
     debug(`[%s → %s] %o`, source, target, query);
-    result = await remoteRegistry.receiveQuery(query, {source});
+    result = await parentLayer.receiveQuery(query, {source});
     debug(`[%s ← %s] %o`, source, target, result);
     result = this.deserialize(result, {source: target});
     return result;

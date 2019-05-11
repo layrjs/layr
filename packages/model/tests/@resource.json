@@ -1,6 +1,6 @@
 {
   "@import": "1place/jest#^0.1.0",
   "dependencies": {
-    "@storable/registry": "^0.1.0"
+    "@storable/layer": "^0.1.0"
   }
 }
