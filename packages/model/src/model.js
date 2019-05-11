@@ -6,12 +6,10 @@ import isEmpty from 'lodash/isEmpty';
 import {Field} from './field';
 
 export class Model extends Serializable(Registerable()) {
-  static _fields = new Map();
-
   constructor(object = {}, {fields, deserialize, ...options} = {}) {
     super(object, {deserialize, ...options});
 
-    this._fields = new Map();
+    this._initializeFields();
 
     if (deserialize) {
       return;
@@ -28,7 +26,7 @@ export class Model extends Serializable(Registerable()) {
         }
       }
 
-      const field = this.initializeField(name);
+      const field = this._initializeField(name);
 
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
         const defaultValue = field.getDefaultValue();
@@ -58,7 +56,7 @@ export class Model extends Serializable(Registerable()) {
   _assignObject(object) {
     for (const [name, value] of Object.entries(object)) {
       if (this.constructor.hasField(name)) {
-        const field = this.initializeField(name);
+        const field = this._initializeField(name);
         field.createValue(value);
       }
     }
@@ -69,7 +67,7 @@ export class Model extends Serializable(Registerable()) {
       const name = otherField.getName();
       const value = otherField.getValue();
       if (this.constructor.hasField(name)) {
-        const field = this.initializeField(name);
+        const field = this._initializeField(name);
         field.setValue(value);
       }
     }
@@ -121,14 +119,14 @@ export class Model extends Serializable(Registerable()) {
     for (const name of this.constructor.getFieldNames()) {
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
         if (isNew) {
-          const field = this.initializeField(name);
+          const field = this._initializeField(name);
           const defaultValue = field.getDefaultValue();
           field.setValue(defaultValue);
         }
         continue;
       }
 
-      const field = this.initializeField(name);
+      const field = this._initializeField(name);
       const value = object[name];
       const previousValue = field.getValue();
       field.deserializeValue(value, {source, previousValue});
@@ -141,7 +139,7 @@ export class Model extends Serializable(Registerable()) {
     }
   }
 
-  // === Fields ===
+  // === Model fields ===
 
   static defineField(name, type, options, descriptor) {
     if (descriptor.initializer) {
@@ -155,7 +153,7 @@ export class Model extends Serializable(Registerable()) {
       return field.getValue();
     };
     descriptor.set = function (value) {
-      const field = this.initializeField(name);
+      const field = this._initializeField(name);
       value = field.setValue(value);
       return value;
     };
@@ -172,6 +170,38 @@ export class Model extends Serializable(Registerable()) {
     return field;
   }
 
+  static getFields() {
+    return this._fields.values();
+  }
+
+  static getFieldNames() {
+    return this._fields.keys();
+  }
+
+  static setField(name, type, options) {
+    if (this._fields.has(name)) {
+      throw new Error(`Field already exists (name: '${name}')`);
+    }
+    this._initializeFields();
+    const field = new Field(name, type, options);
+    this._fields.set(name, field);
+    return field;
+  }
+
+  static hasField(name) {
+    return this._fields.has(name);
+  }
+
+  static _fields = new Map();
+
+  static _initializeFields() {
+    if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
+      this._fields = new Map(this._fields);
+    }
+  }
+
+  // === Instance fields ===
+
   getField(name) {
     const field = this._fields.get(name);
     if (!field) {
@@ -180,10 +210,6 @@ export class Model extends Serializable(Registerable()) {
       );
     }
     return field;
-  }
-
-  static getFields() {
-    return this._fields.values();
   }
 
   getFields({filter} = {}) {
@@ -203,37 +229,6 @@ export class Model extends Serializable(Registerable()) {
         };
       }
     };
-  }
-
-  static getFieldNames() {
-    return this._fields.keys();
-  }
-
-  static setField(name, type, options) {
-    if (this._fields.has(name)) {
-      throw new Error(`Field already exists (name: '${name}')`);
-    }
-    if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
-      this._fields = new Map(this._fields);
-    }
-    const field = new Field(name, type, options);
-    this._fields.set(name, field);
-    return field;
-  }
-
-  initializeField(name) {
-    let field = this._fields.get(name);
-    if (field) {
-      return field;
-    }
-    const modelField = this.constructor.getField(name);
-    field = modelField.fork(this);
-    this._fields.set(name, field);
-    return field;
-  }
-
-  static hasField(name) {
-    return this._fields.has(name);
   }
 
   hasField(name) {
@@ -270,6 +265,21 @@ export class Model extends Serializable(Registerable()) {
     }
 
     return true;
+  }
+
+  _initializeFields() {
+    this._fields = new Map();
+  }
+
+  _initializeField(name) {
+    let field = this._fields.get(name);
+    if (field) {
+      return field;
+    }
+    const modelField = this.constructor.getField(name);
+    field = modelField.fork(this);
+    this._fields.set(name, field);
+    return field;
   }
 
   static filterEntityFields(fields) {
