@@ -1,10 +1,10 @@
 <p align="center">
-	<img src="branding/storable-logo.svg" width="200" alt="Storable — A database abstraction layer that feels just right">
+	<img src="branding/layr-logo.svg" width="200" alt="Layr — The root of your backend, frontend, UI, or whatever">
 	<br>
 	<br>
 </p>
 
-> A database abstraction layer that feels just right.
+> The root of your backend, frontend, UI, or whatever.
 
 ## Development environment
 
@@ -25,10 +25,6 @@ run . @build
 ```bash
 run . @lint
 ```
-
-## Logo
-
-Wooden box by Hea Poh Lin from the Noun Project.
 
 ## License
 

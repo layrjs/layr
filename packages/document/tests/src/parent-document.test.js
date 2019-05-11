@@ -1,5 +1,5 @@
-import {Layer, LayerClient, LayerServer} from '@storable/layer';
-import {MemoryStore} from '@storable/memory-store';
+import {Layer, LayerClient, LayerServer} from '@layr/layer';
+import {MemoryStore} from '@layr/memory-store';
 
 import {ParentDocument, LocalDocument, field, parentMethod, serialize, deserialize} from '../../..';
 

@@ -1,9 +1,9 @@
-# @storable/util
+# @layr/util
 
-A few utility functions shared among Storable's packages.
+A few utility functions shared among Layr's packages.
 
 ## Installation
 
 ```
-npm install @storable/util
+npm install @layr/util
 ```

@@ -1,4 +1,4 @@
-import {Layer} from '@storable/layer';
+import {Layer} from '@layr/layer';
 
 import {IdentityModel, field} from '../../..';
 

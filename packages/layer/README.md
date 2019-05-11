@@ -1,9 +1,9 @@
-# @storable/layer
+# @layr/layer
 
-The root of your backend, frontend, UI, or whatever layer you want.
+The root of your backend, frontend, UI, or whatever.
 
 ## Installation
 
 ```
-npm install @storable/layer
+npm install @layr/layer
 ```

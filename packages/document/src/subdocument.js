@@ -1,4 +1,4 @@
-import {IdentityModel} from '@storable/model';
+import {IdentityModel} from '@layr/model';
 
 import {BaseDocument} from './base-document';
 

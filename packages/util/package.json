@@ -1,10 +1,10 @@
 {
-  "name": "@storable/util",
-  "version": "0.1.1",
-  "description": "A few utility functions shared among Storable's packages",
+  "name": "@layr/util",
+  "version": "0.1.2",
+  "description": "A few utility functions shared among Layr's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/storable.git",
+  "repository": "https://github.com/medmain/layr.git",
   "files": [
     "dist"
   ],

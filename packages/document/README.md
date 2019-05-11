@@ -1,9 +1,9 @@
-# @storable/document
+# @layr/document
 
-Base class inheriting from @storable/model and adding persistence capabilities.
+Base class inheriting from @layr/model and adding persistence capabilities.
 
 ## Installation
 
 ```
-npm install @storable/document
+npm install @layr/document
 ```

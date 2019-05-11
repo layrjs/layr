@@ -1,6 +1,6 @@
 import {inspect} from 'util';
-import {Registerable, Serializable} from '@storable/layer';
-import {FieldMask, callWithOneOrMany, oneOrMany} from '@storable/util';
+import {Registerable, Serializable} from '@layr/layer';
+import {FieldMask, callWithOneOrMany, oneOrMany} from '@layr/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';

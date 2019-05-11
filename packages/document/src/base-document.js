@@ -1,4 +1,4 @@
-import {callWithOneOrMany} from '@storable/util';
+import {callWithOneOrMany} from '@layr/util';
 
 export const BaseDocument = Parent =>
   class extends Parent {

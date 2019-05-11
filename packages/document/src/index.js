@@ -1,4 +1,4 @@
-export * from '@storable/model';
+export * from '@layr/model';
 
 export {LocalDocument} from './local-document';
 export {ParentDocument} from './parent-document';

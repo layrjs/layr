@@ -1,5 +1,5 @@
-import {EntityModel} from '@storable/model';
-import {FieldMask} from '@storable/util';
+import {EntityModel} from '@layr/model';
+import {FieldMask} from '@layr/util';
 
 import {BaseDocument} from './base-document';
 

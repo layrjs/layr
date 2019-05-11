@@ -1,6 +1,6 @@
 import {inspect} from 'util';
 import cuid from 'cuid';
-import {findFromOneOrMany} from '@storable/util';
+import {findFromOneOrMany} from '@layr/util';
 
 import {Model} from './model';
 

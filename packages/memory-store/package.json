@@ -1,10 +1,10 @@
 {
-  "name": "@storable/memory-store",
+  "name": "@layr/memory-store",
   "version": "0.1.1",
   "description": "A simple store that uses the memory",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/storable.git",
+  "repository": "https://github.com/medmain/layr.git",
   "files": [
     "dist"
   ],
@@ -13,7 +13,7 @@
   "browser": "dist/browser/esm",
   "dependencies": {
     "lodash": "^4.17.11",
-    "@storable/util": "^0.1.0"
+    "@layr/util": "^0.1.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

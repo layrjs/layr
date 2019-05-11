@@ -1,17 +1,17 @@
 {
   "@import": "medmain/npm-package#^0.1.0",
-  "name": "@storable/model",
-  "version": "0.1.2",
+  "name": "@layr/model",
+  "version": "0.1.3",
   "description": "Base class providing typed properties, validation and serialization",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/storable.git",
+  "repository": "https://github.com/medmain/layr/tree/master/packages/model",
   "dependencies": {
     "cuid": "^2.1.6",
     "fn-name": "^2.0.1",
     "lodash": "^4.17.11",
-    "@storable/layer": "^0.1.2",
-    "@storable/util": "^0.1.0"
+    "@layr/layer": "^0.1.2",
+    "@layr/util": "^0.1.0"
   },
   "tests": {
     "@include": "./tests"

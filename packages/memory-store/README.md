@@ -1,9 +1,9 @@
-# @storable/memory-store
+# @layr/memory-store
 
 A simple store that uses the memory.
 
 ## Installation
 
 ```
-npm install @storable/memory-store
+npm install @layr/memory-store
 ```

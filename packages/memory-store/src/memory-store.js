@@ -1,4 +1,4 @@
-import {FieldMask, getFromOneOrMany, mapFromOneOrMany} from '@storable/util';
+import {FieldMask, getFromOneOrMany, mapFromOneOrMany} from '@layr/util';
 import assert from 'assert';
 
 export class MemoryStore {

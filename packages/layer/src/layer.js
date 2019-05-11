@@ -5,9 +5,9 @@ import debugModule from 'debug';
 import {isRegisterable} from './registerable';
 import {isSerializable} from './serializable';
 
-const debug = debugModule('storable');
+const debug = debugModule('layr');
 // To display the debug log, set this environment:
-// DEBUG=storable DEBUG_DEPTH=10
+// DEBUG=layr DEBUG_DEPTH=10
 
 export class Layer {
   constructor(

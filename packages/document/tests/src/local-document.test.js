@@ -1,5 +1,5 @@
-import {Layer} from '@storable/layer';
-import {MemoryStore} from '@storable/memory-store';
+import {Layer} from '@layr/layer';
+import {MemoryStore} from '@layr/memory-store';
 
 import {LocalDocument, Subdocument, Model, field} from '../../..';
 
