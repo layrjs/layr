@@ -42,14 +42,14 @@ export class EntityModel extends IdentityModel {
   }
 
   static getEntity(id) {
-    return this._entities?.[id];
+    return this._entities?.get(id);
   }
 
   static setEntity(id, entity) {
     if (!Object.prototype.hasOwnProperty.call(this, '_entities')) {
-      this._entities = Object.create(this._entities || {});
+      this._entities = new Map(this._entities);
     }
-    this._entities[id] = entity;
+    this._entities.set(id, entity);
   }
 
   // release() {
