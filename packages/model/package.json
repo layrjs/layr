@@ -4,7 +4,7 @@
   "description": "Base class providing typed properties, validation and serialization",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/layr.git",
+  "repository": "https://github.com/medmain/layr/tree/master/packages/model",
   "files": [
     "dist"
   ],

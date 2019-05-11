@@ -4,7 +4,7 @@
   "description": "A few utility functions shared among Layr's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/layr.git",
+  "repository": "https://github.com/medmain/layr/tree/master/packages/util",
   "files": [
     "dist"
   ],
