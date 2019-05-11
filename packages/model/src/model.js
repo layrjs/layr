@@ -1,6 +1,6 @@
 import {inspect} from 'util';
 import {Registerable, Serializable} from '@storable/registry';
-import {FieldMask, callWithOneOrMany} from '@storable/util';
+import {FieldMask, callWithOneOrMany, oneOrMany} from '@storable/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';
@@ -19,9 +19,7 @@ export class Model extends Serializable(Registerable()) {
 
     const rootFields = fields !== undefined ? new FieldMask(fields) : undefined;
 
-    for (let field of this.constructor.getFields()) {
-      const name = field.getName();
-
+    for (const name of this.constructor.getFieldNames()) {
       let fields;
       if (rootFields) {
         fields = rootFields.get(name);
@@ -30,7 +28,7 @@ export class Model extends Serializable(Registerable()) {
         }
       }
 
-      field = this.setField(name);
+      const field = this.initializeField(name);
 
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
         const defaultValue = field.getDefaultValue();
@@ -59,9 +57,8 @@ export class Model extends Serializable(Registerable()) {
 
   _assignObject(object) {
     for (const [name, value] of Object.entries(object)) {
-      let field = this.constructor.getField(name, {throwIfNotFound: false});
-      if (field) {
-        field = this.setField(name);
+      if (this.constructor.hasField(name)) {
+        const field = this.initializeField(name);
         field.createValue(value);
       }
     }
@@ -71,9 +68,8 @@ export class Model extends Serializable(Registerable()) {
     for (const otherField of other.getFields()) {
       const name = otherField.getName();
       const value = otherField.getValue();
-      let field = this.constructor.getField(name, {throwIfNotFound: false});
-      if (field) {
-        field = this.setField(name);
+      if (this.constructor.hasField(name)) {
+        const field = this.initializeField(name);
         field.setValue(value);
       }
     }
@@ -122,19 +118,17 @@ export class Model extends Serializable(Registerable()) {
 
     const isNew = this.isNew();
 
-    for (let field of this.constructor.getFields()) {
-      const name = field.getName();
-
+    for (const name of this.constructor.getFieldNames()) {
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
         if (isNew) {
-          field = this.setField(name);
+          const field = this.initializeField(name);
           const defaultValue = field.getDefaultValue();
           field.setValue(defaultValue);
         }
         continue;
       }
 
-      field = this.setField(name);
+      const field = this.initializeField(name);
       const value = object[name];
       const previousValue = field.getValue();
       field.deserializeValue(value, {source, previousValue});
@@ -161,7 +155,7 @@ export class Model extends Serializable(Registerable()) {
       return field.getValue();
     };
     descriptor.set = function (value) {
-      const field = this.setField(name);
+      const field = this.initializeField(name);
       value = field.setValue(value);
       return value;
     };
@@ -170,26 +164,49 @@ export class Model extends Serializable(Registerable()) {
     delete descriptor.writable;
   }
 
-  static getField(name, {throwIfNotFound = true} = {}) {
+  static getField(name) {
     const field = this._fields.get(name);
-    if (field) {
-      return field;
-    }
-    if (throwIfNotFound) {
+    if (!field) {
       throw new Error(`Field not found (name: '${name}'), model: ${this.getRegisteredName()}`);
     }
+    return field;
   }
 
-  getField(name, {throwIfNotFound = true} = {}) {
+  getField(name) {
     const field = this._fields.get(name);
-    if (field) {
-      return field;
-    }
-    if (throwIfNotFound) {
+    if (!field) {
       throw new Error(
         `Field not found (name: '${name}'), model: ${this.constructor.getRegisteredName()}`
       );
     }
+    return field;
+  }
+
+  static getFields() {
+    return this._fields.values();
+  }
+
+  getFields({filter} = {}) {
+    return {
+      [Symbol.iterator]: () => {
+        const fieldIterator = this._fields.values()[Symbol.iterator]();
+        return {
+          next: () => {
+            while (true) {
+              const {value, done} = fieldIterator.next();
+              if (value && filter && !filter.call(this, value)) {
+                continue;
+              }
+              return {value, done};
+            }
+          }
+        };
+      }
+    };
+  }
+
+  static getFieldNames() {
+    return this._fields.keys();
   }
 
   static setField(name, type, options) {
@@ -204,7 +221,7 @@ export class Model extends Serializable(Registerable()) {
     return field;
   }
 
-  setField(name) {
+  initializeField(name) {
     let field = this._fields.get(name);
     if (field) {
       return field;
@@ -215,42 +232,45 @@ export class Model extends Serializable(Registerable()) {
     return field;
   }
 
-  // _activateField(field) {
-  //   this._activeFields.add(field.name);
-  // }
+  static hasField(name) {
+    return this._fields.has(name);
+  }
 
-  // _fieldIsActive(field) {
-  //   return this._activeFields.has(field.name);
-  // }
+  hasField(name) {
+    return this._fields.has(name);
+  }
 
-  // _fieldsAreActive(fields) {
-  //   const rootFields = new FieldMask(fields);
+  hasFields(fieldMask) {
+    const rootFieldMask = new FieldMask(fieldMask);
 
-  //   const result = this.constructor.forEachField(field => {
-  //     const fields = rootFields.get(field.name);
-  //     if (!fields) {
-  //       return;
-  //     }
+    for (const name of this.constructor.getFieldNames()) {
+      const fieldMask = rootFieldMask.get(name);
+      if (!fieldMask) {
+        continue;
+      }
 
-  //     if (!this._fieldIsActive(field)) {
-  //       return false;
-  //     }
+      const field = this._fields.get(name);
+      if (!field) {
+        return false;
+      }
 
-  //     const value = this._getFieldValue(field);
-  //     if (value !== undefined) {
-  //       const incompleteValue = findFromOneOrMany(value, value => {
-  //         if (this.constructor.fieldValueIsSubmodel(value)) {
-  //           return !value._fieldsAreActive(fields);
-  //         }
-  //       });
-  //       if (incompleteValue !== undefined) {
-  //         return false;
-  //       }
-  //     }
-  //   });
+      const valueOrValues = field.getValue();
+      if (valueOrValues === undefined) {
+        continue;
+      }
 
-  //   return result !== false;
-  // }
+      for (const value of oneOrMany(valueOrValues)) {
+        if (!this.constructor.fieldValueIsSubmodel(value)) {
+          continue;
+        }
+        if (!value.hasFields(fieldMask)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
 
   static filterEntityFields(fields) {
     fields = new FieldMask(fields);
@@ -285,29 +305,6 @@ export class Model extends Serializable(Registerable()) {
     }
 
     return filteredFields;
-  }
-
-  static getFields() {
-    return this._fields.values();
-  }
-
-  getFields({filter} = {}) {
-    return {
-      [Symbol.iterator]: () => {
-        const fieldIterator = this._fields.values()[Symbol.iterator]();
-        return {
-          next: () => {
-            while (true) {
-              const {value, done} = fieldIterator.next();
-              if (value && filter && !filter.call(this, value)) {
-                continue;
-              }
-              return {value, done};
-            }
-          }
-        };
-      }
-    };
   }
 
   static fieldValueIsSubmodel(value) {
