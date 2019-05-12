@@ -7,12 +7,19 @@ export class EntityModel extends IdentityModel {
     this.constructor.setInstance(this);
   }
 
-  serialize({_isDeep, ...otherOptions} = {}) {
-    if (_isDeep) {
-      return this._serializeReference();
+  static _normalizeFieldMask(fieldMask, {layer, _isRoot}) {
+    if (!_isRoot) {
+      return {};
     }
-    return super.serialize({_isDeep, ...otherOptions});
+    return super._normalizeFieldMask(fieldMask, {layer, _isRoot});
   }
+
+  // serialize({_isDeep, ...otherOptions} = {}) {
+  //   if (_isDeep) {
+  //     return this._serializeReference();
+  //   }
+  //   return super.serialize({_isDeep, ...otherOptions});
+  // }
 
   // static _serializeType() {
   //   return {_type: this.getRegisteredName()};
@@ -26,9 +33,9 @@ export class EntityModel extends IdentityModel {
   //   return {...this.constructor._serializeType(), ...this._serializeId()};
   // }
 
-  _serializeReference() {
-    return {...this.serialize({fieldFilter: () => false}), _ref: true};
-  }
+  // _serializeReference() {
+  //   return this.serialize({fieldFilter: () => false});
+  // }
 
   static getInstance(object, _previousInstance) {
     const id = object?._id;

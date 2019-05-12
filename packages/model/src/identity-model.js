@@ -5,10 +5,10 @@ import {findFromOneOrMany} from '@layr/util';
 import {Model} from './model';
 
 export class IdentityModel extends Model {
-  constructor(object = {}, {deserialize, ...options} = {}) {
-    super(object, {deserialize, ...options});
+  constructor(object = {}, {isDeserializing, ...options} = {}) {
+    super(object, {isDeserializing, ...options});
 
-    if (deserialize) {
+    if (isDeserializing) {
       return;
     }
 
@@ -21,8 +21,8 @@ export class IdentityModel extends Model {
     this._id = id;
   }
 
-  serialize(options) {
-    const {_type, _new, ...fields} = super.serialize(options);
+  _serialize({target, fieldMask, fieldFilter}) {
+    const {_type, _new, ...fields} = super._serialize({target, fieldMask, fieldFilter});
     return {_type, ...(_new && {_new}), _id: this._id, ...fields};
   }
 

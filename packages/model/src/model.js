@@ -1,31 +1,21 @@
 import {inspect} from 'util';
 import {Registerable, Serializable} from '@layr/layer';
-import {FieldMask, callWithOneOrMany, oneOrMany} from '@layr/util';
+import {FieldMask, oneOrMany} from '@layr/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';
 
 export class Model extends Serializable(Registerable()) {
-  constructor(object = {}, {fields, deserialize, ...options} = {}) {
-    super(object, {deserialize, ...options});
+  constructor(object = {}, {isDeserializing} = {}) {
+    super(object, {isDeserializing});
 
     this._initializeFields();
 
-    if (deserialize) {
+    if (isDeserializing) {
       return;
     }
 
-    const rootFields = fields !== undefined ? new FieldMask(fields) : undefined;
-
     for (const name of this.constructor.getFieldNames()) {
-      let fields;
-      if (rootFields) {
-        fields = rootFields.get(name);
-        if (!fields) {
-          continue;
-        }
-      }
-
       const field = this._initializeField(name);
 
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
@@ -35,7 +25,7 @@ export class Model extends Serializable(Registerable()) {
       }
 
       const value = object[name];
-      field.createValue(value, {fields});
+      field.createValue(value);
     }
   }
 
@@ -79,36 +69,42 @@ export class Model extends Serializable(Registerable()) {
 
   // === Serialization ===
 
-  serialize({target, fieldFilter, _isDeep, ...otherOptions} = {}) {
-    if (!_isDeep) {
-      this.validate({fieldFilter});
-    }
+  serialize({target, fields, fieldFilter} = {}) {
+    const fieldMask = this.constructor.normalizeFieldMask(fields);
+    this._validate({fieldMask, fieldFilter});
+    return this._serialize({target, fieldMask, fieldFilter});
+  }
 
-    const fields = {};
+  _serialize({target, fieldMask: rootFieldMask, fieldFilter}) {
+    const serializedFields = {};
 
     for (const field of this.getFields({filter: fieldFilter})) {
       const name = field.getName();
-      const value = field.serializeValue({
-        target,
-        fieldFilter,
-        _isDeep: true,
-        ...otherOptions
-      });
+
+      const fieldMask = rootFieldMask.get(name);
+      if (!fieldMask) {
+        continue;
+      }
+
+      const value = field.serializeValue({target, fieldMask, fieldFilter});
+
       if (value !== undefined) {
-        fields[name] = value;
+        serializedFields[name] = value;
       }
     }
 
-    return {...super.serialize({target, _isDeep, ...otherOptions}), ...fields};
+    return {...super.serialize(), ...serializedFields};
   }
 
   static deserialize(object, {source, previousInstance} = {}) {
-    const instance = this.getInstance(object, previousInstance);
+    let instance = this.getInstance(object, previousInstance);
     if (instance) {
       instance.deserialize(object, {source});
       return instance;
     }
-    return super.deserialize(object, {source});
+    instance = new this(object, {isDeserializing: true});
+    instance.deserialize(object, {source});
+    return instance;
   }
 
   deserialize(object = {}, {source} = {}) {
@@ -256,6 +252,7 @@ export class Model extends Serializable(Registerable()) {
 
       for (const value of oneOrMany(valueOrValues)) {
         if (!this.constructor.fieldValueIsSubmodel(value)) {
+          // TODO: Get rid of this
           continue;
         }
         if (!value.hasFields(fieldMask)) {
@@ -282,93 +279,124 @@ export class Model extends Serializable(Registerable()) {
     return field;
   }
 
-  static filterEntityFields(fields) {
-    fields = new FieldMask(fields);
-    fields = this._filterEntityFields(fields);
-    return new FieldMask(fields);
+  // === Field masks ===
+
+  static normalizeFieldMask(fields) {
+    const fieldMask = new FieldMask(fields);
+    const layer = this.getLayer();
+    const normalizedFieldMask = this._normalizeFieldMask(fieldMask, {layer, _isRoot: true});
+    return new FieldMask(normalizedFieldMask);
   }
 
-  static _filterEntityFields(rootFields) {
-    const filteredFields = {};
+  static _normalizeFieldMask(rootFieldMask, {layer, _isRoot}) {
+    const normalizedFieldMask = {};
 
     for (const field of this.getFields()) {
       const name = field.getName();
 
-      const fields = rootFields.get(name);
-      if (!fields) {
+      const fieldMask = rootFieldMask.get(name);
+      if (!fieldMask) {
         continue;
       }
 
-      if (field.scalar.isPrimitiveType()) {
-        filteredFields[name] = true;
-        continue;
-      }
-
-      const Model = field.scalar.getModel(this._getLayer());
-
-      if (Model.prototype.isOfType('EntityModel')) {
-        filteredFields[name] = {};
-        continue;
-      }
-
-      filteredFields[name] = Model._filterEntityFields(fields);
+      normalizedFieldMask[name] = field.normalizeFieldMask(fieldMask, {layer});
     }
 
-    return filteredFields;
+    return normalizedFieldMask;
   }
 
-  static fieldValueIsSubmodel(value) {
-    return value?.isOfType && !value.isOfType('EntityModel');
-  }
+  // static filterEntityFields(fields) {
+  //   fields = new FieldMask(fields);
+  //   fields = this._filterEntityFields(fields);
+  //   return new FieldMask(fields);
+  // }
 
-  static fieldValueIsNestedEntity(value) {
-    return value?.isOfType && value.isOfType('EntityModel');
-  }
+  // static _filterEntityFields(rootFields) {
+  //   const filteredFields = {};
 
-  forEachSubmodel(func) {
-    return this.forEachField(field => {
-      const value = this._getFieldValue(field);
-      return callWithOneOrMany(value, value => {
-        if (this.constructor.fieldValueIsSubmodel(value)) {
-          return func(value);
-        }
-      });
-    });
-  }
+  //   for (const field of this.getFields()) {
+  //     const name = field.getName();
 
-  forEachNestedEntityDeep(func, {fields} = {}) {
-    const rootFields = new FieldMask(fields);
+  //     const fields = rootFields.get(name);
+  //     if (!fields) {
+  //       continue;
+  //     }
 
-    return this.constructor.forEachField(field => {
-      const name = field.getName();
+  //     if (field.scalar.isPrimitiveType()) {
+  //       filteredFields[name] = true;
+  //       continue;
+  //     }
 
-      const fields = rootFields.get(name);
-      if (!fields) {
-        return;
-      }
+  //     const Model = field.scalar.getModel(this._getLayer());
 
-      const value = this._getFieldValue(field);
-      if (value !== undefined) {
-        return callWithOneOrMany(value, value => {
-          if (this.constructor.fieldValueIsNestedEntity(value)) {
-            const result = func(value, {fields});
-            if (result !== undefined) {
-              return result;
-            }
-          }
+  //     if (Model.prototype.isOfType('EntityModel')) {
+  //       filteredFields[name] = {};
+  //       continue;
+  //     }
 
-          if (value?.isOfType && value.isOfType('Model')) {
-            return value.forEachNestedEntityDeep(func, {fields});
-          }
-        });
-      }
-    });
-  }
+  //     filteredFields[name] = Model._filterEntityFields(fields);
+  //   }
+
+  //   return filteredFields;
+  // }
+
+  // static fieldValueIsSubmodel(value) {
+  //   return value?.isOfType && !value.isOfType('EntityModel');
+  // }
+
+  // static fieldValueIsNestedEntity(value) {
+  //   return value?.isOfType && value.isOfType('EntityModel');
+  // }
+
+  // forEachSubmodel(func) {
+  //   return this.forEachField(field => {
+  //     const value = this._getFieldValue(field);
+  //     return callWithOneOrMany(value, value => {
+  //       if (this.constructor.fieldValueIsSubmodel(value)) {
+  //         return func(value);
+  //       }
+  //     });
+  //   });
+  // }
+
+  // forEachNestedEntityDeep(func, {fields} = {}) {
+  //   const rootFields = new FieldMask(fields);
+
+  //   return this.constructor.forEachField(field => {
+  //     const name = field.getName();
+
+  //     const fields = rootFields.get(name);
+  //     if (!fields) {
+  //       return;
+  //     }
+
+  //     const value = this._getFieldValue(field);
+  //     if (value !== undefined) {
+  //       return callWithOneOrMany(value, value => {
+  //         if (this.constructor.fieldValueIsNestedEntity(value)) {
+  //           const result = func(value, {fields});
+  //           if (result !== undefined) {
+  //             return result;
+  //           }
+  //         }
+
+  //         if (value?.isOfType && value.isOfType('Model')) {
+  //           return value.forEachNestedEntityDeep(func, {fields});
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 
   // === Validation ===
 
-  validate({fieldFilter} = {}) {
-    const failedValidators = this.getFailedValidators({fieldFilter});
+  validate({fields, fieldFilter} = {}) {
+    const fieldMask = this.constructor.normalizeFieldMask(fields);
+    this._validate({fieldMask, fieldFilter});
+  }
+
+  _validate({fieldMask, fieldFilter}) {
+    const failedValidators = this._getFailedValidators({fieldMask, fieldFilter});
     if (failedValidators) {
       const error = new Error(
         `Model validation failed (model: '${this.constructor.getRegisteredName()}', failedValidators: ${JSON.stringify(
@@ -380,15 +408,20 @@ export class Model extends Serializable(Registerable()) {
     }
   }
 
-  isValid({fieldFilter} = {}) {
-    return this.getFailedValidators({fieldFilter}) === undefined;
+  isValid({fields, fieldFilter} = {}) {
+    return this.getFailedValidators({fields, fieldFilter}) === undefined;
   }
 
-  getFailedValidators({fieldFilter} = {}) {
+  getFailedValidators({fields, fieldFilter} = {}) {
+    const fieldMask = this.constructor.normalizeFieldMask(fields);
+    return this._getFailedValidators({fieldMask, fieldFilter});
+  }
+
+  _getFailedValidators({fieldMask, fieldFilter}) {
     let result;
     for (const field of this.getFields({filter: fieldFilter})) {
       const name = field.getName();
-      const failedValidators = field.validateValue({fieldFilter});
+      const failedValidators = field.validateValue({fieldMask, fieldFilter});
       if (!isEmpty(failedValidators)) {
         if (!result) {
           result = {};
@@ -401,10 +434,8 @@ export class Model extends Serializable(Registerable()) {
 
   // === Utilities ===
 
-  static _isModel = true;
-
   static isModel(object) {
-    return object?.constructor._isModel === true;
+    return typeof object?.constructor.isModel === 'function';
   }
 
   isOfType(name) {

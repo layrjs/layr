@@ -52,4 +52,43 @@ describe('EntityModel', () => {
     // expect(movie.title).toBeUndefined();
     // expect(movie.year).toBeUndefined();
   });
+
+  test('Serialization', () => {
+    class Movie extends EntityModel {
+      @field('string?') title;
+
+      @field('number?') year;
+
+      @field('Director?') director;
+    }
+
+    class Director extends EntityModel {
+      @field('string') fullName;
+    }
+
+    const layer = new Layer('frontend', {register: {Movie, Director}});
+
+    const movie = new layer.Movie({
+      id: 'm1',
+      title: 'Inception',
+      year: 2010,
+      director: new layer.Director({id: 'd1', fullName: 'Christopher Nolan'})
+    });
+
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      _new: true,
+      _id: 'm1',
+      title: 'Inception',
+      year: 2010,
+      director: {_type: 'Director', _new: true, _id: 'd1'}
+    });
+
+    expect(movie.director.serialize()).toEqual({
+      _type: 'Director',
+      _new: true,
+      _id: 'd1',
+      fullName: 'Christopher Nolan'
+    });
+  });
 });

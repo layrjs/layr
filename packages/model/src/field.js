@@ -5,6 +5,8 @@ import isPlainObject from 'lodash/isPlainObject';
 
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
+// TODO: Pass 'layer' so we can get rid of 'parent'
+
 export class Field {
   constructor(name, type, {default: defaultValue, validators = []} = {}) {
     if (typeof name !== 'string' || !name) {
@@ -112,15 +114,16 @@ export class Field {
     return source;
   }
 
-  createValue(value, {fields} = {}) {
+  createValue(value) {
+    // TODO: Don't call setValue()
     return this.setValue(
       mapFromOneOrMany(value, value =>
-        this._scalar.createValue(this._parent, value, {fields, fieldName: this._name})
+        this._scalar.createValue(this._parent, value, {fieldName: this._name})
       )
     );
   }
 
-  serializeValue({target, ...otherOptions} = {}) {
+  serializeValue({target, fieldMask, fieldFilter} = {}) {
     if (target !== undefined) {
       const source = this.getSource();
       if (target === source) {
@@ -130,7 +133,7 @@ export class Field {
 
     const value = this.getValue();
     return mapFromOneOrMany(value, value =>
-      this._scalar.serializeValue(this._parent, value, {target, ...otherOptions})
+      this._scalar.serializeValue(this._parent, value, {target, fieldMask, fieldFilter})
     );
   }
 
@@ -147,13 +150,13 @@ export class Field {
     );
   }
 
-  validateValue({fieldFilter} = {}) {
+  validateValue({fieldMask, fieldFilter} = {}) {
     const value = this.getValue();
     if (this._isArray) {
       const values = value;
       let failedValidators = runValidators(values, this._validators);
       const failedScalarValidators = values.map(value =>
-        this._scalar.validateValue(this._parent, value, {fieldFilter})
+        this._scalar.validateValue(this._parent, value, {fieldMask, fieldFilter})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -163,7 +166,7 @@ export class Field {
       }
       return failedValidators;
     }
-    return this._scalar.validateValue(this._parent, value, {fieldFilter});
+    return this._scalar.validateValue(this._parent, value, {fieldMask, fieldFilter});
   }
 
   getDefaultValue() {
@@ -178,6 +181,10 @@ export class Field {
     }
 
     return value;
+  }
+
+  normalizeFieldMask(fieldMask, {layer} = {}) {
+    return this._scalar.normalizeFieldMask(fieldMask, {layer});
   }
 }
 
@@ -214,21 +221,24 @@ class Scalar {
     }
   }
 
-  createValue(parent, value, {fields}) {
+  createValue(parent, value) {
     if (value === undefined) {
       return undefined;
     }
 
-    const primitiveType = getPrimitiveType(this._type);
-    if (primitiveType) {
+    if (this.isPrimitiveType()) {
       return value;
     }
 
-    const Model = parent.constructor.getLayer().get(this._type);
-    return new Model(value, {fields});
+    if (isPlainObject(value)) {
+      const Model = parent.constructor.getLayer().get(this._type);
+      return new Model(value);
+    }
+
+    return value;
   }
 
-  serializeValue(parent, value, options) {
+  serializeValue(parent, value, {target, fieldMask, fieldFilter}) {
     if (value === undefined) {
       // In case the data is transported via JSON, we will lost all the 'undefined' values.
       // We don't want that because 'undefined' might mean that a field has been deleted.
@@ -244,7 +254,7 @@ class Scalar {
       return value;
     }
 
-    return value.serialize(options);
+    return value._serialize({target, fieldMask, fieldFilter});
   }
 
   deserializeValue(parent, value, {source, previousValue, fieldName}) {
@@ -272,19 +282,29 @@ class Scalar {
     return Model.deserialize(value, {source, previousInstance: previousValue});
   }
 
-  validateValue(parent, value, {fieldFilter}) {
+  validateValue(parent, value, {fieldMask, fieldFilter}) {
     if (value === undefined) {
       if (!this._isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
       }
       return undefined;
     }
-    if (value.isOfType && value.isOfType('Model')) {
-      return value.constructor.fieldValueIsSubmodel(value) ?
-        value.getFailedValidators({fieldFilter}) :
-        undefined;
+    if (this.isPrimitiveType()) {
+      return runValidators(value, this._validators);
     }
-    return runValidators(value, this._validators);
+    return value._getFailedValidators({fieldMask, fieldFilter});
+  }
+
+  normalizeFieldMask(fieldMask, {layer}) {
+    if (this.isPrimitiveType()) {
+      return true;
+    }
+    const Model = layer.get(this._type);
+    return Model._normalizeFieldMask(fieldMask, {layer});
+  }
+
+  isPrimitiveType() {
+    return getPrimitiveType(this._type) !== undefined;
   }
 }
 
