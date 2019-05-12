@@ -1,6 +1,6 @@
 # @layr/layer
 
-The root of your backend, frontend, UI, or whatever.
+The root of your backend, frontend, UI, or whatever layer you build.
 
 ## Installation
 

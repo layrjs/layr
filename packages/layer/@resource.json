@@ -2,7 +2,7 @@
   "@import": "medmain/npm-package#^0.1.0",
   "name": "@layr/layer",
   "version": "0.1.3",
-  "description": "The root of your backend, frontend, UI, or whatever",
+  "description": "The root of your backend, frontend, UI, or whatever layer you build",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/medmain/layr/tree/master/packages/layer",

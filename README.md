@@ -1,10 +1,10 @@
 <p align="center">
-	<img src="branding/layr-logo.svg" width="200" alt="Layr — The root of your backend, frontend, UI, or whatever">
+	<img src="branding/layr-logo.svg" width="200" alt="Layr — The root of your backend, frontend, UI, or whatever layer you build">
 	<br>
 	<br>
 </p>
 
-> The root of your backend, frontend, UI, or whatever.
+> The root of your backend, frontend, UI, or whatever layer you build.
 
 ## Development environment
 
