@@ -1,8 +1,8 @@
 export const Serializable = (Base = Object) =>
   class Serializable extends Base {
-    constructor(object, {deserialize, ...options} = {}) {
-      super(object, options);
-      if (!deserialize) {
+    constructor(object, {isDeserializing} = {}) {
+      super(object);
+      if (!isDeserializing) {
         this._isNew = true;
       }
     }
@@ -19,7 +19,7 @@ export const Serializable = (Base = Object) =>
       this._isNew = false;
     }
 
-    serialize(_options) {
+    serialize() {
       return {
         _type: this.constructor.getRegisteredName(),
         ...(this._isNew && {_new: true})
@@ -30,13 +30,13 @@ export const Serializable = (Base = Object) =>
       return this.serialize();
     }
 
-    static deserialize(object, options) {
-      const instance = new this(object, {deserialize: true, ...options});
-      instance.deserialize(object, options);
+    static deserialize(object) {
+      const instance = new this(object, {isDeserializing: true});
+      instance.deserialize(object);
       return instance;
     }
 
-    deserialize(object, _options) {
+    deserialize(object) {
       this._isNew = Boolean(object?._new);
     }
   };

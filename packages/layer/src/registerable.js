@@ -55,8 +55,8 @@ export const Registerable = (Base = Object) =>
       this.constructor.setRegisteredName.call(this, registeredName);
     }
 
-    getLayer(options) {
-      return this.constructor.getLayer.call(this, options);
+    getLayer({throwIfNotFound = true} = {}) {
+      return this.constructor.getLayer.call(this, {throwIfNotFound});
     }
 
     setLayer(layer) {

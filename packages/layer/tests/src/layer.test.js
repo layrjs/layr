@@ -72,20 +72,22 @@ describe('Layer', () => {
 
   test('Serialization', () => {
     class Movie extends Serializable(Registerable()) {
-      constructor({title, ...object} = {}, options) {
-        super(object, options);
-        this.title = title;
+      constructor({title, ...object} = {}, {isDeserializing} = {}) {
+        super(object, {isDeserializing});
+        if (!isDeserializing) {
+          this.title = title;
+        }
       }
 
-      serialize(options) {
+      serialize() {
         return {
-          ...super.serialize(options),
+          ...super.serialize(),
           title: this.title
         };
       }
 
-      deserialize({title, ...object} = {}, options) {
-        super.deserialize(object, options);
+      deserialize({title, ...object} = {}) {
+        super.deserialize(object);
         this.title = title;
       }
     }

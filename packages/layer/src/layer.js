@@ -105,29 +105,29 @@ export class Layer {
 
   // === Serialization ===
 
-  serialize(value, options) {
+  serialize(value) {
     if (value === null) {
       throw new Error(`The 'null' value is not allowed`);
     }
 
     if (Array.isArray(value)) {
-      return this._serializeArray(value, options);
+      return this._serializeArray(value);
     }
 
     if (typeof value === 'object') {
-      return this._serializeObject(value, options);
+      return this._serializeObject(value);
     }
 
     return value;
   }
 
-  _serializeArray(array, options) {
-    return array.map(item => this.serialize(item, options));
+  _serializeArray(array) {
+    return array.map(item => this.serialize(item));
   }
 
-  _serializeObject(object, options) {
+  _serializeObject(object) {
     if (isSerializable(object)) {
-      return object.serialize(object, options);
+      return object.serialize(object);
     }
 
     const primitiveType = getPrimitiveTypeFromValue(object);
@@ -139,50 +139,50 @@ export class Layer {
       return object.toJSON();
     }
 
-    return this._serializePlainObject(object, options);
+    return this._serializePlainObject(object);
   }
 
-  _serializePlainObject(object, options) {
+  _serializePlainObject(object) {
     const serializedObject = {};
     for (const [key, value] of Object.entries(object)) {
-      serializedObject[key] = this.serialize(value, options);
+      serializedObject[key] = this.serialize(value);
     }
     return serializedObject;
   }
 
-  deserialize(value, options) {
+  deserialize(value) {
     if (value === null) {
       throw new Error(`The 'null' value is not allowed`);
     }
 
     if (Array.isArray(value)) {
-      return this._deserializeArray(value, options);
+      return this._deserializeArray(value);
     }
 
     if (typeof value === 'object') {
-      return this._deserializeObject(value, options);
+      return this._deserializeObject(value);
     }
 
     return value;
   }
 
-  _deserializeArray(array, options) {
-    return array.map(item => this.deserialize(item, options));
+  _deserializeArray(array) {
+    return array.map(item => this.deserialize(item));
   }
 
-  _deserializeObject(object, options) {
+  _deserializeObject(object) {
     if (this._isTypedObject(object)) {
-      return this._deserializeTypedObject(object, options);
+      return this._deserializeTypedObject(object);
     }
 
-    return this._deserializePlainObject(object, options);
+    return this._deserializePlainObject(object);
   }
 
   _isTypedObject(object) {
     return object._type !== undefined;
   }
 
-  _deserializeTypedObject(object, options) {
+  _deserializeTypedObject(object) {
     const type = object._type;
 
     const primitiveType = getPrimitiveType(type);
@@ -191,13 +191,13 @@ export class Layer {
     }
 
     const Class = this.get(type);
-    return Class.deserialize(object, options);
+    return Class.deserialize(object);
   }
 
-  _deserializePlainObject(object, options) {
+  _deserializePlainObject(object) {
     const deserializedObject = {};
     for (const [key, value] of Object.entries(object)) {
-      deserializedObject[key] = this.deserialize(value, options);
+      deserializedObject[key] = this.deserialize(value);
     }
     return deserializedObject;
   }

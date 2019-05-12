@@ -4,29 +4,33 @@ describe('Parent layer', () => {
   test('Parent call', async () => {
     const BaseMath = Base =>
       class BaseMath extends Base {
-        constructor({a, b, ...object} = {}, options) {
-          super(object, options);
-          this.a = a;
-          this.b = b;
+        constructor({a, b, ...object} = {}, {isDeserializing} = {}) {
+          super(object, {isDeserializing});
+          if (!isDeserializing) {
+            this.a = a;
+            this.b = b;
+          }
           this.constructor.setInstance(this);
         }
 
-        serialize(options) {
+        serialize() {
           return {
-            ...super.serialize(options),
+            ...super.serialize(),
             a: this.a,
             b: this.b,
             lastResult: this.lastResult
           };
         }
 
-        static deserialize(object, options) {
-          const instance = this.getInstance(object);
+        static deserialize(object) {
+          let instance = this.getInstance(object);
           if (instance) {
-            instance.deserialize(object, options);
+            instance.deserialize(object);
             return instance;
           }
-          return super.deserialize(object, options);
+          instance = new this(object, {isDeserializing: true});
+          instance.deserialize(object);
+          return instance;
         }
 
         deserialize({a, b, lastResult} = {}) {
