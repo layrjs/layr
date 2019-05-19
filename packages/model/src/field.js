@@ -61,6 +61,7 @@ export class Field {
     this._validators = validators;
     this._isArray = isArray;
     this._default = defaultValue;
+    this._isActive = false;
     this._value = undefined;
     this._source = undefined;
   }
@@ -79,12 +80,20 @@ export class Field {
     return this._type;
   }
 
+  isActive() {
+    return this._isActive;
+  }
+
   getValue() {
+    if (!this._isActive) {
+      throw new Error(`Cannot get the value from an inactive field (field: '${this._name}')`);
+    }
     return this._value;
   }
 
   setValue(value, {source} = {}) {
     this.checkValue(value);
+    this._isActive = true;
     this._value = value;
     this._source = source;
     return value;
@@ -123,7 +132,7 @@ export class Field {
     );
   }
 
-  serializeValue({target, fieldMask, fieldFilter} = {}) {
+  serializeValue({target, fields} = {}) {
     if (target !== undefined) {
       const source = this.getSource();
       if (target === source) {
@@ -133,7 +142,7 @@ export class Field {
 
     const value = this.getValue();
     return mapFromOneOrMany(value, value =>
-      this._scalar.serializeValue(this._parent, value, {target, fieldMask, fieldFilter})
+      this._scalar.serializeValue(this._parent, value, {target, fields})
     );
   }
 
@@ -150,13 +159,13 @@ export class Field {
     );
   }
 
-  validateValue({fieldMask, fieldFilter} = {}) {
+  getFailedValidators({fields} = {}) {
     const value = this.getValue();
     if (this._isArray) {
       const values = value;
       let failedValidators = runValidators(values, this._validators);
       const failedScalarValidators = values.map(value =>
-        this._scalar.validateValue(this._parent, value, {fieldMask, fieldFilter})
+        this._scalar.getFailedValidators(this._parent, value, {fields})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -166,7 +175,7 @@ export class Field {
       }
       return failedValidators;
     }
-    return this._scalar.validateValue(this._parent, value, {fieldMask, fieldFilter});
+    return this._scalar.getFailedValidators(this._parent, value, {fields});
   }
 
   getDefaultValue() {
@@ -183,8 +192,19 @@ export class Field {
     return value;
   }
 
-  normalizeFieldMask(fieldMask) {
-    return this._scalar.normalizeFieldMask(this._parent, fieldMask);
+  _normalizeFieldMask(fieldMask) {
+    if (Array.isArray(fieldMask)) {
+      if (!this._isArray) {
+        throw new Error(
+          `Type mismatch (field: '${
+            this._name
+          }', expected: 'boolean' or 'object', provided: 'array')`
+        );
+      }
+      fieldMask = fieldMask[0];
+    }
+
+    return this._scalar._normalizeFieldMask(this._parent, fieldMask);
   }
 }
 
@@ -238,7 +258,7 @@ class Scalar {
     return value;
   }
 
-  serializeValue(parent, value, {target, fieldMask, fieldFilter}) {
+  serializeValue(parent, value, {target, fields}) {
     if (value === undefined) {
       // In case the data is transported via JSON, we will lost all the 'undefined' values.
       // We don't want that because 'undefined' might mean that a field has been deleted.
@@ -254,7 +274,7 @@ class Scalar {
       return value;
     }
 
-    return value._serialize({target, fieldMask, fieldFilter});
+    return value.serialize({target, fields, _isDeep: true});
   }
 
   deserializeValue(parent, value, {source, previousValue, fieldName}) {
@@ -282,7 +302,7 @@ class Scalar {
     return Model.deserialize(value, {source, previousInstance: previousValue});
   }
 
-  validateValue(parent, value, {fieldMask, fieldFilter}) {
+  getFailedValidators(parent, value, {fields}) {
     if (value === undefined) {
       if (!this._isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
@@ -292,19 +312,19 @@ class Scalar {
     if (this.isPrimitiveType()) {
       return runValidators(value, this._validators);
     }
-    return value._getFailedValidators({fieldMask, fieldFilter});
-  }
-
-  normalizeFieldMask(parent, fieldMask) {
-    if (this.isPrimitiveType()) {
-      return true;
-    }
-    const Model = parent.constructor.getLayer().get(this._type);
-    return Model._normalizeFieldMask(fieldMask);
+    return value.getFailedValidators({fields, _isDeep: true});
   }
 
   isPrimitiveType() {
     return getPrimitiveType(this._type) !== undefined;
+  }
+
+  _normalizeFieldMask(parent, fieldMask) {
+    if (this.isPrimitiveType()) {
+      return true;
+    }
+    const Model = parent.constructor.getLayer().get(this._type);
+    return Model.prototype._normalizeFieldMask(fieldMask);
   }
 }
 

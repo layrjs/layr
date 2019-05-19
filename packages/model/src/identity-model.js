@@ -21,9 +21,9 @@ export class IdentityModel extends Model {
     this._id = id;
   }
 
-  _serialize({target, fieldMask, fieldFilter}) {
-    const {_type, _new, ...fields} = super._serialize({target, fieldMask, fieldFilter});
-    return {_type, ...(_new && {_new}), _id: this._id, ...fields};
+  serialize({target, fields, _isDeep} = {}) {
+    const {_type, _new, ...otherProps} = super.serialize({target, fields, _isDeep});
+    return {_type, ...(_new && {_new}), _id: this._id, ...otherProps};
   }
 
   deserialize(object = {}, options) {

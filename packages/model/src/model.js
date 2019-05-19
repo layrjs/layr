@@ -1,22 +1,20 @@
 import {inspect} from 'util';
 import {Registerable, Serializable} from '@layr/layer';
-import {FieldMask, oneOrMany} from '@layr/util';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';
+import {FieldMask} from './field-mask';
 
 export class Model extends Serializable(Registerable()) {
   constructor(object = {}, {isDeserializing} = {}) {
     super(object, {isDeserializing});
 
-    this._initializeFields();
-
     if (isDeserializing) {
       return;
     }
 
-    for (const name of this.constructor.getFieldNames()) {
-      const field = this._initializeField(name);
+    for (const field of this.getFields()) {
+      const name = field.getName();
 
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
         const defaultValue = field.getDefaultValue();
@@ -45,19 +43,19 @@ export class Model extends Serializable(Registerable()) {
 
   _assignObject(object) {
     for (const [name, value] of Object.entries(object)) {
-      if (this.constructor.hasField(name)) {
-        const field = this._initializeField(name);
+      if (this.hasField(name)) {
+        const field = this.getField(name);
         field.createValue(value);
       }
     }
   }
 
   _assignOther(other) {
-    for (const otherField of other.getFields()) {
+    for (const otherField of other.getActiveFields()) {
       const name = otherField.getName();
-      const value = otherField.getValue();
-      if (this.constructor.hasField(name)) {
-        const field = this._initializeField(name);
+      if (this.hasField(name)) {
+        const field = this.getField(name);
+        const value = otherField.getValue();
         field.setValue(value);
       }
     }
@@ -69,16 +67,16 @@ export class Model extends Serializable(Registerable()) {
 
   // === Serialization ===
 
-  serialize({target, fields, fieldFilter} = {}) {
-    const fieldMask = this.constructor.normalizeFieldMask(fields);
-    this._validate({fieldMask, fieldFilter});
-    return this._serialize({target, fieldMask, fieldFilter});
-  }
+  serialize({target, fields, _isDeep} = {}) {
+    const rootFieldMask = this.normalizeFieldMask(fields);
 
-  _serialize({target, fieldMask: rootFieldMask, fieldFilter}) {
+    if (!_isDeep) {
+      this.validate({fields: rootFieldMask});
+    }
+
     const serializedFields = {};
 
-    for (const field of this.getFields({filter: fieldFilter})) {
+    for (const field of this.getActiveFields()) {
       const name = field.getName();
 
       const fieldMask = rootFieldMask.get(name);
@@ -86,7 +84,7 @@ export class Model extends Serializable(Registerable()) {
         continue;
       }
 
-      const value = field.serializeValue({target, fieldMask, fieldFilter});
+      const value = field.serializeValue({target, fields: fieldMask});
 
       if (value !== undefined) {
         serializedFields[name] = value;
@@ -112,19 +110,19 @@ export class Model extends Serializable(Registerable()) {
 
     const isNew = this.isNew();
 
-    for (const name of this.constructor.getFieldNames()) {
+    for (const name of this.getFieldNames()) {
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
         if (isNew) {
-          const field = this._initializeField(name);
+          const field = this.getField(name);
           const defaultValue = field.getDefaultValue();
           field.setValue(defaultValue);
         }
         continue;
       }
 
-      const field = this._initializeField(name);
+      const field = this.getField(name);
       const value = object[name];
-      const previousValue = field.getValue();
+      const previousValue = field.isActive() ? field.getValue() : undefined;
       field.deserializeValue(value, {source, previousValue});
     }
   }
@@ -135,9 +133,9 @@ export class Model extends Serializable(Registerable()) {
     }
   }
 
-  // === Class fields ===
+  // === Fields ===
 
-  static defineField(name, type, options, descriptor) {
+  defineField(name, type, options, descriptor) {
     if (descriptor.initializer) {
       options = {...options, default: descriptor.initializer};
     }
@@ -149,7 +147,7 @@ export class Model extends Serializable(Registerable()) {
       return field.getValue();
     };
     descriptor.set = function (value) {
-      const field = this._initializeField(name);
+      const field = this.getField(name);
       value = field.setValue(value);
       return value;
     };
@@ -158,72 +156,31 @@ export class Model extends Serializable(Registerable()) {
     delete descriptor.writable;
   }
 
-  static getField(name) {
-    this._initializeFields();
-    const field = this._fields.get(name);
-    if (!field) {
-      throw new Error(`Field not found (name: '${name}'), model: ${this.getRegisteredName()}`);
-    }
-    return field;
-  }
-
-  static getFields() {
-    this._initializeFields();
-    return this._fields.values();
-  }
-
-  static getFieldNames() {
-    return this._fields ? this._fields.keys() : [];
-  }
-
-  static setField(name, type, options) {
-    if (this._fields?.has(name)) {
-      throw new Error(`Field already exists (name: '${name}')`);
-    }
-    this._initializeFields();
-    const field = new Field(this.prototype, name, type, options);
-    this._fields.set(name, field);
-    return field;
-  }
-
-  static hasField(name) {
-    return this._fields?.has(name);
-  }
-
-  static _initializeFields() {
-    if (!this._fields) {
-      this._fields = new Map();
-    } else if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
-      this._fields = new Map(
-        Array.from(this._fields).map(([name, field]) => [name, field.fork(this.prototype)])
-      );
-    }
-  }
-
-  // === Instance fields ===
-
   getField(name) {
-    const field = this._fields.get(name);
+    const field = this._fields?.get(name);
     if (!field) {
       throw new Error(
         `Field not found (name: '${name}'), model: ${this.constructor.getRegisteredName()}`
       );
     }
-    return field;
+    return this._initializeField(field);
   }
 
   getFields({filter} = {}) {
     return {
       [Symbol.iterator]: () => {
-        const fieldIterator = this._fields.values()[Symbol.iterator]();
+        const fieldIterator = (this._fields || []).values()[Symbol.iterator]();
         return {
           next: () => {
             while (true) {
-              const {value, done} = fieldIterator.next();
-              if (value && filter && !filter.call(this, value)) {
-                continue;
+              let {value: field, done} = fieldIterator.next();
+              if (field) {
+                if (filter && !filter(field)) {
+                  continue;
+                }
+                field = this._initializeField(field);
               }
-              return {value, done};
+              return {value: field, done};
             }
           }
         };
@@ -231,78 +188,103 @@ export class Model extends Serializable(Registerable()) {
     };
   }
 
-  hasField(name) {
-    return this._fields.has(name);
+  getActiveFields() {
+    const filter = function (field) {
+      return field.isActive();
+    };
+    return this.getFields({filter});
   }
 
-  hasFields(fieldMask) {
-    const rootFieldMask = new FieldMask(fieldMask);
+  getFieldNames() {
+    return this._fields ? this._fields.keys() : [];
+  }
 
-    for (const name of this.constructor.getFieldNames()) {
-      const fieldMask = rootFieldMask.get(name);
-      if (!fieldMask) {
-        continue;
-      }
-
-      const field = this._fields.get(name);
-      if (!field) {
-        return false;
-      }
-
-      const valueOrValues = field.getValue();
-      if (valueOrValues === undefined) {
-        continue;
-      }
-
-      for (const value of oneOrMany(valueOrValues)) {
-        if (!this.constructor.fieldValueIsSubmodel(value)) {
-          // TODO: Get rid of this
-          continue;
-        }
-        if (!value.hasFields(fieldMask)) {
-          return false;
-        }
-      }
+  setField(name, type, options) {
+    if (this._fields?.has(name)) {
+      throw new Error(`Field already exists (name: '${name}')`);
     }
-
-    return true;
+    this._initializeFields();
+    const field = new Field(this, name, type, options);
+    this._fields.set(name, field);
+    return field;
   }
+
+  hasField(name) {
+    return this._fields?.has(name);
+  }
+
+  // hasFields(fieldMask) {
+  //   const rootFieldMask = new FieldMask(fieldMask);
+
+  //   for (const name of this.constructor.getFieldNames()) {
+  //     const fieldMask = rootFieldMask.get(name);
+  //     if (!fieldMask) {
+  //       continue;
+  //     }
+
+  //     const field = this._fields.get(name);
+  //     if (!field) {
+  //       return false;
+  //     }
+
+  //     const valueOrValues = field.getValue();
+  //     if (valueOrValues === undefined) {
+  //       continue;
+  //     }
+
+  //     for (const value of oneOrMany(valueOrValues)) {
+  //       if (!this.constructor.fieldValueIsSubmodel(value)) {
+  //         // TODO: Get rid of this
+  //         continue;
+  //       }
+  //       if (!value.hasFields(fieldMask)) {
+  //         return false;
+  //       }
+  //     }
+  //   }
+
+  //   return true;
+  // }
 
   _initializeFields() {
-    this._fields = new Map();
+    if (!this._fields) {
+      this._fields = new Map();
+    } else if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
+      this._fields = new Map(this._fields);
+    }
   }
 
-  _initializeField(name) {
-    let field = this._fields.get(name);
-    if (field) {
-      return field;
+  _initializeField(field) {
+    if (field.parent !== this) {
+      this._initializeFields();
+      field = field.fork(this);
+      this._fields.set(field.getName(), field);
     }
-    const modelField = this.constructor.getField(name);
-    field = modelField.fork(this);
-    this._fields.set(name, field);
     return field;
   }
 
   // === Field masks ===
 
-  static normalizeFieldMask(fields) {
-    const fieldMask = new FieldMask(fields);
-    const normalizedFieldMask = this._normalizeFieldMask(fieldMask, {_isRoot: true});
-    return new FieldMask(normalizedFieldMask);
+  normalizeFieldMask(fields = true) {
+    if (FieldMask.isFieldMask(fields)) {
+      return fields;
+    }
+    fields = this._normalizeFieldMask(fields);
+    return new FieldMask(fields);
   }
 
-  static _normalizeFieldMask(rootFieldMask, {_isRoot} = {}) {
+  _normalizeFieldMask(rootFieldMask) {
     const normalizedFieldMask = {};
 
     for (const field of this.getFields()) {
       const name = field.getName();
 
-      const fieldMask = rootFieldMask.get(name);
+      const fieldMask = typeof rootFieldMask === 'object' ? rootFieldMask[name] : rootFieldMask;
       if (!fieldMask) {
         continue;
       }
 
-      normalizedFieldMask[name] = field.normalizeFieldMask(fieldMask);
+      normalizedFieldMask[name] = field._normalizeFieldMask(fieldMask);
     }
 
     return normalizedFieldMask;
@@ -393,13 +375,8 @@ export class Model extends Serializable(Registerable()) {
 
   // === Validation ===
 
-  validate({fields, fieldFilter} = {}) {
-    const fieldMask = this.constructor.normalizeFieldMask(fields);
-    this._validate({fieldMask, fieldFilter});
-  }
-
-  _validate({fieldMask, fieldFilter}) {
-    const failedValidators = this._getFailedValidators({fieldMask, fieldFilter});
+  validate({fields} = {}) {
+    const failedValidators = this.getFailedValidators({fields});
     if (failedValidators) {
       const error = new Error(
         `Model validation failed (model: '${this.constructor.getRegisteredName()}', failedValidators: ${JSON.stringify(
@@ -411,20 +388,24 @@ export class Model extends Serializable(Registerable()) {
     }
   }
 
-  isValid({fields, fieldFilter} = {}) {
-    return this.getFailedValidators({fields, fieldFilter}) === undefined;
+  isValid({fields} = {}) {
+    return this.getFailedValidators({fields}) === undefined;
   }
 
-  getFailedValidators({fields, fieldFilter} = {}) {
-    const fieldMask = this.constructor.normalizeFieldMask(fields);
-    return this._getFailedValidators({fieldMask, fieldFilter});
-  }
+  getFailedValidators({fields, _isDeep} = {}) {
+    const rootFieldMask = this.normalizeFieldMask(fields);
 
-  _getFailedValidators({fieldMask, fieldFilter}) {
     let result;
-    for (const field of this.getFields({filter: fieldFilter})) {
+
+    for (const field of this.getActiveFields()) {
       const name = field.getName();
-      const failedValidators = field.validateValue({fieldMask, fieldFilter});
+
+      const fieldMask = rootFieldMask.get(name);
+      if (!fieldMask) {
+        continue;
+      }
+
+      const failedValidators = field.getFailedValidators({fields: fieldMask});
       if (!isEmpty(failedValidators)) {
         if (!result) {
           result = {};
@@ -432,6 +413,7 @@ export class Model extends Serializable(Registerable()) {
         result[name] = failedValidators;
       }
     }
+
     return result;
   }
 
@@ -458,6 +440,6 @@ export class Model extends Serializable(Registerable()) {
 
 export function field(type, options) {
   return function (target, name, descriptor) {
-    target.constructor.defineField(name, type, options, descriptor);
+    target.defineField(name, type, options, descriptor);
   };
 }

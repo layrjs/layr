@@ -7,11 +7,15 @@ export class EntityModel extends IdentityModel {
     this.constructor.setInstance(this);
   }
 
-  static _normalizeFieldMask(fieldMask, {_isRoot} = {}) {
-    if (!_isRoot) {
-      return {};
+  serialize({target, fields, _isDeep} = {}) {
+    return super.serialize({target, fields: _isDeep ? false : fields, _isDeep});
+  }
+
+  getFailedValidators({fields, _isDeep} = {}) {
+    if (_isDeep) {
+      return undefined;
     }
-    return super._normalizeFieldMask(fieldMask, {_isRoot});
+    return super.getFailedValidators({fields, _isDeep});
   }
 
   // serialize({_isDeep, ...otherOptions} = {}) {

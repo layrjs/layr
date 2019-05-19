@@ -509,23 +509,6 @@ describe('Model', () => {
       ]
     });
 
-    // Serialization using a fieldFilter
-
-    movie = layer.Movie.deserialize({
-      title: 'Inception',
-      country: 'USA'
-    });
-    expect(
-      movie.serialize({
-        fieldFilter(field) {
-          return field.getName() === 'title';
-        }
-      })
-    ).toEqual({
-      _type: 'Movie',
-      title: 'Inception'
-    });
-
     // Serialization of 'undefined'
 
     movie = layer.Movie.deserialize({title: 'Inception'});
