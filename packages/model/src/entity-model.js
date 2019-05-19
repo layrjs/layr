@@ -7,11 +7,11 @@ export class EntityModel extends IdentityModel {
     this.constructor.setInstance(this);
   }
 
-  static _normalizeFieldMask(fieldMask, {layer, _isRoot}) {
+  static _normalizeFieldMask(fieldMask, {_isRoot} = {}) {
     if (!_isRoot) {
       return {};
     }
-    return super._normalizeFieldMask(fieldMask, {layer, _isRoot});
+    return super._normalizeFieldMask(fieldMask, {_isRoot});
   }
 
   // serialize({_isDeep, ...otherOptions} = {}) {
@@ -62,8 +62,4 @@ export class EntityModel extends IdentityModel {
   // release() {
   //   this.constructor.setEntity(this._id, undefined);
   // }
-
-  isOfType(name) {
-    return name === 'EntityModel' ? true : super.isOfType(name); // Optimization
-  }
 }

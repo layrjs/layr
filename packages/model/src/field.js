@@ -8,7 +8,7 @@ import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './vali
 // TODO: Pass 'layer' so we can get rid of 'parent'
 
 export class Field {
-  constructor(name, type, {default: defaultValue, validators = []} = {}) {
+  constructor(parent, name, type, {default: defaultValue, validators = []} = {}) {
     if (typeof name !== 'string' || !name) {
       throw new Error("'name' parameter is missing or invalid");
     }
@@ -23,6 +23,7 @@ export class Field {
       mapFromOneOrMany(validator, validator => normalizeValidator(validator, {fieldName: name}))
     );
 
+    this._parent = parent;
     this._name = name;
     this._type = type;
 
@@ -60,7 +61,6 @@ export class Field {
     this._validators = validators;
     this._isArray = isArray;
     this._default = defaultValue;
-    this._parent = undefined;
     this._value = undefined;
     this._source = undefined;
   }
@@ -183,8 +183,8 @@ export class Field {
     return value;
   }
 
-  normalizeFieldMask(fieldMask, {layer} = {}) {
-    return this._scalar.normalizeFieldMask(fieldMask, {layer});
+  normalizeFieldMask(fieldMask) {
+    return this._scalar.normalizeFieldMask(this._parent, fieldMask);
   }
 }
 
@@ -295,12 +295,12 @@ class Scalar {
     return value._getFailedValidators({fieldMask, fieldFilter});
   }
 
-  normalizeFieldMask(fieldMask, {layer}) {
+  normalizeFieldMask(parent, fieldMask) {
     if (this.isPrimitiveType()) {
       return true;
     }
-    const Model = layer.get(this._type);
-    return Model._normalizeFieldMask(fieldMask, {layer});
+    const Model = parent.constructor.getLayer().get(this._type);
+    return Model._normalizeFieldMask(fieldMask);
   }
 
   isPrimitiveType() {

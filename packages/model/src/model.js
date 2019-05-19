@@ -135,7 +135,7 @@ export class Model extends Serializable(Registerable()) {
     }
   }
 
-  // === Model fields ===
+  // === Class fields ===
 
   static defineField(name, type, options, descriptor) {
     if (descriptor.initializer) {
@@ -159,6 +159,7 @@ export class Model extends Serializable(Registerable()) {
   }
 
   static getField(name) {
+    this._initializeFields();
     const field = this._fields.get(name);
     if (!field) {
       throw new Error(`Field not found (name: '${name}'), model: ${this.getRegisteredName()}`);
@@ -167,32 +168,35 @@ export class Model extends Serializable(Registerable()) {
   }
 
   static getFields() {
+    this._initializeFields();
     return this._fields.values();
   }
 
   static getFieldNames() {
-    return this._fields.keys();
+    return this._fields ? this._fields.keys() : [];
   }
 
   static setField(name, type, options) {
-    if (this._fields.has(name)) {
+    if (this._fields?.has(name)) {
       throw new Error(`Field already exists (name: '${name}')`);
     }
     this._initializeFields();
-    const field = new Field(name, type, options);
+    const field = new Field(this.prototype, name, type, options);
     this._fields.set(name, field);
     return field;
   }
 
   static hasField(name) {
-    return this._fields.has(name);
+    return this._fields?.has(name);
   }
 
-  static _fields = new Map();
-
   static _initializeFields() {
-    if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
-      this._fields = new Map(this._fields);
+    if (!this._fields) {
+      this._fields = new Map();
+    } else if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
+      this._fields = new Map(
+        Array.from(this._fields).map(([name, field]) => [name, field.fork(this.prototype)])
+      );
     }
   }
 
@@ -283,12 +287,11 @@ export class Model extends Serializable(Registerable()) {
 
   static normalizeFieldMask(fields) {
     const fieldMask = new FieldMask(fields);
-    const layer = this.getLayer();
-    const normalizedFieldMask = this._normalizeFieldMask(fieldMask, {layer, _isRoot: true});
+    const normalizedFieldMask = this._normalizeFieldMask(fieldMask, {_isRoot: true});
     return new FieldMask(normalizedFieldMask);
   }
 
-  static _normalizeFieldMask(rootFieldMask, {layer, _isRoot}) {
+  static _normalizeFieldMask(rootFieldMask, {_isRoot} = {}) {
     const normalizedFieldMask = {};
 
     for (const field of this.getFields()) {
@@ -299,7 +302,7 @@ export class Model extends Serializable(Registerable()) {
         continue;
       }
 
-      normalizedFieldMask[name] = field.normalizeFieldMask(fieldMask, {layer});
+      normalizedFieldMask[name] = field.normalizeFieldMask(fieldMask);
     }
 
     return normalizedFieldMask;
@@ -436,21 +439,6 @@ export class Model extends Serializable(Registerable()) {
 
   static isModel(object) {
     return typeof object?.constructor.isModel === 'function';
-  }
-
-  isOfType(name) {
-    if (name === 'Model') {
-      return true; // Optimization
-    }
-
-    let Model = this.constructor;
-    while (Model) {
-      if (Model.name === name) {
-        return true;
-      }
-      Model = Object.getPrototypeOf(Model);
-    }
-    return false;
   }
 
   [inspect.custom]() {

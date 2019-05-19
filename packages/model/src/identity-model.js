@@ -59,8 +59,4 @@ export class IdentityModel extends Model {
   [inspect.custom]() {
     return {id: this._id, ...super[inspect.custom]()};
   }
-
-  isOfType(name) {
-    return name === 'IdentityModel' ? true : super.isOfType(name); // Optimization
-  }
 }
