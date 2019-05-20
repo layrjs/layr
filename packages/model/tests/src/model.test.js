@@ -245,33 +245,6 @@ describe('Model', () => {
     expect(() => movie.validate()).not.toThrow();
   });
 
-  // test('Commit and rollback', () => {
-  //   class Movie extends Model {
-  //     @field('string') title;
-  //   }
-
-  //   const layer = new Layer('frontend', {register: {Movie}});
-
-  //   let movie = new layer.Movie({title: 'Inception'});
-  //   expect(movie.isChanged()).toBe(true); // Models created with `new' are considered as changed
-
-  //   movie = layer.Movie.deserialize({title: 'Inception'});
-  //   expect(movie.isChanged()).toBe(false); // Deserialized models are considered as unchanged
-
-  //   movie.title = 'The Matrix';
-  //   expect(movie.isChanged()).toBe(true);
-
-  //   movie.commit();
-  //   expect(movie.isChanged()).toBe(false);
-
-  //   movie.title = 'Inception';
-  //   expect(movie.isChanged()).toBe(true);
-
-  //   movie.rollback();
-  //   expect(movie.title).toBe('The Matrix');
-  //   expect(movie.isChanged()).toBe(false);
-  // });
-
   test('isNew()', () => {
     class Movie extends Model {
       @field('string') title;

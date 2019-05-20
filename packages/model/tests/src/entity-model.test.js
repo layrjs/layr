@@ -39,18 +39,6 @@ describe('EntityModel', () => {
 
     layer.Movie.deserialize({_id: id, year: null});
     expect(movie.year).toBeUndefined();
-
-    // layer.Movie.deserialize({_id: id, year: 1999});
-    // expect(movie.year).toBe(1999);
-    // layer.Movie.deserialize({_id: id}, {fields: {year: true}});
-    // expect(movie.title).toBe('The Matrix');
-    // expect(movie.year).toBeUndefined();
-
-    // layer.Movie.deserialize({_id: id, year: 1999});
-    // expect(movie.year).toBe(1999);
-    // layer.Movie.deserialize({_id: id}, {fields: true});
-    // expect(movie.title).toBeUndefined();
-    // expect(movie.year).toBeUndefined();
   });
 
   test('Serialization', () => {
