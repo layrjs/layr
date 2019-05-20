@@ -52,8 +52,11 @@ export class Field {
         scalarType = scalarType.slice(0, -1);
       }
     }
+    if (!scalarType) {
+      throw new Error("'type' parameter is invalid");
+    }
 
-    this._scalar = new Scalar(scalarType, {
+    this._scalar = new Scalar(this, scalarType, {
       isOptional: scalarIsOptional,
       validators: scalarValidators
     });
@@ -68,6 +71,7 @@ export class Field {
   fork(parent) {
     const forkedField = Object.create(this);
     forkedField._parent = parent;
+    forkedField._scalar = this._scalar.fork(forkedField);
     return forkedField;
   }
 
@@ -102,6 +106,23 @@ export class Field {
     return value;
   }
 
+  getValues() {
+    return {
+      [Symbol.iterator]: () => {
+        const value = this.getValue();
+        let values;
+        if (this._isArray) {
+          values = value;
+        } else if (value !== undefined) {
+          values = [value];
+        } else {
+          values = [];
+        }
+        return values[Symbol.iterator]();
+      }
+    };
+  }
+
   checkValue(value) {
     if (value === undefined) {
       return;
@@ -113,9 +134,7 @@ export class Field {
       );
     }
 
-    return mapFromOneOrMany(value, value =>
-      this._scalar.checkValue(this, value, {fieldName: this._name})
-    );
+    return mapFromOneOrMany(value, value => this._scalar.checkValue(value));
   }
 
   getSource() {
@@ -127,11 +146,7 @@ export class Field {
   }
 
   createValue(value) {
-    return this.setValue(
-      mapFromOneOrMany(value, value =>
-        this._scalar.createValue(this, value, {fieldName: this._name})
-      )
-    );
+    return this.setValue(mapFromOneOrMany(value, value => this._scalar.createValue(value)));
   }
 
   serializeValue({target, fields} = {}) {
@@ -143,19 +158,16 @@ export class Field {
     }
 
     const value = this.getValue();
-    return mapFromOneOrMany(value, value =>
-      this._scalar.serializeValue(this, value, {target, fields})
-    );
+    return mapFromOneOrMany(value, value => this._scalar.serializeValue(value, {target, fields}));
   }
 
   deserializeValue(value, {source} = {}) {
     const previousValue = this.isActive() ? this.getValue() : undefined;
     return this.setValue(
       mapFromOneOrMany(value, value =>
-        this._scalar.deserializeValue(this, value, {
+        this._scalar.deserializeValue(value, {
           source,
-          previousValue,
-          fieldName: this._name
+          previousValue
         })
       ),
       {source}
@@ -168,7 +180,7 @@ export class Field {
       const values = value;
       let failedValidators = runValidators(values, this._validators);
       const failedScalarValidators = values.map(value =>
-        this._scalar.getFailedValidators(this, value, {fields})
+        this._scalar.getFailedValidators(value, {fields})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -178,7 +190,7 @@ export class Field {
       }
       return failedValidators;
     }
-    return this._scalar.getFailedValidators(this, value, {fields});
+    return this._scalar.getFailedValidators(value, {fields});
   }
 
   getDefaultValue() {
@@ -207,26 +219,30 @@ export class Field {
       fieldMask = fieldMask[0];
     }
 
-    return this._scalar._normalizeFieldMask(this, fieldMask);
+    return this._scalar._normalizeFieldMask(fieldMask);
   }
 }
 
 class Scalar {
-  constructor(type, {isOptional, validators}) {
-    if (typeof type !== 'string' || !type) {
-      throw new Error("'type' parameter is missing or invalid");
-    }
+  constructor(field, type, {isOptional, validators}) {
+    this._field = field;
     this._type = type;
     this._isOptional = isOptional;
     this._validators = validators;
   }
 
-  checkValue(field, value, {fieldName}) {
+  fork(field) {
+    const forkedScalar = Object.create(this);
+    forkedScalar._field = field;
+    return forkedScalar;
+  }
+
+  checkValue(value) {
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       if (!primitiveType.check(value)) {
         throw new Error(
-          `Type mismatch (field: '${fieldName}', expected: '${
+          `Type mismatch (field: '${this._field.getName()}', expected: '${
             this._type
           }', provided: '${typeof value}')`
         );
@@ -234,17 +250,17 @@ class Scalar {
       return;
     }
 
-    const Model = field.getLayer().get(this._type);
+    const Model = this.getModel();
     if (!(value instanceof Model)) {
       throw new Error(
-        `Type mismatch (field: '${fieldName}', expected: '${this._type}', provided: '${
+        `Type mismatch (field: '${this._field.getName()}', expected: '${this._type}', provided: '${
           value.constructor.name
         }')`
       );
     }
   }
 
-  createValue(field, value) {
+  createValue(value) {
     if (value === undefined) {
       return undefined;
     }
@@ -254,14 +270,14 @@ class Scalar {
     }
 
     if (isPlainObject(value)) {
-      const Model = field.getLayer().get(this._type);
+      const Model = this.getModel();
       return new Model(value);
     }
 
     return value;
   }
 
-  serializeValue(field, value, {target, fields}) {
+  serializeValue(value, {target, fields}) {
     if (value === undefined) {
       // In case the data is transported via JSON, we will lost all the 'undefined' values.
       // We don't want that because 'undefined' could mean that a field has been deleted.
@@ -280,9 +296,9 @@ class Scalar {
     return value.serialize({target, fields, isDeep: true});
   }
 
-  deserializeValue(field, value, {source, previousValue, fieldName}) {
+  deserializeValue(value, {source, previousValue}) {
     if (value === undefined) {
-      throw new Error(`Cannot deserialize 'undefined' (field: '${fieldName}')`);
+      throw new Error(`Cannot deserialize 'undefined' (field: '${this._field.getName()}')`);
     }
 
     if (value === null) {
@@ -299,13 +315,13 @@ class Scalar {
 
     const type = value._type;
     if (!type) {
-      throw new Error(`Cannot determine the type of a value (field: '${fieldName}')`);
+      throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
-    const Model = field.getLayer().get(type);
+    const Model = this._field.getLayer().get(type);
     return Model.deserialize(value, {source, previousInstance: previousValue});
   }
 
-  getFailedValidators(field, value, {fields}) {
+  getFailedValidators(value, {fields}) {
     if (value === undefined) {
       if (!this._isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
@@ -322,12 +338,19 @@ class Scalar {
     return getPrimitiveType(this._type) !== undefined;
   }
 
-  _normalizeFieldMask(field, fieldMask) {
+  getModel() {
     if (this.isPrimitiveType()) {
-      return true;
+      return undefined;
     }
-    const Model = field.getLayer().get(this._type);
-    return Model.prototype._normalizeFieldMask(fieldMask);
+    return this._field.getLayer().get(this._type);
+  }
+
+  _normalizeFieldMask(fieldMask) {
+    const Model = this.getModel();
+    if (Model) {
+      return Model.prototype._normalizeFieldMask(fieldMask);
+    }
+    return true;
   }
 }
 

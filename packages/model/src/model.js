@@ -180,15 +180,50 @@ export class Model extends Serializable(Registerable()) {
     };
   }
 
-  getActiveFields() {
+  getActiveFields({filter: otherFilter} = {}) {
     const filter = function (field) {
-      return field.isActive();
+      if (!field.isActive()) {
+        return false;
+      }
+      if (otherFilter) {
+        return otherFilter(field);
+      }
+      return true;
     };
     return this.getFields({filter});
   }
 
   getFieldNames() {
     return this._fields ? this._fields.keys() : [];
+  }
+
+  getFieldValues({filter} = {}) {
+    return {
+      [Symbol.iterator]: () => {
+        const fieldIterator = this.getActiveFields({filter});
+        let valueIterator;
+
+        return {
+          next: () => {
+            while (true) {
+              if (!valueIterator) {
+                const {value: field} = fieldIterator.next();
+                if (!field) {
+                  return {value: undefined, done: true};
+                }
+                valueIterator = field.getValues();
+              }
+
+              const {value, done} = valueIterator.next();
+              if (!done) {
+                return {value, done: false};
+              }
+              valueIterator = undefined;
+            }
+          }
+        };
+      }
+    };
   }
 
   setField(name, type, options) {
