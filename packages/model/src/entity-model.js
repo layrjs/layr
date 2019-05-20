@@ -7,22 +7,22 @@ export class EntityModel extends IdentityModel {
     this.constructor.setInstance(this);
   }
 
-  serialize({target, fields, _isDeep} = {}) {
-    return super.serialize({target, fields: _isDeep ? false : fields, _isDeep});
+  serialize({target, fields, isDeep} = {}) {
+    return super.serialize({target, fields: isDeep ? false : fields, isDeep});
   }
 
-  getFailedValidators({fields, _isDeep} = {}) {
-    if (_isDeep) {
+  getFailedValidators({fields, isDeep} = {}) {
+    if (isDeep) {
       return undefined;
     }
-    return super.getFailedValidators({fields, _isDeep});
+    return super.getFailedValidators({fields, isDeep});
   }
 
-  // serialize({_isDeep, ...otherOptions} = {}) {
-  //   if (_isDeep) {
+  // serialize({isDeep, ...otherOptions} = {}) {
+  //   if (isDeep) {
   //     return this._serializeReference();
   //   }
-  //   return super.serialize({_isDeep, ...otherOptions});
+  //   return super.serialize({isDeep, ...otherOptions});
   // }
 
   // static _serializeType() {
@@ -44,23 +44,15 @@ export class EntityModel extends IdentityModel {
   static getInstance(object, _previousInstance) {
     const id = object?._id;
     if (id !== undefined) {
-      return this.getEntity(id);
+      return this._instances?.get(id);
     }
   }
 
   static setInstance(instance) {
-    this.setEntity(instance._id, instance);
-  }
-
-  static getEntity(id) {
-    return this._entities?.get(id);
-  }
-
-  static setEntity(id, entity) {
-    if (!Object.prototype.hasOwnProperty.call(this, '_entities')) {
-      this._entities = new Map(this._entities);
+    if (!Object.prototype.hasOwnProperty.call(this, '_instances')) {
+      this._instances = new Map(this._instances);
     }
-    this._entities.set(id, entity);
+    this._instances.set(instance._id, instance);
   }
 
   // release() {

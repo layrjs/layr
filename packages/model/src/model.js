@@ -15,15 +15,13 @@ export class Model extends Serializable(Registerable()) {
 
     for (const field of this.getFields()) {
       const name = field.getName();
-
-      if (!Object.prototype.hasOwnProperty.call(object, name)) {
+      if (Object.prototype.hasOwnProperty.call(object, name)) {
+        const value = object[name];
+        field.createValue(value);
+      } else {
         const defaultValue = field.getDefaultValue();
         field.setValue(defaultValue);
-        continue;
       }
-
-      const value = object[name];
-      field.createValue(value);
     }
   }
 
@@ -67,10 +65,10 @@ export class Model extends Serializable(Registerable()) {
 
   // === Serialization ===
 
-  serialize({target, fields, _isDeep} = {}) {
+  serialize({target, fields, isDeep} = {}) {
     const rootFieldMask = this.normalizeFieldMask(fields);
 
-    if (!_isDeep) {
+    if (!isDeep) {
       this.validate({fields: rootFieldMask});
     }
 
@@ -96,11 +94,9 @@ export class Model extends Serializable(Registerable()) {
 
   static deserialize(object, {source, previousInstance} = {}) {
     let instance = this.getInstance(object, previousInstance);
-    if (instance) {
-      instance.deserialize(object, {source});
-      return instance;
+    if (!instance) {
+      instance = new this(object, {isDeserializing: true});
     }
-    instance = new this(object, {isDeserializing: true});
     instance.deserialize(object, {source});
     return instance;
   }
@@ -111,19 +107,15 @@ export class Model extends Serializable(Registerable()) {
     const isNew = this.isNew();
 
     for (const name of this.getFieldNames()) {
-      if (!Object.prototype.hasOwnProperty.call(object, name)) {
-        if (isNew) {
-          const field = this.getField(name);
-          const defaultValue = field.getDefaultValue();
-          field.setValue(defaultValue);
-        }
-        continue;
+      if (Object.prototype.hasOwnProperty.call(object, name)) {
+        const field = this.getField(name);
+        const value = object[name];
+        field.deserializeValue(value, {source});
+      } else if (isNew) {
+        const field = this.getField(name);
+        const defaultValue = field.getDefaultValue();
+        field.setValue(defaultValue);
       }
-
-      const field = this.getField(name);
-      const value = object[name];
-      const previousValue = field.isActive() ? field.getValue() : undefined;
-      field.deserializeValue(value, {source, previousValue});
     }
   }
 
@@ -146,10 +138,10 @@ export class Model extends Serializable(Registerable()) {
       const field = this.getField(name);
       return field.getValue();
     };
+
     descriptor.set = function (value) {
       const field = this.getField(name);
-      value = field.setValue(value);
-      return value;
+      return field.setValue(value);
     };
 
     delete descriptor.initializer;
@@ -169,11 +161,11 @@ export class Model extends Serializable(Registerable()) {
   getFields({filter} = {}) {
     return {
       [Symbol.iterator]: () => {
-        const fieldIterator = (this._fields || []).values()[Symbol.iterator]();
+        const iterator = (this._fields || []).values()[Symbol.iterator]();
         return {
           next: () => {
             while (true) {
-              let {value: field, done} = fieldIterator.next();
+              let {value: field, done} = iterator.next();
               if (field) {
                 if (filter && !filter(field)) {
                   continue;
@@ -275,18 +267,14 @@ export class Model extends Serializable(Registerable()) {
 
   _normalizeFieldMask(rootFieldMask) {
     const normalizedFieldMask = {};
-
     for (const field of this.getFields()) {
       const name = field.getName();
-
       const fieldMask = typeof rootFieldMask === 'object' ? rootFieldMask[name] : rootFieldMask;
       if (!fieldMask) {
         continue;
       }
-
       normalizedFieldMask[name] = field._normalizeFieldMask(fieldMask);
     }
-
     return normalizedFieldMask;
   }
 
@@ -392,7 +380,7 @@ export class Model extends Serializable(Registerable()) {
     return this.getFailedValidators({fields}) === undefined;
   }
 
-  getFailedValidators({fields, _isDeep} = {}) {
+  getFailedValidators({fields, isDeep: _isDeep} = {}) {
     const rootFieldMask = this.normalizeFieldMask(fields);
 
     let result;
@@ -425,7 +413,7 @@ export class Model extends Serializable(Registerable()) {
 
   [inspect.custom]() {
     const object = {};
-    for (const field of this.getFields()) {
+    for (const field of this.getActiveFields()) {
       const name = field.getName();
       const value = field.getValue();
       if (value !== undefined) {

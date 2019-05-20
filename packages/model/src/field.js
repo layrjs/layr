@@ -5,13 +5,12 @@ import isPlainObject from 'lodash/isPlainObject';
 
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
-// TODO: Pass 'layer' so we can get rid of 'parent'
-
 export class Field {
   constructor(parent, name, type, {default: defaultValue, validators = []} = {}) {
     if (typeof name !== 'string' || !name) {
       throw new Error("'name' parameter is missing or invalid");
     }
+
     if (typeof type !== 'string' || !type) {
       throw new Error("'type' parameter is missing or invalid");
     }
@@ -72,6 +71,10 @@ export class Field {
     return forkedField;
   }
 
+  getLayer() {
+    return this._parent.constructor.getLayer();
+  }
+
   getName() {
     return this._name;
   }
@@ -111,23 +114,22 @@ export class Field {
     }
 
     return mapFromOneOrMany(value, value =>
-      this._scalar.checkValue(this._parent, value, {fieldName: this._name})
+      this._scalar.checkValue(this, value, {fieldName: this._name})
     );
   }
 
   getSource() {
     let source = this._source;
     if (!source) {
-      source = this._parent.constructor.getLayer().getName();
+      source = this.getLayer().getName();
     }
     return source;
   }
 
   createValue(value) {
-    // TODO: Don't call setValue()
     return this.setValue(
       mapFromOneOrMany(value, value =>
-        this._scalar.createValue(this._parent, value, {fieldName: this._name})
+        this._scalar.createValue(this, value, {fieldName: this._name})
       )
     );
   }
@@ -142,14 +144,15 @@ export class Field {
 
     const value = this.getValue();
     return mapFromOneOrMany(value, value =>
-      this._scalar.serializeValue(this._parent, value, {target, fields})
+      this._scalar.serializeValue(this, value, {target, fields})
     );
   }
 
-  deserializeValue(value, {source, previousValue} = {}) {
+  deserializeValue(value, {source} = {}) {
+    const previousValue = this.isActive() ? this.getValue() : undefined;
     return this.setValue(
       mapFromOneOrMany(value, value =>
-        this._scalar.deserializeValue(this._parent, value, {
+        this._scalar.deserializeValue(this, value, {
           source,
           previousValue,
           fieldName: this._name
@@ -165,7 +168,7 @@ export class Field {
       const values = value;
       let failedValidators = runValidators(values, this._validators);
       const failedScalarValidators = values.map(value =>
-        this._scalar.getFailedValidators(this._parent, value, {fields})
+        this._scalar.getFailedValidators(this, value, {fields})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -175,7 +178,7 @@ export class Field {
       }
       return failedValidators;
     }
-    return this._scalar.getFailedValidators(this._parent, value, {fields});
+    return this._scalar.getFailedValidators(this, value, {fields});
   }
 
   getDefaultValue() {
@@ -204,7 +207,7 @@ export class Field {
       fieldMask = fieldMask[0];
     }
 
-    return this._scalar._normalizeFieldMask(this._parent, fieldMask);
+    return this._scalar._normalizeFieldMask(this, fieldMask);
   }
 }
 
@@ -218,7 +221,7 @@ class Scalar {
     this._validators = validators;
   }
 
-  checkValue(parent, value, {fieldName}) {
+  checkValue(field, value, {fieldName}) {
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       if (!primitiveType.check(value)) {
@@ -231,7 +234,7 @@ class Scalar {
       return;
     }
 
-    const Model = parent.constructor.getLayer().get(this._type);
+    const Model = field.getLayer().get(this._type);
     if (!(value instanceof Model)) {
       throw new Error(
         `Type mismatch (field: '${fieldName}', expected: '${this._type}', provided: '${
@@ -241,7 +244,7 @@ class Scalar {
     }
   }
 
-  createValue(parent, value) {
+  createValue(field, value) {
     if (value === undefined) {
       return undefined;
     }
@@ -251,17 +254,17 @@ class Scalar {
     }
 
     if (isPlainObject(value)) {
-      const Model = parent.constructor.getLayer().get(this._type);
+      const Model = field.getLayer().get(this._type);
       return new Model(value);
     }
 
     return value;
   }
 
-  serializeValue(parent, value, {target, fields}) {
+  serializeValue(field, value, {target, fields}) {
     if (value === undefined) {
       // In case the data is transported via JSON, we will lost all the 'undefined' values.
-      // We don't want that because 'undefined' might mean that a field has been deleted.
+      // We don't want that because 'undefined' could mean that a field has been deleted.
       // So, we replace all 'undefined' values by 'null'.
       return null;
     }
@@ -274,10 +277,10 @@ class Scalar {
       return value;
     }
 
-    return value.serialize({target, fields, _isDeep: true});
+    return value.serialize({target, fields, isDeep: true});
   }
 
-  deserializeValue(parent, value, {source, previousValue, fieldName}) {
+  deserializeValue(field, value, {source, previousValue, fieldName}) {
     if (value === undefined) {
       throw new Error(`Cannot deserialize 'undefined' (field: '${fieldName}')`);
     }
@@ -298,11 +301,11 @@ class Scalar {
     if (!type) {
       throw new Error(`Cannot determine the type of a value (field: '${fieldName}')`);
     }
-    const Model = parent.constructor.getLayer().get(type);
+    const Model = field.getLayer().get(type);
     return Model.deserialize(value, {source, previousInstance: previousValue});
   }
 
-  getFailedValidators(parent, value, {fields}) {
+  getFailedValidators(field, value, {fields}) {
     if (value === undefined) {
       if (!this._isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
@@ -312,18 +315,18 @@ class Scalar {
     if (this.isPrimitiveType()) {
       return runValidators(value, this._validators);
     }
-    return value.getFailedValidators({fields, _isDeep: true});
+    return value.getFailedValidators({fields, isDeep: true});
   }
 
   isPrimitiveType() {
     return getPrimitiveType(this._type) !== undefined;
   }
 
-  _normalizeFieldMask(parent, fieldMask) {
+  _normalizeFieldMask(field, fieldMask) {
     if (this.isPrimitiveType()) {
       return true;
     }
-    const Model = parent.constructor.getLayer().get(this._type);
+    const Model = field.getLayer().get(this._type);
     return Model.prototype._normalizeFieldMask(fieldMask);
   }
 }

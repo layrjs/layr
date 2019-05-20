@@ -6,13 +6,13 @@ export class FieldMask {
     this._fields = fields;
   }
 
-  // static _normalize(fields, {_isDeep} = {}) {
+  // static _normalize(fields, {isDeep} = {}) {
   //   if (fields === undefined) {
-  //     return !_isDeep;
+  //     return !isDeep;
   //   }
 
   //   if (fields === false) {
-  //     if (!_isDeep) {
+  //     if (!isDeep) {
   //       throw new Error(`A 'false' boolean cannot be the root of a field mask`);
   //     }
   //     return false;
@@ -23,7 +23,7 @@ export class FieldMask {
   //   }
 
   //   if (Array.isArray(fields)) {
-  //     if (!_isDeep) {
+  //     if (!isDeep) {
   //       throw new Error(`An array cannot be the root of a field mask`);
   //     }
   //     return this._normalize(fields[0]);
@@ -32,7 +32,7 @@ export class FieldMask {
   //   if (typeof fields === 'object') {
   //     const normalizedFields = {};
   //     for (const [name, subfields] of Object.entries(fields)) {
-  //       const normalizedSubfields = this._normalize(subfields, {_isDeep: true});
+  //       const normalizedSubfields = this._normalize(subfields, {isDeep: true});
   //       if (normalizedSubfields !== false) {
   //         normalizedFields[name] = normalizedSubfields;
   //       }
