@@ -11,10 +11,7 @@ const debug = debugModule('layr');
 // DEBUG=layr DEBUG_DEPTH=10
 
 export class Layer {
-  constructor(
-    registerables,
-    {name, parentLayer, allowQuerySources: allowedQuerySources = ['*']} = {}
-  ) {
+  constructor(registerables, {name, parentLayer} = {}) {
     this._registeredNames = [];
     this._registerables = {};
 
@@ -27,7 +24,6 @@ export class Layer {
     if (parentLayer) {
       this.setParentLayer(parentLayer);
     }
-    this.allowQuerySources(allowedQuerySources);
   }
 
   getId() {
@@ -249,12 +245,6 @@ export class Layer {
 
   async receiveQuery(query, {source} = {}) {
     const target = this.getId();
-
-    const allowed = this.checkQuerySource(source);
-    if (!allowed) {
-      throw new Error(`Query source not allowed (source: '${source}', target: '${target}')`);
-    }
-
     let result;
     debug(`[%s → %s] %o)`, source, target, query);
     query = this.deserialize(query, {source});
@@ -266,19 +256,6 @@ export class Layer {
 
   async invokeQuery(query) {
     return await invokeQuery(this, query);
-  }
-
-  allowQuerySources(allowedQuerySources) {
-    this._allowedQuerySources = allowedQuerySources;
-  }
-
-  checkQuerySource(querySource) {
-    for (const allowedQuerySource of this._allowedQuerySources) {
-      if (allowedQuerySource === '*' || querySource === allowedQuerySource) {
-        return true;
-      }
-    }
-    return false;
   }
 
   // === Utilities ===
