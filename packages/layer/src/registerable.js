@@ -7,7 +7,7 @@ export const Registerable = (Base = Object) =>
     }
 
     static setRegisteredName(registeredName) {
-      this._registeredName = registeredName;
+      Object.defineProperty(this, '_registeredName', {value: registeredName});
     }
 
     static getLayer({throwIfNotFound = true} = {}) {
@@ -23,7 +23,7 @@ export const Registerable = (Base = Object) =>
       Object.defineProperty(this, '_layer', {value: layer});
     }
 
-    static async callParent(methodName, ...args) {
+    static async callParentLayer(methodName, ...args) {
       const layer = this.getLayer();
       const query = {
         [`${this.getRegisteredName()}=>`]: {
@@ -63,7 +63,7 @@ export const Registerable = (Base = Object) =>
       this.constructor.setLayer.call(this, layer);
     }
 
-    async callParent(methodName, ...args) {
+    async callParentLayer(methodName, ...args) {
       const layer = this.constructor.getLayer();
       const query = {
         '<=': this,
@@ -85,10 +85,10 @@ export function isRegisterable(value) {
   return typeof value?.getLayer === 'function';
 }
 
-export function parentMethod() {
+export function callParentLayer() {
   return function (target, name, descriptor) {
     descriptor.value = async function (...args) {
-      return await this.callParent(name, ...args);
+      return await this.callParentLayer(name, ...args);
     };
     delete descriptor.initializer;
     delete descriptor.writable;

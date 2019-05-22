@@ -1,4 +1,4 @@
-import {Layer, Registerable, Serializable, LayerProxy, parentMethod} from '../../..';
+import {Layer, Registerable, Serializable, LayerProxy, callParentLayer} from '../../..';
 
 describe('Parent layer', () => {
   test('Parent call', async () => {
@@ -73,9 +73,9 @@ describe('Parent layer', () => {
     // Frontend
 
     class Math extends BaseMath(Serializable(Registerable())) {
-      @parentMethod() static sum;
+      @callParentLayer() static sum;
 
-      @parentMethod() sum;
+      @callParentLayer() sum;
     }
 
     const layer = new Layer({Math}, {name: 'frontend', parentLayer: backendProxy});
