@@ -1,4 +1,5 @@
 import {inspect} from 'util';
+import nanoid from 'nanoid';
 import {invokeQuery} from '@deepr/runtime';
 import debugModule from 'debug';
 
@@ -29,6 +30,13 @@ export class Layer {
     this.allowQuerySources(allowedQuerySources);
   }
 
+  getId() {
+    if (!this._id) {
+      this._id = nanoid();
+    }
+    return this._id;
+  }
+
   getName() {
     return this._name;
   }
@@ -48,9 +56,7 @@ export class Layer {
       return this[name];
     }
     if (throwIfNotFound) {
-      throw new Error(
-        `Item not found in the layer (layer name: '${this.getName()}', item name: '${name}')`
-      );
+      throw new Error(`Item not found in the layer (name: '${name}')`);
     }
   }
 
@@ -229,8 +235,8 @@ export class Layer {
 
   async sendQuery(query) {
     const parentLayer = this.getParentLayer();
-    const source = this.getName();
-    const target = parentLayer.getName();
+    const source = this.getId();
+    const target = parentLayer.getId();
 
     let result;
     query = this.serialize(query, {target});
@@ -242,7 +248,7 @@ export class Layer {
   }
 
   async receiveQuery(query, {source} = {}) {
-    const target = this.getName();
+    const target = this.getId();
 
     const allowed = this.checkQuerySource(source);
     if (!allowed) {

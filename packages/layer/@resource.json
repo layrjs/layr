@@ -8,7 +8,8 @@
   "repository": "https://github.com/medmain/layr/tree/master/packages/layer",
   "dependencies": {
     "debug": "^4.1.1",
-    "@deepr/runtime": "^0.2.0"
+    "@deepr/runtime": "^0.2.0",
+    "nanoid": "^2.0.3"
   },
   "tests": {
     "@include": "./tests"

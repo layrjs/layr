@@ -6,9 +6,13 @@ export class LayerProxy {
     this._target = target;
   }
 
-  getName() {
-    return this._target.getName();
+  getId() {
+    return this._target.getId();
   }
+
+  // getName() {
+  //   return this._target.getName();
+  // }
 
   async receiveQuery(...args) {
     return await this._target.receiveQuery(...args);

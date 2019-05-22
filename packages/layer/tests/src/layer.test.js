@@ -12,6 +12,7 @@ describe('Layer', () => {
     }
 
     const layer = new Layer({Item, Movie}, {name: 'layer'});
+    expect(layer.getId().length).toBeGreaterThanOrEqual(10);
     expect(layer.getName()).toBe('layer');
 
     expect(layer.Movie).not.toBe(Movie);
@@ -45,6 +46,8 @@ describe('Layer', () => {
     }).toThrow();
 
     const anotherLayer = new Layer({Item, Movie}, {name: 'anotherLayer'});
+    expect(anotherLayer.getId().length).toBeGreaterThanOrEqual(10);
+    expect(anotherLayer.getId()).not.toBe(layer.getId());
     expect(anotherLayer.getName()).toBe('anotherLayer');
 
     expect(() => {
