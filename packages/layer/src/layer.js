@@ -11,16 +11,22 @@ const debug = debugModule('layr');
 
 export class Layer {
   constructor(
-    name,
-    {register: registerables, parentLayer, allowQuerySources: allowedQuerySources = ['*']} = {}
+    registerables,
+    {name, parentLayer, allowQuerySources: allowedQuerySources = ['*']} = {}
   ) {
     this._registeredNames = [];
     this._registerables = {};
 
-    this.setName(name);
-    this.setParentLayer(parentLayer);
+    if (registerables) {
+      this.register(registerables);
+    }
+    if (name) {
+      this.setName(name);
+    }
+    if (parentLayer) {
+      this.setParentLayer(parentLayer);
+    }
     this.allowQuerySources(allowedQuerySources);
-    this.register(registerables);
   }
 
   getName() {
@@ -49,10 +55,12 @@ export class Layer {
   }
 
   register(registerables) {
-    if (registerables !== undefined) {
-      for (const [name, registerable] of Object.entries(registerables)) {
-        this._register(name, registerable);
-      }
+    if (typeof registerables !== 'object') {
+      throw new Error(`Expected an object (received: ${typeof registerables})`);
+    }
+
+    for (const [name, registerable] of Object.entries(registerables)) {
+      this._register(name, registerable);
     }
   }
 
@@ -95,11 +103,13 @@ export class Layer {
 
   // === Forking ===
 
-  fork({register: registerables} = {}) {
+  fork(registerables) {
     const forkedLayer = Object.create(this);
     forkedLayer._registeredNames = [...this._registeredNames];
     forkedLayer._registerables = Object.create(this._registerables);
-    forkedLayer.register(registerables);
+    if (registerables) {
+      forkedLayer.register(registerables);
+    }
     return forkedLayer;
   }
 

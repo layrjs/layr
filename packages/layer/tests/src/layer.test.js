@@ -11,7 +11,7 @@ describe('Layer', () => {
       }
     }
 
-    const layer = new Layer('layer', {register: {Item, Movie}});
+    const layer = new Layer({Item, Movie}, {name: 'layer'});
     expect(layer.getName()).toBe('layer');
 
     expect(layer.Movie).not.toBe(Movie);
@@ -44,7 +44,7 @@ describe('Layer', () => {
       layer.movie = movie2; // Cannot modify a registered item
     }).toThrow();
 
-    const anotherLayer = new Layer('anotherLayer', {register: {Item, Movie}});
+    const anotherLayer = new Layer({Item, Movie}, {name: 'anotherLayer'});
     expect(anotherLayer.getName()).toBe('anotherLayer');
 
     expect(() => {
@@ -55,7 +55,7 @@ describe('Layer', () => {
   test('Forking', () => {
     class Store extends Registerable() {}
 
-    const layer = new Layer('layer', {register: {Store}});
+    const layer = new Layer({Store});
 
     const store = new layer.Store();
 
@@ -92,7 +92,7 @@ describe('Layer', () => {
       }
     }
 
-    const layer = new Layer('layer', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     let movie = new layer.Movie({title: 'Inception'});
     expect(movie.isNew()).toBe(true);

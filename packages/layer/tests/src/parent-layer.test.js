@@ -65,7 +65,7 @@ describe('Parent layer', () => {
         }
       }
 
-      const layer = new Layer('backend', {register: {Math}, allowQuerySources: ['frontend']});
+      const layer = new Layer({Math}, {name: 'backend', allowQuerySources: ['frontend']});
 
       return new LayerProxy(layer);
     })();
@@ -78,7 +78,7 @@ describe('Parent layer', () => {
       @parentMethod() sum;
     }
 
-    const layer = new Layer('frontend', {register: {Math}, parentLayer: backendProxy});
+    const layer = new Layer({Math}, {name: 'frontend', parentLayer: backendProxy});
 
     expect(await layer.Math.sum(1, 2)).toBe(3);
 
@@ -87,10 +87,13 @@ describe('Parent layer', () => {
     expect(result).toBe(5);
     expect(math.lastResult).toBe(5);
 
-    const databaseLayer = new Layer('database', {
-      register: {Math},
-      parentLayer: backendProxy
-    });
+    const databaseLayer = new Layer(
+      {Math},
+      {
+        name: 'database',
+        parentLayer: backendProxy
+      }
+    );
     await expect(databaseLayer.Math.sum(1, 2)).rejects.toThrow(/Query source not allowed/);
   });
 });
