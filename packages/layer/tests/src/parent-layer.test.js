@@ -1,7 +1,7 @@
 import {Layer, Registerable, Serializable, LayerProxy, callParentLayer} from '../../..';
 
 describe('Parent layer', () => {
-  test('Parent call', async () => {
+  test('Parent call', () => {
     const BaseMath = Base =>
       class BaseMath extends Base {
         constructor({a, b, ...object} = {}, {isDeserializing} = {}) {
@@ -54,11 +54,11 @@ describe('Parent layer', () => {
       // Backend
 
       class Math extends BaseMath(Serializable(Registerable())) {
-        static async sum(a, b) {
+        static sum(a, b) {
           return a + b;
         }
 
-        async sum() {
+        sum() {
           const result = this.a + this.b;
           this.lastResult = result;
           return result;
@@ -80,10 +80,10 @@ describe('Parent layer', () => {
 
     const layer = new Layer({Math}, {name: 'frontend', parentLayer: backendProxy});
 
-    expect(await layer.Math.sum(1, 2)).toBe(3);
+    expect(layer.Math.sum(1, 2)).toBe(3);
 
     const math = new layer.Math({a: 2, b: 3});
-    const result = await math.sum();
+    const result = math.sum();
     expect(result).toBe(5);
     expect(math.lastResult).toBe(5);
   });

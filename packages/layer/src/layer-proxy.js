@@ -14,7 +14,7 @@ export class LayerProxy {
   //   return this._target.getName();
   // }
 
-  async receiveQuery(...args) {
-    return await this._target.receiveQuery(...args);
+  receiveQuery(...args) {
+    return this._target.receiveQuery(...args);
   }
 }

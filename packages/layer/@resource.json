@@ -9,6 +9,7 @@
   "dependencies": {
     "debug": "^4.1.1",
     "@deepr/runtime": "^0.2.0",
+    "@deepr/util": "^0.1.0",
     "nanoid": "^2.0.3"
   },
   "tests": {

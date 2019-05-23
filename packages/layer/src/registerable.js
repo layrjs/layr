@@ -1,3 +1,5 @@
+import {syncOrAsync} from '@deepr/util';
+
 export const Registerable = (Base = Object) =>
   class Registerable extends Base {
     // === Class registration ===
@@ -23,7 +25,7 @@ export const Registerable = (Base = Object) =>
       Object.defineProperty(this, '_layer', {value: layer});
     }
 
-    static async callParentLayer(methodName, ...args) {
+    static callParentLayer(methodName, ...args) {
       const layer = this.getLayer();
       const query = {
         [`${this.getRegisteredName()}=>`]: {
@@ -32,8 +34,7 @@ export const Registerable = (Base = Object) =>
           }
         }
       };
-      const {result} = await layer.sendQuery(query);
-      return result;
+      return syncOrAsync(layer.sendQuery(query), ({result}) => result);
     }
 
     static fork() {
@@ -63,7 +64,7 @@ export const Registerable = (Base = Object) =>
       this.constructor.setLayer.call(this, layer);
     }
 
-    async callParentLayer(methodName, ...args) {
+    callParentLayer(methodName, ...args) {
       const layer = this.constructor.getLayer();
       const query = {
         '<=': this,
@@ -72,8 +73,7 @@ export const Registerable = (Base = Object) =>
         },
         '=>changes': true
       };
-      const {result} = await layer.sendQuery(query);
-      return result;
+      return syncOrAsync(layer.sendQuery(query), ({result}) => result);
     }
 
     fork() {
@@ -87,8 +87,8 @@ export function isRegisterable(value) {
 
 export function callParentLayer() {
   return function (target, name, descriptor) {
-    descriptor.value = async function (...args) {
-      return await this.callParentLayer(name, ...args);
+    descriptor.value = function (...args) {
+      return this.callParentLayer(name, ...args);
     };
     delete descriptor.initializer;
     delete descriptor.writable;

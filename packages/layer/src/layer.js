@@ -1,6 +1,7 @@
 import {inspect} from 'util';
 import nanoid from 'nanoid';
 import {invokeQuery} from '@deepr/runtime';
+import {syncOrAsync} from '@deepr/util';
 import debugModule from 'debug';
 
 import {isRegisterable} from './registerable';
@@ -229,33 +230,33 @@ export class Layer {
     this._parentLayer = parentLayer;
   }
 
-  async sendQuery(query) {
+  sendQuery(query) {
     const parentLayer = this.getParentLayer();
     const source = this.getId();
     const target = parentLayer.getId();
 
-    let result;
     query = this.serialize(query, {target});
     debug(`[%s → %s] %o`, source, target, query);
-    result = await parentLayer.receiveQuery(query, {source});
-    debug(`[%s ← %s] %o`, source, target, result);
-    result = this.deserialize(result, {source: target});
-    return result;
+    return syncOrAsync(parentLayer.receiveQuery(query, {source}), result => {
+      debug(`[%s ← %s] %o`, source, target, result);
+      result = this.deserialize(result, {source: target});
+      return result;
+    });
   }
 
-  async receiveQuery(query, {source} = {}) {
+  receiveQuery(query, {source} = {}) {
     const target = this.getId();
-    let result;
     debug(`[%s → %s] %o)`, source, target, query);
     query = this.deserialize(query, {source});
-    result = await this.invokeQuery(query);
-    result = this.serialize(result, {target: source});
-    debug(`[%s ← %s] %o`, source, target, result);
-    return result;
+    return syncOrAsync(this.invokeQuery(query), result => {
+      result = this.serialize(result, {target: source});
+      debug(`[%s ← %s] %o`, source, target, result);
+      return result;
+    });
   }
 
-  async invokeQuery(query) {
-    return await invokeQuery(this, query);
+  invokeQuery(query) {
+    return invokeQuery(this, query);
   }
 
   // === Utilities ===
