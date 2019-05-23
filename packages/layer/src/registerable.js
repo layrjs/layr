@@ -2,89 +2,136 @@ import {syncOrAsync} from '@deepr/util';
 
 export const Registerable = (Base = Object) =>
   class Registerable extends Base {
-    // === Class registration ===
+    // === Class ===
 
     static getRegisteredName() {
-      return this._registeredName;
+      return _getRegisteredName(this);
     }
 
     static setRegisteredName(registeredName) {
-      Object.defineProperty(this, '_registeredName', {value: registeredName});
+      _setRegisteredName(this, registeredName);
     }
 
     static getLayer({throwIfNotFound = true} = {}) {
-      if (this._layer) {
-        return this._layer;
-      }
-      if (throwIfNotFound) {
-        throw new Error(`Layer not found`);
-      }
+      return _getLayer(this, {throwIfNotFound});
     }
 
     static setLayer(layer) {
-      Object.defineProperty(this, '_layer', {value: layer});
+      _setLayer(this, layer);
     }
 
     static callParentLayer(methodName, ...args) {
-      const layer = this.getLayer();
-      const query = {
-        [`${this.getRegisteredName()}=>`]: {
-          [`${methodName}=>result`]: {
-            '([])': args
-          }
-        }
-      };
-      return syncOrAsync(layer.sendQuery(query), ({result}) => result);
+      return _callParentLayer(this, methodName, ...args);
     }
 
     static fork() {
-      const Base = this;
-      return class extends this {
-        static [Symbol.hasInstance](instance) {
-          return instance instanceof Base;
-        }
-      };
+      return _fork(this);
     }
 
-    // === Instance registration ===
+    // === Instance ===
 
     getRegisteredName() {
-      return this.constructor.getRegisteredName.call(this);
+      return _getRegisteredName(this);
     }
 
     setRegisteredName(registeredName) {
-      this.constructor.setRegisteredName.call(this, registeredName);
+      _setRegisteredName(this, registeredName);
     }
 
-    getLayer({throwIfNotFound = true} = {}) {
-      return this.constructor.getLayer.call(this, {throwIfNotFound});
+    getLayer({fallBackToClass = true, throwIfNotFound = true} = {}) {
+      // First, let try to get the instance's layer
+      const layer = _getLayer(this, {throwIfNotFound: throwIfNotFound && !fallBackToClass});
+      if (layer) {
+        return layer;
+      }
+      if (fallBackToClass) {
+        // If not found, let's fall back to the class' layer
+        return _getLayer(this.constructor, {throwIfNotFound});
+      }
     }
 
     setLayer(layer) {
-      this.constructor.setLayer.call(this, layer);
+      _setLayer(this, layer);
     }
 
     callParentLayer(methodName, ...args) {
-      const layer = this.constructor.getLayer();
-      const query = {
-        '<=': this,
-        [`${methodName}=>result`]: {
-          '([])': args
-        },
-        '=>changes': true
-      };
-      return syncOrAsync(layer.sendQuery(query), ({result}) => result);
+      return _callParentLayer(this, methodName, ...args);
     }
 
     fork() {
-      return Object.create(this);
+      return _fork(this);
     }
   };
+
+function _getRegisteredName(target) {
+  return target._registeredName;
+}
+
+function _setRegisteredName(target, registeredName) {
+  Object.defineProperty(target, '_registeredName', {value: registeredName});
+}
+
+function _getLayer(target, {throwIfNotFound = true} = {}) {
+  if (target._layer) {
+    return target._layer;
+  }
+  if (throwIfNotFound) {
+    throw new Error(`Layer not found`);
+  }
+}
+
+function _setLayer(target, layer) {
+  Object.defineProperty(target, '_layer', {value: layer});
+}
+
+function _callParentLayer(target, methodName, ...args) {
+  const layer = target.getLayer();
+  const query = _buildQuery(target, methodName, ...args);
+  return syncOrAsync(layer.sendQuery(query), ({result}) => result);
+}
+
+function _buildQuery(target, methodName, ...args) {
+  if (typeof target === 'function') {
+    // Class invocation
+    return {
+      [`${target.getRegisteredName()}=>`]: {
+        [`${methodName}=>result`]: {
+          '([])': args
+        }
+      }
+    };
+  }
+
+  // Instance invocation
+  return {
+    '<=': target,
+    [`${methodName}=>result`]: {
+      '([])': args
+    },
+    '=>changes': true
+  };
+}
+
+function _fork(target) {
+  if (typeof target === 'function') {
+    // Class forking
+    const Base = target;
+    return class extends target {
+      static [Symbol.hasInstance](instance) {
+        return instance instanceof Base;
+      }
+    };
+  }
+
+  // Instance forking
+  return Object.create(target);
+}
 
 export function isRegisterable(value) {
   return typeof value?.getLayer === 'function';
 }
 
+// Decorator
 export function callParentLayer() {
   return function (target, name, descriptor) {
     descriptor.value = function (...args) {

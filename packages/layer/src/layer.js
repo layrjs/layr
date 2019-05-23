@@ -72,7 +72,7 @@ export class Layer {
       throw new Error(`Expected a registerable`);
     }
 
-    if (registerable.getLayer({throwIfNotFound: false})) {
+    if (registerable.getLayer({fallBackToClass: false, throwIfNotFound: false})) {
       throw new Error(`Registerable already registered (name: '${name}')`);
     }
 

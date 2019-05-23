@@ -25,7 +25,8 @@ describe('Layer', () => {
 
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie instanceof layer.Item).toBe(true);
-    expect(movie.constructor.getLayer()).toBe(layer);
+    expect(movie.getLayer()).toBe(layer);
+    expect(movie.getLayer({fallBackToClass: false, throwIfNotFound: false})).toBeUndefined();
 
     layer.register({movie});
 
