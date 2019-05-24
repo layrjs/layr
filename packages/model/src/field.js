@@ -76,7 +76,7 @@ export class Field {
   }
 
   getLayer() {
-    return this._parent.constructor.getLayer();
+    return this._parent.getLayer();
   }
 
   getName() {
@@ -140,7 +140,7 @@ export class Field {
   getSource() {
     let source = this._source;
     if (!source) {
-      source = this.getLayer().getName();
+      source = this.getLayer().getId();
     }
     return source;
   }

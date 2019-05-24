@@ -12,7 +12,7 @@ describe('Model', () => {
       @field('number') year;
     }
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     let movie = new layer.Movie({title: 'Inception', year: 2010});
     expect(movie instanceof layer.Movie).toBe(true);
@@ -36,7 +36,7 @@ describe('Model', () => {
       @field('Date') releasedOn;
     }
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     const movie = new layer.Movie({
       title: 'Inception',
@@ -61,7 +61,7 @@ describe('Model', () => {
       @field('string') fullName;
     }
 
-    const layer = new Layer('frontend', {register: {Movie, Actor}});
+    const layer = new Layer({Movie, Actor});
 
     let movie = new layer.Movie();
     expect(movie.genres).toEqual([]);
@@ -90,7 +90,7 @@ describe('Model', () => {
       @field('string[]') genres;
     }
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     const movie = new layer.Movie();
 
@@ -118,7 +118,7 @@ describe('Model', () => {
       @field('boolean') isRestricted = false;
     }
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     let movie = new layer.Movie();
     expect(movie.title).toBeUndefined();
@@ -144,7 +144,7 @@ describe('Model', () => {
       };
     }).toThrow(/Field already exists/);
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     const movie = new layer.Movie({id: 'abc123', title: 'Inception'});
     expect(movie.id).toBe('abc123');
@@ -162,7 +162,7 @@ describe('Model', () => {
       @field('string') aspectRatio;
     }
 
-    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs}});
+    const layer = new Layer({Movie, TechnicalSpecs});
 
     const movie = new layer.Movie({technicalSpecs: {aspectRatio: '2.39:1'}});
     expect(movie.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
@@ -194,7 +194,7 @@ describe('Model', () => {
       director;
     }
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     let movie = new layer.Movie();
     expect(movie.getFailedValidators()).toEqual({title: ['required()']});
@@ -250,7 +250,7 @@ describe('Model', () => {
       @field('string') title;
     }
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     let movie = new layer.Movie({title: 'Inception'});
     expect(movie.isNew()).toBe(true);
@@ -280,7 +280,7 @@ describe('Model', () => {
       @field('string') aspectRatio;
     }
 
-    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs}});
+    const layer = new Layer({Movie, TechnicalSpecs});
 
     const movie = new layer.Movie();
 
@@ -326,7 +326,7 @@ describe('Model', () => {
       @field('string') fullName;
     }
 
-    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs, Actor}});
+    const layer = new Layer({Movie, TechnicalSpecs, Actor});
 
     // Simple serialization
 
@@ -511,18 +511,22 @@ describe('Model', () => {
 
     // Serialization using 'source' and 'target'
 
-    movie = layer.Movie.deserialize({title: 'Inception'}, {source: 'backend'});
-    expect(movie.getField('title').getSource()).toBe('backend');
-    expect(movie.serialize({target: 'backend'})).toEqual({_type: 'Movie'});
-    expect(movie.serialize({target: 'frontend'})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.serialize({target: 'other'})).toEqual({_type: 'Movie', title: 'Inception'});
+    const frontendId = movie.getLayer().getId();
+    const backendId = 'abc123';
+    const otherId = 'xyz789';
+
+    movie = layer.Movie.deserialize({title: 'Inception'}, {source: backendId});
+    expect(movie.getField('title').getSource()).toBe(backendId);
+    expect(movie.serialize({target: backendId})).toEqual({_type: 'Movie'});
+    expect(movie.serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.serialize({target: otherId})).toEqual({_type: 'Movie', title: 'Inception'});
     expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception'});
 
     movie.country = 'USA';
-    expect(movie.getField('country').getSource()).toBe('frontend');
-    expect(movie.serialize({target: 'backend'})).toEqual({_type: 'Movie', country: 'USA'});
-    expect(movie.serialize({target: 'frontend'})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.serialize({target: 'other'})).toEqual({
+    expect(movie.getField('country').getSource()).toBe(frontendId);
+    expect(movie.serialize({target: backendId})).toEqual({_type: 'Movie', country: 'USA'});
+    expect(movie.serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.serialize({target: otherId})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA'
@@ -543,7 +547,7 @@ describe('Model', () => {
       @field('string') aspectRatio;
     }
 
-    const layer = new Layer('frontend', {register: {Movie, TechnicalSpecs}});
+    const layer = new Layer({Movie, TechnicalSpecs});
 
     const movie = new layer.Movie({
       title: 'Inception',
@@ -589,9 +593,7 @@ describe('Model', () => {
       @field('string') fullName;
     }
 
-    const layer = new Layer('frontend', {
-      register: {Movie, Identity, User, Organization, Actor}
-    });
+    const layer = new Layer({Movie, Identity, User, Organization, Actor});
 
     const movie = new layer.Movie({title: 'Inception'});
     expect(movie.title).toBe('Inception');

@@ -15,7 +15,7 @@ describe('EntityModel', () => {
       @field('number') year;
     }
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     const movie = new layer.Movie({title: 'Inception', year: 2010});
     const id = movie.id;
@@ -54,7 +54,7 @@ describe('EntityModel', () => {
       @field('string') fullName;
     }
 
-    const layer = new Layer('frontend', {register: {Movie, Director}});
+    const layer = new Layer({Movie, Director});
 
     const movie = new layer.Movie({
       id: 'm1',

@@ -6,7 +6,7 @@ describe('IdentityModel', () => {
   test('id', () => {
     class Movie extends IdentityModel {}
 
-    const layer = new Layer('frontend', {register: {Movie}});
+    const layer = new Layer({Movie});
 
     let movie = new layer.Movie();
     const id = movie.id; // An 'id' should have been generated automatically
@@ -36,7 +36,7 @@ describe('IdentityModel', () => {
       @field('number') popularity;
     }
 
-    const layer = new Layer('frontend', {register: {Movie, Actor}});
+    const layer = new Layer({Movie, Actor});
 
     const movie = layer.Movie.deserialize({
       _type: 'Movie',

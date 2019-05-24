@@ -10,10 +10,6 @@ export class LayerProxy {
     return this._target.getId();
   }
 
-  // getName() {
-  //   return this._target.getName();
-  // }
-
   receiveQuery(...args) {
     return this._target.receiveQuery(...args);
   }
