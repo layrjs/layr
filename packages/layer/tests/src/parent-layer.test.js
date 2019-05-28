@@ -78,11 +78,18 @@ describe('Parent layer', () => {
       @callParentLayer() sum;
     }
 
-    const layer = new Layer({Math}, {name: 'frontend', parentLayer: backendProxy});
+    const layer = new Layer({Math}, {name: 'frontend', parent: backendProxy});
+
+    expect(layer.getParent()).toBe(backendProxy);
+    expect(layer.hasParent()).toBe(true);
+    expect(layer.Math.hasParentLayer()).toBe(true);
 
     expect(layer.Math.sum(1, 2)).toBe(3);
 
     const math = new layer.Math({a: 2, b: 3});
+
+    expect(math.hasParentLayer()).toBe(true);
+
     const result = math.sum();
     expect(result).toBe(5);
     expect(math.lastResult).toBe(5);

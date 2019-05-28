@@ -12,7 +12,7 @@ const debug = debugModule('layr');
 // DEBUG=layr DEBUG_DEPTH=10
 
 export class Layer {
-  constructor(registerables, {name, parentLayer} = {}) {
+  constructor(registerables, {name, parent} = {}) {
     this._registeredNames = [];
     this._registerables = {};
 
@@ -22,8 +22,8 @@ export class Layer {
     if (name) {
       this.setName(name);
     }
-    if (parentLayer) {
-      this.setParentLayer(parentLayer);
+    if (parent) {
+      this.setParent(parent);
     }
   }
 
@@ -217,27 +217,31 @@ export class Layer {
 
   // === Parent layer ===
 
-  getParentLayer({throwIfNotFound = true} = {}) {
-    if (this._parentLayer) {
-      return this._parentLayer;
+  getParent({throwIfNotFound = true} = {}) {
+    if (this._parent) {
+      return this._parent;
     }
     if (throwIfNotFound) {
       throw new Error(`Parent layer not found`);
     }
   }
 
-  setParentLayer(parentLayer) {
-    this._parentLayer = parentLayer;
+  setParent(parent) {
+    this._parent = parent;
+  }
+
+  hasParent() {
+    return this._parent !== undefined;
   }
 
   sendQuery(query) {
-    const parentLayer = this.getParentLayer();
+    const parent = this.getParent();
     const source = this.getId();
-    const target = parentLayer.getId();
+    const target = parent.getId();
 
     query = this.serialize(query, {target});
     debug(`[%s → %s] %o`, source, target, query);
-    return syncOrAsync(parentLayer.receiveQuery(query, {source}), result => {
+    return syncOrAsync(parent.receiveQuery(query, {source}), result => {
       debug(`[%s ← %s] %o`, source, target, result);
       result = this.deserialize(result, {source: target});
       return result;

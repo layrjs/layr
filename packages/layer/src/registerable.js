@@ -20,6 +20,10 @@ export const Registerable = (Base = Object) =>
       _setLayer(this, layer);
     }
 
+    static hasParentLayer() {
+      return _hasParentLayer(this);
+    }
+
     static callParentLayer(methodName, ...args) {
       return _callParentLayer(this, methodName, ...args);
     }
@@ -54,6 +58,10 @@ export const Registerable = (Base = Object) =>
       _setLayer(this, layer);
     }
 
+    hasParentLayer() {
+      return _hasParentLayer(this);
+    }
+
     callParentLayer(methodName, ...args) {
       return _callParentLayer(this, methodName, ...args);
     }
@@ -82,6 +90,11 @@ function _getLayer(target, {throwIfNotFound = true} = {}) {
 
 function _setLayer(target, layer) {
   Object.defineProperty(target, '_layer', {value: layer});
+}
+
+function _hasParentLayer(target) {
+  const layer = target.getLayer();
+  return layer.hasParent();
 }
 
 function _callParentLayer(target, methodName, ...args) {
