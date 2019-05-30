@@ -1,64 +1,64 @@
-import {Layer, Registerable, Serializable, LayerProxy, callParentLayer} from '../../..';
+import {Layer, Registerable, Serializable, LayerProxy, expose} from '../../..';
 
 describe('Parent layer', () => {
   test('Parent call', () => {
-    const BaseMath = Base =>
-      class BaseMath extends Base {
-        constructor({a, b, ...object} = {}, {isDeserializing} = {}) {
-          super(object, {isDeserializing});
-          if (!isDeserializing) {
-            this.a = a;
-            this.b = b;
-          }
-          this.constructor.setInstance(this);
+    class BaseMath extends Serializable(Registerable()) {
+      constructor({a, b, ...object} = {}, {isDeserializing} = {}) {
+        super(object, {isDeserializing});
+        if (!isDeserializing) {
+          this.a = a;
+          this.b = b;
         }
+        this.constructor.setInstance(this);
+      }
 
-        serialize() {
-          return {
-            ...super.serialize(),
-            a: this.a,
-            b: this.b,
-            lastResult: this.lastResult
-          };
-        }
+      serialize() {
+        return {
+          ...super.serialize(),
+          a: this.a,
+          b: this.b,
+          lastResult: this.lastResult
+        };
+      }
 
-        static deserialize(object) {
-          let instance = this.getInstance(object);
-          if (instance) {
-            instance.deserialize(object);
-            return instance;
-          }
-          instance = new this(object, {isDeserializing: true});
+      static deserialize(object) {
+        let instance = this.getInstance(object);
+        if (instance) {
           instance.deserialize(object);
           return instance;
         }
+        instance = new this(object, {isDeserializing: true});
+        instance.deserialize(object);
+        return instance;
+      }
 
-        deserialize({a, b, lastResult} = {}) {
-          this.a = a;
-          this.b = b;
-          this.lastResult = lastResult;
-        }
+      deserialize({a, b, lastResult} = {}) {
+        this.a = a;
+        this.b = b;
+        this.lastResult = lastResult;
+      }
 
-        // Let's simulate an identity map
+      // Let's simulate an identity map
 
-        static getInstance(_object) {
-          return this._instance;
-        }
+      static getInstance(_object) {
+        return this._instance;
+      }
 
-        static setInstance(instance) {
-          this._instance = instance;
-        }
-      };
+      static setInstance(instance) {
+        this._instance = instance;
+      }
+    }
 
     const backendProxy = (() => {
       // Backend
 
-      class Math extends BaseMath(Serializable(Registerable())) {
-        static sum(a, b) {
+      @expose()
+      class Math extends BaseMath {
+        @expose() static sum(a, b) {
           return a + b;
         }
 
-        sum() {
+        @expose() sum() {
           const result = this.a + this.b;
           this.lastResult = result;
           return result;
@@ -72,10 +72,13 @@ describe('Parent layer', () => {
 
     // Frontend
 
-    class Math extends BaseMath(Serializable(Registerable())) {
-      @callParentLayer() static sum;
-
-      @callParentLayer() sum;
+    class Math extends BaseMath {
+      // static sum(a, b) {
+      //   return super.sum(a, b);
+      // }
+      // sum(a, b) {
+      //   return super.sum(a, b);
+      // }
     }
 
     const layer = new Layer({Math}, {name: 'frontend', parent: backendProxy});

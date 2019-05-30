@@ -1,4 +1,5 @@
 export * from './layer';
+export * from './layer-proxy';
 export * from './registerable';
 export * from './serializable';
-export * from './layer-proxy';
+export * from './missing-property-emitter';

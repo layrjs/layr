@@ -11,14 +11,18 @@ describe('Layer', () => {
       }
     }
 
+    expect(Movie.hasLayer()).toBe(false);
+
     const layer = new Layer({Item, Movie}, {name: 'layer'});
     expect(layer.getId().length).toBeGreaterThanOrEqual(10);
     expect(layer.getName()).toBe('layer');
 
     expect(layer.Movie).not.toBe(Movie);
     expect(Movie.getLayer({throwIfNotFound: false})).toBeUndefined();
+    expect(Movie.hasLayer()).toBe(false);
     expect(Movie.getRegisteredName()).toBeUndefined();
     expect(layer.Movie.getLayer()).toBe(layer);
+    expect(layer.Movie.hasLayer()).toBe(true);
     expect(layer.Movie.getRegisteredName()).toBe('Movie');
 
     const movie = new layer.Movie({title: 'Inception'});
@@ -26,7 +30,9 @@ describe('Layer', () => {
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie instanceof layer.Item).toBe(true);
     expect(movie.getLayer()).toBe(layer);
+    expect(movie.hasLayer()).toBe(true);
     expect(movie.getLayer({fallBackToClass: false, throwIfNotFound: false})).toBeUndefined();
+    expect(movie.hasLayer({fallBackToClass: false})).toBe(false);
 
     layer.register({movie});
 
