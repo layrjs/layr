@@ -92,15 +92,6 @@ export class Model extends Serializable(Registerable()) {
     return {...super.serialize(), ...serializedFields};
   }
 
-  static deserialize(object, {source, previousInstance} = {}) {
-    let instance = this.getInstance(object, previousInstance);
-    if (!instance) {
-      instance = new this(object, {isDeserializing: true});
-    }
-    instance.deserialize(object, {source});
-    return instance;
-  }
-
   deserialize(object = {}, {source} = {}) {
     super.deserialize(object);
 
