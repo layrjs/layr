@@ -5,6 +5,7 @@ export const Serializable = (Base = Object) =>
       if (!isDeserializing) {
         this._isNew = true;
       }
+      // When overriding, call `this.constructor.setInstance(this)` after setting the id
     }
 
     isNew() {
@@ -30,14 +31,25 @@ export const Serializable = (Base = Object) =>
       return this.serialize();
     }
 
-    static deserialize(object) {
-      const instance = new this(object, {isDeserializing: true});
-      instance.deserialize(object);
+    static deserialize(object, {previousInstance, ...otherOptions} = {}) {
+      let instance = this.getInstance(object, previousInstance);
+      if (!instance) {
+        instance = new this(object, {isDeserializing: true});
+      }
+      instance.deserialize(object, otherOptions);
       return instance;
     }
 
     deserialize(object) {
       this._isNew = Boolean(object?._new);
+    }
+
+    static getInstance(_object, _previousInstance) {
+      // Override to implement an identity map
+    }
+
+    static setInstance(_instance) {
+      // Override to implement an identity map
     }
   };
 

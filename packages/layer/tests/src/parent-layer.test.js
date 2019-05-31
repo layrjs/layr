@@ -21,17 +21,6 @@ describe('Parent layer', () => {
         };
       }
 
-      static deserialize(object) {
-        let instance = this.getInstance(object);
-        if (instance) {
-          instance.deserialize(object);
-          return instance;
-        }
-        instance = new this(object, {isDeserializing: true});
-        instance.deserialize(object);
-        return instance;
-      }
-
       deserialize({a, b, lastResult} = {}) {
         this.a = a;
         this.b = b;
@@ -40,7 +29,7 @@ describe('Parent layer', () => {
 
       // Let's simulate an identity map
 
-      static getInstance(_object) {
+      static getInstance(_object, _previousInstance) {
         return this._instance;
       }
 
@@ -73,12 +62,13 @@ describe('Parent layer', () => {
     // Frontend
 
     class Math extends BaseMath {
-      // static sum(a, b) {
-      //   return super.sum(a, b);
-      // }
-      // sum(a, b) {
-      //   return super.sum(a, b);
-      // }
+      static sum(a, b) {
+        return super.sum(a, b);
+      }
+
+      sum(a, b) {
+        return super.sum(a, b);
+      }
     }
 
     const layer = new Layer({Math}, {name: 'frontend', parent: backendProxy});
