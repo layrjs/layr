@@ -8,7 +8,17 @@ export class EntityModel extends IdentityModel {
   }
 
   serialize({target, fields, isDeep} = {}) {
-    return super.serialize({target, fields: isDeep ? false : fields, isDeep});
+    if (isDeep) {
+      return this._serializeReference({target});
+    }
+    return super.serialize({target, fields, isDeep});
+  }
+
+  _serializeReference({target}) {
+    if (this.isNew()) {
+      throw new Error(`Cannot serialize a reference to a new entity`);
+    }
+    return {...super.serialize({target, fields: false, isDeep: true}), _ref: true};
   }
 
   getFailedValidators({fields, isDeep} = {}) {
@@ -17,29 +27,6 @@ export class EntityModel extends IdentityModel {
     }
     return super.getFailedValidators({fields, isDeep});
   }
-
-  // serialize({isDeep, ...otherOptions} = {}) {
-  //   if (isDeep) {
-  //     return this._serializeReference();
-  //   }
-  //   return super.serialize({isDeep, ...otherOptions});
-  // }
-
-  // static _serializeType() {
-  //   return {_type: this.getRegisteredName()};
-  // }
-
-  // _serializeId() {
-  //   return {_id: this._id};
-  // }
-
-  // _serializeTypeAndId() {
-  //   return {...this.constructor._serializeType(), ...this._serializeId()};
-  // }
-
-  // _serializeReference() {
-  //   return this.serialize({fieldFilter: () => false});
-  // }
 
   static getInstance(object, _previousInstance) {
     const id = object?._id;

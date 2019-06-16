@@ -60,7 +60,7 @@ describe('EntityModel', () => {
       id: 'm1',
       title: 'Inception',
       year: 2010,
-      director: new layer.Director({id: 'd1', fullName: 'Christopher Nolan'})
+      director: layer.Director.deserialize({_id: 'd1', fullName: 'Christopher Nolan'})
     });
 
     expect(movie.serialize()).toEqual({
@@ -69,12 +69,11 @@ describe('EntityModel', () => {
       _id: 'm1',
       title: 'Inception',
       year: 2010,
-      director: {_type: 'Director', _new: true, _id: 'd1'}
+      director: {_type: 'Director', _id: 'd1', _ref: true}
     });
 
     expect(movie.director.serialize()).toEqual({
       _type: 'Director',
-      _new: true,
       _id: 'd1',
       fullName: 'Christopher Nolan'
     });
