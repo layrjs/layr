@@ -87,6 +87,10 @@ export class Field {
     return this._type;
   }
 
+  getScalar() {
+    return this._scalar;
+  }
+
   isActive() {
     return this._isActive;
   }
