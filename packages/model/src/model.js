@@ -191,7 +191,7 @@ export class Model extends Serializable(Registerable()) {
   getFieldValues({filter} = {}) {
     return {
       [Symbol.iterator]: () => {
-        const fieldIterator = this.getActiveFields({filter});
+        const fieldIterator = this.getActiveFields({filter})[Symbol.iterator]();
         let valueIterator;
 
         return {
@@ -202,7 +202,7 @@ export class Model extends Serializable(Registerable()) {
                 if (!field) {
                   return {value: undefined, done: true};
                 }
-                valueIterator = field.getValues();
+                valueIterator = field.getValues()[Symbol.iterator]();
               }
 
               const {value, done} = valueIterator.next();
