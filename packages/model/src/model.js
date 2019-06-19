@@ -66,7 +66,7 @@ export class Model extends Serializable(Registerable()) {
   // === Serialization ===
 
   serialize({target, fields, isDeep} = {}) {
-    const rootFieldMask = this.normalizeFieldMask(fields);
+    const rootFieldMask = this.createFieldMask(fields);
 
     if (!isDeep) {
       this.validate({fields: rootFieldMask});
@@ -283,25 +283,33 @@ export class Model extends Serializable(Registerable()) {
 
   // === Field masks ===
 
-  normalizeFieldMask(fields = true) {
+  createFieldMask(fields = true, {filter} = {}) {
     if (FieldMask.isFieldMask(fields)) {
       return fields;
     }
-    fields = this._normalizeFieldMask(fields);
+    fields = this._createFieldMask(fields, {filter});
     return new FieldMask(fields);
   }
 
-  _normalizeFieldMask(rootFieldMask) {
+  _createFieldMask(rootFieldMask, {filter}) {
     const normalizedFieldMask = {};
-    for (const field of this.getFields()) {
+    for (const field of this.getFields({filter})) {
       const name = field.getName();
       const fieldMask = typeof rootFieldMask === 'object' ? rootFieldMask[name] : rootFieldMask;
       if (!fieldMask) {
         continue;
       }
-      normalizedFieldMask[name] = field._normalizeFieldMask(fieldMask);
+      normalizedFieldMask[name] = field._createFieldMask(fieldMask, {filter});
     }
     return normalizedFieldMask;
+  }
+
+  createFieldMaskForActiveFields() {
+    return this.createFieldMask(true, {
+      filter(field) {
+        return field.isActive();
+      }
+    });
   }
 
   // static filterEntityFields(fields) {
@@ -407,7 +415,7 @@ export class Model extends Serializable(Registerable()) {
   }
 
   getFailedValidators({fields, isDeep: _isDeep} = {}) {
-    const rootFieldMask = this.normalizeFieldMask(fields);
+    const rootFieldMask = this.createFieldMask(fields);
 
     let result;
 

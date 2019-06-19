@@ -211,7 +211,7 @@ export class Field {
     return value;
   }
 
-  _normalizeFieldMask(fieldMask) {
+  _createFieldMask(fieldMask, {filter}) {
     if (Array.isArray(fieldMask)) {
       if (!this._isArray) {
         throw new Error(
@@ -223,7 +223,7 @@ export class Field {
       fieldMask = fieldMask[0];
     }
 
-    return this._scalar._normalizeFieldMask(fieldMask);
+    return this._scalar._createFieldMask(fieldMask, {filter});
   }
 }
 
@@ -349,10 +349,10 @@ class Scalar {
     return this._field.getLayer().get(this._type);
   }
 
-  _normalizeFieldMask(fieldMask) {
+  _createFieldMask(fieldMask, {filter}) {
     const Model = this.getModel();
     if (Model) {
-      return Model.prototype._normalizeFieldMask(fieldMask);
+      return Model.prototype._createFieldMask(fieldMask, {filter});
     }
     return true;
   }
