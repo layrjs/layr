@@ -8,7 +8,7 @@
 
 ## Introduction
 
-Building a full web app is painful. We have to worry about the frontend, the backend, the database, and all these layers have to be connected. Additional layers are required to connect the frontend and the backend. So we put a REST or GraphQL API in the middle, and since we have to implement it in both the frontend and the backend, it adds two additional layers.
+Building a full web app is painful. We have to worry about the frontend, the backend, the database, and all these layers have to be connected. Additional layers are usually required to connect the frontend and the backend. So we put a REST or GraphQL API in the middle, and since we have to implement it in both the frontend and the backend, it adds two additional layers.
 
 Eventually, our well-architected application is composed of six layers: user interface, frontend model, API client, API server, backend model, and database. So every time we want to implement a new feature, we have to make changes in six different places. Conceptually, it is not complicated, but it is cumbersome.
 
@@ -107,7 +107,7 @@ class Counter extends BaseCounter {
 }
 ```
 
-To put it simply, it is as if there is no separation between frontend and backend. When a local class inherits from a remote class through a parent layer, the methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are automatically transported.
+To put it simply, it is as if there is no separation between frontend and backend. When a local class inherits from a remote class through a parent layer, methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are automatically transported.
 
 Building a frontend/backend application becomes as easy as building a standalone application.
 
