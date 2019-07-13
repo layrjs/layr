@@ -59,7 +59,7 @@ class Counter extends BaseCounter {
 const layer = new Layer({Counter});
 
 // And we serve the layer through HTTP
-const server = new LayerHTTPServer(layer);
+const server = new LayerHTTPServer(layer, {port: 3000});
 await server.run();
 ```
 
@@ -77,7 +77,7 @@ class Counter extends BaseCounter {
 }
 
 // We connect to the backend layer
-const backendLayer = await new LayerHTTPClient('https://backend.mycounter.com');
+const backendLayer = await new LayerHTTPClient('http://localhost:3000');
 
 // We register the frontend class into a layer and we set the backend layer as parent
 const layer = new Layer({Counter}, {parent: backendLayer});
@@ -90,7 +90,13 @@ console.log(counter.value); // => 1
 
 This is it. By invoking `counter.increment()`, we get the counter's value incremented. Notice that the `increment()` method is not implemented in the frontend class or the shared class. It only exists in the backend class. So, how is it possible that we could call it from the frontend? It is because the frontend class is registered in a layer that has the backend as a parent. When a method is missing in the frontend, and a method with the same name is exposed in the backend, it is automatically invoked.
 
-From the frontend point of view, the operation is transparent. It doesn't need to know that some methods are invoked remotely. It just works. The current state of an instance (i.e., `counter`'s attributes) is automatically transported back and forth. When a method is executed in the backend, it has access to all attributes of the frontend's instance. And inversely, when some attributes change in the backend, they are automatically reflected in the frontend.
+We have cross-layers class inheritance:
+
+<p align="center">
+	<img src="assets/cross-layers-class-inheritance-example.svg" width="250" alt="Example of cross-layers class inheritance">
+</p>
+
+From the frontend point of view, the operation is transparent. It doesn't need to know that some methods are invoked remotely. It just works. The current state of an instance (i.e., `counter`'s attributes) is automatically transported back and forth. When a method is executed in the backend, it has access to all attributes of the frontend's instance. And inversely, when some attributes change in the backend, they are reflected in the frontend.
 
 How about returning values from a remotely invoked method? It is possible to `return` anything that is serializable, including instances of the current class or any other class. As long as a class is registered with the same name in both the frontend and the backend, instances are automatically transported.
 
@@ -107,7 +113,7 @@ class Counter extends BaseCounter {
 }
 ```
 
-To put it simply, it is as if there is no separation between frontend and backend. When a local class inherits from a remote class through a parent layer, methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are automatically transported.
+To put it simply, it is as if there is no separation between frontend and backend. When a local class inherits from a remote class through a parent layer, methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are made available.
 
 Building a frontend/backend application becomes as easy as building a standalone application.
 
