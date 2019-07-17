@@ -53,6 +53,35 @@ describe('FieldMask', () => {
     ).toBe(false);
   });
 
+  test('Inclusion', () => {
+    expect(new FieldMask({}).includes(new FieldMask({}))).toBe(true);
+    expect(new FieldMask({title: true}).includes(new FieldMask({}))).toBe(true);
+    expect(new FieldMask({title: true}).includes(new FieldMask({title: true}))).toBe(true);
+    expect(new FieldMask({title: true, genre: true}).includes(new FieldMask({title: true}))).toBe(
+      true
+    );
+    expect(new FieldMask({title: true}).includes(new FieldMask({title: true, genre: true}))).toBe(
+      false
+    );
+
+    expect(new FieldMask({director: {}}).includes(new FieldMask({director: {}}))).toBe(true);
+    expect(
+      new FieldMask({director: {fullName: true}}).includes(
+        new FieldMask({director: {fullName: true}})
+      )
+    ).toBe(true);
+    expect(
+      new FieldMask({director: {fullName: true, age: true}}).includes(
+        new FieldMask({director: {fullName: true}})
+      )
+    ).toBe(true);
+    expect(
+      new FieldMask({director: {fullName: true}}).includes(
+        new FieldMask({director: {fullName: true, age: true}})
+      )
+    ).toBe(false);
+  });
+
   test('Merging', () => {
     expect(
       FieldMask.isEqual(

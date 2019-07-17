@@ -37,6 +37,27 @@ export class FieldMask {
     return new FieldMask(subfields);
   }
 
+  includes(fields) {
+    if (!FieldMask.isFieldMask(fields)) {
+      throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
+    }
+
+    function _includes(rootFields, rootOtherFields) {
+      for (const [name, otherFields] of Object.entries(rootOtherFields)) {
+        const fields = rootFields[name];
+        if (fields === undefined) {
+          return false;
+        }
+        if (typeof fields === 'object' && !_includes(fields, otherFields)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return _includes(this._fields, fields._fields);
+  }
+
   static isEqual(fields, otherFields) {
     if (!this.isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
