@@ -9,12 +9,12 @@ export class EntityModel extends IdentityModel {
 
   serialize({target, fields, isDeep} = {}) {
     if (isDeep) {
-      return this._serializeReference({target});
+      return this.serializeReference({target});
     }
     return super.serialize({target, fields, isDeep});
   }
 
-  _serializeReference({target}) {
+  serializeReference({target} = {}) {
     if (this.isNew()) {
       throw new Error(`Cannot serialize a reference to a new entity`);
     }
@@ -30,16 +30,21 @@ export class EntityModel extends IdentityModel {
 
   static getInstance(object, _previousInstance) {
     const id = object?._id;
-    if (id !== undefined) {
-      return this._instances?.get(id);
+    if (id === undefined) {
+      throw new Error(`Entity 'id' is missing`);
     }
+    return this._instances?.get(id);
   }
 
   static setInstance(instance) {
+    const id = instance?._id;
+    if (id === undefined) {
+      throw new Error(`Entity 'id' is missing`);
+    }
     if (!Object.prototype.hasOwnProperty.call(this, '_instances')) {
       this._instances = new Map(this._instances);
     }
-    this._instances.set(instance._id, instance);
+    this._instances.set(id, instance);
   }
 
   // release() {

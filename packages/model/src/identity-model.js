@@ -8,27 +8,29 @@ export class IdentityModel extends Model {
   constructor(object = {}, {isDeserializing} = {}) {
     super(object, {isDeserializing});
 
+    let id;
     if (isDeserializing) {
-      return;
+      id = object._id;
+      if (id !== undefined) {
+        this.constructor.validateId(id);
+      } else {
+        throw new Error(`Identity 'id' is missing`);
+      }
+    } else {
+      id = object.id;
+      if (id !== undefined) {
+        this.constructor.validateId(id);
+      } else {
+        id = this.constructor.generateId();
+      }
     }
 
-    let id = object.id;
-    if (id !== undefined) {
-      this.constructor.validateId(id);
-    } else {
-      id = this.constructor.generateId();
-    }
     this._id = id;
   }
 
   serialize({target, fields, isDeep} = {}) {
     const {_type, _new, ...otherProps} = super.serialize({target, fields, isDeep});
     return {_type, ...(_new && {_new}), _id: this._id, ...otherProps};
-  }
-
-  deserialize(object = {}, options) {
-    super.deserialize(object, options);
-    this._id = object._id;
   }
 
   static getInstance(object, previousInstance) {

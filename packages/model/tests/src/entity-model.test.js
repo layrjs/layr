@@ -17,28 +17,40 @@ describe('EntityModel', () => {
 
     const layer = new Layer({Movie});
 
-    const movie = new layer.Movie({title: 'Inception', year: 2010});
-    const id = movie.id;
-    expect(movie.counter).toBe(0);
-    movie.counter++;
-    expect(movie.counter).toBe(1);
+    // With a new movie
 
-    const movie2 = layer.Movie.deserialize({_id: id});
-    expect(movie2).toBe(movie); // Since the movie was in the identity map, we got the same object
-    expect(movie2.title).toBe('Inception');
-    expect(movie2.year).toBe(2010);
-    expect(movie.counter).toBe(1); // Movie's constructor has not been called a second time
+    const newMovie = new layer.Movie({id: 'm1', title: 'Inception', year: 2010});
+    expect(newMovie.id).toBe('m1');
+    expect(newMovie.title).toBe('Inception');
+    expect(newMovie.year).toBe(2010);
+    expect(newMovie.counter).toBe(0);
+    newMovie.counter++;
+    expect(newMovie.counter).toBe(1);
 
-    layer.Movie.deserialize({_id: id, title: 'The Matrix'});
-    expect(movie.title).toBe('The Matrix');
-    expect(movie.year).toBe(2010);
+    const newMovie2 = layer.Movie.deserialize({_id: 'm1'});
+    expect(newMovie2).toBe(newMovie); // Since the movie was in the identity map, we got the same object
+    expect(newMovie.counter).toBe(1); // Movie's constructor has not been called a second time
 
-    layer.Movie.deserialize({_id: id, year: 1999});
-    expect(movie.title).toBe('The Matrix');
-    expect(movie.year).toBe(1999);
+    layer.Movie.deserialize({_id: 'm1', title: 'The Matrix'});
+    expect(newMovie.title).toBe('The Matrix');
+    expect(newMovie.year).toBe(2010);
 
-    layer.Movie.deserialize({_id: id, year: null});
-    expect(movie.year).toBeUndefined();
+    layer.Movie.deserialize({_id: 'm1', year: 1999});
+    expect(newMovie.title).toBe('The Matrix');
+    expect(newMovie.year).toBe(1999);
+
+    layer.Movie.deserialize({_id: 'm1', year: null});
+    expect(newMovie.year).toBeUndefined();
+
+    // With a deserialized movie
+
+    // const oldMovie = layer.Movie.deserialize({_id: 'm2', title: 'Inception', year: 2010});
+    // expect(oldMovie.id).toBe('m2');
+    // expect(oldMovie.title).toBe('Inception');
+    // expect(oldMovie.year).toBe(2010);
+
+    // const oldMovie2 = layer.Movie.deserialize({_id: 'm2'});
+    // expect(oldMovie2).toBe(oldMovie); // Since the movie was in the identity map, we got the same object
   });
 
   test('Serialization', () => {
