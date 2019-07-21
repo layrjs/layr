@@ -4,7 +4,7 @@
 	<br>
 </p>
 
-> Build a frontend/backend application as easily as a standalone one.
+> Build a frontend/backend app as easily as a standalone app.
 
 ## Introduction
 
