@@ -1,0 +1,21 @@
+{
+  "@import": "medmain/npm-package#^0.1.0",
+  "name": "@layr/mongodb-store",
+  "version": "0.1.0",
+  "description": "A Layr store using MongoDB",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/mongodb-store",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "@layr/layer": "^0.1.0",
+    "@layr/util": "^0.1.0",
+    "lodash": "^4.17.11",
+    "mongodb": "^3.2.7",
+    "nanoid": "^2.0.3",
+    "ow": "^0.13.2"
+  },
+  "tests": {
+    "@include": "./tests"
+  }
+}
