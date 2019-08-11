@@ -3,7 +3,7 @@ import {MemoryStore} from '@layr/memory-store';
 
 import {ParentDocument, LocalDocument, field, parentMethod, serialize, deserialize} from '../../..';
 
-describe('ParentDocument', () => {
+describe('Frontend Document', () => {
   describe('One parent layer', () => {
     const BaseMovie = Parent =>
       class extends Parent {

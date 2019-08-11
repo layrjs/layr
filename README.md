@@ -59,8 +59,8 @@ class Counter extends BaseCounter {
 const layer = new Layer({Counter});
 
 // And we serve the layer through HTTP
-const server = new LayerHTTPServer(layer, {port: 3000});
-await server.run();
+const server = new LayerHTTPServer(layer, {port: 3333});
+await server.start();
 ```
 
 Finally, let's build the frontend:
@@ -77,7 +77,8 @@ class Counter extends BaseCounter {
 }
 
 // We connect to the backend layer
-const backendLayer = await new LayerHTTPClient('http://localhost:3000');
+const client = new LayerHTTPClient('http://localhost:3333');
+const backendLayer = await client.connect();
 
 // We register the frontend class into a layer and we set the backend layer as parent
 const layer = new Layer({Counter}, {parent: backendLayer});

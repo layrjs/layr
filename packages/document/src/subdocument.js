@@ -1,9 +1,9 @@
 import {IdentityModel} from '@layr/model';
 
-import {BaseDocument} from './base-document';
+import {DocumentNode} from './document-node';
 
-export class Subdocument extends BaseDocument(IdentityModel) {
-  isOfType(name) {
-    return name === 'Subdocument' ? true : super.isOfType(name); // Optimization
+export class Subdocument extends DocumentNode(IdentityModel) {
+  static isSubdocument(object) {
+    return typeof object?.constructor.isSubdocument === 'function';
   }
 }

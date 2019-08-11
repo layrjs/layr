@@ -1,99 +1,123 @@
 import {Layer} from '@layr/layer';
-import {MemoryStore} from '@layr/memory-store';
+import {MongoDBStore} from '@layr/mongodb-store';
+import {MongoMemoryServer} from 'mongodb-memory-server';
 
-import {LocalDocument, Subdocument, Model, field} from '../../..';
+import {Document, Subdocument, Model, field} from '../../..';
 
-describe('LocalDocument', () => {
-  test('CRUD operations', async () => {
-    class Movie extends LocalDocument {
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 3 * 60 * 1000; // 3 minutes
+
+let server;
+let store;
+
+beforeEach(async () => {
+  server = new MongoMemoryServer();
+  const connectionString = await server.getConnectionString();
+  store = new MongoDBStore(connectionString);
+  await store.connect();
+});
+
+afterEach(async () => {
+  await store.disconnect();
+  await server.stop();
+});
+
+describe('Backend Document', () => {
+  test.only('CRUD operations', async () => {
+    class Movie extends Document {
       @field('string') title;
 
       @field('number?') year;
     }
 
-    const store = new MemoryStore();
     const rootLayer = new Layer({Movie, store});
-    const layer = rootLayer.fork();
 
     // Create
 
+    let layer = rootLayer.fork();
     let movie = new layer.Movie({title: 'Inception', year: 2010});
     const id = movie.id;
     await movie.save();
 
     // Read
 
+    layer = rootLayer.fork();
+    movie = await layer.Movie.get(id);
+    expect(movie.title).toBe('Inception');
+    expect(movie.year).toBe(2010);
+
     let movie2 = await layer.Movie.get(id);
     expect(movie2).toBe(movie);
     expect(movie2.title).toBe('Inception');
     expect(movie2.year).toBe(2010);
+
     let otherLayer = rootLayer.fork();
     movie2 = await otherLayer.Movie.get(id);
     expect(movie2).not.toBe(movie);
-    expect(movie2.title).toBe('Inception');
-    expect(movie2.year).toBe(2010);
 
     await expect(layer.Movie.get('missing-id')).rejects.toThrow(/Document not found/);
-    await expect(layer.Movie.get('missing-id', {throwIfNotFound: false})).resolves.toBeUndefined();
+    await expect(
+      layer.Movie.get('missing-id', {throwIfNotFound: false}).then(document => document.serialize())
+    ).resolves.toEqual({_type: 'Movie', _id: 'missing-id'});
 
     // Partial read
 
     movie = await layer.Movie.get(id, {fields: {title: true}});
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('Inception');
-    expect(movie.year).toBe(2010); // Although we didn't fetch 'year', since the instance is in the memory, the 'year' is still there
+    expect(movie.getField('year').isActive()).toBe(true);
+    expect(movie.year).toBe(2010); // Although we didn't fetch the 'year', the instance was in the identity map, and the 'year' is still there
 
     otherLayer = rootLayer.fork();
     movie = await otherLayer.Movie.get(id, {fields: {title: true}});
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('Inception');
-    expect(movie.year).toBeUndefined(); // Since we loaded the movie from another layer, the 'year' has not been fetched
+    expect(movie.getField('year').isActive()).toBe(false); // We loaded the movie from another layer, so the 'year' has not been fetched
 
     movie2 = await otherLayer.Movie.get(id, {fields: {year: true}});
     expect(movie2).toBe(movie);
     expect(movie2.title).toBe('Inception'); // The 'title' is still there
+    expect(movie.getField('year').isActive()).toBe(true);
     expect(movie2.year).toBe(2010); // And now we have the 'year'
 
     otherLayer = rootLayer.fork();
-    movie = await otherLayer.Movie.get(id, {fields: {}}); // Existence check
+    movie = await otherLayer.Movie.get(id, {fields: false}); // Existence check
     expect(movie.id).toBe(id);
-    expect(movie.title).toBeUndefined();
-    expect(movie.year).toBeUndefined();
+    expect(movie.getField('title').isActive()).toBe(false);
+    expect(movie.getField('year').isActive()).toBe(false);
 
     // Update
 
+    layer = rootLayer.fork();
     movie = await layer.Movie.get(id);
     movie.title = 'The Matrix';
     await movie.save();
+    layer = rootLayer.fork();
     movie = await layer.Movie.get(id);
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('The Matrix');
     expect(movie.year).toBe(2010);
-    otherLayer = rootLayer.fork();
-    movie2 = await otherLayer.Movie.get(id);
-    expect(movie2.title).toBe('The Matrix');
-    expect(movie2.year).toBe(2010);
 
+    layer = rootLayer.fork();
+    movie = await layer.Movie.get(id);
     movie.year = undefined;
     await movie.save();
+    layer = rootLayer.fork();
     movie = await layer.Movie.get(id);
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('The Matrix');
-    expect(movie.year).toBeUndefined();
-    otherLayer = rootLayer.fork();
-    movie2 = await otherLayer.Movie.get(id);
-    expect(movie2.title).toBe('The Matrix');
-    expect(movie2.year).toBeUndefined();
+    expect(movie.getField('year').isActive()).toBe(false);
 
     // Delete
 
+    layer = rootLayer.fork();
+    movie = await layer.Movie.get(id);
     await movie.delete();
-    movie = await layer.Movie.get(id, {throwIfNotFound: false});
-    expect(movie).toBeUndefined();
+    layer = rootLayer.fork();
+    await expect(layer.Movie.get(id)).rejects.toThrow(/Document not found/);
   });
 
   test('Nesting models', async () => {
-    class Movie extends LocalDocument {
+    class Movie extends Document {
       @field('string') title;
 
       @field('TechnicalSpecs') technicalSpecs;
@@ -105,7 +129,7 @@ describe('LocalDocument', () => {
       @field('string') aspectRatio;
     }
 
-    const store = new MemoryStore();
+    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, TechnicalSpecs, store});
 
     let layer = rootLayer.fork();
@@ -146,7 +170,7 @@ describe('LocalDocument', () => {
   });
 
   test('Subdocuments', async () => {
-    class Movie extends LocalDocument {
+    class Movie extends Document {
       @field('string') title;
 
       @field('Trailer') trailer;
@@ -158,7 +182,7 @@ describe('LocalDocument', () => {
       @field('number?') duration;
     }
 
-    const store = new MemoryStore();
+    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, Trailer, store});
 
     // Let's create both a 'Movie' and a 'Trailer'
@@ -239,7 +263,7 @@ describe('LocalDocument', () => {
   });
 
   test('Finding documents', async () => {
-    class Movie extends LocalDocument {
+    class Movie extends Document {
       @field('string') title;
 
       @field('string') genre;
@@ -247,7 +271,7 @@ describe('LocalDocument', () => {
       @field('string') country;
     }
 
-    const store = new MemoryStore();
+    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, store});
 
     let layer = rootLayer.fork();
@@ -314,13 +338,13 @@ describe('LocalDocument', () => {
   });
 
   test('Reloading documents', async () => {
-    class Movie extends LocalDocument {
+    class Movie extends Document {
       @field('string') title;
 
       @field('number') year;
     }
 
-    const store = new MemoryStore();
+    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, store});
 
     const layer = rootLayer.fork();
@@ -350,17 +374,17 @@ describe('LocalDocument', () => {
   });
 
   test('Referenced documents', async () => {
-    class Movie extends LocalDocument {
+    class Movie extends Document {
       @field('string') title;
 
       @field('Director') director;
     }
 
-    class Director extends LocalDocument {
+    class Director extends Document {
       @field('string') fullName;
     }
 
-    const store = new MemoryStore();
+    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, Director, store});
 
     let layer = rootLayer.fork();
@@ -439,17 +463,17 @@ describe('LocalDocument', () => {
   });
 
   test('Arrays of referenced document', async () => {
-    class Movie extends LocalDocument {
+    class Movie extends Document {
       @field('string') title;
 
       @field('Actor[]') actors;
     }
 
-    class Actor extends LocalDocument {
+    class Actor extends Document {
       @field('string') fullName;
     }
 
-    const store = new MemoryStore();
+    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, Actor, store});
 
     // Let's create both a 'Movie' and some 'Actor'
@@ -575,7 +599,7 @@ describe('LocalDocument', () => {
         }
       };
 
-    class Movie extends HookMixin(LocalDocument) {
+    class Movie extends HookMixin(Document) {
       @field('string') title;
 
       @field('Trailer') trailer;
@@ -585,7 +609,7 @@ describe('LocalDocument', () => {
       @field('string') url;
     }
 
-    const store = new MemoryStore();
+    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, Trailer, store});
 
     let layer = rootLayer.fork();

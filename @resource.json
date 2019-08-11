@@ -9,8 +9,8 @@
   "document": {
     "@include": "./packages/document"
   },
-  "memoryStore": {
-    "@include": "./packages/memory-store"
+  "mongoDBStore": {
+    "@include": "./packages/mongodb-store"
   },
   "util": {
     "@include": "./packages/util"
@@ -24,8 +24,8 @@
       "(@import shell/bash) run \"npm-link ./packages/layer/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/document\"",
       "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/memory-store\"",
-      "(@import shell/bash) run \"npm-link ./packages/memory-store/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/mongodb-store\"",
+      "(@import shell/bash) run \"npm-link ./packages/mongodb-store/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/util\"",
       "(@import shell/bash) run \"npm-link ./packages/util/tests\""
     ]
