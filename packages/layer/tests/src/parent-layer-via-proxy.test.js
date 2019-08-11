@@ -1,6 +1,6 @@
 import {Layer, Registerable, Serializable, LayerProxy, expose} from '../../..';
 
-describe('Parent layer', () => {
+describe('Parent layer via proxy', () => {
   test('Parent call', () => {
     class BaseMath extends Serializable(Registerable()) {
       constructor({a, b, ...object} = {}, {isDeserializing} = {}) {

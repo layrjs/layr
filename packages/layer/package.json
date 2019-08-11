@@ -4,7 +4,7 @@
   "description": "The root of your backend, frontend, UI, or whatever layer you build",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/medmain/layr/tree/master/packages/layer",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/layer",
   "files": [
     "dist"
   ],
@@ -12,9 +12,15 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
+    "cross-fetch": "^3.0.4",
     "debug": "^4.1.1",
     "@deepr/runtime": "^0.2.0",
     "@deepr/util": "^0.1.0",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "@koa/cors": "^3.0.0",
+    "koa-json-error": "^3.1.2",
+    "koa-logger": "^3.2.1",
     "nanoid": "^2.0.3"
   },
   "@managed": {
