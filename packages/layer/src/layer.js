@@ -4,10 +4,10 @@ import {invokeQuery} from '@deepr/runtime';
 import {syncOrAsync} from '@deepr/util';
 import debugModule from 'debug';
 
-import {isRegisterable} from './registerable';
+import {isRegisterable, isExposed} from './registerable';
 import {isSerializable} from './serializable';
 
-const debug = debugModule('layr');
+const debug = debugModule('layr:layer');
 // To display the debug log, set this environment:
 // DEBUG=layr DEBUG_DEPTH=10
 
@@ -114,6 +114,58 @@ export class Layer {
       forkedLayer.register(registerables);
     }
     return forkedLayer;
+  }
+
+  // === Introspection ===
+
+  getItems({filter} = {}) {
+    return {
+      [Symbol.iterator]: () => {
+        const iterator = this._registeredNames[Symbol.iterator]();
+        return {
+          next: () => {
+            while (true) {
+              let item;
+              const {value: name, done} = iterator.next();
+              if (name !== undefined) {
+                item = this[name];
+                if (filter && !filter(item)) {
+                  continue;
+                }
+              }
+              return {value: item, done};
+            }
+          }
+        };
+      }
+    };
+  }
+
+  getExposedItems({filter: otherFilter} = {}) {
+    const filter = function (item) {
+      if (!isExposed(item)) {
+        return false;
+      }
+      if (otherFilter) {
+        return otherFilter(item);
+      }
+      return true;
+    };
+    return this.getItems({filter});
+  }
+
+  introspect() {
+    const introspection = {
+      id: this.getId(),
+      name: this.getName(),
+      items: {}
+    };
+
+    for (const exposedItem of this.getExposedItems()) {
+      introspection.items[exposedItem.getRegisteredName()] = exposedItem.introspect();
+    }
+
+    return introspection;
   }
 
   // === Serialization ===

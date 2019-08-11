@@ -64,6 +64,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return _fork(this);
     }
 
+    static introspect() {
+      return _introspect(this);
+    }
+
     // === Instance ===
 
     getRegisteredName() {
@@ -128,6 +132,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     fork() {
       return _fork(this);
+    }
+
+    introspect() {
+      return _introspect(this);
     }
   };
 
@@ -287,6 +295,42 @@ function _fork(target) {
 
   // Instance forking
   return Object.create(target);
+}
+
+/*
+{
+  _type: 'class',
+  _isExposed: true,
+  get: {
+    _type: 'method'
+  },
+  prototype: {
+    save: {
+      _type: 'method'
+    }
+  }
+}
+*/
+
+function _introspect(target) {
+  const isClass = typeof target === 'function';
+
+  const introspection = {
+    _type: isClass ? 'class' : 'object'
+  };
+
+  for (const {name, type} of _getExposedProperties(target).values()) {
+    introspection[name] = {_type: type};
+  }
+
+  if (isClass) {
+    introspection.prototype = {};
+    for (const {name, type} of _getExposedProperties(target.prototype).values()) {
+      introspection.prototype[name] = {_type: type};
+    }
+  }
+
+  return introspection;
 }
 
 // === Exposition ===

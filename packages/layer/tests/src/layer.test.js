@@ -25,6 +25,8 @@ describe('Layer', () => {
     expect(layer.Movie.hasLayer()).toBe(true);
     expect(layer.Movie.getRegisteredName()).toBe('Movie');
 
+    expect([...layer.getItems()]).toEqual([layer.Item, layer.Movie]);
+
     const movie = new layer.Movie({title: 'Inception'});
 
     expect(movie instanceof layer.Movie).toBe(true);
