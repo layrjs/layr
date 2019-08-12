@@ -238,10 +238,7 @@ export class MongoDBStore extends Registerable() {
   async _connectClient() {
     if (!this._client) {
       debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
-      this._client = await MongoClient.connect(
-        this._connectionString,
-        {useNewUrlParser: true}
-      );
+      this._client = await MongoClient.connect(this._connectionString, {useNewUrlParser: true});
       debug(`Connected to MongoDB Server (connectionString: ${this._connectionString})`);
     }
   }

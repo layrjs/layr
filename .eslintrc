@@ -25,7 +25,9 @@
     "no-unused-vars": [2, {"ignoreRestSiblings": true, "argsIgnorePattern": "^_"}],
     "no-warning-comments": 0,
     "quotes": [2, "single", {"avoidEscape": true, "allowTemplateLiterals": true}],
+    "padding-line-between-statements": 0,
     "prefer-destructuring": 0,
+    "require-atomic-updates": 0,
     "require-await": 0
   }
 }

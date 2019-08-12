@@ -215,9 +215,7 @@ export class Field {
     if (Array.isArray(fieldMask)) {
       if (!this._isArray) {
         throw new Error(
-          `Type mismatch (field: '${
-            this._name
-          }', expected: 'boolean' or 'object', provided: 'array')`
+          `Type mismatch (field: '${this._name}', expected: 'boolean' or 'object', provided: 'array')`
         );
       }
       fieldMask = fieldMask[0];
