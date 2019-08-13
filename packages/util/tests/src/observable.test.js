@@ -33,9 +33,18 @@ describe('Observable', () => {
       expect(JSON.stringify(observableArray)).toBe(JSON.stringify(originalArray));
     });
 
+    it('Should call observers when notify() is called', () => {
+      const observer = jest.fn();
+      observableArray.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
+      observableArray.notify();
+      expect(observer).toHaveBeenCalled();
+    });
+
     it('Should call observers when changing an item', () => {
       const observer = jest.fn();
       observableArray.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
       observableArray[0] = 1;
       expect(observer).toHaveBeenCalled();
     });
@@ -43,6 +52,7 @@ describe('Observable', () => {
     it('Should call observers when changing array length', () => {
       const observer = jest.fn();
       observableArray.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
       observableArray.length = 0;
       expect(observer).toHaveBeenCalled();
     });
@@ -76,6 +86,7 @@ describe('Observable', () => {
         observableArray[0] = observableItem;
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableItem.push(1);
         expect(observer).toHaveBeenCalled();
       });
@@ -101,6 +112,7 @@ describe('Observable', () => {
       it('Should call observers when using copyWithin()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.copyWithin(0, 1);
         expect(observer).toHaveBeenCalled();
       });
@@ -108,6 +120,7 @@ describe('Observable', () => {
       it('Should call observers when using fill()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.fill(0);
         expect(observer).toHaveBeenCalled();
       });
@@ -115,6 +128,7 @@ describe('Observable', () => {
       it('Should call observers when using pop()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.pop();
         expect(observer).toHaveBeenCalled();
       });
@@ -122,6 +136,7 @@ describe('Observable', () => {
       it('Should call observers when using push()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.push(4);
         expect(observer).toHaveBeenCalled();
       });
@@ -129,6 +144,7 @@ describe('Observable', () => {
       it('Should call observers when using reverse()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.reverse();
         expect(observer).toHaveBeenCalled();
       });
@@ -136,6 +152,7 @@ describe('Observable', () => {
       it('Should call observers when using shift()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.shift();
         expect(observer).toHaveBeenCalled();
       });
@@ -143,6 +160,7 @@ describe('Observable', () => {
       it('Should call observers when using sort()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.sort();
         expect(observer).toHaveBeenCalled();
       });
@@ -150,6 +168,7 @@ describe('Observable', () => {
       it('Should call observers when using splice()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.splice(0, 1);
         expect(observer).toHaveBeenCalled();
       });
@@ -157,6 +176,7 @@ describe('Observable', () => {
       it('Should call observers when using unshift()', () => {
         const observer = jest.fn();
         observableArray.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableArray.unshift(4);
         expect(observer).toHaveBeenCalled();
       });
@@ -197,9 +217,18 @@ describe('Observable', () => {
       expect(JSON.stringify(observableObject)).toBe(JSON.stringify(originalObject));
     });
 
+    it('Should call observers when notify() is called', () => {
+      const observer = jest.fn();
+      observableObject.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
+      observableObject.notify();
+      expect(observer).toHaveBeenCalled();
+    });
+
     it('Should call observers when changing an attribute', () => {
       const observer = jest.fn();
       observableObject.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
       observableObject.id = 2;
       expect(observer).toHaveBeenCalled();
     });
@@ -233,6 +262,7 @@ describe('Observable', () => {
         observableObject.attribute = observableAttribute;
         const observer = jest.fn();
         observableObject.observe(observer);
+        expect(observer).not.toHaveBeenCalled();
         observableAttribute.id = 2;
         expect(observer).toHaveBeenCalled();
       });

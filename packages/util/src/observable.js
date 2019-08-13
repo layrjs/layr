@@ -8,7 +8,8 @@ export class Observable {
       typeof object === 'object' &&
       object !== null &&
       typeof object.observe === 'function' &&
-      typeof object.unobserve === 'function'
+      typeof object.unobserve === 'function' &&
+      typeof object.notify === 'function'
     );
   }
 }
@@ -22,9 +23,9 @@ function createObservable(target) {
     return target;
   }
 
-  if ('observe' in target || 'unobserve' in target) {
+  if ('observe' in target || 'unobserve' in target || 'notify' in target) {
     throw new Error(
-      `Observable target cannot own or inherit a property named 'observe' or 'unobserve'`
+      `Observable target cannot own or inherit a property named 'observe', 'unobserve' or 'notify'`
     );
   }
 
@@ -57,7 +58,7 @@ function createObservable(target) {
 
   const handler = {
     has(target, key) {
-      if (key === 'observe' || key === 'unobserve') {
+      if (key === 'observe' || key === 'unobserve' || key === 'notify') {
         return true;
       }
 
@@ -73,13 +74,17 @@ function createObservable(target) {
         return removeObserver;
       }
 
+      if (key === 'notify') {
+        return callObservers;
+      }
+
       return Reflect.get(target, key);
     },
 
     set(target, key, nextValue) {
-      if (key === 'observe' || key === 'unobserve') {
+      if (key === 'observe' || key === 'unobserve' || key === 'notify') {
         throw new Error(
-          `Cannot set a property named 'observe' or 'unobserve' in an observed object`
+          `Cannot set a property named 'observe', 'unobserve' or 'notify' in an observed object`
         );
       }
 
@@ -100,9 +105,9 @@ function createObservable(target) {
     },
 
     deleteProperty(target, key) {
-      if (key === 'observe' || key === 'unobserve') {
+      if (key === 'observe' || key === 'unobserve' || key === 'notify') {
         throw new Error(
-          `Cannot delete a property named 'observe' or 'unobserve' in an observed object`
+          `Cannot delete a property named 'observe', 'unobserve' or 'notify' in an observed object`
         );
       }
 
