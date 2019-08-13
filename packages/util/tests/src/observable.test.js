@@ -49,6 +49,14 @@ describe('Observable', () => {
       expect(observer).toHaveBeenCalled();
     });
 
+    it('Should not call observers when setting an item with the same value', () => {
+      const observer = jest.fn();
+      observableArray.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
+      observableArray[0] = 3;
+      expect(observer).not.toHaveBeenCalled();
+    });
+
     it('Should call observers when changing array length', () => {
       const observer = jest.fn();
       observableArray.observe(observer);
@@ -231,6 +239,14 @@ describe('Observable', () => {
       expect(observer).not.toHaveBeenCalled();
       observableObject.id = 2;
       expect(observer).toHaveBeenCalled();
+    });
+
+    it('Should not call observers when setting an attribute with the same value', () => {
+      const observer = jest.fn();
+      observableObject.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
+      observableObject.id = 1;
+      expect(observer).not.toHaveBeenCalled();
     });
 
     it(`Shouldn't call removed observers`, () => {

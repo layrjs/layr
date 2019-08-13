@@ -90,7 +90,9 @@ function createObservable(target) {
 
       const previousValue = Reflect.get(target, key);
 
-      if (previousValue !== nextValue) {
+      const valueChanged = nextValue !== previousValue;
+
+      if (valueChanged) {
         if (previousValue instanceof Observable) {
           previousValue.unobserve(callObservers);
         }
@@ -100,7 +102,11 @@ function createObservable(target) {
       }
 
       const result = Reflect.set(target, key, nextValue);
-      callObservers();
+
+      if (valueChanged) {
+        callObservers();
+      }
+
       return result;
     },
 
