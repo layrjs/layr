@@ -29,6 +29,10 @@ describe('Observable', () => {
       expect(observableArray).toEqual(originalArray);
     });
 
+    it('Should produce the same JSON as the original array', () => {
+      expect(JSON.stringify(observableArray)).toBe(JSON.stringify(originalArray));
+    });
+
     it('Should call observers when changing an item', () => {
       const observer = jest.fn();
       observableArray.observe(observer);
@@ -187,6 +191,10 @@ describe('Observable', () => {
 
     it('Should be equal to the original object', () => {
       expect(observableObject).toEqual(originalObject);
+    });
+
+    it('Should produce the same JSON as the original object', () => {
+      expect(JSON.stringify(observableObject)).toBe(JSON.stringify(originalObject));
     });
 
     it('Should call observers when changing an attribute', () => {
