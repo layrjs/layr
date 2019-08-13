@@ -20,6 +20,11 @@ describe('Observable', () => {
       expect(observableArray instanceof Observable).toBe(true);
     });
 
+    it('Should be usable as the target of a new Observable', () => {
+      const newObservableArray = new Observable(observableArray);
+      expect(newObservableArray instanceof Observable).toBe(true);
+    });
+
     it('Should be equal to the original array', () => {
       expect(observableArray).toEqual(originalArray);
     });
@@ -173,6 +178,11 @@ describe('Observable', () => {
     it('Should be an observable', () => {
       expect(originalObject instanceof Observable).toBe(false);
       expect(observableObject instanceof Observable).toBe(true);
+    });
+
+    it('Should be usable as the target of a new Observable', () => {
+      const newObservableObject = new Observable(observableObject);
+      expect(newObservableObject instanceof Observable).toBe(true);
     });
 
     it('Should be equal to the original object', () => {

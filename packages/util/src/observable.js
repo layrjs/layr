@@ -18,6 +18,10 @@ function createObservable(target) {
     throw new Error(`Observable target must be an object or an array`);
   }
 
+  if (target instanceof Observable) {
+    return target;
+  }
+
   if ('observe' in target || 'unobserve' in target) {
     throw new Error(
       `Observable target cannot own or inherit a property named 'observe' or 'unobserve'`
