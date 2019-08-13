@@ -231,39 +231,6 @@ export class Model extends Serializable(Registerable()) {
     return this._fields?.has(name);
   }
 
-  // hasFields(fieldMask) {
-  //   const rootFieldMask = new FieldMask(fieldMask);
-
-  //   for (const name of this.constructor.getFieldNames()) {
-  //     const fieldMask = rootFieldMask.get(name);
-  //     if (!fieldMask) {
-  //       continue;
-  //     }
-
-  //     const field = this._fields.get(name);
-  //     if (!field) {
-  //       return false;
-  //     }
-
-  //     const valueOrValues = field.getValue();
-  //     if (valueOrValues === undefined) {
-  //       continue;
-  //     }
-
-  //     for (const value of oneOrMany(valueOrValues)) {
-  //       if (!this.constructor.fieldValueIsSubmodel(value)) {
-  //         // TODO: Get rid of this
-  //         continue;
-  //       }
-  //       if (!value.hasFields(fieldMask)) {
-  //         return false;
-  //       }
-  //     }
-  //   }
-
-  //   return true;
-  // }
-
   _initializeFields() {
     if (!this._fields) {
       this._fields = new Map();
@@ -311,89 +278,6 @@ export class Model extends Serializable(Registerable()) {
       }
     });
   }
-
-  // static filterEntityFields(fields) {
-  //   fields = new FieldMask(fields);
-  //   fields = this._filterEntityFields(fields);
-  //   return new FieldMask(fields);
-  // }
-
-  // static _filterEntityFields(rootFields) {
-  //   const filteredFields = {};
-
-  //   for (const field of this.getFields()) {
-  //     const name = field.getName();
-
-  //     const fields = rootFields.get(name);
-  //     if (!fields) {
-  //       continue;
-  //     }
-
-  //     if (field.scalar.isPrimitiveType()) {
-  //       filteredFields[name] = true;
-  //       continue;
-  //     }
-
-  //     const Model = field.scalar.getModel(this._getLayer());
-
-  //     if (Model.prototype.isOfType('EntityModel')) {
-  //       filteredFields[name] = {};
-  //       continue;
-  //     }
-
-  //     filteredFields[name] = Model._filterEntityFields(fields);
-  //   }
-
-  //   return filteredFields;
-  // }
-
-  // static fieldValueIsSubmodel(value) {
-  //   return value?.isOfType && !value.isOfType('EntityModel');
-  // }
-
-  // static fieldValueIsNestedEntity(value) {
-  //   return value?.isOfType && value.isOfType('EntityModel');
-  // }
-
-  // forEachSubmodel(func) {
-  //   return this.forEachField(field => {
-  //     const value = this._getFieldValue(field);
-  //     return callWithOneOrMany(value, value => {
-  //       if (this.constructor.fieldValueIsSubmodel(value)) {
-  //         return func(value);
-  //       }
-  //     });
-  //   });
-  // }
-
-  // forEachNestedEntityDeep(func, {fields} = {}) {
-  //   const rootFields = new FieldMask(fields);
-
-  //   return this.constructor.forEachField(field => {
-  //     const name = field.getName();
-
-  //     const fields = rootFields.get(name);
-  //     if (!fields) {
-  //       return;
-  //     }
-
-  //     const value = this._getFieldValue(field);
-  //     if (value !== undefined) {
-  //       return callWithOneOrMany(value, value => {
-  //         if (this.constructor.fieldValueIsNestedEntity(value)) {
-  //           const result = func(value, {fields});
-  //           if (result !== undefined) {
-  //             return result;
-  //           }
-  //         }
-
-  //         if (value?.isOfType && value.isOfType('Model')) {
-  //           return value.forEachNestedEntityDeep(func, {fields});
-  //         }
-  //       });
-  //     }
-  //   });
-  // }
 
   // === Validation ===
 

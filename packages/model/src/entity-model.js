@@ -46,8 +46,4 @@ export class EntityModel extends IdentityModel {
     }
     this._instances.set(id, instance);
   }
-
-  // release() {
-  //   this.constructor.setEntity(this._id, undefined);
-  // }
 }

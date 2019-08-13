@@ -23,7 +23,7 @@ const _validators = {
 
   integer: value => Number.isInteger(value),
 
-  // Strings and Arrays
+  // Strings and arrays
 
   notEmpty: value => value.length > 0,
 
