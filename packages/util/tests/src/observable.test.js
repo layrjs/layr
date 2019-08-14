@@ -300,4 +300,24 @@ describe('Observable', () => {
       });
     });
   });
+
+  describe('Unobservable value', () => {
+    it('Should not be possible to observe a primitive', () => {
+      expect(Observable.canBeObserved(true)).toBe(false);
+
+      expect(Observable.canBeObserved(1)).toBe(false);
+
+      expect(Observable.canBeObserved('Hello')).toBe(false);
+
+      expect(Observable.canBeObserved(new Date())).toBe(false);
+
+      expect(Observable.canBeObserved(undefined)).toBe(false);
+
+      expect(Observable.canBeObserved(null)).toBe(false);
+
+      expect(() => new Observable('Hello')).toThrow(
+        /Observable target must be an object or an array/
+      );
+    });
+  });
 });

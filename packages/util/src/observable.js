@@ -1,6 +1,10 @@
 export class Observable {
-  constructor(object) {
-    return createObservable(object);
+  constructor(target) {
+    return createObservable(target);
+  }
+
+  static canBeObserved(target) {
+    return canBeObserved(target);
   }
 
   static [Symbol.hasInstance](object) {
@@ -15,7 +19,7 @@ export class Observable {
 }
 
 function createObservable(target) {
-  if (typeof target !== 'object' || target === null) {
+  if (!canBeObserved(target)) {
     throw new Error(`Observable target must be an object or an array`);
   }
 
@@ -124,4 +128,8 @@ function createObservable(target) {
   };
 
   return new Proxy(target, handler);
+}
+
+function canBeObserved(target) {
+  return typeof target === 'object' && target !== null && !(target instanceof Date);
 }
