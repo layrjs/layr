@@ -1,4 +1,4 @@
-import {mapFromOneOrMany} from '@layr/util';
+import {Observable, mapFromOneOrMany} from '@layr/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';
@@ -104,9 +104,27 @@ export class Field {
 
   setValue(value, {source} = {}) {
     this.checkValue(value);
+
+    if (Observable.canBeObserved(value) && !(value instanceof Observable)) {
+      value = new Observable(value);
+    }
+
+    const previousValue = this._value;
+
     this._isActive = true;
     this._value = value;
     this._source = source;
+
+    if (value !== previousValue) {
+      if (previousValue instanceof Observable) {
+        previousValue.unobserve(this._parent._getNotifier());
+      }
+      if (value instanceof Observable) {
+        value.observe(this._parent._getNotifier());
+      }
+      this._parent.notify();
+    }
+
     return value;
   }
 
@@ -205,7 +223,7 @@ export class Field {
     }
 
     if (value === undefined && this._isArray) {
-      return [];
+      return new Observable([]);
     }
 
     return value;

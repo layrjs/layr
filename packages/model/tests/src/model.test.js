@@ -610,4 +610,50 @@ describe('Model', () => {
       movie.owner = new layer.Actor({fullName: 'Leonardo DiCaprio'}); // Actor is not an Identity
     }).toThrow(/Type mismatch/);
   });
+
+  test('Observability', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('string[]') genres;
+
+      @field('TechnicalSpecs') technicalSpecs;
+    }
+
+    class TechnicalSpecs extends Model {
+      @field('string') aspectRatio;
+    }
+
+    const layer = new Layer({Movie, TechnicalSpecs});
+
+    const movie = new layer.Movie({
+      title: 'Inception',
+      genres: ['Drama'],
+      technicalSpecs: {aspectRatio: '2.39:1'}
+    });
+
+    const observer = jest.fn();
+    movie.observe(observer);
+
+    expect(observer.mock.calls.length).toBe(0);
+    let numberOfCalls = observer.mock.calls.length;
+
+    movie.title = 'The Matrix';
+    expect(observer.mock.calls.length).not.toBe(numberOfCalls);
+    numberOfCalls = observer.mock.calls.length;
+
+    movie.genres.push('Action');
+    expect(observer.mock.calls.length).not.toBe(numberOfCalls);
+    numberOfCalls = observer.mock.calls.length;
+
+    movie.technicalSpecs.aspectRatio = '2.4:1';
+    expect(observer.mock.calls.length).not.toBe(numberOfCalls);
+    numberOfCalls = observer.mock.calls.length;
+
+    movie.technicalSpecs.aspectRatio = '2.4:1'; // No changes
+    expect(observer.mock.calls.length).toBe(numberOfCalls);
+
+    movie.technicalSpecs.notify();
+    expect(observer.mock.calls.length).not.toBe(numberOfCalls);
+  });
 });

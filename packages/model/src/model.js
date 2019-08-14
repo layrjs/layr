@@ -323,6 +323,50 @@ export class Model extends Serializable(Registerable()) {
     return result;
   }
 
+  // === Observability ===
+
+  observe(observer) {
+    if (typeof observer !== 'function') {
+      throw new Error(`'observer' must be a function`);
+    }
+
+    const observers = this._getObservers();
+    observers.push(observer);
+  }
+
+  unobserve(observer) {
+    if (typeof observer !== 'function') {
+      throw new Error(`'observer' must be a function`);
+    }
+
+    const observers = this._getObservers();
+    const index = observers.indexOf(observer);
+    if (index !== -1) {
+      observers.splice(index, 1);
+    }
+  }
+
+  notify() {
+    const observers = this._getObservers();
+    for (const observer of observers) {
+      observer();
+    }
+  }
+
+  _getObservers() {
+    if (!Object.prototype.hasOwnProperty.call(this, '_observers')) {
+      this._observers = [];
+    }
+    return this._observers;
+  }
+
+  _getNotifier() {
+    if (!Object.prototype.hasOwnProperty.call(this, '_notifier')) {
+      this._notifier = this.notify.bind(this);
+    }
+    return this._notifier;
+  }
+
   // === Utilities ===
 
   static isModel(object) {
