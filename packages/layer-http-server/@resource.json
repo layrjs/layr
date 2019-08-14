@@ -1,0 +1,17 @@
+{
+  "@import": "medmain/npm-package#^0.1.0",
+  "name": "@layr/layer-http-server",
+  "version": "0.1.0",
+  "description": "Serve a layer through HTTP",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/layer-http-server",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "@koa/cors": "^3.0.0",
+    "koa-json-error": "^3.1.2",
+    "koa-logger": "^3.2.1"
+  }
+}

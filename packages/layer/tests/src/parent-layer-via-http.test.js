@@ -1,11 +1,6 @@
-import {
-  Layer,
-  Registerable,
-  Serializable,
-  expose,
-  LayerHTTPServer,
-  LayerHTTPClient
-} from '../../..';
+import {Layer, Registerable, Serializable, expose} from '../../..';
+import {LayerHTTPClient} from '@layr/layer-http-client';
+import {LayerHTTPServer} from '@layr/layer-http-server';
 
 class BaseMovie extends Serializable(Registerable()) {
   constructor(

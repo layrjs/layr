@@ -6,6 +6,12 @@
   "layer": {
     "@include": "./packages/layer"
   },
+  "layerHTTPClient": {
+    "@include": "./packages/layer-http-client"
+  },
+  "layerHTTPServer": {
+    "@include": "./packages/layer-http-server"
+  },
   "document": {
     "@include": "./packages/document"
   },
@@ -22,6 +28,8 @@
       "(@import shell/bash) run \"npm-link ./packages/model/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/layer\"",
       "(@import shell/bash) run \"npm-link ./packages/layer/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/layer-http-client\"",
+      "(@import shell/bash) run \"npm-link ./packages/layer-http-server\"",
       "(@import shell/bash) run \"npm-link ./packages/document\"",
       "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/mongodb-store\"",
