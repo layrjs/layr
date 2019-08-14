@@ -4,7 +4,7 @@
 	<br>
 </p>
 
-> Build a frontend/backend app as easily as a standalone app.
+> A new approach for developing full-stack JavaScript applications.
 
 ## Introduction
 
@@ -114,7 +114,7 @@ class Counter extends BaseCounter {
 }
 ```
 
-To put it simply, it is as if there is no physical separation between frontend and backend. When a local class inherits from a remote class through a parent layer, methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are made available.
+To put it simply, it is as if there is no physical separation between frontend and backend. When a local class inherits from a remote class through a parent layer, methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are automatically transported.
 
 Building a frontend/backend application becomes as easy as building a standalone application.
 
