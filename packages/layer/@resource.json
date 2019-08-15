@@ -1,5 +1,5 @@
 {
-  "@import": "medmain/npm-package#^0.1.0",
+  "@import": "1place/npm-package#^0.2.0",
   "name": "@layr/layer",
   "version": "0.1.3",
   "description": "The root of your backend, frontend, UI, or whatever layer you build",

@@ -1,5 +1,5 @@
 {
-  "@import": "medmain/npm-package#^0.1.0",
+  "@import": "1place/npm-package#^0.2.0",
   "name": "@layr/document",
   "version": "0.1.2",
   "description": "Base class inheriting from @layr/model and adding persistence capabilities",

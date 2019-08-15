@@ -1,5 +1,5 @@
 {
-  "@import": "medmain/npm-package#^0.1.0",
+  "@import": "1place/npm-package#^0.2.0",
   "name": "@layr/util",
   "version": "0.1.2",
   "description": "A few utility functions shared among Layr's packages",

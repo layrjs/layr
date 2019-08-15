@@ -128,7 +128,15 @@ export class MongoDBStore extends Registerable() {
     const updatedDocuments = [];
     const acknowledgedDocuments = [];
 
-    for (const {_type, _new, _id, ...fields} of documents) {
+    // Because a Babel issue (https://github.com/babel/babel/issues/10339), the following
+    // code cannot be transpiled:
+    //
+    // for (const {_type, _new, _id, ...fields} of documents) {
+    //
+    // So we have to destructure 'document' after the 'for' statement
+    for (const document of documents) {
+      const {_type, _new, _id, ...fields} = document;
+
       const acknowledgedDocument = {_type, _id, ...fields}; // Everything but '_new'
 
       let existingDocument = existingDocuments?.find(
