@@ -18,6 +18,9 @@
   "mongoDBStore": {
     "@include": "./packages/mongodb-store"
   },
+  "reactBindings": {
+    "@include": "./packages/react-bindings"
+  },
   "util": {
     "@include": "./packages/util"
   },
@@ -34,6 +37,7 @@
       "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/mongodb-store\"",
       "(@import shell/bash) run \"npm-link ./packages/mongodb-store/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/react-bindings\"",
       "(@import shell/bash) run \"npm-link ./packages/util\"",
       "(@import shell/bash) run \"npm-link ./packages/util/tests\""
     ]

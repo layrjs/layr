@@ -1,0 +1,40 @@
+{
+  "name": "@layr/react-bindings",
+  "version": "0.1.0",
+  "description": "React bindings for Layr",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/react-bindings",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/node/cjs",
+  "module": "dist/node/esm",
+  "browser": "dist/browser/esm",
+  "dependencies": {
+    "use-force-update": "^1.0.7"
+  },
+  "@managed": {
+    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
+    "properties": [
+      "name",
+      "version",
+      "description",
+      "keywords",
+      "homepage",
+      "author",
+      "contributors",
+      "license",
+      "repository",
+      "files",
+      "main",
+      "module",
+      "browser",
+      "bin",
+      "dependencies",
+      "peerDependencies",
+      "optionalDependencies",
+      "devDependencies"
+    ]
+  }
+}
