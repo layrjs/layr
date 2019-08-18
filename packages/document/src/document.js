@@ -1,5 +1,4 @@
-import {EntityModel} from '@layr/model';
-import {FieldMask} from '@layr/util';
+import {EntityModel, FieldMask} from '@layr/model';
 
 import {DocumentNode} from './document-node';
 
