@@ -29,7 +29,7 @@ First, we need some shared code between the frontend and the backend:
 ```js
 import {Document, field} from '@layr/document';
 
-export class BaseCounter extends Document {
+export class Counter extends Document {
   // The shared class define a field to keep track of the counter's value
   @field('number') value = 0;
 }
@@ -40,9 +40,10 @@ Then, let's build the backend:
 `backend.js`:
 
 ```js
-import {Layer, LayerHTTPServer, expose} from '@layr/layer';
+import {Layer, expose} from '@layr/layer';
+import {LayerHTTPServer} from '@layr/layer-http-server';
 
-import {BaseCounter} from 'shared';
+import {Counter as BaseCounter} from './shared';
 
 @expose()
 class Counter extends BaseCounter {
@@ -68,9 +69,10 @@ Finally, let's build the frontend:
 `frontend.js`:
 
 ```js
-import {Layer, LayerHTTPClient} from '@layr/layer';
+import {Layer} from '@layr/layer';
+import {LayerHTTPClient} from '@layr/layer-http-client';
 
-import {BaseCounter} from 'shared';
+import {Counter as BaseCounter} from './shared';
 
 class Counter extends BaseCounter {
   // For now, the frontend class is nothing more than the base class
