@@ -111,4 +111,61 @@ describe('MongoDBStore', () => {
       {_type: 'Movie', _id: 'xyz123', _missed: true}
     ]);
   });
+
+  test('Finding documents', async () => {
+    await store.save([
+      {
+        _type: 'Movie',
+        _new: true,
+        _id: 'movie1',
+        title: 'Inception',
+        genre: 'action',
+        country: 'USA'
+      },
+      {
+        _type: 'Movie',
+        _new: true,
+        _id: 'movie2',
+        title: 'Forrest Gump',
+        genre: 'drama',
+        country: 'USA'
+      },
+      {
+        _type: 'Movie',
+        _new: true,
+        _id: 'movie3',
+        title: 'Léon',
+        genre: 'action',
+        country: 'France'
+      }
+    ]);
+
+    let movies = await store.find({_type: 'Movie'});
+    expect(movies.map(movie => movie._id)).toEqual(['movie1', 'movie2', 'movie3']);
+
+    movies = await store.find({_type: 'Movie', genre: 'action'});
+    expect(movies.map(movie => movie._id)).toEqual(['movie1', 'movie3']);
+
+    movies = await store.find({_type: 'Movie', genre: 'action', country: 'France'});
+    expect(movies.map(movie => movie._id)).toEqual(['movie3']);
+
+    movies = await store.find({_type: 'Movie', genre: 'adventure'});
+    expect(movies.map(movie => movie._id)).toEqual([]);
+
+    movies = await store.find({_type: 'Movie'}, {skip: 1, limit: 1});
+    expect(movies.map(movie => movie._id)).toEqual(['movie2']);
+
+    movies = await store.find({_type: 'Movie'}, {fields: {title: true}});
+    expect(movies).toEqual([
+      {_type: 'Movie', _id: 'movie1', title: 'Inception'},
+      {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},
+      {_type: 'Movie', _id: 'movie3', title: 'Léon'}
+    ]);
+
+    await store.delete([
+      {_type: 'Movie', _id: 'movie1'},
+      {_type: 'Movie', _id: 'movie2'},
+      {_type: 'Movie', _id: 'movie3'}
+    ]);
+  });
 });

@@ -236,6 +236,41 @@ export class MongoDBStore extends Registerable() {
     return acknowledgedDocuments;
   }
 
+  async find({_type: type, ...filter}, {sort, skip, limit, fields} = {}) {
+    ow(type, ow.string.nonEmpty);
+    ow(sort, ow.optional.object);
+    ow(skip, ow.optional.number);
+    ow(limit, ow.optional.number);
+    ow(fields, ow.optional.object);
+
+    const collection = await this._getCollection(type);
+
+    const query = filter;
+    let projection;
+    if (fields !== undefined) {
+      projection = buildProjection(fields);
+    }
+    const options = {projection};
+    debug(`%s.find(%o, %o)`, type, query, options);
+    const cursor = collection.find(query, options);
+
+    if (sort !== undefined) {
+      cursor.sort(sort);
+    }
+
+    if (skip !== undefined) {
+      cursor.skip(skip);
+    }
+
+    if (limit !== undefined) {
+      cursor.limit(limit);
+    }
+
+    const documents = await cursor.toArray();
+
+    return documents;
+  }
+
   // === Database ===
 
   async _getClient() {
