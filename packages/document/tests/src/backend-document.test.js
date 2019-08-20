@@ -262,7 +262,7 @@ describe('Backend Document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test('Finding documents', async () => {
+  test.only('Finding documents', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -271,28 +271,32 @@ describe('Backend Document', () => {
       @field('string') country;
     }
 
-    const store = new MongoDBStore();
     const rootLayer = new Layer({Movie, store});
 
+    // Create
+
     let layer = rootLayer.fork();
-    const movie1 = await new layer.Movie({
+    const movie1 = new layer.Movie({
       id: 'movie1',
       title: 'Inception',
       genre: 'action',
       country: 'USA'
-    }).save();
-    const movie2 = await new layer.Movie({
+    });
+    await movie1.save();
+    const movie2 = new layer.Movie({
       id: 'movie2',
       title: 'Forrest Gump',
       genre: 'drama',
       country: 'USA'
-    }).save();
-    const movie3 = await new layer.Movie({
+    });
+    await movie2.save();
+    const movie3 = new layer.Movie({
       id: 'movie3',
       title: 'Léon',
       genre: 'action',
       country: 'France'
-    }).save();
+    });
+    await movie3.save();
 
     let movies = await layer.Movie.find();
     expect(movies[0]).toBe(movie1);
@@ -331,10 +335,8 @@ describe('Backend Document', () => {
     ]);
 
     layer = rootLayer.fork();
-    for (const id of ['movie1', 'movie2', 'movie3']) {
-      const movie = await layer.Movie.get(id);
-      await movie.delete();
-    }
+    movies = await layer.Movie.find({fields: false});
+    await layer.Movie.delete(movies);
   });
 
   test('Reloading documents', async () => {

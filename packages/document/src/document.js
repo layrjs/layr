@@ -243,19 +243,54 @@ export class Document extends DocumentNode(EntityModel) {
     populate = true,
     throwIfNotFound = true
   } = {}) {
-    fields = new FieldMask(fields);
+    fields = this.prototype.createFieldMask(fields);
 
-    const documentFields = this.filterEntityFields(fields);
-    const documents = await this._find({filter, sort, skip, limit, fields: documentFields});
+    // TODO:
+    // fields = this.filterEntityFields(fields);
+
+    let documents;
+
+    if (this.hasStore()) {
+      documents = await this._findInStore({filter, sort, skip, limit, fields});
+    } else if (this.hasParentLayer()) {
+      // Call find() in the parent layer
+      documents = await super.find({
+        filter,
+        sort,
+        skip,
+        limit,
+        fields,
+        populate: false,
+        throwIfNotFound
+      });
+    } else {
+      throw new Error(
+        `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
+      );
+    }
 
     if (populate) {
-      await this.populate(documents, {fields, throwIfNotFound});
+      // await this.populate(documents, {fields, throwIfNotFound});
     }
 
     for (const document of documents) {
       await document.afterLoad();
     }
 
+    return documents;
+  }
+
+  static async _findInStore({filter, sort, skip, limit, fields}) {
+    const store = this.getStore();
+    const storeId = store.getId();
+    const serializedFields = fields.serialize();
+    const serializedDocuments = await store.find(
+      {_type: this.getRegisteredName(), ...filter},
+      {sort, skip, limit, fields: serializedFields}
+    );
+    const documents = serializedDocuments.map(serializedDocument =>
+      this.deserialize(serializedDocument, {fields, source: storeId})
+    );
     return documents;
   }
 
