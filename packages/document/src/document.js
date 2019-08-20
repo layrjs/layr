@@ -1,4 +1,5 @@
 import {EntityModel, FieldMask} from '@layr/model';
+import {expose} from '@layr/layer';
 
 import {DocumentNode} from './document-node';
 
@@ -17,6 +18,7 @@ export class Document extends DocumentNode(EntityModel) {
     return documents;
   }
 
+  @expose()
   static async load(documents, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
       documents = [documents];
@@ -149,6 +151,7 @@ export class Document extends DocumentNode(EntityModel) {
     return (await this.constructor.populate([this], {fields, throwIfNotFound}))[0];
   }
 
+  @expose()
   static async save(documents, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
     if (!Array.isArray(documents)) {
       documents = [documents];
@@ -194,6 +197,7 @@ export class Document extends DocumentNode(EntityModel) {
     await this.constructor.save([this], {throwIfNotFound, throwIfAlreadyExists});
   }
 
+  @expose()
   static async delete(documents, {throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
       documents = [documents];
@@ -234,6 +238,7 @@ export class Document extends DocumentNode(EntityModel) {
     await this.constructor.delete([this], {throwIfNotFound});
   }
 
+  @expose()
   static async find({
     filter,
     sort,
@@ -296,11 +301,13 @@ export class Document extends DocumentNode(EntityModel) {
 
   static getStore({throwIfNotFound = true} = {}) {
     const layer = this.getLayer({throwIfNotFound});
-    const store = layer?.get('store');
-    if (store) {
+    const store = layer?.get('store', {throwIfNotFound});
+    if (store !== undefined) {
       return store;
     }
-    throw new Error(`Store not found`);
+    if (throwIfNotFound) {
+      throw new Error(`Store not found`);
+    }
   }
 
   static hasStore() {

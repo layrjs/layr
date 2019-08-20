@@ -8,6 +8,7 @@
   "repository": "https://github.com/layrjs/layr/tree/master/packages/document",
   "dependencies": {
     "lodash": "^4.17.11",
+    "@layr/layer": "^0.1.0",
     "@layr/model": "^0.1.0",
     "@layr/util": "^0.1.0"
   },
