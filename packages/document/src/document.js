@@ -21,7 +21,7 @@ export class Document extends DocumentNode(EntityModel) {
   @expose()
   static async load(documents, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
-      documents = [documents];
+      return (await this.load([documents], {fields, reload, populate, throwIfNotFound}))[0];
     }
 
     fields = this.prototype.createFieldMask(fields);
@@ -32,6 +32,8 @@ export class Document extends DocumentNode(EntityModel) {
       // TODO:
       // await this.populate(documents, {fields, throwIfNotFound});
     }
+
+    return documents;
   }
 
   static async reload(documents, {fields, populate = true, throwIfNotFound = true} = {}) {
@@ -154,7 +156,7 @@ export class Document extends DocumentNode(EntityModel) {
   @expose()
   static async save(documents, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
     if (!Array.isArray(documents)) {
-      documents = [documents];
+      return (await this.save([documents], {throwIfNotFound, throwIfAlreadyExists}))[0];
     }
 
     for (const document of documents) {
@@ -175,6 +177,8 @@ export class Document extends DocumentNode(EntityModel) {
     for (const document of documents) {
       await document.afterSave();
     }
+
+    return documents;
   }
 
   static async _saveToStore(documents, {throwIfNotFound, throwIfAlreadyExists}) {
@@ -200,7 +204,7 @@ export class Document extends DocumentNode(EntityModel) {
   @expose()
   static async delete(documents, {throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
-      documents = [documents];
+      return (await this.delete([documents], {throwIfNotFound}))[0];
     }
 
     for (const document of documents) {
@@ -221,6 +225,8 @@ export class Document extends DocumentNode(EntityModel) {
     for (const document of documents) {
       await document.afterDelete();
     }
+
+    return documents;
   }
 
   static async _deleteFromStore(documents, {throwIfNotFound}) {
