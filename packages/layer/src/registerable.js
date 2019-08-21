@@ -20,6 +20,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return _getLayer(this, {throwIfNotFound});
     }
 
+    static get layer() {
+      return this.getLayer();
+    }
+
     static setLayer(layer) {
       _setLayer(this, layer);
     }
@@ -88,6 +92,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         // If not found, let's fall back to the class' layer
         return _getLayer(this.constructor, {throwIfNotFound});
       }
+    }
+
+    get layer() {
+      return this.getLayer();
     }
 
     setLayer(layer) {
