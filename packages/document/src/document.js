@@ -58,6 +58,7 @@ export class Document extends DocumentNode(EntityModel) {
       // Call load() in the parent layer
       await super.load(documentsToLoad, {
         fields,
+        reload,
         populate: false,
         throwIfNotFound
       });
