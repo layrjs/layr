@@ -49,10 +49,10 @@ export function view() {
         }
 
         const model = this;
-        const boundComponent = function () {
+        const boundComponent = function (props) {
           // eslint-disable-next-line react-hooks/rules-of-hooks
           useModel(model);
-          return component.call(model);
+          return component.call(model, props);
         };
         boundComponent.displayName = name;
 
