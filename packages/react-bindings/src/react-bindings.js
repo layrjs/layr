@@ -1,5 +1,6 @@
 import {useEffect} from 'react';
 import useForceUpdate from 'use-force-update';
+import {Observable} from '@layr/util';
 
 // === React hooks ===
 
@@ -50,8 +51,10 @@ export function view() {
 
         const model = this;
         const boundComponent = function (props) {
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          useModel(model);
+          if (model instanceof Observable) {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useModel(model);
+          }
           return component.call(model, props);
         };
         boundComponent.displayName = name;
