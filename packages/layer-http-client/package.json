@@ -1,10 +1,10 @@
 {
-  "name": "@layr/layer-http-client",
+  "name": "@liaison/layer-http-client",
   "version": "0.1.0",
   "description": "Connect to a layer through HTTP",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/layer-http-client",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-http-client",
   "files": [
     "dist"
   ],
@@ -35,7 +35,8 @@
       "dependencies",
       "peerDependencies",
       "optionalDependencies",
-      "devDependencies"
+      "devDependencies",
+      "private"
     ]
   }
 }

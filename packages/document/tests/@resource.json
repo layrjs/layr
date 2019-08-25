@@ -1,8 +1,8 @@
 {
   "@import": "1place/jest#^0.1.0",
   "dependencies": {
-    "@layr/layer": "^0.1.0",
-    "@layr/mongodb-store": "^0.1.0",
+    "@liaison/layer": "^0.1.0",
+    "@liaison/mongodb-store": "^0.1.0",
     "mongodb-memory-server": "^5.1.3"
   }
 }

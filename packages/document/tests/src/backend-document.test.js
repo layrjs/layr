@@ -1,5 +1,5 @@
-import {Layer} from '@layr/layer';
-import {MongoDBStore} from '@layr/mongodb-store';
+import {Layer} from '@liaison/layer';
+import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
 import {Document, Subdocument, Model, field} from '../../..';

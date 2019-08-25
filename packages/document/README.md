@@ -1,9 +1,9 @@
-# @layr/document
+# @liaison/document
 
-Base class inheriting from @layr/model and adding persistence capabilities.
+Base class inheriting from @liaison/model and adding persistence capabilities.
 
 ## Installation
 
 ```
-npm install @layr/document
+npm install @liaison/document
 ```

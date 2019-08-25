@@ -1,9 +1,9 @@
-# @layr/layer-http-server
+# @liaison/layer-http-server
 
 Serve a layer through HTTP.
 
 ## Installation
 
 ```
-npm install @layr/layer-http-client
+npm install @liaison/layer-http-client
 ```

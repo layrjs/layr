@@ -1,5 +1,5 @@
 import {inspect} from 'util';
-import {Registerable, Serializable} from '@layr/layer';
+import {Registerable, Serializable} from '@liaison/layer';
 import isEmpty from 'lodash/isEmpty';
 
 import {Field} from './field';

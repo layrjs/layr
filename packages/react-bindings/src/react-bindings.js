@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import useForceUpdate from 'use-force-update';
-import {Observable} from '@layr/util';
+import {Observable} from '@liaison/util';
 
 // === React hooks ===
 

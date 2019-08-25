@@ -1,13 +1,13 @@
-import {Registerable} from '@layr/layer';
+import {Registerable} from '@liaison/layer';
 import nanoid from 'nanoid';
 import {MongoClient} from 'mongodb';
 import groupBy from 'lodash/groupBy';
 import ow from 'ow';
 import debugModule from 'debug';
 
-const debug = debugModule('layr:mongodb-store');
+const debug = debugModule('liaison:mongodb-store');
 // To display the debug log, set this environment:
-// DEBUG=layr:mongodb-store DEBUG_DEPTH=10
+// DEBUG=liaison:mongodb-store DEBUG_DEPTH=10
 
 export class MongoDBStore extends Registerable() {
   constructor(connectionString) {

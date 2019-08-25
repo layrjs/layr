@@ -1,11 +1,11 @@
 {
   "@import": "1place/npm-package#^0.2.0",
-  "name": "@layr/util",
+  "name": "@liaison/util",
   "version": "0.1.2",
-  "description": "A few utility functions shared among Layr's packages",
+  "description": "A few utility functions shared among Liaison's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/util",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/util",
   "dependencies": {
     "lodash": "^4.17.11"
   },

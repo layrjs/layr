@@ -1,5 +1,5 @@
-import {EntityModel, FieldMask} from '@layr/model';
-import {expose} from '@layr/layer';
+import {EntityModel, FieldMask} from '@liaison/model';
+import {expose} from '@liaison/layer';
 
 import {DocumentNode} from './document-node';
 

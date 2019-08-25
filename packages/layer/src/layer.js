@@ -7,9 +7,9 @@ import debugModule from 'debug';
 import {isRegisterable, isExposed} from './registerable';
 import {isSerializable} from './serializable';
 
-const debug = debugModule('layr:layer');
+const debug = debugModule('liaison:layer');
 // To display the debug log, set this environment:
-// DEBUG=layr DEBUG_DEPTH=10
+// DEBUG=liaison DEBUG_DEPTH=10
 
 export class Layer {
   constructor(registerables, {name, parent} = {}) {

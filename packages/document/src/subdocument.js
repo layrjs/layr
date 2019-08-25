@@ -1,4 +1,4 @@
-import {IdentityModel} from '@layr/model';
+import {IdentityModel} from '@liaison/model';
 
 import {DocumentNode} from './document-node';
 

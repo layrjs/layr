@@ -1,4 +1,4 @@
-import {Layer} from '@layr/layer';
+import {Layer} from '@liaison/layer';
 
 import {EntityModel, field} from '../../..';
 

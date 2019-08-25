@@ -1,16 +1,16 @@
 {
   "@import": "1place/npm-package#^0.2.0",
-  "name": "@layr/document",
+  "name": "@liaison/document",
   "version": "0.1.2",
-  "description": "Base class inheriting from @layr/model and adding persistence capabilities",
+  "description": "Base class inheriting from @liaison/model and adding persistence capabilities",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/document",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/document",
   "dependencies": {
     "lodash": "^4.17.11",
-    "@layr/layer": "^0.1.0",
-    "@layr/model": "^0.1.0",
-    "@layr/util": "^0.1.0"
+    "@liaison/layer": "^0.1.0",
+    "@liaison/model": "^0.1.0",
+    "@liaison/util": "^0.1.0"
   },
   "tests": {
     "@include": "./tests"

@@ -5,9 +5,9 @@ import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
 import debugModule from 'debug';
 
-const debug = debugModule('layr:layer:http-server');
+const debug = debugModule('liaison:layer:http-server');
 // To display the debug log, set this environment:
-// DEBUG=layr:layer:http-server DEBUG_DEPTH=10
+// DEBUG=liaison:layer:http-server DEBUG_DEPTH=10
 
 const DEFAULT_PORT = 3333;
 

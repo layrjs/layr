@@ -1,4 +1,4 @@
-import {Observable, mapFromOneOrMany} from '@layr/util';
+import {Observable, mapFromOneOrMany} from '@liaison/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';

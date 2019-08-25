@@ -1,9 +1,9 @@
 import fetch from 'cross-fetch';
 import debugModule from 'debug';
 
-const debug = debugModule('layr:layer-http-client');
+const debug = debugModule('liaison:layer-http-client');
 // To display the debug log, set this environment:
-// DEBUG=layr:layer-http-client DEBUG_DEPTH=10
+// DEBUG=liaison:layer-http-client DEBUG_DEPTH=10
 
 export class LayerHTTPClient {
   constructor(url) {

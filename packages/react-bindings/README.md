@@ -1,9 +1,9 @@
-# @layr/react-bindings
+# @liaison/react-bindings
 
-React bindings for Layr.
+React bindings for Liaison.
 
 ## Installation
 
 ```
-npm install @layr/react-bindings
+npm install @liaison/react-bindings
 ```

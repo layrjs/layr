@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="assets/layr-logo.svg" width="200" alt="Layr — The root of your backend, frontend, UI, or whatever layer you build">
+	<img src="assets/liaison-logo.svg" width="200" alt="Liaison">
 	<br>
 	<br>
 </p>
@@ -12,7 +12,7 @@ Building a full web app is painful. We have to worry about the frontend, the bac
 
 Eventually, our well-architected application is composed of six layers: user interface, frontend model, API client, API server, backend model, and database. So every time we want to implement a new feature, we have to make changes in six different places. Conceptually, it is not complicated, but it is cumbersome.
 
-Layr allows reducing the number of layers from six to three. First, we get rid of the API layers, and then we unify the frontend and backend models into what we call an "isomorphic model":
+Liaison allows reducing the number of layers from six to three. First, we get rid of the API layers, and then we unify the frontend and backend models into what we call an "isomorphic model":
 
 <p align="center">
 	<img src="assets/traditional-vs-isomorphic.svg" width="600" alt="Traditional vs isomorphic architectures">
@@ -27,7 +27,7 @@ First, we need some shared code between the frontend and the backend:
 `shared.js`:
 
 ```js
-import {Document, field} from '@layr/document';
+import {Document, field} from '@liaison/document';
 
 export class Counter extends Document {
   // The shared class define a field to keep track of the counter's value
@@ -40,8 +40,8 @@ Then, let's build the backend:
 `backend.js`:
 
 ```js
-import {Layer, expose} from '@layr/layer';
-import {LayerHTTPServer} from '@layr/layer-http-server';
+import {Layer, expose} from '@liaison/layer';
+import {LayerHTTPServer} from '@liaison/layer-http-server';
 
 import {Counter as BaseCounter} from './shared';
 
@@ -69,8 +69,8 @@ Finally, let's build the frontend:
 `frontend.js`:
 
 ```js
-import {Layer} from '@layr/layer';
-import {LayerHTTPClient} from '@layr/layer-http-client';
+import {Layer} from '@liaison/layer';
+import {LayerHTTPClient} from '@liaison/layer-http-client';
 
 import {Counter as BaseCounter} from './shared';
 
@@ -120,7 +120,7 @@ To put it simply, it is as if there is no physical separation between frontend a
 
 Building a frontend/backend application becomes as easy as building a standalone application.
 
-This is Layr.
+This is Liaison.
 
 ## Guide
 

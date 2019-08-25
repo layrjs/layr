@@ -1,13 +1,13 @@
 {
   "@import": "1place/npm-package#^0.2.0",
-  "name": "@layr/react-bindings",
+  "name": "@liaison/react-bindings",
   "version": "0.1.0",
-  "description": "React bindings for Layr",
+  "description": "React bindings for Liaison",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/react-bindings",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/react-bindings",
   "dependencies": {
-    "@layr/util": "^0.1.0",
+    "@liaison/util": "^0.1.0",
     "use-force-update": "^1.0.7"
   }
 }

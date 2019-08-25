@@ -1,11 +1,11 @@
 {
   "@import": "1place/npm-package#^0.2.0",
-  "name": "@layr/layer-http-client",
+  "name": "@liaison/layer-http-client",
   "version": "0.1.0",
   "description": "Connect to a layer through HTTP",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/layer-http-client",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-http-client",
   "dependencies": {
     "cross-fetch": "^3.0.4",
     "debug": "^4.1.1"

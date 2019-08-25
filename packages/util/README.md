@@ -1,9 +1,9 @@
-# @layr/util
+# @liaison/util
 
-A few utility functions shared among Layr's packages.
+A few utility functions shared among Liaison's packages.
 
 ## Installation
 
 ```
-npm install @layr/util
+npm install @liaison/util
 ```

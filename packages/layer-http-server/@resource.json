@@ -1,11 +1,11 @@
 {
   "@import": "1place/npm-package#^0.2.0",
-  "name": "@layr/layer-http-server",
+  "name": "@liaison/layer-http-server",
   "version": "0.1.0",
   "description": "Serve a layer through HTTP",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/layer-http-server",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-http-server",
   "dependencies": {
     "debug": "^4.1.1",
     "koa": "^2.7.0",
