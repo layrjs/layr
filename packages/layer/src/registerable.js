@@ -158,7 +158,7 @@ function _setRegisteredName(target, registeredName) {
 }
 
 function _getLayer(target, {throwIfNotFound = true} = {}) {
-  const layer = target._layer;
+  const layer = Object.prototype.hasOwnProperty.call(target, '_layer') ? target._layer : undefined;
   if (layer) {
     return layer;
   }

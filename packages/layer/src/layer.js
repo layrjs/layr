@@ -80,28 +80,22 @@ export class Layer {
       throw new Error(`Name already registered (name: '${name}')`);
     }
 
-    const forkedRegisterable = this.__register(name, registerable);
-
-    forkedRegisterable.setRegisteredName(name);
-
+    registerable.setLayer(this);
+    registerable.setRegisteredName(name);
+    this._registerables[name] = registerable;
     this._registeredNames.push(name);
 
     Object.defineProperty(this, name, {
       get() {
         let registerable = this._registerables[name];
         if (!Object.prototype.hasOwnProperty.call(this._registerables, name)) {
-          registerable = this.__register(name, registerable);
+          registerable = registerable.fork();
+          registerable.setLayer(this);
+          this._registerables[name] = registerable;
         }
         return registerable;
       }
     });
-  }
-
-  __register(name, registerable) {
-    const forkedRegisterable = registerable.fork();
-    forkedRegisterable.setLayer(this);
-    this._registerables[name] = forkedRegisterable;
-    return forkedRegisterable;
   }
 
   // === Forking ===

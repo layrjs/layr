@@ -16,35 +16,26 @@ describe('Layer', () => {
     const layer = new Layer({Item, Movie}, {name: 'layer'});
     expect(layer.getId().length).toBeGreaterThanOrEqual(10);
     expect(layer.getName()).toBe('layer');
+    expect(Movie.getLayer()).toBe(layer);
+    expect(Movie.hasLayer()).toBe(true);
+    expect(Movie.getRegisteredName()).toBe('Movie');
+    expect(layer.Movie).toBe(Movie);
+    expect([...layer.getItems()]).toEqual([Item, Movie]);
 
-    expect(layer.Movie).not.toBe(Movie);
-    expect(Movie.getLayer({throwIfNotFound: false})).toBeUndefined();
-    expect(Movie.hasLayer()).toBe(false);
-    expect(Movie.getRegisteredName()).toBeUndefined();
-    expect(layer.Movie.getLayer()).toBe(layer);
-    expect(layer.Movie.hasLayer()).toBe(true);
-    expect(layer.Movie.getRegisteredName()).toBe('Movie');
+    const movie = new Movie({title: 'Inception'});
 
-    expect([...layer.getItems()]).toEqual([layer.Item, layer.Movie]);
-
-    const movie = new layer.Movie({title: 'Inception'});
-
-    expect(movie instanceof layer.Movie).toBe(true);
-    expect(movie instanceof layer.Item).toBe(true);
+    expect(movie instanceof Movie).toBe(true);
+    expect(movie instanceof Item).toBe(true);
     expect(movie.getLayer()).toBe(layer);
     expect(movie.hasLayer()).toBe(true);
     expect(movie.getLayer({fallBackToClass: false, throwIfNotFound: false})).toBeUndefined();
     expect(movie.hasLayer({fallBackToClass: false})).toBe(false);
 
     layer.register({movie});
+    expect(movie.getRegisteredName()).toBe('movie');
+    expect(layer.movie).toBe(movie);
 
-    expect(layer.movie.title).toBe('Inception');
-    expect(layer.movie).not.toBe(movie);
-    expect(layer.movie instanceof layer.Movie).toBe(true);
-    expect(layer.movie instanceof layer.Item).toBe(true);
-    expect(layer.movie.getRegisteredName()).toBe('movie');
-
-    const movie2 = new layer.Movie({title: 'The Matrix'});
+    const movie2 = new Movie({title: 'The Matrix'});
 
     expect(() => {
       layer.register({movie: movie2}); // Cannot register an item with a name that already exists
@@ -54,14 +45,16 @@ describe('Layer', () => {
       layer.movie = movie2; // Cannot modify a registered item
     }).toThrow();
 
-    const anotherLayer = new Layer({Item, Movie}, {name: 'anotherLayer'});
+    expect(() => {
+      return new Layer({Movie}); // Cannot register an already registered item into another layer
+    }).toThrow(/Registerable already registered/);
+
+    class Trailer extends Item {}
+
+    const anotherLayer = new Layer({Trailer}, {name: 'anotherLayer'});
     expect(anotherLayer.getId().length).toBeGreaterThanOrEqual(10);
     expect(anotherLayer.getId()).not.toBe(layer.getId());
     expect(anotherLayer.getName()).toBe('anotherLayer');
-
-    expect(() => {
-      anotherLayer.register({movie: layer.movie}); // Cannot register an already registered item
-    }).toThrow(/Registerable already registered/);
   });
 
   test('Forking', () => {
