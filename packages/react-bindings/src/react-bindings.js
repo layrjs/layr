@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import useForceUpdate from 'use-force-update';
-import {Observable} from '@liaison/util';
+import {isObservable} from '@liaison/observable';
 
 // === React hooks ===
 
@@ -51,7 +51,7 @@ export function view() {
 
         const model = this;
         const boundComponent = function (props) {
-          if (model instanceof Observable) {
+          if (isObservable(model)) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useModel(model);
           }

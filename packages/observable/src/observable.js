@@ -1,29 +1,31 @@
-export class Observable {
-  constructor(target) {
-    return createObservable(target);
-  }
+export const Observable = (Base = Object) =>
+  class Observable extends Base {
+    observe(observer) {
+      this._getObservers().add(observer);
+    }
 
-  static canBeObserved(target) {
-    return canBeObserved(target);
-  }
+    unobserve(observer) {
+      this._getObservers().remove(observer);
+    }
 
-  static [Symbol.hasInstance](object) {
-    return (
-      typeof object === 'object' &&
-      object !== null &&
-      typeof object.observe === 'function' &&
-      typeof object.unobserve === 'function' &&
-      typeof object.notify === 'function'
-    );
-  }
-}
+    notify() {
+      this._getObservers().call();
+    }
 
-function createObservable(target) {
-  if (!canBeObserved(target)) {
+    _getObservers() {
+      if (!Object.prototype.hasOwnProperty.call(this, '_observers')) {
+        Object.defineProperty(this, '_observers', {value: new ObserverSet()});
+      }
+      return this._observers;
+    }
+  };
+
+export function createObservable(target) {
+  if (!canBecomeObservable(target)) {
     throw new Error(`Observable target must be an object or an array`);
   }
 
-  if (target instanceof Observable) {
+  if (isObservable(target)) {
     return target;
   }
 
@@ -33,31 +35,18 @@ function createObservable(target) {
     );
   }
 
-  const observers = [];
+  const observers = new ObserverSet();
 
   const addObserver = function (observer) {
-    if (typeof observer !== 'function') {
-      throw new Error(`'observer' must be a function`);
-    }
-
-    observers.push(observer);
+    observers.add(observer);
   };
 
   const removeObserver = function (observer) {
-    if (typeof observer !== 'function') {
-      throw new Error(`'observer' must be a function`);
-    }
-
-    const index = observers.indexOf(observer);
-    if (index !== -1) {
-      observers.splice(index, 1);
-    }
+    observers.remove(observer);
   };
 
   const callObservers = function () {
-    for (const observer of observers) {
-      observer();
-    }
+    observers.call();
   };
 
   const handler = {
@@ -97,10 +86,10 @@ function createObservable(target) {
       const result = Reflect.set(target, key, nextValue);
 
       if (nextValue !== previousValue) {
-        if (previousValue instanceof Observable) {
+        if (isObservable(previousValue)) {
           previousValue.unobserve(callObservers);
         }
-        if (nextValue instanceof Observable) {
+        if (isObservable(nextValue)) {
           nextValue.observe(callObservers);
         }
         callObservers();
@@ -117,7 +106,7 @@ function createObservable(target) {
       }
 
       const previousValue = Reflect.get(target, key);
-      if (previousValue instanceof Observable) {
+      if (isObservable(previousValue)) {
         previousValue.unobserve(callObservers);
       }
 
@@ -130,6 +119,47 @@ function createObservable(target) {
   return new Proxy(target, handler);
 }
 
-function canBeObserved(target) {
+class ObserverSet {
+  constructor() {
+    this._observers = [];
+  }
+
+  add(observer) {
+    if (typeof observer !== 'function') {
+      throw new Error(`'observer' must be a function`);
+    }
+
+    this._observers.push(observer);
+  }
+
+  remove(observer) {
+    if (typeof observer !== 'function') {
+      throw new Error(`'observer' must be a function`);
+    }
+
+    const index = this._observers.indexOf(observer);
+    if (index !== -1) {
+      this._observers.splice(index, 1);
+    }
+  }
+
+  call() {
+    for (const observer of this._observers) {
+      observer();
+    }
+  }
+}
+
+export function isObservable(object) {
+  return (
+    typeof object === 'object' &&
+    object !== null &&
+    typeof object.observe === 'function' &&
+    typeof object.unobserve === 'function' &&
+    typeof object.notify === 'function'
+  );
+}
+
+export function canBecomeObservable(target) {
   return typeof target === 'object' && target !== null && !(target instanceof Date);
 }

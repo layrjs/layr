@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/util",
-  "version": "0.1.3",
-  "description": "A few utility functions shared among Liaison's packages",
+  "name": "@liaison/observable",
+  "version": "0.1.0",
+  "description": "Observe JavaScript objects, arrays, or your own classes",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/util",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/observable",
   "files": [
     "dist"
   ],

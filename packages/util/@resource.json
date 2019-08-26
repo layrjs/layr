@@ -1,14 +1,12 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/util",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A few utility functions shared among Liaison's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/util",
-  "dependencies": {
-    "lodash": "^4.17.11"
-  },
+  "dependencies": {},
   "tests": {
     "@include": "./tests"
   }

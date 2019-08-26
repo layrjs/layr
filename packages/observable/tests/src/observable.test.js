@@ -1,4 +1,4 @@
-import {Observable} from '../../..';
+import {Observable, createObservable, isObservable, canBecomeObservable} from '../../..';
 
 describe('Observable', () => {
   describe('Observable array', () => {
@@ -7,7 +7,7 @@ describe('Observable', () => {
 
     beforeEach(() => {
       originalArray = [3, 2, 1];
-      observableArray = new Observable(originalArray);
+      observableArray = createObservable(originalArray);
     });
 
     it('Should be an array', () => {
@@ -16,13 +16,13 @@ describe('Observable', () => {
     });
 
     it('Should be an observable', () => {
-      expect(originalArray instanceof Observable).toBe(false);
-      expect(observableArray instanceof Observable).toBe(true);
+      expect(isObservable(originalArray)).toBe(false);
+      expect(isObservable(observableArray)).toBe(true);
     });
 
-    it('Should be usable as the target of a new Observable', () => {
-      const newObservableArray = new Observable(observableArray);
-      expect(newObservableArray instanceof Observable).toBe(true);
+    it('Should be usable as the target of a new observable', () => {
+      const newObservableArray = createObservable(observableArray);
+      expect(isObservable(newObservableArray)).toBe(true);
     });
 
     it('Should be equal to the original array', () => {
@@ -90,7 +90,7 @@ describe('Observable', () => {
 
     describe('Observable item', () => {
       it('Should call observers when updating an observable item', () => {
-        const observableItem = new Observable([]);
+        const observableItem = createObservable([]);
         observableArray[0] = observableItem;
         const observer = jest.fn();
         observableArray.observe(observer);
@@ -100,7 +100,7 @@ describe('Observable', () => {
       });
 
       it(`Should stop calling observers when an observable item has been removed`, () => {
-        const observableItem = new Observable([]);
+        const observableItem = createObservable([]);
         observableArray[0] = observableItem;
 
         const observer = jest.fn();
@@ -199,7 +199,7 @@ describe('Observable', () => {
       originalObject = {
         id: 1
       };
-      observableObject = new Observable(originalObject);
+      observableObject = createObservable(originalObject);
     });
 
     it('Should be an object', () => {
@@ -208,13 +208,13 @@ describe('Observable', () => {
     });
 
     it('Should be an observable', () => {
-      expect(originalObject instanceof Observable).toBe(false);
-      expect(observableObject instanceof Observable).toBe(true);
+      expect(isObservable(originalObject)).toBe(false);
+      expect(isObservable(observableObject)).toBe(true);
     });
 
-    it('Should be usable as the target of a new Observable', () => {
-      const newObservableObject = new Observable(observableObject);
-      expect(newObservableObject instanceof Observable).toBe(true);
+    it('Should be usable as the target of a new observable', () => {
+      const newObservableObject = createObservable(observableObject);
+      expect(isObservable(newObservableObject)).toBe(true);
     });
 
     it('Should be equal to the original object', () => {
@@ -274,7 +274,7 @@ describe('Observable', () => {
 
     describe('Observable attribute', () => {
       it('Should call observers when updating an observable attribute', () => {
-        const observableAttribute = new Observable({id: 1});
+        const observableAttribute = createObservable({id: 1});
         observableObject.attribute = observableAttribute;
         const observer = jest.fn();
         observableObject.observe(observer);
@@ -284,7 +284,7 @@ describe('Observable', () => {
       });
 
       it(`Should stop calling observers when an observable attribute has been removed`, () => {
-        const observableAttribute = new Observable([]);
+        const observableAttribute = createObservable([]);
         observableObject.attribute = observableAttribute;
 
         const observer = jest.fn();
@@ -301,21 +301,93 @@ describe('Observable', () => {
     });
   });
 
+  describe('Custom observable object', () => {
+    class ObservableObject extends Observable() {
+      constructor({id} = {}) {
+        super();
+        this._id = id;
+      }
+
+      get id() {
+        return this._id;
+      }
+
+      set id(id) {
+        this._id = id;
+        this.notify();
+      }
+    }
+
+    let observableObject;
+
+    beforeEach(() => {
+      observableObject = new ObservableObject({id: 1});
+    });
+
+    it('Should be an observable', () => {
+      expect(isObservable(observableObject)).toBe(true);
+    });
+
+    it('Should be usable as the target of a new observable', () => {
+      const newObservableObject = createObservable(observableObject);
+      expect(isObservable(newObservableObject)).toBe(true);
+    });
+
+    it('Should call observers when notify() is called', () => {
+      const observer = jest.fn();
+      observableObject.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
+      observableObject.notify();
+      expect(observer).toHaveBeenCalled();
+    });
+
+    it('Should call observers when changing an attribute', () => {
+      const observer = jest.fn();
+      observableObject.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
+      observableObject.id = 2;
+      expect(observer).toHaveBeenCalled();
+    });
+
+    it(`Shouldn't call removed observers`, () => {
+      const observer1 = jest.fn();
+      observableObject.observe(observer1);
+
+      const observer2 = jest.fn();
+      observableObject.observe(observer2);
+
+      observableObject.id = 2;
+
+      const numberOfCalls1 = observer1.mock.calls.length;
+      const numberOfCalls2 = observer2.mock.calls.length;
+
+      expect(numberOfCalls1).not.toBe(0);
+      expect(numberOfCalls2).not.toBe(0);
+
+      observableObject.unobserve(observer1);
+
+      observableObject.id = 3;
+
+      expect(observer1.mock.calls.length).toBe(numberOfCalls1);
+      expect(observer2.mock.calls.length).not.toBe(numberOfCalls1);
+    });
+  });
+
   describe('Unobservable value', () => {
     it('Should not be possible to observe a primitive', () => {
-      expect(Observable.canBeObserved(true)).toBe(false);
+      expect(canBecomeObservable(true)).toBe(false);
 
-      expect(Observable.canBeObserved(1)).toBe(false);
+      expect(canBecomeObservable(1)).toBe(false);
 
-      expect(Observable.canBeObserved('Hello')).toBe(false);
+      expect(canBecomeObservable('Hello')).toBe(false);
 
-      expect(Observable.canBeObserved(new Date())).toBe(false);
+      expect(canBecomeObservable(new Date())).toBe(false);
 
-      expect(Observable.canBeObserved(undefined)).toBe(false);
+      expect(canBecomeObservable(undefined)).toBe(false);
 
-      expect(Observable.canBeObserved(null)).toBe(false);
+      expect(canBecomeObservable(null)).toBe(false);
 
-      expect(() => new Observable('Hello')).toThrow(
+      expect(() => createObservable('Hello')).toThrow(
         /Observable target must be an object or an array/
       );
     });

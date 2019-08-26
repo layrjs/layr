@@ -1,4 +1,5 @@
-import {Observable, mapFromOneOrMany} from '@liaison/util';
+import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
+import {mapFromOneOrMany} from '@liaison/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';
@@ -105,8 +106,8 @@ export class Field {
   setValue(value, {source} = {}) {
     this.checkValue(value);
 
-    if (Observable.canBeObserved(value) && !(value instanceof Observable)) {
-      value = new Observable(value);
+    if (canBecomeObservable(value) && !isObservable(value)) {
+      value = createObservable(value);
     }
 
     const previousValue = this._value;
@@ -116,10 +117,10 @@ export class Field {
     this._source = source;
 
     if (value !== previousValue) {
-      if (previousValue instanceof Observable) {
+      if (isObservable(previousValue)) {
         previousValue.unobserve(this._parent._getNotifier());
       }
-      if (value instanceof Observable) {
+      if (isObservable(value)) {
         value.observe(this._parent._getNotifier());
       }
       this._parent.notify();
@@ -223,7 +224,7 @@ export class Field {
     }
 
     if (value === undefined && this._isArray) {
-      return new Observable([]);
+      return createObservable([]);
     }
 
     return value;

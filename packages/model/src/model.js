@@ -1,11 +1,12 @@
-import {inspect} from 'util';
+import {Observable} from '@liaison/observable';
 import {Registerable, Serializable} from '@liaison/layer';
 import isEmpty from 'lodash/isEmpty';
+import {inspect} from 'util';
 
 import {Field} from './field';
 import {FieldMask} from './field-mask';
 
-export class Model extends Serializable(Registerable()) {
+export class Model extends Observable(Serializable(Registerable())) {
   constructor(object = {}, {isDeserializing} = {}) {
     super(object, {isDeserializing});
 
@@ -324,41 +325,6 @@ export class Model extends Serializable(Registerable()) {
   }
 
   // === Observability ===
-
-  observe(observer) {
-    if (typeof observer !== 'function') {
-      throw new Error(`'observer' must be a function`);
-    }
-
-    const observers = this._getObservers();
-    observers.push(observer);
-  }
-
-  unobserve(observer) {
-    if (typeof observer !== 'function') {
-      throw new Error(`'observer' must be a function`);
-    }
-
-    const observers = this._getObservers();
-    const index = observers.indexOf(observer);
-    if (index !== -1) {
-      observers.splice(index, 1);
-    }
-  }
-
-  notify() {
-    const observers = this._getObservers();
-    for (const observer of observers) {
-      observer();
-    }
-  }
-
-  _getObservers() {
-    if (!Object.prototype.hasOwnProperty.call(this, '_observers')) {
-      this._observers = [];
-    }
-    return this._observers;
-  }
 
   _getNotifier() {
     if (!Object.prototype.hasOwnProperty.call(this, '_notifier')) {

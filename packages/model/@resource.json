@@ -9,9 +9,10 @@
   "dependencies": {
     "cuid": "^2.1.6",
     "fn-name": "^2.0.1",
-    "lodash": "^4.17.11",
     "@liaison/layer": "^0.1.2",
-    "@liaison/util": "^0.1.0"
+    "@liaison/observable": "^0.1.0",
+    "@liaison/util": "^0.1.0",
+    "lodash": "^4.17.11"
   },
   "tests": {
     "@include": "./tests"
