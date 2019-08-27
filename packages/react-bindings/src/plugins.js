@@ -3,7 +3,7 @@ import useForceUpdate from 'use-force-update';
 
 /* eslint-disable react-hooks/rules-of-hooks */
 
-export function RouterPlugin() {
+export function ReactRouterPlugin() {
   return function (router) {
     Object.assign(router, {
       use() {
