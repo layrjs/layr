@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import React, {useEffect} from 'react';
 import useForceUpdate from 'use-force-update';
 import {isObservable} from '@liaison/observable';
 
@@ -21,8 +21,8 @@ export function useModel(model) {
 // === Decorators ===
 
 export function view() {
-  return function (target, name, {value: component, configurable, enumerable}) {
-    if (typeof component !== 'function') {
+  return function (target, name, {value: Component, configurable, enumerable}) {
+    if (typeof Component !== 'function') {
       throw new Error(`@view() can only be used on functions`);
     }
 
@@ -32,24 +32,29 @@ export function view() {
       get() {
         const model = this;
 
-        const boundComponent = function (props) {
+        const BoundComponent = function (props, context) {
+          if (!context) {
+            // The component has been called directly (without React.createElement())
+            // TODO: This sounds quite fragile, so if possible, let's get rid of this
+            return <BoundComponent {...props} />;
+          }
           if (isObservable(model)) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useModel(model);
           }
-          return component.call(model, props);
+          return Component.call(model, props, context);
         };
-        boundComponent.displayName = name;
+        BoundComponent.displayName = name;
 
         Object.defineProperty(this, name, {
           configurable: true,
           writable: true,
           // NOT enumerable when it's a bound method
           enumerable: false,
-          value: boundComponent
+          value: BoundComponent
         });
 
-        return boundComponent;
+        return BoundComponent;
       }
     };
   };
