@@ -1,0 +1,43 @@
+{
+  "name": "@liaison/router",
+  "version": "0.1.0",
+  "description": "Route URLs to layers",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/router",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/node/cjs",
+  "module": "dist/node/esm",
+  "browser": "dist/browser/esm",
+  "dependencies": {
+    "@liaison/layer": "^0.1.0",
+    "@liaison/observable": "^0.1.0",
+    "path-parser": "^4.2.0"
+  },
+  "@managed": {
+    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
+    "properties": [
+      "name",
+      "version",
+      "description",
+      "keywords",
+      "homepage",
+      "author",
+      "contributors",
+      "license",
+      "repository",
+      "files",
+      "main",
+      "module",
+      "browser",
+      "bin",
+      "dependencies",
+      "peerDependencies",
+      "optionalDependencies",
+      "devDependencies",
+      "private"
+    ]
+  }
+}
