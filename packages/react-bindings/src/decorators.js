@@ -1,24 +1,7 @@
-import React, {useEffect} from 'react';
-import useForceUpdate from 'use-force-update';
+import React from 'react';
 import {isObservable} from '@liaison/observable';
 
-// === React hooks ===
-
-export function useModel(model) {
-  const forceUpdate = useForceUpdate();
-
-  useEffect(function () {
-    const handleChange = function () {
-      forceUpdate();
-    };
-    model.observe(handleChange);
-    return function () {
-      model.unobserve(handleChange);
-    };
-  });
-}
-
-// === Decorators ===
+import {useModel} from './hooks';
 
 export function view() {
   return function (target, name, {value: Component, configurable, enumerable}) {

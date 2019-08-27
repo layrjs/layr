@@ -12,7 +12,7 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/util": "^0.1.0",
+    "@liaison/observable": "^0.1.0",
     "use-force-update": "^1.0.7"
   },
   "@managed": {
