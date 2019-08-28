@@ -28,12 +28,10 @@ export class BrowserRouter extends Observable(Registerable()) {
   findRoute() {
     const url = this.location.href;
 
-    for (const item of this.layer.getItems()) {
-      if (isRoutable(item)) {
-        const result = item.findRoute(url);
-        if (result) {
-          return {target: item, ...result};
-        }
+    for (const item of this.layer.getItems({filter: isRoutable})) {
+      const result = item.findRoute(url);
+      if (result) {
+        return {target: item, ...result};
       }
     }
   }
