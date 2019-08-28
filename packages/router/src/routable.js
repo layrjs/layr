@@ -44,6 +44,8 @@ export const Routable = (Base = Object) =>
       }
       return this[result.route.name](result.params);
     }
+
+    static __isRoutable = true;
   };
 
 // === Decorators ===
@@ -101,4 +103,10 @@ export function route(pattern, options) {
       enumerable
     };
   };
+}
+
+// === Utilities ===
+
+export function isRoutable(object) {
+  return object !== undefined && object !== null && object.__isRoutable === true;
 }

@@ -1,6 +1,8 @@
 import {Registerable} from '@liaison/layer';
 import {Observable} from '@liaison/observable';
 
+import {isRoutable} from './routable';
+
 export class BrowserRouter extends Observable(Registerable()) {
   constructor({plugins} = {}) {
     super();
@@ -27,7 +29,7 @@ export class BrowserRouter extends Observable(Registerable()) {
     const url = this.location.href;
 
     for (const item of this.layer.getItems()) {
-      if (typeof item.findRoute === 'function') {
+      if (isRoutable(item)) {
         const result = item.findRoute(url);
         if (result) {
           return {target: item, ...result};
