@@ -1,4 +1,4 @@
-import Path from 'path-parser';
+import {Route} from './route';
 
 export const Routable = (Base = Object) =>
   class Routable extends Base {
@@ -9,9 +9,7 @@ export const Routable = (Base = Object) =>
 
     static setRoute(name, pattern, options) {
       const routes = this.getRoutes();
-      const route = {name, pattern, ...options};
-      const _parsedPattern = new Path(pattern);
-      Object.defineProperty(route, '_parsedPattern', {value: _parsedPattern});
+      const route = new Route(name, pattern, options);
       routes.set(name, route);
       return route;
     }
@@ -26,11 +24,9 @@ export const Routable = (Base = Object) =>
     }
 
     static findRoute(url) {
-      const {pathname} = new URL(url);
-
       const routes = this.getRoutes();
       for (const route of routes.values()) {
-        const result = route._parsedPattern.test(pathname);
+        const result = route.test(url);
         if (result) {
           return {route, params: result};
         }
