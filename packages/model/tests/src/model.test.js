@@ -64,8 +64,8 @@ describe('Model', () => {
     const layer = new Layer({Movie, Actor});
 
     let movie = new layer.Movie();
-    expect(movie.genres).toEqual([]);
-    expect(movie.actors).toEqual([]);
+    expect(movie.genres).toBe(undefined);
+    expect(movie.actors).toBe(undefined);
 
     movie = new layer.Movie({
       title: 'Inception',
@@ -181,7 +181,7 @@ describe('Model', () => {
 
       @field('number?', {validators: [greaterThanOrEqual(1900)]}) year;
 
-      @field('string[]', {validators: [maxLength(3), [notEmpty()]]}) genres;
+      @field('string[]?', {validators: [maxLength(3), [notEmpty()]]}) genres;
 
       @field('string?', {
         validators: [
@@ -311,11 +311,11 @@ describe('Model', () => {
 
       @field('Date?') releasedOn;
 
-      @field('string[]') genres;
+      @field('string[]?') genres;
 
       @field('TechnicalSpecs?') technicalSpecs;
 
-      @field('Actor[]') actors;
+      @field('Actor[]?') actors;
     }
 
     class TechnicalSpecs extends Model {
@@ -337,9 +337,9 @@ describe('Model', () => {
       title: null,
       country: null,
       releasedOn: null,
-      genres: [],
+      genres: null,
       technicalSpecs: null,
-      actors: []
+      actors: null
     });
 
     movie.title = 'Inception';
@@ -349,9 +349,9 @@ describe('Model', () => {
       title: 'Inception',
       country: null,
       releasedOn: null,
-      genres: [],
+      genres: null,
       technicalSpecs: null,
-      actors: []
+      actors: null
     });
 
     movie.country = 'USA';
@@ -361,9 +361,9 @@ describe('Model', () => {
       title: 'Inception',
       country: 'USA',
       releasedOn: null,
-      genres: [],
+      genres: null,
       technicalSpecs: null,
-      actors: []
+      actors: null
     });
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
@@ -373,9 +373,9 @@ describe('Model', () => {
       title: 'Inception',
       country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-      genres: [],
+      genres: null,
       technicalSpecs: null,
-      actors: []
+      actors: null
     });
 
     movie.genres = ['action', 'adventure', 'sci-fi'];
@@ -387,7 +387,7 @@ describe('Model', () => {
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: null,
-      actors: []
+      actors: null
     });
 
     movie.technicalSpecs = new layer.TechnicalSpecs({aspectRatio: '2.39:1'});
@@ -399,7 +399,7 @@ describe('Model', () => {
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_type: 'TechnicalSpecs', _new: true, aspectRatio: '2.39:1'},
-      actors: []
+      actors: null
     });
 
     movie.actors = [
@@ -434,9 +434,9 @@ describe('Model', () => {
       title: null,
       country: null,
       releasedOn: null,
-      genres: [],
+      genres: null,
       technicalSpecs: null,
-      actors: []
+      actors: null
     });
 
     movie = layer.Movie.deserialize({title: 'Inception'});
@@ -452,9 +452,9 @@ describe('Model', () => {
       title: 'Inception',
       country: null,
       releasedOn: null,
-      genres: [],
+      genres: null,
       technicalSpecs: null,
-      actors: []
+      actors: null
     });
 
     movie = layer.Movie.deserialize({

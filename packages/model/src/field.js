@@ -30,13 +30,17 @@ export class Field {
     let scalarType;
     let scalarIsOptional;
     let scalarValidators;
-    const isArray = type.endsWith('[]');
+
+    const isArray = type.endsWith('[]') || type.endsWith('[]?');
+    let arrayIsOptional;
 
     if (isArray) {
-      if (type.includes('?')) {
-        throw new Error(`An array type cannot be optional (field: '${name}')`);
+      if (type.endsWith('?')) {
+        arrayIsOptional = true;
+        scalarType = type.slice(0, -3);
+      } else {
+        scalarType = type.slice(0, -2);
       }
-      scalarType = type.slice(0, -2);
       const index = validators.findIndex(validator => Array.isArray(validator));
       if (index !== -1) {
         scalarValidators = validators[index];
@@ -48,11 +52,13 @@ export class Field {
       scalarType = type;
       scalarValidators = validators;
       validators = [];
-      if (scalarType.endsWith('?')) {
-        scalarIsOptional = true;
-        scalarType = scalarType.slice(0, -1);
-      }
     }
+
+    if (scalarType.endsWith('?')) {
+      scalarIsOptional = true;
+      scalarType = scalarType.slice(0, -1);
+    }
+
     if (!scalarType) {
       throw new Error("'type' parameter is invalid");
     }
@@ -63,6 +69,7 @@ export class Field {
     });
     this._validators = validators;
     this._isArray = isArray;
+    this._arrayIsOptional = arrayIsOptional;
     this._default = defaultValue;
     this._isActive = false;
     this._value = undefined;
@@ -134,12 +141,12 @@ export class Field {
       [Symbol.iterator]: () => {
         const value = this.getValue();
         let values;
-        if (this._isArray) {
-          values = value;
-        } else if (value !== undefined) {
-          values = [value];
-        } else {
+        if (value === undefined) {
           values = [];
+        } else if (this._isArray) {
+          values = value;
+        } else {
+          values = [value];
         }
         return values[Symbol.iterator]();
       }
@@ -201,6 +208,12 @@ export class Field {
     const value = this.getValue();
     if (this._isArray) {
       const values = value;
+      if (values === undefined) {
+        if (!this._arrayIsOptional) {
+          return [REQUIRED_VALIDATOR_NAME];
+        }
+        return undefined;
+      }
       let failedValidators = runValidators(values, this._validators);
       const failedScalarValidators = values.map(value =>
         this._scalar.getFailedValidators(value, {fields})
@@ -218,15 +231,9 @@ export class Field {
 
   getDefaultValue() {
     let value = this._default;
-
     while (typeof value === 'function') {
       value = value.call(this._parent);
     }
-
-    if (value === undefined && this._isArray) {
-      return createObservable([]);
-    }
-
     return value;
   }
 
