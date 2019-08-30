@@ -1,7 +1,7 @@
 {
   "@import": "1place/js-repository#^0.1.0",
-  "model": {
-    "@include": "./packages/model"
+  "document": {
+    "@include": "./packages/document"
   },
   "layer": {
     "@include": "./packages/layer"
@@ -12,14 +12,20 @@
   "layerHTTPServer": {
     "@include": "./packages/layer-http-server"
   },
-  "document": {
-    "@include": "./packages/document"
+  "liaison": {
+    "@include": "./packages/liaison"
+  },
+  "model": {
+    "@include": "./packages/model"
   },
   "mongoDBStore": {
     "@include": "./packages/mongodb-store"
   },
   "observable": {
     "@include": "./packages/observable"
+  },
+  "promisable": {
+    "@include": "./packages/promisable"
   },
   "reactBindings": {
     "@include": "./packages/react-bindings"
@@ -30,18 +36,21 @@
   "link": {
     "@type": "method",
     "@run": [
-      "(@import shell/bash) run \"npm-link ./packages/model\"",
-      "(@import shell/bash) run \"npm-link ./packages/model/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/document\"",
+      "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/layer\"",
       "(@import shell/bash) run \"npm-link ./packages/layer/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/layer-http-client\"",
       "(@import shell/bash) run \"npm-link ./packages/layer-http-server\"",
-      "(@import shell/bash) run \"npm-link ./packages/document\"",
-      "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/liaison\"",
+      "(@import shell/bash) run \"npm-link ./packages/model\"",
+      "(@import shell/bash) run \"npm-link ./packages/model/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/mongodb-store\"",
       "(@import shell/bash) run \"npm-link ./packages/mongodb-store/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/observable\"",
       "(@import shell/bash) run \"npm-link ./packages/observable/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/promisable\"",
+      "(@import shell/bash) run \"npm-link ./packages/promisable/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/react-bindings\"",
       "(@import shell/bash) run \"npm-link ./packages/util\"",
       "(@import shell/bash) run \"npm-link ./packages/util/tests\""
