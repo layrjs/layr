@@ -1,3 +1,5 @@
+import {ObserverSet} from '@liaison/observable';
+
 import {isPromise} from './is-promise';
 
 export function createPromiseWithStatus(promise) {
@@ -9,21 +11,34 @@ export function createPromiseWithStatus(promise) {
     return promise;
   }
 
+  const observers = new ObserverSet();
+
   const promiseWithStatus = promise.then(
-    value => {
+    function (value) {
       promiseWithStatus.status = 'fulfilled';
       promiseWithStatus.fulfilledValue = value;
+      observers.call();
       return value;
     },
-    reason => {
+    function (reason) {
       promiseWithStatus.status = 'rejected';
       promiseWithStatus.rejectionReason = reason;
+      observers.call();
       throw reason;
     }
   );
 
   promiseWithStatus.status = 'pending';
+
   promiseWithStatus.originalPromise = promise;
+
+  promiseWithStatus.observe = function (observer) {
+    observers.add(observer);
+  };
+
+  promiseWithStatus.unobserve = function (observer) {
+    observers.remove(observer);
+  };
 
   return promiseWithStatus;
 }

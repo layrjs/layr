@@ -1,4 +1,4 @@
-import {Promisable, makePromisable} from '../../..';
+import {Promisable, createPromisable} from '../../..';
 
 describe('Promisable', () => {
   class PromisableObject extends Promisable() {}
@@ -11,7 +11,7 @@ describe('Promisable', () => {
 
   test('Zero promise', async () => {
     const result = await promisableObject;
-    expect(result).toEqual([]);
+    expect(result).toBe(promisableObject);
   });
 
   test('One promise', async () => {
@@ -19,7 +19,7 @@ describe('Promisable', () => {
     promisableObject.addPromise(timer.start());
     expect(timer.isRunning).toBe(true);
     const result = await promisableObject;
-    expect(result).toEqual([timer]);
+    expect(result).toBe(promisableObject);
     expect(timer.isRunning).toBe(false);
   });
 
@@ -34,7 +34,7 @@ describe('Promisable', () => {
     expect(timer2.isRunning).toBe(true);
     expect(timer3.isRunning).toBe(true);
     const result = await promisableObject;
-    expect(result).toEqual([timer1, timer2, timer3]);
+    expect(result).toBe(promisableObject);
     expect(timer1.isRunning).toBe(false);
     expect(timer2.isRunning).toBe(false);
     expect(timer3.isRunning).toBe(false);
@@ -47,14 +47,14 @@ describe('Promisable', () => {
     expect(timer1.isRunning).toBe(true);
     promisableObject
       .then(result => {
-        expect(result).toEqual([timer1]);
+        expect(result).toBe(promisableObject);
         expect(timer1.isRunning).toBe(false);
         promisableObject.addPromise(timer2.start());
         expect(timer2.isRunning).toBe(true);
         return promisableObject;
       })
       .then(result => {
-        expect(result).toEqual([timer2]);
+        expect(result).toBe(promisableObject);
         expect(timer1.isRunning).toBe(false);
         expect(timer2.isRunning).toBe(false);
         done();
@@ -163,8 +163,8 @@ describe('Promisable', () => {
     expect(promisableObject.getPromises()).toEqual([]);
   });
 
-  test('makePromisable()', async () => {
-    const promisableArray = makePromisable([]);
+  test('createPromisable()', async () => {
+    const promisableArray = createPromisable([]);
 
     const promise = (async () => {
       await new Timer(30).start();
