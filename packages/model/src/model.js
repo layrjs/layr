@@ -324,15 +324,6 @@ export class Model extends Observable(Serializable(Registerable())) {
     return result;
   }
 
-  // === Observability ===
-
-  _getNotifier() {
-    if (!Object.prototype.hasOwnProperty.call(this, '_notifier')) {
-      this._notifier = this.notify.bind(this);
-    }
-    return this._notifier;
-  }
-
   // === Utilities ===
 
   static isModel(object) {

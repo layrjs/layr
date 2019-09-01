@@ -125,10 +125,10 @@ export class Field {
 
     if (value !== previousValue) {
       if (isObservable(previousValue)) {
-        previousValue.unobserve(this._parent._getNotifier());
+        previousValue.unobserve(this._parent);
       }
       if (isObservable(value)) {
-        value.observe(this._parent._getNotifier());
+        value.observe(this._parent);
       }
       this._parent.notify();
     }
