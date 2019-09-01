@@ -119,22 +119,22 @@ export function createObservable(target) {
   return new Proxy(target, handler);
 }
 
-class ObserverSet {
+export class ObserverSet {
   constructor() {
     this._observers = [];
   }
 
   add(observer) {
-    if (typeof observer !== 'function') {
-      throw new Error(`'observer' must be a function`);
+    if (!(typeof observer === 'function' || isObservable(observer))) {
+      throw new Error(`'observer' must be a function or an observable`);
     }
 
     this._observers.push(observer);
   }
 
   remove(observer) {
-    if (typeof observer !== 'function') {
-      throw new Error(`'observer' must be a function`);
+    if (!(typeof observer === 'function' || isObservable(observer))) {
+      throw new Error(`'observer' must be a function or an observable`);
     }
 
     const index = this._observers.indexOf(observer);
@@ -145,7 +145,12 @@ class ObserverSet {
 
   call() {
     for (const observer of this._observers) {
-      observer();
+      if (typeof observer === 'function') {
+        observer();
+      } else {
+        // The observer is an observable
+        observer.notify();
+      }
     }
   }
 }
