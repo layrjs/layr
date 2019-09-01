@@ -4,13 +4,25 @@ import useForceUpdate from 'use-force-update';
 export function useModel(model) {
   const forceUpdate = useForceUpdate();
 
-  useEffect(function () {
-    const handleChange = function () {
-      forceUpdate();
-    };
-    model.observe(handleChange);
-    return function () {
-      model.unobserve(handleChange);
-    };
-  });
+  useEffect(
+    function () {
+      let deferredForceUpdate = false;
+      const deferForceUpdate = function () {
+        if (!deferredForceUpdate) {
+          deferredForceUpdate = true;
+          setTimeout(function () {
+            deferredForceUpdate = false;
+            forceUpdate();
+          }, 10);
+        }
+      };
+
+      model.observe(deferForceUpdate);
+
+      return function () {
+        model.unobserve(deferForceUpdate);
+      };
+    },
+    [model, forceUpdate]
+  );
 }
