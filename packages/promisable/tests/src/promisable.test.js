@@ -1,180 +1,61 @@
-import {Promisable, createPromisable} from '../../..';
+import {createPromisable} from '../../..';
 
 describe('Promisable', () => {
-  class PromisableObject extends Promisable() {}
+  test('Proxy', async () => {
+    const object = {};
+    const promisableObject = createPromisable(object, Promise.resolve());
+    expect(promisableObject).not.toBe(object);
 
-  let promisableObject;
-
-  beforeEach(() => {
-    promisableObject = new PromisableObject();
+    expect(promisableObject.attribute).toBe(undefined);
+    promisableObject.attribute = 'value';
+    expect(promisableObject.attribute).toBe('value');
+    expect(object.attribute).toBe('value');
   });
 
-  test('Zero promise', async () => {
-    const result = await promisableObject;
-    expect(result).toBe(promisableObject);
-  });
-
-  test('One promise', async () => {
+  test('await promisable', async () => {
+    const object = {};
     const timer = new Timer(30);
-    promisableObject.addPromise(timer.start());
+    const promisableObject = createPromisable(object, timer.start());
+
+    expect(promisableObject).not.toBe(object);
+
     expect(timer.isRunning).toBe(true);
     const result = await promisableObject;
-    expect(result).toBe(promisableObject);
+    expect(result).toBe(object);
     expect(timer.isRunning).toBe(false);
   });
 
-  test('Several promises', async () => {
-    const timer1 = new Timer(30);
-    const timer2 = new Timer(40);
-    const timer3 = new Timer(20);
-    promisableObject.addPromise(timer1.start());
-    promisableObject.addPromise(timer2.start());
-    promisableObject.addPromise(timer3.start());
-    expect(timer1.isRunning).toBe(true);
-    expect(timer2.isRunning).toBe(true);
-    expect(timer3.isRunning).toBe(true);
-    const result = await promisableObject;
-    expect(result).toBe(promisableObject);
-    expect(timer1.isRunning).toBe(false);
-    expect(timer2.isRunning).toBe(false);
-    expect(timer3.isRunning).toBe(false);
-  });
+  test('promisable.then()', done => {
+    const object = {};
+    const timer = new Timer(30);
+    const promisableObject = createPromisable(object, timer.start());
 
-  test('then()', done => {
-    const timer1 = new Timer(30);
-    const timer2 = new Timer(20);
-    promisableObject.addPromise(timer1.start());
-    expect(timer1.isRunning).toBe(true);
-    promisableObject
-      .then(result => {
-        expect(result).toBe(promisableObject);
-        expect(timer1.isRunning).toBe(false);
-        promisableObject.addPromise(timer2.start());
-        expect(timer2.isRunning).toBe(true);
-        return promisableObject;
-      })
-      .then(result => {
-        expect(result).toBe(promisableObject);
-        expect(timer1.isRunning).toBe(false);
-        expect(timer2.isRunning).toBe(false);
-        done();
-      });
+    expect(promisableObject).not.toBe(object);
+
+    expect(timer.isRunning).toBe(true);
+    promisableObject.then(result => {
+      expect(result).toBe(object);
+      expect(timer.isRunning).toBe(false);
+      done();
+    });
   });
 
   test('Error', async () => {
+    const object = {};
     const timer = new Timer(30, {throwError: new Error('The timer has thrown an error')});
-    promisableObject.addPromise(timer.start());
+    const promisableObject = createPromisable(object, timer.start());
+
     expect(timer.isRunning).toBe(true);
     await expect(promisableObject).rejects.toThrow(/The timer has thrown an error/);
     expect(timer.isRunning).toBe(false);
   });
 
-  test('Pending status', async () => {
-    expect(promisableObject.isPending()).toBe(false);
-    const timer1 = new Timer(10);
-    const timer2 = new Timer(30);
-    promisableObject.addPromise(timer1.start());
-    promisableObject.addPromise(timer2.start());
-    expect(promisableObject.isPending()).toBe(true);
-    await new Timer(20).start();
-    expect(promisableObject.isPending()).toBe(true);
-    await new Timer(20).start();
-    expect(promisableObject.isPending()).toBe(false);
-  });
+  test('getPromise()', async () => {
+    const object = {};
+    const promise = Promise.resolve();
+    const promisableObject = createPromisable(object, promise);
 
-  test('Promise statuses without rejection', async () => {
-    expect(promisableObject.isPending()).toBe(false);
-    expect(promisableObject.isFulfilled()).toBe(true);
-    expect(promisableObject.isRejected()).toBe(false);
-    expect(promisableObject.getFulfilledValues()).toEqual([]);
-    expect(promisableObject.getRejectionReasons()).toEqual([]);
-
-    const timer1 = new Timer(10);
-    const timer2 = new Timer(30);
-    promisableObject.addPromise(timer1.start());
-    promisableObject.addPromise(timer2.start());
-    expect(promisableObject.isPending()).toBe(true);
-    expect(promisableObject.isFulfilled()).toBe(false);
-    expect(promisableObject.isRejected()).toBe(false);
-    expect(promisableObject.getFulfilledValues()).toEqual([]);
-    expect(promisableObject.getRejectionReasons()).toEqual([]);
-
-    await new Timer(20).start();
-    expect(promisableObject.isPending()).toBe(true);
-    expect(promisableObject.isFulfilled()).toBe(false);
-    expect(promisableObject.isRejected()).toBe(false);
-    expect(promisableObject.getFulfilledValues()).toEqual([timer1]);
-    expect(promisableObject.getRejectionReasons()).toEqual([]);
-
-    await new Timer(20).start();
-    expect(promisableObject.isPending()).toBe(false);
-    expect(promisableObject.isFulfilled()).toBe(true);
-    expect(promisableObject.isRejected()).toBe(false);
-    expect(promisableObject.getFulfilledValues()).toEqual([timer1, timer2]);
-    expect(promisableObject.getRejectionReasons()).toEqual([]);
-  });
-
-  test('Promise statuses with rejection', async () => {
-    expect(promisableObject.isPending()).toBe(false);
-    expect(promisableObject.isFulfilled()).toBe(true);
-    expect(promisableObject.isRejected()).toBe(false);
-    expect(promisableObject.getFulfilledValues()).toEqual([]);
-    expect(promisableObject.getRejectionReasons()).toEqual([]);
-
-    const error1 = new Error('Timer1 has thrown an error');
-    const timer1 = new Timer(10, {throwError: error1});
-    const timer2 = new Timer(30);
-    promisableObject.addPromise(timer1.start()).catch(() => {}); // Let's avoid unhandled exceptions
-    promisableObject.addPromise(timer2.start());
-    expect(promisableObject.isPending()).toBe(true);
-    expect(promisableObject.isFulfilled()).toBe(false);
-    expect(promisableObject.isRejected()).toBe(false);
-    expect(promisableObject.getFulfilledValues()).toEqual([]);
-    expect(promisableObject.getRejectionReasons()).toEqual([]);
-
-    await new Timer(20).start();
-    expect(promisableObject.isPending()).toBe(false);
-    expect(promisableObject.isFulfilled()).toBe(false);
-    expect(promisableObject.isRejected()).toBe(true);
-    expect(promisableObject.getFulfilledValues()).toEqual([]);
-    expect(promisableObject.getRejectionReasons()).toEqual([error1]);
-
-    await new Timer(20).start();
-    expect(promisableObject.isPending()).toBe(false);
-    expect(promisableObject.isFulfilled()).toBe(false);
-    expect(promisableObject.isRejected()).toBe(true);
-    expect(promisableObject.getFulfilledValues()).toEqual([timer2]);
-    expect(promisableObject.getRejectionReasons()).toEqual([error1]);
-
-    expect(() => {
-      const timer3 = new Timer(20);
-      promisableObject.addPromise(timer3.start());
-    }).toThrow(/Cannot add a new promise when an older one has been rejected/);
-  });
-
-  test('getPromises()', async () => {
-    expect(promisableObject.getPromises()).toEqual([]);
-    const promise1 = new Timer(30).start();
-    const promise2 = new Timer(40).start();
-    promisableObject.addPromise(promise1);
-    promisableObject.addPromise(promise2);
-    expect(promisableObject.getPromises()).toEqual([promise1, promise2]);
-    await promisableObject;
-    expect(promisableObject.getPromises()).toEqual([]);
-  });
-
-  test('createPromisable()', async () => {
-    const promisableArray = createPromisable([]);
-
-    const promise = (async () => {
-      await new Timer(30).start();
-      promisableArray.push(1, 2, 3);
-    })();
-    promisableArray.addPromise(promise);
-
-    expect(promisableArray).toEqual([]);
-    await promisableArray;
-    expect(promisableArray).toEqual([1, 2, 3]);
+    expect(promisableObject.getPromise()).toBe(promise);
   });
 });
 
