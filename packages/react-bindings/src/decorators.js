@@ -13,19 +13,17 @@ export function view() {
       configurable,
       enumerable,
       get() {
-        const model = this;
-
-        const BoundComponent = function (props, context) {
+        const BoundComponent = (props, context) => {
           if (!context) {
             // The component has been called directly (without React.createElement())
             // TODO: This sounds quite fragile, so if possible, let's get rid of this
             return <BoundComponent {...props} />;
           }
-          if (isObservable(model)) {
+          if (isObservable(this)) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            useModel(model);
+            useModel(this);
           }
-          return Component.call(model, props, context);
+          return Component.call(this, props, context);
         };
         BoundComponent.displayName = name;
 
