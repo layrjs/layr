@@ -6,13 +6,17 @@ export function useModel(model) {
 
   useEffect(
     function () {
+      let isMounted = true;
+
       let deferredForceUpdate = false;
       const deferForceUpdate = function () {
         if (!deferredForceUpdate) {
           deferredForceUpdate = true;
           setTimeout(function () {
             deferredForceUpdate = false;
-            forceUpdate();
+            if (isMounted) {
+              forceUpdate();
+            }
           }, 10);
         }
       };
@@ -20,6 +24,7 @@ export function useModel(model) {
       model.observe(deferForceUpdate);
 
       return function () {
+        isMounted = false;
         model.unobserve(deferForceUpdate);
       };
     },
