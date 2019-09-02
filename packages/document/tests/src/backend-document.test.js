@@ -1,8 +1,9 @@
 import {Layer} from '@liaison/layer';
+import {Model, field} from '@liaison/model';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
-import {Document, Subdocument, Model, field} from '../../..';
+import {Document, Subdocument} from '../../..';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 3 * 60 * 1000; // 3 minutes
 
@@ -22,7 +23,7 @@ afterEach(async () => {
 });
 
 describe('Backend Document', () => {
-  test.only('CRUD operations', async () => {
+  test('CRUD operations', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -85,6 +86,12 @@ describe('Backend Document', () => {
     expect(movie.getField('title').isActive()).toBe(false);
     expect(movie.getField('year').isActive()).toBe(false);
 
+    layer = rootLayer.fork();
+    movie = layer.Movie.get(id);
+    expect(movie.isLoading()).toBe(true);
+    await movie;
+    expect(movie.isLoading()).toBe(false);
+
     // Update
 
     layer = rootLayer.fork();
@@ -116,7 +123,7 @@ describe('Backend Document', () => {
     await expect(layer.Movie.get(id)).rejects.toThrow(/Document not found/);
   });
 
-  test('Nesting models', async () => {
+  test.skip('Nesting models', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -169,7 +176,7 @@ describe('Backend Document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test('Subdocuments', async () => {
+  test.skip('Subdocuments', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -262,7 +269,7 @@ describe('Backend Document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test.only('Finding documents', async () => {
+  test('Finding documents', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -339,7 +346,7 @@ describe('Backend Document', () => {
     await layer.Movie.delete(movies);
   });
 
-  test('Reloading documents', async () => {
+  test.skip('Reloading documents', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -375,7 +382,7 @@ describe('Backend Document', () => {
     await movie.delete();
   });
 
-  test('Referenced documents', async () => {
+  test.skip('Referenced documents', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -464,7 +471,7 @@ describe('Backend Document', () => {
     await director.delete();
   });
 
-  test('Arrays of referenced document', async () => {
+  test.skip('Arrays of referenced document', async () => {
     class Movie extends Document {
       @field('string') title;
 
@@ -562,7 +569,7 @@ describe('Backend Document', () => {
     expect(actor).toBeUndefined();
   });
 
-  test('Hooks', async () => {
+  test.skip('Hooks', async () => {
     const HookMixin = Base =>
       class extends Base {
         afterLoadCount = 0;
