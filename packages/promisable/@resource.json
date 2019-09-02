@@ -6,9 +6,7 @@
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/promisable",
-  "dependencies": {
-    "@liaison/observable": "^0.1.0"
-  },
+  "dependencies": {},
   "tests": {
     "@include": "./tests"
   }
