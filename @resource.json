@@ -30,6 +30,9 @@
   "reactBindings": {
     "@include": "./packages/react-bindings"
   },
+  "trackable": {
+    "@include": "./packages/trackable"
+  },
   "util": {
     "@include": "./packages/util"
   },
@@ -52,6 +55,7 @@
       "(@import shell/bash) run \"npm-link ./packages/promisable\"",
       "(@import shell/bash) run \"npm-link ./packages/promisable/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/react-bindings\"",
+      "(@import shell/bash) run \"npm-link ./packages/trackable\"",
       "(@import shell/bash) run \"npm-link ./packages/util\"",
       "(@import shell/bash) run \"npm-link ./packages/util/tests\""
     ]

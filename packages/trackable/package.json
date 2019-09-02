@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/liaison",
+  "name": "@liaison/trackable",
   "version": "0.1.0",
-  "description": "Convenience package exporting core Liaison's packages",
+  "description": "Provide a way to track operations that are running for a given instance",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/liaison",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/trackable",
   "files": [
     "dist"
   ],
@@ -12,14 +12,7 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/document": "^0.1.0",
-    "@liaison/layer": "^0.1.0",
-    "@liaison/model": "^0.1.0",
-    "@liaison/observable": "^0.1.0",
-    "@liaison/promisable": "^0.1.0",
-    "@liaison/router": "^0.1.0",
-    "@liaison/trackable": "^0.1.0",
-    "@liaison/util": "^0.1.0"
+    "@liaison/observable": "^0.1.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
