@@ -21,6 +21,10 @@ export class EntityModel extends IdentityModel {
     return {...super.serialize({target, fields: false, isDeep: true}), _ref: true};
   }
 
+  clone() {
+    return this.constructor.deserialize({...this.serialize(), _id: undefined});
+  }
+
   getFailedValidators({fields, isDeep} = {}) {
     if (isDeep) {
       return undefined;
@@ -31,7 +35,7 @@ export class EntityModel extends IdentityModel {
   static getInstance(object, _previousInstance) {
     const id = object?._id;
     if (id === undefined) {
-      throw new Error(`Entity 'id' is missing`);
+      return undefined;
     }
     return this._instances?.get(id);
   }
@@ -39,7 +43,7 @@ export class EntityModel extends IdentityModel {
   static setInstance(instance) {
     const id = instance?._id;
     if (id === undefined) {
-      throw new Error(`Entity 'id' is missing`);
+      return;
     }
     if (!Object.prototype.hasOwnProperty.call(this, '_instances')) {
       this._instances = new Map(this._instances);

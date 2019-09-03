@@ -13,8 +13,6 @@ export class IdentityModel extends Model {
       id = object._id;
       if (id !== undefined) {
         this.constructor.validateId(id);
-      } else {
-        throw new Error(`Identity 'id' is missing`);
       }
     } else {
       id = object.id;
