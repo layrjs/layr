@@ -16,20 +16,37 @@ export class Route {
   }
 
   test(url) {
-    const {pathname} = new URL(url);
+    const {pathname, search} = new URL(url);
 
-    const result = this._parsedPattern.test(pathname);
+    const path = pathname + search;
+
+    const result = this._parsedPattern.test(path);
     if (result) {
       return result;
     }
 
     if (this.aliases) {
       for (const parsedAlias of this._parsedAliases) {
-        const result = parsedAlias.test(pathname);
+        const result = parsedAlias.test(path);
         if (result) {
           return result;
         }
       }
     }
+  }
+
+  build(params) {
+    const parsedPattern = this._parsedPattern;
+
+    // Since 'path-parser' ignore getters, let's call them explicitly
+    const actualParams = {};
+    for (const name of parsedPattern.params) {
+      const value = params[name];
+      if (value !== undefined) {
+        actualParams[name] = value;
+      }
+    }
+
+    return parsedPattern.build(actualParams);
   }
 }

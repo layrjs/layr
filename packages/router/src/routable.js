@@ -60,18 +60,7 @@ export function route(pattern, options) {
       }
 
       func.getPath = function (params) {
-        const parsedPattern = route._parsedPattern;
-
-        // Since 'path-parser' ignore getters, let's call them explicitly
-        const actualParams = {};
-        for (const name of parsedPattern.params) {
-          const value = params[name];
-          if (value !== undefined) {
-            actualParams[name] = value;
-          }
-        }
-
-        return parsedPattern.build(actualParams);
+        return route.build(params);
       };
 
       func.navigate = function (params, {replace = false} = {}) {
