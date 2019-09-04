@@ -1,26 +1,32 @@
 import {ModelList} from '@liaison/model';
 import {createPromisable} from '@liaison/promisable';
-import {Trackable} from '@liaison/trackable';
+import {Trackable, Task} from '@liaison/trackable';
 
 export const DocumentList = documentModelName =>
   class DocumentList extends Trackable(ModelList(documentModelName)) {
     find(options) {
       const Document = this.layer.get(documentModelName);
 
-      this.getTracker().startOperation('finding');
+      const task = new Task('finding', async () => {
+        this.items = await Document.find(options);
+      });
 
-      const promise = (async () => {
-        try {
-          this.items = await Document.find(options);
-        } finally {
-          this.getTracker().stopOperation('finding');
-        }
-      })();
+      this.getTracker().addTask(task);
+
+      const promise = task.start();
 
       return createPromisable(this, promise);
     }
 
     isFinding() {
-      return this.getTracker().hasOperation('finding');
+      return this.getTracker().hasRunningTask('finding');
+    }
+
+    findingFailed() {
+      return this.getTracker().hasFailedTask('finding');
+    }
+
+    retryFinding() {
+      return this.getTracker().retryTask('finding');
     }
   };
