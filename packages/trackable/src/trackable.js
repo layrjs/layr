@@ -1,4 +1,6 @@
-import {Observable, isObservable} from '@liaison/observable';
+import {isObservable} from '@liaison/observable';
+
+import {Tracker} from './tracker';
 
 export const Trackable = (Base = Object) =>
   class Trackable extends Base {
@@ -14,31 +16,3 @@ export const Trackable = (Base = Object) =>
       return this._tracker;
     }
   };
-
-class Tracker extends Observable() {
-  constructor() {
-    super();
-    this._operations = {};
-  }
-
-  startOperation(name) {
-    this._operations[name] = (this._operations[name] || 0) + 1;
-    this.notify();
-  }
-
-  stopOperation(name) {
-    const count = this._operations[name] || 0;
-    if (!(count > 0)) {
-      throw new Error(
-        `\`startOperation()\` must be called before \`stopOperation()\` (name: '${name}')`
-      );
-    }
-    this._operations[name] = count - 1;
-    this.notify();
-  }
-
-  hasOperation(name) {
-    const count = this._operations[name] || 0;
-    return count > 0;
-  }
-}
