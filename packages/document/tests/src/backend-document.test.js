@@ -86,12 +86,6 @@ describe('Backend Document', () => {
     expect(movie.getField('title').isActive()).toBe(false);
     expect(movie.getField('year').isActive()).toBe(false);
 
-    layer = rootLayer.fork();
-    movie = layer.Movie.get(id);
-    expect(movie.isLoading()).toBe(true);
-    await movie;
-    expect(movie.isLoading()).toBe(false);
-
     // Update
 
     layer = rootLayer.fork();

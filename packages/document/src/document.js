@@ -1,36 +1,32 @@
 import {EntityModel, FieldMask} from '@liaison/model';
 import {expose} from '@liaison/layer';
-import {createPromisable} from '@liaison/promisable';
-import {Trackable, Task} from '@liaison/trackable';
 
 import {DocumentNode} from './document-node';
 
-export class Document extends DocumentNode(Trackable(EntityModel)) {
-  static get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
+export class Document extends DocumentNode(EntityModel) {
+  static async get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(ids)) {
-      return this.get([ids], {fields, populate, throwIfNotFound})[0];
+      return (await this.get([ids], {fields, populate, throwIfNotFound}))[0];
     }
 
     for (const id of ids) {
       this.validateId(id);
     }
 
-    let documents = ids.map(id => this.deserialize({_id: id}));
-
-    documents = this.load(documents, {fields, reload, populate, throwIfNotFound});
-
+    const documents = ids.map(id => this.deserialize({_id: id}));
+    await this.load(documents, {fields, reload, populate, throwIfNotFound});
     return documents;
   }
 
   @expose()
-  static load(documents, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
+  static async load(documents, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
-      return this.load([documents], {fields, reload, populate, throwIfNotFound})[0];
+      return (await this.load([documents], {fields, reload, populate, throwIfNotFound}))[0];
     }
 
     fields = this.prototype.createFieldMask(fields);
 
-    documents = this._loadRootDocuments(documents, {fields, reload, throwIfNotFound});
+    await this._loadRootDocuments(documents, {fields, reload, throwIfNotFound});
 
     if (populate) {
       // TODO:
@@ -40,11 +36,11 @@ export class Document extends DocumentNode(Trackable(EntityModel)) {
     return documents;
   }
 
-  static reload(documents, {fields, populate = true, throwIfNotFound = true} = {}) {
-    return this.load(documents, {fields, reload: true, populate, throwIfNotFound});
+  static async reload(documents, {fields, populate = true, throwIfNotFound = true} = {}) {
+    await this.load(documents, {fields, reload: true, populate, throwIfNotFound});
   }
 
-  static _loadRootDocuments(documents, {fields, reload, throwIfNotFound}) {
+  static async _loadRootDocuments(documents, {fields, reload, throwIfNotFound}) {
     // TODO:
     // fields = this.filterEntityFields(fields);
 
@@ -53,46 +49,28 @@ export class Document extends DocumentNode(Trackable(EntityModel)) {
       documents.filter(document => !document.createFieldMaskForActiveFields().includes(fields));
 
     if (!documentsToLoad.length) {
-      return documents;
+      return;
     }
 
-    const task = new Task('loading', async () => {
-      if (this.hasStore()) {
-        await this._loadFromStore(documentsToLoad, {fields, throwIfNotFound});
-      } else if (this.hasParentLayer()) {
-        // Call load() in the parent layer
-        await super.load(documentsToLoad, {
-          fields,
-          reload,
-          populate: false,
-          throwIfNotFound
-        });
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
-        );
-      }
-
-      const loadedDocuments = documentsToLoad;
-
-      for (const loadedDocument of loadedDocuments) {
-        await loadedDocument.afterLoad();
-      }
-    });
-
-    for (const documentToLoad of documentsToLoad) {
-      documentToLoad.getTracker().addTask(task);
+    if (this.hasStore()) {
+      await this._loadFromStore(documentsToLoad, {fields, throwIfNotFound});
+    } else if (this.hasParentLayer()) {
+      // Call load() in the parent layer
+      await super.load(documentsToLoad, {
+        fields,
+        reload,
+        populate: false,
+        throwIfNotFound
+      });
+    } else {
+      throw new Error(
+        `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
+      );
     }
 
-    const promise = task.start();
-
-    documents = documents.map(document =>
-      documentsToLoad.includes(document) ? createPromisable(document, promise) : document
-    );
-
-    documents = createPromisable(documents, promise);
-
-    return documents;
+    for (const loadedDocument of documentsToLoad) {
+      await loadedDocument.afterLoad();
+    }
   }
 
   static async _loadFromStore(documents, {fields, throwIfNotFound}) {
@@ -111,24 +89,12 @@ export class Document extends DocumentNode(Trackable(EntityModel)) {
     );
   }
 
-  load({fields, reload, populate = true, throwIfNotFound = true} = {}) {
-    return this.constructor.load(this, {fields, reload, populate, throwIfNotFound});
+  async load({fields, reload, populate = true, throwIfNotFound = true} = {}) {
+    await this.constructor.load([this], {fields, reload, populate, throwIfNotFound});
   }
 
-  reload({fields, populate = true, throwIfNotFound = true} = {}) {
-    return this.load({fields, reload: true, populate, throwIfNotFound});
-  }
-
-  isLoading() {
-    return this.getTracker().hasRunningTask('loading');
-  }
-
-  loadingFailed() {
-    return this.getTracker().hasFailedTask('loading');
-  }
-
-  retryLoading() {
-    return this.getTracker().retryTask('loading');
+  async reload({fields, populate = true, throwIfNotFound = true} = {}) {
+    await this.load({fields, reload: true, populate, throwIfNotFound});
   }
 
   static async populate(documents, {fields, throwIfNotFound = true} = {}) {
@@ -189,41 +155,29 @@ export class Document extends DocumentNode(Trackable(EntityModel)) {
   }
 
   @expose()
-  static save(documents, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
+  static async save(documents, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
     if (!Array.isArray(documents)) {
-      return this.save([documents], {throwIfNotFound, throwIfAlreadyExists})[0];
+      return (await this.save([documents], {throwIfNotFound, throwIfAlreadyExists}))[0];
     }
-
-    const task = new Task('saving', async () => {
-      for (const document of documents) {
-        await document.beforeSave();
-      }
-
-      if (this.hasStore()) {
-        await this._saveToStore(documents, {throwIfNotFound, throwIfAlreadyExists});
-      } else if (this.hasParentLayer()) {
-        // Call save() in the parent layer
-        await super.save(documents, {throwIfNotFound, throwIfAlreadyExists});
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
-        );
-      }
-
-      for (const document of documents) {
-        await document.afterSave();
-      }
-    });
 
     for (const document of documents) {
-      document.getTracker().addTask(task);
+      await document.beforeSave();
     }
 
-    const promise = task.start();
+    if (this.hasStore()) {
+      await this._saveToStore(documents, {throwIfNotFound, throwIfAlreadyExists});
+    } else if (this.hasParentLayer()) {
+      // Call save() in the parent layer
+      await super.save(documents, {throwIfNotFound, throwIfAlreadyExists});
+    } else {
+      throw new Error(
+        `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
+      );
+    }
 
-    documents = documents.map(document => createPromisable(document, promise));
-
-    documents = createPromisable(documents, promise);
+    for (const document of documents) {
+      await document.afterSave();
+    }
 
     return documents;
   }
@@ -244,58 +198,34 @@ export class Document extends DocumentNode(Trackable(EntityModel)) {
     );
   }
 
-  save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
-    return this.constructor.save(this, {throwIfNotFound, throwIfAlreadyExists});
-  }
-
-  isSaving() {
-    return this.getTracker().hasRunningTask('saving');
-  }
-
-  savingFailed() {
-    return this.getTracker().hasFailedTask('saving');
-  }
-
-  retrySaving() {
-    return this.getTracker().retryTask('saving');
+  async save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
+    await this.constructor.save([this], {throwIfNotFound, throwIfAlreadyExists});
   }
 
   @expose()
-  static delete(documents, {throwIfNotFound = true} = {}) {
+  static async delete(documents, {throwIfNotFound = true} = {}) {
     if (!Array.isArray(documents)) {
-      return this.delete([documents], {throwIfNotFound})[0];
+      return (await this.delete([documents], {throwIfNotFound}))[0];
     }
-
-    const task = new Task('deleting', async () => {
-      for (const document of documents) {
-        await document.beforeDelete();
-      }
-
-      if (this.hasStore()) {
-        await this._deleteFromStore(documents, {throwIfNotFound});
-      } else if (this.hasParentLayer()) {
-        // Call delete() in the parent layer
-        await super.delete(documents, {throwIfNotFound});
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
-        );
-      }
-
-      for (const document of documents) {
-        await document.afterDelete();
-      }
-    });
 
     for (const document of documents) {
-      document.getTracker().addTask(task);
+      await document.beforeDelete();
     }
 
-    const promise = task.start();
+    if (this.hasStore()) {
+      await this._deleteFromStore(documents, {throwIfNotFound});
+    } else if (this.hasParentLayer()) {
+      // Call delete() in the parent layer
+      await super.delete(documents, {throwIfNotFound});
+    } else {
+      throw new Error(
+        `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
+      );
+    }
 
-    documents = documents.map(document => createPromisable(document, promise));
-
-    documents = createPromisable(documents, promise);
+    for (const document of documents) {
+      await document.afterDelete();
+    }
 
     return documents;
   }
@@ -311,63 +241,53 @@ export class Document extends DocumentNode(Trackable(EntityModel)) {
     await store.delete(serializedDocuments, {throwIfNotFound});
   }
 
-  delete({throwIfNotFound = true} = {}) {
-    return this.constructor.delete(this, {throwIfNotFound});
-  }
-
-  isDeleting() {
-    return this.getTracker().hasRunningTask('deleting');
-  }
-
-  deletingFailed() {
-    return this.getTracker().hasFailedTask('deleting');
-  }
-
-  retryDeleting() {
-    return this.getTracker().retryTask('deleting');
+  async delete({throwIfNotFound = true} = {}) {
+    await this.constructor.delete([this], {throwIfNotFound});
   }
 
   @expose()
-  static find({filter, sort, skip, limit, fields, populate = true, throwIfNotFound = true} = {}) {
+  static async find({
+    filter,
+    sort,
+    skip,
+    limit,
+    fields,
+    populate = true,
+    throwIfNotFound = true
+  } = {}) {
     fields = this.prototype.createFieldMask(fields);
 
     // TODO:
     // fields = this.filterEntityFields(fields);
 
-    const promise = (async () => {
-      let foundDocuments;
+    let documents;
 
-      if (this.hasStore()) {
-        foundDocuments = await this._findInStore({filter, sort, skip, limit, fields});
-      } else if (this.hasParentLayer()) {
-        // Call find() in the parent layer
-        foundDocuments = await super.find({
-          filter,
-          sort,
-          skip,
-          limit,
-          fields,
-          populate: false,
-          throwIfNotFound
-        });
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
-        );
-      }
+    if (this.hasStore()) {
+      documents = await this._findInStore({filter, sort, skip, limit, fields});
+    } else if (this.hasParentLayer()) {
+      // Call find() in the parent layer
+      documents = await super.find({
+        filter,
+        sort,
+        skip,
+        limit,
+        fields,
+        populate: false,
+        throwIfNotFound
+      });
+    } else {
+      throw new Error(
+        `Couldn't find a store or a parent layer (document: '${this.getRegisteredName()}')`
+      );
+    }
 
-      if (populate) {
-        // await this.populate(foundDocuments, {fields, throwIfNotFound});
-      }
+    if (populate) {
+      // await this.populate(documents, {fields, throwIfNotFound});
+    }
 
-      for (const foundDocument of foundDocuments) {
-        await foundDocument.afterLoad();
-      }
-
-      documents.push(...foundDocuments);
-    })();
-
-    const documents = createPromisable([], promise);
+    for (const document of documents) {
+      await document.afterLoad();
+    }
 
     return documents;
   }
