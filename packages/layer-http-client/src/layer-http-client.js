@@ -97,7 +97,7 @@ export class LayerHTTPClient {
           });
 
           if (fetchResponse.status !== 200) {
-            throw new Error('An error occurred while sending a query the layer server');
+            throw new Error('An error occurred while sending a query to the layer server');
           }
 
           const response = await fetchResponse.json();
