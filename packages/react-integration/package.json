@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/react-bindings",
+  "name": "@liaison/react-integration",
   "version": "0.1.0",
-  "description": "React bindings for Liaison",
+  "description": "React integration for Liaison",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/react-bindings",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/react-integration",
   "files": [
     "dist"
   ],
