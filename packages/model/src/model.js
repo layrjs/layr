@@ -327,7 +327,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   // === Utilities ===
 
   static isModel(object) {
-    return typeof object?.constructor.isModel === 'function';
+    return isModel(object);
   }
 
   [inspect.custom]() {
@@ -349,4 +349,10 @@ export function field(type, options) {
   return function (target, name, descriptor) {
     target.defineField(name, type, options, descriptor);
   };
+}
+
+// === Utilities ===
+
+export function isModel(object) {
+  return typeof object?.constructor?.isModel === 'function';
 }
