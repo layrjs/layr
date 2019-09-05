@@ -85,6 +85,22 @@ export function useAsyncMemo(func, inputs) {
   return [state.result, state.isExecuting === true, state.error, retry];
 }
 
+export function useDelay(duration = 100) {
+  const [isElapsed, setIsElapsed] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsElapsed(true);
+    }, duration);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  return [isElapsed];
+}
+
 export function useIsMounted() {
   const isMountedRef = useRef(false);
 
