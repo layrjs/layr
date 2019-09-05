@@ -1,5 +1,5 @@
 import React from 'react';
-import {isObservable} from '@liaison/observable';
+import {isModel} from '@liaison/model';
 
 import {useModel} from './hooks';
 
@@ -19,7 +19,7 @@ export function view() {
             // TODO: This sounds quite fragile, so if possible, let's get rid of this
             return <BoundComponent {...props} />;
           }
-          if (isObservable(this)) {
+          if (isModel(this)) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useModel(this);
           }

@@ -12,8 +12,7 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/observable": "^0.1.0",
-    "use-force-update": "^1.0.7"
+    "@liaison/model": "^0.1.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

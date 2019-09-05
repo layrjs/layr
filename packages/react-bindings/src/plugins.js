@@ -1,7 +1,6 @@
 import React, {useEffect} from 'react';
-import useForceUpdate from 'use-force-update';
 
-/* eslint-disable react-hooks/rules-of-hooks */
+import {useForceUpdate} from './hooks';
 
 export function ReactRouterPlugin() {
   return function (router) {
@@ -19,7 +18,7 @@ export function ReactRouterPlugin() {
           return function () {
             router.unobserve(handler);
           };
-        }, [forceUpdate]);
+        }, []);
 
         return router;
       },

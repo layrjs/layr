@@ -7,7 +7,6 @@
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/react-bindings",
   "dependencies": {
-    "@liaison/observable": "^0.1.0",
-    "use-force-update": "^1.0.7"
+    "@liaison/model": "^0.1.0"
   }
 }
