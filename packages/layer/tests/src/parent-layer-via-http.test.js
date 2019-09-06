@@ -58,6 +58,7 @@ beforeAll(async () => {
   @expose()
   class Movie extends BaseMovie {
     @expose() static get(id) {
+      this.authorize();
       if (id === 'abc123') {
         return this.deserialize({title: 'Inception', year: 2010, ratingSum: 9, ratingCount: 1});
       }
@@ -65,8 +66,16 @@ beforeAll(async () => {
     }
 
     @expose() rate(rating) {
+      this.constructor.authorize();
       this.ratingSum += rating;
       this.ratingCount += 1;
+    }
+
+    static authorize() {
+      const {token} = this.layer.getEnvironment();
+      if (token !== '123456789') {
+        throw new Error('Token is invalid');
+      }
     }
   }
 
@@ -87,7 +96,10 @@ describe('Parent layer via HTTP', () => {
   test('Parent call', async () => {
     class Movie extends BaseMovie {}
 
-    const layer = new Layer({Movie}, {name: 'frontend', parent: backendLayer});
+    const layer = new Layer(
+      {Movie},
+      {name: 'frontend', environment: {token: '123456789'}, parent: backendLayer}
+    );
 
     const movie = await layer.Movie.get('abc123');
     expect(movie instanceof layer.Movie).toBe(true);
@@ -101,5 +113,8 @@ describe('Parent layer via HTTP', () => {
     expect(movie.ratingSum).toBe(16);
     expect(movie.ratingCount).toBe(2);
     expect(movie.getAverageRating()).toBe(8);
+
+    layer.setEnvironment({token: '987654321'});
+    await expect(layer.Movie.get('abc123')).rejects.toThrow(/Token is invalid/);
   });
 });

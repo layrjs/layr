@@ -12,17 +12,24 @@ const debug = debugModule('liaison:layer');
 // DEBUG=liaison DEBUG_DEPTH=10
 
 export class Layer {
-  constructor(registerables, {name, parent} = {}) {
+  constructor(registerables, {name, environment, parent} = {}) {
     this._registeredNames = [];
     this._registerables = {};
+    this._environment = {};
 
-    if (registerables) {
+    if (registerables !== undefined) {
       this.register(registerables);
     }
-    if (name) {
+
+    if (name !== undefined) {
       this.setName(name);
     }
-    if (parent) {
+
+    if (environment !== undefined) {
+      this.setEnvironment(environment);
+    }
+
+    if (parent !== undefined) {
       this.setParent(parent);
     }
   }
@@ -31,6 +38,7 @@ export class Layer {
     if (!this._id) {
       this._id = nanoid();
     }
+
     return this._id;
   }
 
@@ -58,6 +66,10 @@ export class Layer {
   }
 
   register(registerables) {
+    if (registerables === null) {
+      throw new Error(`Expected an object (received: null)`);
+    }
+
     if (typeof registerables !== 'object') {
       throw new Error(`Expected an object (received: ${typeof registerables})`);
     }
@@ -98,15 +110,37 @@ export class Layer {
     });
   }
 
+  // === Environment ===
+
+  getEnvironment() {
+    return this._environment;
+  }
+
+  setEnvironment(environment) {
+    if (environment === null) {
+      throw new Error(`Expected an object (received: null)`);
+    }
+
+    if (typeof environment !== 'object') {
+      throw new Error(`Expected an object (received: ${typeof environment})`);
+    }
+
+    this._environment = environment;
+  }
+
   // === Forking ===
 
   fork(registerables) {
     const forkedLayer = Object.create(this);
+
     forkedLayer._registeredNames = [...this._registeredNames];
     forkedLayer._registerables = Object.create(this._registerables);
+    forkedLayer._environment = {...this._environment};
+
     if (registerables) {
       forkedLayer.register(registerables);
     }
+
     return forkedLayer;
   }
 
@@ -281,21 +315,26 @@ export class Layer {
   }
 
   sendQuery(query) {
+    const environment = this.getEnvironment();
+
     const parent = this.getParent();
     const source = this.getId();
     const target = parent.getId();
 
     query = this.serialize(query, {target});
     debug(`[%s → %s] %o`, source, target, query);
-    return syncOrAsync(parent.receiveQuery(query, {source}), result => {
+    return syncOrAsync(parent.receiveQuery(query, {environment, source}), result => {
       debug(`[%s ← %s] %o`, source, target, result);
       result = this.deserialize(result, {source: target});
       return result;
     });
   }
 
-  receiveQuery(query, {source} = {}) {
+  receiveQuery(query, {environment, source} = {}) {
+    this.setEnvironment(environment);
+
     const target = this.getId();
+
     debug(`[%s → %s] %o)`, source, target, query);
     query = this.deserialize(query, {source});
     return syncOrAsync(this.invokeQuery(query), result => {

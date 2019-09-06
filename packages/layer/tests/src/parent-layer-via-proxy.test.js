@@ -44,13 +44,22 @@ describe('Parent layer via proxy', () => {
       @expose()
       class Math extends BaseMath {
         @expose() static sum(a, b) {
+          this.authorize();
           return a + b;
         }
 
         @expose() sum() {
+          this.constructor.authorize();
           const result = this.a + this.b;
           this.lastResult = result;
           return result;
+        }
+
+        static authorize() {
+          const {token} = this.layer.getEnvironment();
+          if (token !== '123456789') {
+            throw new Error('Token is invalid');
+          }
         }
       }
 
@@ -71,7 +80,10 @@ describe('Parent layer via proxy', () => {
       }
     }
 
-    const layer = new Layer({Math}, {name: 'frontend', parent: backendProxy});
+    const layer = new Layer(
+      {Math},
+      {name: 'frontend', environment: {token: '123456789'}, parent: backendProxy}
+    );
 
     expect(layer.getParent()).toBe(backendProxy);
     expect(layer.hasParent()).toBe(true);
@@ -86,5 +98,8 @@ describe('Parent layer via proxy', () => {
     const result = math.sum();
     expect(result).toBe(5);
     expect(math.lastResult).toBe(5);
+
+    layer.setEnvironment({token: '987654321'});
+    expect(() => layer.Math.sum(1, 2)).toThrow(/Token is invalid/);
   });
 });

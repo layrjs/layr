@@ -85,7 +85,7 @@ export class LayerHTTPClient {
           return itemProxy;
         },
 
-        async receiveQuery(query, {source} = {}) {
+        async receiveQuery(query, {environment, source} = {}) {
           debug(`Sending query to layer server (URL: '${url}', query: ${JSON.stringify(query)})`);
 
           const fetchResponse = await fetch(url, {
@@ -93,7 +93,7 @@ export class LayerHTTPClient {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({query, source})
+            body: JSON.stringify({query, environment, source})
           });
 
           if (fetchResponse.status !== 200) {
@@ -106,7 +106,11 @@ export class LayerHTTPClient {
             `Query sent to layer server (URL: '${url}'), response: ${JSON.stringify(response)}`
           );
 
-          return response;
+          if (response.error) {
+            throw new Error(response.error.message);
+          }
+
+          return response.result;
         }
       };
     }

@@ -39,8 +39,15 @@ export class LayerHTTPServer {
       if (ctx.method === 'GET') {
         ctx.body = this._layer.introspect();
       } else if (ctx.method === 'POST') {
-        const {query, source} = ctx.request.body;
-        ctx.body = await this._layer.receiveQuery(query, {source});
+        const {query, environment, source} = ctx.request.body;
+        const forkedLayer = this._layer.fork();
+        try {
+          const result = await forkedLayer.receiveQuery(query, {environment, source});
+          ctx.body = {result};
+        } catch (err) {
+          const error = {message: err.message};
+          ctx.body = {error};
+        }
       } else {
         throw new Error('Invalid HTTP request');
       }
