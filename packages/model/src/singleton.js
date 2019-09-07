@@ -1,6 +1,6 @@
 import {Model} from './model';
 
-export class SingletonModel extends Model {
+export class Singleton extends Model {
   constructor(object, options) {
     super(object, options);
 
