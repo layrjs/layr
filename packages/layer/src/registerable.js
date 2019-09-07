@@ -343,16 +343,22 @@ function _introspect(target) {
 
 // === Exposition ===
 
-export function expose() {
-  return function (target, name, descriptor) {
-    if (!name) {
-      // @expose() used on a class
-      target._isExposed = true;
-      return target;
-    }
-    // @expose() used on a property
-    target.exposeProperty(name, descriptor);
-  };
+export function expose(target) {
+  if (target !== undefined) {
+    // expose() called with an object
+    target._isExposed = true;
+  } else {
+    // expose() called as a decorator
+    return function (target, name, descriptor) {
+      if (!name) {
+        // @expose() used on a class
+        target._isExposed = true;
+        return target;
+      }
+      // @expose() used on a property
+      target.exposeProperty(name, descriptor);
+    };
+  }
 }
 
 export function isExposed(target, name) {
