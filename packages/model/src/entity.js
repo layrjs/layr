@@ -1,6 +1,6 @@
 import {Identity} from './identity';
 
-export class EntityModel extends Identity {
+export class Entity extends Identity {
   constructor(object, options) {
     super(object, options);
 

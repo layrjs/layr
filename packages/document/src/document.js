@@ -1,9 +1,9 @@
-import {EntityModel, FieldMask} from '@liaison/model';
+import {Entity, FieldMask} from '@liaison/model';
 import {expose} from '@liaison/layer';
 
 import {DocumentNode} from './document-node';
 
-export class Document extends DocumentNode(EntityModel) {
+export class Document extends DocumentNode(Entity) {
   static async get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(ids)) {
       return (await this.get([ids], {fields, populate, throwIfNotFound}))[0];

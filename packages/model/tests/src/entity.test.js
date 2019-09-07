@@ -1,10 +1,10 @@
 import {Layer} from '@liaison/layer';
 
-import {EntityModel, field} from '../../..';
+import {Entity, field} from '../../..';
 
-describe('EntityModel', () => {
+describe('Entity', () => {
   test('Identity mapping', () => {
-    class Movie extends EntityModel {
+    class Movie extends Entity {
       constructor(object, options) {
         super(object, options);
         this.counter = 0;
@@ -54,7 +54,7 @@ describe('EntityModel', () => {
   });
 
   test('Serialization', () => {
-    class Movie extends EntityModel {
+    class Movie extends Entity {
       @field('string?') title;
 
       @field('number?') year;
@@ -62,7 +62,7 @@ describe('EntityModel', () => {
       @field('Director?') director;
     }
 
-    class Director extends EntityModel {
+    class Director extends Entity {
       @field('string') fullName;
     }
 
