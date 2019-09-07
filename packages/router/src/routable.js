@@ -42,13 +42,33 @@ export const Routable = (Base = Object) =>
     }
 
     static __isRoutable = true;
+
+    getRoute(name) {
+      return this.constructor.getRoute.call(this, name);
+    }
+
+    setRoute(name, pattern, options) {
+      return this.constructor.setRoute.call(this, name, pattern, options);
+    }
+
+    getRoutes() {
+      return this.constructor.getRoutes.call(this);
+    }
+
+    findRoute(url) {
+      return this.constructor.findRoute.call(this, url);
+    }
+
+    callRoute(url) {
+      return this.constructor.callRoute.call(this, url);
+    }
   };
 
 // === Decorators ===
 
 export function route(pattern, options) {
   return function (target, name, {value: func, get: getter, configurable, enumerable}) {
-    if (typeof target.setRoute !== 'function') {
+    if (!isRoutable(target)) {
       throw new Error(`@route() can only be used on routable classes`);
     }
 
@@ -93,5 +113,9 @@ export function route(pattern, options) {
 // === Utilities ===
 
 export function isRoutable(object) {
-  return object !== undefined && object !== null && object.__isRoutable === true;
+  return (
+    object !== undefined &&
+    object !== null &&
+    (object.__isRoutable === true || object.constructor?.__isRoutable === true)
+  );
 }
