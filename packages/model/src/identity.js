@@ -4,7 +4,7 @@ import {findFromOneOrMany} from '@liaison/util';
 
 import {Model} from './model';
 
-export class IdentityModel extends Model {
+export class Identity extends Model {
   constructor(object = {}, {isDeserializing} = {}) {
     super(object, {isDeserializing});
 

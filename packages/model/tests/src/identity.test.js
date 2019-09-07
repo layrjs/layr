@@ -1,10 +1,10 @@
 import {Layer} from '@liaison/layer';
 
-import {IdentityModel, field} from '../../..';
+import {Identity, field} from '../../..';
 
-describe('IdentityModel', () => {
+describe('Identity', () => {
   test('id', () => {
-    class Movie extends IdentityModel {}
+    class Movie extends Identity {}
 
     const layer = new Layer({Movie});
 
@@ -24,13 +24,13 @@ describe('IdentityModel', () => {
   });
 
   test('Identity mapping', () => {
-    class Movie extends IdentityModel {
+    class Movie extends Identity {
       @field('string') title;
 
       @field('Actor[]') actors;
     }
 
-    class Actor extends IdentityModel {
+    class Actor extends Identity {
       @field('string') fullName;
 
       @field('number') popularity;
