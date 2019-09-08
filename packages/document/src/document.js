@@ -1,9 +1,7 @@
 import {Entity, FieldMask} from '@liaison/model';
 import {expose} from '@liaison/layer';
 
-import {DocumentNode} from './document-node';
-
-export class Document extends DocumentNode(Entity) {
+export class Document extends Entity {
   static async get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
     if (!Array.isArray(ids)) {
       return (await this.get([ids], {fields, populate, throwIfNotFound}))[0];
@@ -320,5 +318,44 @@ export class Document extends DocumentNode(Entity) {
   static hasStore() {
     const store = this.getStore({throwIfNotFound: false});
     return store !== undefined;
+  }
+
+  // === Hooks ===
+
+  async afterLoad() {
+    for (const subdocument of this.getSubdocuments()) {
+      await subdocument.afterLoad();
+    }
+  }
+
+  async beforeSave() {
+    for (const subdocument of this.getSubdocuments()) {
+      await subdocument.beforeSave();
+    }
+  }
+
+  async afterSave() {
+    for (const subdocument of this.getSubdocuments()) {
+      await subdocument.afterSave();
+    }
+  }
+
+  async beforeDelete() {
+    for (const subdocument of this.getSubdocuments()) {
+      await subdocument.beforeDelete();
+    }
+  }
+
+  async afterDelete() {
+    for (const subdocument of this.getSubdocuments()) {
+      await subdocument.afterDelete();
+    }
+  }
+
+  getSubdocuments() {
+    const filter = function (field) {
+      return typeof field.getScalar().getModel()?.isSubdocument === 'function';
+    };
+    return this.getFieldValues({filter});
   }
 }
