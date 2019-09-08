@@ -49,21 +49,7 @@ export const Storable = (Base = Entity) =>
         return;
       }
 
-      if (this.hasStore()) {
-        await this._loadFromStore(storablesToLoad, {fields, throwIfNotFound});
-      } else if (this.hasParentLayer()) {
-        // Call load() in the parent layer
-        await super.load(storablesToLoad, {
-          fields,
-          reload,
-          populate: false,
-          throwIfNotFound
-        });
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (storable: '${this.getRegisteredName()}')`
-        );
-      }
+      await this._loadFromStore(storablesToLoad, {fields, throwIfNotFound});
 
       for (const loadedStorable of storablesToLoad) {
         await loadedStorable.afterLoad();
@@ -160,16 +146,7 @@ export const Storable = (Base = Entity) =>
         await storable.beforeSave();
       }
 
-      if (this.hasStore()) {
-        await this._saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists});
-      } else if (this.hasParentLayer()) {
-        // Call save() in the parent layer
-        await super.save(storables, {throwIfNotFound, throwIfAlreadyExists});
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (storable: '${this.getRegisteredName()}')`
-        );
-      }
+      await this._saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists});
 
       for (const storable of storables) {
         await storable.afterSave();
@@ -207,16 +184,7 @@ export const Storable = (Base = Entity) =>
         await storable.beforeDelete();
       }
 
-      if (this.hasStore()) {
-        await this._deleteFromStore(storables, {throwIfNotFound});
-      } else if (this.hasParentLayer()) {
-        // Call delete() in the parent layer
-        await super.delete(storables, {throwIfNotFound});
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (storable: '${this.getRegisteredName()}')`
-        );
-      }
+      await this._deleteFromStore(storables, {throwIfNotFound});
 
       for (const storable of storables) {
         await storable.afterDelete();
@@ -246,34 +214,15 @@ export const Storable = (Base = Entity) =>
       skip,
       limit,
       fields,
-      populate = true,
-      throwIfNotFound = true
+      populate = true
+      // throwIfNotFound = true
     } = {}) {
       fields = this.prototype.createFieldMask(fields);
 
       // TODO:
       // fields = this.filterEntityFields(fields);
 
-      let storables;
-
-      if (this.hasStore()) {
-        storables = await this._findInStore({filter, sort, skip, limit, fields});
-      } else if (this.hasParentLayer()) {
-        // Call find() in the parent layer
-        storables = await super.find({
-          filter,
-          sort,
-          skip,
-          limit,
-          fields,
-          populate: false,
-          throwIfNotFound
-        });
-      } else {
-        throw new Error(
-          `Couldn't find a store or a parent layer (storable: '${this.getRegisteredName()}')`
-        );
-      }
+      const storables = await this._findInStore({filter, sort, skip, limit, fields});
 
       if (populate) {
         // await this.populate(storables, {fields, throwIfNotFound});
@@ -309,11 +258,6 @@ export const Storable = (Base = Entity) =>
       if (throwIfNotFound) {
         throw new Error(`Store not found`);
       }
-    }
-
-    static hasStore() {
-      const store = this.getStore({throwIfNotFound: false});
-      return store !== undefined;
     }
 
     // === Hooks ===
