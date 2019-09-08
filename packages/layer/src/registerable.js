@@ -204,9 +204,10 @@ function _exposeProperty(target, name, descriptor) {
     throw new Error('Currently, only methods can be exposed');
   }
 
-  if (target._exposedProperties?.has(name)) {
-    throw new Error(`Property is already exposed (name: '${name}')`);
-  }
+  // TODO: Consider adding the following:
+  // if (target._exposedProperties?.has(name)) {
+  //   throw new Error(`Property is already exposed (name: '${name}')`);
+  // }
 
   if (!target._exposedProperties) {
     target._exposedProperties = new Map();
@@ -344,6 +345,8 @@ function _introspect(target) {
 // === Exposition ===
 
 export function expose(target) {
+  // TODO: Simplify
+
   if (target !== undefined) {
     // expose() called with an object
     target._isExposed = true;
@@ -355,6 +358,35 @@ export function expose(target) {
         target._isExposed = true;
         return target;
       }
+
+      if (descriptor.initializer !== undefined) {
+        // @expose() used on a property defined in a parent prototype
+        const prototype = Object.getPrototypeOf(target);
+        const prototypeDescriptor = getPropertyDescriptor(prototype, name);
+        if (prototypeDescriptor.get !== undefined) {
+          // @expose() used on a field
+          // TODO: Implement field exposition
+          return;
+        }
+
+        const func = prototypeDescriptor.value;
+
+        if (typeof func !== 'function') {
+          throw new Error('Expected a function'); // TODO: Improve this error message
+        }
+
+        const newDescriptor = {
+          enumerable: descriptor.enumerable,
+          configurable: descriptor.configurable,
+          writable: descriptor.writable,
+          value: func
+        };
+
+        target.exposeProperty(name, newDescriptor);
+
+        return newDescriptor;
+      }
+
       // @expose() used on a property
       target.exposeProperty(name, descriptor);
     };
@@ -376,4 +408,22 @@ export function isExposed(target, name) {
 
 export function isRegisterable(value) {
   return typeof value?.getLayer === 'function';
+}
+
+function getPropertyDescriptor(object, name) {
+  if (!((typeof object === 'object' && object !== null) || typeof object === 'function')) {
+    return undefined;
+  }
+
+  if (!(name in object)) {
+    return undefined;
+  }
+
+  while (object !== null) {
+    const descriptor = Object.getOwnPropertyDescriptor(object, name);
+    if (descriptor) {
+      return descriptor;
+    }
+    object = Object.getPrototypeOf(object);
+  }
 }
