@@ -3,7 +3,7 @@ import {Model, Identity, field} from '@liaison/model';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
-import {Document} from '../../..';
+import {Storable} from '../../..';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 3 * 60 * 1000; // 3 minutes
 
@@ -22,9 +22,9 @@ afterEach(async () => {
   await server.stop();
 });
 
-describe('Backend Document', () => {
+describe('Storable', () => {
   test('CRUD operations', async () => {
-    class Movie extends Document() {
+    class Movie extends Storable() {
       @field('string') title;
 
       @field('number?') year;
@@ -57,7 +57,7 @@ describe('Backend Document', () => {
 
     await expect(layer.Movie.get('missing-id')).rejects.toThrow(/Document not found/);
     await expect(
-      layer.Movie.get('missing-id', {throwIfNotFound: false}).then(document => document.serialize())
+      layer.Movie.get('missing-id', {throwIfNotFound: false}).then(storable => storable.serialize())
     ).resolves.toEqual({_type: 'Movie', _id: 'missing-id'});
 
     // Partial read
@@ -118,7 +118,7 @@ describe('Backend Document', () => {
   });
 
   test.skip('Nesting models', async () => {
-    class Movie extends Document() {
+    class Movie extends Storable() {
       @field('string') title;
 
       @field('TechnicalSpecs') technicalSpecs;
@@ -170,8 +170,8 @@ describe('Backend Document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test.skip('Subdocuments', async () => {
-    class Movie extends Document() {
+  test.skip('Substorables', async () => {
+    class Movie extends Storable() {
       @field('string') title;
 
       @field('Trailer') trailer;
@@ -200,7 +200,7 @@ describe('Backend Document', () => {
     expect(trailerId !== '').toBe(true);
     await movie.save();
 
-    // Will fetch both the 'Movie' document and its 'Trailer' subdocument
+    // Will fetch both the 'Movie' storable and its 'Trailer' substorable
     layer = rootLayer.fork();
     movie = await layer.Movie.get(movieId);
     expect(movie instanceof layer.Movie).toBe(true);
@@ -211,7 +211,7 @@ describe('Backend Document', () => {
     expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=YoHD9XEInc0');
     expect(movie.trailer.duration).toBe(30);
 
-    // Will fetch the 'Movie' document only
+    // Will fetch the 'Movie' storable only
     layer = rootLayer.fork();
     movie = await layer.Movie.get(movieId, {fields: {title: true}});
     expect(movie instanceof layer.Movie).toBe(true);
@@ -219,7 +219,7 @@ describe('Backend Document', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.trailer).toBeUndefined();
 
-    // Will fetch the 'Movie' document and the id of its trailer
+    // Will fetch the 'Movie' storable and the id of its trailer
     layer = rootLayer.fork();
     movie = await layer.Movie.get(movieId, {fields: {title: true, trailer: {}}});
     expect(movie instanceof layer.Movie).toBe(true);
@@ -254,7 +254,7 @@ describe('Backend Document', () => {
     expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=YoHD9XEInc0');
     expect(movie.trailer.duration).toBe(45);
 
-    // Will delete both the movie document and its trailer subdocument
+    // Will delete both the movie storable and its trailer substorable
     layer = rootLayer.fork();
     movie = await layer.Movie.get(movieId);
     await movie.delete();
@@ -263,8 +263,8 @@ describe('Backend Document', () => {
     expect(movie).toBeUndefined();
   });
 
-  test('Finding documents', async () => {
-    class Movie extends Document() {
+  test('Finding storables', async () => {
+    class Movie extends Storable() {
       @field('string') title;
 
       @field('string') genre;
@@ -340,8 +340,8 @@ describe('Backend Document', () => {
     await layer.Movie.delete(movies);
   });
 
-  test.skip('Reloading documents', async () => {
-    class Movie extends Document() {
+  test.skip('Reloading storables', async () => {
+    class Movie extends Storable() {
       @field('string') title;
 
       @field('number') year;
@@ -376,14 +376,14 @@ describe('Backend Document', () => {
     await movie.delete();
   });
 
-  test.skip('Referenced documents', async () => {
-    class Movie extends Document() {
+  test.skip('Referenced storables', async () => {
+    class Movie extends Storable() {
       @field('string') title;
 
       @field('Director') director;
     }
 
-    class Director extends Document() {
+    class Director extends Storable() {
       @field('string') fullName;
     }
 
@@ -465,14 +465,14 @@ describe('Backend Document', () => {
     await director.delete();
   });
 
-  test.skip('Arrays of referenced document', async () => {
-    class Movie extends Document() {
+  test.skip('Arrays of referenced storable', async () => {
+    class Movie extends Storable() {
       @field('string') title;
 
       @field('Actor[]') actors;
     }
 
-    class Actor extends Document() {
+    class Actor extends Storable() {
       @field('string') fullName;
     }
 
@@ -503,7 +503,7 @@ describe('Backend Document', () => {
     expect(actor.id).toBe(actorIds[1]);
     expect(actor.fullName).toBe('Joseph Gordon-Levitt');
 
-    // Will fetch both 'Movie' and 'Actor' documents
+    // Will fetch both 'Movie' and 'Actor' storables
     layer = rootLayer.fork();
     movie = await layer.Movie.get(movieId);
     expect(movie instanceof layer.Movie).toBe(true);
@@ -517,7 +517,7 @@ describe('Backend Document', () => {
     expect(movie.actors[1].id).toBe(actorIds[1]);
     expect(movie.actors[1].fullName).toBe('Joseph Gordon-Levitt');
 
-    // Will fetch 'Movie' document only
+    // Will fetch 'Movie' storable only
     layer = rootLayer.fork();
     movie = await layer.Movie.get(movieId, {fields: {title: true}});
     expect(movie instanceof layer.Movie).toBe(true);
@@ -525,7 +525,7 @@ describe('Backend Document', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.actors).toHaveLength(0);
 
-    // Will fetch 'Movie' document and the ids of the actors
+    // Will fetch 'Movie' storable and the ids of the actors
     layer = rootLayer.fork();
     movie = await layer.Movie.get(movieId, {fields: {title: true, actors: [{}]}});
     expect(movie instanceof layer.Movie).toBe(true);
@@ -602,7 +602,7 @@ describe('Backend Document', () => {
         }
       };
 
-    class Movie extends HookMixin(Document()) {
+    class Movie extends HookMixin(Storable()) {
       @field('string') title;
 
       @field('Trailer') trailer;

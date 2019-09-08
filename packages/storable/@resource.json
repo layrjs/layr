@@ -1,11 +1,11 @@
 {
   "@import": "1place/npm-package#^0.2.0",
-  "name": "@liaison/document",
+  "name": "@liaison/storable",
   "version": "0.1.2",
-  "description": "Base class inheriting from @liaison/model and adding persistence capabilities",
+  "description": "Mixin adding persistence capabilities to Liaison's entities",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/document",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/storable",
   "dependencies": {
     "lodash": "^4.17.11",
     "@liaison/layer": "^0.1.0",

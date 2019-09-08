@@ -27,9 +27,9 @@ First, we need some shared code between the frontend and the backend:
 `shared.js`:
 
 ```js
-import {Document, field} from '@liaison/document';
+import {Entity, field} from '@liaison/liaison';
 
-export class Counter extends Document {
+export class Counter extends Entity {
   // The shared class define a field to keep track of the counter's value
   @field('number') value = 0;
 }
@@ -40,7 +40,7 @@ Then, let's build the backend:
 `backend.js`:
 
 ```js
-import {Layer, expose} from '@liaison/layer';
+import {Layer, expose} from '@liaison/liaison';
 import {LayerHTTPServer} from '@liaison/layer-http-server';
 
 import {Counter as BaseCounter} from './shared';
@@ -69,7 +69,7 @@ Finally, let's build the frontend:
 `frontend.js`:
 
 ```js
-import {Layer} from '@liaison/layer';
+import {Layer} from '@liaison/liaison';
 import {LayerHTTPClient} from '@liaison/layer-http-client';
 
 import {Counter as BaseCounter} from './shared';

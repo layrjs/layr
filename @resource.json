@@ -1,8 +1,5 @@
 {
   "@import": "1place/js-repository#^0.1.0",
-  "document": {
-    "@include": "./packages/document"
-  },
   "layer": {
     "@include": "./packages/layer"
   },
@@ -30,6 +27,9 @@
   "reactIntegration": {
     "@include": "./packages/react-integration"
   },
+  "storable": {
+    "@include": "./packages/storable"
+  },
   "trackable": {
     "@include": "./packages/trackable"
   },
@@ -39,8 +39,6 @@
   "link": {
     "@type": "method",
     "@run": [
-      "(@import shell/bash) run \"npm-link ./packages/document\"",
-      "(@import shell/bash) run \"npm-link ./packages/document/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/layer\"",
       "(@import shell/bash) run \"npm-link ./packages/layer/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/layer-http-client\"",
@@ -55,6 +53,8 @@
       "(@import shell/bash) run \"npm-link ./packages/promisable\"",
       "(@import shell/bash) run \"npm-link ./packages/promisable/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/react-integration\"",
+      "(@import shell/bash) run \"npm-link ./packages/storable\"",
+      "(@import shell/bash) run \"npm-link ./packages/storable/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/trackable\"",
       "(@import shell/bash) run \"npm-link ./packages/util\"",
       "(@import shell/bash) run \"npm-link ./packages/util/tests\""

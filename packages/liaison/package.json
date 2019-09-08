@@ -12,12 +12,12 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/document": "^0.1.0",
     "@liaison/layer": "^0.1.0",
     "@liaison/model": "^0.1.0",
     "@liaison/observable": "^0.1.0",
     "@liaison/promisable": "^0.1.0",
     "@liaison/router": "^0.1.0",
+    "@liaison/storable": "^0.1.0",
     "@liaison/trackable": "^0.1.0",
     "@liaison/util": "^0.1.0"
   },
