@@ -1,9 +1,9 @@
 import {Layer} from '@liaison/layer';
-import {Model, field} from '@liaison/model';
+import {Model, Identity, field} from '@liaison/model';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
-import {Document, Subdocument} from '../../..';
+import {Document} from '../../..';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 3 * 60 * 1000; // 3 minutes
 
@@ -24,7 +24,7 @@ afterEach(async () => {
 
 describe('Backend Document', () => {
   test('CRUD operations', async () => {
-    class Movie extends Document {
+    class Movie extends Document() {
       @field('string') title;
 
       @field('number?') year;
@@ -118,7 +118,7 @@ describe('Backend Document', () => {
   });
 
   test.skip('Nesting models', async () => {
-    class Movie extends Document {
+    class Movie extends Document() {
       @field('string') title;
 
       @field('TechnicalSpecs') technicalSpecs;
@@ -171,13 +171,13 @@ describe('Backend Document', () => {
   });
 
   test.skip('Subdocuments', async () => {
-    class Movie extends Document {
+    class Movie extends Document() {
       @field('string') title;
 
       @field('Trailer') trailer;
     }
 
-    class Trailer extends Subdocument {
+    class Trailer extends Identity {
       @field('string') url;
 
       @field('number?') duration;
@@ -264,7 +264,7 @@ describe('Backend Document', () => {
   });
 
   test('Finding documents', async () => {
-    class Movie extends Document {
+    class Movie extends Document() {
       @field('string') title;
 
       @field('string') genre;
@@ -341,7 +341,7 @@ describe('Backend Document', () => {
   });
 
   test.skip('Reloading documents', async () => {
-    class Movie extends Document {
+    class Movie extends Document() {
       @field('string') title;
 
       @field('number') year;
@@ -377,13 +377,13 @@ describe('Backend Document', () => {
   });
 
   test.skip('Referenced documents', async () => {
-    class Movie extends Document {
+    class Movie extends Document() {
       @field('string') title;
 
       @field('Director') director;
     }
 
-    class Director extends Document {
+    class Director extends Document() {
       @field('string') fullName;
     }
 
@@ -466,13 +466,13 @@ describe('Backend Document', () => {
   });
 
   test.skip('Arrays of referenced document', async () => {
-    class Movie extends Document {
+    class Movie extends Document() {
       @field('string') title;
 
       @field('Actor[]') actors;
     }
 
-    class Actor extends Document {
+    class Actor extends Document() {
       @field('string') fullName;
     }
 
@@ -602,13 +602,13 @@ describe('Backend Document', () => {
         }
       };
 
-    class Movie extends HookMixin(Document) {
+    class Movie extends HookMixin(Document()) {
       @field('string') title;
 
       @field('Trailer') trailer;
     }
 
-    class Trailer extends HookMixin(Subdocument) {
+    class Trailer extends HookMixin(Identity) {
       @field('string') url;
     }
 
