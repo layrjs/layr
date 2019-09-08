@@ -326,6 +326,26 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Utilities ===
 
+  get super() {
+    const handler = {
+      // TODO: Consider implementing more handlers
+
+      get(target, name) {
+        const prototype = Object.getPrototypeOf(target.constructor.prototype);
+
+        let value = prototype[name];
+
+        if (typeof value === 'function') {
+          value = value.bind(target);
+        }
+
+        return value;
+      }
+    };
+
+    return new Proxy(this, handler);
+  }
+
   static isModel(object) {
     return isModel(object);
   }
