@@ -37,7 +37,7 @@ export class Entity extends Identity {
     if (id === undefined) {
       return undefined;
     }
-    return this._instances?.get(id);
+    return this._getInstances().get(id);
   }
 
   static setInstance(instance) {
@@ -45,9 +45,13 @@ export class Entity extends Identity {
     if (id === undefined) {
       return;
     }
+    this._getInstances().set(id, instance);
+  }
+
+  static _getInstances() {
     if (!Object.prototype.hasOwnProperty.call(this, '_instances')) {
-      this._instances = new Map(this._instances);
+      this._instances = new Map();
     }
-    this._instances.set(id, instance);
+    return this._instances;
   }
 }
