@@ -39,10 +39,10 @@ export class LayerHTTPServer {
       if (ctx.method === 'GET') {
         ctx.body = this._layer.introspect();
       } else if (ctx.method === 'POST') {
-        const {query, environment, source} = ctx.request.body;
+        const {query, items, source} = ctx.request.body;
         const forkedLayer = this._layer.fork();
         try {
-          const result = await forkedLayer.receiveQuery(query, {environment, source});
+          const result = await forkedLayer.receiveQuery({query, items, source});
           ctx.body = {result};
         } catch (err) {
           const error = {message: err.message};

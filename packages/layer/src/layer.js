@@ -7,15 +7,16 @@ import debugModule from 'debug';
 import {isRegisterable, isExposed} from './registerable';
 import {isSerializable} from './serializable';
 
-const debug = debugModule('liaison:layer');
+const debugSending = debugModule('liaison:layer:sending');
+const debugReceiving = debugModule('liaison:layer:receiving');
+
 // To display the debug log, set this environment:
-// DEBUG=liaison DEBUG_DEPTH=10
+// DEBUG=liaison:layer:* DEBUG_DEPTH=10
 
 export class Layer {
-  constructor(registerables, {name, environment, parent} = {}) {
+  constructor(registerables, {name, parent} = {}) {
     this._registeredNames = [];
     this._registerables = {};
-    this._environment = {};
 
     if (registerables !== undefined) {
       this.register(registerables);
@@ -23,10 +24,6 @@ export class Layer {
 
     if (name !== undefined) {
       this.setName(name);
-    }
-
-    if (environment !== undefined) {
-      this.setEnvironment(environment);
     }
 
     if (parent !== undefined) {
@@ -110,24 +107,6 @@ export class Layer {
     });
   }
 
-  // === Environment ===
-
-  getEnvironment() {
-    return this._environment;
-  }
-
-  setEnvironment(environment) {
-    if (environment === null) {
-      throw new Error(`Expected an object (received: null)`);
-    }
-
-    if (typeof environment !== 'object') {
-      throw new Error(`Expected an object (received: ${typeof environment})`);
-    }
-
-    this._environment = environment;
-  }
-
   // === Forking ===
 
   fork(registerables) {
@@ -135,7 +114,6 @@ export class Layer {
 
     forkedLayer._registeredNames = [...this._registeredNames];
     forkedLayer._registerables = Object.create(this._registerables);
-    forkedLayer._environment = {...this._environment};
 
     if (registerables) {
       forkedLayer.register(registerables);
@@ -315,37 +293,87 @@ export class Layer {
   }
 
   sendQuery(query) {
-    const environment = this.getEnvironment();
-
     const parent = this.getParent();
     const source = this.getId();
     const target = parent.getId();
 
     query = this.serialize(query, {target});
-    debug(`[%s → %s] %o`, source, target, query);
-    return syncOrAsync(parent.receiveQuery(query, {environment, source}), result => {
-      debug(`[%s ← %s] %o`, source, target, result);
+    const items = this._serializeItems({isSending: true});
+    debugSending(`[%s → %s] {query: %o, items: %o}`, source, target, query, items);
+    return syncOrAsync(parent.receiveQuery({query, items, source}), ({result, items}) => {
+      debugSending(`[%s ← %s] {result: %o, items: %o}`, source, target, result, items);
       result = this.deserialize(result, {source: target});
+      this._deserializeItems(items, {source: target});
       return result;
     });
   }
 
-  receiveQuery(query, {environment, source} = {}) {
-    this.setEnvironment(environment);
-
+  receiveQuery({query, items, source} = {}) {
     const target = this.getId();
 
-    debug(`[%s → %s] %o)`, source, target, query);
+    debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
+    this._deserializeItems(items, {source, isReceiving: true});
     query = this.deserialize(query, {source});
     return syncOrAsync(this.invokeQuery(query), result => {
       result = this.serialize(result, {target: source});
-      debug(`[%s ← %s] %o`, source, target, result);
-      return result;
+      items = this._serializeItems({target: source});
+      debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
+      return {result, items};
     });
   }
 
   invokeQuery(query) {
     return invokeQuery(this, query);
+  }
+
+  _serializeItems({target, isSending} = {}) {
+    const serializedItems = {};
+    let hasSerializedItems = false;
+
+    for (const item of this.getItems()) {
+      if (typeof item !== 'object') {
+        continue;
+      }
+
+      const name = item.getRegisteredName();
+
+      if (isSending) {
+        if (!this.getParent().get(name, {throwIfNotFound: false})) {
+          continue;
+        }
+      } else if (!isExposed(item)) {
+        continue;
+      }
+
+      if (!isSerializable(item)) {
+        throw new Error(`Cannot send an item that is not serializable (name: '${name}')`);
+      }
+
+      serializedItems[name] = item.serialize({target});
+      hasSerializedItems = true;
+    }
+
+    return hasSerializedItems ? serializedItems : undefined;
+  }
+
+  _deserializeItems(serializedItems, {source, isReceiving} = {}) {
+    if (serializedItems === undefined) {
+      return;
+    }
+
+    for (const [name, serializedItem] of Object.entries(serializedItems)) {
+      const item = this.get(name);
+
+      if (isReceiving && !isExposed(item)) {
+        throw new Error(`Cannot receive an item that is not exposed (name: '${name}')`);
+      }
+
+      if (!isSerializable(item)) {
+        throw new Error(`Cannot receive an item that is not serializable (name: '${name}')`);
+      }
+
+      item.deserialize(serializedItem, {source});
+    }
   }
 
   // === Utilities ===

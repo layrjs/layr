@@ -2,6 +2,19 @@ import {Layer, Registerable, Serializable, expose} from '../../..';
 import {LayerHTTPClient} from '@liaison/layer-http-client';
 import {LayerHTTPServer} from '@liaison/layer-http-server';
 
+class BaseAuthenticator extends Serializable(Registerable()) {
+  serialize() {
+    return {
+      ...super.serialize(),
+      token: this.token
+    };
+  }
+
+  deserialize({token} = {}) {
+    this.token = token;
+  }
+}
+
 class BaseMovie extends Serializable(Registerable()) {
   constructor(
     {title, year, ratingSum = 0, ratingCount = 0, ...object} = {},
@@ -56,6 +69,17 @@ let backendLayer;
 
 beforeAll(async () => {
   @expose()
+  class Authenticator extends BaseAuthenticator {
+    @expose() signIn() {
+      this.token = '123456789';
+    }
+
+    @expose() signOut() {
+      this.token = undefined;
+    }
+  }
+
+  @expose()
   class Movie extends BaseMovie {
     @expose() static get(id) {
       this.authorize();
@@ -72,14 +96,16 @@ beforeAll(async () => {
     }
 
     static authorize() {
-      const {token} = this.layer.getEnvironment();
+      const {token} = this.layer.authenticator;
       if (token !== '123456789') {
         throw new Error('Token is invalid');
       }
     }
   }
 
-  const layer = new Layer({Movie}, {name: 'backend'});
+  const authenticator = expose(Authenticator.deserialize());
+
+  const layer = new Layer({authenticator, Movie}, {name: 'backend'});
 
   layerServer = new LayerHTTPServer(layer, {port: 4444});
   await layerServer.start();
@@ -94,12 +120,17 @@ afterAll(async () => {
 
 describe('Parent layer via HTTP', () => {
   test('Parent call', async () => {
+    class Authenticator extends BaseAuthenticator {}
+
     class Movie extends BaseMovie {}
 
-    const layer = new Layer(
-      {Movie},
-      {name: 'frontend', environment: {token: '123456789'}, parent: backendLayer}
-    );
+    const authenticator = Authenticator.deserialize();
+
+    const layer = new Layer({authenticator, Movie}, {name: 'frontend', parent: backendLayer});
+
+    expect(layer.authenticator.token).toBeUndefined();
+    await layer.authenticator.signIn();
+    expect(layer.authenticator.token).toBe('123456789');
 
     const movie = await layer.Movie.get('abc123');
     expect(movie instanceof layer.Movie).toBe(true);
@@ -114,7 +145,10 @@ describe('Parent layer via HTTP', () => {
     expect(movie.ratingCount).toBe(2);
     expect(movie.getAverageRating()).toBe(8);
 
-    layer.setEnvironment({token: '987654321'});
+    expect(layer.authenticator.token).toBe('123456789');
+    await layer.authenticator.signOut();
+    expect(layer.authenticator.token).toBeUndefined();
+
     await expect(layer.Movie.get('abc123')).rejects.toThrow(/Token is invalid/);
   });
 });

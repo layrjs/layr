@@ -85,15 +85,19 @@ export class LayerHTTPClient {
           return itemProxy;
         },
 
-        async receiveQuery(query, {environment, source} = {}) {
-          debug(`Sending query to layer server (URL: '${url}', query: ${JSON.stringify(query)})`);
+        async receiveQuery({query, items, source} = {}) {
+          debug(
+            `Sending query to layer server (URL: '${url}', query: ${JSON.stringify(
+              query
+            )}), items: ${JSON.stringify(items)})`
+          );
 
           const fetchResponse = await fetch(url, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({query, environment, source})
+            body: JSON.stringify({query, items, source})
           });
 
           if (fetchResponse.status !== 200) {

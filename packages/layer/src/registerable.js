@@ -16,6 +16,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       _setRegisteredName(this, registeredName);
     }
 
+    static isRegistered() {
+      return _isRegistered(this);
+    }
+
     static getLayer({throwIfNotFound = true} = {}) {
       return _getLayer(this, {throwIfNotFound});
     }
@@ -80,6 +84,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     setRegisteredName(registeredName) {
       _setRegisteredName(this, registeredName);
+    }
+
+    isRegistered() {
+      return _isRegistered(this);
     }
 
     getLayer({fallBackToClass = true, throwIfNotFound = true} = {}) {
@@ -157,6 +165,10 @@ function _setRegisteredName(target, registeredName) {
   Object.defineProperty(target, '_registeredName', {value: registeredName});
 }
 
+function _isRegistered(target) {
+  return target._registeredName !== undefined;
+}
+
 function _getLayer(target, {throwIfNotFound = true} = {}) {
   const layer = Object.prototype.hasOwnProperty.call(target, '_layer') ? target._layer : undefined;
   if (layer) {
@@ -178,7 +190,7 @@ function _callParentLayer(layer, target, methodName, ...args) {
 
 function _buildQuery(target, methodName, ...args) {
   if (typeof target === 'function') {
-    // Class invocation
+    // The target is a class
     return {
       [`${target.getRegisteredName()}=>`]: {
         [`${methodName}=>result`]: {
@@ -188,7 +200,18 @@ function _buildQuery(target, methodName, ...args) {
     };
   }
 
-  // Instance invocation
+  if (target.isRegistered()) {
+    // The target is a registered instance
+    return {
+      [`${target.getRegisteredName()}=>`]: {
+        [`${methodName}=>result`]: {
+          '([])': args
+        }
+      }
+    };
+  }
+
+  // The target is a unregistered instance
   return {
     '<=': target,
     [`${methodName}=>result`]: {
@@ -228,7 +251,7 @@ function _getExposedProperties(target) {
 
 function _onMissingProperty(target, name) {
   if (typeof name === 'symbol' || name.startsWith('_')) {
-    // Symbols and property names prefixed with an underscore should be never exposed
+    // Symbols and property names prefixed with an underscore shouldn't be exposed
     return undefined;
   }
 
@@ -350,47 +373,48 @@ export function expose(target) {
   if (target !== undefined) {
     // expose() called with an object
     target._isExposed = true;
-  } else {
-    // expose() called as a decorator
-    return function (target, name, descriptor) {
-      if (!name) {
-        // @expose() used on a class
-        target._isExposed = true;
-        return target;
-      }
-
-      if (descriptor.initializer !== undefined) {
-        // @expose() used on a property defined in a parent prototype
-        const prototype = Object.getPrototypeOf(target);
-        const prototypeDescriptor = getPropertyDescriptor(prototype, name);
-        if (prototypeDescriptor.get !== undefined) {
-          // @expose() used on a field
-          // TODO: Implement field exposition
-          return;
-        }
-
-        const func = prototypeDescriptor.value;
-
-        if (typeof func !== 'function') {
-          throw new Error('Expected a function'); // TODO: Improve this error message
-        }
-
-        const newDescriptor = {
-          enumerable: descriptor.enumerable,
-          configurable: descriptor.configurable,
-          writable: descriptor.writable,
-          value: func
-        };
-
-        target.exposeProperty(name, newDescriptor);
-
-        return newDescriptor;
-      }
-
-      // @expose() used on a property
-      target.exposeProperty(name, descriptor);
-    };
+    return target;
   }
+
+  // expose() called as a decorator
+  return function (target, name, descriptor) {
+    if (!name) {
+      // @expose() used on a class
+      target._isExposed = true;
+      return target;
+    }
+
+    if (descriptor.initializer !== undefined) {
+      // @expose() used on a property defined in a parent prototype
+      const prototype = Object.getPrototypeOf(target);
+      const prototypeDescriptor = getPropertyDescriptor(prototype, name);
+      if (prototypeDescriptor.get !== undefined) {
+        // @expose() used on a field
+        // TODO: Implement field exposition
+        return;
+      }
+
+      const func = prototypeDescriptor.value;
+
+      if (typeof func !== 'function') {
+        throw new Error('Expected a function'); // TODO: Improve this error message
+      }
+
+      const newDescriptor = {
+        enumerable: descriptor.enumerable,
+        configurable: descriptor.configurable,
+        writable: descriptor.writable,
+        value: func
+      };
+
+      target.exposeProperty(name, newDescriptor);
+
+      return newDescriptor;
+    }
+
+    // @expose() used on a property
+    target.exposeProperty(name, descriptor);
+  };
 }
 
 export function isExposed(target, name) {

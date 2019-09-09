@@ -2,6 +2,19 @@ import {Layer, Registerable, Serializable, LayerProxy, expose} from '../../..';
 
 describe('Parent layer via proxy', () => {
   test('Parent call', () => {
+    class BaseAuthenticator extends Serializable(Registerable()) {
+      serialize() {
+        return {
+          ...super.serialize(),
+          token: this.token
+        };
+      }
+
+      deserialize({token} = {}) {
+        this.token = token;
+      }
+    }
+
     class BaseMath extends Serializable(Registerable()) {
       constructor({a, b, ...object} = {}, {isDeserializing} = {}) {
         super(object, {isDeserializing});
@@ -42,6 +55,17 @@ describe('Parent layer via proxy', () => {
       // Backend
 
       @expose()
+      class Authenticator extends BaseAuthenticator {
+        @expose() signIn() {
+          this.token = '123456789';
+        }
+
+        @expose() signOut() {
+          this.token = undefined;
+        }
+      }
+
+      @expose()
       class Math extends BaseMath {
         @expose() static sum(a, b) {
           this.authorize();
@@ -56,19 +80,23 @@ describe('Parent layer via proxy', () => {
         }
 
         static authorize() {
-          const {token} = this.layer.getEnvironment();
+          const {token} = this.layer.authenticator;
           if (token !== '123456789') {
             throw new Error('Token is invalid');
           }
         }
       }
 
-      const layer = new Layer({Math}, {name: 'backend'});
+      const authenticator = expose(Authenticator.deserialize());
+
+      const layer = new Layer({authenticator, Math}, {name: 'backend'});
 
       return new LayerProxy(layer);
     })();
 
     // Frontend
+
+    class Authenticator extends BaseAuthenticator {}
 
     class Math extends BaseMath {
       static sum(a, b) {
@@ -80,14 +108,17 @@ describe('Parent layer via proxy', () => {
       }
     }
 
-    const layer = new Layer(
-      {Math},
-      {name: 'frontend', environment: {token: '123456789'}, parent: backendProxy}
-    );
+    const authenticator = Authenticator.deserialize();
+
+    const layer = new Layer({authenticator, Math}, {name: 'frontend', parent: backendProxy});
 
     expect(layer.getParent()).toBe(backendProxy);
     expect(layer.hasParent()).toBe(true);
     expect(layer.Math.hasParentLayer()).toBe(true);
+
+    expect(layer.authenticator.token).toBeUndefined();
+    layer.authenticator.signIn();
+    expect(layer.authenticator.token).toBe('123456789');
 
     expect(layer.Math.sum(1, 2)).toBe(3);
 
@@ -99,7 +130,10 @@ describe('Parent layer via proxy', () => {
     expect(result).toBe(5);
     expect(math.lastResult).toBe(5);
 
-    layer.setEnvironment({token: '987654321'});
+    expect(layer.authenticator.token).toBe('123456789');
+    layer.authenticator.signOut();
+    expect(layer.authenticator.token).toBeUndefined();
+
     expect(() => layer.Math.sum(1, 2)).toThrow(/Token is invalid/);
   });
 });
