@@ -8,7 +8,9 @@ export class Singleton extends Model {
   }
 
   static getInstance() {
-    return this._instance;
+    if (Object.prototype.hasOwnProperty.call(this, '_instance')) {
+      return this._instance;
+    }
   }
 
   static setInstance(instance) {
