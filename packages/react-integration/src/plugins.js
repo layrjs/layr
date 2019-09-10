@@ -39,5 +39,12 @@ export function ReactRouterPlugin() {
         return <a {...props} onClick={handleClick} />;
       }
     });
+
+    router.addCustomRouteDecorator(function (func) {
+      func.Link = function ({params, ...props}) {
+        const href = func.getPath(params);
+        return router.Link({href, ...props});
+      };
+    });
   };
 }
