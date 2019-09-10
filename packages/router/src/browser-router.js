@@ -7,6 +7,8 @@ export class BrowserRouter extends Observable(Registerable()) {
   constructor({plugins} = {}) {
     super();
 
+    this._customRouteDecorators = [];
+
     if (plugins !== undefined) {
       this._applyPlugins(plugins);
     }
@@ -49,6 +51,16 @@ export class BrowserRouter extends Observable(Registerable()) {
     }
 
     throw new Error(`Route not found (URL: '${this.location.href}')`);
+  }
+
+  addCustomRouteDecorator(decorator) {
+    this._customRouteDecorators.push(decorator);
+  }
+
+  applyCustomRouteDecorators(target, func) {
+    for (const customRouteDecorator of this._customRouteDecorators) {
+      customRouteDecorator.call(target, func);
+    }
   }
 
   _applyPlugins(plugins) {

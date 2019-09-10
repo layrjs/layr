@@ -67,7 +67,11 @@ export const Routable = (Base = Object) =>
 // === Decorators ===
 
 export function route(pattern, options) {
-  return function (target, name, {value: func, get: getter, configurable, enumerable}) {
+  return function (
+    target,
+    name,
+    {value: originalFunction, get: originalGet, configurable, enumerable}
+  ) {
     if (!isRoutable(target)) {
       throw new Error(`@route() can only be used on routable classes`);
     }
@@ -79,34 +83,34 @@ export function route(pattern, options) {
         throw new Error(`@route() can only be used on functions`);
       }
 
+      const router = this.getLayer().get('router');
+
       func.getPath = function (params) {
         return route.build(params);
       };
 
       func.navigate = function (params, {replace = false} = {}) {
-        const router = target.layer.get('router');
         const path = this.getPath(params);
         router.navigate(path, {replace});
       };
+
+      router.applyCustomRouteDecorators(this, func);
     };
 
-    if (getter) {
-      const originalGetter = getter;
-      getter = function () {
-        const func = originalGetter.call(this);
-        decorate(func);
-        return func;
-      };
-    } else {
-      decorate(func);
-    }
+    let hasBeenDecorated = false;
 
-    return {
-      ...(func && {value: func}),
-      ...(getter && {get: getter}),
-      configurable,
-      enumerable
+    const get = function () {
+      const func = originalGet ? originalGet.call(this) : originalFunction;
+
+      if (!hasBeenDecorated) {
+        decorate.call(this, func);
+        hasBeenDecorated = true;
+      }
+
+      return func;
     };
+
+    return {get, configurable, enumerable};
   };
 }
 
