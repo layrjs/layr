@@ -116,7 +116,7 @@ export class Field {
   }
 
   getOptionalValue(fallbackValue) {
-    this.getValue({throwIfInactive: false, fallbackValue});
+    return this.getValue({throwIfInactive: false, fallbackValue});
   }
 
   setValue(value, {source} = {}) {
