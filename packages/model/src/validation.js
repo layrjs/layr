@@ -27,9 +27,12 @@ const _validators = {
 
   notEmpty: value => value.length > 0,
 
-  minLength: (value, length) => value.length >= length,
+  minLength: (value, minLength) => value.length >= minLength,
 
-  maxLength: (value, length) => value.length <= length,
+  maxLength: (value, maxLength) => value.length <= maxLength,
+
+  rangeLength: (value, [minLength, maxLength]) =>
+    value.length >= minLength && value.length <= maxLength,
 
   // Strings
 
