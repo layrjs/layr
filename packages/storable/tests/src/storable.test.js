@@ -106,7 +106,7 @@ describe('Storable', () => {
     movie = await layer.Movie.get(id);
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('The Matrix');
-    expect(movie.getField('year').isActive()).toBe(false);
+    expect(movie.year).toBeUndefined();
 
     // Delete
 

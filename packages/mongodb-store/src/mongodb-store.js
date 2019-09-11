@@ -82,12 +82,21 @@ export class MongoDBStore extends Registerable() {
     const documentsByType = groupBy(documents, '_type');
     for (const [type, documents] of Object.entries(documentsByType)) {
       const collection = await this._getCollection(type);
+
       const ids = documents.map(document => document._id);
       const query = {_id: {$in: ids}};
       const options = {projection};
+
       debug(`%s.find(%o, %o)`, type, query, options);
       const cursor = collection.find(query, options);
       const foundDocuments = await cursor.toArray();
+
+      if (fields !== undefined) {
+        for (const foundDocument of foundDocuments) {
+          assignUndefinedFields(foundDocument, fields);
+        }
+      }
+
       loadedDocuments.push(...foundDocuments);
     }
 
@@ -194,6 +203,8 @@ export class MongoDBStore extends Registerable() {
         updatedValue = value;
       }
 
+      updatedDocument[name] = updatedValue;
+
       if (updatedValue !== undefined) {
         updatedDocument[name] = updatedValue;
       } else {
@@ -267,6 +278,12 @@ export class MongoDBStore extends Registerable() {
     }
 
     const documents = await cursor.toArray();
+
+    if (fields !== undefined) {
+      for (const document of documents) {
+        assignUndefinedFields(document, fields);
+      }
+    }
 
     return documents;
   }
@@ -352,4 +369,18 @@ function buildProjection(fields) {
   build(fields, []);
 
   return projection;
+}
+
+function assignUndefinedFields(document, fields) {
+  // TODO: Handle nested models
+  for (const [name, value] of Object.entries(fields)) {
+    if (value === false) {
+      // TODO: Verify this
+      continue;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(document, name)) {
+      document[name] = null; // TODO: The serialization shouldn't be handled here
+    }
+  }
 }
