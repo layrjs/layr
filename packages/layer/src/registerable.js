@@ -391,7 +391,7 @@ export function expose(target) {
       if (prototypeDescriptor.get !== undefined) {
         // @expose() used on a field
         // TODO: Implement field exposition
-        return;
+        return prototypeDescriptor;
       }
 
       const func = prototypeDescriptor.value;
