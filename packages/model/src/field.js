@@ -103,20 +103,15 @@ export class Field {
     return this._isActive;
   }
 
-  getValue({throwIfInactive = true, fallbackValue} = {}) {
-    if (this._isActive) {
-      return this._value;
+  getValue({throwIfInactive = true} = {}) {
+    if (!this._isActive) {
+      if (throwIfInactive) {
+        throw new Error(`Cannot get the value from an inactive field (field: '${this._name}')`);
+      }
+      return undefined;
     }
 
-    if (throwIfInactive) {
-      throw new Error(`Cannot get the value from an inactive field (field: '${this._name}')`);
-    }
-
-    return fallbackValue;
-  }
-
-  getOptionalValue(fallbackValue) {
-    return this.getValue({throwIfInactive: false, fallbackValue});
+    return this._value;
   }
 
   setValue(value, {source} = {}) {
