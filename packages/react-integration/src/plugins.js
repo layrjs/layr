@@ -32,7 +32,8 @@ export function ReactRouterPlugin() {
         const handleClick = event => {
           if (!(event.shiftKey || event.ctrlKey || event.altKey || event.metaKey)) {
             event.preventDefault();
-            router.navigate(event.target.href);
+            // eslint-disable-next-line react/prop-types
+            router.navigate(props.href);
           }
         };
 
