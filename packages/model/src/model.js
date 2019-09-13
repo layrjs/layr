@@ -259,16 +259,27 @@ export class Model extends Observable(Serializable(Registerable())) {
     return new FieldMask(fields);
   }
 
-  _createFieldMask(rootFieldMask, {filter}) {
+  _createFieldMask(rootFieldMask, {filter, _typeStack = new Set()}) {
     const normalizedFieldMask = {};
+
     for (const field of this.getFields({filter})) {
+      const type = field.getScalar().getType();
+      if (_typeStack.has(type)) {
+        continue; // Avoid looping indefinitely when a circular type is encountered
+      }
+
       const name = field.getName();
+
       const fieldMask = typeof rootFieldMask === 'object' ? rootFieldMask[name] : rootFieldMask;
       if (!fieldMask) {
         continue;
       }
-      normalizedFieldMask[name] = field._createFieldMask(fieldMask, {filter});
+
+      _typeStack.add(type);
+      normalizedFieldMask[name] = field._createFieldMask(fieldMask, {filter, _typeStack});
+      _typeStack.delete(type);
     }
+
     return normalizedFieldMask;
   }
 

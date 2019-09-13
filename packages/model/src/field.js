@@ -241,7 +241,7 @@ export class Field {
     return value;
   }
 
-  _createFieldMask(fieldMask, {filter}) {
+  _createFieldMask(fieldMask, {filter, _typeStack}) {
     if (Array.isArray(fieldMask)) {
       if (!this._isArray) {
         throw new Error(
@@ -251,7 +251,7 @@ export class Field {
       fieldMask = fieldMask[0];
     }
 
-    return this._scalar._createFieldMask(fieldMask, {filter});
+    return this._scalar._createFieldMask(fieldMask, {filter, _typeStack});
   }
 }
 
@@ -267,6 +267,10 @@ class Scalar {
     const forkedScalar = Object.create(this);
     forkedScalar._field = field;
     return forkedScalar;
+  }
+
+  getType() {
+    return this._type;
   }
 
   checkValue(value) {
@@ -377,10 +381,10 @@ class Scalar {
     return this._field.getLayer().get(this._type);
   }
 
-  _createFieldMask(fieldMask, {filter}) {
+  _createFieldMask(fieldMask, {filter, _typeStack}) {
     const Model = this.getModel();
     if (Model) {
-      return Model.prototype._createFieldMask(fieldMask, {filter});
+      return Model.prototype._createFieldMask(fieldMask, {filter, _typeStack});
     }
     return true;
   }

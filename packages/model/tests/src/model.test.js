@@ -611,6 +611,39 @@ describe('Model', () => {
     }).toThrow(/Type mismatch/);
   });
 
+  test('Circular type', () => {
+    class Movie extends Model {
+      @field('string') title;
+
+      @field('Movie[]') similarMovies = [];
+    }
+
+    const layer = new Layer({Movie});
+
+    let movie = new layer.Movie({
+      title: 'Inception',
+      similarMovies: [new layer.Movie({title: 'The Matrix'})]
+    });
+    expect(movie.serialize()).toEqual({
+      _type: 'Movie',
+      _new: true,
+      title: 'Inception',
+      similarMovies: [{_type: 'Movie', _new: true, title: 'The Matrix'}]
+    });
+
+    movie = layer.deserialize({
+      _type: 'Movie',
+      _new: true,
+      title: 'Inception',
+      similarMovies: [{_type: 'Movie', _new: true, title: 'The Matrix'}]
+    });
+    expect(movie instanceof layer.Movie).toBe(true);
+    expect(movie.title).toBe('Inception');
+    expect(movie.similarMovies).toHaveLength(1);
+    expect(movie.similarMovies[0] instanceof layer.Movie).toBe(true);
+    expect(movie.similarMovies[0].title).toBe('The Matrix');
+  });
+
   test('Observability', () => {
     class Movie extends Model {
       @field('string') title;
