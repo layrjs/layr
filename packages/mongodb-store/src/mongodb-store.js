@@ -89,7 +89,9 @@ export class MongoDBStore extends Registerable() {
 
       debug(`%s.find(%o, %o)`, type, query, options);
       const cursor = collection.find(query, options);
-      const foundDocuments = await cursor.toArray();
+      let foundDocuments = await cursor.toArray();
+
+      foundDocuments = foundDocuments.map(serializeDocument);
 
       if (fields !== undefined) {
         for (const foundDocument of foundDocuments) {
@@ -194,7 +196,7 @@ export class MongoDBStore extends Registerable() {
           throwIfNotFound,
           throwIfAlreadyExists
         });
-      } else if (typeof value === 'object') {
+      } else if (typeof value === 'object' && !(value instanceof Date)) {
         updatedValue = this._updateDocument(existingValue, value, {
           throwIfNotFound,
           throwIfAlreadyExists
@@ -277,7 +279,9 @@ export class MongoDBStore extends Registerable() {
       cursor.limit(limit);
     }
 
-    const documents = await cursor.toArray();
+    let documents = await cursor.toArray();
+
+    documents = documents.map(serializeDocument);
 
     if (fields !== undefined) {
       for (const document of documents) {
@@ -333,8 +337,35 @@ export class MongoDBStore extends Registerable() {
   }
 }
 
-// TODO: We should probably not have to handle serialization at this level
+function serializeDocument(document) {
+  // TODO: Handle nested models
+
+  const serializedDocument = {};
+
+  for (const [name, value] of Object.entries(document)) {
+    serializedDocument[name] = serializeValue(value);
+  }
+
+  return serializedDocument;
+}
+
+function serializeValue(value) {
+  // TODO: We should probably not have to handle serialization at this level
+
+  if (value === undefined) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return {_type: 'Date', _value: value.toISOString()};
+  }
+
+  return value;
+}
+
 function deserializeValue(value) {
+  // TODO: We should probably not have to handle serialization at this level
+
   if (value === null) {
     return undefined;
   }

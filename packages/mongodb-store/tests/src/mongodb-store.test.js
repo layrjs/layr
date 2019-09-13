@@ -23,15 +23,36 @@ describe('MongoDBStore', () => {
   test('CRUD operations', async () => {
     // Create
     let acknowledgement = await store.save([
-      {_type: 'Movie', _new: true, _id: 'abc123', title: 'Inception', year: 2010}
+      {
+        _type: 'Movie',
+        _new: true,
+        _id: 'abc123',
+        title: 'Inception',
+        year: 2010,
+        releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
+      }
     ]);
     expect(acknowledgement).toEqual([
-      {_type: 'Movie', _id: 'abc123', title: 'Inception', year: 2010}
+      {
+        _type: 'Movie',
+        _id: 'abc123',
+        title: 'Inception',
+        year: 2010,
+        releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
+      }
     ]);
 
     // Read
     let movies = await store.load([{_type: 'Movie', _id: 'abc123'}]);
-    expect(movies).toEqual([{_type: 'Movie', _id: 'abc123', title: 'Inception', year: 2010}]);
+    expect(movies).toEqual([
+      {
+        _type: 'Movie',
+        _id: 'abc123',
+        title: 'Inception',
+        year: 2010,
+        releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
+      }
+    ]);
 
     // Partial read
     movies = await store.load([{_type: 'Movie', _id: 'abc123'}], {fields: {title: true}});
@@ -59,15 +80,20 @@ describe('MongoDBStore', () => {
 
     // Update
     acknowledgement = await store.save([
-      {_type: 'Movie', _id: 'abc123', title: 'The Matrix', year: undefined}
+      {_type: 'Movie', _id: 'abc123', title: 'The Matrix', year: null}
     ]);
     expect(acknowledgement).toEqual([
-      {_type: 'Movie', _id: 'abc123', title: 'The Matrix', year: undefined}
-    ]);
-    expect(Object.keys(acknowledgement[0]).includes('year')).toBe(true); // 'year' is still there
+      {_type: 'Movie', _id: 'abc123', title: 'The Matrix', year: null}
+    ]); // 'year' is still there
     movies = await store.load([{_type: 'Movie', _id: 'abc123'}]);
-    expect(movies).toEqual([{_type: 'Movie', _id: 'abc123', title: 'The Matrix'}]);
-    expect(Object.keys(movies[0]).includes('year')).toBe(false); // 'year' has been deleted
+    expect(movies).toEqual([
+      {
+        _type: 'Movie',
+        _id: 'abc123',
+        title: 'The Matrix',
+        releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'}
+      }
+    ]); // 'year' has been deleted
 
     // Already existing document
     expect(
