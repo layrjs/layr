@@ -146,35 +146,45 @@ export class MongoDBStore extends Registerable() {
     //
     // So we have to destructure 'document' after the 'for' statement
     for (const document of documents) {
-      const {_type, _new, _id, ...fields} = document;
+      const {_type, _new, _id, _ref, ...fields} = document;
 
-      const acknowledgedDocument = {_type, _id, ...fields}; // Everything but '_new'
+      let updatedDocument;
+      let acknowledgedDocument;
 
-      let existingDocument = existingDocuments?.find(
-        existingDocument => existingDocument._type === _type && existingDocument._id === _id
-      );
-
-      if (existingDocument) {
-        if (_new) {
-          if (throwIfAlreadyExists) {
-            throw new Error(`Document already exists (type: '${_type}', id: '${_id}')`);
-          }
-          acknowledgedDocument._existed = true;
-        }
+      if (_ref === true) {
+        acknowledgedDocument = {_type, _id, _ref};
+        updatedDocument = {_type, _id, _ref};
       } else {
-        if (!_new) {
-          if (throwIfNotFound) {
-            throw new Error(`Document not found (type: '${_type}', id: '${_id}')`);
-          }
-          acknowledgedDocument._missed = true;
-        }
-        existingDocument = {_type, _id};
-      }
+        acknowledgedDocument = {_type, _id, ...fields}; // Everything but '_new'
 
-      const updatedDocument = this._updateDocument(existingDocument, fields, {
-        throwIfNotFound,
-        throwIfAlreadyExists
-      });
+        let existingDocument = existingDocuments?.find(
+          existingDocument => existingDocument._type === _type && existingDocument._id === _id
+        );
+
+        if (existingDocument) {
+          if (_new) {
+            // eslint-disable-next-line max-depth
+            if (throwIfAlreadyExists) {
+              throw new Error(`Document already exists (type: '${_type}', id: '${_id}')`);
+            }
+            acknowledgedDocument._existed = true;
+          }
+        } else {
+          if (!_new) {
+            // eslint-disable-next-line max-depth
+            if (throwIfNotFound) {
+              throw new Error(`Document not found (type: '${_type}', id: '${_id}')`);
+            }
+            acknowledgedDocument._missed = true;
+          }
+          existingDocument = {_type, _id};
+        }
+
+        updatedDocument = this._updateDocument(existingDocument, fields, {
+          throwIfNotFound,
+          throwIfAlreadyExists
+        });
+      }
 
       updatedDocuments.push(updatedDocument);
       acknowledgedDocuments.push(acknowledgedDocument);
@@ -195,7 +205,7 @@ export class MongoDBStore extends Registerable() {
         updatedValue = this._updateDocuments(existingValue, value, {
           throwIfNotFound,
           throwIfAlreadyExists
-        });
+        }).updatedDocuments;
       } else if (typeof value === 'object' && !(value instanceof Date)) {
         updatedValue = this._updateDocument(existingValue, value, {
           throwIfNotFound,
