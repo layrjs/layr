@@ -8,8 +8,8 @@ export const Observable = (Base = Object) =>
       this._getObservers().remove(observer);
     }
 
-    notify() {
-      this._getObservers().call();
+    notify({_observerStack} = {}) {
+      this._getObservers().call({_observerStack});
     }
 
     _getObservers() {
@@ -45,8 +45,8 @@ export function createObservable(target) {
     observers.remove(observer);
   };
 
-  const callObservers = function () {
-    observers.call();
+  const callObservers = function ({_observerStack} = {}) {
+    observers.call({_observerStack});
   };
 
   const handler = {
@@ -143,13 +143,22 @@ export class ObserverSet {
     }
   }
 
-  call() {
+  call({_observerStack = new Set()} = {}) {
     for (const observer of this._observers) {
-      if (typeof observer === 'function') {
-        observer();
-      } else {
-        // The observer is an observable
-        observer.notify();
+      if (_observerStack.has(observer)) {
+        continue; // Avoid looping indefinitely when a circular reference is encountered
+      }
+
+      _observerStack.add(observer);
+      try {
+        if (typeof observer === 'function') {
+          observer({_observerStack});
+        } else {
+          // The observer is an observable
+          observer.notify({_observerStack});
+        }
+      } finally {
+        _observerStack.delete(observer);
       }
     }
   }

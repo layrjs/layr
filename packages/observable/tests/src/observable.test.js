@@ -392,4 +392,16 @@ describe('Observable', () => {
       );
     });
   });
+
+  describe('Observable with a circular reference', () => {
+    it('Should not loop indefinitely', () => {
+      const observableObject = createObservable({});
+
+      const observer = jest.fn();
+      observableObject.observe(observer);
+      expect(observer).not.toHaveBeenCalled();
+      observableObject.circularReference = observableObject;
+      expect(observer).toHaveBeenCalled();
+    });
+  });
 });
