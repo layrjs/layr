@@ -1,3 +1,4 @@
+import ow from 'ow';
 import {syncOrAsync} from '@deepr/util';
 
 import {MissingPropertyEmitter} from './missing-property-emitter';
@@ -52,8 +53,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return _callParentLayer(layer, this, methodName, ...args);
     }
 
-    static exposeProperty(name, descriptor) {
-      _exposeProperty(this, name, descriptor);
+    static exposeProperty(name, type, options) {
+      _exposeProperty(this, name, type, options);
     }
 
     static getExposedProperty(name) {
@@ -130,8 +131,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return _callParentLayer(layer, this, methodName, ...args);
     }
 
-    exposeProperty(name, descriptor) {
-      _exposeProperty(this, name, descriptor);
+    exposeProperty(name, type, options) {
+      _exposeProperty(this, name, type, options);
     }
 
     getExposedProperty(name) {
@@ -221,12 +222,7 @@ function _buildQuery(target, methodName, ...args) {
   };
 }
 
-function _exposeProperty(target, name, descriptor) {
-  const func = descriptor.value;
-  if (typeof func !== 'function') {
-    throw new Error('Currently, only methods can be exposed');
-  }
-
+function _exposeProperty(target, name, type, options) {
   // TODO: Consider adding the following:
   // if (target._exposedProperties?.has(name)) {
   //   throw new Error(`Property is already exposed (name: '${name}')`);
@@ -238,7 +234,7 @@ function _exposeProperty(target, name, descriptor) {
     target._exposedProperties = new Map(target._exposedProperties);
   }
 
-  target._exposedProperties.set(name, {name, type: 'method'});
+  target._exposedProperties.set(name, {name, type, ...options});
 }
 
 function _getExposedProperty(target, name) {
@@ -367,53 +363,28 @@ function _introspect(target) {
 
 // === Exposition ===
 
-export function expose(target) {
-  // TODO: Simplify
+export function expose(options = {}) {
+  ow(options, ow.object.exactShape({})); // TODO: implement 'condition' option
 
-  if (target !== undefined) {
-    // expose() called with an object
-    target._isExposed = true;
-    return target;
-  }
-
-  // expose() called as a decorator
   return function (target, name, descriptor) {
     if (!name) {
-      // @expose() used on a class
+      // @expose() used on a class or an object
       target._isExposed = true;
       return target;
     }
 
     if (descriptor.initializer !== undefined) {
-      // @expose() used on a property defined in a parent prototype
+      // @expose() used on an inherited property shortcut
+      // Examples: `@expose() title;` or `@expose() save;`
       const prototype = Object.getPrototypeOf(target);
-      const prototypeDescriptor = getPropertyDescriptor(prototype, name);
-      if (prototypeDescriptor.get !== undefined) {
-        // @expose() used on a field
-        // TODO: Implement field exposition
-        return prototypeDescriptor;
-      }
-
-      const func = prototypeDescriptor.value;
-
-      if (typeof func !== 'function') {
-        throw new Error('Expected a function'); // TODO: Improve this error message
-      }
-
-      const newDescriptor = {
-        enumerable: descriptor.enumerable,
-        configurable: descriptor.configurable,
-        writable: descriptor.writable,
-        value: func
-      };
-
-      target.exposeProperty(name, newDescriptor);
-
-      return newDescriptor;
+      descriptor = getPropertyDescriptor(prototype, name);
     }
 
-    // @expose() used on a property
-    target.exposeProperty(name, descriptor);
+    const type = typeof descriptor.value === 'function' ? 'method' : 'field';
+
+    target.exposeProperty(name, type, options);
+
+    return descriptor;
   };
 }
 

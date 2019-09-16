@@ -87,7 +87,7 @@ describe('Parent layer via proxy', () => {
         }
       }
 
-      const authenticator = expose(Authenticator.deserialize());
+      const authenticator = expose()(Authenticator.deserialize());
 
       const layer = new Layer({authenticator, Math}, {name: 'backend'});
 

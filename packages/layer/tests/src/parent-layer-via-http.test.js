@@ -103,7 +103,7 @@ beforeAll(async () => {
     }
   }
 
-  const authenticator = expose(Authenticator.deserialize());
+  const authenticator = expose()(Authenticator.deserialize());
 
   const layer = new Layer({authenticator, Movie}, {name: 'backend'});
 
@@ -115,7 +115,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await layerServer.stop();
+  await layerServer?.stop();
 });
 
 describe('Parent layer via HTTP', () => {
