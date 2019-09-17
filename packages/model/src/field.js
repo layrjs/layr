@@ -1,3 +1,4 @@
+import {isExposed} from '@liaison/layer';
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
 import {mapFromOneOrMany} from '@liaison/util';
 import isEmpty from 'lodash/isEmpty';
@@ -87,6 +88,10 @@ export class Field {
     return this._parent.getLayer();
   }
 
+  getParent() {
+    return this._parent;
+  }
+
   getName() {
     return this._name;
   }
@@ -101,6 +106,10 @@ export class Field {
 
   isActive() {
     return this._isActive;
+  }
+
+  isExposed() {
+    return isExposed(this._parent, this._name);
   }
 
   getValue({throwIfInactive = true} = {}) {

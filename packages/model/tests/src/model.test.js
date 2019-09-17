@@ -1,4 +1,4 @@
-import {Layer} from '@liaison/layer';
+import {Layer, expose} from '@liaison/layer';
 
 import {Model, field, validators, createValidator} from '../../..';
 
@@ -305,17 +305,17 @@ describe('Model', () => {
 
   test('Serialization', () => {
     class Movie extends Model {
-      @field('string?') title;
+      @expose() @field('string?') title;
 
-      @field('string?') country;
+      @expose() @field('string?') country;
 
-      @field('Date?') releasedOn;
+      @expose() @field('Date?') releasedOn;
 
-      @field('string[]?') genres;
+      @expose() @field('string[]?') genres;
 
-      @field('TechnicalSpecs?') technicalSpecs;
+      @expose() @field('TechnicalSpecs?') technicalSpecs;
 
-      @field('Actor[]?') actors;
+      @expose() @field('Actor[]?') actors;
     }
 
     class TechnicalSpecs extends Model {
@@ -532,6 +532,46 @@ describe('Model', () => {
       country: 'USA'
     });
     expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
+  });
+
+  test('Field exposition', () => {
+    class BaseMovie extends Model {
+      @field('string?') title;
+
+      @field('string?') secret;
+    }
+
+    class BackendMovie extends BaseMovie {
+      @expose() title;
+    }
+
+    class FrontendMovie extends BaseMovie {}
+
+    const backendLayer = new Layer({Movie: BackendMovie});
+    const frontendLayer = new Layer({Movie: FrontendMovie}, {parent: backendLayer});
+
+    const frontendMovie = frontendLayer.Movie.deserialize({title: 'Inception', secret: 'xyz123'});
+    expect(frontendMovie.serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      secret: 'xyz123'
+    });
+    expect(frontendMovie.serialize({target: backendLayer.getId()})).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      secret: 'xyz123'
+    });
+
+    const backendMovie = backendLayer.Movie.deserialize({title: 'Inception', secret: 'xyz123'});
+    expect(backendMovie.serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      secret: 'xyz123'
+    });
+    expect(backendMovie.serialize({target: frontendLayer.getId()})).toEqual({
+      _type: 'Movie',
+      title: 'Inception'
+    });
   });
 
   test('Cloning', () => {

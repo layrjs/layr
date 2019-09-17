@@ -67,7 +67,19 @@ export class Model extends Observable(Serializable(Registerable())) {
   // === Serialization ===
 
   serialize({target, fields, isDeep} = {}) {
-    const rootFieldMask = this.createFieldMask(fields);
+    const targetIsLower = () => {
+      if (target === undefined) {
+        return false;
+      }
+
+      const layer = this.getLayer({throwIfNotFound: false});
+      const parentLayer = layer?.getParent({throwIfNotFound: false});
+      return !(target === layer?.getId() || target === parentLayer?.getId());
+    };
+
+    const rootFieldMask = targetIsLower() ?
+      this.createFieldMaskForExposedFields(fields) :
+      this.createFieldMask(fields);
 
     if (!isDeep) {
       this.validate({fields: rootFieldMask});
@@ -291,6 +303,14 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.createFieldMask(true, {
       filter(field) {
         return field.isActive();
+      }
+    });
+  }
+
+  createFieldMaskForExposedFields(fields = true) {
+    return this.createFieldMask(fields, {
+      filter(field) {
+        return field.isExposed();
       }
     });
   }
