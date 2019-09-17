@@ -3,7 +3,7 @@ import {Model, Identity, field} from '@liaison/model';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
-import {Storable} from '../../..';
+import {Storable, storable} from '../../..';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 3 * 60 * 1000; // 3 minutes
 
@@ -18,25 +18,31 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await store.disconnect();
-  await server.stop();
+  await store?.disconnect();
+  await server?.stop();
 });
 
 describe('Storable', () => {
   test('CRUD operations', async () => {
     class Movie extends Storable() {
-      @field('string') title;
+      @storable() @field('string') title;
 
-      @field('number?') year;
+      @storable() @field('number?') year;
+
+      @field('string?') secret;
     }
 
     const rootLayer = new Layer({Movie, store});
 
+    let layer = rootLayer.fork();
+    let movie = new layer.Movie({title: 'Inception', year: 2010, secret: 'abc123'});
+    const id = movie.id;
+
+    const storableFields = movie.createFieldMaskForStorableFields();
+    expect(storableFields.serialize()).toEqual({title: true, year: true});
+
     // Create
 
-    let layer = rootLayer.fork();
-    let movie = new layer.Movie({title: 'Inception', year: 2010});
-    const id = movie.id;
     await movie.save();
 
     // Read
@@ -45,6 +51,7 @@ describe('Storable', () => {
     movie = await layer.Movie.get(id);
     expect(movie.title).toBe('Inception');
     expect(movie.year).toBe(2010);
+    expect(movie.getField('secret').isActive()).toBe(false);
 
     let movie2 = await layer.Movie.get(id);
     expect(movie2).toBe(movie);
@@ -265,11 +272,11 @@ describe('Storable', () => {
 
   test('Finding storables', async () => {
     class Movie extends Storable() {
-      @field('string') title;
+      @storable() @field('string') title;
 
-      @field('string') genre;
+      @storable() @field('string') genre;
 
-      @field('string') country;
+      @storable() @field('string') country;
     }
 
     const rootLayer = new Layer({Movie, store});

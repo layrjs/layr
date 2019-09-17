@@ -52,22 +52,34 @@ export const Storable = (Base = Entity) =>
       await this._loadFromStore(storablesToLoad, {fields, throwIfNotFound});
 
       for (const loadedStorable of storablesToLoad) {
-        await loadedStorable.afterLoad();
+        await loadedStorable.afterLoad({fields});
       }
     }
 
-    static async _loadFromStore(storables, {fields, throwIfNotFound}) {
+    static async _loadFromStore(storables, {fields, reload, throwIfNotFound}) {
+      fields = this.prototype.createFieldMaskForStorableFields(fields);
+
+      const storablesToLoad = reload ?
+        storables :
+        storables.filter(storable => !storable.createFieldMaskForActiveFields().includes(fields));
+
+      if (!storablesToLoad.length) {
+        return;
+      }
+
       const store = this.getStore();
       const storeId = store.getId();
       let serializedStorables = storables.map(storable =>
         storable.serializeReference({target: storeId})
       );
+
       const serializedFields = fields.serialize();
       serializedStorables = await store.load(serializedStorables, {
         fields: serializedFields,
         throwIfNotFound
       });
-      storables = serializedStorables.map(serializedStorable =>
+
+      serializedStorables.map(serializedStorable =>
         this.deserialize(serializedStorable, {fields, source: storeId})
       );
     }
@@ -142,11 +154,13 @@ export const Storable = (Base = Entity) =>
         return (await this.save([storables], {throwIfNotFound, throwIfAlreadyExists}))[0];
       }
 
+      const fields = this.prototype.createFieldMaskForStorableFields();
+
       for (const storable of storables) {
         await storable.beforeSave();
       }
 
-      await this._saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists});
+      await this._saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists});
 
       for (const storable of storables) {
         await storable.afterSave();
@@ -155,11 +169,13 @@ export const Storable = (Base = Entity) =>
       return storables;
     }
 
-    static async _saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists}) {
+    static async _saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists}) {
       const store = this.getStore();
       const storeId = store.getId();
 
-      let serializedStorables = storables.map(storable => storable.serialize({target: storeId}));
+      let serializedStorables = storables.map(storable =>
+        storable.serialize({target: storeId, fields})
+      );
 
       serializedStorables = await store.save(serializedStorables, {
         throwIfNotFound,
@@ -235,23 +251,28 @@ export const Storable = (Base = Entity) =>
       }
 
       for (const storable of storables) {
-        await storable.afterLoad();
+        await storable.afterLoad({fields});
       }
 
       return storables;
     }
 
     static async _findInStore({filter, sort, skip, limit, fields}) {
+      fields = this.prototype.createFieldMaskForStorableFields(fields);
+
       const store = this.getStore();
       const storeId = store.getId();
+
       const serializedFields = fields.serialize();
       const serializedStorables = await store.find(
         {_type: this.getRegisteredName(), ...filter},
         {sort, skip, limit, fields: serializedFields}
       );
+
       const storables = serializedStorables.map(serializedStorable =>
         this.deserialize(serializedStorable, {fields, source: storeId})
       );
+
       return storables;
     }
 
@@ -304,4 +325,32 @@ export const Storable = (Base = Entity) =>
       };
       return this.getFieldValues({filter});
     }
+
+    // === Storable fields ===
+
+    addStorableField(name) {
+      if (!this._storableFields) {
+        this._storableFields = new Map();
+      } else if (!Object.prototype.hasOwnProperty.call(this, '_storableFields')) {
+        this._storableFields = new Map(this._storableFields);
+      }
+      this._storableFields.set(name, {name});
+    }
+
+    createFieldMaskForStorableFields(fields = true) {
+      return this.createFieldMask(fields, {
+        filter: field => {
+          return this._storableFields?.has(field.getName());
+        }
+      });
+    }
   };
+
+// === Decorators ===
+
+export function storable() {
+  return function (target, name, descriptor) {
+    target.addStorableField(name);
+    return descriptor;
+  };
+}
