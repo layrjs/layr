@@ -67,21 +67,16 @@ export const Storable = (Base = Entity) =>
         return;
       }
 
-      const store = this.getStore();
-      const storeId = store.getId();
-      let serializedStorables = storables.map(storable =>
-        storable.serializeReference({target: storeId})
-      );
+      let serializedStorables = storables.map(storable => storable.serializeReference());
 
+      const store = this.getStore();
       const serializedFields = fields.serialize();
       serializedStorables = await store.load(serializedStorables, {
         fields: serializedFields,
         throwIfNotFound
       });
 
-      serializedStorables.map(serializedStorable =>
-        this.deserialize(serializedStorable, {fields, source: storeId})
-      );
+      serializedStorables.map(serializedStorable => this.deserialize(serializedStorable));
     }
 
     async load({fields, reload, populate = true, throwIfNotFound = true} = {}) {
@@ -170,21 +165,15 @@ export const Storable = (Base = Entity) =>
     }
 
     static async _saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists}) {
+      let serializedStorables = storables.map(storable => storable.serialize({fields}));
+
       const store = this.getStore();
-      const storeId = store.getId();
-
-      let serializedStorables = storables.map(storable =>
-        storable.serialize({target: storeId, fields})
-      );
-
       serializedStorables = await store.save(serializedStorables, {
         throwIfNotFound,
         throwIfAlreadyExists
       });
 
-      serializedStorables.map(serializedStorable =>
-        this.deserialize(serializedStorable, {source: storeId})
-      );
+      serializedStorables.map(serializedStorable => this.deserialize(serializedStorable));
     }
 
     async save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
@@ -216,13 +205,9 @@ export const Storable = (Base = Entity) =>
     }
 
     static async _deleteFromStore(storables, {throwIfNotFound}) {
+      const serializedStorables = storables.map(storable => storable.serializeReference());
+
       const store = this.getStore();
-      const storeId = store.getId();
-
-      const serializedStorables = storables.map(storable =>
-        storable.serializeReference({target: storeId})
-      );
-
       await store.delete(serializedStorables, {throwIfNotFound});
     }
 
@@ -261,8 +246,6 @@ export const Storable = (Base = Entity) =>
       fields = this.prototype.createFieldMaskForStorableFields(fields);
 
       const store = this.getStore();
-      const storeId = store.getId();
-
       const serializedFields = fields.serialize();
       const serializedStorables = await store.find(
         {_type: this.getRegisteredName(), ...filter},
@@ -270,7 +253,7 @@ export const Storable = (Base = Entity) =>
       );
 
       const storables = serializedStorables.map(serializedStorable =>
-        this.deserialize(serializedStorable, {fields, source: storeId})
+        this.deserialize(serializedStorable)
       );
 
       return storables;
@@ -339,8 +322,8 @@ export const Storable = (Base = Entity) =>
 
     createFieldMaskForStorableFields(fields = true) {
       return this.createFieldMask(fields, {
-        filter: field => {
-          return this._storableFields?.has(field.getName());
+        filter(field) {
+          return field.getParent()._storableFields?.has(field.getName());
         }
       });
     }

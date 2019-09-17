@@ -1,5 +1,4 @@
 import {Registerable} from '@liaison/layer';
-import nanoid from 'nanoid';
 import {MongoClient} from 'mongodb';
 import groupBy from 'lodash/groupBy';
 import ow from 'ow';
@@ -14,12 +13,8 @@ export class MongoDBStore extends Registerable() {
     ow(connectionString, ow.string.url);
 
     super();
-    this._connectionString = connectionString;
-    this._id = nanoid();
-  }
 
-  getId() {
-    return this._id;
+    this._connectionString = connectionString;
   }
 
   async connect() {

@@ -17,7 +17,6 @@
     "@liaison/util": "^0.1.0",
     "lodash": "^4.17.11",
     "mongodb": "^3.2.7",
-    "nanoid": "^2.0.3",
     "ow": "^0.13.2"
   },
   "@managed": {
