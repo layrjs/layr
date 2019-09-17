@@ -252,10 +252,14 @@ export class Model extends Observable(Serializable(Registerable())) {
   // === Field masks ===
 
   createFieldMask(fields = true, {filter} = {}) {
+    // TODO: Consider memoizing
+
     if (FieldMask.isFieldMask(fields)) {
-      return fields;
+      fields = fields.serialize();
     }
+
     fields = this._createFieldMask(fields, {filter});
+
     return new FieldMask(fields);
   }
 

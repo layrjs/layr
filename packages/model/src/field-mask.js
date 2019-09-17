@@ -37,6 +37,14 @@ export class FieldMask {
     return new FieldMask(subfields);
   }
 
+  has(name) {
+    if (typeof name !== 'string' || name === '') {
+      throw new Error(`The 'name' paramter must be a non empty string`);
+    }
+
+    return this._fields[name] !== undefined;
+  }
+
   includes(fields) {
     if (!FieldMask.isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
