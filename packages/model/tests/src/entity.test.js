@@ -55,11 +55,11 @@ describe('Entity', () => {
 
   test('Serialization', () => {
     class Movie extends Entity {
-      @field('string?') title;
+      @field('string') title;
 
-      @field('number?') year;
+      @field('number') year;
 
-      @field('Director?') director;
+      @field('Director') director;
     }
 
     class Director extends Entity {

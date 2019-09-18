@@ -66,7 +66,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Serialization ===
 
-  serialize({target, fields, isDeep} = {}) {
+  serialize({target, fields} = {}) {
     const targetIsLower = () => {
       if (target === undefined) {
         return false;
@@ -80,10 +80,6 @@ export class Model extends Observable(Serializable(Registerable())) {
     const rootFieldMask = targetIsLower() ?
       this.createFieldMaskForExposedFields(fields) :
       this.createFieldMask(fields);
-
-    if (!isDeep) {
-      this.validate({fields: rootFieldMask});
-    }
 
     const serializedFields = {};
 

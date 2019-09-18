@@ -305,17 +305,17 @@ describe('Model', () => {
 
   test('Serialization', () => {
     class Movie extends Model {
-      @expose() @field('string?') title;
+      @expose() @field('string') title;
 
-      @expose() @field('string?') country;
+      @expose() @field('string') country;
 
-      @expose() @field('Date?') releasedOn;
+      @expose() @field('Date') releasedOn;
 
-      @expose() @field('string[]?') genres;
+      @expose() @field('string[]') genres;
 
-      @expose() @field('TechnicalSpecs?') technicalSpecs;
+      @expose() @field('TechnicalSpecs') technicalSpecs;
 
-      @expose() @field('Actor[]?') actors;
+      @expose() @field('Actor[]') actors;
     }
 
     class TechnicalSpecs extends Model {
@@ -536,9 +536,9 @@ describe('Model', () => {
 
   test('Field exposition', () => {
     class BaseMovie extends Model {
-      @field('string?') title;
+      @field('string') title;
 
-      @field('string?') secret;
+      @field('string') secret;
     }
 
     class BackendMovie extends BaseMovie {
