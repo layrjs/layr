@@ -57,7 +57,7 @@ export class MongoDBStore extends Registerable() {
         loadedDocument => loadedDocument._type === _type && loadedDocument._id === _id
       );
       if (loadedDocument) {
-        return loadedDocument;
+        return serializeDocument(loadedDocument);
       }
       if (!throwIfNotFound) {
         return {_type, _id, _missed: true};
@@ -84,9 +84,7 @@ export class MongoDBStore extends Registerable() {
 
       debug(`%s.find(%o, %o)`, type, query, options);
       const cursor = collection.find(query, options);
-      let foundDocuments = await cursor.toArray();
-
-      foundDocuments = foundDocuments.map(serializeDocument);
+      const foundDocuments = await cursor.toArray();
 
       if (fields !== undefined) {
         for (const foundDocument of foundDocuments) {
