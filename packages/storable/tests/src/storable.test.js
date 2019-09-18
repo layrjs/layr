@@ -117,6 +117,11 @@ describe('Storable', () => {
     expect(movie.title).toBe('The Matrix');
     expect(movie.year).toBeUndefined();
 
+    layer = rootLayer.fork();
+    movie = await layer.Movie.$get(id);
+    movie.title = undefined;
+    await expect(movie.$save()).rejects.toThrow(/Model validation failed/);
+
     // Delete
 
     layer = rootLayer.fork();
