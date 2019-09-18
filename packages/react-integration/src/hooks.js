@@ -5,21 +5,10 @@ export function useModel(model) {
 
   useEffect(
     function () {
-      let deferredForceUpdate = false;
-      const deferForceUpdate = function () {
-        if (!deferredForceUpdate) {
-          deferredForceUpdate = true;
-          setTimeout(function () {
-            deferredForceUpdate = false;
-            forceUpdate();
-          }, 10);
-        }
-      };
-
-      model.observe(deferForceUpdate);
+      model.observe(forceUpdate);
 
       return function () {
-        model.unobserve(deferForceUpdate);
+        model.unobserve(forceUpdate);
       };
     },
     [model]
