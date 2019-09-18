@@ -138,18 +138,18 @@ export class Model extends Observable(Serializable(Registerable())) {
 
     this.setField(name, type, options);
 
-    descriptor.get = function () {
-      const field = this.getField(name);
-      return field.getValue();
+    return {
+      configurable: false,
+      enumerable: false,
+      get() {
+        const field = this.getField(name);
+        return field.getValue();
+      },
+      set(value) {
+        const field = this.getField(name);
+        return field.setValue(value);
+      }
     };
-
-    descriptor.set = function (value) {
-      const field = this.getField(name);
-      return field.setValue(value);
-    };
-
-    delete descriptor.initializer;
-    delete descriptor.writable;
   }
 
   getField(name) {
@@ -171,10 +171,10 @@ export class Model extends Observable(Serializable(Registerable())) {
             while (true) {
               let {value: field, done} = iterator.next();
               if (field) {
+                field = this._initializeField(field);
                 if (filter && !filter(field)) {
                   continue;
                 }
-                field = this._initializeField(field);
               }
               return {value: field, done};
             }
@@ -253,7 +253,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   _initializeField(field) {
-    if (field.parent !== this) {
+    if (field.getParent() !== this) {
       this._initializeFields();
       field = field.fork(this);
       this._fields.set(field.getName(), field);
@@ -402,7 +402,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
 export function field(type, options) {
   return function (target, name, descriptor) {
-    target.defineField(name, type, options, descriptor);
+    return target.defineField(name, type, options, descriptor);
   };
 }
 
