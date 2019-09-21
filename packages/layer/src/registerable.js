@@ -65,6 +65,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return _getExposedProperties(this);
     }
 
+    static async exposedPropertyOperationIsAllowed({property, operation, setting}) {
+      return await _exposedPropertyOperationIsAllowed(this, {property, operation, setting});
+    }
+
     static onMissingProperty(name) {
       return _onMissingProperty(this, name);
     }
@@ -141,6 +145,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     getExposedProperties() {
       return _getExposedProperties(this);
+    }
+
+    async exposedPropertyOperationIsAllowed({property, operation, setting}) {
+      return await _exposedPropertyOperationIsAllowed(this, {property, operation, setting});
     }
 
     onMissingProperty(name) {
@@ -223,10 +231,13 @@ function _buildQuery(target, methodName, ...args) {
 }
 
 function _exposeProperty(target, name, type, options) {
-  // TODO: Consider adding the following:
-  // if (target._exposedProperties?.has(name)) {
-  //   throw new Error(`Property is already exposed (name: '${name}')`);
-  // }
+  ow(type, ow.string.oneOf(['field', 'method']));
+  const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array, ow.set);
+  if (type === 'field') {
+    ow(options, ow.object.exactShape({read: setting, write: setting}));
+  } else if (type === 'method') {
+    ow(options, ow.object.exactShape({call: setting}));
+  }
 
   if (!target._exposedProperties) {
     target._exposedProperties = new Map();
@@ -243,6 +254,21 @@ function _getExposedProperty(target, name) {
 
 function _getExposedProperties(target) {
   return target._exposedProperties || EMPTY_MAP;
+}
+
+async function _exposedPropertyOperationIsAllowed(
+  _target,
+  {property: _property, operation: _operation, setting}
+) {
+  if (setting === true) {
+    return true;
+  }
+
+  if (setting === false) {
+    return false;
+  }
+
+  return undefined;
 }
 
 function _onMissingProperty(target, name) {
@@ -364,11 +390,10 @@ function _introspect(target) {
 // === Exposition ===
 
 export function expose(options = {}) {
-  ow(options, ow.object.exactShape({})); // TODO: implement 'condition' option
-
   return function (target, name, descriptor) {
     if (!name) {
       // @expose() used on a class or an object
+      // TODO: Get rid of this
       target._isExposed = true;
       return target;
     }
