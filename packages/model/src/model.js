@@ -14,7 +14,7 @@ export class Model extends Observable(Serializable(Registerable())) {
       return;
     }
 
-    for (const field of this.getFields()) {
+    for (const field of this.$getFields()) {
       const name = field.getName();
       if (Object.prototype.hasOwnProperty.call(object, name)) {
         const value = object[name];
@@ -26,10 +26,10 @@ export class Model extends Observable(Serializable(Registerable())) {
     }
   }
 
-  assign(object) {
+  $assign(object) {
     if (object === undefined) {
       // NOOP
-    } else if (Model.isModel(object)) {
+    } else if (Model.$isModel(object)) {
       this._assignOther(object);
     } else if (typeof object === 'object') {
       this._assignObject(object);
@@ -42,48 +42,48 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   _assignObject(object) {
     for (const [name, value] of Object.entries(object)) {
-      if (this.hasField(name)) {
-        const field = this.getField(name);
+      if (this.$hasField(name)) {
+        const field = this.$getField(name);
         field.createValue(value);
       }
     }
   }
 
   _assignOther(other) {
-    for (const otherField of other.getActiveFields()) {
+    for (const otherField of other.$getActiveFields()) {
       const name = otherField.getName();
-      if (this.hasField(name)) {
-        const field = this.getField(name);
+      if (this.$hasField(name)) {
+        const field = this.$getField(name);
         const value = otherField.getValue();
         field.setValue(value);
       }
     }
   }
 
-  clone() {
-    return this.constructor.deserialize(this.serialize());
+  $clone() {
+    return this.constructor.$deserialize(this.$serialize());
   }
 
   // === Serialization ===
 
-  serialize({target, fields} = {}) {
+  $serialize({target, fields} = {}) {
     const targetIsLower = () => {
       if (target === undefined) {
         return false;
       }
 
-      const layer = this.getLayer({throwIfNotFound: false});
+      const layer = this.$getLayer({throwIfNotFound: false});
       const parentLayer = layer?.getParent({throwIfNotFound: false});
       return !(target === layer?.getId() || target === parentLayer?.getId());
     };
 
     const rootFieldMask = targetIsLower() ?
-      this.createFieldMaskForExposedFields(fields) :
-      this.createFieldMask(fields);
+      this.$createFieldMaskForExposedFields(fields) :
+      this.$createFieldMask(fields);
 
     const serializedFields = {};
 
-    for (const field of this.getActiveFields()) {
+    for (const field of this.$getActiveFields()) {
       const name = field.getName();
 
       const fieldMask = rootFieldMask.get(name);
@@ -98,28 +98,28 @@ export class Model extends Observable(Serializable(Registerable())) {
       }
     }
 
-    return {...super.serialize(), ...serializedFields};
+    return {...super.$serialize(), ...serializedFields};
   }
 
-  deserialize(object = {}, {source} = {}) {
-    super.deserialize(object);
+  $deserialize(object = {}, {source} = {}) {
+    super.$deserialize(object);
 
-    const isNew = this.isNew();
+    const isNew = this.$isNew();
 
-    for (const name of this.getFieldNames()) {
+    for (const name of this.$getFieldNames()) {
       if (Object.prototype.hasOwnProperty.call(object, name)) {
-        const field = this.getField(name);
+        const field = this.$getField(name);
         const value = object[name];
         field.deserializeValue(value, {source});
       } else if (isNew) {
-        const field = this.getField(name);
+        const field = this.$getField(name);
         const defaultValue = field.getDefaultValue();
         field.setValue(defaultValue);
       }
     }
   }
 
-  static getInstance(object, previousInstance) {
+  static $getInstance(object, previousInstance) {
     if (previousInstance?.constructor === this) {
       return previousInstance;
     }
@@ -127,38 +127,38 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Fields ===
 
-  defineField(name, type, options, descriptor) {
+  $defineField(name, type, options, descriptor) {
     if (descriptor.initializer) {
       options = {...options, default: descriptor.initializer};
     }
 
-    this.setField(name, type, options);
+    this.$setField(name, type, options);
 
     return {
       configurable: false,
       enumerable: false,
       get() {
-        const field = this.getField(name);
+        const field = this.$getField(name);
         return field.getValue();
       },
       set(value) {
-        const field = this.getField(name);
+        const field = this.$getField(name);
         return field.setValue(value);
       }
     };
   }
 
-  getField(name) {
+  $getField(name) {
     const field = this._fields?.get(name);
     if (!field) {
       throw new Error(
-        `Field not found (name: '${name}'), model: ${this.constructor.getRegisteredName()}`
+        `Field not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
       );
     }
     return this._initializeField(field);
   }
 
-  getFields({filter} = {}) {
+  $getFields({filter} = {}) {
     return {
       [Symbol.iterator]: () => {
         const iterator = (this._fields || []).values()[Symbol.iterator]();
@@ -180,7 +180,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
-  getActiveFields({filter: otherFilter} = {}) {
+  $getActiveFields({filter: otherFilter} = {}) {
     const filter = function (field) {
       if (!field.isActive()) {
         return false;
@@ -190,17 +190,17 @@ export class Model extends Observable(Serializable(Registerable())) {
       }
       return true;
     };
-    return this.getFields({filter});
+    return this.$getFields({filter});
   }
 
-  getFieldNames() {
+  $getFieldNames() {
     return this._fields ? this._fields.keys() : [];
   }
 
-  getFieldValues({filter} = {}) {
+  $getFieldValues({filter} = {}) {
     return {
       [Symbol.iterator]: () => {
-        const fieldIterator = this.getActiveFields({filter})[Symbol.iterator]();
+        const fieldIterator = this.$getActiveFields({filter})[Symbol.iterator]();
         let valueIterator;
 
         return {
@@ -226,7 +226,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
-  setField(name, type, options) {
+  $setField(name, type, options) {
     if (this._fields?.has(name)) {
       throw new Error(`Field already exists (name: '${name}')`);
     }
@@ -236,7 +236,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     return field;
   }
 
-  hasField(name) {
+  $hasField(name) {
     return this._fields?.has(name);
   }
 
@@ -259,7 +259,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Field masks ===
 
-  createFieldMask(fields = true, {filter} = {}) {
+  $createFieldMask(fields = true, {filter} = {}) {
     // TODO: Consider memoizing
 
     if (FieldMask.isFieldMask(fields)) {
@@ -274,7 +274,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   _createFieldMask(rootFieldMask, {filter, _typeStack = new Set()}) {
     const normalizedFieldMask = {};
 
-    for (const field of this.getFields({filter})) {
+    for (const field of this.$getFields({filter})) {
       const type = field.getScalar().getType();
       if (_typeStack.has(type)) {
         continue; // Avoid looping indefinitely when a circular type is encountered
@@ -295,16 +295,16 @@ export class Model extends Observable(Serializable(Registerable())) {
     return normalizedFieldMask;
   }
 
-  createFieldMaskForActiveFields() {
-    return this.createFieldMask(true, {
+  $createFieldMaskForActiveFields() {
+    return this.$createFieldMask(true, {
       filter(field) {
         return field.isActive();
       }
     });
   }
 
-  createFieldMaskForExposedFields(fields = true) {
-    return this.createFieldMask(fields, {
+  $createFieldMaskForExposedFields(fields = true) {
+    return this.$createFieldMask(fields, {
       filter(field) {
         return field.isExposed();
       }
@@ -313,11 +313,11 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Validation ===
 
-  validate({fields} = {}) {
-    const failedValidators = this.getFailedValidators({fields});
+  $validate({fields} = {}) {
+    const failedValidators = this.$getFailedValidators({fields});
     if (failedValidators) {
       const error = new Error(
-        `Model validation failed (model: '${this.constructor.getRegisteredName()}', failedValidators: ${JSON.stringify(
+        `Model validation failed (model: '${this.constructor.$getRegisteredName()}', failedValidators: ${JSON.stringify(
           failedValidators
         )})`
       );
@@ -326,16 +326,16 @@ export class Model extends Observable(Serializable(Registerable())) {
     }
   }
 
-  isValid({fields} = {}) {
-    return this.getFailedValidators({fields}) === undefined;
+  $isValid({fields} = {}) {
+    return this.$getFailedValidators({fields}) === undefined;
   }
 
-  getFailedValidators({fields, isDeep: _isDeep} = {}) {
-    const rootFieldMask = this.createFieldMask(fields);
+  $getFailedValidators({fields, isDeep: _isDeep} = {}) {
+    const rootFieldMask = this.$createFieldMask(fields);
 
     let result;
 
-    for (const field of this.getActiveFields()) {
+    for (const field of this.$getActiveFields()) {
       const name = field.getName();
 
       const fieldMask = rootFieldMask.get(name);
@@ -377,13 +377,13 @@ export class Model extends Observable(Serializable(Registerable())) {
     return new Proxy(this, handler);
   }
 
-  static isModel(object) {
+  static $isModel(object) {
     return isModel(object);
   }
 
   [inspect.custom]() {
     const object = {};
-    for (const field of this.getActiveFields()) {
+    for (const field of this.$getActiveFields()) {
       const name = field.getName();
       const value = field.getValue();
       if (value !== undefined) {
@@ -398,12 +398,12 @@ export class Model extends Observable(Serializable(Registerable())) {
 
 export function field(type, options) {
   return function (target, name, descriptor) {
-    return target.defineField(name, type, options, descriptor);
+    return target.$defineField(name, type, options, descriptor);
   };
 }
 
 // === Utilities ===
 
 export function isModel(object) {
-  return typeof object?.constructor?.isModel === 'function';
+  return typeof object?.constructor?.$isModel === 'function';
 }

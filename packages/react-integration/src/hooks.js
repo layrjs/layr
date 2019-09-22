@@ -5,10 +5,10 @@ export function useModel(model) {
 
   useEffect(
     function () {
-      model.observe(forceUpdate);
+      model.$observe(forceUpdate);
 
       return function () {
-        model.unobserve(forceUpdate);
+        model.$unobserve(forceUpdate);
       };
     },
     [model]

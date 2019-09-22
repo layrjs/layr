@@ -2,19 +2,19 @@ import {Route} from './route';
 
 export const Routable = (Base = Object) =>
   class Routable extends Base {
-    static getRoute(name) {
-      const routes = this.getRoutes();
+    static $getRoute(name) {
+      const routes = this.$getRoutes();
       return routes.get(name);
     }
 
-    static setRoute(name, pattern, options) {
-      const routes = this.getRoutes();
+    static $setRoute(name, pattern, options) {
+      const routes = this.$getRoutes();
       const route = new Route(name, pattern, options);
       routes.set(name, route);
       return route;
     }
 
-    static getRoutes() {
+    static $getRoutes() {
       let routes = this._routes;
       if (!Object.prototype.hasOwnProperty.call(this, '_routes')) {
         routes = new Map(routes);
@@ -23,8 +23,8 @@ export const Routable = (Base = Object) =>
       return routes;
     }
 
-    static findRoute(url) {
-      const routes = this.getRoutes();
+    static $findRoute(url) {
+      const routes = this.$getRoutes();
       for (const route of routes.values()) {
         const result = route.test(url);
         if (result) {
@@ -33,8 +33,8 @@ export const Routable = (Base = Object) =>
       }
     }
 
-    static callRoute(url) {
-      const result = this.findRoute(url);
+    static $callRoute(url) {
+      const result = this.$findRoute(url);
       if (!result) {
         throw new Error(`Route not found (URL: '${url}')`);
       }
@@ -43,24 +43,24 @@ export const Routable = (Base = Object) =>
 
     static __isRoutable = true;
 
-    getRoute(name) {
-      return this.constructor.getRoute.call(this, name);
+    $getRoute(name) {
+      return this.constructor.$getRoute.call(this, name);
     }
 
-    setRoute(name, pattern, options) {
-      return this.constructor.setRoute.call(this, name, pattern, options);
+    $setRoute(name, pattern, options) {
+      return this.constructor.$setRoute.call(this, name, pattern, options);
     }
 
-    getRoutes() {
-      return this.constructor.getRoutes.call(this);
+    $getRoutes() {
+      return this.constructor.$getRoutes.call(this);
     }
 
-    findRoute(url) {
-      return this.constructor.findRoute.call(this, url);
+    $findRoute(url) {
+      return this.constructor.$findRoute.call(this, url);
     }
 
-    callRoute(url) {
-      return this.constructor.callRoute.call(this, url);
+    $callRoute(url) {
+      return this.constructor.$callRoute.call(this, url);
     }
   };
 
@@ -76,14 +76,14 @@ export function route(pattern, options) {
       throw new Error(`@route() can only be used on routable classes`);
     }
 
-    const route = target.setRoute(name, pattern, options);
+    const route = target.$setRoute(name, pattern, options);
 
     const decorate = function (func) {
       if (typeof func !== 'function') {
         throw new Error(`@route() can only be used on functions`);
       }
 
-      const router = this.getLayer().get('router');
+      const router = this.$getLayer().get('router');
 
       func.getPath = function (params) {
         return route.build(params);

@@ -8,7 +8,7 @@ export class Tracker extends Observable() {
 
   addTask(task) {
     this._tasks.push(task);
-    task.observe(this);
+    task.$observe(this);
   }
 
   findTask(name, status) {

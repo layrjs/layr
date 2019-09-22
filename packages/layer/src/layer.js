@@ -78,10 +78,11 @@ export class Layer {
 
   _register(name, registerable) {
     if (!isRegisterable(registerable)) {
+      console.log(registerable);
       throw new Error(`Expected a registerable`);
     }
 
-    if (registerable.getLayer({fallBackToClass: false, throwIfNotFound: false})) {
+    if (registerable.$getLayer({fallBackToClass: false, throwIfNotFound: false})) {
       throw new Error(`Registerable already registered (name: '${name}')`);
     }
 
@@ -89,8 +90,8 @@ export class Layer {
       throw new Error(`Name already registered (name: '${name}')`);
     }
 
-    registerable.setLayer(this);
-    registerable.setRegisteredName(name);
+    registerable.$setLayer(this);
+    registerable.$setRegisteredName(name);
     this._registerables[name] = registerable;
     this._registeredNames.push(name);
 
@@ -98,8 +99,8 @@ export class Layer {
       get() {
         let registerable = this._registerables[name];
         if (!Object.prototype.hasOwnProperty.call(this._registerables, name)) {
-          registerable = registerable.fork();
-          registerable.setLayer(this);
+          registerable = registerable.$fork();
+          registerable.$setLayer(this);
           this._registerables[name] = registerable;
         }
         return registerable;
@@ -168,7 +169,7 @@ export class Layer {
     };
 
     for (const exposedItem of this.getExposedItems()) {
-      introspection.items[exposedItem.getRegisteredName()] = exposedItem.introspect();
+      introspection.items[exposedItem.$getRegisteredName()] = exposedItem.$introspect();
     }
 
     return introspection;
@@ -198,7 +199,7 @@ export class Layer {
 
   _serializeObject(object, options) {
     if (isSerializable(object)) {
-      return object.serialize(options);
+      return object.$serialize(options);
     }
 
     const primitiveType = getPrimitiveTypeFromValue(object);
@@ -262,7 +263,7 @@ export class Layer {
     }
 
     const Class = this.get(type);
-    return Class.deserialize(object, options);
+    return Class.$deserialize(object, options);
   }
 
   _deserializePlainObject(object, options) {
@@ -335,7 +336,7 @@ export class Layer {
         continue;
       }
 
-      const name = item.getRegisteredName();
+      const name = item.$getRegisteredName();
 
       if (isSending) {
         if (!this.getParent().get(name, {throwIfNotFound: false})) {
@@ -349,7 +350,7 @@ export class Layer {
         throw new Error(`Cannot send an item that is not serializable (name: '${name}')`);
       }
 
-      serializedItems[name] = item.serialize({target});
+      serializedItems[name] = item.$serialize({target});
       hasSerializedItems = true;
     }
 
@@ -372,7 +373,7 @@ export class Layer {
         throw new Error(`Cannot receive an item that is not serializable (name: '${name}')`);
       }
 
-      item.deserialize(serializedItem, {source});
+      item.$deserialize(serializedItem, {source});
     }
   }
 

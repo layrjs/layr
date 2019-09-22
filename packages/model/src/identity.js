@@ -19,19 +19,19 @@ export class Identity extends Model {
       if (id !== undefined) {
         this.constructor.validateId(id);
       } else {
-        id = this.constructor.generateId();
+        id = this.constructor.$generateId();
       }
     }
 
     this._id = id;
   }
 
-  serialize({target, fields, isDeep} = {}) {
-    const {_type, _new, ...otherProps} = super.serialize({target, fields, isDeep});
+  $serialize({target, fields, isDeep} = {}) {
+    const {_type, _new, ...otherProps} = super.$serialize({target, fields, isDeep});
     return {_type, ...(_new && {_new}), _id: this._id, ...otherProps};
   }
 
-  static getInstance(object, previousInstance) {
+  static $getInstance(object, previousInstance) {
     return findFromOneOrMany(
       previousInstance,
       previousInstance =>
@@ -43,7 +43,7 @@ export class Identity extends Model {
     return this._id;
   }
 
-  static generateId() {
+  static $generateId() {
     return cuid();
   }
 

@@ -27,17 +27,17 @@ export class Task extends Observable() {
     }
 
     this._status = 'running';
-    this.notify();
+    this.$notify();
 
     this._promise = this._func().then(
       value => {
         this._status = 'completed';
-        this.notify();
+        this.$notify();
         return value;
       },
       reason => {
         this._status = 'failed';
-        this.notify();
+        this.$notify();
         throw reason;
       }
     );

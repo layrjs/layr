@@ -3,14 +3,14 @@ import {LayerHTTPClient} from '@liaison/layer-http-client';
 import {LayerHTTPServer} from '@liaison/layer-http-server';
 
 class BaseAuthenticator extends Serializable(Registerable()) {
-  serialize() {
+  $serialize() {
     return {
-      ...super.serialize(),
+      ...super.$serialize(),
       token: this.token
     };
   }
 
-  deserialize({token} = {}) {
+  $deserialize({token} = {}) {
     this.token = token;
   }
 }
@@ -27,12 +27,12 @@ class BaseMovie extends Serializable(Registerable()) {
       this.ratingSum = ratingSum;
       this.ratingCount = ratingCount;
     }
-    this.constructor.setInstance(this);
+    this.constructor.$setInstance(this);
   }
 
-  serialize() {
+  $serialize() {
     return {
-      ...super.serialize(),
+      ...super.$serialize(),
       title: this.title,
       year: this.year,
       ratingSum: this.ratingSum,
@@ -40,19 +40,19 @@ class BaseMovie extends Serializable(Registerable()) {
     };
   }
 
-  deserialize({title, year, ratingSum, ratingCount} = {}) {
+  $deserialize({title, year, ratingSum, ratingCount} = {}) {
     this.title = title;
     this.year = year;
     this.ratingSum = ratingSum;
     this.ratingCount = ratingCount;
   }
 
-  static getInstance(_object, _previousInstance) {
+  static $getInstance(_object, _previousInstance) {
     // Let's simulate an identity map
     return this._instance;
   }
 
-  static setInstance(instance) {
+  static $setInstance(instance) {
     // The identity map can contain one instance only
     this._instance = instance;
   }
@@ -84,7 +84,7 @@ beforeAll(async () => {
     @expose() static get(id) {
       this.authorize();
       if (id === 'abc123') {
-        return this.deserialize({title: 'Inception', year: 2010, ratingSum: 9, ratingCount: 1});
+        return this.$deserialize({title: 'Inception', year: 2010, ratingSum: 9, ratingCount: 1});
       }
       throw new Error(`Movie not found (id: '${id}')`);
     }
@@ -96,14 +96,14 @@ beforeAll(async () => {
     }
 
     static authorize() {
-      const {token} = this.layer.authenticator;
+      const {token} = this.$layer.authenticator;
       if (token !== '123456789') {
         throw new Error('Token is invalid');
       }
     }
   }
 
-  const authenticator = expose()(Authenticator.deserialize());
+  const authenticator = expose()(Authenticator.$deserialize());
 
   const layer = new Layer({authenticator, Movie}, {name: 'backend'});
 
@@ -124,7 +124,7 @@ describe('Parent layer via HTTP', () => {
 
     class Movie extends BaseMovie {}
 
-    const authenticator = Authenticator.deserialize();
+    const authenticator = Authenticator.$deserialize();
 
     const layer = new Layer({authenticator, Movie}, {name: 'frontend', parent: backendLayer});
 

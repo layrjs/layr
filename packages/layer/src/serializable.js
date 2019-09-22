@@ -5,54 +5,54 @@ export const Serializable = (Base = Object) =>
       if (!isDeserializing) {
         this._isNew = true;
       }
-      // When overriding, call `this.constructor.setInstance(this)` after setting the id
+      // When overriding, call `this.constructor.$setInstance(this)` after setting the id
     }
 
-    isNew() {
+    $isNew() {
       return this._isNew;
     }
 
-    markAsNew() {
+    $markAsNew() {
       this._isNew = true;
     }
 
-    markAsNotNew() {
+    $markAsNotNew() {
       this._isNew = false;
     }
 
-    serialize() {
+    $serialize() {
       return {
-        _type: this.constructor.getRegisteredName(),
+        _type: this.constructor.$getRegisteredName(),
         ...(this._isNew && {_new: true})
       };
     }
 
     toJSON() {
-      return this.serialize();
+      return this.$serialize();
     }
 
-    static deserialize(object, {previousInstance, ...otherOptions} = {}) {
-      let instance = this.getInstance(object, previousInstance);
+    static $deserialize(object, {previousInstance, ...otherOptions} = {}) {
+      let instance = this.$getInstance(object, previousInstance);
       if (!instance) {
         instance = new this(object, {isDeserializing: true});
       }
-      instance.deserialize(object, otherOptions);
+      instance.$deserialize(object, otherOptions);
       return instance;
     }
 
-    deserialize(object) {
+    $deserialize(object) {
       this._isNew = Boolean(object?._new);
     }
 
-    static getInstance(_object, _previousInstance) {
+    static $getInstance(_object, _previousInstance) {
       // Override to implement an identity map
     }
 
-    static setInstance(_instance) {
+    static $setInstance(_instance) {
       // Override to implement an identity map
     }
   };
 
 export function isSerializable(value) {
-  return typeof value?.serialize === 'function';
+  return typeof value?.$serialize === 'function';
 }

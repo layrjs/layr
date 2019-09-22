@@ -51,7 +51,7 @@ describe('Storable', () => {
     movie = await layer.Movie.$get(id);
     expect(movie.title).toBe('Inception');
     expect(movie.year).toBe(2010);
-    expect(movie.getField('secret').isActive()).toBe(false);
+    expect(movie.$getField('secret').isActive()).toBe(false);
 
     let movie2 = await layer.Movie.$get(id);
     expect(movie2).toBe(movie);
@@ -65,7 +65,7 @@ describe('Storable', () => {
     await expect(layer.Movie.$get('missing-id')).rejects.toThrow(/Document not found/);
     await expect(
       layer.Movie.$get('missing-id', {throwIfNotFound: false}).then(storable =>
-        storable.serialize()
+        storable.$serialize()
       )
     ).resolves.toEqual({_type: 'Movie', _id: 'missing-id'});
 
@@ -74,26 +74,26 @@ describe('Storable', () => {
     movie = await layer.Movie.$get(id, {fields: {title: true}});
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('Inception');
-    expect(movie.getField('year').isActive()).toBe(true);
+    expect(movie.$getField('year').isActive()).toBe(true);
     expect(movie.year).toBe(2010); // Although we didn't fetch the 'year', the instance was in the identity map, and the 'year' is still there
 
     otherLayer = rootLayer.fork();
     movie = await otherLayer.Movie.$get(id, {fields: {title: true}});
     expect(movie.id).toBe(id);
     expect(movie.title).toBe('Inception');
-    expect(movie.getField('year').isActive()).toBe(false); // We loaded the movie from another layer, so the 'year' has not been fetched
+    expect(movie.$getField('year').isActive()).toBe(false); // We loaded the movie from another layer, so the 'year' has not been fetched
 
     movie2 = await otherLayer.Movie.$get(id, {fields: {year: true}});
     expect(movie2).toBe(movie);
     expect(movie2.title).toBe('Inception'); // The 'title' is still there
-    expect(movie.getField('year').isActive()).toBe(true);
+    expect(movie.$getField('year').isActive()).toBe(true);
     expect(movie2.year).toBe(2010); // And now we have the 'year'
 
     otherLayer = rootLayer.fork();
     movie = await otherLayer.Movie.$get(id, {fields: false}); // Existence check
     expect(movie.id).toBe(id);
-    expect(movie.getField('title').isActive()).toBe(false);
-    expect(movie.getField('year').isActive()).toBe(false);
+    expect(movie.$getField('title').isActive()).toBe(false);
+    expect(movie.$getField('year').isActive()).toBe(false);
 
     // Update
 
@@ -343,7 +343,7 @@ describe('Storable', () => {
 
     layer = rootLayer.fork();
     movies = await layer.Movie.$find({fields: {title: true}});
-    expect(movies.map(movie => movie.serialize())).toEqual([
+    expect(movies.map(movie => movie.$serialize())).toEqual([
       {_type: 'Movie', _id: 'movie1', title: 'Inception'},
       {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},
       {_type: 'Movie', _id: 'movie3', title: 'Léon'}

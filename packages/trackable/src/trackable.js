@@ -8,7 +8,7 @@ export const Trackable = (Base = Object) =>
       if (!Object.prototype.hasOwnProperty.call(this, '_tracker')) {
         const tracker = new Tracker();
         if (isObservable(this)) {
-          tracker.observe(this);
+          tracker.$observe(this);
         }
         Object.defineProperty(this, '_tracker', {value: tracker});
       }

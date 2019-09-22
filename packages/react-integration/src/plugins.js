@@ -13,10 +13,10 @@ export function ReactRouterPlugin() {
             forceUpdate();
           };
 
-          router.observe(handler);
+          router.$observe(handler);
 
           return function () {
-            router.unobserve(handler);
+            router.$unobserve(handler);
           };
         }, []);
 

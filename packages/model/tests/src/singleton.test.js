@@ -10,7 +10,7 @@ describe('Singleton', () => {
 
     expect(authenticator.token).toBe('abc.123.def');
 
-    const otherAuthenticator = Authenticator.deserialize();
+    const otherAuthenticator = Authenticator.$deserialize();
 
     expect(otherAuthenticator.token).toBe('abc.123.def');
   });

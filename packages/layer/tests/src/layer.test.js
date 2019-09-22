@@ -11,14 +11,14 @@ describe('Layer', () => {
       }
     }
 
-    expect(Movie.hasLayer()).toBe(false);
+    expect(Movie.$hasLayer()).toBe(false);
 
     const layer = new Layer({Item, Movie}, {name: 'layer'});
     expect(layer.getId().length).toBeGreaterThanOrEqual(10);
     expect(layer.getName()).toBe('layer');
-    expect(Movie.getLayer()).toBe(layer);
-    expect(Movie.hasLayer()).toBe(true);
-    expect(Movie.getRegisteredName()).toBe('Movie');
+    expect(Movie.$getLayer()).toBe(layer);
+    expect(Movie.$hasLayer()).toBe(true);
+    expect(Movie.$getRegisteredName()).toBe('Movie');
     expect(layer.Movie).toBe(Movie);
     expect([...layer.getItems()]).toEqual([Item, Movie]);
 
@@ -26,13 +26,13 @@ describe('Layer', () => {
 
     expect(movie instanceof Movie).toBe(true);
     expect(movie instanceof Item).toBe(true);
-    expect(movie.getLayer()).toBe(layer);
-    expect(movie.hasLayer()).toBe(true);
-    expect(movie.getLayer({fallBackToClass: false, throwIfNotFound: false})).toBeUndefined();
-    expect(movie.hasLayer({fallBackToClass: false})).toBe(false);
+    expect(movie.$getLayer()).toBe(layer);
+    expect(movie.$hasLayer()).toBe(true);
+    expect(movie.$getLayer({fallBackToClass: false, throwIfNotFound: false})).toBeUndefined();
+    expect(movie.$hasLayer({fallBackToClass: false})).toBe(false);
 
     layer.register({movie});
-    expect(movie.getRegisteredName()).toBe('movie');
+    expect(movie.$getRegisteredName()).toBe('movie');
     expect(layer.movie).toBe(movie);
 
     const movie2 = new Movie({title: 'The Matrix'});
@@ -84,15 +84,15 @@ describe('Layer', () => {
         }
       }
 
-      serialize() {
+      $serialize() {
         return {
-          ...super.serialize(),
+          ...super.$serialize(),
           title: this.title
         };
       }
 
-      deserialize({title, ...object} = {}) {
-        super.deserialize(object);
+      $deserialize({title, ...object} = {}) {
+        super.$deserialize(object);
         this.title = title;
       }
     }
@@ -100,33 +100,33 @@ describe('Layer', () => {
     const layer = new Layer({Movie});
 
     let movie = new layer.Movie({title: 'Inception'});
-    expect(movie.isNew()).toBe(true);
+    expect(movie.$isNew()).toBe(true);
     expect(movie.title).toBe('Inception');
-    expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, title: 'Inception'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', _new: true, title: 'Inception'});
 
     movie = layer.deserialize({_type: 'Movie', _new: true, title: 'Inception'});
     expect(movie instanceof layer.Movie).toBe(true);
-    expect(movie.isNew()).toBe(true);
+    expect(movie.$isNew()).toBe(true);
     expect(movie.title).toBe('Inception');
-    expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, title: 'Inception'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', _new: true, title: 'Inception'});
 
     movie = layer.deserialize({_type: 'Movie', title: 'The Matrix'});
     expect(movie instanceof layer.Movie).toBe(true);
-    expect(movie.isNew()).toBe(false);
+    expect(movie.$isNew()).toBe(false);
     expect(movie.title).toBe('The Matrix');
-    expect(movie.serialize()).toEqual({_type: 'Movie', title: 'The Matrix'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'The Matrix'});
 
     movie = layer.deserialize({_type: 'Movie'});
     expect(movie instanceof layer.Movie).toBe(true);
-    expect(movie.isNew()).toBe(false);
+    expect(movie.$isNew()).toBe(false);
     expect(movie.title).toBeUndefined();
-    expect(movie.serialize()).toEqual({_type: 'Movie'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie'});
 
     movie = layer.deserialize({_type: 'Movie', title: 'Forest Gump'});
     const serialized = layer.serialize({
       id: 123,
       date: new Date(Date.UTC(2019, 4, 5)),
-      payload: {movies: [movie.serialize()]}
+      payload: {movies: [movie.$serialize()]}
     });
     expect(serialized).toEqual({
       id: 123,

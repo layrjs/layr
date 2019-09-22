@@ -4,35 +4,35 @@ export class Entity extends Identity {
   constructor(object, options) {
     super(object, options);
 
-    this.constructor.setInstance(this);
+    this.constructor.$setInstance(this);
   }
 
-  serialize({target, fields, isDeep} = {}) {
+  $serialize({target, fields, isDeep} = {}) {
     if (isDeep) {
-      return this.serializeReference({target});
+      return this.$serializeReference({target});
     }
-    return super.serialize({target, fields, isDeep});
+    return super.$serialize({target, fields, isDeep});
   }
 
-  serializeReference({target} = {}) {
-    if (this.isNew()) {
+  $serializeReference({target} = {}) {
+    if (this.$isNew()) {
       throw new Error(`Cannot serialize a reference to a new entity`);
     }
-    return {...super.serialize({target, fields: false, isDeep: true}), _ref: true};
+    return {...super.$serialize({target, fields: false, isDeep: true}), _ref: true};
   }
 
-  clone() {
-    return this.constructor.deserialize({...this.serialize(), _id: undefined});
+  $clone() {
+    return this.constructor.$deserialize({...this.$serialize(), _id: undefined});
   }
 
-  getFailedValidators({fields, isDeep} = {}) {
+  $getFailedValidators({fields, isDeep} = {}) {
     if (isDeep) {
       return undefined;
     }
-    return super.getFailedValidators({fields, isDeep});
+    return super.$getFailedValidators({fields, isDeep});
   }
 
-  static getInstance(object, _previousInstance) {
+  static $getInstance(object, _previousInstance) {
     const id = object?._id;
     if (id === undefined) {
       return undefined;
@@ -40,7 +40,7 @@ export class Entity extends Identity {
     return this._getInstances().get(id);
   }
 
-  static setInstance(instance) {
+  static $setInstance(instance) {
     const id = instance?._id;
     if (id === undefined) {
       return;

@@ -11,7 +11,7 @@ export const Storable = (Base = Entity) =>
         this.validateId(id);
       }
 
-      const storables = ids.map(id => this.deserialize({_id: id}));
+      const storables = ids.map(id => this.$deserialize({_id: id}));
       await this.$load(storables, {fields, reload, populate, throwIfNotFound});
       return storables;
     }
@@ -21,7 +21,7 @@ export const Storable = (Base = Entity) =>
         return (await this.$load([storables], {fields, reload, populate, throwIfNotFound}))[0];
       }
 
-      fields = this.prototype.createFieldMask(fields);
+      fields = this.prototype.$createFieldMask(fields);
 
       await this.__loadRootStorables(storables, {fields, reload, throwIfNotFound});
 
@@ -43,7 +43,9 @@ export const Storable = (Base = Entity) =>
 
       const storablesToLoad = reload ?
         storables :
-        storables.filter(storable => !storable.createFieldMaskForActiveFields().includes(fields));
+        storables.filter(
+          storable => !storable.$createFieldMaskForActiveFields().includes(fields)
+        );
 
       if (!storablesToLoad.length) {
         return;
@@ -61,13 +63,15 @@ export const Storable = (Base = Entity) =>
 
       const storablesToLoad = reload ?
         storables :
-        storables.filter(storable => !storable.createFieldMaskForActiveFields().includes(fields));
+        storables.filter(
+          storable => !storable.$createFieldMaskForActiveFields().includes(fields)
+        );
 
       if (!storablesToLoad.length) {
         return;
       }
 
-      let serializedStorables = storables.map(storable => storable.serializeReference());
+      let serializedStorables = storables.map(storable => storable.$serializeReference());
 
       const store = this.$getStore();
       const serializedFields = fields.serialize();
@@ -76,7 +80,7 @@ export const Storable = (Base = Entity) =>
         throwIfNotFound
       });
 
-      serializedStorables.map(serializedStorable => this.deserialize(serializedStorable));
+      serializedStorables.map(serializedStorable => this.$deserialize(serializedStorable));
     }
 
     async $load({fields, reload, populate = true, throwIfNotFound = true} = {}) {
@@ -153,7 +157,7 @@ export const Storable = (Base = Entity) =>
 
       for (const storable of storables) {
         await storable.$beforeValidate();
-        storable.validate({fields});
+        storable.$validate({fields});
       }
 
       for (const storable of storables) {
@@ -170,7 +174,7 @@ export const Storable = (Base = Entity) =>
     }
 
     static async __saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists}) {
-      let serializedStorables = storables.map(storable => storable.serialize({fields}));
+      let serializedStorables = storables.map(storable => storable.$serialize({fields}));
 
       const store = this.$getStore();
       serializedStorables = await store.save(serializedStorables, {
@@ -178,7 +182,7 @@ export const Storable = (Base = Entity) =>
         throwIfAlreadyExists
       });
 
-      serializedStorables.map(serializedStorable => this.deserialize(serializedStorable));
+      serializedStorables.map(serializedStorable => this.$deserialize(serializedStorable));
     }
 
     async $save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
@@ -186,7 +190,7 @@ export const Storable = (Base = Entity) =>
     }
 
     async $update(changes, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
-      this.assign(changes);
+      this.$assign(changes);
 
       await this.$save({throwIfNotFound, throwIfAlreadyExists});
     }
@@ -210,7 +214,7 @@ export const Storable = (Base = Entity) =>
     }
 
     static async __deleteFromStore(storables, {throwIfNotFound}) {
-      const serializedStorables = storables.map(storable => storable.serializeReference());
+      const serializedStorables = storables.map(storable => storable.$serializeReference());
 
       const store = this.$getStore();
       await store.delete(serializedStorables, {throwIfNotFound});
@@ -229,7 +233,7 @@ export const Storable = (Base = Entity) =>
       populate = true
       // throwIfNotFound = true
     } = {}) {
-      fields = this.prototype.createFieldMask(fields);
+      fields = this.prototype.$createFieldMask(fields);
 
       // TODO:
       // fields = this.filterEntityFields(fields);
@@ -253,19 +257,19 @@ export const Storable = (Base = Entity) =>
       const store = this.$getStore();
       const serializedFields = fields.serialize();
       const serializedStorables = await store.find(
-        {_type: this.getRegisteredName(), ...filter},
+        {_type: this.$getRegisteredName(), ...filter},
         {sort, skip, limit, fields: serializedFields}
       );
 
       const storables = serializedStorables.map(serializedStorable =>
-        this.deserialize(serializedStorable)
+        this.$deserialize(serializedStorable)
       );
 
       return storables;
     }
 
     static $getStore({throwIfNotFound = true} = {}) {
-      const layer = this.getLayer({throwIfNotFound});
+      const layer = this.$getLayer({throwIfNotFound});
       const store = layer?.get('store', {throwIfNotFound});
       if (store !== undefined) {
         return store;
@@ -317,7 +321,7 @@ export const Storable = (Base = Entity) =>
       const filter = function (field) {
         return typeof field.getScalar().getModel()?.isSubstorable === 'function';
       };
-      return this.getFieldValues({filter});
+      return this.$getFieldValues({filter});
     }
 
     // === Storable fields ===
@@ -332,7 +336,7 @@ export const Storable = (Base = Entity) =>
     }
 
     $createFieldMaskForStorableFields(fields = true) {
-      return this.createFieldMask(fields, {
+      return this.$createFieldMask(fields, {
         filter(field) {
           return field.getParent().__storableFields?.has(field.getName());
         }

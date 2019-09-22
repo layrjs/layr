@@ -12,15 +12,15 @@ describe('Identity', () => {
     const id = movie.id; // An 'id' should have been generated automatically
     expect(typeof id === 'string').toBe(true);
     expect(id !== '').toBe(true);
-    expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, _id: id});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', _new: true, _id: id});
 
     movie = new layer.Movie({id: 'abc123'});
     expect(movie.id).toBe('abc123');
-    expect(movie.serialize()).toEqual({_type: 'Movie', _new: true, _id: 'abc123'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', _new: true, _id: 'abc123'});
 
-    movie = layer.Movie.deserialize({_id: 'abc456'});
+    movie = layer.Movie.$deserialize({_id: 'abc456'});
     expect(movie.id).toBe('abc456');
-    expect(movie.serialize()).toEqual({_type: 'Movie', _id: 'abc456'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', _id: 'abc456'});
   });
 
   test('Identity mapping', () => {
@@ -38,7 +38,7 @@ describe('Identity', () => {
 
     const layer = new Layer({Movie, Actor});
 
-    const movie = layer.Movie.deserialize({
+    const movie = layer.Movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
       title: 'Inception',
@@ -58,7 +58,7 @@ describe('Identity', () => {
     expect(actor2.popularity).toBe(75);
 
     // We can change the order of the actors
-    movie.deserialize({
+    movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
       actors: [{_type: 'Actor', _id: 'a2'}, {_type: 'Actor', _id: 'a1'}]
@@ -72,7 +72,7 @@ describe('Identity', () => {
     expect(actor2.popularity).toBe(75);
 
     // We can partially change an actor (while restoring the initial order)
-    movie.deserialize({
+    movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
       actors: [{_type: 'Actor', _id: 'a1'}, {_type: 'Actor', _id: 'a2', popularity: 80}]
@@ -86,7 +86,7 @@ describe('Identity', () => {
     expect(actor2.popularity).toBe(80);
 
     // We can insert an actor
-    movie.deserialize({
+    movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
       actors: [
@@ -108,7 +108,7 @@ describe('Identity', () => {
     expect(actor3.popularity).toBe(85);
 
     // We can remove an actor
-    movie.deserialize({
+    movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
       actors: [{_type: 'Actor', _id: 'a3'}, {_type: 'Actor', _id: 'a2'}]

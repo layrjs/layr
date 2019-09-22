@@ -85,7 +85,7 @@ export class Field {
   }
 
   getLayer() {
-    return this._parent.getLayer();
+    return this._parent.$getLayer();
   }
 
   getParent() {
@@ -138,12 +138,12 @@ export class Field {
 
     if (value !== previousValue) {
       if (isObservable(previousValue)) {
-        previousValue.unobserve(this._parent);
+        previousValue.$unobserve(this._parent);
       }
       if (isObservable(value)) {
-        value.observe(this._parent);
+        value.$observe(this._parent);
       }
-      this._parent.notify();
+      this._parent.$notify();
     }
 
     return value;
@@ -338,7 +338,7 @@ class Scalar {
       return value;
     }
 
-    return value.serialize({target, fields, isDeep: true});
+    return value.$serialize({target, fields, isDeep: true});
   }
 
   deserializeValue(value, {source, previousValue}) {
@@ -363,7 +363,7 @@ class Scalar {
       throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
     const Model = this._field.getLayer().get(type);
-    return Model.deserialize(value, {source, previousInstance: previousValue});
+    return Model.$deserialize(value, {source, previousInstance: previousValue});
   }
 
   getFailedValidators(value, {fields}) {
@@ -376,7 +376,7 @@ class Scalar {
     if (this.isPrimitiveType()) {
       return runValidators(value, this._validators);
     }
-    return value.getFailedValidators({fields, isDeep: true});
+    return value.$getFailedValidators({fields, isDeep: true});
   }
 
   isPrimitiveType() {

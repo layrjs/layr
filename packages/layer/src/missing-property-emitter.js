@@ -5,7 +5,7 @@ const handler = {
     if (Reflect.has(target, name)) {
       return Reflect.get(target, name, receiver);
     }
-    return receiver.onMissingProperty(name);
+    return receiver.$onMissingProperty(name);
   }
 };
 

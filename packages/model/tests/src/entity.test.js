@@ -27,29 +27,29 @@ describe('Entity', () => {
     newMovie.counter++;
     expect(newMovie.counter).toBe(1);
 
-    const newMovie2 = layer.Movie.deserialize({_id: 'm1'});
+    const newMovie2 = layer.Movie.$deserialize({_id: 'm1'});
     expect(newMovie2).toBe(newMovie); // Since the movie was in the identity map, we got the same object
     expect(newMovie.counter).toBe(1); // Movie's constructor has not been called a second time
 
-    layer.Movie.deserialize({_id: 'm1', title: 'The Matrix'});
+    layer.Movie.$deserialize({_id: 'm1', title: 'The Matrix'});
     expect(newMovie.title).toBe('The Matrix');
     expect(newMovie.year).toBe(2010);
 
-    layer.Movie.deserialize({_id: 'm1', year: 1999});
+    layer.Movie.$deserialize({_id: 'm1', year: 1999});
     expect(newMovie.title).toBe('The Matrix');
     expect(newMovie.year).toBe(1999);
 
-    layer.Movie.deserialize({_id: 'm1', year: null});
+    layer.Movie.$deserialize({_id: 'm1', year: null});
     expect(newMovie.year).toBeUndefined();
 
     // With a deserialized movie
 
-    // const oldMovie = layer.Movie.deserialize({_id: 'm2', title: 'Inception', year: 2010});
+    // const oldMovie = layer.Movie.$deserialize({_id: 'm2', title: 'Inception', year: 2010});
     // expect(oldMovie.id).toBe('m2');
     // expect(oldMovie.title).toBe('Inception');
     // expect(oldMovie.year).toBe(2010);
 
-    // const oldMovie2 = layer.Movie.deserialize({_id: 'm2'});
+    // const oldMovie2 = layer.Movie.$deserialize({_id: 'm2'});
     // expect(oldMovie2).toBe(oldMovie); // Since the movie was in the identity map, we got the same object
   });
 
@@ -72,10 +72,10 @@ describe('Entity', () => {
       id: 'm1',
       title: 'Inception',
       year: 2010,
-      director: layer.Director.deserialize({_id: 'd1', fullName: 'Christopher Nolan'})
+      director: layer.Director.$deserialize({_id: 'd1', fullName: 'Christopher Nolan'})
     });
 
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       _id: 'm1',
@@ -84,7 +84,7 @@ describe('Entity', () => {
       director: {_type: 'Director', _id: 'd1', _ref: true}
     });
 
-    expect(movie.director.serialize()).toEqual({
+    expect(movie.director.$serialize()).toEqual({
       _type: 'Director',
       _id: 'd1',
       fullName: 'Christopher Nolan'

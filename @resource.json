@@ -27,6 +27,9 @@
   "reactIntegration": {
     "@include": "./packages/react-integration"
   },
+  "router": {
+    "@include": "./packages/router"
+  },
   "storable": {
     "@include": "./packages/storable"
   },
@@ -53,6 +56,7 @@
       "(@import shell/bash) run \"npm-link ./packages/promisable\"",
       "(@import shell/bash) run \"npm-link ./packages/promisable/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/react-integration\"",
+      "(@import shell/bash) run \"npm-link ./packages/router\"",
       "(@import shell/bash) run \"npm-link ./packages/storable\"",
       "(@import shell/bash) run \"npm-link ./packages/storable/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/trackable\"",

@@ -9,93 +9,93 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
   class Registerable extends Base {
     // === Class ===
 
-    static getRegisteredName() {
+    static $getRegisteredName() {
       return _getRegisteredName(this);
     }
 
-    static setRegisteredName(registeredName) {
+    static $setRegisteredName(registeredName) {
       _setRegisteredName(this, registeredName);
     }
 
-    static isRegistered() {
+    static $isRegistered() {
       return _isRegistered(this);
     }
 
-    static getLayer({throwIfNotFound = true} = {}) {
+    static $getLayer({throwIfNotFound = true} = {}) {
       return _getLayer(this, {throwIfNotFound});
     }
 
-    static get layer() {
-      return this.getLayer();
+    static get $layer() {
+      return this.$getLayer();
     }
 
-    static setLayer(layer) {
+    static $setLayer(layer) {
       _setLayer(this, layer);
     }
 
-    static hasLayer() {
-      const layer = this.getLayer({throwIfNotFound: false});
+    static $hasLayer() {
+      const layer = this.$getLayer({throwIfNotFound: false});
       return layer !== undefined;
     }
 
-    static getParentLayer({throwIfNotFound = true} = {}) {
-      const layer = this.getLayer({throwIfNotFound});
+    static $getParentLayer({throwIfNotFound = true} = {}) {
+      const layer = this.$getLayer({throwIfNotFound});
       return layer?.getParent({throwIfNotFound});
     }
 
-    static hasParentLayer() {
-      const layer = this.getLayer({throwIfNotFound: false});
+    static $hasParentLayer() {
+      const layer = this.$getLayer({throwIfNotFound: false});
       return layer ? layer.hasParent() : false;
     }
 
-    static callParentLayer(methodName, ...args) {
-      const layer = this.getLayer();
+    static $callParentLayer(methodName, ...args) {
+      const layer = this.$getLayer();
       return _callParentLayer(layer, this, methodName, ...args);
     }
 
-    static exposeProperty(name, type, options) {
+    static $exposeProperty(name, type, options) {
       _exposeProperty(this, name, type, options);
     }
 
-    static getExposedProperty(name) {
+    static $getExposedProperty(name) {
       return _getExposedProperty(this, name);
     }
 
-    static getExposedProperties() {
+    static $getExposedProperties() {
       return _getExposedProperties(this);
     }
 
-    static async exposedPropertyOperationIsAllowed({property, operation, setting}) {
+    static async $exposedPropertyOperationIsAllowed({property, operation, setting}) {
       return await _exposedPropertyOperationIsAllowed(this, {property, operation, setting});
     }
 
-    static onMissingProperty(name) {
+    static $onMissingProperty(name) {
       return _onMissingProperty(this, name);
     }
 
-    static fork() {
+    static $fork() {
       return _fork(this);
     }
 
-    static introspect() {
+    static $introspect() {
       return _introspect(this);
     }
 
     // === Instance ===
 
-    getRegisteredName() {
+    $getRegisteredName() {
       return _getRegisteredName(this);
     }
 
-    setRegisteredName(registeredName) {
+    $setRegisteredName(registeredName) {
       _setRegisteredName(this, registeredName);
     }
 
-    isRegistered() {
+    $isRegistered() {
       return _isRegistered(this);
     }
 
-    getLayer({fallBackToClass = true, throwIfNotFound = true} = {}) {
+    $getLayer({fallBackToClass = true, throwIfNotFound = true} = {}) {
       // First, let try to get the instance's layer
       const layer = _getLayer(this, {throwIfNotFound: throwIfNotFound && !fallBackToClass});
       if (layer) {
@@ -107,59 +107,59 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       }
     }
 
-    get layer() {
-      return this.getLayer();
+    get $layer() {
+      return this.$getLayer();
     }
 
-    setLayer(layer) {
+    $setLayer(layer) {
       _setLayer(this, layer);
     }
 
-    hasLayer({fallBackToClass = true} = {}) {
-      const layer = this.getLayer({fallBackToClass, throwIfNotFound: false});
+    $hasLayer({fallBackToClass = true} = {}) {
+      const layer = this.$getLayer({fallBackToClass, throwIfNotFound: false});
       return layer !== undefined;
     }
 
-    getParentLayer({fallBackToClass = true, throwIfNotFound = true} = {}) {
-      const layer = this.getLayer({fallBackToClass, throwIfNotFound});
+    $getParentLayer({fallBackToClass = true, throwIfNotFound = true} = {}) {
+      const layer = this.$getLayer({fallBackToClass, throwIfNotFound});
       return layer?.getParent({throwIfNotFound});
     }
 
-    hasParentLayer({fallBackToClass = true} = {}) {
-      const layer = this.getLayer({fallBackToClass, throwIfNotFound: false});
+    $hasParentLayer({fallBackToClass = true} = {}) {
+      const layer = this.$getLayer({fallBackToClass, throwIfNotFound: false});
       return layer ? layer.hasParent() : false;
     }
 
-    callParentLayer(methodName, ...args) {
-      const layer = this.getLayer();
+    $callParentLayer(methodName, ...args) {
+      const layer = this.$getLayer();
       return _callParentLayer(layer, this, methodName, ...args);
     }
 
-    exposeProperty(name, type, options) {
+    $exposeProperty(name, type, options) {
       _exposeProperty(this, name, type, options);
     }
 
-    getExposedProperty(name) {
+    $getExposedProperty(name) {
       return _getExposedProperty(this, name);
     }
 
-    getExposedProperties() {
+    $getExposedProperties() {
       return _getExposedProperties(this);
     }
 
-    async exposedPropertyOperationIsAllowed({property, operation, setting}) {
+    async $exposedPropertyOperationIsAllowed({property, operation, setting}) {
       return await _exposedPropertyOperationIsAllowed(this, {property, operation, setting});
     }
 
-    onMissingProperty(name) {
+    $onMissingProperty(name) {
       return _onMissingProperty(this, name);
     }
 
-    fork() {
+    $fork() {
       return _fork(this);
     }
 
-    introspect() {
+    $introspect() {
       return _introspect(this);
     }
   };
@@ -201,7 +201,7 @@ function _buildQuery(target, methodName, ...args) {
   if (typeof target === 'function') {
     // The target is a class
     return {
-      [`${target.getRegisteredName()}=>`]: {
+      [`${target.$getRegisteredName()}=>`]: {
         [`${methodName}=>result`]: {
           '([])': args
         }
@@ -209,10 +209,10 @@ function _buildQuery(target, methodName, ...args) {
     };
   }
 
-  if (target.isRegistered()) {
+  if (target.$isRegistered()) {
     // The target is a registered instance
     return {
-      [`${target.getRegisteredName()}=>`]: {
+      [`${target.$getRegisteredName()}=>`]: {
         [`${methodName}=>result`]: {
           '([])': args
         }
@@ -282,7 +282,7 @@ function _onMissingProperty(target, name) {
     return undefined;
   }
 
-  const exposedProperty = parentTarget.getExposedProperty(name);
+  const exposedProperty = parentTarget.$getExposedProperty(name);
   if (!exposedProperty) {
     return undefined;
   }
@@ -292,18 +292,18 @@ function _onMissingProperty(target, name) {
   }
 
   return function (...args) {
-    return this.callParentLayer(name, ...args);
+    return this.$callParentLayer(name, ...args);
   };
 }
 
 function _getParentTarget(target) {
   if (typeof target === 'function') {
     // The target is a class
-    const registeredName = target.getRegisteredName();
+    const registeredName = target.$getRegisteredName();
     if (!registeredName) {
       return undefined;
     }
-    const parentLayer = target.getParentLayer({throwIfNotFound: false});
+    const parentLayer = target.$getParentLayer({throwIfNotFound: false});
     const parentTarget = parentLayer?.get(registeredName, {throwIfNotFound: false});
     if (!isExposed(parentTarget)) {
       return undefined;
@@ -312,10 +312,10 @@ function _getParentTarget(target) {
   }
 
   // The target is an instance
-  let registeredName = target.getRegisteredName();
+  let registeredName = target.$getRegisteredName();
   if (registeredName) {
     // The target is a registered instance
-    const parentLayer = target.getParentLayer({fallBackToClass: false, throwIfNotFound: false});
+    const parentLayer = target.$getParentLayer({fallBackToClass: false, throwIfNotFound: false});
     const parentTarget = parentLayer?.get(registeredName, {throwIfNotFound: false});
     if (!isExposed(parentTarget)) {
       return undefined;
@@ -324,11 +324,11 @@ function _getParentTarget(target) {
   }
 
   // The target is an instance of a registered class
-  registeredName = target.constructor.getRegisteredName();
+  registeredName = target.constructor.$getRegisteredName();
   if (!registeredName) {
     return undefined;
   }
-  const parentLayer = target.constructor.getParentLayer({throwIfNotFound: false});
+  const parentLayer = target.constructor.$getParentLayer({throwIfNotFound: false});
   const parentTarget = parentLayer?.get(registeredName, {throwIfNotFound: false});
   if (!isExposed(parentTarget)) {
     return undefined;
@@ -407,7 +407,7 @@ export function expose(options = {}) {
 
     const type = typeof descriptor.value === 'function' ? 'method' : 'field';
 
-    target.exposeProperty(name, type, options);
+    target.$exposeProperty(name, type, options);
 
     return descriptor;
   };
@@ -421,13 +421,13 @@ export function isExposed(target, name) {
     // @isExposed() called with a class or an instance
     return target._isExposed === true;
   }
-  return target.getExposedProperty(name) !== undefined;
+  return target.$getExposedProperty(name) !== undefined;
 }
 
 // === Utilities ===
 
 export function isRegisterable(value) {
-  return typeof value?.getLayer === 'function';
+  return typeof value?.$getLayer === 'function';
 }
 
 function getPropertyDescriptor(object, name) {

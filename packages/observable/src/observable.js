@@ -1,18 +1,18 @@
 export const Observable = (Base = Object) =>
   class Observable extends Base {
-    observe(observer) {
-      this._getObservers().add(observer);
+    $observe(observer) {
+      this.__getObservers().add(observer);
     }
 
-    unobserve(observer) {
-      this._getObservers().remove(observer);
+    $unobserve(observer) {
+      this.__getObservers().remove(observer);
     }
 
-    notify({_observerStack} = {}) {
-      this._getObservers().call({_observerStack});
+    $notify({_observerStack} = {}) {
+      this.__getObservers().call({_observerStack});
     }
 
-    _getObservers() {
+    __getObservers() {
       if (!Object.prototype.hasOwnProperty.call(this, '_observers')) {
         Object.defineProperty(this, '_observers', {value: new ObserverSet()});
       }
@@ -29,9 +29,9 @@ export function createObservable(target) {
     return target;
   }
 
-  if ('observe' in target || 'unobserve' in target || 'notify' in target) {
+  if ('$observe' in target || '$unobserve' in target || '$notify' in target) {
     throw new Error(
-      `Observable target cannot own or inherit a property named 'observe', 'unobserve' or 'notify'`
+      `Observable target cannot own or inherit a property named '$observe', '$unobserve' or '$notify'`
     );
   }
 
@@ -51,7 +51,7 @@ export function createObservable(target) {
 
   const handler = {
     has(target, key) {
-      if (key === 'observe' || key === 'unobserve' || key === 'notify') {
+      if (key === '$observe' || key === '$unobserve' || key === '$notify') {
         return true;
       }
 
@@ -59,15 +59,15 @@ export function createObservable(target) {
     },
 
     get(target, key) {
-      if (key === 'observe') {
+      if (key === '$observe') {
         return addObserver;
       }
 
-      if (key === 'unobserve') {
+      if (key === '$unobserve') {
         return removeObserver;
       }
 
-      if (key === 'notify') {
+      if (key === '$notify') {
         return callObservers;
       }
 
@@ -75,9 +75,9 @@ export function createObservable(target) {
     },
 
     set(target, key, nextValue) {
-      if (key === 'observe' || key === 'unobserve' || key === 'notify') {
+      if (key === '$observe' || key === '$unobserve' || key === '$notify') {
         throw new Error(
-          `Cannot set a property named 'observe', 'unobserve' or 'notify' in an observed object`
+          `Cannot set a property named '$observe', '$unobserve' or '$notify' in an observed object`
         );
       }
 
@@ -87,10 +87,10 @@ export function createObservable(target) {
 
       if (nextValue !== previousValue) {
         if (isObservable(previousValue)) {
-          previousValue.unobserve(callObservers);
+          previousValue.$unobserve(callObservers);
         }
         if (isObservable(nextValue)) {
-          nextValue.observe(callObservers);
+          nextValue.$observe(callObservers);
         }
         callObservers();
       }
@@ -99,15 +99,15 @@ export function createObservable(target) {
     },
 
     deleteProperty(target, key) {
-      if (key === 'observe' || key === 'unobserve' || key === 'notify') {
+      if (key === '$observe' || key === '$unobserve' || key === '$notify') {
         throw new Error(
-          `Cannot delete a property named 'observe', 'unobserve' or 'notify' in an observed object`
+          `Cannot delete a property named '$observe', '$unobserve' or '$notify' in an observed object`
         );
       }
 
       const previousValue = Reflect.get(target, key);
       if (isObservable(previousValue)) {
-        previousValue.unobserve(callObservers);
+        previousValue.$unobserve(callObservers);
       }
 
       const result = Reflect.deleteProperty(target, key);
@@ -155,7 +155,7 @@ export class ObserverSet {
           observer({_observerStack});
         } else {
           // The observer is an observable
-          observer.notify({_observerStack});
+          observer.$notify({_observerStack});
         }
       } finally {
         _observerStack.delete(observer);
@@ -168,9 +168,9 @@ export function isObservable(object) {
   return (
     typeof object === 'object' &&
     object !== null &&
-    typeof object.observe === 'function' &&
-    typeof object.unobserve === 'function' &&
-    typeof object.notify === 'function'
+    typeof object.$observe === 'function' &&
+    typeof object.$unobserve === 'function' &&
+    typeof object.$notify === 'function'
   );
 }
 

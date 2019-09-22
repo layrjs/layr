@@ -197,30 +197,32 @@ describe('Model', () => {
     const layer = new Layer({Movie});
 
     let movie = new layer.Movie();
-    expect(movie.getFailedValidators()).toEqual({title: ['required()']});
+    expect(movie.$getFailedValidators()).toEqual({title: ['required()']});
     movie.title = '';
-    expect(movie.getFailedValidators()).toEqual({title: ['notEmpty()']});
+    expect(movie.$getFailedValidators()).toEqual({title: ['notEmpty()']});
     movie.title = '12345678901234567890123456789012345678901';
-    expect(movie.getFailedValidators()).toEqual({title: ['maxLength(40)']});
+    expect(movie.$getFailedValidators()).toEqual({title: ['maxLength(40)']});
     movie.title = '1234567890123456789012345678901234567890';
-    expect(movie.getFailedValidators()).toBeUndefined();
+    expect(movie.$getFailedValidators()).toBeUndefined();
 
     movie.year = 1899;
-    expect(movie.getFailedValidators()).toEqual({year: ['greaterThanOrEqual(1900)']});
+    expect(movie.$getFailedValidators()).toEqual({year: ['greaterThanOrEqual(1900)']});
     movie.year = 1900;
-    expect(movie.getFailedValidators()).toBeUndefined();
+    expect(movie.$getFailedValidators()).toBeUndefined();
 
     movie.genres = ['action', 'adventure', 'sci-fi', 'drama'];
-    expect(movie.getFailedValidators()).toEqual({genres: ['maxLength(3)']});
+    expect(movie.$getFailedValidators()).toEqual({genres: ['maxLength(3)']});
     movie.genres = ['action', '', 'sci-fi'];
-    expect(movie.getFailedValidators()).toEqual({genres: [[undefined, ['notEmpty()'], undefined]]});
+    expect(movie.$getFailedValidators()).toEqual({
+      genres: [[undefined, ['notEmpty()'], undefined]]
+    });
     movie.genres = ['action', 'adventure', 'sci-fi'];
-    expect(movie.getFailedValidators()).toBeUndefined();
+    expect(movie.$getFailedValidators()).toBeUndefined();
 
     movie.director = 'christopher nolan';
-    expect(movie.getFailedValidators()).toEqual({director: ['startsWithUpperCase()']});
+    expect(movie.$getFailedValidators()).toEqual({director: ['startsWithUpperCase()']});
     movie.director = 'Christopher Nolan';
-    expect(movie.getFailedValidators()).toBeUndefined();
+    expect(movie.$getFailedValidators()).toBeUndefined();
 
     movie = new layer.Movie({
       title: '',
@@ -228,24 +230,24 @@ describe('Model', () => {
       genres: ['action', 'adventure', '', 'drama'],
       director: 'christopher nolan'
     });
-    expect(movie.getFailedValidators()).toEqual({
+    expect(movie.$getFailedValidators()).toEqual({
       title: ['notEmpty()'],
       year: ['greaterThanOrEqual(1900)'],
       genres: ['maxLength(3)', [undefined, undefined, ['notEmpty()'], undefined]],
       director: ['startsWithUpperCase()']
     });
 
-    expect(movie.isValid()).toBe(false);
+    expect(movie.$isValid()).toBe(false);
     expect(() => {
-      movie.validate();
+      movie.$validate();
     }).toThrow(/Model validation failed/);
 
     movie = new layer.Movie({title: 'Inception'});
-    expect(movie.isValid()).toBe(true);
-    expect(() => movie.validate()).not.toThrow();
+    expect(movie.$isValid()).toBe(true);
+    expect(() => movie.$validate()).not.toThrow();
   });
 
-  test('isNew()', () => {
+  test('$isNew()', () => {
     class Movie extends Model {
       @field('string') title;
     }
@@ -253,19 +255,19 @@ describe('Model', () => {
     const layer = new Layer({Movie});
 
     let movie = new layer.Movie({title: 'Inception'});
-    expect(movie.isNew()).toBe(true);
+    expect(movie.$isNew()).toBe(true);
 
-    movie.markAsNotNew();
-    expect(movie.isNew()).toBe(false);
+    movie.$markAsNotNew();
+    expect(movie.$isNew()).toBe(false);
 
-    movie = layer.Movie.deserialize({title: 'Inception'});
-    expect(movie.isNew()).toBe(false);
+    movie = layer.Movie.$deserialize({title: 'Inception'});
+    expect(movie.$isNew()).toBe(false);
 
-    movie = layer.Movie.deserialize({_new: true, title: 'Inception'});
-    expect(movie.isNew()).toBe(true);
+    movie = layer.Movie.$deserialize({_new: true, title: 'Inception'});
+    expect(movie.$isNew()).toBe(true);
   });
 
-  test('assign()', () => {
+  test('$assign()', () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -284,19 +286,19 @@ describe('Model', () => {
 
     const movie = new layer.Movie();
 
-    movie.assign({title: 'Inception', year: 2010});
+    movie.$assign({title: 'Inception', year: 2010});
     expect(movie.title).toBe('Inception');
     expect(movie.year).toBe(2010);
 
-    movie.assign({genres: ['action', 'drama']});
+    movie.$assign({genres: ['action', 'drama']});
     expect(movie.genres).toEqual(['action', 'drama']);
 
-    movie.assign({technicalSpecs: {aspectRatio: '2.39:1'}});
+    movie.$assign({technicalSpecs: {aspectRatio: '2.39:1'}});
     expect(movie.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
     expect(movie.technicalSpecs.aspectRatio).toBe('2.39:1');
 
     const movie2 = new layer.Movie();
-    movie2.assign(movie);
+    movie2.$assign(movie);
     expect(movie2.title).toBe('Inception');
     expect(movie2.year).toBe(2010);
     expect(movie2.genres).toEqual(['action', 'drama']);
@@ -331,7 +333,7 @@ describe('Model', () => {
     // Simple serialization
 
     let movie = new layer.Movie();
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: null,
@@ -343,7 +345,7 @@ describe('Model', () => {
     });
 
     movie.title = 'Inception';
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -355,7 +357,7 @@ describe('Model', () => {
     });
 
     movie.country = 'USA';
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -367,7 +369,7 @@ describe('Model', () => {
     });
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -379,7 +381,7 @@ describe('Model', () => {
     });
 
     movie.genres = ['action', 'adventure', 'sci-fi'];
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -391,7 +393,7 @@ describe('Model', () => {
     });
 
     movie.technicalSpecs = new layer.TechnicalSpecs({aspectRatio: '2.39:1'});
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -406,7 +408,7 @@ describe('Model', () => {
       new layer.Actor({fullName: 'Leonardo DiCaprio'}),
       new layer.Actor({fullName: 'Joseph Gordon-Levitt'})
     ];
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -422,13 +424,13 @@ describe('Model', () => {
 
     // Deserialization
 
-    movie = layer.Movie.deserialize();
-    expect(movie.serialize()).toEqual({
+    movie = layer.Movie.$deserialize();
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie'
     });
 
-    movie = layer.Movie.deserialize({_new: true});
-    expect(movie.serialize()).toEqual({
+    movie = layer.Movie.$deserialize({_new: true});
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: null,
@@ -439,14 +441,14 @@ describe('Model', () => {
       actors: null
     });
 
-    movie = layer.Movie.deserialize({title: 'Inception'});
-    expect(movie.serialize()).toEqual({
+    movie = layer.Movie.$deserialize({title: 'Inception'});
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
 
-    movie = layer.Movie.deserialize({_new: true, title: 'Inception'});
-    expect(movie.serialize()).toEqual({
+    movie = layer.Movie.$deserialize({_new: true, title: 'Inception'});
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -457,7 +459,7 @@ describe('Model', () => {
       actors: null
     });
 
-    movie = layer.Movie.deserialize({
+    movie = layer.Movie.$deserialize({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA',
@@ -469,7 +471,7 @@ describe('Model', () => {
         {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
       ]
     });
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA',
@@ -484,25 +486,25 @@ describe('Model', () => {
 
     // Serialization of 'undefined'
 
-    movie = layer.Movie.deserialize({title: 'Inception'});
-    expect(movie.serialize()).toEqual({
+    movie = layer.Movie.$deserialize({title: 'Inception'});
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
 
     movie.country = undefined;
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
       country: null
     });
 
     expect(
-      layer.Movie.deserialize({
+      layer.Movie.$deserialize({
         _type: 'Movie',
         title: 'Inception',
         country: null
-      }).serialize()
+      }).$serialize()
     ).toEqual({
       _type: 'Movie',
       title: 'Inception',
@@ -511,27 +513,27 @@ describe('Model', () => {
 
     // Serialization using 'source' and 'target'
 
-    const frontendId = movie.getLayer().getId();
+    const frontendId = movie.$getLayer().getId();
     const backendId = 'abc123';
     const otherId = 'xyz789';
 
-    movie = layer.Movie.deserialize({title: 'Inception'}, {source: backendId});
-    expect(movie.getField('title').getSource()).toBe(backendId);
-    expect(movie.serialize({target: backendId})).toEqual({_type: 'Movie'});
-    expect(movie.serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.serialize({target: otherId})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception'});
+    movie = layer.Movie.$deserialize({title: 'Inception'}, {source: backendId});
+    expect(movie.$getField('title').getSource()).toBe(backendId);
+    expect(movie.$serialize({target: backendId})).toEqual({_type: 'Movie'});
+    expect(movie.$serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.$serialize({target: otherId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception'});
 
     movie.country = 'USA';
-    expect(movie.getField('country').getSource()).toBe(frontendId);
-    expect(movie.serialize({target: backendId})).toEqual({_type: 'Movie', country: 'USA'});
-    expect(movie.serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.serialize({target: otherId})).toEqual({
+    expect(movie.$getField('country').getSource()).toBe(frontendId);
+    expect(movie.$serialize({target: backendId})).toEqual({_type: 'Movie', country: 'USA'});
+    expect(movie.$serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.$serialize({target: otherId})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA'
     });
-    expect(movie.serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
   });
 
   test('Field exposition', () => {
@@ -550,25 +552,25 @@ describe('Model', () => {
     const backendLayer = new Layer({Movie: BackendMovie});
     const frontendLayer = new Layer({Movie: FrontendMovie}, {parent: backendLayer});
 
-    const frontendMovie = frontendLayer.Movie.deserialize({title: 'Inception', secret: 'xyz123'});
-    expect(frontendMovie.serialize()).toEqual({
+    const frontendMovie = frontendLayer.Movie.$deserialize({title: 'Inception', secret: 'xyz123'});
+    expect(frontendMovie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
       secret: 'xyz123'
     });
-    expect(frontendMovie.serialize({target: backendLayer.getId()})).toEqual({
+    expect(frontendMovie.$serialize({target: backendLayer.getId()})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       secret: 'xyz123'
     });
 
-    const backendMovie = backendLayer.Movie.deserialize({title: 'Inception', secret: 'xyz123'});
-    expect(backendMovie.serialize()).toEqual({
+    const backendMovie = backendLayer.Movie.$deserialize({title: 'Inception', secret: 'xyz123'});
+    expect(backendMovie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
       secret: 'xyz123'
     });
-    expect(backendMovie.serialize({target: frontendLayer.getId()})).toEqual({
+    expect(backendMovie.$serialize({target: frontendLayer.getId()})).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
@@ -595,11 +597,11 @@ describe('Model', () => {
       technicalSpecs: {aspectRatio: '2.39:1'}
     });
 
-    const clone = movie.clone();
+    const clone = movie.$clone();
 
     expect(clone instanceof layer.Movie).toBe(true);
     expect(clone).not.toBe(movie);
-    expect(clone.serialize()).toEqual(movie.serialize());
+    expect(clone.$serialize()).toEqual(movie.$serialize());
 
     expect(clone.title).toBe('Inception');
 
@@ -664,7 +666,7 @@ describe('Model', () => {
       title: 'Inception',
       similarMovies: [new layer.Movie({title: 'The Matrix'})]
     });
-    expect(movie.serialize()).toEqual({
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -706,7 +708,7 @@ describe('Model', () => {
     });
 
     const observer = jest.fn();
-    movie.observe(observer);
+    movie.$observe(observer);
 
     expect(observer.mock.calls.length).toBe(0);
     let numberOfCalls = observer.mock.calls.length;
@@ -726,7 +728,7 @@ describe('Model', () => {
     movie.technicalSpecs.aspectRatio = '2.4:1'; // No changes
     expect(observer.mock.calls.length).toBe(numberOfCalls);
 
-    movie.technicalSpecs.notify();
+    movie.technicalSpecs.$notify();
     expect(observer.mock.calls.length).not.toBe(numberOfCalls);
   });
 });

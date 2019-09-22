@@ -14,7 +14,7 @@ export class BrowserRouter extends Observable(Registerable()) {
     }
 
     window.addEventListener('popstate', () => {
-      this.notify();
+      this.$notify();
     });
   }
 
@@ -24,14 +24,14 @@ export class BrowserRouter extends Observable(Registerable()) {
 
   navigate(url, {replace = false} = {}) {
     window.history[`${replace ? 'replace' : 'push'}State`](null, null, url);
-    this.notify();
+    this.$notify();
   }
 
   findRoute() {
     const url = this.location.href;
 
-    for (const item of this.layer.getItems({filter: isRoutable})) {
-      const result = item.findRoute(url);
+    for (const item of this.$getLayer().getItems({filter: isRoutable})) {
+      const result = item.$findRoute(url);
       if (result) {
         return {target: item, ...result};
       }

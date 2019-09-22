@@ -3,14 +3,14 @@ import {Layer, Registerable, Serializable, LayerProxy, expose} from '../../..';
 describe('Parent layer via proxy', () => {
   test('Parent call', () => {
     class BaseAuthenticator extends Serializable(Registerable()) {
-      serialize() {
+      $serialize() {
         return {
-          ...super.serialize(),
+          ...super.$serialize(),
           token: this.token
         };
       }
 
-      deserialize({token} = {}) {
+      $deserialize({token} = {}) {
         this.token = token;
       }
     }
@@ -22,19 +22,19 @@ describe('Parent layer via proxy', () => {
           this.a = a;
           this.b = b;
         }
-        this.constructor.setInstance(this);
+        this.constructor.$setInstance(this);
       }
 
-      serialize() {
+      $serialize() {
         return {
-          ...super.serialize(),
+          ...super.$serialize(),
           a: this.a,
           b: this.b,
           lastResult: this.lastResult
         };
       }
 
-      deserialize({a, b, lastResult} = {}) {
+      $deserialize({a, b, lastResult} = {}) {
         this.a = a;
         this.b = b;
         this.lastResult = lastResult;
@@ -42,11 +42,11 @@ describe('Parent layer via proxy', () => {
 
       // Let's simulate an identity map
 
-      static getInstance(_object, _previousInstance) {
+      static $getInstance(_object, _previousInstance) {
         return this._instance;
       }
 
-      static setInstance(instance) {
+      static $setInstance(instance) {
         this._instance = instance;
       }
     }
@@ -80,14 +80,14 @@ describe('Parent layer via proxy', () => {
         }
 
         static authorize() {
-          const {token} = this.layer.authenticator;
+          const {token} = this.$layer.authenticator;
           if (token !== '123456789') {
             throw new Error('Token is invalid');
           }
         }
       }
 
-      const authenticator = expose()(Authenticator.deserialize());
+      const authenticator = expose()(Authenticator.$deserialize());
 
       const layer = new Layer({authenticator, Math}, {name: 'backend'});
 
@@ -108,13 +108,13 @@ describe('Parent layer via proxy', () => {
       }
     }
 
-    const authenticator = Authenticator.deserialize();
+    const authenticator = Authenticator.$deserialize();
 
     const layer = new Layer({authenticator, Math}, {name: 'frontend', parent: backendProxy});
 
     expect(layer.getParent()).toBe(backendProxy);
     expect(layer.hasParent()).toBe(true);
-    expect(layer.Math.hasParentLayer()).toBe(true);
+    expect(layer.Math.$hasParentLayer()).toBe(true);
 
     expect(layer.authenticator.token).toBeUndefined();
     layer.authenticator.signIn();
@@ -124,7 +124,7 @@ describe('Parent layer via proxy', () => {
 
     const math = new layer.Math({a: 2, b: 3});
 
-    expect(math.hasParentLayer()).toBe(true);
+    expect(math.$hasParentLayer()).toBe(true);
 
     const result = math.sum();
     expect(result).toBe(5);
