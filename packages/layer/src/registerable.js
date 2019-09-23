@@ -339,12 +339,7 @@ function _getParentTarget(target) {
 function _fork(target) {
   if (typeof target === 'function') {
     // Class forking
-    const Base = target;
-    return class extends target {
-      static [Symbol.hasInstance](instance) {
-        return instance instanceof Base;
-      }
-    };
+    return class extends target {};
   }
 
   // Instance forking

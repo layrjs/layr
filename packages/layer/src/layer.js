@@ -15,8 +15,7 @@ const debugReceiving = debugModule('liaison:layer:receiving');
 
 export class Layer {
   constructor(registerables, {name, parent} = {}) {
-    this._registeredNames = [];
-    this._registerables = {};
+    this._registerables = Object.create(null);
 
     if (registerables !== undefined) {
       this.register(registerables);
@@ -54,12 +53,23 @@ export class Layer {
   // === Registration ===
 
   get(name, {throwIfNotFound = true} = {}) {
-    if (this._registeredNames.includes(name)) {
-      return this[name];
+    let registerable = this._registerables[name];
+
+    if (registerable === undefined) {
+      if (throwIfNotFound) {
+        throw new Error(`Item not found in the layer (name: '${name}')`);
+      }
+      return undefined;
     }
-    if (throwIfNotFound) {
-      throw new Error(`Item not found in the layer (name: '${name}')`);
+
+    if (!Object.prototype.hasOwnProperty.call(this._registerables, name)) {
+      // Since the layer has been forked, the registerable must be forked as well
+      registerable = registerable.$fork();
+      registerable.$setLayer(this);
+      this._registerables[name] = registerable;
     }
+
+    return registerable;
   }
 
   register(registerables) {
@@ -78,7 +88,6 @@ export class Layer {
 
   _register(name, registerable) {
     if (!isRegisterable(registerable)) {
-      console.log(registerable);
       throw new Error(`Expected a registerable`);
     }
 
@@ -86,24 +95,17 @@ export class Layer {
       throw new Error(`Registerable already registered (name: '${name}')`);
     }
 
-    if (this._registeredNames.includes(name)) {
+    if (name in this._registerables) {
       throw new Error(`Name already registered (name: '${name}')`);
     }
 
     registerable.$setLayer(this);
     registerable.$setRegisteredName(name);
     this._registerables[name] = registerable;
-    this._registeredNames.push(name);
 
     Object.defineProperty(this, name, {
       get() {
-        let registerable = this._registerables[name];
-        if (!Object.prototype.hasOwnProperty.call(this._registerables, name)) {
-          registerable = registerable.$fork();
-          registerable.$setLayer(this);
-          this._registerables[name] = registerable;
-        }
-        return registerable;
+        return this.get(name);
       }
     });
   }
@@ -112,8 +114,6 @@ export class Layer {
 
   fork(registerables) {
     const forkedLayer = Object.create(this);
-
-    forkedLayer._registeredNames = [...this._registeredNames];
     forkedLayer._registerables = Object.create(this._registerables);
 
     if (registerables) {
@@ -126,24 +126,17 @@ export class Layer {
   // === Introspection ===
 
   getItems({filter} = {}) {
+    const layer = this;
     return {
-      [Symbol.iterator]: () => {
-        const iterator = this._registeredNames[Symbol.iterator]();
-        return {
-          next: () => {
-            while (true) {
-              let item;
-              const {value: name, done} = iterator.next();
-              if (name !== undefined) {
-                item = this[name];
-                if (filter && !filter(item)) {
-                  continue;
-                }
-              }
-              return {value: item, done};
-            }
+      * [Symbol.iterator]() {
+        // eslint-disable-next-line guard-for-in
+        for (const name in layer._registerables) {
+          const item = layer.get(name);
+          if (filter && !filter(item)) {
+            continue;
           }
-        };
+          yield item;
+        }
       }
     };
   }
@@ -380,11 +373,11 @@ export class Layer {
   // === Utilities ===
 
   [inspect.custom]() {
-    const registerables = {};
-    for (const name of this._registeredNames) {
-      registerables[name] = this._registerables[name];
+    const items = {};
+    for (const item of this.getItems()) {
+      items[item.$getRegisteredName()] = item;
     }
-    return registerables;
+    return items;
   }
 }
 
