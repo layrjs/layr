@@ -150,18 +150,19 @@ export class Field {
   }
 
   getValues() {
+    const field = this;
     return {
-      [Symbol.iterator]: () => {
-        const value = this.getValue();
-        let values;
-        if (value === undefined) {
-          values = [];
-        } else if (this._isArray) {
-          values = value;
-        } else {
-          values = [value];
+      * [Symbol.iterator]() {
+        const value = field.getValue();
+        if (value !== undefined) {
+          if (field._isArray) {
+            for (const item of value) {
+              yield item;
+            }
+          } else {
+            yield value;
+          }
         }
-        return values[Symbol.iterator]();
       }
     };
   }

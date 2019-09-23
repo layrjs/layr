@@ -159,23 +159,21 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getFields({filter} = {}) {
+    const model = this;
+
     return {
-      [Symbol.iterator]: () => {
-        const iterator = (this._fields || []).values()[Symbol.iterator]();
-        return {
-          next: () => {
-            while (true) {
-              let {value: field, done} = iterator.next();
-              if (field) {
-                field = this._initializeField(field);
-                if (filter && !filter(field)) {
-                  continue;
-                }
-              }
-              return {value: field, done};
-            }
+      * [Symbol.iterator]() {
+        if (model._fields === undefined) {
+          return;
+        }
+
+        for (let [, field] of model._fields) {
+          field = model._initializeField(field);
+          if (filter && !filter(field)) {
+            continue;
           }
-        };
+          yield field;
+        }
       }
     };
   }
@@ -198,30 +196,14 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getFieldValues({filter} = {}) {
+    const model = this;
     return {
-      [Symbol.iterator]: () => {
-        const fieldIterator = this.$getActiveFields({filter})[Symbol.iterator]();
-        let valueIterator;
-
-        return {
-          next: () => {
-            while (true) {
-              if (!valueIterator) {
-                const {value: field} = fieldIterator.next();
-                if (!field) {
-                  return {value: undefined, done: true};
-                }
-                valueIterator = field.getValues()[Symbol.iterator]();
-              }
-
-              const {value, done} = valueIterator.next();
-              if (!done) {
-                return {value, done: false};
-              }
-              valueIterator = undefined;
-            }
+      * [Symbol.iterator]() {
+        for (const field of model.$getActiveFields({filter})) {
+          for (const value of field.getValues()) {
+            yield value;
           }
-        };
+        }
       }
     };
   }
