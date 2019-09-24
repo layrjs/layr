@@ -15,10 +15,10 @@ export const Routable = (Base = Object) =>
     }
 
     static $getRoutes() {
-      let routes = this._routes;
-      if (!Object.prototype.hasOwnProperty.call(this, '_routes')) {
+      let routes = this.__routes;
+      if (!Object.prototype.hasOwnProperty.call(this, '__routes')) {
         routes = new Map(routes);
-        Object.defineProperty(this, '_routes', {value: routes});
+        Object.defineProperty(this, '__routes', {value: routes});
       }
       return routes;
     }

@@ -13,10 +13,10 @@ export const Observable = (Base = Object) =>
     }
 
     __getObservers() {
-      if (!Object.prototype.hasOwnProperty.call(this, '_observers')) {
-        Object.defineProperty(this, '_observers', {value: new ObserverSet()});
+      if (!Object.prototype.hasOwnProperty.call(this, '__observers')) {
+        Object.defineProperty(this, '__observers', {value: new ObserverSet()});
       }
-      return this._observers;
+      return this.__observers;
     }
   };
 

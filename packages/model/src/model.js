@@ -30,9 +30,9 @@ export class Model extends Observable(Serializable(Registerable())) {
     if (object === undefined) {
       // NOOP
     } else if (Model.$isModel(object)) {
-      this._assignOther(object);
+      this.__assignOther(object);
     } else if (typeof object === 'object') {
-      this._assignObject(object);
+      this.__assignObject(object);
     } else {
       throw new Error(
         `Type mismatch (expected: 'Model' or 'Object', received: '${typeof object}')`
@@ -40,7 +40,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     }
   }
 
-  _assignObject(object) {
+  __assignObject(object) {
     for (const [name, value] of Object.entries(object)) {
       if (this.$hasField(name)) {
         const field = this.$getField(name);
@@ -49,7 +49,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     }
   }
 
-  _assignOther(other) {
+  __assignOther(other) {
     for (const otherField of other.$getActiveFields()) {
       const name = otherField.getName();
       if (this.$hasField(name)) {
@@ -149,7 +149,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getField(name) {
-    const fields = this._getFields();
+    const fields = this.__getFields();
 
     let field = fields[name];
 
@@ -202,7 +202,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getFieldNames() {
-    const fields = this._fields;
+    const fields = this.__fields;
 
     return {
       * [Symbol.iterator]() {
@@ -235,7 +235,7 @@ export class Model extends Observable(Serializable(Registerable())) {
       throw new Error(`Field already exists (name: '${name}')`);
     }
 
-    const fields = this._getFields();
+    const fields = this.__getFields();
 
     const field = new Field(this, name, type, options);
     fields[name] = field;
@@ -244,17 +244,17 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $hasField(name) {
-    return this._fields ? name in this._fields : false;
+    return this.__fields ? name in this.__fields : false;
   }
 
-  _getFields() {
-    if (!this._fields) {
-      this._fields = Object.create(null);
-    } else if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
-      this._fields = Object.create(this._fields);
+  __getFields() {
+    if (!this.__fields) {
+      this.__fields = Object.create(null);
+    } else if (!Object.prototype.hasOwnProperty.call(this, '__fields')) {
+      this.__fields = Object.create(this.__fields);
     }
 
-    return this._fields;
+    return this.__fields;
   }
 
   // === Field masks ===
@@ -266,12 +266,12 @@ export class Model extends Observable(Serializable(Registerable())) {
       fields = fields.serialize();
     }
 
-    fields = this._createFieldMask(fields, {filter});
+    fields = this.__createFieldMask(fields, {filter});
 
     return new FieldMask(fields);
   }
 
-  _createFieldMask(rootFieldMask, {filter, _typeStack = new Set()}) {
+  __createFieldMask(rootFieldMask, {filter, _typeStack = new Set()}) {
     const normalizedFieldMask = {};
 
     for (const field of this.$getFields({filter})) {

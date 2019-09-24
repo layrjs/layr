@@ -67,7 +67,7 @@ export class LayerHTTPClient {
           };
 
           const itemProxy = {
-            _isExposed: true,
+            __isExposed: true,
 
             $getExposedProperty(name) {
               return _getExposedProperty(properties, name);

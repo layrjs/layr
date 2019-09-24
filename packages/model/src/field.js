@@ -394,7 +394,7 @@ class Scalar {
   _createFieldMask(fieldMask, {filter, _typeStack}) {
     const Model = this.getModel();
     if (Model) {
-      return Model.prototype._createFieldMask(fieldMask, {filter, _typeStack});
+      return Model.prototype.__createFieldMask(fieldMask, {filter, _typeStack});
     }
     return true;
   }

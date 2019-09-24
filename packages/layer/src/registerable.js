@@ -167,19 +167,21 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 // === Common logic used by both class and instance methods ===
 
 function _getRegisteredName(target) {
-  return target._registeredName;
+  return target.__registeredName;
 }
 
 function _setRegisteredName(target, registeredName) {
-  Object.defineProperty(target, '_registeredName', {value: registeredName});
+  Object.defineProperty(target, '__registeredName', {value: registeredName});
 }
 
 function _isRegistered(target) {
-  return target._registeredName !== undefined;
+  return target.__registeredName !== undefined;
 }
 
 function _getLayer(target, {throwIfNotFound = true} = {}) {
-  const layer = Object.prototype.hasOwnProperty.call(target, '_layer') ? target._layer : undefined;
+  const layer = Object.prototype.hasOwnProperty.call(target, '__layer') ?
+    target.__layer :
+    undefined;
   if (layer) {
     return layer;
   }
@@ -189,7 +191,7 @@ function _getLayer(target, {throwIfNotFound = true} = {}) {
 }
 
 function _setLayer(target, layer) {
-  Object.defineProperty(target, '_layer', {value: layer});
+  Object.defineProperty(target, '__layer', {value: layer});
 }
 
 function _callParentLayer(layer, target, methodName, ...args) {
@@ -239,21 +241,21 @@ function _exposeProperty(target, name, type, options) {
     ow(options, ow.object.exactShape({call: setting}));
   }
 
-  if (!target._exposedProperties) {
-    target._exposedProperties = new Map();
-  } else if (!Object.prototype.hasOwnProperty.call(target, '_exposedProperties')) {
-    target._exposedProperties = new Map(target._exposedProperties);
+  if (!target.__exposedProperties) {
+    target.__exposedProperties = new Map();
+  } else if (!Object.prototype.hasOwnProperty.call(target, '__exposedProperties')) {
+    target.__exposedProperties = new Map(target.__exposedProperties);
   }
 
-  target._exposedProperties.set(name, {name, type, ...options});
+  target.__exposedProperties.set(name, {name, type, ...options});
 }
 
 function _getExposedProperty(target, name) {
-  return target._exposedProperties?.get(name);
+  return target.__exposedProperties?.get(name);
 }
 
 function _getExposedProperties(target) {
-  return target._exposedProperties || EMPTY_MAP;
+  return target.__exposedProperties || EMPTY_MAP;
 }
 
 async function _exposedPropertyOperationIsAllowed(
@@ -346,21 +348,6 @@ function _fork(target) {
   return Object.create(target);
 }
 
-/*
-{
-  _type: 'class',
-  _isExposed: true,
-  get: {
-    _type: 'method'
-  },
-  prototype: {
-    save: {
-      _type: 'method'
-    }
-  }
-}
-*/
-
 function _introspect(target) {
   const isClass = typeof target === 'function';
 
@@ -389,7 +376,7 @@ export function expose(options = {}) {
     if (!name) {
       // @expose() used on a class or an object
       // TODO: Get rid of this
-      target._isExposed = true;
+      target.__isExposed = true;
       return target;
     }
 
@@ -414,7 +401,7 @@ export function isExposed(target, name) {
   }
   if (!name) {
     // @isExposed() called with a class or an instance
-    return target._isExposed === true;
+    return target.__isExposed === true;
   }
   return target.$getExposedProperty(name) !== undefined;
 }

@@ -3,27 +3,27 @@ export const Serializable = (Base = Object) =>
     constructor(object, {isDeserializing} = {}) {
       super(object);
       if (!isDeserializing) {
-        this._isNew = true;
+        this.__isNew = true;
       }
       // When overriding, call `this.constructor.$setInstance(this)` after setting the id
     }
 
     $isNew() {
-      return this._isNew;
+      return this.__isNew;
     }
 
     $markAsNew() {
-      this._isNew = true;
+      this.__isNew = true;
     }
 
     $markAsNotNew() {
-      this._isNew = false;
+      this.__isNew = false;
     }
 
     $serialize() {
       return {
         _type: this.constructor.$getRegisteredName(),
-        ...(this._isNew && {_new: true})
+        ...(this.__isNew && {_new: true})
       };
     }
 
@@ -41,7 +41,7 @@ export const Serializable = (Base = Object) =>
     }
 
     $deserialize(object) {
-      this._isNew = Boolean(object?._new);
+      this.__isNew = Boolean(object?._new);
     }
 
     static $getInstance(_object, _previousInstance) {
