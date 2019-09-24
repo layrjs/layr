@@ -1,5 +1,6 @@
 import {Observable} from '@liaison/observable';
 import {Registerable, Serializable} from '@liaison/layer';
+import ow from 'ow';
 import isEmpty from 'lodash/isEmpty';
 import {inspect} from 'util';
 
@@ -272,6 +273,8 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   __createFieldMask(rootFieldMask, {filter, _typeStack = new Set()}) {
+    ow(rootFieldMask, 'fields', ow.any(ow.boolean, ow.object));
+
     const normalizedFieldMask = {};
 
     for (const field of this.$getFields({filter})) {

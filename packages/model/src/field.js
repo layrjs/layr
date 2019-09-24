@@ -4,6 +4,7 @@ import {mapFromOneOrMany} from '@liaison/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';
+import ow from 'ow';
 
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
@@ -396,6 +397,9 @@ class Scalar {
     if (Model) {
       return Model.prototype.__createFieldMask(fieldMask, {filter, _typeStack});
     }
+
+    ow(fieldMask, 'fields', ow.boolean.true);
+
     return true;
   }
 }

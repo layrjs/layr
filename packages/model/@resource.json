@@ -12,7 +12,8 @@
     "@liaison/layer": "^0.1.2",
     "@liaison/observable": "^0.1.0",
     "@liaison/util": "^0.1.0",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "ow": "^0.13.2"
   },
   "tests": {
     "@include": "./tests"
