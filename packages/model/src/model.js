@@ -149,13 +149,22 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getField(name) {
-    const field = this._fields?.get(name);
+    const fields = this._getFields();
+
+    let field = fields[name];
+
     if (!field) {
       throw new Error(
         `Field not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
       );
     }
-    return this._initializeField(field);
+
+    if (!Object.prototype.hasOwnProperty.call(fields, name)) {
+      field = field.fork(this);
+      fields[name] = field;
+    }
+
+    return field;
   }
 
   $getFields({filter} = {}) {
@@ -163,15 +172,13 @@ export class Model extends Observable(Serializable(Registerable())) {
 
     return {
       * [Symbol.iterator]() {
-        if (model._fields === undefined) {
-          return;
-        }
+        for (const name of model.$getFieldNames()) {
+          const field = model.$getField(name);
 
-        for (let [, field] of model._fields) {
-          field = model._initializeField(field);
           if (filter && !filter(field)) {
             continue;
           }
+
           yield field;
         }
       }
@@ -183,20 +190,35 @@ export class Model extends Observable(Serializable(Registerable())) {
       if (!field.isActive()) {
         return false;
       }
+
       if (otherFilter) {
         return otherFilter(field);
       }
+
       return true;
     };
+
     return this.$getFields({filter});
   }
 
   $getFieldNames() {
-    return this._fields ? this._fields.keys() : [];
+    const fields = this._fields;
+
+    return {
+      * [Symbol.iterator]() {
+        if (fields) {
+          // eslint-disable-next-line guard-for-in
+          for (const name in fields) {
+            yield name;
+          }
+        }
+      }
+    };
   }
 
   $getFieldValues({filter} = {}) {
     const model = this;
+
     return {
       * [Symbol.iterator]() {
         for (const field of model.$getActiveFields({filter})) {
@@ -209,34 +231,30 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $setField(name, type, options) {
-    if (this._fields?.has(name)) {
+    if (this.$hasField(name)) {
       throw new Error(`Field already exists (name: '${name}')`);
     }
-    this._initializeFields();
+
+    const fields = this._getFields();
+
     const field = new Field(this, name, type, options);
-    this._fields.set(name, field);
+    fields[name] = field;
+
     return field;
   }
 
   $hasField(name) {
-    return this._fields?.has(name);
+    return this._fields ? name in this._fields : false;
   }
 
-  _initializeFields() {
+  _getFields() {
     if (!this._fields) {
-      this._fields = new Map();
+      this._fields = Object.create(null);
     } else if (!Object.prototype.hasOwnProperty.call(this, '_fields')) {
-      this._fields = new Map(this._fields);
+      this._fields = Object.create(this._fields);
     }
-  }
 
-  _initializeField(field) {
-    if (field.getParent() !== this) {
-      this._initializeFields();
-      field = field.fork(this);
-      this._fields.set(field.getName(), field);
-    }
-    return field;
+    return this._fields;
   }
 
   // === Field masks ===
