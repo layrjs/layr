@@ -13,27 +13,28 @@ export function view() {
       configurable,
       enumerable,
       get() {
-        const BoundComponent = (props, context) => {
-          if (!context) {
-            // The component has been called directly (without React.createElement())
-            // TODO: This sounds quite fragile, so if possible, let's get rid of this
-            return <BoundComponent {...props} />;
-          }
-          if (isModel(this)) {
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            useModel(this);
-          }
-          return Component.call(this, props, context);
-        };
-        BoundComponent.displayName = name;
+        if (!Object.prototype.hasOwnProperty.call(this, '__boundComponents')) {
+          this.__boundComponents = {};
+        }
 
-        Object.defineProperty(this, name, {
-          configurable: true,
-          writable: true,
-          // NOT enumerable when it's a bound method
-          enumerable: false,
-          value: BoundComponent
-        });
+        let BoundComponent = this.__boundComponents[name];
+
+        if (!BoundComponent) {
+          BoundComponent = (props, context) => {
+            if (!context) {
+              // The component has been called directly (without React.createElement())
+              // TODO: This sounds quite fragile, so if possible, let's get rid of this
+              return <BoundComponent {...props} />;
+            }
+            if (isModel(this)) {
+              useModel(this);
+            }
+            return Component.call(this, props, context);
+          };
+          BoundComponent.displayName = name;
+
+          this.__boundComponents[name] = BoundComponent;
+        }
 
         return BoundComponent;
       }
