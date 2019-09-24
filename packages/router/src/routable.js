@@ -1,3 +1,5 @@
+import {hasOwnProperty} from '@liaison/util';
+
 import {Route} from './route';
 
 export const Routable = (Base = Object) =>
@@ -16,7 +18,7 @@ export const Routable = (Base = Object) =>
 
     static $getRoutes() {
       let routes = this.__routes;
-      if (!Object.prototype.hasOwnProperty.call(this, '__routes')) {
+      if (!hasOwnProperty(this, '__routes')) {
         routes = new Map(routes);
         Object.defineProperty(this, '__routes', {value: routes});
       }

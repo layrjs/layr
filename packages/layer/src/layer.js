@@ -1,5 +1,6 @@
 import {inspect} from 'util';
 import nanoid from 'nanoid';
+import {hasOwnProperty} from '@liaison/util';
 import {invokeQuery} from '@deepr/runtime';
 import {syncOrAsync} from '@deepr/util';
 import debugModule from 'debug';
@@ -62,7 +63,7 @@ export class Layer {
       return undefined;
     }
 
-    if (!Object.prototype.hasOwnProperty.call(this._registerables, name)) {
+    if (!hasOwnProperty(this._registerables, name)) {
       // Since the layer has been forked, the registerable must be forked as well
       registerable = registerable.$fork();
       registerable.$setLayer(this);

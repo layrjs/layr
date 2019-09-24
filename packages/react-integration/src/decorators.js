@@ -1,5 +1,6 @@
 import React from 'react';
 import {isModel} from '@liaison/model';
+import {hasOwnProperty} from '@liaison/util';
 
 import {useModel} from './hooks';
 
@@ -13,7 +14,7 @@ export function view() {
       configurable,
       enumerable,
       get() {
-        if (!Object.prototype.hasOwnProperty.call(this, '__boundComponents')) {
+        if (!hasOwnProperty(this, '__boundComponents')) {
           this.__boundComponents = {};
         }
 

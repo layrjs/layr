@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+import {hasOwnProperty} from '@liaison/util';
 import debugModule from 'debug';
 
 const debug = debugModule('liaison:layer-http-client');
@@ -49,7 +50,7 @@ export class LayerHTTPClient {
         },
 
         get(name, {throwIfNotFound = true} = {}) {
-          if (!Object.prototype.hasOwnProperty.call(introspection.items, name)) {
+          if (!hasOwnProperty(introspection.items, name)) {
             if (throwIfNotFound) {
               throw new Error(`Item not found in the layer proxy (name: '${name}')`);
             }
@@ -59,7 +60,7 @@ export class LayerHTTPClient {
           const properties = introspection.items[name];
 
           const _getExposedProperty = function (target, name) {
-            if (!Object.prototype.hasOwnProperty.call(target, name)) {
+            if (!hasOwnProperty(target, name)) {
               return undefined;
             }
             const {_type: type} = target[name];

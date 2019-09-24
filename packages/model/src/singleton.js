@@ -1,3 +1,5 @@
+import {hasOwnProperty} from '@liaison/util';
+
 import {Model} from './model';
 
 export class Singleton extends Model {
@@ -8,7 +10,7 @@ export class Singleton extends Model {
   }
 
   static $getInstance() {
-    if (Object.prototype.hasOwnProperty.call(this, '__instance')) {
+    if (hasOwnProperty(this, '__instance')) {
       return this.__instance;
     }
   }

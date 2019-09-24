@@ -1,3 +1,5 @@
+import {hasOwnProperty} from '@liaison/util';
+
 import {Identity} from './identity';
 
 export class Entity extends Identity {
@@ -49,7 +51,7 @@ export class Entity extends Identity {
   }
 
   static __getInstances() {
-    if (!Object.prototype.hasOwnProperty.call(this, '__instances')) {
+    if (!hasOwnProperty(this, '__instances')) {
       this.__instances = new Map();
     }
     return this.__instances;

@@ -1,4 +1,5 @@
 import {Entity, FieldMask} from '@liaison/model';
+import {hasOwnProperty} from '@liaison/util';
 
 export const Storable = (Base = Entity) =>
   class Storable extends Base {
@@ -329,7 +330,7 @@ export const Storable = (Base = Entity) =>
     $addStorableField(name) {
       if (!this.__storableFields) {
         this.__storableFields = new Map();
-      } else if (!Object.prototype.hasOwnProperty.call(this, '__storableFields')) {
+      } else if (!hasOwnProperty(this, '__storableFields')) {
         this.__storableFields = new Map(this.__storableFields);
       }
       this.__storableFields.set(name, {name});

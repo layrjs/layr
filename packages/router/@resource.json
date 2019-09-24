@@ -9,6 +9,7 @@
   "dependencies": {
     "@liaison/layer": "^0.1.0",
     "@liaison/observable": "^0.1.0",
+    "@liaison/util": "^0.1.0",
     "path-parser": "^4.2.0"
   }
 }

@@ -1,3 +1,5 @@
+import {hasOwnProperty} from '@liaison/util';
+
 export const Observable = (Base = Object) =>
   class Observable extends Base {
     $observe(observer) {
@@ -13,7 +15,7 @@ export const Observable = (Base = Object) =>
     }
 
     __getObservers() {
-      if (!Object.prototype.hasOwnProperty.call(this, '__observers')) {
+      if (!hasOwnProperty(this, '__observers')) {
         Object.defineProperty(this, '__observers', {value: new ObserverSet()});
       }
       return this.__observers;

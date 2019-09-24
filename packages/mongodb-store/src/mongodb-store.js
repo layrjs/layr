@@ -1,5 +1,6 @@
 import {Registerable} from '@liaison/layer';
 import {MongoClient} from 'mongodb';
+import {hasOwnProperty} from '@liaison/util';
 import groupBy from 'lodash/groupBy';
 import ow from 'ow';
 import debugModule from 'debug';
@@ -413,7 +414,7 @@ function assignUndefinedFields(document, fields) {
       continue;
     }
 
-    if (!Object.prototype.hasOwnProperty.call(document, name)) {
+    if (!hasOwnProperty(document, name)) {
       document[name] = null; // TODO: The serialization shouldn't be handled here
     }
   }

@@ -1,5 +1,6 @@
 import {Observable} from '@liaison/observable';
 import {Registerable, Serializable} from '@liaison/layer';
+import {hasOwnProperty} from '@liaison/util';
 import ow from 'ow';
 import isEmpty from 'lodash/isEmpty';
 import {inspect} from 'util';
@@ -17,7 +18,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
     for (const field of this.$getFields()) {
       const name = field.getName();
-      if (Object.prototype.hasOwnProperty.call(object, name)) {
+      if (hasOwnProperty(object, name)) {
         const value = object[name];
         field.createValue(value);
       } else {
@@ -108,7 +109,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     const isNew = this.$isNew();
 
     for (const name of this.$getFieldNames()) {
-      if (Object.prototype.hasOwnProperty.call(object, name)) {
+      if (hasOwnProperty(object, name)) {
         const field = this.$getField(name);
         const value = object[name];
         field.deserializeValue(value, {source});
@@ -160,7 +161,7 @@ export class Model extends Observable(Serializable(Registerable())) {
       );
     }
 
-    if (!Object.prototype.hasOwnProperty.call(fields, name)) {
+    if (!hasOwnProperty(fields, name)) {
       field = field.fork(this);
       fields[name] = field;
     }
@@ -251,7 +252,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   __getFields() {
     if (!this.__fields) {
       this.__fields = Object.create(null);
-    } else if (!Object.prototype.hasOwnProperty.call(this, '__fields')) {
+    } else if (!hasOwnProperty(this, '__fields')) {
       this.__fields = Object.create(this.__fields);
     }
 
