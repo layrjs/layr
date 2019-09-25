@@ -105,7 +105,7 @@ beforeAll(async () => {
 
   const authenticator = expose()(Authenticator.$deserialize());
 
-  const layer = new Layer({authenticator, Movie}, {name: 'backend'});
+  const layer = new Layer({Movie, authenticator}, {name: 'backend'});
 
   layerServer = new LayerHTTPServer(layer, {port: 4444});
   await layerServer.start();
@@ -126,7 +126,7 @@ describe('Parent layer via HTTP', () => {
 
     const authenticator = Authenticator.$deserialize();
 
-    const layer = new Layer({authenticator, Movie}, {name: 'frontend', parent: backendLayer});
+    const layer = new Layer({Movie, authenticator}, {name: 'frontend', parent: backendLayer});
 
     expect(layer.authenticator.token).toBeUndefined();
     await layer.authenticator.signIn();

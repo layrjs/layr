@@ -2,6 +2,7 @@ import ow from 'ow';
 import {hasOwnProperty, getPropertyDescriptor} from '@liaison/util';
 import {syncOrAsync} from '@deepr/util';
 
+import {isSerializable} from './serializable';
 import {MissingPropertyEmitter} from './missing-property-emitter';
 
 const EMPTY_MAP = new Map();
@@ -96,6 +97,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return this.__exposedProperties || EMPTY_MAP;
     }
 
+    static $hasExposedProperties() {
+      return this.__exposedProperties !== undefined;
+    }
+
     // eslint-disable-next-line no-unused-vars
     static async $exposedPropertyOperationIsAllowed({property, operation, setting}) {
       if (setting === true) {
@@ -151,7 +156,15 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return parentRegistrable;
     }
 
-    static $fork() {
+    static $fork({targetLayer} = {}) {
+      if (targetLayer === undefined) {
+        targetLayer = this.$getLayer().fork();
+      }
+
+      return targetLayer.get(this.$getRegisteredName());
+    }
+
+    static __fork(_targetLayer) {
       return class extends this {};
     }
 
@@ -255,6 +268,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return this.constructor.$getExposedProperties.call(this);
     }
 
+    $hasExposedProperties() {
+      return this.constructor.$hasExposedProperties.call(this);
+    }
+
     async $exposedPropertyOperationIsAllowed({property, operation, setting}) {
       return await this.constructor.$exposedPropertyOperationIsAllowed.call(this, {
         property,
@@ -280,7 +297,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         return parentRegistrable;
       }
 
-      // Let's fallback to the class
+      // Let's see if the class is registered
       registeredName = this.constructor.$getRegisteredName();
 
       if (!registeredName) {
@@ -297,7 +314,30 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return parentRegistrable.prototype;
     }
 
-    $fork() {
+    $fork({targetLayer} = {}) {
+      if (targetLayer === undefined) {
+        targetLayer = this.$getLayer().fork();
+      }
+
+      const registeredName = this.$getRegisteredName();
+      if (registeredName) {
+        return targetLayer.get(registeredName);
+      }
+
+      return this.__fork(targetLayer);
+    }
+
+    __fork(targetLayer) {
+      if (isSerializable(this)) {
+        if (this.$isRegistered()) {
+          const fork = Object.create(this);
+          fork.$deserialize(this.$serialize());
+          return fork;
+        }
+
+        return targetLayer.deserialize(this.$serialize());
+      }
+
       return Object.create(this);
     }
 
@@ -341,18 +381,20 @@ export function expose(options = {}) {
 }
 
 export function isExposed(target, name) {
-  if (target === undefined) {
+  if (!isRegisterable(target)) {
     return false;
   }
+
   if (!name) {
-    // @isExposed() called with a class or an instance
-    return target.__isExposed === true;
+    // isExposed() called with a class or an instance
+    return target.__isRegisterableProxy || target.$hasExposedProperties();
   }
+
   return target.$getExposedProperty(name) !== undefined;
 }
 
 // === Utilities ===
 
 export function isRegisterable(value) {
-  return typeof value?.$getLayer === 'function';
+  return value?.__isRegisterableProxy || typeof value?.$getLayer === 'function';
 }

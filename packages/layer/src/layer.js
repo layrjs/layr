@@ -65,7 +65,7 @@ export class Layer {
 
     if (!hasOwnProperty(this._registerables, name)) {
       // Since the layer has been forked, the registerable must be forked as well
-      registerable = registerable.$fork();
+      registerable = registerable.__fork(this);
       registerable.$setLayer(this);
       this._registerables[name] = registerable;
     }
@@ -256,8 +256,8 @@ export class Layer {
       return primitiveType.deserialize(object);
     }
 
-    const Class = this.get(type);
-    return Class.$deserialize(object, options);
+    const registerable = this.get(type);
+    return registerable.$deserialize(object, options);
   }
 
   _deserializePlainObject(object, options) {

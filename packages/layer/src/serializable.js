@@ -21,8 +21,10 @@ export const Serializable = (Base = Object) =>
     }
 
     $serialize() {
+      const registeredName = this.$getRegisteredName() || this.constructor.$getRegisteredName();
+
       return {
-        _type: this.constructor.$getRegisteredName(),
+        _type: registeredName,
         ...(this.__isNew && {_new: true})
       };
     }

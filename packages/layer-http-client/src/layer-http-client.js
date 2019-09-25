@@ -32,7 +32,9 @@ export class LayerHTTPClient {
   }
 
   getProxy() {
-    if (this._proxy === undefined) {
+    let proxy = this._proxy;
+
+    if (proxy === undefined) {
       const url = this._url;
       const introspection = this._introspection;
 
@@ -40,7 +42,7 @@ export class LayerHTTPClient {
         throw new Error('Layer server has not been connected');
       }
 
-      this._proxy = {
+      proxy = {
         getId() {
           return introspection.id;
         },
@@ -68,7 +70,7 @@ export class LayerHTTPClient {
           };
 
           const itemProxy = {
-            __isExposed: true,
+            __isRegisterableProxy: true, // TODO: Try to get rid of this
 
             $getExposedProperty(name) {
               return _getExposedProperty(properties, name);
@@ -118,8 +120,10 @@ export class LayerHTTPClient {
           return response.result;
         }
       };
+
+      this._proxy = proxy;
     }
 
-    return this._proxy;
+    return proxy;
   }
 }
