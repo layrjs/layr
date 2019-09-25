@@ -118,7 +118,7 @@ afterAll(async () => {
   await layerServer?.stop();
 });
 
-describe('Parent layer via HTTP', () => {
+describe('Parent layer', () => {
   test('Parent call', async () => {
     class Authenticator extends BaseAuthenticator {}
 
