@@ -12,6 +12,7 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
+    "@liaison/util": "^0.1.0",
     "cross-fetch": "^3.0.4",
     "debug": "^4.1.1"
   },
