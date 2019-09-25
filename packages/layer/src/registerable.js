@@ -365,16 +365,16 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
 export function expose(options = {}) {
   return function (target, name, descriptor) {
-    if (!name) {
-      // @expose() used on a class or an object
-      // TODO: Get rid of this
-      target.__isExposed = true;
-      return target;
+    if (!isRegisterable(target)) {
+      throw new Error(`@expose() target must be a registerable`);
+    }
+    if (!(name && descriptor)) {
+      throw new Error(`@expose() must be used to decorate properties`);
     }
 
     if (descriptor.initializer !== undefined) {
-      // @expose() used on an inherited property shortcut
-      // Examples: `@expose() title;` or `@expose() save;`
+      // @expose() is used on an property defined in a parent class
+      // Examples: `@expose() title;` or `@expose() static $get;`
       const prototype = Object.getPrototypeOf(target);
       descriptor = getPropertyDescriptor(prototype, name);
       if (descriptor === undefined) {

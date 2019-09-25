@@ -68,7 +68,6 @@ let layerServer;
 let backendLayer;
 
 beforeAll(async () => {
-  @expose()
   class Authenticator extends BaseAuthenticator {
     @expose() signIn() {
       this.token = '123456789';
@@ -79,7 +78,6 @@ beforeAll(async () => {
     }
   }
 
-  @expose()
   class Movie extends BaseMovie {
     @expose() static get(id) {
       this.authorize();
@@ -103,7 +101,7 @@ beforeAll(async () => {
     }
   }
 
-  const authenticator = expose()(Authenticator.$deserialize());
+  const authenticator = Authenticator.$deserialize();
 
   const layer = new Layer({Movie, authenticator}, {name: 'backend'});
 
