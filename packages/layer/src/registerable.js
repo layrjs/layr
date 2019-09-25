@@ -341,6 +341,13 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return Object.create(this);
     }
 
+    $merge(fork) {
+      if (!isSerializable(fork)) {
+        throw new Error(`Cannot merge an object that is not serializable`);
+      }
+      this.$deserialize(fork.$serialize());
+    }
+
     $introspect() {
       const introspection = {
         _type: 'instance'
@@ -370,6 +377,9 @@ export function expose(options = {}) {
       // Examples: `@expose() title;` or `@expose() save;`
       const prototype = Object.getPrototypeOf(target);
       descriptor = getPropertyDescriptor(prototype, name);
+      if (descriptor === undefined) {
+        throw new Error(`Cannot expose an undefined property (name: '${name}')`);
+      }
     }
 
     const type = typeof descriptor.value === 'function' ? 'method' : 'field';
