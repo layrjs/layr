@@ -189,12 +189,6 @@ export const Storable = (Base = Entity) =>
       await this.constructor.$save([this], {throwIfNotFound, throwIfAlreadyExists});
     }
 
-    async $update(changes, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
-      this.$assign(changes);
-
-      await this.$save({throwIfNotFound, throwIfAlreadyExists});
-    }
-
     static async $delete(storables, {throwIfNotFound = true} = {}) {
       if (!Array.isArray(storables)) {
         return (await this.$delete([storables], {throwIfNotFound}))[0];
