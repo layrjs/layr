@@ -113,14 +113,9 @@ export class Layer {
 
   // === Forking ===
 
-  fork(registerables) {
+  fork() {
     const forkedLayer = Object.create(this);
     forkedLayer._registerables = Object.create(this._registerables);
-
-    if (registerables) {
-      forkedLayer.register(registerables);
-    }
-
     return forkedLayer;
   }
 
