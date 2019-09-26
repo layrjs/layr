@@ -53,26 +53,6 @@ export class Layer {
 
   // === Registration ===
 
-  get(name, {throwIfNotFound = true} = {}) {
-    let registerable = this._registerables[name];
-
-    if (registerable === undefined) {
-      if (throwIfNotFound) {
-        throw new Error(`Item not found in the layer (name: '${name}')`);
-      }
-      return undefined;
-    }
-
-    if (!hasOwnProperty(this._registerables, name)) {
-      // Since the layer has been forked, the registerable must be forked as well
-      registerable = registerable.__fork(this);
-      registerable.$setLayer(this);
-      this._registerables[name] = registerable;
-    }
-
-    return registerable;
-  }
-
   register(registerables) {
     if (registerables === null) {
       throw new Error(`Expected an object (received: null)`);
@@ -100,6 +80,10 @@ export class Layer {
       throw new Error(`Name already registered (name: '${name}')`);
     }
 
+    if (this.isOpen()) {
+      throw new Error(`Cannot register an item in an open layer (name: '${name}')`);
+    }
+
     registerable.$setLayer(this);
     registerable.$setRegisteredName(name);
     this._registerables[name] = registerable;
@@ -111,15 +95,78 @@ export class Layer {
     });
   }
 
-  // === Forking ===
+  // === Opening and closing ===
 
-  fork() {
-    const forkedLayer = Object.create(this);
-    forkedLayer._registerables = Object.create(this._registerables);
-    return forkedLayer;
+  async open() {
+    if (this._isOpen) {
+      throw new Error(`Cannot open a layer that is already open`);
+    }
+
+    if (this._isOpen === false && !hasOwnProperty(this, '_isOpen')) {
+      throw new Error(`Cannot reopen a layer from a fork`);
+    }
+
+    if (this.hasParent() && !this.getParent().isOpen()) {
+      throw new Error(`The parent layer must be opened before the child one`);
+    }
+
+    this._isOpen = true;
+
+    try {
+      for (const item of this.getItems()) {
+        await item.$open();
+      }
+    } catch (error) {
+      this._isOpen = false;
+      throw error;
+    }
   }
 
-  // === Introspection ===
+  async close() {
+    if (!this._isOpen) {
+      throw new Error(`Cannot close a layer that is not open`);
+    }
+
+    if (!hasOwnProperty(this, '_isOpen')) {
+      throw new Error(`Cannot close a layer from a fork`);
+    }
+
+    for (const item of this.getItems()) {
+      await item.$close();
+    }
+
+    this._isOpen = false;
+  }
+
+  isOpen() {
+    return this._isOpen === true;
+  }
+
+  // === Getting items ===
+
+  get(name, {throwIfNotFound = true} = {}) {
+    if (!this.isOpen()) {
+      throw new Error(`Cannot get an item from a closed layer (name: '${name}')`);
+    }
+
+    let registerable = this._registerables[name];
+
+    if (registerable === undefined) {
+      if (throwIfNotFound) {
+        throw new Error(`Item not found in the layer (name: '${name}')`);
+      }
+      return undefined;
+    }
+
+    if (!hasOwnProperty(this._registerables, name)) {
+      // Since the layer has been forked, the registerable must be forked as well
+      registerable = registerable.__fork(this);
+      registerable.$setLayer(this);
+      this._registerables[name] = registerable;
+    }
+
+    return registerable;
+  }
 
   getItems({filter} = {}) {
     const layer = this;
@@ -149,6 +196,16 @@ export class Layer {
     };
     return this.getItems({filter});
   }
+
+  // === Forking ===
+
+  fork() {
+    const forkedLayer = Object.create(this);
+    forkedLayer._registerables = Object.create(this._registerables);
+    return forkedLayer;
+  }
+
+  // === Introspection ===
 
   introspect() {
     const introspection = {

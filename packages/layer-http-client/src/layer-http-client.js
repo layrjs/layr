@@ -15,43 +15,66 @@ export class LayerHTTPClient {
     this._url = url;
   }
 
-  async connect() {
-    debug(`Connecting to layer server (URL: '${this._url}')`);
+  getLayer() {
+    let layer = this._layer;
 
-    const response = await fetch(this._url); // Introspect remote layer
-
-    if (response.status !== 200) {
-      throw new Error('An error occurred while connecting to the layer server');
-    }
-
-    this._introspection = await response.json();
-
-    debug(`Layer server connected (URL: '${this._url}')`);
-
-    return this.getProxy();
-  }
-
-  getProxy() {
-    let proxy = this._proxy;
-
-    if (proxy === undefined) {
+    if (layer === undefined) {
       const url = this._url;
-      const introspection = this._introspection;
 
-      if (introspection === undefined) {
-        throw new Error('Layer server has not been connected');
-      }
+      let isOpen;
+      let introspection;
 
-      proxy = {
+      layer = {
+        async open() {
+          if (isOpen) {
+            throw new Error(`Cannot open a layer proxy that is already open`);
+          }
+
+          debug(`Introspecting the remote layer (URL: '${url}')`);
+          const response = await fetch(url); // Introspect remote layer
+          if (response.status !== 200) {
+            throw new Error('An error occurred while introspecting the remote layer');
+          }
+          introspection = await response.json();
+          debug(`Remote layer introspected (URL: '${url}')`);
+
+          isOpen = true;
+        },
+
+        async close() {
+          if (!isOpen) {
+            throw new Error(`Cannot close a layer proxy that is not open`);
+          }
+
+          introspection = undefined;
+          isOpen = false;
+        },
+
+        isOpen() {
+          return isOpen === true;
+        },
+
         getId() {
+          if (!this.isOpen()) {
+            throw new Error(`Cannot get the id of a closed layer proxy`);
+          }
+
           return introspection.id;
         },
 
         getName() {
+          if (!this.isOpen()) {
+            throw new Error(`Cannot get the name of a closed layer proxy`);
+          }
+
           return introspection.name;
         },
 
         get(name, {throwIfNotFound = true} = {}) {
+          if (!this.isOpen()) {
+            throw new Error(`Cannot get an item from a closed layer proxy (name: '${name}')`);
+          }
+
           if (!hasOwnProperty(introspection.items, name)) {
             if (throwIfNotFound) {
               throw new Error(`Item not found in the layer proxy (name: '${name}')`);
@@ -90,7 +113,7 @@ export class LayerHTTPClient {
 
         async receiveQuery({query, items, source} = {}) {
           debug(
-            `Sending query to layer server (URL: '${url}', query: ${JSON.stringify(
+            `Sending a query to the remote layer (URL: '${url}', query: ${JSON.stringify(
               query
             )}), items: ${JSON.stringify(items)})`
           );
@@ -104,13 +127,13 @@ export class LayerHTTPClient {
           });
 
           if (fetchResponse.status !== 200) {
-            throw new Error('An error occurred while sending a query to the layer server');
+            throw new Error('An error occurred while sending a query to the remote layer');
           }
 
           const response = await fetchResponse.json();
 
           debug(
-            `Query sent to layer server (URL: '${url}'), response: ${JSON.stringify(response)}`
+            `Query sent to the remote layer (URL: '${url}'), response: ${JSON.stringify(response)}`
           );
 
           if (response.error) {
@@ -121,9 +144,9 @@ export class LayerHTTPClient {
         }
       };
 
-      this._proxy = proxy;
+      this._layer = layer;
     }
 
-    return proxy;
+    return layer;
   }
 }

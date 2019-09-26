@@ -5,7 +5,7 @@ import {Model, field, validators, createValidator} from '../../..';
 const {notEmpty, maxLength, greaterThanOrEqual} = validators;
 
 describe('Model', () => {
-  test('Basic fields', () => {
+  test('Basic fields', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -13,6 +13,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     let movie = new layer.Movie({title: 'Inception', year: 2010});
     expect(movie instanceof layer.Movie).toBe(true);
@@ -29,7 +30,7 @@ describe('Model', () => {
     expect(movie.unknownField).toBeUndefined(); // Silently ignore undefined fields
   });
 
-  test('Date field', () => {
+  test('Date field', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -37,6 +38,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     const movie = new layer.Movie({
       title: 'Inception',
@@ -48,7 +50,7 @@ describe('Model', () => {
     expect(movie.releasedOn.getUTCDate()).toBe(16);
   });
 
-  test('Array field', () => {
+  test('Array field', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -62,6 +64,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, Actor});
+    await layer.open();
 
     let movie = new layer.Movie();
     expect(movie.genres).toBe(undefined);
@@ -81,7 +84,7 @@ describe('Model', () => {
     expect(movie.actors[1].fullName).toBe('Joseph Gordon-Levitt');
   });
 
-  test('Type checking', () => {
+  test('Type checking', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -91,6 +94,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     const movie = new layer.Movie();
 
@@ -111,7 +115,7 @@ describe('Model', () => {
     }).toThrow(/Type mismatch/);
   });
 
-  test('Default values', () => {
+  test('Default values', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -119,6 +123,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     let movie = new layer.Movie();
     expect(movie.title).toBeUndefined();
@@ -129,7 +134,7 @@ describe('Model', () => {
     expect(movie.isRestricted).toBe(true);
   });
 
-  test('Inheritance', () => {
+  test('Inheritance', async () => {
     class Item extends Model {
       @field('string') id;
     }
@@ -145,13 +150,14 @@ describe('Model', () => {
     }).toThrow(/Field already exists/);
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     const movie = new layer.Movie({id: 'abc123', title: 'Inception'});
     expect(movie.id).toBe('abc123');
     expect(movie.title).toBe('Inception');
   });
 
-  test('Composition', () => {
+  test('Composition', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -163,6 +169,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs});
+    await layer.open();
 
     const movie = new layer.Movie({technicalSpecs: {aspectRatio: '2.39:1'}});
     expect(movie.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
@@ -175,7 +182,7 @@ describe('Model', () => {
     expect(movie.technicalSpecs).toBe(technicalSpecs);
   });
 
-  test('Validation', () => {
+  test('Validation', async () => {
     class Movie extends Model {
       @field('string', {validators: [notEmpty(), maxLength(40)]}) title;
 
@@ -195,6 +202,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     let movie = new layer.Movie();
     expect(movie.$getFailedValidators()).toEqual({title: ['required()']});
@@ -247,12 +255,13 @@ describe('Model', () => {
     expect(() => movie.$validate()).not.toThrow();
   });
 
-  test('$isNew()', () => {
+  test('$isNew()', async () => {
     class Movie extends Model {
       @field('string') title;
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     let movie = new layer.Movie({title: 'Inception'});
     expect(movie.$isNew()).toBe(true);
@@ -267,7 +276,7 @@ describe('Model', () => {
     expect(movie.$isNew()).toBe(true);
   });
 
-  test('$assign()', () => {
+  test('$assign()', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -283,6 +292,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs});
+    await layer.open();
 
     const movie = new layer.Movie();
 
@@ -305,7 +315,7 @@ describe('Model', () => {
     expect(movie2.technicalSpecs).toBe(movie.technicalSpecs);
   });
 
-  test('Serialization', () => {
+  test('Serialization', async () => {
     class Movie extends Model {
       @expose() @field('string') title;
 
@@ -329,6 +339,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs, Actor});
+    await layer.open();
 
     // Simple serialization
 
@@ -536,7 +547,7 @@ describe('Model', () => {
     expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
   });
 
-  test('Field exposition', () => {
+  test('Field exposition', async () => {
     class BaseMovie extends Model {
       @field('string') title;
 
@@ -550,7 +561,9 @@ describe('Model', () => {
     class FrontendMovie extends BaseMovie {}
 
     const backendLayer = new Layer({Movie: BackendMovie});
+    await backendLayer.open();
     const frontendLayer = new Layer({Movie: FrontendMovie}, {parent: backendLayer});
+    await frontendLayer.open();
 
     const frontendMovie = frontendLayer.Movie.$deserialize({title: 'Inception', secret: 'xyz123'});
     expect(frontendMovie.$serialize()).toEqual({
@@ -576,7 +589,7 @@ describe('Model', () => {
     });
   });
 
-  test('Cloning', () => {
+  test('Cloning', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -590,6 +603,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs});
+    await layer.open();
 
     const movie = new layer.Movie({
       title: 'Inception',
@@ -614,7 +628,7 @@ describe('Model', () => {
     expect(clone.technicalSpecs.aspectRatio).toBe('2.39:1');
   });
 
-  test('Polymorphism', () => {
+  test('Polymorphism', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -636,6 +650,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, Identity, User, Organization, Actor});
+    await layer.open();
 
     const movie = new layer.Movie({title: 'Inception'});
     expect(movie.title).toBe('Inception');
@@ -653,7 +668,7 @@ describe('Model', () => {
     }).toThrow(/Type mismatch/);
   });
 
-  test('Circular type', () => {
+  test('Circular type', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -661,6 +676,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     let movie = new layer.Movie({
       title: 'Inception',
@@ -686,7 +702,7 @@ describe('Model', () => {
     expect(movie.similarMovies[0].title).toBe('The Matrix');
   });
 
-  test('Observability', () => {
+  test('Observability', async () => {
     class Movie extends Model {
       @field('string') title;
 
@@ -700,6 +716,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs});
+    await layer.open();
 
     const movie = new layer.Movie({
       title: 'Inception',

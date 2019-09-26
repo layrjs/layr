@@ -1,7 +1,7 @@
 import {Layer, Registerable, Serializable} from '../../..';
 
 describe('Layer', () => {
-  test('Registration', () => {
+  test('Basic usage', async () => {
     class Item extends Registerable() {}
 
     class Movie extends Item {
@@ -14,15 +14,21 @@ describe('Layer', () => {
     expect(Movie.$hasLayer()).toBe(false);
 
     const layer = new Layer({Item, Movie}, {name: 'layer'});
+
     expect(layer.getId().length).toBeGreaterThanOrEqual(10);
     expect(layer.getName()).toBe('layer');
     expect(Movie.$getLayer()).toBe(layer);
     expect(Movie.$hasLayer()).toBe(true);
     expect(Movie.$getRegisteredName()).toBe('Movie');
+
+    expect(() => layer.Movie).toThrow(/Cannot get an item from a closed layer/);
+
+    await layer.open();
+
     expect(layer.Movie).toBe(Movie);
     expect([...layer.getItems()]).toEqual([Item, Movie]);
 
-    const movie = new Movie({title: 'Inception'});
+    const movie = new layer.Movie({title: 'Inception'});
 
     expect(movie instanceof Movie).toBe(true);
     expect(movie instanceof Item).toBe(true);
@@ -31,9 +37,14 @@ describe('Layer', () => {
     expect(movie.$getLayer({fallBackToClass: false, throwIfNotFound: false})).toBeUndefined();
     expect(movie.$hasLayer({fallBackToClass: false})).toBe(false);
 
+    await layer.close();
+
     layer.register({movie});
     expect(movie.$getRegisteredName()).toBe('movie');
+
+    await layer.open();
     expect(layer.movie).toBe(movie);
+    await layer.close();
 
     const movie2 = new Movie({title: 'The Matrix'});
 
@@ -57,25 +68,22 @@ describe('Layer', () => {
     expect(anotherLayer.getName()).toBe('anotherLayer');
   });
 
-  test('Forking', () => {
+  test('Forking', async () => {
     class Store extends Registerable() {}
 
-    const layer = new Layer({Store});
+    const store = new Store();
 
-    const store = new layer.Store();
-
-    layer.register({store});
+    const layer = new Layer({Store, store});
+    await layer.open();
 
     const sublayer = layer.fork();
-
-    expect(sublayer.store instanceof layer.Store).toBe(true);
 
     sublayer.store.transaction = 12345;
     expect(sublayer.store.transaction).toBe(12345);
     expect(layer.store.transaction).toBeUndefined();
   });
 
-  test('Serialization', () => {
+  test('Serialization', async () => {
     class Movie extends Serializable(Registerable()) {
       constructor({title, ...object} = {}, {isDeserializing} = {}) {
         super(object, {isDeserializing});
@@ -98,6 +106,7 @@ describe('Layer', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     let movie = new layer.Movie({title: 'Inception'});
     expect(movie.$isNew()).toBe(true);

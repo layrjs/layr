@@ -33,6 +33,7 @@ describe('Storable', () => {
     }
 
     const rootLayer = new Layer({Movie, store});
+    await rootLayer.open();
 
     let layer = rootLayer.fork();
     let movie = new layer.Movie({title: 'Inception', year: 2010, secret: 'abc123'});
@@ -287,6 +288,7 @@ describe('Storable', () => {
     }
 
     const rootLayer = new Layer({Movie, store});
+    await rootLayer.open();
 
     // Create
 

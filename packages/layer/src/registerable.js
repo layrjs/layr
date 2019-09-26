@@ -55,22 +55,6 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
-    static $callParentLayer(methodName, ...args) {
-      const layer = this.$getLayer();
-      const query = this.__buildQuery(methodName, ...args);
-      return syncOrAsync(layer.sendQuery(query), ({result}) => result);
-    }
-
-    static __buildQuery(methodName, ...args) {
-      return {
-        [`${this.$getRegisteredName()}=>`]: {
-          [`${methodName}=>result`]: {
-            '([])': args
-          }
-        }
-      };
-    }
-
     static $exposeProperty(name, type, options) {
       ow(type, ow.string.oneOf(['field', 'method']));
       const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array, ow.set);
@@ -114,6 +98,42 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return undefined;
     }
 
+    static $fork({targetLayer} = {}) {
+      if (targetLayer === undefined) {
+        targetLayer = this.$getLayer().fork();
+      }
+
+      return targetLayer.get(this.$getRegisteredName());
+    }
+
+    static __fork(_targetLayer) {
+      return class extends this {};
+    }
+
+    static async $open() {
+      // Override this method to implement initialization logic
+    }
+
+    static async $close() {
+      // Override this method to implement deinitialization logic
+    }
+
+    static $callParentLayer(methodName, ...args) {
+      const layer = this.$getLayer();
+      const query = this.__buildQuery(methodName, ...args);
+      return syncOrAsync(layer.sendQuery(query), ({result}) => result);
+    }
+
+    static __buildQuery(methodName, ...args) {
+      return {
+        [`${this.$getRegisteredName()}=>`]: {
+          [`${methodName}=>result`]: {
+            '([])': args
+          }
+        }
+      };
+    }
+
     static $onMissingProperty(name) {
       if (typeof name === 'symbol' || name.startsWith('_')) {
         // Symbols and property names prefixed with an underscore shouldn't be exposed
@@ -154,18 +174,6 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       }
 
       return parentRegistrable;
-    }
-
-    static $fork({targetLayer} = {}) {
-      if (targetLayer === undefined) {
-        targetLayer = this.$getLayer().fork();
-      }
-
-      return targetLayer.get(this.$getRegisteredName());
-    }
-
-    static __fork(_targetLayer) {
-      return class extends this {};
     }
 
     static $introspect() {
@@ -232,30 +240,6 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
-    $callParentLayer(methodName, ...args) {
-      return this.constructor.$callParentLayer.call(this, methodName, ...args);
-    }
-
-    __buildQuery(methodName, ...args) {
-      if (this.$isRegistered()) {
-        return {
-          [`${this.$getRegisteredName()}=>`]: {
-            [`${methodName}=>result`]: {
-              '([])': args
-            }
-          }
-        };
-      }
-
-      return {
-        '<=': this,
-        [`${methodName}=>result`]: {
-          '([])': args
-        },
-        '=>changes': true
-      };
-    }
-
     $exposeProperty(name, type, options) {
       this.constructor.$exposeProperty.call(this, name, type, options);
     }
@@ -278,40 +262,6 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         operation,
         setting
       });
-    }
-
-    $onMissingProperty(name) {
-      return this.constructor.$onMissingProperty.call(this, name);
-    }
-
-    __getParentRegistrable() {
-      let registeredName = this.$getRegisteredName();
-
-      if (registeredName) {
-        // The instance is registered
-        const parentLayer = this.$getParentLayer({fallBackToClass: false, throwIfNotFound: false});
-        const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
-        if (!isExposed(parentRegistrable)) {
-          return undefined;
-        }
-        return parentRegistrable;
-      }
-
-      // Let's see if the class is registered
-      registeredName = this.constructor.$getRegisteredName();
-
-      if (!registeredName) {
-        return undefined;
-      }
-
-      const parentLayer = this.constructor.$getParentLayer({throwIfNotFound: false});
-      const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
-
-      if (!isExposed(parentRegistrable)) {
-        return undefined;
-      }
-
-      return parentRegistrable.prototype;
     }
 
     $fork({targetLayer} = {}) {
@@ -346,6 +296,72 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         throw new Error(`Cannot merge an object that is not serializable`);
       }
       this.$deserialize(fork.$serialize());
+    }
+
+    async $open() {
+      // Override this method to implement initialization logic
+    }
+
+    async $close() {
+      // Override this method to implement deinitialization logic
+    }
+
+    $callParentLayer(methodName, ...args) {
+      return this.constructor.$callParentLayer.call(this, methodName, ...args);
+    }
+
+    __buildQuery(methodName, ...args) {
+      if (this.$isRegistered()) {
+        return {
+          [`${this.$getRegisteredName()}=>`]: {
+            [`${methodName}=>result`]: {
+              '([])': args
+            }
+          }
+        };
+      }
+
+      return {
+        '<=': this,
+        [`${methodName}=>result`]: {
+          '([])': args
+        },
+        '=>changes': true
+      };
+    }
+
+    $onMissingProperty(name) {
+      return this.constructor.$onMissingProperty.call(this, name);
+    }
+
+    __getParentRegistrable() {
+      let registeredName = this.$getRegisteredName();
+
+      if (registeredName) {
+        // The instance is registered
+        const parentLayer = this.$getParentLayer({fallBackToClass: false, throwIfNotFound: false});
+        const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
+        if (!isExposed(parentRegistrable)) {
+          return undefined;
+        }
+        return parentRegistrable;
+      }
+
+      // Let's see if the class is registered
+      registeredName = this.constructor.$getRegisteredName();
+
+      if (!registeredName) {
+        return undefined;
+      }
+
+      const parentLayer = this.constructor.$getParentLayer({throwIfNotFound: false});
+      const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
+
+      if (!isExposed(parentRegistrable)) {
+        return undefined;
+      }
+
+      return parentRegistrable.prototype;
     }
 
     $introspect() {

@@ -3,7 +3,7 @@ import {Layer} from '@liaison/layer';
 import {Entity, field} from '../../..';
 
 describe('Entity', () => {
-  test('Identity mapping', () => {
+  test('Identity mapping', async () => {
     class Movie extends Entity {
       constructor(object, options) {
         super(object, options);
@@ -16,6 +16,7 @@ describe('Entity', () => {
     }
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     // With a new movie
 
@@ -53,7 +54,7 @@ describe('Entity', () => {
     // expect(oldMovie2).toBe(oldMovie); // Since the movie was in the identity map, we got the same object
   });
 
-  test('Serialization', () => {
+  test('Serialization', async () => {
     class Movie extends Entity {
       @field('string') title;
 
@@ -67,6 +68,7 @@ describe('Entity', () => {
     }
 
     const layer = new Layer({Movie, Director});
+    await layer.open();
 
     const movie = new layer.Movie({
       id: 'm1',

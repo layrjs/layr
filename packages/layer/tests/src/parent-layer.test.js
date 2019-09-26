@@ -68,48 +68,51 @@ let layerServer;
 let backendLayer;
 
 beforeAll(async () => {
-  class Authenticator extends BaseAuthenticator {
-    @expose() signIn() {
-      this.token = '123456789';
-    }
-
-    @expose() signOut() {
-      this.token = undefined;
-    }
-  }
-
-  class Movie extends BaseMovie {
-    @expose() static get(id) {
-      this.authorize();
-      if (id === 'abc123') {
-        return this.$deserialize({title: 'Inception', year: 2010, ratingSum: 9, ratingCount: 1});
+  async function layerCreator() {
+    class Authenticator extends BaseAuthenticator {
+      @expose() signIn() {
+        this.token = '123456789';
       }
-      throw new Error(`Movie not found (id: '${id}')`);
-    }
 
-    @expose() rate(rating) {
-      this.constructor.authorize();
-      this.ratingSum += rating;
-      this.ratingCount += 1;
-    }
-
-    static authorize() {
-      const {token} = this.$layer.authenticator;
-      if (token !== '123456789') {
-        throw new Error('Token is invalid');
+      @expose() signOut() {
+        this.token = undefined;
       }
     }
+
+    class Movie extends BaseMovie {
+      @expose() static get(id) {
+        this.authorize();
+        if (id === 'abc123') {
+          return this.$deserialize({title: 'Inception', year: 2010, ratingSum: 9, ratingCount: 1});
+        }
+        throw new Error(`Movie not found (id: '${id}')`);
+      }
+
+      @expose() rate(rating) {
+        this.constructor.authorize();
+        this.ratingSum += rating;
+        this.ratingCount += 1;
+      }
+
+      static authorize() {
+        const {token} = this.$layer.authenticator;
+        if (token !== '123456789') {
+          throw new Error('Token is invalid');
+        }
+      }
+    }
+
+    const authenticator = Authenticator.$deserialize();
+
+    return new Layer({Movie, authenticator}, {name: 'backend'});
   }
 
-  const authenticator = Authenticator.$deserialize();
-
-  const layer = new Layer({Movie, authenticator}, {name: 'backend'});
-
-  layerServer = new LayerHTTPServer(layer, {port: 4444});
+  layerServer = new LayerHTTPServer(layerCreator, {port: 4444});
   await layerServer.start();
 
   const layerClient = new LayerHTTPClient('http://localhost:4444');
-  backendLayer = await layerClient.connect();
+  backendLayer = layerClient.getLayer();
+  await backendLayer.open();
 });
 
 afterAll(async () => {
@@ -125,6 +128,7 @@ describe('Parent layer', () => {
     const authenticator = Authenticator.$deserialize();
 
     const layer = new Layer({Movie, authenticator}, {name: 'frontend', parent: backendLayer});
+    await layer.open();
 
     expect(layer.authenticator.token).toBeUndefined();
     await layer.authenticator.signIn();

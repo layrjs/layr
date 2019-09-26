@@ -12,12 +12,12 @@ const debug = debugModule('liaison:layer:http-server');
 const DEFAULT_PORT = 3333;
 
 export class LayerHTTPServer {
-  constructor(layer, {port = DEFAULT_PORT} = {}) {
-    if (!layer) {
-      throw new Error(`'layer' parameter is missing`);
+  constructor(layerCreator, {port = DEFAULT_PORT} = {}) {
+    if (!layerCreator) {
+      throw new Error(`'layerCreator' parameter is missing`);
     }
 
-    this._layer = layer;
+    this._layerCreator = layerCreator;
     this._port = port;
 
     this._koa = this._createKoa();
@@ -36,20 +36,26 @@ export class LayerHTTPServer {
     koa.use(bodyParser({enableTypes: ['json'], jsonLimit: '8mb'}));
 
     koa.use(async ctx => {
-      if (ctx.method === 'GET') {
-        ctx.body = this._layer.introspect();
-      } else if (ctx.method === 'POST') {
-        const {query, items, source} = ctx.request.body;
-        const forkedLayer = this._layer.fork();
-        try {
-          const result = await forkedLayer.receiveQuery({query, items, source});
-          ctx.body = {result};
-        } catch (err) {
-          const error = {message: err.message};
-          ctx.body = {error};
+      const layer = await this._layerCreator();
+      await layer.open();
+
+      try {
+        if (ctx.method === 'GET') {
+          ctx.body = layer.introspect();
+        } else if (ctx.method === 'POST') {
+          try {
+            const {query, items, source} = ctx.request.body;
+            const result = await layer.receiveQuery({query, items, source});
+            ctx.body = {result};
+          } catch (err) {
+            const error = {message: err.message};
+            ctx.body = {error};
+          }
+        } else {
+          throw new Error('Invalid HTTP request');
         }
-      } else {
-        throw new Error('Invalid HTTP request');
+      } finally {
+        await layer.close();
       }
     });
 

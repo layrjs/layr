@@ -3,10 +3,11 @@ import {Layer} from '@liaison/layer';
 import {Identity, field} from '../../..';
 
 describe('Identity', () => {
-  test('id', () => {
+  test('id', async () => {
     class Movie extends Identity {}
 
     const layer = new Layer({Movie});
+    await layer.open();
 
     let movie = new layer.Movie();
     const id = movie.id; // An 'id' should have been generated automatically
@@ -23,7 +24,7 @@ describe('Identity', () => {
     expect(movie.$serialize()).toEqual({_type: 'Movie', _id: 'abc456'});
   });
 
-  test('Identity mapping', () => {
+  test('Identity mapping', async () => {
     class Movie extends Identity {
       @field('string') title;
 
@@ -37,6 +38,7 @@ describe('Identity', () => {
     }
 
     const layer = new Layer({Movie, Actor});
+    await layer.open();
 
     const movie = layer.Movie.$deserialize({
       _type: 'Movie',
