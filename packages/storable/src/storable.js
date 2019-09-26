@@ -157,12 +157,11 @@ export const Storable = (Base = Entity) =>
       const fields = this.prototype.$createFieldMaskForStorableFields();
 
       for (const storable of storables) {
-        await storable.$beforeValidate();
-        storable.$validate({fields});
+        await storable.$beforeSave();
       }
 
       for (const storable of storables) {
-        await storable.$beforeSave();
+        storable.$validate({fields});
       }
 
       await this.__saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists});
@@ -285,12 +284,6 @@ export const Storable = (Base = Entity) =>
     async $afterLoad() {
       for (const substorable of this.$getSubstorables()) {
         await substorable.$afterLoad();
-      }
-    }
-
-    async $beforeValidate() {
-      for (const substorable of this.$getSubstorables()) {
-        await substorable.$beforeValidate();
       }
     }
 
