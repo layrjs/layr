@@ -24,7 +24,7 @@ afterEach(async () => {
 
 describe('Storable', () => {
   test('CRUD operations', async () => {
-    class Movie extends Storable() {
+    class Movie extends Storable(undefined, {storeName: 'store'}) {
       @storable() @field('string') title;
 
       @storable() @field('number?') year;
@@ -279,7 +279,7 @@ describe('Storable', () => {
   });
 
   test('Finding storables', async () => {
-    class Movie extends Storable() {
+    class Movie extends Storable(undefined, {storeName: 'store'}) {
       @storable() @field('string') title;
 
       @storable() @field('string') genre;
