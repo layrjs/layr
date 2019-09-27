@@ -1,7 +1,6 @@
 import isEqual from 'lodash/isEqual';
 import isEmpty from 'lodash/isEmpty';
 import cloneDeep from 'lodash/cloneDeep';
-import merge from 'lodash/merge';
 
 export class FieldMask {
   constructor(fields = {}) {
@@ -92,7 +91,34 @@ export class FieldMask {
       throw new Error(`Expected a FieldMask (received: ${typeof otherFields})`);
     }
 
-    return new FieldMask(merge(fields._fields, otherFields._fields));
+    function _merge(rootFields, rootOtherFields) {
+      const mergedFields = {...rootFields};
+
+      for (const [name, otherFields] of Object.entries(rootOtherFields)) {
+        let fields = rootFields[name];
+
+        if (otherFields === true) {
+          if (typeof fields === 'object') {
+            throw new Error(`Cannot merge two incompatible fieldMasks`);
+          }
+          if (fields === undefined) {
+            mergedFields[name] = true;
+          }
+        } else if (typeof otherFields === 'object') {
+          if (fields === true) {
+            throw new Error(`Cannot merge two incompatible fieldMasks`);
+          }
+          if (fields === undefined) {
+            fields = {};
+          }
+          mergedFields[name] = _merge(fields, otherFields);
+        }
+      }
+
+      return mergedFields;
+    }
+
+    return new FieldMask(_merge(fields._fields, otherFields._fields));
   }
 
   static remove(fields, otherFields) {
