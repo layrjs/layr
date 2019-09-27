@@ -1,4 +1,5 @@
 import isEqual from 'lodash/isEqual';
+import isEmpty from 'lodash/isEmpty';
 import cloneDeep from 'lodash/cloneDeep';
 import merge from 'lodash/merge';
 
@@ -39,14 +40,18 @@ export class FieldMask {
 
   has(name) {
     if (typeof name !== 'string' || name === '') {
-      throw new Error(`The 'name' paramter must be a non empty string`);
+      throw new Error(`The 'name' parameter must be a non empty string`);
     }
 
     return this._fields[name] !== undefined;
   }
 
+  isEmpty() {
+    return isEmpty(this._fields);
+  }
+
   includes(fields) {
-    if (!FieldMask.isFieldMask(fields)) {
+    if (!isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
     }
 
@@ -67,30 +72,62 @@ export class FieldMask {
   }
 
   static isEqual(fields, otherFields) {
-    if (!this.isFieldMask(fields)) {
+    if (!isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
     }
 
-    if (!this.isFieldMask(otherFields)) {
+    if (!isFieldMask(otherFields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof otherFields})`);
     }
 
     return isEqual(fields._fields, otherFields._fields);
   }
 
-  static merge(fields, otherFields) {
-    if (!this.isFieldMask(fields)) {
+  static add(fields, otherFields) {
+    if (!isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
     }
 
-    if (!this.isFieldMask(otherFields)) {
+    if (!isFieldMask(otherFields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof otherFields})`);
     }
 
     return new FieldMask(merge(fields._fields, otherFields._fields));
   }
 
-  static isFieldMask(object) {
-    return typeof object?.constructor.isFieldMask === 'function';
+  static remove(fields, otherFields) {
+    if (!isFieldMask(fields)) {
+      throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
+    }
+
+    if (!isFieldMask(otherFields)) {
+      throw new Error(`Expected a FieldMask (received: ${typeof otherFields})`);
+    }
+
+    function _remove(rootFields, rootOtherFields) {
+      const remainingFields = {};
+
+      for (const [name, fields] of Object.entries(rootFields)) {
+        const otherFields = rootOtherFields[name];
+
+        if (otherFields === undefined) {
+          remainingFields[name] = fields;
+        } else if (typeof otherFields === 'object') {
+          remainingFields[name] = _remove(fields, otherFields);
+        }
+      }
+
+      return remainingFields;
+    }
+
+    return new FieldMask(_remove(fields._fields, otherFields._fields));
   }
+
+  static isFieldMask(object) {
+    return isFieldMask(object);
+  }
+}
+
+export function isFieldMask(object) {
+  return typeof object?.constructor?.isFieldMask === 'function';
 }

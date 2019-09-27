@@ -82,37 +82,102 @@ describe('FieldMask', () => {
     ).toBe(false);
   });
 
-  test('Merging', () => {
+  test('Adding', () => {
     expect(
       FieldMask.isEqual(
-        FieldMask.merge(new FieldMask({title: true}), new FieldMask({})),
+        FieldMask.add(new FieldMask({title: true}), new FieldMask({})),
         new FieldMask({title: true})
       )
     ).toBe(true);
 
     expect(
       FieldMask.isEqual(
-        FieldMask.merge(new FieldMask({title: true}), new FieldMask({genre: true})),
+        FieldMask.add(new FieldMask({title: true}), new FieldMask({genre: true})),
         new FieldMask({title: true, genre: true})
       )
     ).toBe(true);
 
     expect(
       FieldMask.isEqual(
-        FieldMask.merge(new FieldMask({title: true}), new FieldMask({director: {fullName: true}})),
+        FieldMask.add(new FieldMask({title: true}), new FieldMask({director: {fullName: true}})),
         new FieldMask({
           title: true,
           director: {fullName: true}
         })
       )
     ).toBe(true);
+
     expect(
       FieldMask.isEqual(
-        FieldMask.merge(
+        FieldMask.add(
           new FieldMask({director: {fullName: true}}),
           new FieldMask({director: {country: true}})
         ),
         new FieldMask({director: {fullName: true, country: true}})
+      )
+    ).toBe(true);
+  });
+
+  test('Removing', () => {
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(new FieldMask({title: true}), new FieldMask({})),
+        new FieldMask({title: true})
+      )
+    ).toBe(true);
+
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(new FieldMask({}), new FieldMask({title: true})),
+        new FieldMask({})
+      )
+    ).toBe(true);
+
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(new FieldMask({title: true}), new FieldMask({genre: true})),
+        new FieldMask({title: true})
+      )
+    ).toBe(true);
+
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(new FieldMask({title: true}), new FieldMask({title: true})),
+        new FieldMask({})
+      )
+    ).toBe(true);
+
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(new FieldMask({title: true, genre: true}), new FieldMask({genre: true})),
+        new FieldMask({title: true})
+      )
+    ).toBe(true);
+
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(
+          new FieldMask({title: true, director: {fullName: true, country: true}}),
+          new FieldMask({director: {country: true}})
+        ),
+        new FieldMask({
+          title: true,
+          director: {fullName: true}
+        })
+      )
+    ).toBe(true);
+
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(new FieldMask({}), new FieldMask({director: {country: true}})),
+        new FieldMask({})
+      )
+    ).toBe(true);
+
+    expect(
+      FieldMask.isEqual(
+        FieldMask.remove(new FieldMask({director: {}}), new FieldMask({director: {country: true}})),
+        new FieldMask({director: {}})
       )
     ).toBe(true);
   });
