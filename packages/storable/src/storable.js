@@ -1,8 +1,22 @@
 import {Entity, FieldMask} from '@liaison/model';
 import {hasOwnProperty} from '@liaison/util';
 
+import {Cache} from './cache';
+
+// TODO: Storable.getBy({name: value}, options) or just Storable.get({name: value}, options)
+
+const DEFAULT_CACHE_SIZE = 1000;
+
 export const Storable = (Base = Entity) =>
   class Storable extends Base {
+    static async $open() {
+      this.__cache = new Cache({size: DEFAULT_CACHE_SIZE});
+    }
+
+    static async $close() {
+      this.__cache = undefined;
+    }
+
     static async $get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
       if (!Array.isArray(ids)) {
         return (await this.$get([ids], {fields, populate, throwIfNotFound}))[0];
@@ -39,37 +53,25 @@ export const Storable = (Base = Entity) =>
     }
 
     static async __loadRootStorables(storables, {fields, reload, throwIfNotFound}) {
-      // TODO:
-      // fields = this.filterEntityFields(fields);
+      await this.__loadFromStore(storables, {fields, reload, throwIfNotFound});
 
-      const storablesToLoad = reload ?
-        storables :
-        storables.filter(
-          storable => !storable.$createFieldMaskForActiveFields().includes(fields)
-        );
-
-      if (!storablesToLoad.length) {
-        return;
-      }
-
-      await this.__loadFromStore(storablesToLoad, {fields, throwIfNotFound});
-
-      for (const loadedStorable of storablesToLoad) {
-        await loadedStorable.$afterLoad({fields});
+      for (const storable of storables) {
+        await storable.$afterLoad({fields});
       }
     }
 
     static async __loadFromStore(storables, {fields, reload, throwIfNotFound}) {
       fields = this.prototype.$createFieldMaskForStorableFields(fields);
 
-      const storablesToLoad = reload ?
-        storables :
-        storables.filter(
-          storable => !storable.$createFieldMaskForActiveFields().includes(fields)
-        );
+      if (!reload) {
+        const {missingStorables, missingFields} = this.__cache.load(storables, {fields});
 
-      if (!storablesToLoad.length) {
-        return;
+        if (missingStorables.length === 0) {
+          return;
+        }
+
+        storables = missingStorables;
+        fields = missingFields;
       }
 
       let serializedStorables = storables.map(storable => storable.$serializeReference());
@@ -81,7 +83,11 @@ export const Storable = (Base = Entity) =>
         throwIfNotFound
       });
 
-      serializedStorables.map(serializedStorable => this.$deserialize(serializedStorable));
+      for (const serializedStorable of serializedStorables) {
+        this.$deserialize(serializedStorable);
+      }
+
+      this.__cache.save(storables, {fields});
     }
 
     async $load({fields, reload, populate = true, throwIfNotFound = true} = {}) {
@@ -128,7 +134,7 @@ export const Storable = (Base = Entity) =>
             if (!entry.storables.includes(storable)) {
               entry.storables.push(storable);
             }
-            entry.fields = FieldMask.merge(entry.fields, fields);
+            entry.fields = FieldMask.add(entry.fields, fields);
           },
           {fields}
         );
@@ -149,12 +155,15 @@ export const Storable = (Base = Entity) =>
       return (await this.constructor.$populate([this], {fields, throwIfNotFound}))[0];
     }
 
-    static async $save(storables, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
+    static async $save(
+      storables,
+      {fields, throwIfNotFound = true, throwIfAlreadyExists = true} = {}
+    ) {
       if (!Array.isArray(storables)) {
         return (await this.$save([storables], {throwIfNotFound, throwIfAlreadyExists}))[0];
       }
 
-      const fields = this.prototype.$createFieldMaskForStorableFields();
+      fields = this.prototype.$createFieldMask(fields);
 
       for (const storable of storables) {
         await storable.$beforeSave();
@@ -174,6 +183,8 @@ export const Storable = (Base = Entity) =>
     }
 
     static async __saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists}) {
+      fields = this.prototype.$createFieldMaskForStorableFields();
+
       let serializedStorables = storables.map(storable => storable.$serialize({fields}));
 
       const store = this.$getStore();
@@ -182,7 +193,11 @@ export const Storable = (Base = Entity) =>
         throwIfAlreadyExists
       });
 
-      serializedStorables.map(serializedStorable => this.$deserialize(serializedStorable));
+      for (const serializedStorable of serializedStorables) {
+        this.$deserialize(serializedStorable);
+      }
+
+      this.__cache.save(storables, {fields});
     }
 
     async $save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
@@ -204,6 +219,8 @@ export const Storable = (Base = Entity) =>
         await storable.$afterDelete();
       }
 
+      this.__cache.delete(storables);
+
       return storables;
     }
 
@@ -223,23 +240,18 @@ export const Storable = (Base = Entity) =>
       sort,
       skip,
       limit,
+      load = true,
+      reload,
       fields,
-      populate = true
-      // throwIfNotFound = true
+      populate,
+      throwIfNotFound
     } = {}) {
       fields = this.prototype.$createFieldMask(fields);
 
-      // TODO:
-      // fields = this.filterEntityFields(fields);
+      const storables = await this.__findInStore({filter, sort, skip, limit, fields: {}}); // TODO: Remove 'fields' option
 
-      const storables = await this.__findInStore({filter, sort, skip, limit, fields});
-
-      if (populate) {
-        // await this.$populate(storables, {fields, throwIfNotFound});
-      }
-
-      for (const storable of storables) {
-        await storable.$afterLoad({fields});
+      if (load) {
+        await this.$load(storables, {fields, reload, populate, throwIfNotFound});
       }
 
       return storables;

@@ -12,12 +12,13 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "lodash": "^4.17.11",
     "@liaison/layer": "^0.1.0",
     "@liaison/model": "^0.1.0",
     "@liaison/promisable": "^0.1.0",
     "@liaison/trackable": "^0.1.0",
-    "@liaison/util": "^0.1.0"
+    "@liaison/util": "^0.1.0",
+    "lodash": "^4.17.11",
+    "quick-lru": "^4.0.1"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
