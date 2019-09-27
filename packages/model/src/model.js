@@ -103,16 +103,23 @@ export class Model extends Observable(Serializable(Registerable())) {
     return {...super.$serialize(), ...serializedFields};
   }
 
-  $deserialize(object = {}, {source} = {}) {
+  $deserialize(object = {}, {source, fields} = {}) {
     super.$deserialize(object);
+
+    const rootFieldMask = this.$createFieldMask(fields);
 
     const isNew = this.$isNew();
 
     for (const name of this.$getFieldNames()) {
+      const fieldMask = rootFieldMask.get(name);
+      if (!fieldMask) {
+        continue;
+      }
+
       if (hasOwnProperty(object, name)) {
         const field = this.$getField(name);
         const value = object[name];
-        field.deserializeValue(value, {source});
+        field.deserializeValue(value, {source, fields: fieldMask});
       } else if (isNew) {
         const field = this.$getField(name);
         const defaultValue = field.getDefaultValue();

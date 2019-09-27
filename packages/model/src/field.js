@@ -206,12 +206,13 @@ export class Field {
     return mapFromOneOrMany(value, value => this._scalar.serializeValue(value, {target, fields}));
   }
 
-  deserializeValue(value, {source} = {}) {
+  deserializeValue(value, {source, fields} = {}) {
     const previousValue = this.isActive() ? this.getValue() : undefined;
     return this.setValue(
       mapFromOneOrMany(value, value =>
         this._scalar.deserializeValue(value, {
           source,
+          fields,
           previousValue
         })
       ),
@@ -343,7 +344,7 @@ class Scalar {
     return value.$serialize({target, fields, isDeep: true});
   }
 
-  deserializeValue(value, {source, previousValue}) {
+  deserializeValue(value, {source, fields, previousValue}) {
     if (value === undefined) {
       throw new Error(`Cannot deserialize 'undefined' (field: '${this._field.getName()}')`);
     }
@@ -365,7 +366,7 @@ class Scalar {
       throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
     const Model = this._field.getLayer().get(type);
-    return Model.$deserialize(value, {source, previousInstance: previousValue});
+    return Model.$deserialize(value, {source, fields, previousInstance: previousValue});
   }
 
   getFailedValidators(value, {fields}) {
