@@ -1,5 +1,5 @@
 import ow from 'ow';
-import {hasOwnProperty, getPropertyDescriptor} from '@liaison/util';
+import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
 import {syncOrAsync} from '@deepr/util';
 
 import {isSerializable} from './serializable';
@@ -391,8 +391,7 @@ export function expose(options = {}) {
     if (descriptor.initializer !== undefined) {
       // @expose() is used on an property defined in a parent class
       // Examples: `@expose() title;` or `@expose() static $get;`
-      const prototype = Object.getPrototypeOf(target);
-      descriptor = getPropertyDescriptor(prototype, name);
+      descriptor = getInheritedPropertyDescriptor(target, name);
       if (descriptor === undefined) {
         throw new Error(`Cannot expose an undefined property (name: '${name}')`);
       }
