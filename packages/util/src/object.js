@@ -33,3 +33,8 @@ export function getPropertyDescriptor(object, name) {
     object = Object.getPrototypeOf(object);
   }
 }
+
+export function getInheritedPropertyDescriptor(object, name) {
+  const prototype = Object.getPrototypeOf(object);
+  return getPropertyDescriptor(prototype, name);
+}
