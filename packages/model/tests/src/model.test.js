@@ -149,7 +149,7 @@ describe('Model', () => {
       return class Actor extends Item {
         @field('number') id;
       };
-    }).toThrow(/Cannot change the type of an inherited field/);
+    }).toThrow(/Cannot change the type of an existing field/);
 
     expect(Item.prototype.$getField('id').hasValidators()).toBe(false);
     expect(Movie.prototype.$getField('id').hasValidators()).toBe(true);
