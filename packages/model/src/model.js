@@ -143,26 +143,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Fields ===
 
-  $defineField(name, type, options, descriptor) {
-    if (descriptor.initializer) {
-      options = {...options, default: descriptor.initializer};
-    }
-
-    this.$setField(name, type, options);
-
-    return {
-      configurable: false,
-      enumerable: false,
-      get() {
-        const field = this.$getField(name);
-        return field.getValue();
-      },
-      set(value) {
-        const field = this.$getField(name);
-        return field.setValue(value);
-      }
-    };
-  }
+  static $Field = Field;
 
   $getField(name) {
     const fields = this.__getFields();
@@ -247,13 +228,26 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $setField(name, type, options) {
+    if (typeof type !== 'string') {
+      // Let's make 'type' optional to better support field overriding
+      options = type;
+      type = undefined;
+    }
+
     if (this.$hasField(name)) {
-      throw new Error(`Field already exists (name: '${name}')`);
+      const existingField = this.$getField(name);
+
+      if (type === undefined) {
+        type = existingField.getType();
+      } else if (type !== existingField.getType()) {
+        throw new Error(`Cannot change the type of an existing field (name: '${name}')`);
+      }
+
+      options = {...existingField.getOptions(), ...options};
     }
 
     const fields = this.__getFields();
-
-    const field = new Field(this, name, type, options);
+    const field = new this.constructor.$Field(this, name, type, options);
     fields[name] = field;
 
     return field;
@@ -416,7 +410,24 @@ export class Model extends Observable(Serializable(Registerable())) {
 
 export function field(type, options) {
   return function (target, name, descriptor) {
-    return target.$defineField(name, type, options, descriptor);
+    if (descriptor.initializer) {
+      options = {...options, default: descriptor.initializer};
+    }
+
+    target.$setField(name, type, options);
+
+    return {
+      configurable: false,
+      enumerable: false,
+      get() {
+        const field = this.$getField(name);
+        return field.getValue();
+      },
+      set(value) {
+        const field = this.$getField(name);
+        return field.setValue(value);
+      }
+    };
   };
 }
 

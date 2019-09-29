@@ -140,14 +140,19 @@ describe('Model', () => {
     }
 
     class Movie extends Item {
+      @field({validators: [notEmpty()]}) id;
+
       @field('string') title;
     }
 
     expect(() => {
       return class Actor extends Item {
-        @field('string') id; // Cannot add a property that already exists
+        @field('number') id;
       };
-    }).toThrow(/Field already exists/);
+    }).toThrow(/Cannot change the type of an inherited field/);
+
+    expect(Item.prototype.$getField('id').hasValidators()).toBe(false);
+    expect(Movie.prototype.$getField('id').hasValidators()).toBe(true);
 
     const layer = new Layer({Movie});
     await layer.open();

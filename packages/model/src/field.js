@@ -10,13 +10,19 @@ import ow from 'ow';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field {
-  constructor(parent, name, type, {default: defaultValue, validators = []} = {}) {
+  constructor(parent, name, type, options = {}) {
     if (typeof name !== 'string' || !name) {
-      throw new Error("'name' parameter is missing or invalid");
+      throw new Error("'name' field parameter is missing or invalid");
     }
 
     if (typeof type !== 'string' || !type) {
-      throw new Error("'type' parameter is missing or invalid");
+      throw new Error("'type' field parameter is missing or invalid");
+    }
+
+    let {default: defaultValue, validators = [], ...unknownOptions} = options;
+    const unknownOption = Object.keys(unknownOptions)[0];
+    if (unknownOption) {
+      throw new Error(`'${unknownOption}' option is unknown (field: '${name}')`);
     }
 
     if (!Array.isArray(validators)) {
@@ -29,6 +35,7 @@ export class Field {
     this._parent = parent;
     this._name = name;
     this._type = type;
+    this._options = options;
 
     let scalarType;
     let scalarIsOptional;
@@ -100,6 +107,10 @@ export class Field {
 
   getType() {
     return this._type;
+  }
+
+  getOptions() {
+    return this._options;
   }
 
   getScalar() {
@@ -233,6 +244,10 @@ export class Field {
     );
 
     return {missingFields: rootMissingFields};
+  }
+
+  hasValidators() {
+    return this._validators.length > 0 || this._scalar.hasValidators();
   }
 
   getFailedValidators({fields} = {}) {
@@ -384,6 +399,10 @@ class Scalar {
     const deserializedValue = Model.$instantiate(value, {previousInstance: previousValue});
     const {missingFields} = deserializedValue.$deserialize(value, {source, fields});
     return {deserializedValue, missingFields};
+  }
+
+  hasValidators() {
+    return this._validators.length > 0;
   }
 
   getFailedValidators(value, {fields}) {
