@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 
 export class FieldMask {
   constructor(fields = {}) {
-    if (typeof fields !== 'object') {
+    if (typeof fields !== 'object' || fields === null) {
       throw new Error(`Expected an object (received: ${typeof fields})`);
     }
 
@@ -43,6 +43,23 @@ export class FieldMask {
     }
 
     return this._fields[name] !== undefined;
+  }
+
+  set(name, subfields) {
+    if (typeof name !== 'string' || name === '') {
+      throw new Error(`The 'name' paramter must be a non empty string`);
+    }
+
+    if (subfields === true) {
+      this._fields[name] = true;
+      return;
+    }
+
+    if (!isFieldMask(subfields)) {
+      throw new Error(`Expected a FieldMask (received: ${typeof subfields})`);
+    }
+
+    this._fields[name] = subfields.serialize();
   }
 
   isEmpty() {

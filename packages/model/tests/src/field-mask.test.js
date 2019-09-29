@@ -1,7 +1,7 @@
 import {FieldMask} from '../../..';
 
 describe('FieldMask', () => {
-  test('Basic use', () => {
+  test('Getting', () => {
     let fields = new FieldMask();
     expect(fields.get('title')).toBe(false);
 
@@ -12,6 +12,19 @@ describe('FieldMask', () => {
 
     fields = new FieldMask({title: true});
     expect(fields.get('genre')).toBe(false);
+  });
+
+  test('Setting', () => {
+    const fields = new FieldMask();
+
+    expect(fields.get('title')).toBe(false);
+    fields.set('title', true);
+    expect(fields.get('title')).toBe(true);
+
+    expect(fields.get('director')).toBe(false);
+    expect(() => fields.set('director', {fullName: true})).toThrow();
+    fields.set('director', new FieldMask({fullName: true}));
+    expect(FieldMask.isEqual(fields.get('director'), new FieldMask({fullName: true}))).toBe(true);
   });
 
   test('Nesting', () => {
