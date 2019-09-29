@@ -1,5 +1,5 @@
 import {Entity, FieldMask} from '@liaison/model';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
 
 import {Cache} from './cache';
 
@@ -65,7 +65,7 @@ export const Storable = (Base = Entity, {storeName} = {}) => {
           await storable.$afterLoad({fields});
         }
 
-        this.__cache.save(storables, {fields});
+        this.__cache.save(storables);
 
         if (populate) {
           // TODO:
@@ -161,40 +161,37 @@ export const Storable = (Base = Entity, {storeName} = {}) => {
         return (await this.constructor.$populate([this], {fields, throwIfNotFound}))[0];
       }
 
-      static async $save(
-        storables,
-        {fields, throwIfNotFound = true, throwIfAlreadyExists = true} = {}
-      ) {
+      static async $save(storables, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
         if (!Array.isArray(storables)) {
           return (await this.$save([storables], {throwIfNotFound, throwIfAlreadyExists}))[0];
         }
-
-        fields = this.prototype.$createFieldMaskForStorableFields();
 
         for (const storable of storables) {
           await storable.$beforeSave();
         }
 
-        for (const storable of storables) {
-          storable.$validate({fields});
-        }
-
         if (this.$hasStore()) {
-          await this.__saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists});
+          await this.__saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists});
         } else {
-          await super.$save(storables, {fields, throwIfNotFound, throwIfAlreadyExists});
+          await super.$save(storables, {throwIfNotFound, throwIfAlreadyExists});
         }
 
         for (const storable of storables) {
           await storable.$afterSave();
         }
 
-        this.__cache.save(storables, {fields});
+        this.__cache.save(storables);
 
         return storables;
       }
 
-      static async __saveToStore(storables, {fields, throwIfNotFound, throwIfAlreadyExists}) {
+      static async __saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists}) {
+        const fields = this.prototype.$createFieldMaskForStorableFields();
+
+        for (const storable of storables) {
+          storable.$validate({fields});
+        }
+
         let serializedStorables = storables.map(storable => storable.$serialize({fields}));
 
         const store = this.$getStore();
@@ -375,9 +372,26 @@ export const Storable = (Base = Entity, {storeName} = {}) => {
 
 // === Decorators ===
 
-export function storable() {
+export function store() {
   return function (target, name, descriptor) {
+    if (!isStorable(target)) {
+      throw new Error(`@store() target must be a storable`);
+    }
+    if (!(name && descriptor)) {
+      throw new Error(`@store() must be used to decorate properties`);
+    }
+
+    if (descriptor.initializer !== undefined) {
+      // @store() is used on an property defined in a parent class
+      // Example: `@store() title;`
+      descriptor = getInheritedPropertyDescriptor(target, name);
+      if (descriptor === undefined) {
+        throw new Error(`Cannot use @store() with an undefined property (name: '${name}')`);
+      }
+    }
+
     target.$addStorableField(name);
+
     return descriptor;
   };
 }

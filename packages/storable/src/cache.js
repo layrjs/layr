@@ -3,7 +3,7 @@ import QuickLRU from 'quick-lru';
 
 export class Cache {
   constructor({size}) {
-    this._items = new QuickLRU({maxSize: size});
+    this._storables = new QuickLRU({maxSize: size});
   }
 
   load(storables, {fields}) {
@@ -22,36 +22,27 @@ export class Cache {
   }
 
   loadOne(storable, {fields}) {
-    const item = this._items.get(storable.id);
+    const cachedStorable = this._storables.get(storable.id);
 
-    if (!item) {
+    if (!cachedStorable) {
       return fields;
     }
 
-    storable.$deserialize(item.storable, {fields});
-    const missingFields = FieldMask.remove(fields, item.fields);
+    const {missingFields} = storable.$deserialize(cachedStorable, {fields});
 
     return missingFields;
   }
 
-  save(storables, {fields}) {
+  save(storables) {
     for (const storable of storables) {
-      this.saveOne(storable, {fields});
+      this.saveOne(storable);
     }
   }
 
-  saveOne(storable, {fields}) {
-    let item = this._items.get(storable.id);
+  saveOne(storable) {
+    // TODO: Consider merging the existing cached storable with the saved one
 
-    if (item) {
-      fields = FieldMask.add(item.fields, fields);
-    } else {
-      item = {};
-      this._items.set(storable.id, item);
-    }
-
-    item.storable = storable.$serialize({fields});
-    item.fields = fields;
+    this._storables.set(storable.id, storable.$serialize());
   }
 
   delete(storables) {
@@ -61,6 +52,6 @@ export class Cache {
   }
 
   deleteOne(storable) {
-    this._items.delete(storable.id);
+    this._storables.delete(storable.id);
   }
 }
