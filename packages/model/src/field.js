@@ -1,3 +1,4 @@
+import {FieldMask} from './field-mask';
 import {isExposed} from '@liaison/layer';
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
 import {mapFromOneOrMany} from '@liaison/util';
@@ -207,17 +208,31 @@ export class Field {
   }
 
   deserializeValue(value, {source, fields} = {}) {
+    let rootMissingFields;
+
     const previousValue = this.isActive() ? this.getValue() : undefined;
-    return this.setValue(
-      mapFromOneOrMany(value, value =>
-        this._scalar.deserializeValue(value, {
+
+    this.setValue(
+      mapFromOneOrMany(value, value => {
+        const {deserializedValue, missingFields} = this._scalar.deserializeValue(value, {
           source,
           fields,
           previousValue
-        })
-      ),
+        });
+
+        if (missingFields) {
+          if (!rootMissingFields) {
+            rootMissingFields = new FieldMask();
+          }
+          rootMissingFields = FieldMask.add(rootMissingFields, missingFields);
+        }
+
+        return deserializedValue;
+      }),
       {source}
     );
+
+    return {missingFields: rootMissingFields};
   }
 
   getFailedValidators({fields} = {}) {
@@ -350,15 +365,15 @@ class Scalar {
     }
 
     if (value === null) {
-      return undefined;
+      return {deserializedValue: undefined};
     }
 
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       if (primitiveType.deserialize) {
-        return primitiveType.deserialize(value);
+        return {deserializedValue: primitiveType.deserialize(value)};
       }
-      return value;
+      return {deserializedValue: value};
     }
 
     const type = value._type;
@@ -366,7 +381,9 @@ class Scalar {
       throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
     const Model = this._field.getLayer().get(type);
-    return Model.$deserialize(value, {source, fields, previousInstance: previousValue});
+    const deserializedValue = Model.$instantiate(value, {previousInstance: previousValue});
+    const {missingFields} = deserializedValue.$deserialize(value, {source, fields});
+    return {deserializedValue, missingFields};
   }
 
   getFailedValidators(value, {fields}) {

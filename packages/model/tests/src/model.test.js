@@ -433,9 +433,91 @@ describe('Model', () => {
       ]
     });
 
-    // Deserialization
+    // Serialization of 'undefined'
 
-    movie = layer.Movie.$deserialize();
+    movie = layer.Movie.$deserialize({title: 'Inception'});
+    expect(movie.$serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception'
+    });
+
+    movie.country = undefined;
+    expect(movie.$serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      country: null
+    });
+
+    expect(
+      layer.Movie.$deserialize({
+        _type: 'Movie',
+        title: 'Inception',
+        country: null
+      }).$serialize()
+    ).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      country: null
+    });
+
+    // Serialization using 'source' and 'target'
+
+    const frontendId = movie.$getLayer().getId();
+    const backendId = 'abc123';
+    const otherId = 'xyz789';
+
+    movie = layer.Movie.$deserialize({title: 'Inception'}, {source: backendId});
+    expect(movie.$getField('title').getSource()).toBe(backendId);
+    expect(movie.$serialize({target: backendId})).toEqual({_type: 'Movie'});
+    expect(movie.$serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.$serialize({target: otherId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception'});
+
+    movie.country = 'USA';
+    expect(movie.$getField('country').getSource()).toBe(frontendId);
+    expect(movie.$serialize({target: backendId})).toEqual({_type: 'Movie', country: 'USA'});
+    expect(movie.$serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.$serialize({target: otherId})).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      country: 'USA'
+    });
+    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
+  });
+
+  test('Deserialization', async () => {
+    class Movie extends Model {
+      @expose() @field('string') title;
+
+      @expose() @field('string') country;
+
+      @expose() @field('Date') releasedOn;
+
+      @expose() @field('string[]') genres;
+
+      @expose() @field('TechnicalSpecs') technicalSpecs;
+
+      @expose() @field('Actor[]') actors;
+    }
+
+    class TechnicalSpecs extends Model {
+      @field('string') aspectRatio;
+
+      @field('boolean') isColored;
+    }
+
+    class Actor extends Model {
+      @field('string') fullName;
+
+      @field('string') country;
+    }
+
+    const layer = new Layer({Movie, TechnicalSpecs, Actor});
+    await layer.open();
+
+    // Simple deserialization
+
+    let movie = layer.Movie.$deserialize();
     expect(movie.$serialize()).toEqual({
       _type: 'Movie'
     });
@@ -495,56 +577,88 @@ describe('Model', () => {
       ]
     });
 
-    // Serialization of 'undefined'
+    // Deserialization using the 'fields' option
 
-    movie = layer.Movie.$deserialize({title: 'Inception'});
-    expect(movie.$serialize()).toEqual({
-      _type: 'Movie',
-      title: 'Inception'
-    });
-
-    movie.country = undefined;
-    expect(movie.$serialize()).toEqual({
-      _type: 'Movie',
-      title: 'Inception',
-      country: null
-    });
-
-    expect(
-      layer.Movie.$deserialize({
-        _type: 'Movie',
-        title: 'Inception',
-        country: null
-      }).$serialize()
-    ).toEqual({
-      _type: 'Movie',
-      title: 'Inception',
-      country: null
-    });
-
-    // Serialization using 'source' and 'target'
-
-    const frontendId = movie.$getLayer().getId();
-    const backendId = 'abc123';
-    const otherId = 'xyz789';
-
-    movie = layer.Movie.$deserialize({title: 'Inception'}, {source: backendId});
-    expect(movie.$getField('title').getSource()).toBe(backendId);
-    expect(movie.$serialize({target: backendId})).toEqual({_type: 'Movie'});
-    expect(movie.$serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.$serialize({target: otherId})).toEqual({_type: 'Movie', title: 'Inception'});
+    movie = layer.Movie.$deserialize(
+      {_type: 'Movie', title: 'Inception', country: 'USA'},
+      {fields: {title: true}}
+    );
     expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception'});
 
-    movie.country = 'USA';
-    expect(movie.$getField('country').getSource()).toBe(frontendId);
-    expect(movie.$serialize({target: backendId})).toEqual({_type: 'Movie', country: 'USA'});
-    expect(movie.$serialize({target: frontendId})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.$serialize({target: otherId})).toEqual({
+    movie = layer.Movie.$deserialize(
+      {
+        _type: 'Movie',
+        title: 'Inception',
+        country: 'USA',
+        genres: ['action', 'adventure', 'sci-fi'],
+        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1', isColored: true},
+        actors: [
+          {_type: 'Actor', fullName: 'Leonardo DiCaprio', country: 'USA'},
+          {_type: 'Actor', fullName: 'Joseph Gordon-Levitt', country: 'USA'}
+        ]
+      },
+      {
+        fields: {
+          title: true,
+          genres: true,
+          technicalSpecs: {isColored: true},
+          actors: [{country: true}]
+        }
+      }
+    );
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception',
-      country: 'USA'
+      genres: ['action', 'adventure', 'sci-fi'],
+      technicalSpecs: {_type: 'TechnicalSpecs', isColored: true},
+      actors: [{_type: 'Actor', country: 'USA'}, {_type: 'Actor', country: 'USA'}]
     });
-    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
+
+    // Deserialization using the returned 'missingFields'
+
+    let {missingFields} = layer.Movie.$instantiate().$deserialize(
+      {_type: 'Movie', title: 'Inception', country: 'USA'},
+      {fields: {title: true}}
+    );
+    expect(missingFields.serialize()).toEqual({});
+
+    ({missingFields} = layer.Movie.$instantiate().$deserialize(
+      {
+        _type: 'Movie',
+        title: 'Inception',
+        country: 'USA',
+        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
+      },
+      {fields: {title: true, releasedOn: true, technicalSpecs: {aspectRatio: true}}}
+    ));
+    expect(missingFields.serialize()).toEqual({releasedOn: true});
+
+    ({missingFields} = layer.Movie.$instantiate().$deserialize(
+      {
+        _type: 'Movie',
+        title: 'Inception',
+        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
+        actors: [
+          {_type: 'Actor', fullName: 'Leonardo DiCaprio'},
+          {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
+        ]
+      },
+      {
+        fields: {
+          title: true,
+          country: true,
+          genres: true,
+          technicalSpecs: {aspectRatio: true, isColored: true},
+          actors: [{fullName: true, country: true}]
+        }
+      }
+    ));
+    expect(missingFields.serialize()).toEqual({
+      country: true,
+      genres: true,
+      technicalSpecs: {isColored: true},
+      actors: {country: true}
+    });
   });
 
   test('Field exposition', async () => {
