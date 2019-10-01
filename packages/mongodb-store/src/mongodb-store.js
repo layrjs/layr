@@ -262,7 +262,7 @@ export class MongoDBStore extends Registerable() {
 
     const collection = await this._getCollection(type);
 
-    const query = filter;
+    const query = buildQuery(filter);
     let projection;
     if (fields !== undefined) {
       projection = buildProjection(fields);
@@ -379,6 +379,32 @@ function deserializeValue(value) {
   }
 
   return value;
+}
+
+// {a: 'z', b: ['a', 'b']} => {a: 'z', b: {$in: ['a', 'b']}}
+function buildQuery(filter) {
+  ow(filter, ow.optional.object);
+
+  if (filter === undefined) {
+    return undefined;
+  }
+
+  function build(filter) {
+    const query = {};
+
+    for (let [name, value] of Object.entries(filter)) {
+      if (Array.isArray(value)) {
+        value = {$in: value};
+      } else if (typeof value === 'object') {
+        value = build(value);
+      }
+      query[name] = value;
+    }
+
+    return query;
+  }
+
+  return build(filter);
 }
 
 // {a: true, b: {c: true}} => {_type: 1, _id: 1, a: 1, "b._type": 1, "b._id": 1, "b.c": 1}
