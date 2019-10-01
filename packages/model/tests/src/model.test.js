@@ -151,8 +151,18 @@ describe('Model', () => {
       };
     }).toThrow(/Cannot change the type of an existing field/);
 
-    expect(Item.prototype.$getField('id').hasValidators()).toBe(false);
-    expect(Movie.prototype.$getField('id').hasValidators()).toBe(true);
+    expect(
+      Item.prototype
+        .$getField('id')
+        .getScalar()
+        .hasValidators()
+    ).toBe(false);
+    expect(
+      Movie.prototype
+        .$getField('id')
+        .getScalar()
+        .hasValidators()
+    ).toBe(true);
 
     const layer = new Layer({Movie});
     await layer.open();

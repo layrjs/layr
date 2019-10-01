@@ -13,7 +13,7 @@ export class Entity extends Identity {
     if (isDeep) {
       return this.$serializeReference({target});
     }
-    return super.$serialize({target, fields, isDeep});
+    return super.$serialize({target, fields});
   }
 
   $serializeReference({target} = {}) {
@@ -21,6 +21,13 @@ export class Entity extends Identity {
       throw new Error(`Cannot serialize a reference to a new entity`);
     }
     return {...super.$serialize({target, fields: false, isDeep: true}), _ref: true};
+  }
+
+  $deserialize(object, {source, fields, isDeep} = {}) {
+    if (isDeep) {
+      return {missingFields: undefined};
+    }
+    return super.$deserialize(object, {source, fields, isDeep});
   }
 
   $clone() {

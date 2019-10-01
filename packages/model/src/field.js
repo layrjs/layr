@@ -109,6 +109,14 @@ export class Field {
     return this._type;
   }
 
+  isArray() {
+    return this._isArray;
+  }
+
+  isOptional() {
+    return this._arrayIsOptional;
+  }
+
   getOptions() {
     return this._options;
   }
@@ -232,10 +240,7 @@ export class Field {
         });
 
         if (missingFields) {
-          if (!rootMissingFields) {
-            rootMissingFields = new FieldMask();
-          }
-          rootMissingFields = FieldMask.add(rootMissingFields, missingFields);
+          rootMissingFields = FieldMask.add(rootMissingFields || new FieldMask(), missingFields);
         }
 
         return deserializedValue;
@@ -247,7 +252,7 @@ export class Field {
   }
 
   hasValidators() {
-    return this._validators.length > 0 || this._scalar.hasValidators();
+    return this._validators.length > 0;
   }
 
   getFailedValidators({fields} = {}) {
@@ -283,6 +288,10 @@ export class Field {
     return value;
   }
 
+  hasDefaultValue() {
+    return this._default !== undefined;
+  }
+
   _createFieldMask(fieldMask, {filter, _typeStack}) {
     if (Array.isArray(fieldMask)) {
       if (!this._isArray) {
@@ -313,6 +322,10 @@ class Scalar {
 
   getType() {
     return this._type;
+  }
+
+  isOptional() {
+    return this._isOptional;
   }
 
   checkValue(value) {
@@ -397,7 +410,7 @@ class Scalar {
     }
     const Model = this._field.getLayer().get(type);
     const deserializedValue = Model.$instantiate(value, {previousInstance: previousValue});
-    const {missingFields} = deserializedValue.$deserialize(value, {source, fields});
+    const {missingFields} = deserializedValue.$deserialize(value, {source, fields, isDeep: true});
     return {deserializedValue, missingFields};
   }
 
