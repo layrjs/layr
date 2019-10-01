@@ -10,6 +10,12 @@ export class Cache {
     this._size = size;
 
     this._entries = new LRUMap(size);
+    this._entries.shift = () => {
+      // Delete indexes when an entry is evicted from the cache
+      const entry = LRUMap.prototype.shift.call(this._entries);
+      this._deleteIndexes(entry.indexedFields);
+      return entry;
+    };
 
     this._indexes = Object.create(null);
     const uniqueFields = parent.prototype.$getUniqueFields();
