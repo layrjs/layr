@@ -1,5 +1,8 @@
 import {Entity, FieldMask} from '@liaison/model';
 import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
+import difference from 'lodash/difference';
+import uniq from 'lodash/uniq';
+import ow from 'ow';
 
 import {StorableField} from './storable-field';
 import {Cache} from './cache';
@@ -25,25 +28,128 @@ function extendClass(Base) {
     static $Field = StorableField;
 
     static async $open() {
-      this.__cache = new Cache({size: DEFAULT_CACHE_SIZE});
+      this.__cache = new Cache(this, {size: DEFAULT_CACHE_SIZE});
     }
 
-    static async $close() {
-      this.__cache = undefined;
-    }
-
-    static async $get(ids, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
-      if (!Array.isArray(ids)) {
-        return (await this.$get([ids], {fields, populate, throwIfNotFound}))[0];
+    static async $get(keys, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
+      if (!Array.isArray(keys)) {
+        return (await this.$get([keys], {fields, reload, populate, throwIfNotFound}))[0];
       }
 
-      for (const id of ids) {
-        this.validateId(id);
+      const {name, values} = this.__extractKeys(keys);
+
+      let storables;
+      if (name === 'id') {
+        storables = values.map(value => this.$deserialize({_id: value}));
+      } else {
+        storables = await this.$getId(name, values, {reload, throwIfNotFound});
       }
 
-      const storables = ids.map(id => this.$deserialize({_id: id}));
       await this.$load(storables, {fields, reload, populate, throwIfNotFound});
+
       return storables;
+    }
+
+    static async $getId(name, values, {reload, throwIfNotFound}) {
+      const {storables = [], missingValues = values} = !reload ?
+        this.__cache.find(name, values) :
+        {};
+
+      if (missingValues.length === 0) {
+        return storables;
+      }
+
+      let missingStorables;
+
+      if (this.$hasStore()) {
+        missingStorables = await this._getIdFromStore(name, missingValues, {throwIfNotFound});
+      } else {
+        missingStorables = await super.$getId(name, missingValues, {reload, throwIfNotFound});
+      }
+
+      this.__cache.save(missingStorables);
+
+      return [...storables, ...missingStorables];
+    }
+
+    static async _getIdFromStore(name, values, {throwIfNotFound}) {
+      const store = this.$getStore();
+      const serializedStorables = await store.find(
+        {_type: this.$getRegisteredName(), [name]: values},
+        {fields: {[name]: true}}
+      );
+
+      const foundValues = serializedStorables.map(serializedStorable => serializedStorable[name]);
+
+      const uniqueValues = uniq(foundValues);
+      if (uniqueValues.length < foundValues.length) {
+        throw new Error(`Found duplicated values in a unique field (name: '${name}')`);
+      }
+
+      if (foundValues.length < values.length && throwIfNotFound) {
+        const missingValues = difference(values, foundValues);
+        throw new Error(`Item(s) not found (${name}(s): ${JSON.stringify(missingValues)})`);
+      }
+
+      const storables = serializedStorables.map(serializedStorable =>
+        this.$deserialize(serializedStorable)
+      );
+
+      return storables;
+    }
+
+    static __extractKeys(keys) {
+      let name;
+      const values = new Set();
+
+      for (const key of keys) {
+        ow(key, ow.object);
+
+        const keyNames = Object.keys(key);
+        if (keyNames.length !== 1) {
+          throw new Error(
+            `A key must be an object composed of one unique field (key: ${JSON.stringify(key)})`
+          );
+        }
+
+        const keyName = keyNames[0];
+
+        if (name === undefined) {
+          const isUnique = keyName === 'id' || this.prototype.$getField(keyName).isUnique();
+          if (!isUnique) {
+            throw new Error(`A key name must correspond to a unique field (name: '${keyName}')`);
+          }
+          name = keyName;
+        } else if (name !== keyName) {
+          throw new Error(
+            `Cannot handle different key names in a set of keys (keys: ${JSON.stringify(keys)})`
+          );
+        }
+
+        const keyValue = key[keyName];
+
+        if (keyValue === undefined) {
+          throw new Error(`A key value cannot be undefined (name: '${name}')`);
+        }
+
+        if (values.has(keyValue)) {
+          throw new Error(`A key value cannot be duplicated (name: '${name}')`);
+        }
+
+        values.add(keyValue);
+      }
+
+      return {name, values: Array.from(values)};
+    }
+
+    static async $has(keys, {reload} = {}) {
+      if (!Array.isArray(keys)) {
+        return await this.$has([keys], {reload});
+      }
+
+      const storables = await this.$get(keys, {fields: false, reload, throwIfNotFound: false});
+
+      return storables.length === keys.length;
     }
 
     static async $load(storables, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
@@ -259,8 +365,8 @@ function extendClass(Base) {
       skip,
       limit,
       load = true,
-      reload,
       fields,
+      reload,
       populate,
       throwIfNotFound
     } = {}) {
@@ -362,6 +468,12 @@ function extendClass(Base) {
           return field.getParent().__storableFields?.has(field.getName());
         }
       });
+    }
+
+    // === Unique fields ===
+
+    $getUniqueFields() {
+      return this.$getFields({filter: field => field.isUnique()});
     }
 
     // === Utilities ===

@@ -18,7 +18,8 @@
     "@liaison/trackable": "^0.1.0",
     "@liaison/util": "^0.1.0",
     "lodash": "^4.17.11",
-    "quick-lru": "^4.0.1"
+    "lru_map": "^0.3.3",
+    "ow": "^0.13.2"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
