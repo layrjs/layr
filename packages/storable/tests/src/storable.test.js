@@ -38,12 +38,7 @@ describe('Storable', () => {
     await rootLayer.open();
 
     let layer = rootLayer.fork();
-    let movie = new layer.Movie({
-      title: 'Inception',
-      year: 2010,
-      reference: 'movie-001',
-      secret: 'abc123'
-    });
+    let movie = new layer.Movie({title: 'Inception', year: 2010, secret: 'abc123'});
     const id = movie.id;
 
     const storableFields = movie.$createFieldMaskForStorableFields();
@@ -51,6 +46,8 @@ describe('Storable', () => {
 
     // === Create ===
 
+    await expect(movie.$save()).rejects.toThrow(/Model validation failed/);
+    movie.reference = 'movie-001';
     await movie.$save();
 
     // === Read ===
@@ -71,11 +68,8 @@ describe('Storable', () => {
     expect(movie2).not.toBe(movie);
 
     await expect(layer.Movie.$get({id: 'missing-id'})).rejects.toThrow(/Document not found/);
-    await expect(
-      layer.Movie.$get({id: 'missing-id'}, {throwIfNotFound: false}).then(storable =>
-        storable.$serialize()
-      )
-    ).resolves.toEqual({_type: 'Movie', _id: 'missing-id'});
+    expect(await layer.Movie.$get({id: 'missing-id'}, {throwIfNotFound: false})).toBeUndefined();
+    expect(await layer.Movie.$has({id: 'missing-id'})).toBe(false);
 
     // === Partial read ===
 
@@ -128,6 +122,10 @@ describe('Storable', () => {
     await expect(layer.Movie.$get({reference: 'missing-ref'})).rejects.toThrow(
       /Item\(s\) not found/
     );
+    expect(
+      await layer.Movie.$get({reference: 'missing-ref'}, {throwIfNotFound: false})
+    ).toBeUndefined();
+    expect(await layer.Movie.$has({reference: 'missing-ref'})).toBe(false);
 
     layer = rootLayer.fork();
     await expect(layer.Movie.$get({title: 'Inception'})).rejects.toThrow(
@@ -164,10 +162,10 @@ describe('Storable', () => {
     // === Delete ===
 
     layer = rootLayer.fork();
+    expect(await layer.Movie.$has({id})).toBe(true);
     movie = await layer.Movie.$get({id});
     await movie.$delete();
-    layer = rootLayer.fork();
-    await expect(layer.Movie.$get({id})).rejects.toThrow(/Document not found/);
+    expect(await layer.Movie.$has({id})).toBe(false);
   });
 
   test.skip('Nesting models', async () => {
@@ -255,7 +253,7 @@ describe('Storable', () => {
 
     // Will fetch both the 'Movie' storable and its 'Trailer' substorable
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
@@ -266,7 +264,7 @@ describe('Storable', () => {
 
     // Will fetch the 'Movie' storable only
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {fields: {title: true}});
+    movie = await layer.Movie.$get({id: movieId}, {fields: {title: true}});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
@@ -274,7 +272,7 @@ describe('Storable', () => {
 
     // Will fetch the 'Movie' storable and the id of its trailer
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {fields: {title: true, trailer: {}}});
+    movie = await layer.Movie.$get({id: movieId}, {fields: {title: true, trailer: {}}});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
@@ -284,17 +282,17 @@ describe('Storable', () => {
 
     // The trailer can be partially modified
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     movie.trailer.url = 'https://www.youtube.com/watch?v=8hP9D6kZseM';
     await movie.$save();
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=8hP9D6kZseM');
     expect(movie.trailer.duration).toBe(30);
 
     // The trailer can be fully replaced
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     movie.trailer = {url: 'https://www.youtube.com/watch?v=YoHD9XEInc0', duration: 45};
     const newTrailerId = movie.trailer.id;
     expect(typeof newTrailerId === 'string').toBe(true);
@@ -302,17 +300,17 @@ describe('Storable', () => {
     expect(newTrailerId).not.toBe(trailerId); // The trailer got a new id
     await movie.$save();
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie.trailer.id).toBe(newTrailerId);
     expect(movie.trailer.url).toBe('https://www.youtube.com/watch?v=YoHD9XEInc0');
     expect(movie.trailer.duration).toBe(45);
 
     // Will delete both the movie storable and its trailer substorable
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     await movie.$delete();
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {throwIfNotFound: false});
+    movie = await layer.Movie.$get({id: movieId}, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
   });
 
@@ -430,22 +428,29 @@ describe('Storable', () => {
     await movie.$delete();
   });
 
-  test.skip('Referenced storables', async () => {
-    class Movie extends Storable() {
-      @field('string') title;
+  test('Referenced storables', async () => {
+    // TODO: Make this test failed when fields are marked as not storable
 
-      @field('Director') director;
+    class Movie extends Storable(undefined, {storeName: 'mongoDBStore'}) {
+      @store() @field('string') title;
+
+      @store() @field('Director') director;
     }
 
-    class Director extends Storable() {
-      @field('string') fullName;
+    class Director extends Storable(undefined, {storeName: 'mongoDBStore'}) {
+      @store() @field('string') fullName;
+
+      @store() @field('string?') country;
     }
 
-    const store = new MongoDBStore();
-    const rootLayer = new Layer({Movie, Director, store});
+    const rootLayer = new Layer({Movie, Director, mongoDBStore});
+    await rootLayer.open();
 
     let layer = rootLayer.fork();
-    let movie = new layer.Movie({title: 'Inception', director: {fullName: 'Christopher Nolan'}});
+    let movie = new layer.Movie({
+      title: 'Inception',
+      director: {fullName: 'Christopher Nolan', country: 'USA'}
+    });
     const movieId = movie.id;
     const directorId = movie.director.id;
     await movie.director.$save();
@@ -457,38 +462,55 @@ describe('Storable', () => {
     expect(director instanceof layer.Director).toBe(true);
     expect(director.id).toBe(directorId);
     expect(director.fullName).toBe('Christopher Nolan');
+    expect(director.country).toBe('USA');
 
     // Will fetch both the 'Movie' and its director
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
     expect(movie.director instanceof layer.Director).toBe(true);
     expect(movie.director.id).toBe(directorId);
     expect(movie.director.fullName).toBe('Christopher Nolan');
+    expect(movie.director.country).toBe('USA');
 
     // Will fetch the 'Movie' only
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {fields: {title: true}});
+    movie = await layer.Movie.$get({id: movieId}, {fields: {title: true}});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
-    expect(movie.director).toBeUndefined();
+    expect(movie.$getField('director').isActive()).toBe(false);
 
     // Will fetch the 'Movie' and its director's id
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {fields: {title: true, director: {}}});
+    movie = await layer.Movie.$get({id: movieId}, {fields: {title: true, director: {}}});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
     expect(movie.director instanceof layer.Director).toBe(true);
     expect(movie.director.id).toBe(directorId);
-    expect(movie.director.fullName).toBeUndefined();
+    expect(movie.director.$getField('fullName').isActive()).toBe(false);
+    expect(movie.director.$getField('country').isActive()).toBe(false);
+
+    // Will fetch the 'Movie' and it's director partially
+    layer = rootLayer.fork();
+    movie = await layer.Movie.$get(
+      {id: movieId},
+      {fields: {title: true, director: {fullName: true}}}
+    );
+    expect(movie instanceof layer.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director instanceof layer.Director).toBe(true);
+    expect(movie.director.id).toBe(directorId);
+    expect(movie.director.fullName).toBe('Christopher Nolan');
+    expect(movie.director.$getField('country').isActive()).toBe(false);
 
     // The director can be replaced
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     let newDirector = new layer.Director({fullName: 'C. Nolan'});
     const newDirectorId = newDirector.id;
     expect(newDirectorId).not.toBe(directorId);
@@ -496,27 +518,26 @@ describe('Storable', () => {
     movie.director = newDirector;
     await movie.$save();
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
     expect(movie.director.id).toBe(newDirectorId);
     expect(movie.director.fullName).toBe('C. Nolan');
+    expect(movie.director.country).toBe(undefined);
 
     // Let's delete everything
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    expect(await layer.Movie.$has({id: movieId})).toBe(true); // The movie is there
+    movie = await layer.Movie.$get({id: movieId});
     await movie.$delete();
-    layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {throwIfNotFound: false});
-    expect(movie).toBeUndefined(); // The movie is gone
-    layer = rootLayer.fork();
+    expect(await layer.Movie.$has({id: movieId})).toBe(false); // The movie is gone
     newDirector = await layer.Director.$get({id: newDirectorId});
-    expect(newDirector instanceof layer.Director).toBe(true); // But the director is still there
-    expect(newDirector.id).toBe(newDirectorId);
+    expect(newDirector.id).toBe(newDirectorId); // But the director is still there
     await newDirector.$delete(); // So let's delete it
-    layer = rootLayer.fork();
-    director = await layer.Director.$get({id: directorId}); // Let's also delete the director
+    expect(await layer.Director.$has({id: newDirectorId})).toBe(false);
+    director = await layer.Director.$get({id: directorId}); // Let's also delete the first director
     await director.$delete();
+    expect(await layer.Director.$has({id: directorId})).toBe(false);
   });
 
   test.skip('Arrays of referenced storable', async () => {
@@ -559,7 +580,7 @@ describe('Storable', () => {
 
     // Will fetch both 'Movie' and 'Actor' storables
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
@@ -573,7 +594,7 @@ describe('Storable', () => {
 
     // Will fetch 'Movie' storable only
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {fields: {title: true}});
+    movie = await layer.Movie.$get({id: movieId}, {fields: {title: true}});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
@@ -581,7 +602,7 @@ describe('Storable', () => {
 
     // Will fetch 'Movie' storable and the ids of the actors
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {fields: {title: true, actors: [{}]}});
+    movie = await layer.Movie.$get({id: movieId}, {fields: {title: true, actors: [{}]}});
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
@@ -594,7 +615,7 @@ describe('Storable', () => {
 
     // An actor can be modified through its parent movie
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     movie.actors[0].fullName = 'L. DiCaprio';
     await movie.actors[0].$save();
     layer = rootLayer.fork();
@@ -603,13 +624,13 @@ describe('Storable', () => {
 
     // Let's delete the movie and its actors
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     for (const actor of movie.actors) {
       await actor.$delete();
     }
     await movie.$delete();
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId}, {throwIfNotFound: false});
+    movie = await layer.Movie.$get({id: movieId}, {throwIfNotFound: false});
     expect(movie).toBeUndefined();
     actor = await layer.Actor.$get({id: actorIds[0]}, {throwIfNotFound: false});
     expect(actor).toBeUndefined();
@@ -699,7 +720,7 @@ describe('Storable', () => {
     expect(movie.trailer.afterDeleteCount).toBe(0);
 
     layer = rootLayer.fork();
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie.afterLoadCount).toBe(1);
     expect(movie.beforeSaveCount).toBe(0);
     expect(movie.afterSaveCount).toBe(0);
@@ -711,7 +732,7 @@ describe('Storable', () => {
     expect(movie.trailer.beforeDeleteCount).toBe(0);
     expect(movie.trailer.afterDeleteCount).toBe(0);
 
-    movie = await layer.Movie.$get({movieId});
+    movie = await layer.Movie.$get({id: movieId});
     expect(movie.afterLoadCount).toBe(1); // Since the movie was in the entity map, 'afterLoad' has not been called a second time
     expect(movie.beforeSaveCount).toBe(0);
     expect(movie.afterSaveCount).toBe(0);

@@ -1,4 +1,4 @@
-import {Entity, FieldMask} from '@liaison/model';
+import {Entity, FieldMask, isModel} from '@liaison/model';
 import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
 import difference from 'lodash/difference';
 import uniq from 'lodash/uniq';
@@ -13,7 +13,7 @@ export const Storable = (Base = Entity, {storeName} = {}) => {
   let Storable;
 
   if (!isStorable(Base.prototype)) {
-    Storable = extendClass(Base);
+    Storable = makeStorable(Base);
   } else {
     Storable = class Storable extends Base {};
   }
@@ -23,7 +23,7 @@ export const Storable = (Base = Entity, {storeName} = {}) => {
   return Storable;
 };
 
-function extendClass(Base) {
+function makeStorable(Base) {
   const Storable = class Storable extends Base {
     static $Field = StorableField;
 
@@ -31,9 +31,9 @@ function extendClass(Base) {
       this.__cache = new Cache(this, {size: DEFAULT_CACHE_SIZE});
     }
 
-    static async $get(keys, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
+    static async $get(keys, {fields, reload, throwIfNotFound = true} = {}) {
       if (!Array.isArray(keys)) {
-        return (await this.$get([keys], {fields, reload, populate, throwIfNotFound}))[0];
+        return (await this.$get([keys], {fields, reload, throwIfNotFound}))[0];
       }
 
       const {name, values} = this.__extractKeys(keys);
@@ -45,9 +45,7 @@ function extendClass(Base) {
         storables = await this.$getId(name, values, {reload, throwIfNotFound});
       }
 
-      await this.$load(storables, {fields, reload, populate, throwIfNotFound});
-
-      return storables;
+      return await this.$load(storables, {fields, reload, throwIfNotFound});
     }
 
     static async $getId(name, values, {reload, throwIfNotFound}) {
@@ -152,46 +150,83 @@ function extendClass(Base) {
       return storables.length === keys.length;
     }
 
-    static async $load(storables, {fields, reload, populate = true, throwIfNotFound = true} = {}) {
+    static async $load(storables, {fields, reload, throwIfNotFound = true} = {}) {
       if (!Array.isArray(storables)) {
-        return (await this.$load([storables], {fields, reload, populate, throwIfNotFound}))[0];
+        return (await this.$load([storables], {fields, reload, throwIfNotFound}))[0];
       }
 
-      fields = this.prototype.$createFieldMask(fields);
+      fields = this.prototype.$createFieldMask(fields, {includeReferencedEntities: true});
+
+      const loadedStorables = await this.__load(storables, {fields, reload, throwIfNotFound});
+
+      await this.__populate(loadedStorables, {fields, reload, throwIfNotFound});
+
+      return loadedStorables;
+    }
+
+    static async $reload(storables, {fields, throwIfNotFound = true} = {}) {
+      return await this.$load(storables, {fields, reload: true, throwIfNotFound});
+    }
+
+    async $load({fields, reload, throwIfNotFound = true} = {}) {
+      return await this.constructor.$load(this, {fields, reload, throwIfNotFound});
+    }
+
+    async $reload({fields, throwIfNotFound = true} = {}) {
+      return await this.$load({fields, reload: true, throwIfNotFound});
+    }
+
+    static async __load(storablesToLoad, {fields, reload, throwIfNotFound}) {
+      fields = this.prototype.$createFieldMask(fields); // Remove fields of referenced entities
+
+      let loadedStorables = [];
 
       if (!reload) {
-        const {missingStorables, missingFields} = this.__cache.load(storables, {fields});
+        const {
+          loadedStorables: loadedStorablesFromCache,
+          missingStorables,
+          missingFields
+        } = this.__cache.load(storablesToLoad, {
+          fields
+        });
 
-        if (missingStorables.length === 0) {
-          return;
-        }
-
-        storables = missingStorables;
+        loadedStorables = loadedStorablesFromCache;
+        storablesToLoad = missingStorables;
         fields = missingFields;
       }
 
-      if (this.$hasStore()) {
-        await this.__loadFromStore(storables, {fields, throwIfNotFound});
-      } else {
-        await super.$load(storables, {fields, reload, populate: false, throwIfNotFound});
-      }
+      loadedStorables = [
+        ...loadedStorables,
+        ...(await this.__loadFromStoreOrParentLayer(storablesToLoad, {
+          fields,
+          reload,
+          throwIfNotFound
+        }))
+      ];
 
-      for (const storable of storables) {
-        await storable.$afterLoad({fields});
-      }
-
-      this.__cache.save(storables);
-
-      if (populate) {
-        // TODO:
-        // await this.$populate(storables, {fields, throwIfNotFound});
-      }
-
-      return storables;
+      return loadedStorables;
     }
 
-    static async $reload(storables, {fields, populate = true, throwIfNotFound = true} = {}) {
-      await this.$load(storables, {fields, reload: true, populate, throwIfNotFound});
+    static async __loadFromStoreOrParentLayer(storablesToLoad, {fields, reload, throwIfNotFound}) {
+      if (storablesToLoad.length === 0) {
+        return storablesToLoad; // OPTIMIZATION
+      }
+
+      let loadedStorables;
+
+      if (this.$hasStore()) {
+        loadedStorables = await this.__loadFromStore(storablesToLoad, {fields, throwIfNotFound});
+      } else {
+        loadedStorables = await super.$load(storablesToLoad, {fields, reload, throwIfNotFound});
+      }
+
+      for (const loadedStorable of loadedStorables) {
+        await loadedStorable.$afterLoad({fields});
+      }
+
+      this.__cache.save(loadedStorables);
+
+      return loadedStorables;
     }
 
     static async __loadFromStore(storables, {fields, throwIfNotFound}) {
@@ -206,74 +241,50 @@ function extendClass(Base) {
         throwIfNotFound
       });
 
+      const loadedStorables = [];
+
       for (const serializedStorable of serializedStorables) {
-        this.$deserialize(serializedStorable);
-      }
-    }
-
-    async $load({fields, reload, populate = true, throwIfNotFound = true} = {}) {
-      await this.constructor.$load([this], {fields, reload, populate, throwIfNotFound});
-    }
-
-    async $reload({fields, populate = true, throwIfNotFound = true} = {}) {
-      await this.$load({fields, reload: true, populate, throwIfNotFound});
-    }
-
-    static async $populate(storables, {fields, throwIfNotFound = true} = {}) {
-      if (!Array.isArray(storables)) {
-        return (await this.$populate([storables], {fields, throwIfNotFound}))[0];
+        // TODO: Modify MongoDBStore so we can get rid of the following test:
+        if (!serializedStorable._missed) {
+          loadedStorables.push(this.$deserialize(serializedStorable));
+        }
       }
 
-      fields = new FieldMask(fields);
-
-      let didLoad;
-      do {
-        didLoad = await this.__populate(storables, {fields, throwIfNotFound});
-      } while (didLoad);
+      return loadedStorables;
     }
 
-    static async __populate(storables, {fields, throwIfNotFound}) {
+    static async __populate(storables, {fields, reload, throwIfNotFound}) {
       const storablesByClass = new Map();
 
-      for (const storable of storables) {
-        if (!storable) {
-          continue;
-        }
+      const traverse = (model, rootFields) => {
+        for (const {value, fields} of model.$getFieldValues({fields: rootFields})) {
+          if (isStorable(value)) {
+            const storable = value;
+            const Storable = storable.constructor;
 
-        storable.forEachNestedEntityDeep(
-          (storable, {fields}) => {
-            if (storable.fieldsAreActive(fields)) {
-              return;
-            }
+            let entry = storablesByClass.get(Storable);
 
-            const klass = storable.constructor;
-            let entry = storablesByClass.get(klass);
             if (!entry) {
-              entry = {storables: [], fields: undefined};
-              storablesByClass.set(klass, entry);
+              entry = {storables: new Set(), fields: new FieldMask()};
+              storablesByClass.set(Storable, entry);
             }
-            if (!entry.storables.includes(storable)) {
-              entry.storables.push(storable);
-            }
+
+            entry.storables.add(storable);
             entry.fields = FieldMask.add(entry.fields, fields);
-          },
-          {fields}
-        );
+          } else if (isModel(value)) {
+            const model = value;
+            traverse(model);
+          }
+        }
+      };
+
+      for (const storable of storables) {
+        traverse(storable, fields);
       }
 
-      if (!storablesByClass.size) {
-        return false;
+      for (const [Storable, {storables, fields}] of storablesByClass.entries()) {
+        await Storable.$load(Array.from(storables), {fields, reload, throwIfNotFound});
       }
-
-      for (const [klass, {storables, fields}] of storablesByClass.entries()) {
-        await klass.$load(storables, {fields, populate: false, throwIfNotFound});
-      }
-
-      return true;
-    }
-
-    async $populate({fields, throwIfNotFound = true} = {}) {
-      return (await this.constructor.$populate([this], {fields, throwIfNotFound}))[0];
     }
 
     static async $save(storables, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
@@ -321,7 +332,7 @@ function extendClass(Base) {
     }
 
     async $save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
-      await this.constructor.$save([this], {throwIfNotFound, throwIfAlreadyExists});
+      return await this.constructor.$save(this, {throwIfNotFound, throwIfAlreadyExists});
     }
 
     static async $delete(storables, {throwIfNotFound = true} = {}) {
@@ -356,33 +367,19 @@ function extendClass(Base) {
     }
 
     async $delete({throwIfNotFound = true} = {}) {
-      await this.constructor.$delete([this], {throwIfNotFound});
+      return await this.constructor.$delete(this, {throwIfNotFound});
     }
 
-    static async $find({
-      filter,
-      sort,
-      skip,
-      limit,
-      load = true,
-      fields,
-      reload,
-      populate,
-      throwIfNotFound
-    } = {}) {
-      fields = this.prototype.$createFieldMask(fields);
-
+    static async $find({filter, sort, skip, limit, fields, reload, throwIfNotFound} = {}) {
       let storables;
 
       if (this.$hasStore()) {
         storables = await this.__findInStore({filter, sort, skip, limit, fields: {}}); // TODO: Remove 'fields' option
       } else {
-        storables = await super.$find({filter, sort, skip, limit, load: false});
+        storables = await super.$find({filter, sort, skip, limit, fields: false});
       }
 
-      if (load) {
-        await this.$load(storables, {fields, reload, populate, throwIfNotFound});
-      }
+      await this.$load(storables, {fields, reload, throwIfNotFound});
 
       return storables;
     }
@@ -448,7 +445,7 @@ function extendClass(Base) {
       const filter = function (field) {
         return typeof field.getScalar().getModel()?.isSubstorable === 'function';
       };
-      return this.$getFieldValues({filter});
+      return Array.from(this.$getFieldValues({filter})).map(result => result.value);
     }
 
     // === Storable fields ===
@@ -478,7 +475,7 @@ function extendClass(Base) {
 
     // === Utilities ===
 
-    static isStorable(object) {
+    static $isStorable(object) {
       return isStorable(object);
     }
   };
@@ -515,5 +512,5 @@ export function store() {
 // === Utilities ===
 
 export function isStorable(object) {
-  return typeof object?.constructor?.isStorable === 'function';
+  return typeof object?.constructor?.$isStorable === 'function';
 }

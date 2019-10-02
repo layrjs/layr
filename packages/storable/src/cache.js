@@ -26,6 +26,7 @@ export class Cache {
   }
 
   load(storables, {fields}) {
+    const loadedStorables = [];
     const missingStorables = [];
     let missingFields = new FieldMask();
 
@@ -42,13 +43,15 @@ export class Cache {
         return missingFields;
       })();
 
-      if (storableMissingFields) {
+      if (!storableMissingFields) {
+        loadedStorables.push(storable);
+      } else {
         missingStorables.push(storable);
         missingFields = FieldMask.add(missingFields, storableMissingFields);
       }
     }
 
-    return {missingStorables, missingFields};
+    return {loadedStorables, missingStorables, missingFields};
   }
 
   save(storables) {
