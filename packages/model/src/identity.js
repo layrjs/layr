@@ -56,7 +56,15 @@ export class Identity extends Model {
     }
   }
 
+  static $isIdentity(object) {
+    return isIdentity(object);
+  }
+
   [inspect.custom]() {
     return {id: this._id, ...super[inspect.custom]()};
   }
+}
+
+export function isIdentity(object) {
+  return typeof object?.constructor?.$isIdentity === 'function';
 }

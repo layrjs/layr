@@ -178,7 +178,9 @@ export class Field {
         if (value !== undefined) {
           if (field._isArray) {
             for (const item of value) {
-              yield item;
+              if (item !== undefined) {
+                yield item;
+              }
             }
           } else {
             yield value;

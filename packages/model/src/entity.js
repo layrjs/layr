@@ -61,4 +61,12 @@ export class Entity extends Identity {
     }
     return this.__instances;
   }
+
+  static $isEntity(object) {
+    return isEntity(object);
+  }
+}
+
+export function isEntity(object) {
+  return typeof object?.constructor?.$isEntity === 'function';
 }

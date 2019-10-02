@@ -219,14 +219,23 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
-  $getFieldValues({filter} = {}) {
+  $getFieldValues({fields, filter} = {}) {
+    const rootFieldMask = this.$createFieldMask(fields, {includeReferencedEntities: true});
+
     const model = this;
 
     return {
       * [Symbol.iterator]() {
         for (const field of model.$getActiveFields({filter})) {
+          const name = field.getName();
+
+          const fieldMask = rootFieldMask.get(name);
+          if (!fieldMask) {
+            continue;
+          }
+
           for (const value of field.getValues()) {
-            yield value;
+            yield {value, fields: fieldMask};
           }
         }
       }
