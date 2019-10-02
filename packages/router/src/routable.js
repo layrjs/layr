@@ -96,6 +96,11 @@ export function route(pattern, options) {
         router.navigate(path, {replace});
       };
 
+      func.isActive = function (params) {
+        const path = this.getPath(params);
+        return router.location.pathname === path;
+      };
+
       router.applyCustomRouteDecorators(this, func);
     };
 
