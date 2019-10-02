@@ -195,14 +195,15 @@ function makeStorable(Base) {
         fields = missingFields;
       }
 
-      loadedStorables = [
-        ...loadedStorables,
-        ...(await this.__loadFromStoreOrParentLayer(storablesToLoad, {
-          fields,
-          reload,
-          throwIfNotFound
-        }))
-      ];
+      const actuallyLoadedStorables = await this.__loadFromStoreOrParentLayer(storablesToLoad, {
+        fields,
+        reload,
+        throwIfNotFound
+      });
+
+      this.__cache.save(actuallyLoadedStorables);
+
+      loadedStorables = [...loadedStorables, ...actuallyLoadedStorables];
 
       return loadedStorables;
     }
@@ -223,8 +224,6 @@ function makeStorable(Base) {
       for (const loadedStorable of loadedStorables) {
         await loadedStorable.$afterLoad({fields});
       }
-
-      this.__cache.save(loadedStorables);
 
       return loadedStorables;
     }
@@ -479,6 +478,11 @@ function makeStorable(Base) {
       return isStorable(object);
     }
   };
+
+  // Make existing fields storable
+  for (const name of Base.prototype.$getFieldNames()) {
+    Storable.prototype.$setField(name);
+  }
 
   return Storable;
 }
