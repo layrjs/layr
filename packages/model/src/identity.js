@@ -26,8 +26,8 @@ export class Identity extends Model {
     this._id = id;
   }
 
-  $serialize({target, fields, isDeep} = {}) {
-    const {_type, _new, ...otherProps} = super.$serialize({target, fields, isDeep});
+  $serialize({target, fields} = {}) {
+    const {_type, _new, ...otherProps} = super.$serialize({target, fields});
     return {_type, ...(_new && {_new}), _id: this._id, ...otherProps};
   }
 

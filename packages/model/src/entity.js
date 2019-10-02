@@ -9,8 +9,8 @@ export class Entity extends Identity {
     this.constructor.$setInstance(this);
   }
 
-  $serialize({target, fields, isDeep} = {}) {
-    if (isDeep) {
+  $serialize({target, fields, _isDeep} = {}) {
+    if (_isDeep) {
       return this.$serializeReference({target});
     }
     return super.$serialize({target, fields});
@@ -20,25 +20,23 @@ export class Entity extends Identity {
     if (this.$isNew()) {
       throw new Error(`Cannot serialize a reference to a new entity`);
     }
-    return {...super.$serialize({target, fields: false, isDeep: true}), _ref: true};
-  }
-
-  $deserialize(object, {source, fields, isDeep} = {}) {
-    if (isDeep) {
-      return {missingFields: undefined};
-    }
-    return super.$deserialize(object, {source, fields, isDeep});
+    return {...super.$serialize({target, fields: false}), _ref: true};
   }
 
   $clone() {
     return this.constructor.$deserialize({...this.$serialize(), _id: undefined});
   }
 
-  $getFailedValidators({fields, isDeep} = {}) {
-    if (isDeep) {
-      return undefined;
+  __createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack}) {
+    if (_typeStack.size > 0) {
+      // We are not a the root
+      if (!includeReferencedEntities) {
+        // Ignore fields of referenced entities
+        return {};
+      }
     }
-    return super.$getFailedValidators({fields, isDeep});
+
+    return super.__createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack});
   }
 
   static $getInstance(object, _previousInstance) {

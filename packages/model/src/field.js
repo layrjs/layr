@@ -292,7 +292,7 @@ export class Field {
     return this._default !== undefined;
   }
 
-  _createFieldMask(fieldMask, {filter, _typeStack}) {
+  _createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack}) {
     if (Array.isArray(fieldMask)) {
       if (!this._isArray) {
         throw new Error(
@@ -302,7 +302,11 @@ export class Field {
       fieldMask = fieldMask[0];
     }
 
-    return this._scalar._createFieldMask(fieldMask, {filter, _typeStack});
+    return this._scalar._createFieldMask(fieldMask, {
+      filter,
+      includeReferencedEntities,
+      _typeStack
+    });
   }
 }
 
@@ -384,7 +388,7 @@ class Scalar {
       return value;
     }
 
-    return value.$serialize({target, fields, isDeep: true});
+    return value.$serialize({target, fields, _isDeep: true});
   }
 
   deserializeValue(value, {source, fields, previousValue}) {
@@ -410,7 +414,7 @@ class Scalar {
     }
     const Model = this._field.getLayer().get(type);
     const deserializedValue = Model.$instantiate(value, {previousInstance: previousValue});
-    const {missingFields} = deserializedValue.$deserialize(value, {source, fields, isDeep: true});
+    const {missingFields} = deserializedValue.$deserialize(value, {source, fields});
     return {deserializedValue, missingFields};
   }
 
@@ -428,7 +432,7 @@ class Scalar {
     if (this.isPrimitiveType()) {
       return runValidators(value, this._validators);
     }
-    return value.$getFailedValidators({fields, isDeep: true});
+    return value.$getFailedValidators({fields});
   }
 
   isPrimitiveType() {
@@ -442,10 +446,14 @@ class Scalar {
     return this._field.getLayer().get(this._type);
   }
 
-  _createFieldMask(fieldMask, {filter, _typeStack}) {
+  _createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack}) {
     const Model = this.getModel();
     if (Model) {
-      return Model.prototype.__createFieldMask(fieldMask, {filter, _typeStack});
+      return Model.prototype.__createFieldMask(fieldMask, {
+        filter,
+        includeReferencedEntities,
+        _typeStack
+      });
     }
 
     ow(fieldMask, 'fields', ow.boolean.true);

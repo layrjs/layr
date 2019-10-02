@@ -275,19 +275,23 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Field masks ===
 
-  $createFieldMask(fields = true, {filter} = {}) {
+  $createFieldMask(fields = true, {filter, includeReferencedEntities = false} = {}) {
     // TODO: Consider memoizing
 
     if (FieldMask.isFieldMask(fields)) {
       fields = fields.serialize();
     }
 
-    fields = this.__createFieldMask(fields, {filter});
+    fields = this.__createFieldMask(fields, {
+      filter,
+      includeReferencedEntities,
+      _typeStack: new Set()
+    });
 
     return new FieldMask(fields);
   }
 
-  __createFieldMask(rootFieldMask, {filter, _typeStack = new Set()}) {
+  __createFieldMask(rootFieldMask, {filter, includeReferencedEntities, _typeStack}) {
     ow(rootFieldMask, 'fields', ow.any(ow.boolean, ow.object));
 
     const normalizedFieldMask = {};
@@ -306,7 +310,11 @@ export class Model extends Observable(Serializable(Registerable())) {
       }
 
       _typeStack.add(type);
-      normalizedFieldMask[name] = field._createFieldMask(fieldMask, {filter, _typeStack});
+      normalizedFieldMask[name] = field._createFieldMask(fieldMask, {
+        filter,
+        includeReferencedEntities,
+        _typeStack
+      });
       _typeStack.delete(type);
     }
 
@@ -348,7 +356,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.$getFailedValidators({fields}) === undefined;
   }
 
-  $getFailedValidators({fields, isDeep: _isDeep} = {}) {
+  $getFailedValidators({fields} = {}) {
     const rootFieldMask = this.$createFieldMask(fields);
 
     let result;

@@ -635,7 +635,7 @@ describe('Model', () => {
       {_type: 'Movie', title: 'Inception', country: 'USA'},
       {fields: {title: true}}
     );
-    expect(missingFields.serialize()).toEqual({});
+    expect(missingFields).toBeUndefined();
 
     ({missingFields} = layer.Movie.$instantiate().$deserialize(
       {
