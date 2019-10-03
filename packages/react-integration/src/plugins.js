@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {useForceUpdate} from './hooks';
 
@@ -6,21 +6,21 @@ export function ReactRouterPlugin() {
   return function (router) {
     Object.assign(router, {
       use() {
+        const [isReady, setIsReady] = useState(false);
+
         const forceUpdate = useForceUpdate();
 
         useEffect(() => {
-          const handler = () => {
-            forceUpdate();
-          };
+          router.$observe(forceUpdate);
 
-          router.$observe(handler);
+          setIsReady(true);
 
           return function () {
-            router.$unobserve(handler);
+            router.$unobserve(forceUpdate);
           };
         }, []);
 
-        return router;
+        return isReady;
       },
 
       // eslint-disable-next-line react/prop-types
