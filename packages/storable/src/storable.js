@@ -372,6 +372,8 @@ function makeStorable(Base) {
     static async $find({filter, sort, skip, limit, fields, reload, throwIfNotFound} = {}) {
       let storables;
 
+      filter = await this._resolveFilter(filter);
+
       if (this.$hasStore()) {
         storables = await this.__findInStore({filter, sort, skip, limit, fields: {}}); // TODO: Remove 'fields' option
       } else {
@@ -381,6 +383,29 @@ function makeStorable(Base) {
       await this.$load(storables, {fields, reload, throwIfNotFound});
 
       return storables;
+    }
+
+    static async _resolveFilter(filter) {
+      if (filter === undefined) {
+        return undefined;
+      }
+
+      for (const field of this.prototype.$getFields()) {
+        const name = field.getName();
+        const finder = field.getFinder();
+
+        if (filter[name] === undefined) {
+          continue;
+        }
+
+        if (!finder) {
+          continue;
+        }
+
+        filter = await finder.call(this, filter);
+      }
+
+      return filter;
     }
 
     static async __findInStore({filter, sort, skip, limit, fields}) {
@@ -406,14 +431,25 @@ function makeStorable(Base) {
         return undefined;
       }
 
+      if (isIdentity(filter)) {
+        const identity = filter;
+        // TODO: Consider including the '_type' of the model so we can support polymorphism
+        return {_id: identity.id};
+      }
+
       const serializedFilter = {};
 
       for (let [name, value] of Object.entries(filter)) {
-        if (Array.isArray(value)) {
+        if (name === '$identity') {
+          let identities = value;
+          if (!Array.isArray(identities)) {
+            identities = [identities];
+          }
+          const ids = identities.map(identity => identity.id);
+          name = '_id';
+          value = ids;
+        } else if (Array.isArray(value)) {
           value = value.map(value => this.__serializeFilter(value));
-        } else if (isIdentity(value)) {
-          // TODO: Consider including the '_type' of the model so we can support polymorphism
-          value = {_id: value.id};
         } else if (typeof value === 'object' && value !== null) {
           value = this.__serializeFilter(value);
         }

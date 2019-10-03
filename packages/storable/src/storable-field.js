@@ -1,7 +1,11 @@
 import {Field} from '@liaison/model';
+import ow from 'ow';
 
 export class StorableField extends Field {
-  constructor(parent, name, type, {isUnique = false, ...otherOptions} = {}) {
+  constructor(parent, name, type, {isUnique = false, finder, ...otherOptions} = {}) {
+    ow(isUnique, ow.boolean);
+    ow(finder, ow.optional.function);
+
     super(parent, name, type, otherOptions);
 
     if (isUnique) {
@@ -15,9 +19,15 @@ export class StorableField extends Field {
 
       this._isUnique = true;
     }
+
+    this._finder = finder;
   }
 
   isUnique() {
     return this._isUnique;
+  }
+
+  getFinder() {
+    return this._finder;
   }
 }
