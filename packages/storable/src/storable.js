@@ -1,4 +1,4 @@
-import {Entity, FieldMask, isModel} from '@liaison/model';
+import {Entity, FieldMask, isModel, isIdentity} from '@liaison/model';
 import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
 import difference from 'lodash/difference';
 import uniq from 'lodash/uniq';
@@ -387,9 +387,10 @@ function makeStorable(Base) {
       fields = this.prototype.$createFieldMaskForStorableFields(fields);
 
       const store = this.$getStore();
+      const serializedFilter = this.__serializeFilter(filter);
       const serializedFields = fields.serialize();
       const serializedStorables = await store.find(
-        {_type: this.$getRegisteredName(), ...filter},
+        {_type: this.$getRegisteredName(), ...serializedFilter},
         {sort, skip, limit, fields: serializedFields}
       );
 
@@ -398,6 +399,28 @@ function makeStorable(Base) {
       );
 
       return storables;
+    }
+
+    static __serializeFilter(filter) {
+      if (filter === undefined) {
+        return undefined;
+      }
+
+      const serializedFilter = {};
+
+      for (let [name, value] of Object.entries(filter)) {
+        if (Array.isArray(value)) {
+          value = value.map(value => this.__serializeFilter(value));
+        } else if (isIdentity(value)) {
+          // TODO: Consider including the '_type' of the model so we can support polymorphism
+          value = {_id: value.id};
+        } else if (typeof value === 'object' && value !== null) {
+          value = this.__serializeFilter(value);
+        }
+        serializedFilter[name] = value;
+      }
+
+      return serializedFilter;
     }
 
     static $getStore() {
