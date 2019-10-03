@@ -27,6 +27,10 @@ export class BrowserRouter extends Observable(Registerable()) {
     this.$notify();
   }
 
+  redirect(url) {
+    this.navigate(url, {replace: true});
+  }
+
   findRoute() {
     const url = this.location.href;
 
