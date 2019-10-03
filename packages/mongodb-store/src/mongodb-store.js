@@ -70,10 +70,7 @@ export class MongoDBStore extends Registerable() {
   async _loadDocuments(documents, {fields} = {}) {
     const loadedDocuments = [];
 
-    let projection;
-    if (fields !== undefined) {
-      projection = buildProjection(fields);
-    }
+    const projection = buildProjection(fields);
 
     const documentsByType = groupBy(documents, '_type');
     for (const [type, documents] of Object.entries(documentsByType)) {
@@ -263,10 +260,7 @@ export class MongoDBStore extends Registerable() {
     const collection = await this._getCollection(type);
 
     const query = buildQuery(filter);
-    let projection;
-    if (fields !== undefined) {
-      projection = buildProjection(fields);
-    }
+    const projection = buildProjection(fields);
     const options = {projection};
     debug(`%s.find(%o, %o)`, type, query, options);
     const cursor = collection.find(query, options);
@@ -385,20 +379,24 @@ function deserializeValue(value) {
 function buildQuery(filter) {
   ow(filter, ow.optional.object);
 
-  if (filter === undefined) {
-    return undefined;
-  }
-
   function build(filter) {
+    if (filter === undefined) {
+      return undefined;
+    }
+
     const query = {};
 
-    for (let [name, value] of Object.entries(filter)) {
+    for (const [name, value] of Object.entries(filter)) {
       if (Array.isArray(value)) {
-        value = {$in: value};
-      } else if (typeof value === 'object') {
-        value = build(value);
+        query[name] = {$in: value};
+      } else if (typeof value === 'object' && value !== null) {
+        // TODO: Support multiple levels of nesting
+        for (const [nestedName, nestedValue] of Object.entries(value)) {
+          query[`${name}.${nestedName}`] = nestedValue;
+        }
+      } else {
+        query[name] = value;
       }
-      query[name] = value;
     }
 
     return query;
@@ -409,7 +407,11 @@ function buildQuery(filter) {
 
 // {a: true, b: {c: true}} => {_type: 1, _id: 1, a: 1, "b._type": 1, "b._id": 1, "b.c": 1}
 function buildProjection(fields) {
-  ow(fields, ow.object);
+  ow(fields, ow.optional.object);
+
+  if (fields === undefined) {
+    return undefined;
+  }
 
   const projection = {};
 
