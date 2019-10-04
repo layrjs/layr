@@ -2,6 +2,7 @@ import {Registerable} from '@liaison/layer';
 import {MongoClient} from 'mongodb';
 import {hasOwnProperty} from '@liaison/util';
 import groupBy from 'lodash/groupBy';
+import isPlainObject from 'lodash/isPlainObject';
 import ow from 'ow';
 import debugModule from 'debug';
 
@@ -197,7 +198,7 @@ export class MongoDBStore extends Registerable() {
           throwIfNotFound,
           throwIfAlreadyExists
         }).updatedDocuments;
-      } else if (typeof value === 'object' && !(value instanceof Date)) {
+      } else if (isPlainObject(value)) {
         updatedValue = this._updateDocument(existingValue, value, {
           throwIfNotFound,
           throwIfAlreadyExists
@@ -379,6 +380,8 @@ function deserializeValue(value) {
 function buildQuery(filter) {
   ow(filter, ow.optional.object);
 
+  // TODO: Support multiple levels of nesting
+
   function build(filter) {
     if (filter === undefined) {
       return undefined;
@@ -388,9 +391,23 @@ function buildQuery(filter) {
 
     for (const [name, value] of Object.entries(filter)) {
       if (Array.isArray(value)) {
-        query[name] = {$in: value};
-      } else if (typeof value === 'object' && value !== null) {
-        // TODO: Support multiple levels of nesting
+        const values = value;
+        if (values.length > 0 && values.every(value => isPlainObject(value))) {
+          for (const value of values) {
+            // eslint-disable-next-line max-depth
+            for (const [nestedName, nestedValue] of Object.entries(value)) {
+              const key = `${name}.${nestedName}`;
+              // eslint-disable-next-line max-depth
+              if (query[key] === undefined) {
+                query[key] = {$in: []};
+              }
+              query[key].$in.push(nestedValue);
+            }
+          }
+        } else {
+          query[name] = {$in: values};
+        }
+      } else if (isPlainObject(value)) {
         for (const [nestedName, nestedValue] of Object.entries(value)) {
           query[`${name}.${nestedName}`] = nestedValue;
         }
