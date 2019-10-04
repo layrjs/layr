@@ -35,7 +35,7 @@ export function route(pattern, options) {
 
       func.isActive = function (params) {
         const path = this.getPath(params);
-        return router.location.pathname === path;
+        return router.getCurrentLocation().pathname === path;
       };
 
       router.applyCustomRouteDecorators(this, func);

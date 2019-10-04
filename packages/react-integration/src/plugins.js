@@ -36,7 +36,7 @@ export function ReactRouterPlugin() {
           }
         };
 
-        const isActive = router.location.pathname === href;
+        const isActive = router.getCurrentLocation().pathname === href;
 
         if (isActive) {
           if (activeClassName) {
