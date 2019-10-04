@@ -394,15 +394,27 @@ function makeStorable(Base) {
         const name = field.getName();
         const finder = field.getFinder();
 
-        if (filter[name] === undefined) {
-          continue;
-        }
-
         if (!finder) {
           continue;
         }
 
-        filter = await finder.call(this, filter);
+        const {[name]: value, ...remainingFilter} = filter;
+
+        if (value === undefined) {
+          continue;
+        }
+
+        let newFilter = await finder.call(this, value);
+
+        if (
+          isIdentity(newFilter) ||
+          (Array.isArray(newFilter) && newFilter.every(item => isIdentity(item)))
+        ) {
+          // The finder returned an $identity shortcut
+          newFilter = {$identity: newFilter};
+        }
+
+        filter = {...remainingFilter, ...newFilter};
       }
 
       return filter;
