@@ -32,7 +32,19 @@ export function view() {
             }
             return Component.call(this, props, context);
           };
-          BoundComponent.displayName = name;
+
+          let displayName;
+
+          if (typeof this === 'function') {
+            displayName = this.$getRegisteredName();
+          } else {
+            displayName =
+              this.$getRegisteredName() || this.constructor.$getRegisteredName().toLowerCase();
+          }
+
+          displayName += '.' + name;
+
+          BoundComponent.displayName = displayName;
 
           this.__boundComponents[name] = BoundComponent;
         }
