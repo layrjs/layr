@@ -5,6 +5,7 @@ import uniq from 'lodash/uniq';
 import ow from 'ow';
 
 import {StorableField} from './storable-field';
+import {StorableMethod} from './storable-method';
 import {Cache} from './cache';
 
 const DEFAULT_CACHE_SIZE = 1000;
@@ -26,6 +27,8 @@ export const Storable = (Base = Entity, {storeName} = {}) => {
 function makeStorable(Base) {
   const Storable = class Storable extends Base {
     static $Field = StorableField;
+
+    static $Method = StorableMethod;
 
     static async $open() {
       this.__cache = new Cache(this, {size: DEFAULT_CACHE_SIZE});
@@ -390,9 +393,9 @@ function makeStorable(Base) {
         return undefined;
       }
 
-      for (const field of this.prototype.$getFields()) {
-        const name = field.getName();
-        const finder = field.getFinder();
+      for (const property of this.prototype.$getProperties()) {
+        const name = property.getName();
+        const finder = property.getFinder();
 
         if (!finder) {
           continue;
@@ -553,6 +556,11 @@ function makeStorable(Base) {
   // Make existing fields storable
   for (const name of Base.prototype.$getFieldNames()) {
     Storable.prototype.$setField(name);
+  }
+
+  // Make existing methods storable
+  for (const name of Base.prototype.$getMethodNames()) {
+    Storable.prototype.$setMethod(name);
   }
 
   return Storable;

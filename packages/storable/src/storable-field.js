@@ -1,12 +1,17 @@
 import {Field} from '@liaison/model';
 import ow from 'ow';
 
-export class StorableField extends Field {
-  constructor(parent, name, type, {isUnique = false, finder, ...otherOptions} = {}) {
-    ow(isUnique, ow.boolean);
-    ow(finder, ow.optional.function);
+import {StorableProperty} from './storable-property';
 
-    super(parent, name, type, otherOptions);
+export class StorableField extends StorableProperty(Field) {
+  constructor(parent, name, options = {}) {
+    const {isUnique = false, ...unknownOptions} = options;
+
+    super(parent, name, unknownOptions);
+
+    this._options = options;
+
+    ow(isUnique, ow.boolean);
 
     if (isUnique) {
       if (this.isArray()) {
@@ -19,15 +24,9 @@ export class StorableField extends Field {
 
       this._isUnique = true;
     }
-
-    this._finder = finder;
   }
 
   isUnique() {
     return this._isUnique;
-  }
-
-  getFinder() {
-    return this._finder;
   }
 }
