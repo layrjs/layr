@@ -33,6 +33,11 @@ export function route(pattern, options) {
         router.redirect(path);
       };
 
+      func.reload = function (params, {replace = false} = {}) {
+        const path = this.getPath(params);
+        router.reload(path, {replace});
+      };
+
       func.isActive = function (params) {
         const path = this.getPath(params);
         return router.getCurrentLocation().pathname === path;

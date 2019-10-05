@@ -22,13 +22,21 @@ export class BrowserRouter extends Observable(Registerable()) {
     return window.location;
   }
 
-  navigate(url, {replace = false} = {}) {
-    window.history[`${replace ? 'replace' : 'push'}State`](null, null, url);
-    this.$notify();
+  navigate(url, {replace = false, reload = false} = {}) {
+    if (!reload) {
+      window.history[replace ? 'replaceState' : 'pushState'](null, null, url);
+      this.$notify();
+    } else {
+      window.location[replace ? 'replace' : 'assign'](url);
+    }
   }
 
   redirect(url) {
     this.navigate(url, {replace: true});
+  }
+
+  reload(url, {replace = false} = {}) {
+    this.navigate(url, {replace, reload: true});
   }
 
   findRoute(url) {
