@@ -1,12 +1,13 @@
 import {Observable} from '@liaison/observable';
 import {Registerable, Serializable} from '@liaison/layer';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
 import ow from 'ow';
 import isEmpty from 'lodash/isEmpty';
 import {inspect} from 'util';
 
-import {Field} from './field';
+import {Field, isField} from './field';
 import {FieldMask} from './field-mask';
+import {Method, isMethod} from './method';
 
 export class Model extends Observable(Serializable(Registerable())) {
   constructor(object = {}, {isDeserializing} = {}) {
@@ -147,73 +148,156 @@ export class Model extends Observable(Serializable(Registerable())) {
     }
   }
 
-  // === Fields ===
+  // === Properties ===
 
-  static $Field = Field;
+  $getProperty(name, {throwIfNotFound = true} = {}) {
+    const properties = this.__getProperties();
 
-  $getField(name) {
-    const fields = this.__getFields();
+    let property = properties[name];
 
-    let field = fields[name];
-
-    if (!field) {
-      throw new Error(
-        `Field not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
-      );
+    if (!property) {
+      if (throwIfNotFound) {
+        throw new Error(
+          `Property not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
+        );
+      }
+      return undefined;
     }
 
-    if (!hasOwnProperty(fields, name)) {
-      field = field.fork(this);
-      fields[name] = field;
+    if (!hasOwnProperty(properties, name)) {
+      property = property.fork(this);
+      properties[name] = property;
     }
 
-    return field;
+    return property;
   }
 
-  $getFields({filter} = {}) {
+  $setProperty(constructor, name, options = {}) {
+    if (this.$hasProperty(name)) {
+      const existingProperty = this.$getProperty(name);
+      options = {...existingProperty.getOptions(), ...options};
+    }
+
+    const properties = this.__getProperties();
+    const property = new constructor(this, name, options);
+    properties[name] = property;
+
+    return property;
+  }
+
+  $hasProperty(name) {
+    return this.$getProperty(name, {throwIfNotFound: false}) !== undefined;
+  }
+
+  $getProperties({filter} = {}) {
     const model = this;
 
     return {
       * [Symbol.iterator]() {
-        for (const name of model.$getFieldNames()) {
-          const field = model.$getField(name);
+        for (const name of model.$getPropertyNames()) {
+          const property = model.$getProperty(name);
 
-          if (filter && !filter(field)) {
+          if (filter && !filter(property)) {
             continue;
           }
 
-          yield field;
+          yield property;
         }
       }
     };
   }
 
-  $getActiveFields({filter: otherFilter} = {}) {
-    const filter = function (field) {
-      if (!field.isActive()) {
+  $getPropertyNames() {
+    const properties = this.__properties;
+
+    return {
+      * [Symbol.iterator]() {
+        if (properties) {
+          // eslint-disable-next-line guard-for-in
+          for (const name in properties) {
+            yield name;
+          }
+        }
+      }
+    };
+  }
+
+  __getProperties() {
+    if (!this.__properties) {
+      this.__properties = Object.create(null);
+    } else if (!hasOwnProperty(this, '__properties')) {
+      this.__properties = Object.create(this.__properties);
+    }
+
+    return this.__properties;
+  }
+
+  // === Fields ===
+
+  static $Field = Field;
+
+  $getField(name, {throwIfNotFound = true} = {}) {
+    const property = this.$getProperty(name, {throwIfNotFound: false});
+
+    if (!property) {
+      if (throwIfNotFound) {
+        throw new Error(
+          `Field not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
+        );
+      }
+      return undefined;
+    }
+
+    if (!isField(property)) {
+      throw new Error(
+        `Found property is not a field (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
+      );
+    }
+
+    return property;
+  }
+
+  $setField(name, options = {}) {
+    if (this.$hasProperty(name)) {
+      const existingField = this.$getField(name);
+
+      const type = options.type;
+      if (type !== undefined && type !== existingField.getType()) {
+        throw new Error(`Cannot change the type of an existing field (name: '${name}')`);
+      }
+    }
+
+    return this.$setProperty(this.constructor.$Field, name, options);
+  }
+
+  $hasField(name) {
+    return this.$getField(name, {throwIfNotFound: false}) !== undefined;
+  }
+
+  $getFields({filter: otherFilter} = {}) {
+    const filter = function (property) {
+      if (!isField(property)) {
         return false;
       }
 
       if (otherFilter) {
-        return otherFilter(field);
+        return otherFilter(property);
       }
 
       return true;
     };
 
-    return this.$getFields({filter});
+    return this.$getProperties({filter});
   }
 
   $getFieldNames() {
-    const fields = this.__fields;
+    const fields = this.$getFields();
 
     return {
       * [Symbol.iterator]() {
-        if (fields) {
-          // eslint-disable-next-line guard-for-in
-          for (const name in fields) {
-            yield name;
-          }
+        // eslint-disable-next-line guard-for-in
+        for (const field of fields) {
+          yield field.getName();
         }
       }
     };
@@ -242,44 +326,20 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
-  $setField(name, type, options) {
-    if (typeof type !== 'string') {
-      // Let's make 'type' optional to better support field overriding
-      options = type;
-      type = undefined;
-    }
-
-    if (this.$hasField(name)) {
-      const existingField = this.$getField(name);
-
-      if (type === undefined) {
-        type = existingField.getType();
-      } else if (type !== existingField.getType()) {
-        throw new Error(`Cannot change the type of an existing field (name: '${name}')`);
+  $getActiveFields({filter: otherFilter} = {}) {
+    const filter = function (field) {
+      if (!field.isActive()) {
+        return false;
       }
 
-      options = {...existingField.getOptions(), ...options};
-    }
+      if (otherFilter) {
+        return otherFilter(field);
+      }
 
-    const fields = this.__getFields();
-    const field = new this.constructor.$Field(this, name, type, options);
-    fields[name] = field;
+      return true;
+    };
 
-    return field;
-  }
-
-  $hasField(name) {
-    return this.__fields ? name in this.__fields : false;
-  }
-
-  __getFields() {
-    if (!this.__fields) {
-      this.__fields = Object.create(null);
-    } else if (!hasOwnProperty(this, '__fields')) {
-      this.__fields = Object.create(this.__fields);
-    }
-
-    return this.__fields;
+    return this.$getFields({filter});
   }
 
   // === Field masks ===
@@ -390,6 +450,72 @@ export class Model extends Observable(Serializable(Registerable())) {
     return result;
   }
 
+  // === Methods ===
+
+  static $Method = Method;
+
+  $getMethod(name, {throwIfNotFound = true} = {}) {
+    const property = this.$getProperty(name, {throwIfNotFound: false});
+
+    if (!property) {
+      if (throwIfNotFound) {
+        throw new Error(
+          `Method not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
+        );
+      }
+      return undefined;
+    }
+
+    if (!isMethod(property)) {
+      throw new Error(
+        `Found property is not a method (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
+      );
+    }
+
+    return property;
+  }
+
+  $setMethod(name, options = {}) {
+    if (this.$hasProperty(name)) {
+      this.$getMethod(name); // Make sure the property is a method
+    }
+
+    return this.$setProperty(this.constructor.$Method, name, options);
+  }
+
+  $hasMethod(name) {
+    return this.$getMethod(name, {throwIfNotFound: false}) !== undefined;
+  }
+
+  $getMethods({filter: otherFilter} = {}) {
+    const filter = function (property) {
+      if (!isMethod(property)) {
+        return false;
+      }
+
+      if (otherFilter) {
+        return otherFilter(property);
+      }
+
+      return true;
+    };
+
+    return this.$getProperties({filter});
+  }
+
+  $getMethodNames() {
+    const methods = this.$getMethods();
+
+    return {
+      * [Symbol.iterator]() {
+        // eslint-disable-next-line guard-for-in
+        for (const method of methods) {
+          yield method.getName();
+        }
+      }
+    };
+  }
+
   // === Utilities ===
 
   get super() {
@@ -429,15 +555,36 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 }
 
+// === Utilities ===
+
+export function isModel(object) {
+  return typeof object?.constructor?.$isModel === 'function';
+}
+
 // === Decorators ===
 
-export function field(type, options) {
+export function field(type, options = {}) {
+  // Let's make 'type' optional to better support field overriding
+  if (typeof type === 'string') {
+    options = {...options, type};
+  } else {
+    options = type;
+  }
+
   return function (target, name, descriptor) {
+    if (!isModel(target)) {
+      throw new Error(`@field() target must be a model`);
+    }
+
+    if (!(name && descriptor)) {
+      throw new Error(`@field() must be used to decorate attributes`);
+    }
+
     if (descriptor.initializer) {
       options = {...options, default: descriptor.initializer};
     }
 
-    target.$setField(name, type, options);
+    target.$setField(name, options);
 
     return {
       configurable: false,
@@ -454,8 +601,27 @@ export function field(type, options) {
   };
 }
 
-// === Utilities ===
+export function method(options = {}) {
+  return function (target, name, descriptor) {
+    if (!(isModel(target) || isModel(target.prototype))) {
+      throw new Error(`@method() target must be a model`);
+    }
 
-export function isModel(object) {
-  return typeof object?.constructor?.$isModel === 'function';
+    if (!(name && descriptor)) {
+      throw new Error(`@method() must be used to decorate methods`);
+    }
+
+    if (descriptor.initializer !== undefined) {
+      // @method() is used on an method defined in a parent class
+      // Examples: `@method() $get;` or `@method() static $get;`
+      descriptor = getInheritedPropertyDescriptor(target, name);
+      if (descriptor === undefined) {
+        throw new Error(`Cannot use @method() on an undefined property (name: '${name}')`);
+      }
+    }
+
+    target.$setMethod(name, options);
+
+    return descriptor;
+  };
 }

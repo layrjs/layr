@@ -1,5 +1,4 @@
 import {FieldMask} from './field-mask';
-import {isExposed} from '@liaison/layer';
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
 import {mapFromOneOrMany} from '@liaison/util';
 import isEmpty from 'lodash/isEmpty';
@@ -7,35 +6,25 @@ import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';
 import ow from 'ow';
 
+import {Property} from './property';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
-export class Field {
-  constructor(parent, name, type, options = {}) {
-    if (typeof name !== 'string' || !name) {
-      throw new Error("'name' field parameter is missing or invalid");
-    }
+export class Field extends Property {
+  constructor(parent, name, options = {}) {
+    let {type, default: defaultValue, validators = [], ...unknownOptions} = options;
 
-    if (typeof type !== 'string' || !type) {
-      throw new Error("'type' field parameter is missing or invalid");
-    }
+    super(parent, name, unknownOptions);
 
-    let {default: defaultValue, validators = [], ...unknownOptions} = options;
-    const unknownOption = Object.keys(unknownOptions)[0];
-    if (unknownOption) {
-      throw new Error(`'${unknownOption}' option is unknown (field: '${name}')`);
-    }
+    this._options = options;
 
-    if (!Array.isArray(validators)) {
-      throw new Error(`'validators' option must be an array (field: '${name}')`);
-    }
+    ow(type, ow.string.nonEmpty);
+    ow(validators, ow.array);
+
     validators = validators.map(validator =>
       mapFromOneOrMany(validator, validator => normalizeValidator(validator, {fieldName: name}))
     );
 
-    this._parent = parent;
-    this._name = name;
     this._type = type;
-    this._options = options;
 
     let scalarType;
     let scalarIsOptional;
@@ -87,22 +76,9 @@ export class Field {
   }
 
   fork(parent) {
-    const forkedField = Object.create(this);
-    forkedField._parent = parent;
+    const forkedField = super.fork(parent);
     forkedField._scalar = this._scalar.fork(forkedField);
     return forkedField;
-  }
-
-  getLayer() {
-    return this._parent.$getLayer();
-  }
-
-  getParent() {
-    return this._parent;
-  }
-
-  getName() {
-    return this._name;
   }
 
   getType() {
@@ -117,20 +93,12 @@ export class Field {
     return this._arrayIsOptional;
   }
 
-  getOptions() {
-    return this._options;
-  }
-
   getScalar() {
     return this._scalar;
   }
 
   isActive() {
     return this._isActive;
-  }
-
-  isExposed() {
-    return isExposed(this._parent, this._name);
   }
 
   getValue({throwIfInactive = true} = {}) {
@@ -310,6 +278,14 @@ export class Field {
       _typeStack
     });
   }
+
+  static isField(object) {
+    return isField(object);
+  }
+}
+
+export function isField(object) {
+  return typeof object?.constructor?.isField === 'function';
 }
 
 class Scalar {
