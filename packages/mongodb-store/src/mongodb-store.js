@@ -193,12 +193,15 @@ export class MongoDBStore extends Registerable() {
       const existingValue = updatedDocument[name];
       let updatedValue;
 
-      if (Array.isArray(value)) {
+      if (
+        Array.isArray(value) &&
+        value.every(value => isPlainObject(value) && value._id !== undefined)
+      ) {
         updatedValue = this._updateDocuments(existingValue, value, {
           throwIfNotFound,
           throwIfAlreadyExists
         }).updatedDocuments;
-      } else if (isPlainObject(value)) {
+      } else if (isPlainObject(value) && value._id !== undefined) {
         updatedValue = this._updateDocument(existingValue, value, {
           throwIfNotFound,
           throwIfAlreadyExists
