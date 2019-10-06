@@ -68,6 +68,22 @@ export class BrowserRouter extends Observable(Registerable()) {
     return this.getRoute(this.getCurrentLocation());
   }
 
+  getParams(url) {
+    const result = this.findRoute(url);
+
+    if (!result) {
+      throw new Error(`Route not found (URL: '${url}')`);
+    }
+
+    const {params} = result;
+
+    return params;
+  }
+
+  getCurrentParams() {
+    return this.getParams(this.getCurrentLocation());
+  }
+
   callRoute(url, {fallback} = {}) {
     const result = this.findRoute(url);
 
