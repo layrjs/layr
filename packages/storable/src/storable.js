@@ -1,5 +1,4 @@
-import {Entity, FieldMask, isModel, isIdentity} from '@liaison/model';
-import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
+import {FieldMask, isModel, isIdentity} from '@liaison/model';
 import difference from 'lodash/difference';
 import uniq from 'lodash/uniq';
 import ow from 'ow';
@@ -10,7 +9,7 @@ import {Cache} from './cache';
 
 const DEFAULT_CACHE_SIZE = 1000;
 
-export const Storable = (Base = Entity, {storeName} = {}) => {
+export const Storable = (Base, {storeName} = {}) => {
   let Storable;
 
   if (!isStorable(Base.prototype)) {
@@ -232,7 +231,7 @@ function makeStorable(Base) {
     }
 
     static async __loadFromStore(storables, {fields, throwIfNotFound}) {
-      fields = this.prototype.$createFieldMaskForStorableFields(fields);
+      fields = this.prototype.$createFieldMaskForNonVolatileFields(fields);
 
       let serializedStorables = storables.map(storable => storable.$serializeReference());
 
@@ -314,7 +313,7 @@ function makeStorable(Base) {
     }
 
     static async __saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists}) {
-      const fields = this.prototype.$createFieldMaskForStorableFields();
+      const fields = this.prototype.$createFieldMaskForNonVolatileFields();
 
       for (const storable of storables) {
         storable.$validate({fields});
@@ -424,7 +423,7 @@ function makeStorable(Base) {
     }
 
     static async __findInStore({filter, sort, skip, limit, fields}) {
-      fields = this.prototype.$createFieldMaskForStorableFields(fields);
+      fields = this.prototype.$createFieldMaskForNonVolatileFields(fields);
 
       const store = this.$getStore();
       const serializedFilter = this.__serializeFilter(filter);
@@ -523,27 +522,16 @@ function makeStorable(Base) {
 
     // === Storable fields ===
 
-    $addStorableField(name) {
-      if (!this.__storableFields) {
-        this.__storableFields = new Map();
-      } else if (!hasOwnProperty(this, '__storableFields')) {
-        this.__storableFields = new Map(this.__storableFields);
-      }
-      this.__storableFields.set(name, {name});
-    }
-
-    $createFieldMaskForStorableFields(fields = true) {
-      return this.$createFieldMask(fields, {
-        filter(field) {
-          return field.getParent().__storableFields?.has(field.getName());
-        }
-      });
-    }
-
-    // === Unique fields ===
-
     $getUniqueFields() {
       return this.$getFields({filter: field => field.isUnique()});
+    }
+
+    $createFieldMaskForNonVolatileFields(fields = true) {
+      return this.$createFieldMask(fields, {
+        filter(field) {
+          return !field.isVolatile();
+        }
+      });
     }
 
     // === Utilities ===
@@ -564,32 +552,6 @@ function makeStorable(Base) {
   }
 
   return Storable;
-}
-
-// === Decorators ===
-
-export function store() {
-  return function (target, name, descriptor) {
-    if (!isStorable(target)) {
-      throw new Error(`@store() target must be a storable`);
-    }
-    if (!(name && descriptor)) {
-      throw new Error(`@store() must be used to decorate properties`);
-    }
-
-    if (descriptor.initializer !== undefined) {
-      // @store() is used on an property defined in a parent class
-      // Example: `@store() title;`
-      descriptor = getInheritedPropertyDescriptor(target, name);
-      if (descriptor === undefined) {
-        throw new Error(`Cannot use @store() with an undefined property (name: '${name}')`);
-      }
-    }
-
-    target.$addStorableField(name);
-
-    return descriptor;
-  };
 }
 
 // === Utilities ===

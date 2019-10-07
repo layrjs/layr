@@ -1,9 +1,9 @@
 import {Layer} from '@liaison/layer';
-import {Model, Identity, field} from '@liaison/model';
+import {Model, Identity, Entity, field} from '@liaison/model';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
-import {Storable, store} from '../../..';
+import {Storable} from '../../..';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 3 * 60 * 1000; // 3 minutes
 
@@ -24,14 +24,14 @@ afterEach(async () => {
 
 describe('Storable', () => {
   test('CRUD operations', async () => {
-    class Movie extends Storable(undefined, {storeName: 'mongoDBStore'}) {
-      @store() @field('string') title;
+    class Movie extends Storable(Entity, {storeName: 'mongoDBStore'}) {
+      @field('string') title;
 
-      @store() @field('number?') year;
+      @field('number?') year;
 
-      @store() @field('string', {isUnique: true}) reference;
+      @field('string', {isUnique: true}) reference;
 
-      @field('string?') secret;
+      @field('string?', {isVolatile: true}) secret;
     }
 
     const rootLayer = new Layer({Movie, mongoDBStore});
@@ -41,7 +41,7 @@ describe('Storable', () => {
     let movie = new layer.Movie({title: 'Inception', year: 2010, secret: 'abc123'});
     const id = movie.id;
 
-    const storableFields = movie.$createFieldMaskForStorableFields();
+    const storableFields = movie.$createFieldMaskForNonVolatileFields();
     expect(storableFields.serialize()).toEqual({title: true, year: true, reference: true});
 
     // === Create ===
@@ -315,12 +315,12 @@ describe('Storable', () => {
   });
 
   test('Finding storables', async () => {
-    class Movie extends Storable(undefined, {storeName: 'store'}) {
-      @store() @field('string') title;
+    class Movie extends Storable(Entity, {storeName: 'store'}) {
+      @field('string') title;
 
-      @store() @field('string') genre;
+      @field('string') genre;
 
-      @store() @field('string') country;
+      @field('string') country;
     }
 
     const rootLayer = new Layer({Movie, store: mongoDBStore});
@@ -429,18 +429,18 @@ describe('Storable', () => {
   });
 
   test('Referenced storables', async () => {
-    // TODO: Make this test failed when fields are marked as not storable
+    // TODO: Make this test failed when fields are marked as volatile
 
-    class Movie extends Storable(undefined, {storeName: 'mongoDBStore'}) {
-      @store() @field('string') title;
+    class Movie extends Storable(Entity, {storeName: 'mongoDBStore'}) {
+      @field('string') title;
 
-      @store() @field('Director') director;
+      @field('Director') director;
     }
 
-    class Director extends Storable(undefined, {storeName: 'mongoDBStore'}) {
-      @store() @field('string') fullName;
+    class Director extends Storable(Entity, {storeName: 'mongoDBStore'}) {
+      @field('string') fullName;
 
-      @store() @field('string?') country;
+      @field('string?') country;
     }
 
     const rootLayer = new Layer({Movie, Director, mongoDBStore});

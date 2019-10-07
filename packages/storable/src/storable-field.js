@@ -5,7 +5,7 @@ import {StorableProperty} from './storable-property';
 
 export class StorableField extends StorableProperty(Field) {
   constructor(parent, name, options = {}) {
-    const {isUnique = false, ...unknownOptions} = options;
+    const {isUnique = false, isVolatile = false, ...unknownOptions} = options;
 
     super(parent, name, unknownOptions);
 
@@ -21,12 +21,18 @@ export class StorableField extends StorableProperty(Field) {
       if (this.getScalar().isOptional()) {
         throw new Error(`A unique field cannot be optional (field: '${name}')`);
       }
-
-      this._isUnique = true;
     }
+
+    this._isUnique = isUnique;
+
+    this._isVolatile = isVolatile;
   }
 
   isUnique() {
     return this._isUnique;
+  }
+
+  isVolatile() {
+    return this._isVolatile;
   }
 }
