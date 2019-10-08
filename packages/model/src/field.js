@@ -1,6 +1,6 @@
 import {FieldMask} from './field-mask';
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
-import {mapFromOneOrMany} from '@liaison/util';
+import {mapFromOneOrMany, hasOwnProperty} from '@liaison/util';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';
@@ -109,7 +109,17 @@ export class Field extends Property {
       return undefined;
     }
 
-    return this._value;
+    let value = this._value;
+
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (!hasOwnProperty(this, '_value')) {
+      value = this._forkValue();
+    }
+
+    return value;
   }
 
   setValue(value, {source} = {}) {
@@ -136,6 +146,10 @@ export class Field extends Property {
     }
 
     return value;
+  }
+
+  _forkValue() {
+    return mapFromOneOrMany(this._value, value => this._scalar._forkValue(value));
   }
 
   getValues() {
@@ -310,6 +324,22 @@ class Scalar {
     return this._isOptional;
   }
 
+  _forkValue(value) {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    const primitiveType = getPrimitiveType(this._type);
+    if (primitiveType) {
+      if (primitiveType.fork) {
+        return primitiveType.fork(value);
+      }
+      return value;
+    }
+
+    return value.$forkInto(this._field.getLayer());
+  }
+
   checkValue(value) {
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
@@ -457,11 +487,33 @@ const _primitiveTypes = {
     }
   },
   object: {
+    fork(value) {
+      const _fork = object => {
+        object = Object.create(this);
+
+        for (const [name, value] of Object.entries(object)) {
+          if (Array.isArray(value)) {
+            object[name] = value.map(value => _fork(value));
+          } else if (value instanceof Date) {
+            object[name] = new Date(value);
+          } else if (typeof value === 'object' && value !== null) {
+            object[name] = _fork(value);
+          }
+        }
+
+        return object;
+      };
+
+      return _fork(value);
+    },
     check(value) {
       return isPlainObject(value);
     }
   },
   Date: {
+    fork(value) {
+      return new Date(value);
+    },
     check(value) {
       return value instanceof Date;
     },

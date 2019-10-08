@@ -18,8 +18,6 @@ describe('Entity', () => {
     const layer = new Layer({Movie});
     await layer.open();
 
-    // With a new movie
-
     const newMovie = new layer.Movie({id: 'm1', title: 'Inception', year: 2010});
     expect(newMovie.id).toBe('m1');
     expect(newMovie.title).toBe('Inception');
@@ -42,16 +40,6 @@ describe('Entity', () => {
 
     layer.Movie.$deserialize({_id: 'm1', year: null});
     expect(newMovie.year).toBeUndefined();
-
-    // With a deserialized movie
-
-    // const oldMovie = layer.Movie.$deserialize({_id: 'm2', title: 'Inception', year: 2010});
-    // expect(oldMovie.id).toBe('m2');
-    // expect(oldMovie.title).toBe('Inception');
-    // expect(oldMovie.year).toBe(2010);
-
-    // const oldMovie2 = layer.Movie.$deserialize({_id: 'm2'});
-    // expect(oldMovie2).toBe(oldMovie); // Since the movie was in the identity map, we got the same object
   });
 
   test('Serialization', async () => {
@@ -90,6 +78,69 @@ describe('Entity', () => {
       _type: 'Director',
       _id: 'd1',
       fullName: 'Christopher Nolan'
+    });
+  });
+
+  test('Forking', async () => {
+    class Movie extends Entity {
+      @field('string') title;
+
+      @field('number') year;
+
+      @field('Director') director;
+    }
+
+    class Director extends Entity {
+      @field('string') fullName;
+    }
+
+    const layer = new Layer({Movie, Director});
+    await layer.open();
+
+    const director = layer.Director.$deserialize({_id: 'd1', fullName: 'Christopher Nolan'});
+    const movie = layer.Movie.$deserialize({
+      _id: 'm1',
+      title: 'Inception',
+      year: 2010,
+      director: director.$serialize()
+    });
+
+    expect(movie.constructor.$layer === layer);
+
+    const forkedLayer = layer.fork();
+    const forkedMovie = forkedLayer.Movie.$deserialize({_id: 'm1'});
+
+    expect(forkedMovie).not.toBe(movie);
+    expect(forkedMovie.constructor).toBe(forkedLayer.Movie);
+    expect(forkedMovie).toBeInstanceOf(forkedLayer.Movie);
+    expect(forkedMovie).toBeInstanceOf(layer.Movie);
+    expect(forkedMovie.constructor.$layer).toBe(forkedLayer);
+
+    expect(forkedMovie.title).toBe('Inception');
+    forkedMovie.title = 'Inception 2';
+    expect(forkedMovie.title).toBe('Inception 2');
+    expect(movie.title).toBe('Inception');
+
+    expect(forkedMovie.$serialize()).toEqual({
+      _type: 'Movie',
+      _id: 'm1',
+      title: 'Inception 2',
+      year: 2010,
+      director: {_type: 'Director', _id: 'd1', _ref: true}
+    });
+
+    const forkedDirector = forkedMovie.director;
+    expect(forkedDirector).not.toBe(director);
+
+    expect(forkedDirector.fullName).toBe('Christopher Nolan');
+    forkedDirector.fullName = 'C. Nolan';
+    expect(forkedDirector.fullName).toBe('C. Nolan');
+    expect(director.fullName).toBe('Christopher Nolan');
+
+    expect(forkedDirector.$serialize()).toEqual({
+      _type: 'Director',
+      _id: 'd1',
+      fullName: 'C. Nolan'
     });
   });
 });

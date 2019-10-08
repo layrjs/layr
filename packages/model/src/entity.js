@@ -41,23 +41,40 @@ export class Entity extends Identity {
 
   static $getInstance(object, _previousInstance) {
     const id = object?._id;
+
     if (id === undefined) {
       return undefined;
     }
-    return this.__getInstances().get(id);
+
+    const instances = this.__getInstances();
+
+    let instance = instances[id];
+
+    if (instance && !hasOwnProperty(instances, id)) {
+      instance = instance.__fork(this);
+      instances[id] = instance;
+    }
+
+    return instance;
   }
 
   static $setInstance(instance) {
     const id = instance?._id;
+
     if (id === undefined) {
       return;
     }
-    this.__getInstances().set(id, instance);
+
+    const instances = this.__getInstances();
+
+    instances[id] = instance;
   }
 
   static __getInstances() {
-    if (!hasOwnProperty(this, '__instances')) {
+    if (!this.__instances) {
       this.__instances = new Map();
+    } else if (!hasOwnProperty(this, '__instances')) {
+      this.__instances = Object.create(this.__instances);
     }
     return this.__instances;
   }
