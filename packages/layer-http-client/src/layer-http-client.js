@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import {hasOwnProperty} from '@liaison/util';
+import nanoid from 'nanoid';
 import debugModule from 'debug';
 
 const debug = debugModule('liaison:layer-http-client');
@@ -36,6 +37,9 @@ export class LayerHTTPClient {
             throw new Error('An error occurred while introspecting the remote layer');
           }
           introspection = await response.json();
+          if (introspection.name === undefined) {
+            introspection.name = nanoid(10);
+          }
           debug(`Remote layer introspected (URL: '${url}')`);
 
           isOpen = true;
@@ -52,14 +56,6 @@ export class LayerHTTPClient {
 
         isOpen() {
           return isOpen === true;
-        },
-
-        getId() {
-          if (!this.isOpen()) {
-            throw new Error(`Cannot get the id of a closed layer proxy`);
-          }
-
-          return introspection.id;
         },
 
         getName() {

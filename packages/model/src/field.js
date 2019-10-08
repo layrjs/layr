@@ -189,7 +189,7 @@ export class Field extends Property {
   getSource() {
     let source = this._source;
     if (!source) {
-      source = this.getLayer().getId();
+      source = this.getLayer().getName();
     }
     return source;
   }

@@ -3,6 +3,7 @@ import nanoid from 'nanoid';
 import {hasOwnProperty} from '@liaison/util';
 import {invokeQuery} from '@deepr/runtime';
 import {syncOrAsync} from '@deepr/util';
+import ow from 'ow';
 import debugModule from 'debug';
 
 import {isRegisterable, isExposed} from './registerable';
@@ -22,21 +23,11 @@ export class Layer {
       this.register(registerables);
     }
 
-    if (name !== undefined) {
-      this.setName(name);
-    }
+    this.setName(name);
 
     if (parent !== undefined) {
       this.setParent(parent);
     }
-  }
-
-  getId() {
-    if (!this._id) {
-      this._id = nanoid();
-    }
-
-    return this._id;
   }
 
   getName() {
@@ -44,11 +35,20 @@ export class Layer {
   }
 
   setName(name) {
-    if (typeof name !== 'string' || name === '') {
-      throw new Error(`Expected a non-empty string for the name of the layer`);
+    ow(name, ow.optional.string.nonEmpty);
+
+    if (name !== undefined) {
+      this._name = name;
+      this._nameHasBeenGenerated = false;
+      return;
     }
 
-    this._name = name;
+    this._name = nanoid(10);
+    this._nameHasBeenGenerated = true;
+  }
+
+  nameHasBeenGenerated() {
+    return this._nameHasBeenGenerated;
   }
 
   // === Registration ===
@@ -209,8 +209,7 @@ export class Layer {
 
   introspect() {
     const introspection = {
-      id: this.getId(),
-      name: this.getName(),
+      name: !this.nameHasBeenGenerated() ? this.getName() : undefined,
       items: {}
     };
 
@@ -341,8 +340,8 @@ export class Layer {
 
   sendQuery(query) {
     const parent = this.getParent();
-    const source = this.getId();
-    const target = parent.getId();
+    const source = this.getName();
+    const target = parent.getName();
 
     query = this.serialize(query, {target});
     const items = this._serializeItems({isSending: true});
@@ -356,7 +355,7 @@ export class Layer {
   }
 
   receiveQuery({query, items, source} = {}) {
-    const target = this.getId();
+    const target = this.getName();
 
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
     this._deserializeItems(items, {source, isReceiving: true});

@@ -15,7 +15,6 @@ describe('Layer', () => {
 
     const layer = new Layer({Item, Movie}, {name: 'layer'});
 
-    expect(layer.getId().length).toBeGreaterThanOrEqual(10);
     expect(layer.getName()).toBe('layer');
     expect(Movie.$getLayer()).toBe(layer);
     expect(Movie.$hasLayer()).toBe(true);
@@ -63,8 +62,6 @@ describe('Layer', () => {
     class Trailer extends Item {}
 
     const anotherLayer = new Layer({Trailer}, {name: 'anotherLayer'});
-    expect(anotherLayer.getId().length).toBeGreaterThanOrEqual(10);
-    expect(anotherLayer.getId()).not.toBe(layer.getId());
     expect(anotherLayer.getName()).toBe('anotherLayer');
   });
 

@@ -77,7 +77,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
       const layer = this.$getLayer({throwIfNotFound: false});
       const parentLayer = layer?.getParent({throwIfNotFound: false});
-      return !(target === layer?.getId() || target === parentLayer?.getId());
+      return !(target === layer?.getName() || target === parentLayer?.getName());
     };
 
     const rootFieldMask = targetIsLower() ?

@@ -12,9 +12,10 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/util": "^0.1.0",
     "cross-fetch": "^3.0.4",
-    "debug": "^4.1.1"
+    "debug": "^4.1.1",
+    "@liaison/util": "^0.1.0",
+    "nanoid": "^2.1.2"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

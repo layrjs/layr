@@ -1,6 +1,6 @@
-import ow from 'ow';
 import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
 import {syncOrAsync} from '@deepr/util';
+import ow from 'ow';
 
 import {isSerializable} from './serializable';
 import {MissingPropertyEmitter} from './missing-property-emitter';
