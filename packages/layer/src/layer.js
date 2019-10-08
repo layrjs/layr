@@ -160,7 +160,7 @@ export class Layer {
 
     if (!hasOwnProperty(this._registerables, name)) {
       // Since the layer has been forked, the registerable must be forked as well
-      registerable = registerable.__fork(this);
+      registerable = registerable.__fork();
       registerable.$setLayer(this);
       this._registerables[name] = registerable;
     }

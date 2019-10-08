@@ -69,11 +69,11 @@ describe('Layer', () => {
   });
 
   test('Forking', async () => {
-    class Store extends Registerable() {}
+    class Store extends Serializable(Registerable()) {}
 
     const store = new Store();
 
-    const layer = new Layer({Store, store});
+    const layer = new Layer({store});
     await layer.open();
 
     const sublayer = layer.fork();

@@ -98,16 +98,29 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return undefined;
     }
 
-    static $fork({targetLayer} = {}) {
-      if (targetLayer === undefined) {
-        targetLayer = this.$getLayer().fork();
-      }
-
-      return targetLayer.get(this.$getRegisteredName());
+    static $fork() {
+      const forkedLayer = this.$getLayer().fork();
+      return this.$forkInto(forkedLayer);
     }
 
-    static __fork(_targetLayer) {
-      return class extends this {};
+    static $forkInto(targetLayer) {
+      const registeredName = this.$getRegisteredName();
+      if (registeredName) {
+        return targetLayer.get(registeredName);
+      }
+
+      throw new Error('Cannot fork a registerable that is not registered');
+    }
+
+    static __fork() {
+      const Base = this;
+      return class extends Base {
+        static [Symbol.hasInstance](instance) {
+          // Since we are forking instances with Object.create(),
+          // let's make them believe they are instance of the forked class
+          return instance instanceof Base;
+        }
+      };
     }
 
     static async $open() {
@@ -264,31 +277,41 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       });
     }
 
-    $fork({targetLayer} = {}) {
-      if (targetLayer === undefined) {
-        targetLayer = this.$getLayer().fork();
-      }
+    $fork() {
+      const forkedLayer = this.$getLayer().fork();
+      return this.$forkInto(forkedLayer);
+    }
 
+    $forkInto(targetLayer) {
       const registeredName = this.$getRegisteredName();
       if (registeredName) {
         return targetLayer.get(registeredName);
       }
 
-      return this.__fork(targetLayer);
-    }
-
-    __fork(targetLayer) {
-      if (isSerializable(this)) {
-        if (this.$isRegistered()) {
-          const fork = Object.create(this);
-          fork.$deserialize(this.$serialize());
-          return fork;
+      const constructorRegisteredName = this.constructor.$getRegisteredName();
+      if (constructorRegisteredName) {
+        const forkedConstructor = targetLayer.get(constructorRegisteredName);
+        let fork = forkedConstructor.$getInstance(this);
+        if (!fork) {
+          fork = this.__fork(forkedConstructor);
         }
-
-        return targetLayer.deserialize(this.$serialize());
+        return fork;
       }
 
-      return Object.create(this);
+      throw new Error('Cannot fork a registerable that is not registered');
+    }
+
+    __fork(forkedConstructor) {
+      // Changing the constructor sounds a bit hacky
+      // TODO: Consider doing deserialize(serialize()) instead
+
+      const fork = Object.create(this);
+
+      if (forkedConstructor) {
+        fork.constructor = forkedConstructor;
+      }
+
+      return fork;
     }
 
     $merge(fork) {
