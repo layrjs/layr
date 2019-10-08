@@ -81,8 +81,8 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
 
     const rootFieldMask = targetIsLower() ?
-      this.$createFieldMaskForExposedFields(fields) :
-      this.$createFieldMask(fields);
+      this.$createFieldMaskForExposedFields({fields}) :
+      this.$createFieldMask({fields});
 
     const serializedFields = {};
 
@@ -107,7 +107,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   $deserialize(object = {}, {source, fields} = {}) {
     super.$deserialize(object);
 
-    const rootFieldMask = this.$createFieldMask(fields);
+    const rootFieldMask = this.$createFieldMask({fields});
     let rootMissingFields;
     const isNew = this.$isNew();
 
@@ -304,7 +304,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getFieldValues({fields, filter} = {}) {
-    const rootFieldMask = this.$createFieldMask(fields, {includeReferencedEntities: true});
+    const rootFieldMask = this.$createFieldMask({fields, includeReferencedEntities: true});
 
     const model = this;
 
@@ -344,7 +344,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Field masks ===
 
-  $createFieldMask(fields = true, {filter, includeReferencedEntities = false} = {}) {
+  $createFieldMask({fields = true, filter, includeReferencedEntities = false} = {}) {
     // TODO: Consider memoizing
 
     if (FieldMask.isFieldMask(fields)) {
@@ -390,16 +390,27 @@ export class Model extends Observable(Serializable(Registerable())) {
     return normalizedFieldMask;
   }
 
-  $createFieldMaskForActiveFields() {
-    return this.$createFieldMask(true, {
+  $createFieldMaskForActiveFields({fields = true} = {}) {
+    return this.$createFieldMask({
+      fields,
       filter(field) {
         return field.isActive();
       }
     });
   }
 
-  $createFieldMaskForExposedFields(fields = true) {
-    return this.$createFieldMask(fields, {
+  $createFieldMaskForSource(source, {fields = true} = {}) {
+    return this.$createFieldMask({
+      fields,
+      filter(field) {
+        return field.getSource() === source;
+      }
+    });
+  }
+
+  $createFieldMaskForExposedFields({fields = true} = {}) {
+    return this.$createFieldMask({
+      fields,
       filter(field) {
         return field.isExposed();
       }
@@ -426,7 +437,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getFailedValidators({fields} = {}) {
-    const rootFieldMask = this.$createFieldMask(fields);
+    const rootFieldMask = this.$createFieldMask({fields});
 
     let result;
 
