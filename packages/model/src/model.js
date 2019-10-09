@@ -145,7 +145,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     this.__getSources()[source] = true;
   }
 
-  $hasSource(source) {
+  $hadSource(source) {
     source = this.__normalizeSource(source);
     return this.__getSources()[source] === true;
   }
