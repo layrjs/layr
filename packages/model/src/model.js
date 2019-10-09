@@ -70,21 +70,9 @@ export class Model extends Observable(Serializable(Registerable())) {
   // === Serialization ===
 
   $serialize({target, fields} = {}) {
-    const targetIsLower = () => {
-      if (target === undefined) {
-        return false;
-      }
-
-      const layer = this.$getLayer({throwIfNotFound: false});
-      const parentLayer = layer?.getParent({throwIfNotFound: false});
-      return !(target === layer?.getName() || target === parentLayer?.getName());
-    };
-
-    const rootFieldMask = targetIsLower() ?
-      this.$createFieldMaskForExposedFields({fields}) :
-      this.$createFieldMask({fields});
-
     const serializedFields = {};
+
+    const rootFieldMask = this.$createFieldMask({fields});
 
     for (const field of this.$getActiveFields()) {
       const name = field.getName();
