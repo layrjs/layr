@@ -676,7 +676,7 @@ describe('Model', () => {
     });
   });
 
-  test('Field exposition', async () => {
+  test.skip('Field exposition', async () => {
     class BaseMovie extends Model {
       @field('string') title;
 

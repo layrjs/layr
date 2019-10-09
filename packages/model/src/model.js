@@ -95,6 +95,8 @@ export class Model extends Observable(Serializable(Registerable())) {
   $deserialize(object = {}, {source, fields} = {}) {
     super.$deserialize(object);
 
+    this.$addSource(source);
+
     const rootFieldMask = this.$createFieldMask({fields});
     let rootMissingFields;
     const isNew = this.$isNew();
@@ -134,6 +136,34 @@ export class Model extends Observable(Serializable(Registerable())) {
     if (previousInstance?.constructor === this) {
       return previousInstance;
     }
+  }
+
+  // === Sources ===
+
+  $addSource(source) {
+    source = this.__normalizeSource(source);
+    this.__getSources()[source] = true;
+  }
+
+  $hasSource(source) {
+    source = this.__normalizeSource(source);
+    return this.__getSources()[source] === true;
+  }
+
+  __normalizeSource(source = '__self__') {
+    if (source !== '__self__' && source === this.$getLayer().getName()) {
+      source = '__self__';
+    }
+    return source;
+  }
+
+  __getSources() {
+    if (this.__sources === undefined) {
+      this.__sources = Object.create(null);
+    } else if (!hasOwnProperty(this, '__sources')) {
+      this.__sources = Object.create(this.__sources);
+    }
+    return this.__sources;
   }
 
   // === Properties ===

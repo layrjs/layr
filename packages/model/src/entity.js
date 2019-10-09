@@ -70,6 +70,18 @@ export class Entity extends Identity {
     instances[id] = instance;
   }
 
+  static $deleteInstance(instance) {
+    const id = instance?._id;
+
+    if (id === undefined) {
+      return;
+    }
+
+    const instances = this.__getInstances();
+
+    instances[id] = undefined;
+  }
+
   static __getInstances() {
     if (!this.__instances) {
       this.__instances = new Map();
