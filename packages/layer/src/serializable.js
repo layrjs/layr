@@ -32,16 +32,11 @@ export const Serializable = (Base = Object) =>
       return this.$serialize();
     }
 
-    static $instantiate(object, {previousInstance} = {}) {
+    static $deserialize(object, {previousInstance, ...otherOptions} = {}) {
       let instance = this.$getInstance(object, previousInstance);
       if (!instance) {
         instance = new this(object, {isDeserializing: true});
       }
-      return instance;
-    }
-
-    static $deserialize(object, {previousInstance, ...otherOptions} = {}) {
-      const instance = this.$instantiate(object, {previousInstance});
       instance.$deserialize(object, otherOptions);
       return instance;
     }
