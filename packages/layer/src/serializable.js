@@ -1,10 +1,9 @@
 export const Serializable = (Base = Object) =>
   class Serializable extends Base {
-    constructor(object, {isDeserializing} = {}) {
+    constructor(object) {
       super(object);
-      if (!isDeserializing) {
-        this.__isNew = true;
-      }
+
+      this.__isNew = true;
     }
 
     $isNew() {
@@ -35,7 +34,9 @@ export const Serializable = (Base = Object) =>
     static $deserialize(object, {previousInstance, ...otherOptions} = {}) {
       let instance = this.$getInstance(object, previousInstance);
       if (!instance) {
-        instance = new this(object, {isDeserializing: true});
+        instance = Object.create(this.prototype);
+        instance.constructor = this;
+        this.$setInstance(instance);
       }
       instance.$deserialize(object, otherOptions);
       return instance;
@@ -45,7 +46,13 @@ export const Serializable = (Base = Object) =>
       this.__isNew = Boolean(object?._new);
     }
 
-    static $getInstance(_object, _previousInstance) {
+    // eslint-disable-next-line no-unused-vars
+    static $getInstance(object, previousInstance) {
+      // Override to implement an identity map
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    static $setInstance(instance) {
       // Override to implement an identity map
     }
   };

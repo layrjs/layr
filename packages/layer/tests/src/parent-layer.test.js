@@ -11,27 +11,12 @@ class BaseAuthenticator extends Serializable(Registerable()) {
   }
 
   $deserialize({token} = {}) {
+    super.$deserialize();
     this.token = token;
   }
 }
 
 class BaseMovie extends Serializable(Registerable()) {
-  constructor(
-    {title, year, ratingSum = 0, ratingCount = 0, ...object} = {},
-    {isDeserializing} = {}
-  ) {
-    super(object, {isDeserializing});
-
-    if (!isDeserializing) {
-      this.title = title;
-      this.year = year;
-      this.ratingSum = ratingSum;
-      this.ratingCount = ratingCount;
-    }
-
-    this.constructor._instance = this;
-  }
-
   $serialize() {
     return {
       ...super.$serialize(),
@@ -43,6 +28,7 @@ class BaseMovie extends Serializable(Registerable()) {
   }
 
   $deserialize({title, year, ratingSum, ratingCount} = {}) {
+    super.$deserialize();
     this.title = title;
     this.year = year;
     this.ratingSum = ratingSum;
@@ -52,6 +38,11 @@ class BaseMovie extends Serializable(Registerable()) {
   static $getInstance(_object, _previousInstance) {
     // Let's simulate an identity map
     return this._instance;
+  }
+
+  static $setInstance(instance) {
+    // Let's simulate an identity map
+    this._instance = instance;
   }
 
   getAverageRating() {

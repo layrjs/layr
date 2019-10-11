@@ -5,12 +5,8 @@ import isEmpty from 'lodash/isEmpty';
 import {findFromOneOrMany} from '@liaison/util';
 
 export class Identity extends Model {
-  constructor(object = {}, {isDeserializing} = {}) {
-    super(object, {isDeserializing});
-
-    if (isDeserializing) {
-      return;
-    }
+  constructor(object = {}) {
+    super(object);
 
     let id = object.id;
     if (id === undefined) {

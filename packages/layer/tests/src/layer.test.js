@@ -82,11 +82,9 @@ describe('Layer', () => {
 
   test('Serialization', async () => {
     class Movie extends Serializable(Registerable()) {
-      constructor({title, ...object} = {}, {isDeserializing} = {}) {
-        super(object, {isDeserializing});
-        if (!isDeserializing) {
-          this.title = title;
-        }
+      constructor({title, ...object} = {}) {
+        super(object);
+        this.title = title;
       }
 
       $serialize() {

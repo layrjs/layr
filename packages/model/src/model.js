@@ -10,12 +10,8 @@ import {FieldMask} from './field-mask';
 import {Method, isMethod} from './method';
 
 export class Model extends Observable(Serializable(Registerable())) {
-  constructor(object = {}, {isDeserializing} = {}) {
-    super(object, {isDeserializing});
-
-    if (isDeserializing) {
-      return;
-    }
+  constructor(object = {}) {
+    super(object);
 
     for (const field of this.$getFields()) {
       const name = field.getName();
