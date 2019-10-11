@@ -5,9 +5,6 @@ import ow from 'ow';
 
 import {StorableField} from './storable-field';
 import {StorableMethod} from './storable-method';
-import {Cache} from './cache';
-
-const DEFAULT_CACHE_SIZE = 1000;
 
 export const Storable = (Base, {storeName} = {}) => {
   let Storable;
@@ -29,11 +26,7 @@ function makeStorable(Base) {
 
     static $Method = StorableMethod;
 
-    static async $open() {
-      this.__cache = new Cache(this, {size: DEFAULT_CACHE_SIZE});
-    }
-
-    static async $get(keys, {fields, reload, throwIfNotFound = true} = {}) {
+    static async $get(keys, {fields, exclude, reload, throwIfNotFound = true} = {}) {
       if (!Array.isArray(keys)) {
         return (await this.$get([keys], {fields, reload, throwIfNotFound}))[0];
       }
@@ -42,17 +35,22 @@ function makeStorable(Base) {
 
       let storables;
       if (name === 'id') {
-        storables = values.map(value => this.$deserialize({_id: value}));
+        storables = values.map(
+          value => this.$getInstance({_id: value}) || this.$deserialize({_id: value})
+        );
       } else {
-        storables = await this.$getId(name, values, {reload, throwIfNotFound});
+        storables = await this.$getId(name, values, {exclude, reload, throwIfNotFound});
       }
 
       return await this.$load(storables, {fields, reload, throwIfNotFound});
     }
 
-    static async $getId(name, values, {reload, throwIfNotFound}) {
+    static async $getId(name, values, {exclude, reload, throwIfNotFound}) {
+      // TODO: Consider removing this method
+      // It should be possible to use any unique field as primary key
+
       const {storables = [], missingValues = values} = !reload ?
-        this.__cache.find(name, values) :
+        this.__getIdFromMemory(name, values) :
         {};
 
       if (missingValues.length === 0) {
@@ -62,21 +60,75 @@ function makeStorable(Base) {
       let missingStorables;
 
       if (this.$hasStore()) {
-        missingStorables = await this._getIdFromStore(name, missingValues, {throwIfNotFound});
+        missingStorables = await this.__getIdFromStore(name, missingValues, {
+          exclude,
+          throwIfNotFound
+        });
       } else {
-        missingStorables = await super.$getId(name, missingValues, {reload, throwIfNotFound});
+        missingStorables = await super.$getId(name, missingValues, {
+          exclude,
+          reload,
+          throwIfNotFound
+        });
       }
-
-      this.__cache.save(missingStorables);
 
       return [...storables, ...missingStorables];
     }
 
-    static async _getIdFromStore(name, values, {throwIfNotFound}) {
+    static __getIdFromMemory(name, values) {
+      const storables = [];
+      const missingValues = [];
+
+      const storageSource = this.__getStoreOrParentLayerName();
+
+      for (const value of values) {
+        const storable = this.$getInstance({[name]: value}) || this.$deserialize({[name]: value});
+        if (storable.$getField(name).getSource() === storageSource) {
+          storables.push(storable);
+        } else {
+          missingValues.push(value);
+        }
+      }
+
+      return {storables, missingValues};
+    }
+
+    static async __getIdFromStore(
+      name,
+      values,
+      {exclude: excludedStorables = [], throwIfNotFound}
+    ) {
+      if (!Array.isArray(excludedStorables)) {
+        excludedStorables = [excludedStorables];
+      }
+
+      const excludedIds = excludedStorables.map(excludedStorable => {
+        if (!isStorable(excludedStorable)) {
+          throw new Error(
+            `Invalid value specified in the 'exclude' parameter (a storable was expected)`
+          );
+        }
+
+        const {id} = excludedStorable;
+
+        if (id === undefined) {
+          throw new Error(`'id' is missing in a storable specified in the 'exclude' parameter`);
+        }
+
+        return id;
+      });
+
       const store = this.$getStore();
-      const serializedStorables = await store.find(
+      const storeName = this.$getStoreName();
+
+      let serializedStorables = await store.find(
         {_type: this.$getRegisteredName(), [name]: values},
         {fields: {[name]: true}}
+      );
+
+      // TODO: Implement store.find() 'not-in' operator so we don't need to filter afterward
+      serializedStorables = serializedStorables.filter(
+        serializedStorable => !excludedIds.includes(serializedStorable._id)
       );
 
       const foundValues = serializedStorables.map(serializedStorable => serializedStorable[name]);
@@ -92,7 +144,7 @@ function makeStorable(Base) {
       }
 
       const storables = serializedStorables.map(serializedStorable =>
-        this.$deserialize(serializedStorable)
+        this.$deserialize(serializedStorable, {source: storeName})
       );
 
       return storables;
@@ -142,12 +194,17 @@ function makeStorable(Base) {
       return {name, values: Array.from(values)};
     }
 
-    static async $has(keys, {reload} = {}) {
+    static async $has(keys, {exclude, reload} = {}) {
       if (!Array.isArray(keys)) {
-        return await this.$has([keys], {reload});
+        keys = [keys];
       }
 
-      const storables = await this.$get(keys, {fields: false, reload, throwIfNotFound: false});
+      const storables = await this.$get(keys, {
+        fields: false,
+        exclude,
+        reload,
+        throwIfNotFound: false
+      });
 
       return storables.length === keys.length;
     }
@@ -157,7 +214,7 @@ function makeStorable(Base) {
         return (await this.$load([storables], {fields, reload, throwIfNotFound}))[0];
       }
 
-      fields = this.prototype.$createFieldMask(fields, {includeReferencedEntities: true});
+      fields = this.prototype.$createFieldMask({fields, includeReferencedEntities: true});
 
       const loadedStorables = await this.__load(storables, {fields, reload, throwIfNotFound});
 
@@ -179,20 +236,19 @@ function makeStorable(Base) {
     }
 
     static async __load(storablesToLoad, {fields, reload, throwIfNotFound}) {
-      fields = this.prototype.$createFieldMask(fields); // Remove fields of referenced entities
+      // Remove fields of referenced entities
+      fields = this.prototype.$createFieldMask({fields, includeReferencedEntities: false});
 
       let loadedStorables = [];
 
       if (!reload) {
         const {
-          loadedStorables: loadedStorablesFromCache,
+          loadedStorables: loadedStorablesFromMemory,
           missingStorables,
           missingFields
-        } = this.__cache.load(storablesToLoad, {
-          fields
-        });
+        } = this.__loadFromMemory(storablesToLoad, {fields});
 
-        loadedStorables = loadedStorablesFromCache;
+        loadedStorables = loadedStorablesFromMemory;
         storablesToLoad = missingStorables;
         fields = missingFields;
       }
@@ -203,11 +259,32 @@ function makeStorable(Base) {
         throwIfNotFound
       });
 
-      this.__cache.save(actuallyLoadedStorables);
-
       loadedStorables = [...loadedStorables, ...actuallyLoadedStorables];
 
       return loadedStorables;
+    }
+
+    static __loadFromMemory(storables, {fields}) {
+      const loadedStorables = [];
+      const missingStorables = [];
+      let allMissingFields = new FieldMask();
+
+      const storageSource = this.__getStoreOrParentLayerName();
+
+      for (const storable of storables) {
+        const idIsMissing = storable.$getIdSource() !== storageSource;
+        const existingFields = storable.$createFieldMaskForSource(storageSource, {fields});
+        const missingFields = FieldMask.remove(fields, existingFields);
+
+        if (idIsMissing || !missingFields.isEmpty()) {
+          missingStorables.push(storable);
+          allMissingFields = FieldMask.add(allMissingFields, missingFields);
+        } else {
+          loadedStorables.push(storable);
+        }
+      }
+
+      return {loadedStorables, missingStorables, missingFields: allMissingFields};
     }
 
     static async __loadFromStoreOrParentLayer(storablesToLoad, {fields, reload, throwIfNotFound}) {
@@ -230,24 +307,47 @@ function makeStorable(Base) {
       return loadedStorables;
     }
 
-    static async __loadFromStore(storables, {fields, throwIfNotFound}) {
-      fields = this.prototype.$createFieldMaskForNonVolatileFields(fields);
+    static async __loadFromStore(storablesToLoad, {fields, throwIfNotFound}) {
+      const loadedStorables = [];
 
-      let serializedStorables = storables.map(storable => storable.$serializeReference());
+      fields = this.prototype.$createFieldMaskForNonVolatileFields({fields});
 
       const store = this.$getStore();
+      const storeName = this.$getStoreName();
+
+      let missingStorables;
+      if (fields.isEmpty()) {
+        missingStorables = [];
+
+        for (const storableToLoad of storablesToLoad) {
+          const idIsMissing = storableToLoad.$getIdSource() !== storeName;
+          if (idIsMissing) {
+            missingStorables.push(storableToLoad);
+          } else {
+            loadedStorables.push(storableToLoad);
+          }
+        }
+      } else {
+        missingStorables = storablesToLoad;
+      }
+
+      if (missingStorables.length === 0) {
+        return loadedStorables;
+      }
+
+      let serializedStorables = missingStorables.map(storable => storable.$serializeReference());
+
       const serializedFields = fields.serialize();
+
       serializedStorables = await store.load(serializedStorables, {
         fields: serializedFields,
         throwIfNotFound
       });
 
-      const loadedStorables = [];
-
       for (const serializedStorable of serializedStorables) {
         // TODO: Modify MongoDBStore so we can get rid of the following test:
         if (!serializedStorable._missed) {
-          loadedStorables.push(this.$deserialize(serializedStorable));
+          loadedStorables.push(this.$deserialize(serializedStorable, {source: storeName}));
         }
       }
 
@@ -307,8 +407,6 @@ function makeStorable(Base) {
         await storable.$afterSave();
       }
 
-      this.__cache.save(storables);
-
       return storables;
     }
 
@@ -319,16 +417,20 @@ function makeStorable(Base) {
         storable.$validate({fields});
       }
 
-      let serializedStorables = storables.map(storable => storable.$serialize({fields}));
-
       const store = this.$getStore();
+      const storeName = this.$getStoreName();
+
+      let serializedStorables = storables.map(storable =>
+        storable.$serialize({fields, target: storeName})
+      );
+
       serializedStorables = await store.save(serializedStorables, {
         throwIfNotFound,
         throwIfAlreadyExists
       });
 
       for (const serializedStorable of serializedStorables) {
-        this.$deserialize(serializedStorable);
+        this.$deserialize(serializedStorable, {source: storeName});
       }
     }
 
@@ -352,10 +454,12 @@ function makeStorable(Base) {
       }
 
       for (const storable of storables) {
-        await storable.$afterDelete();
+        this.$deleteInstance(storable);
       }
 
-      this.__cache.delete(storables);
+      for (const storable of storables) {
+        await storable.$afterDelete();
+      }
 
       return storables;
     }
@@ -423,18 +527,20 @@ function makeStorable(Base) {
     }
 
     static async __findInStore({filter, sort, skip, limit, fields}) {
-      fields = this.prototype.$createFieldMaskForNonVolatileFields(fields);
+      fields = this.prototype.$createFieldMaskForNonVolatileFields({fields});
 
       const store = this.$getStore();
+      const storeName = this.$getStoreName();
       const serializedFilter = this.__serializeFilter(filter);
       const serializedFields = fields.serialize();
+
       const serializedStorables = await store.find(
         {_type: this.$getRegisteredName(), ...serializedFilter},
         {sort, skip, limit, fields: serializedFields}
       );
 
       const storables = serializedStorables.map(serializedStorable =>
-        this.$deserialize(serializedStorable)
+        this.$deserialize(serializedStorable, {source: storeName})
       );
 
       return storables;
@@ -481,6 +587,17 @@ function makeStorable(Base) {
       return this.__storeName !== undefined;
     }
 
+    static $getStoreName() {
+      return this.__storeName;
+    }
+
+    static __getStoreOrParentLayerName() {
+      if (this.__storeName !== undefined) {
+        return this.__storeName;
+      }
+      return this.$getParentLayer().getName();
+    }
+
     // === Hooks ===
 
     async $afterLoad() {
@@ -522,12 +639,9 @@ function makeStorable(Base) {
 
     // === Storable fields ===
 
-    $getUniqueFields() {
-      return this.$getFields({filter: field => field.isUnique()});
-    }
-
-    $createFieldMaskForNonVolatileFields(fields = true) {
-      return this.$createFieldMask(fields, {
+    $createFieldMaskForNonVolatileFields({fields = true} = {}) {
+      return this.$createFieldMask({
+        fields,
         filter(field) {
           return !field.isVolatile();
         }

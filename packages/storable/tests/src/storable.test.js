@@ -34,15 +34,15 @@ describe('Storable', () => {
       @field('string?', {isVolatile: true}) secret;
     }
 
-    const rootLayer = new Layer({Movie, mongoDBStore});
+    const rootLayer = new Layer({Movie, mongoDBStore}, {name: 'layer'});
     await rootLayer.open();
 
     let layer = rootLayer.fork();
     let movie = new layer.Movie({title: 'Inception', year: 2010, secret: 'abc123'});
     const id = movie.id;
 
-    const storableFields = movie.$createFieldMaskForNonVolatileFields();
-    expect(storableFields.serialize()).toEqual({title: true, year: true, reference: true});
+    const nonVolatileFields = movie.$createFieldMaskForNonVolatileFields();
+    expect(nonVolatileFields.serialize()).toEqual({title: true, year: true, reference: true});
 
     // === Create ===
 
@@ -56,7 +56,7 @@ describe('Storable', () => {
     movie = await layer.Movie.$get({id});
     expect(movie.title).toBe('Inception');
     expect(movie.year).toBe(2010);
-    // expect(movie.$getField('secret').isActive()).toBe(false); // TODO
+    expect(movie.$getField('secret').isActive()).toBe(false);
 
     let movie2 = await layer.Movie.$get({id});
     expect(movie2).toBe(movie);
@@ -99,16 +99,6 @@ describe('Storable', () => {
 
     // === Get by unique field ===
 
-    layer = rootLayer.fork();
-    movie = await layer.Movie.$get(
-      {reference: 'movie-001'},
-      {fields: {title: true, reference: true}}
-    );
-    expect(movie.title).toBe('Inception');
-    expect(movie.$getField('year').isActive()).toBe(false);
-    expect(movie.reference).toBe('movie-001');
-
-    // Let's query a second time to ensure there is no issue with the cache
     layer = rootLayer.fork();
     movie = await layer.Movie.$get(
       {reference: 'movie-001'},
@@ -182,7 +172,7 @@ describe('Storable', () => {
     }
 
     const store = new MongoDBStore();
-    const rootLayer = new Layer({Movie, TechnicalSpecs, store});
+    const rootLayer = new Layer({Movie, TechnicalSpecs, store}, {name: 'layer'});
 
     let layer = rootLayer.fork();
     let movie = new layer.Movie({
@@ -235,7 +225,7 @@ describe('Storable', () => {
     }
 
     const store = new MongoDBStore();
-    const rootLayer = new Layer({Movie, Trailer, store});
+    const rootLayer = new Layer({Movie, Trailer, store}, {name: 'layer'});
 
     // Let's create both a 'Movie' and a 'Trailer'
     let layer = rootLayer.fork();
@@ -315,7 +305,7 @@ describe('Storable', () => {
   });
 
   test('Finding storables', async () => {
-    class Movie extends Storable(Entity, {storeName: 'store'}) {
+    class Movie extends Storable(Entity, {storeName: 'mongoDBStore'}) {
       @field('string') title;
 
       @field('string') genre;
@@ -323,7 +313,7 @@ describe('Storable', () => {
       @field('string') country;
     }
 
-    const rootLayer = new Layer({Movie, store: mongoDBStore});
+    const rootLayer = new Layer({Movie, mongoDBStore}, {name: 'layer'});
     await rootLayer.open();
 
     // Create
@@ -382,9 +372,24 @@ describe('Storable', () => {
     layer = rootLayer.fork();
     movies = await layer.Movie.$find({fields: {title: true}});
     expect(movies.map(movie => movie.$serialize())).toEqual([
-      {_type: 'Movie', _id: 'movie1', title: 'Inception'},
-      {_type: 'Movie', _id: 'movie2', title: 'Forrest Gump'},
-      {_type: 'Movie', _id: 'movie3', title: 'Léon'}
+      {
+        _type: 'Movie',
+        _id: 'movie1',
+        title: 'Inception',
+        _src: {_id: 'mongoDBStore', title: 'mongoDBStore'}
+      },
+      {
+        _type: 'Movie',
+        _id: 'movie2',
+        title: 'Forrest Gump',
+        _src: {_id: 'mongoDBStore', title: 'mongoDBStore'}
+      },
+      {
+        _type: 'Movie',
+        _id: 'movie3',
+        title: 'Léon',
+        _src: {_id: 'mongoDBStore', title: 'mongoDBStore'}
+      }
     ]);
 
     layer = rootLayer.fork();
@@ -400,7 +405,7 @@ describe('Storable', () => {
     }
 
     const store = new MongoDBStore();
-    const rootLayer = new Layer({Movie, store});
+    const rootLayer = new Layer({Movie, store}, {name: 'layer'});
 
     const layer = rootLayer.fork();
     const movie = new layer.Movie({title: 'Inception', year: 2010});
@@ -429,8 +434,6 @@ describe('Storable', () => {
   });
 
   test('Referenced storables', async () => {
-    // TODO: Make this test failed when fields are marked as volatile
-
     class Movie extends Storable(Entity, {storeName: 'mongoDBStore'}) {
       @field('string') title;
 
@@ -443,7 +446,7 @@ describe('Storable', () => {
       @field('string?') country;
     }
 
-    const rootLayer = new Layer({Movie, Director, mongoDBStore});
+    const rootLayer = new Layer({Movie, Director, mongoDBStore}, {name: 'layer'});
     await rootLayer.open();
 
     let layer = rootLayer.fork();
@@ -552,7 +555,7 @@ describe('Storable', () => {
     }
 
     const store = new MongoDBStore();
-    const rootLayer = new Layer({Movie, Actor, store});
+    const rootLayer = new Layer({Movie, Actor, store}, {name: 'layer'});
 
     // Let's create both a 'Movie' and some 'Actor'
     let layer = rootLayer.fork();
@@ -688,7 +691,7 @@ describe('Storable', () => {
     }
 
     const store = new MongoDBStore();
-    const rootLayer = new Layer({Movie, Trailer, store});
+    const rootLayer = new Layer({Movie, Trailer, store}, {name: 'layer'});
 
     let layer = rootLayer.fork();
     let movie = new layer.Movie({
