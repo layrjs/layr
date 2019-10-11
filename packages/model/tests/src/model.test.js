@@ -639,52 +639,6 @@ describe('Model', () => {
       technicalSpecs: {_type: 'TechnicalSpecs', isColored: true},
       actors: [{_type: 'Actor', country: 'USA'}, {_type: 'Actor', country: 'USA'}]
     });
-
-    // Deserialization using the returned 'missingFields'
-
-    let {missingFields} = layer.Movie.$instantiate().$deserialize(
-      {_type: 'Movie', title: 'Inception', country: 'USA'},
-      {fields: {title: true}}
-    );
-    expect(missingFields).toBeUndefined();
-
-    ({missingFields} = layer.Movie.$instantiate().$deserialize(
-      {
-        _type: 'Movie',
-        title: 'Inception',
-        country: 'USA',
-        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'}
-      },
-      {fields: {title: true, releasedOn: true, technicalSpecs: {aspectRatio: true}}}
-    ));
-    expect(missingFields.serialize()).toEqual({releasedOn: true});
-
-    ({missingFields} = layer.Movie.$instantiate().$deserialize(
-      {
-        _type: 'Movie',
-        title: 'Inception',
-        technicalSpecs: {_type: 'TechnicalSpecs', aspectRatio: '2.39:1'},
-        actors: [
-          {_type: 'Actor', fullName: 'Leonardo DiCaprio'},
-          {_type: 'Actor', fullName: 'Joseph Gordon-Levitt'}
-        ]
-      },
-      {
-        fields: {
-          title: true,
-          country: true,
-          genres: true,
-          technicalSpecs: {aspectRatio: true, isColored: true},
-          actors: [{fullName: true, country: true}]
-        }
-      }
-    ));
-    expect(missingFields.serialize()).toEqual({
-      country: true,
-      genres: true,
-      technicalSpecs: {isColored: true},
-      actors: {country: true}
-    });
   });
 
   test.skip('Field exposition', async () => {

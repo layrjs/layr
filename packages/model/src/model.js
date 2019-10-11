@@ -100,7 +100,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     const sources = source === undefined ? object._src || {} : undefined;
 
     const rootFieldMask = this.$createFieldMask({fields});
-    let rootMissingFields;
+
     const isNew = this.$isNew();
 
     for (const name of this.$getFieldNames()) {
@@ -113,31 +113,17 @@ export class Model extends Observable(Serializable(Registerable())) {
         const field = this.$getField(name);
         const value = object[name];
 
-        const {missingFields} = field.deserializeValue(value, {source, fields: fieldMask});
+        field.deserializeValue(value, {source, fields: fieldMask});
 
         if (source === undefined) {
           field.setSource(sources[name]);
-        }
-
-        if (missingFields) {
-          if (!rootMissingFields) {
-            rootMissingFields = new FieldMask();
-          }
-          rootMissingFields.set(name, missingFields);
         }
       } else if (isNew) {
         const field = this.$getField(name);
         const defaultValue = field.getDefaultValue();
         field.setValue(defaultValue);
-      } else {
-        if (!rootMissingFields) {
-          rootMissingFields = new FieldMask();
-        }
-        rootMissingFields.set(name, fieldMask);
       }
     }
-
-    return {missingFields: rootMissingFields};
   }
 
   static $getInstance(object, previousInstance) {

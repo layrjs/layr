@@ -1,4 +1,3 @@
-import {FieldMask} from './field-mask';
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
 import {mapFromOneOrMany, hasOwnProperty} from '@liaison/util';
 import isEmpty from 'lodash/isEmpty';
@@ -239,28 +238,14 @@ export class Field extends Property {
   }
 
   deserializeValue(value, {source, fields} = {}) {
-    let rootMissingFields;
-
     const previousValue = this.isActive() ? this.getValue() : undefined;
 
     this.setValue(
-      mapFromOneOrMany(value, value => {
-        const {deserializedValue, missingFields} = this._scalar.deserializeValue(value, {
-          source,
-          fields,
-          previousValue
-        });
-
-        if (missingFields) {
-          rootMissingFields = FieldMask.add(rootMissingFields || new FieldMask(), missingFields);
-        }
-
-        return deserializedValue;
-      }),
+      mapFromOneOrMany(value, value =>
+        this._scalar.deserializeValue(value, {source, fields, previousValue})
+      ),
       {source}
     );
-
-    return {missingFields: rootMissingFields};
   }
 
   hasValidators() {
@@ -433,15 +418,15 @@ class Scalar {
     }
 
     if (value === null) {
-      return {deserializedValue: undefined};
+      return undefined;
     }
 
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
       if (primitiveType.deserialize) {
-        return {deserializedValue: primitiveType.deserialize(value)};
+        return primitiveType.deserialize(value);
       }
-      return {deserializedValue: value};
+      return value;
     }
 
     const type = value._type;
@@ -449,9 +434,7 @@ class Scalar {
       throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
     const Model = this._field.getLayer().get(type);
-    const deserializedValue = Model.$instantiate(value, {source, previousInstance: previousValue});
-    const {missingFields} = deserializedValue.$deserialize(value, {source, fields});
-    return {deserializedValue, missingFields};
+    return Model.$deserialize(value, {source, fields, previousInstance: previousValue});
   }
 
   hasValidators() {

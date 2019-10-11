@@ -55,15 +55,13 @@ export class Identity extends Model {
   }
 
   $deserialize(object = {}, {source, ...otherOptions} = {}) {
-    const deserializedIdentity = super.$deserialize(object, {source, ...otherOptions});
+    super.$deserialize(object, {source, ...otherOptions});
 
     const id = object._id;
     if (id !== undefined) {
       const idSource = source === undefined ? object._src?._id : source;
       this.__setId(id, {source: idSource});
     }
-
-    return deserializedIdentity;
   }
 
   static $getInstance(object, previousInstance) {
