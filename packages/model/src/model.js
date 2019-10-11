@@ -56,10 +56,6 @@ export class Model extends Observable(Serializable(Registerable())) {
     this.$deserialize({...other.$serialize(), _src: undefined});
   }
 
-  $clone() {
-    return this.constructor.$deserialize({...this.$serialize(), _src: undefined});
-  }
-
   // === Serialization ===
 
   $serialize({target, fields} = {}) {

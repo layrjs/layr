@@ -732,45 +732,6 @@ describe('Model', () => {
     });
   });
 
-  test('Cloning', async () => {
-    class Movie extends Model {
-      @field('string') title;
-
-      @field('Date') releasedOn;
-
-      @field('TechnicalSpecs') technicalSpecs;
-    }
-
-    class TechnicalSpecs extends Model {
-      @field('string') aspectRatio;
-    }
-
-    const layer = new Layer({Movie, TechnicalSpecs});
-    await layer.open();
-
-    const movie = new layer.Movie({
-      title: 'Inception',
-      releasedOn: new Date(Date.UTC(2010, 6, 16)),
-      technicalSpecs: {aspectRatio: '2.39:1'}
-    });
-
-    const clone = movie.$clone();
-
-    expect(clone instanceof layer.Movie).toBe(true);
-    expect(clone).not.toBe(movie);
-    expect(clone.$serialize()).toEqual(movie.$serialize());
-
-    expect(clone.title).toBe('Inception');
-
-    expect(clone.releasedOn instanceof Date).toBe(true);
-    expect(clone.releasedOn).not.toBe(movie.releasedOn);
-    expect(clone.releasedOn.toISOString()).toBe('2010-07-16T00:00:00.000Z');
-
-    expect(clone.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
-    expect(clone.technicalSpecs).not.toBe(movie.technicalSpecs);
-    expect(clone.technicalSpecs.aspectRatio).toBe('2.39:1');
-  });
-
   test('Polymorphism', async () => {
     class Movie extends Model {
       @field('string') title;
