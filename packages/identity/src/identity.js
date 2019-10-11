@@ -1,9 +1,8 @@
+import {Model} from '@liaison/model';
 import {inspect} from 'util';
 import cuid from 'cuid';
 import isEmpty from 'lodash/isEmpty';
 import {findFromOneOrMany} from '@liaison/util';
-
-import {Model} from './model';
 
 export class Identity extends Model {
   constructor(object = {}, {isDeserializing} = {}) {

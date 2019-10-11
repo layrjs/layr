@@ -1,6 +1,7 @@
 import {Layer} from '@liaison/layer';
+import {field} from '@liaison/model';
 
-import {Identity, field} from '../../..';
+import {Identity} from '../../..';
 
 describe('Identity', () => {
   test('id', async () => {

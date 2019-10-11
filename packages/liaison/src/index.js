@@ -1,3 +1,5 @@
+export * from '@liaison/entity';
+export * from '@liaison/identity';
 export * from '@liaison/layer';
 export * from '@liaison/model';
 export * from '@liaison/observable';

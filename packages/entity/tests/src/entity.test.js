@@ -1,6 +1,7 @@
 import {Layer} from '@liaison/layer';
+import {field} from '@liaison/model';
 
-import {Entity, field} from '../../..';
+import {Entity} from '../../..';
 
 describe('Entity', () => {
   test('Identity mapping', async () => {

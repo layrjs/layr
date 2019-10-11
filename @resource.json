@@ -1,5 +1,11 @@
 {
   "@import": "1place/js-repository#^0.1.0",
+  "entity": {
+    "@include": "./packages/entity"
+  },
+  "identity": {
+    "@include": "./packages/identity"
+  },
   "layer": {
     "@include": "./packages/layer"
   },
@@ -42,6 +48,10 @@
   "link": {
     "@type": "method",
     "@run": [
+      "(@import shell/bash) run \"npm-link ./packages/entity\"",
+      "(@import shell/bash) run \"npm-link ./packages/entity/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/identity\"",
+      "(@import shell/bash) run \"npm-link ./packages/identity/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/layer\"",
       "(@import shell/bash) run \"npm-link ./packages/layer/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/layer-http-client\"",

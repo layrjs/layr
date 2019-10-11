@@ -7,6 +7,7 @@
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/storable",
   "dependencies": {
+    "@liaison/identity": "^0.1.0",
     "@liaison/layer": "^0.1.0",
     "@liaison/model": "^0.1.0",
     "@liaison/promisable": "^0.1.0",

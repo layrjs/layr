@@ -1,4 +1,5 @@
-import {FieldMask, isModel, isIdentity} from '@liaison/model';
+import {FieldMask, isModel} from '@liaison/model';
+import {isIdentity} from '@liaison/identity';
 import difference from 'lodash/difference';
 import uniq from 'lodash/uniq';
 import ow from 'ow';

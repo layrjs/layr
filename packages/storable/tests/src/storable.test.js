@@ -1,5 +1,7 @@
 import {Layer} from '@liaison/layer';
-import {Model, Identity, Entity, field} from '@liaison/model';
+import {Model, field} from '@liaison/model';
+import {Identity} from '@liaison/identity';
+import {Entity} from '@liaison/entity';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
