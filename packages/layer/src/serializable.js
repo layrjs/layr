@@ -5,7 +5,6 @@ export const Serializable = (Base = Object) =>
       if (!isDeserializing) {
         this.__isNew = true;
       }
-      // When overriding, call `this.constructor.$setInstance(this)` after setting the id
     }
 
     $isNew() {
@@ -52,10 +51,6 @@ export const Serializable = (Base = Object) =>
     }
 
     static $getInstance(_object, _previousInstance) {
-      // Override to implement an identity map
-    }
-
-    static $setInstance(_instance) {
       // Override to implement an identity map
     }
   };

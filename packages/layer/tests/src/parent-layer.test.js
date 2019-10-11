@@ -21,13 +21,15 @@ class BaseMovie extends Serializable(Registerable()) {
     {isDeserializing} = {}
   ) {
     super(object, {isDeserializing});
+
     if (!isDeserializing) {
       this.title = title;
       this.year = year;
       this.ratingSum = ratingSum;
       this.ratingCount = ratingCount;
     }
-    this.constructor.$setInstance(this);
+
+    this.constructor._instance = this;
   }
 
   $serialize() {
@@ -50,11 +52,6 @@ class BaseMovie extends Serializable(Registerable()) {
   static $getInstance(_object, _previousInstance) {
     // Let's simulate an identity map
     return this._instance;
-  }
-
-  static $setInstance(instance) {
-    // The identity map can contain one instance only
-    this._instance = instance;
   }
 
   getAverageRating() {
