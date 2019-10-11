@@ -162,34 +162,6 @@ export class Model extends Observable(Serializable(Registerable())) {
     }
   }
 
-  // === Sources ===
-
-  $addSource(source) {
-    source = this.__normalizeSource(source);
-    this.__getSources()[source] = true;
-  }
-
-  $hadSource(source) {
-    source = this.__normalizeSource(source);
-    return this.__getSources()[source] === true;
-  }
-
-  __normalizeSource(source = '__self__') {
-    if (source !== '__self__' && source === this.$getLayer().getName()) {
-      source = '__self__';
-    }
-    return source;
-  }
-
-  __getSources() {
-    if (this.__sources === undefined) {
-      this.__sources = Object.create(null);
-    } else if (!hasOwnProperty(this, '__sources')) {
-      this.__sources = Object.create(this.__sources);
-    }
-    return this.__sources;
-  }
-
   // === Properties ===
 
   $getProperty(name, {throwIfNotFound = true} = {}) {
