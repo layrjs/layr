@@ -327,7 +327,8 @@ describe('Model', () => {
     expect(movie2.title).toBe('Inception');
     expect(movie2.year).toBe(2010);
     expect(movie2.genres).toEqual(['action', 'drama']);
-    expect(movie2.technicalSpecs).toBe(movie.technicalSpecs);
+    expect(movie2.technicalSpecs).not.toBe(movie.technicalSpecs);
+    expect(movie2.technicalSpecs.aspectRatio).toBe('2.39:1');
   });
 
   test('Serialization', async () => {
@@ -484,20 +485,33 @@ describe('Model', () => {
     movie = layer.Movie.$deserialize({title: 'Inception'}, {source: backendName});
     expect(movie.$getField('title').getSource()).toBe(backendName);
     expect(movie.$serialize({target: backendName})).toEqual({_type: 'Movie'});
-    expect(movie.$serialize({target: frontendName})).toEqual({_type: 'Movie', title: 'Inception'});
     expect(movie.$serialize({target: otherName})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception'});
+    expect(movie.$serialize({target: frontendName})).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      _src: {title: backendName}
+    });
+    expect(movie.$serialize()).toEqual(movie.$serialize({target: frontendName}));
 
     movie.country = 'USA';
     expect(movie.$getField('country').getSource()).toBe(frontendName);
     expect(movie.$serialize({target: backendName})).toEqual({_type: 'Movie', country: 'USA'});
-    expect(movie.$serialize({target: frontendName})).toEqual({_type: 'Movie', title: 'Inception'});
     expect(movie.$serialize({target: otherName})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA'
     });
-    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception', country: 'USA'});
+    expect(movie.$serialize({target: frontendName})).toEqual({
+      _type: 'Movie',
+      title: 'Inception',
+      country: 'USA',
+      _src: {title: backendName}
+    });
+    expect(movie.$serialize()).toEqual(movie.$serialize({target: frontendName}));
+
+    movie = layer.Movie.$deserialize(movie.$serialize());
+    expect(movie.$getField('title').getSource()).toBe(backendName);
+    expect(movie.$getField('country').getSource()).toBe(frontendName);
   });
 
   test('Deserialization', async () => {

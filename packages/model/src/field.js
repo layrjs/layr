@@ -11,7 +11,13 @@ import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './vali
 
 export class Field extends Property {
   constructor(parent, name, options = {}) {
-    let {type, default: defaultValue, validators = [], ...unknownOptions} = options;
+    let {
+      type,
+      default: defaultValue,
+      isUnique = false,
+      validators = [],
+      ...unknownOptions
+    } = options;
 
     super(parent, name, unknownOptions);
 
@@ -19,6 +25,7 @@ export class Field extends Property {
 
     ow(type, ow.string.nonEmpty);
     ow(validators, ow.array);
+    ow(isUnique, ow.boolean);
 
     validators = validators.map(validator =>
       mapFromOneOrMany(validator, validator => normalizeValidator(validator, {fieldName: name}))
@@ -62,6 +69,16 @@ export class Field extends Property {
       throw new Error("'type' parameter is invalid");
     }
 
+    if (isUnique) {
+      if (isArray) {
+        throw new Error(`A unique field cannot be an array (field: '${name}')`);
+      }
+
+      if (scalarIsOptional) {
+        throw new Error(`A unique field cannot be optional (field: '${name}')`);
+      }
+    }
+
     this._scalar = new Scalar(this, scalarType, {
       isOptional: scalarIsOptional,
       validators: scalarValidators
@@ -70,6 +87,7 @@ export class Field extends Property {
     this._isArray = isArray;
     this._arrayIsOptional = arrayIsOptional;
     this._default = defaultValue;
+    this._isUnique = isUnique;
     this._isActive = false;
     this._value = undefined;
     this._source = undefined;
@@ -89,6 +107,10 @@ export class Field extends Property {
     return this._isArray;
   }
 
+  isUnique() {
+    return this._isUnique;
+  }
+
   isOptional() {
     return this._arrayIsOptional;
   }
@@ -101,7 +123,7 @@ export class Field extends Property {
     return this._isActive;
   }
 
-  getValue({throwIfInactive = true} = {}) {
+  getValue({throwIfInactive = true, forkIfNotOwned = true} = {}) {
     if (!this._isActive) {
       if (throwIfInactive) {
         throw new Error(`Cannot get the value from an inactive field (field: '${this._name}')`);
@@ -115,7 +137,7 @@ export class Field extends Property {
       return undefined;
     }
 
-    if (!hasOwnProperty(this, '_value')) {
+    if (!hasOwnProperty(this, '_value') && forkIfNotOwned) {
       value = this._forkValue();
     }
 
@@ -129,19 +151,26 @@ export class Field extends Property {
       value = createObservable(value);
     }
 
+    this._isActive = true;
+    this.setSource(source);
+
     const previousValue = this._value;
 
-    this._isActive = true;
-    this._value = value;
-    this._source = source;
-
     if (value !== previousValue) {
+      this._value = value;
+
+      if (this._isUnique) {
+        this._parent.__onUniqueFieldValueChange(this._name, value, previousValue);
+      }
+
       if (isObservable(previousValue)) {
         previousValue.$unobserve(this._parent);
       }
+
       if (isObservable(value)) {
         value.$observe(this._parent);
       }
+
       this._parent.$notify();
     }
 
@@ -188,10 +217,18 @@ export class Field extends Property {
 
   getSource() {
     let source = this._source;
-    if (!source) {
-      source = this.getLayer().getName();
+    if (source === undefined) {
+      source = this.getLayer({throwIfNotFound: false})?.getName();
     }
     return source;
+  }
+
+  setSource(source) {
+    const layerName = this.getLayer({throwIfNotFound: false})?.getName();
+    if (layerName !== undefined && source === layerName) {
+      source = undefined;
+    }
+    this._source = source;
   }
 
   createValue(value) {
@@ -421,7 +458,7 @@ class Scalar {
       throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
     const Model = this._field.getLayer().get(type);
-    const deserializedValue = Model.$instantiate(value, {previousInstance: previousValue});
+    const deserializedValue = Model.$instantiate(value, {source, previousInstance: previousValue});
     const {missingFields} = deserializedValue.$deserialize(value, {source, fields});
     return {deserializedValue, missingFields};
   }

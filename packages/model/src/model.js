@@ -53,24 +53,24 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   __assignOther(other) {
-    for (const otherField of other.$getActiveFields()) {
-      const name = otherField.getName();
-      if (this.$hasField(name)) {
-        const field = this.$getField(name);
-        const value = otherField.getValue();
-        field.setValue(value);
-      }
-    }
+    this.$deserialize({...other.$serialize(), _src: undefined});
   }
 
   $clone() {
-    return this.constructor.$deserialize(this.$serialize());
+    return this.constructor.$deserialize({...this.$serialize(), _src: undefined});
   }
 
   // === Serialization ===
 
   $serialize({target, fields} = {}) {
     const serializedFields = {};
+    const sources = {};
+
+    const layerName = this.$getLayer({throwIfNotFound: false})?.getName();
+
+    if (layerName !== undefined && target === layerName) {
+      target = undefined;
+    }
 
     const rootFieldMask = this.$createFieldMask({fields});
 
@@ -83,19 +83,37 @@ export class Model extends Observable(Serializable(Registerable())) {
       }
 
       const value = field.serializeValue({target, fields: fieldMask});
+      if (value === undefined) {
+        continue;
+      }
 
-      if (value !== undefined) {
-        serializedFields[name] = value;
+      serializedFields[name] = value;
+
+      if (target === undefined) {
+        const source = field.getSource();
+        if (source !== layerName) {
+          sources[name] = source;
+        }
       }
     }
 
-    return {...super.$serialize(), ...serializedFields};
+    return {
+      ...super.$serialize(),
+      ...(!isEmpty(sources) && {_src: sources}),
+      ...serializedFields
+    };
   }
 
   $deserialize(object = {}, {source, fields} = {}) {
     super.$deserialize(object);
 
-    this.$addSource(source);
+    const layerName = this.$getLayer({throwIfNotFound: false})?.getName();
+
+    if (layerName !== undefined && source === layerName) {
+      source = undefined;
+    }
+
+    const sources = source === undefined ? object._src || {} : undefined;
 
     const rootFieldMask = this.$createFieldMask({fields});
     let rootMissingFields;
@@ -110,12 +128,18 @@ export class Model extends Observable(Serializable(Registerable())) {
       if (hasOwnProperty(object, name)) {
         const field = this.$getField(name);
         const value = object[name];
+
         const {missingFields} = field.deserializeValue(value, {source, fields: fieldMask});
+
         if (missingFields) {
           if (!rootMissingFields) {
             rootMissingFields = new FieldMask();
           }
           rootMissingFields.set(name, missingFields);
+        }
+
+        if (source === undefined) {
+          field.setSource(sources[name]);
         }
       } else if (isNew) {
         const field = this.$getField(name);
@@ -344,6 +368,22 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
+  $getUniqueFields({filter: otherFilter} = {}) {
+    const filter = function (field) {
+      if (!field.isUnique()) {
+        return false;
+      }
+
+      if (otherFilter) {
+        return otherFilter(field);
+      }
+
+      return true;
+    };
+
+    return this.$getFields({filter});
+  }
+
   $getActiveFields({filter: otherFilter} = {}) {
     const filter = function (field) {
       if (!field.isActive()) {
@@ -358,6 +398,11 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
 
     return this.$getFields({filter});
+  }
+
+  // eslint-disable-next-line no-unused-vars
+  __onUniqueFieldValueChange(name, value, previousValue) {
+    // Overridden in Entity to update indexes
   }
 
   // === Field masks ===

@@ -3,12 +3,6 @@ import {hasOwnProperty} from '@liaison/util';
 import {Identity} from './identity';
 
 export class Entity extends Identity {
-  constructor(object, options) {
-    super(object, options);
-
-    this.constructor.$setInstance(this);
-  }
-
   $serialize({target, fields, _isDeep} = {}) {
     if (_isDeep) {
       return this.$serializeReference({target});
@@ -23,10 +17,6 @@ export class Entity extends Identity {
     return {...super.$serialize({target, fields: false}), _ref: true};
   }
 
-  $clone() {
-    return this.constructor.$deserialize({...this.$serialize(), _id: undefined});
-  }
-
   __createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack}) {
     if (_typeStack.size > 0) {
       // We are not a the root
@@ -39,56 +29,136 @@ export class Entity extends Identity {
     return super.__createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack});
   }
 
-  static $getInstance(object, _previousInstance) {
-    const id = object?._id;
+  __onIdValueSet(value) {
+    this.__updateIndex('id', value);
+  }
 
-    if (id === undefined) {
+  __onUniqueFieldValueChange(name, value, previousValue) {
+    this.__updateIndex(name, value, previousValue);
+  }
+
+  // === Identity mapping ===
+
+  static $getInstance(object, _previousInstance) {
+    if (object === undefined) {
       return undefined;
     }
 
-    const instances = this.__getInstances();
+    const getInstanceBy = name => {
+      const value = object[name === 'id' ? '_id' : name];
 
-    let instance = instances[id];
+      if (value === undefined) {
+        return undefined;
+      }
 
-    if (instance && !hasOwnProperty(instances, id)) {
-      instance = instance.__fork(this);
-      instances[id] = instance;
+      const index = this.__getIndex(name);
+
+      let instance = index[value];
+
+      if (instance === undefined) {
+        return undefined;
+      }
+
+      if (!hasOwnProperty(index, value)) {
+        instance = instance.__fork(this);
+        instance.__setIndexes();
+      }
+
+      return instance;
+    };
+
+    const instance = getInstanceBy('id');
+    if (instance !== undefined) {
+      return instance;
     }
 
-    return instance;
-  }
-
-  static $setInstance(instance) {
-    const id = instance?._id;
-
-    if (id === undefined) {
-      return;
+    for (const field of this.prototype.$getUniqueFields()) {
+      const name = field.getName();
+      const instance = getInstanceBy(name);
+      if (instance !== undefined) {
+        return instance;
+      }
     }
-
-    const instances = this.__getInstances();
-
-    instances[id] = instance;
   }
 
   static $deleteInstance(instance) {
-    const id = instance?._id;
-
-    if (id === undefined) {
-      return;
-    }
-
-    const instances = this.__getInstances();
-
-    instances[id] = undefined;
+    instance.__deleteIndexes();
   }
 
-  static __getInstances() {
-    if (!this.__instances) {
-      this.__instances = new Map();
-    } else if (!hasOwnProperty(this, '__instances')) {
-      this.__instances = Object.create(this.__instances);
+  static __getIndexes() {
+    if (!this.__indexes) {
+      this.__indexes = Object.create(null);
+    } else if (!hasOwnProperty(this, '__indexes')) {
+      this.__indexes = Object.create(this.__indexes);
     }
-    return this.__instances;
+    return this.__indexes;
+  }
+
+  static __getIndex(name) {
+    const indexes = this.__getIndexes();
+    if (!indexes[name]) {
+      indexes[name] = Object.create(null);
+    } else if (!hasOwnProperty(indexes, name)) {
+      indexes[name] = Object.create(indexes[name]);
+    }
+    return indexes[name];
+  }
+
+  __setIndexes() {
+    const id = this._id;
+
+    if (id !== undefined) {
+      this.__setIndex('id', id);
+    }
+
+    for (const field of this.$getUniqueFields()) {
+      const name = field.getName();
+      const value = field.getValue({throwIfInactive: false, forkIfNotOwned: false});
+      if (value !== undefined) {
+        this.__setIndex(name, value);
+      }
+    }
+  }
+
+  __setIndex(name, value) {
+    const index = this.constructor.__getIndex(name);
+    index[value] = this;
+  }
+
+  __updateIndex(name, value, previousValue) {
+    const index = this.constructor.__getIndex(name);
+
+    if (previousValue !== undefined) {
+      index[previousValue] = undefined;
+    }
+
+    if (value !== undefined) {
+      if (index[value] !== undefined) {
+        throw new Error(`Duplicate value found in a unique field (name: '${name}')`);
+      }
+      index[value] = this;
+    }
+  }
+
+  __deleteIndexes() {
+    const id = this._id;
+
+    if (id !== undefined) {
+      this.__deleteIndex('id', id);
+    }
+
+    for (const field of this.$getUniqueFields()) {
+      const name = field.getName();
+      const value = field.getValue({throwIfInactive: false, forkIfNotOwned: false});
+      if (value !== undefined) {
+        this.__deleteIndex(name, value);
+      }
+    }
+  }
+
+  __deleteIndex(name, value) {
+    const index = this.constructor.__getIndex(name);
+    index[value] = undefined;
   }
 
   static $isEntity(object) {

@@ -190,7 +190,7 @@ describe('FieldMask', () => {
     expect(
       FieldMask.isEqual(
         FieldMask.remove(new FieldMask({director: {}}), new FieldMask({director: {country: true}})),
-        new FieldMask({director: {}})
+        new FieldMask({})
       )
     ).toBe(true);
   });

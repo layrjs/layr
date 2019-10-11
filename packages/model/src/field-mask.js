@@ -148,19 +148,22 @@ export class FieldMask {
     }
 
     function _remove(rootFields, rootOtherFields) {
-      const remainingFields = {};
+      const rootRemainingFields = {};
 
       for (const [name, fields] of Object.entries(rootFields)) {
         const otherFields = rootOtherFields[name];
 
         if (otherFields === undefined) {
-          remainingFields[name] = fields;
+          rootRemainingFields[name] = fields;
         } else if (typeof otherFields === 'object') {
-          remainingFields[name] = _remove(fields, otherFields);
+          const remainingFields = _remove(fields, otherFields);
+          if (!isEmpty(remainingFields)) {
+            rootRemainingFields[name] = remainingFields;
+          }
         }
       }
 
-      return remainingFields;
+      return rootRemainingFields;
     }
 
     return new FieldMask(_remove(fields._fields, otherFields._fields));

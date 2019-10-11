@@ -34,8 +34,8 @@ export class Property {
     return this._name;
   }
 
-  getLayer() {
-    return this._parent.$getLayer();
+  getLayer({throwIfNotFound} = {}) {
+    return this._parent.$getLayer({throwIfNotFound});
   }
 
   getOptions() {
