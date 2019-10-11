@@ -25,12 +25,6 @@ export class Identity extends Model {
   }
 
   $serialize({target, fields} = {}) {
-    const layerName = this.$getLayer({throwIfNotFound: false})?.getName();
-
-    if (layerName !== undefined && target === layerName) {
-      target = undefined;
-    }
-
     const {_type, _new: isNew, _src: sources = {}, ...otherProps} = super.$serialize({
       target,
       fields
@@ -47,9 +41,8 @@ export class Identity extends Model {
       serializedIdentity._id = id;
 
       if (target === undefined) {
-        const idSource = this.$getIdSource();
-        if (idSource !== layerName) {
-          sources._id = idSource;
+        if (this.__idSource !== undefined) {
+          sources._id = this.__idSource;
         }
       }
     }
@@ -62,12 +55,6 @@ export class Identity extends Model {
   }
 
   $deserialize(object = {}, {source, ...otherOptions} = {}) {
-    const layerName = this.$getLayer({throwIfNotFound: false})?.getName();
-
-    if (layerName !== undefined && source === layerName) {
-      source = undefined;
-    }
-
     const deserializedIdentity = super.$deserialize(object, {source, ...otherOptions});
 
     const id = object._id;
@@ -110,16 +97,7 @@ export class Identity extends Model {
   }
 
   $getIdSource() {
-    if (this._id === undefined) {
-      return undefined;
-    }
-
-    let source = this.__idSource;
-    if (source === undefined) {
-      source = this.$getLayer().getName();
-    }
-
-    return source;
+    return this.__idSource;
   }
 
   static $generateId() {

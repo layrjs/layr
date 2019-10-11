@@ -478,7 +478,6 @@ describe('Model', () => {
 
     // Serialization using 'source' and 'target'
 
-    const frontendName = movie.$getLayer().getName();
     const backendName = 'abc123';
     const otherName = 'xyz789';
 
@@ -486,32 +485,30 @@ describe('Model', () => {
     expect(movie.$getField('title').getSource()).toBe(backendName);
     expect(movie.$serialize({target: backendName})).toEqual({_type: 'Movie'});
     expect(movie.$serialize({target: otherName})).toEqual({_type: 'Movie', title: 'Inception'});
-    expect(movie.$serialize({target: frontendName})).toEqual({
+    expect(movie.$serialize({target: undefined})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       _src: {title: backendName}
     });
-    expect(movie.$serialize()).toEqual(movie.$serialize({target: frontendName}));
 
     movie.country = 'USA';
-    expect(movie.$getField('country').getSource()).toBe(frontendName);
+    expect(movie.$getField('country').getSource()).toBeUndefined();
     expect(movie.$serialize({target: backendName})).toEqual({_type: 'Movie', country: 'USA'});
     expect(movie.$serialize({target: otherName})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA'
     });
-    expect(movie.$serialize({target: frontendName})).toEqual({
+    expect(movie.$serialize({target: undefined})).toEqual({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA',
       _src: {title: backendName}
     });
-    expect(movie.$serialize()).toEqual(movie.$serialize({target: frontendName}));
 
     movie = layer.Movie.$deserialize(movie.$serialize());
     expect(movie.$getField('title').getSource()).toBe(backendName);
-    expect(movie.$getField('country').getSource()).toBe(frontendName);
+    expect(movie.$getField('country').getSource()).toBeUndefined();
   });
 
   test('Deserialization', async () => {

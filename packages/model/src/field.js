@@ -152,7 +152,7 @@ export class Field extends Property {
     }
 
     this._isActive = true;
-    this.setSource(source);
+    this._source = source;
 
     const previousValue = this._value;
 
@@ -216,18 +216,10 @@ export class Field extends Property {
   }
 
   getSource() {
-    let source = this._source;
-    if (source === undefined) {
-      source = this.getLayer({throwIfNotFound: false})?.getName();
-    }
-    return source;
+    return this._source;
   }
 
   setSource(source) {
-    const layerName = this.getLayer({throwIfNotFound: false})?.getName();
-    if (layerName !== undefined && source === layerName) {
-      source = undefined;
-    }
     this._source = source;
   }
 
@@ -237,8 +229,7 @@ export class Field extends Property {
 
   serializeValue({target, fields} = {}) {
     if (target !== undefined) {
-      const source = this.getSource();
-      if (target === source) {
+      if (target === this._source) {
         return undefined;
       }
     }

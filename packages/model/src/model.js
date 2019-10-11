@@ -62,12 +62,6 @@ export class Model extends Observable(Serializable(Registerable())) {
     const serializedFields = {};
     const sources = {};
 
-    const layerName = this.$getLayer({throwIfNotFound: false})?.getName();
-
-    if (layerName !== undefined && target === layerName) {
-      target = undefined;
-    }
-
     const rootFieldMask = this.$createFieldMask({fields});
 
     for (const field of this.$getActiveFields()) {
@@ -87,7 +81,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
       if (target === undefined) {
         const source = field.getSource();
-        if (source !== layerName) {
+        if (source !== undefined) {
           sources[name] = source;
         }
       }
@@ -102,12 +96,6 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   $deserialize(object = {}, {source, fields} = {}) {
     super.$deserialize(object);
-
-    const layerName = this.$getLayer({throwIfNotFound: false})?.getName();
-
-    if (layerName !== undefined && source === layerName) {
-      source = undefined;
-    }
 
     const sources = source === undefined ? object._src || {} : undefined;
 
@@ -127,15 +115,15 @@ export class Model extends Observable(Serializable(Registerable())) {
 
         const {missingFields} = field.deserializeValue(value, {source, fields: fieldMask});
 
+        if (source === undefined) {
+          field.setSource(sources[name]);
+        }
+
         if (missingFields) {
           if (!rootMissingFields) {
             rootMissingFields = new FieldMask();
           }
           rootMissingFields.set(name, missingFields);
-        }
-
-        if (source === undefined) {
-          field.setSource(sources[name]);
         }
       } else if (isNew) {
         const field = this.$getField(name);
