@@ -254,20 +254,31 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.$getField(name, {throwIfNotFound: false}) !== undefined;
   }
 
-  $getFields({filter: otherFilter} = {}) {
+  $getFields({fields = true, filter: otherFilter} = {}) {
+    if (FieldMask.isFieldMask(fields)) {
+      fields = fields.serialize();
+    }
+
     const filter = function (property) {
       if (!isField(property)) {
         return false;
       }
 
+      const field = property;
+
+      const name = field.getName();
+      if (!(fields === true || fields[name])) {
+        return false;
+      }
+
       if (otherFilter) {
-        return otherFilter(property);
+        return otherFilter(field);
       }
 
       return true;
     };
 
-    return this.$getProperties({filter});
+    return this.$getProperties({properties: fields, filter});
   }
 
   $getFieldNames() {
@@ -283,20 +294,16 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
-  $getFieldValues({fields, filter} = {}) {
+  $getFieldValues({fields = true, filter} = {}) {
     const rootFieldMask = this.$createFieldMask({fields, includeReferencedEntities: true});
 
     const model = this;
 
     return {
       * [Symbol.iterator]() {
-        for (const field of model.$getActiveFields({filter})) {
+        for (const field of model.$getActiveFields({fields: rootFieldMask, filter})) {
           const name = field.getName();
-
           const fieldMask = rootFieldMask.get(name);
-          if (!fieldMask) {
-            continue;
-          }
 
           for (const value of field.getValues()) {
             yield {value, fields: fieldMask};
@@ -306,36 +313,32 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
-  $getUniqueFields({filter: otherFilter} = {}) {
+  $getUniqueFields({fields = true, filter: otherFilter} = {}) {
     const filter = function (field) {
       if (!field.isUnique()) {
         return false;
       }
-
       if (otherFilter) {
         return otherFilter(field);
       }
-
       return true;
     };
 
-    return this.$getFields({filter});
+    return this.$getFields({fields, filter});
   }
 
-  $getActiveFields({filter: otherFilter} = {}) {
+  $getActiveFields({fields = true, filter: otherFilter} = {}) {
     const filter = function (field) {
       if (!field.isActive()) {
         return false;
       }
-
       if (otherFilter) {
         return otherFilter(field);
       }
-
       return true;
     };
 
-    return this.$getFields({filter});
+    return this.$getFields({fields, filter});
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -504,11 +507,9 @@ export class Model extends Observable(Serializable(Registerable())) {
       if (!isMethod(property)) {
         return false;
       }
-
       if (otherFilter) {
         return otherFilter(property);
       }
-
       return true;
     };
 

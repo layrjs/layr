@@ -302,6 +302,12 @@ function makeStorable(Base) {
       }
 
       for (const loadedStorable of loadedStorables) {
+        for (const field of loadedStorable.$getFieldsWithLoader({fields})) {
+          await field.load();
+        }
+      }
+
+      for (const loadedStorable of loadedStorables) {
         await loadedStorable.$afterLoad({fields});
       }
 
@@ -640,13 +646,32 @@ function makeStorable(Base) {
 
     // === Storable fields ===
 
-    $createFieldMaskForNonVolatileFields({fields = true} = {}) {
-      return this.$createFieldMask({
-        fields,
-        filter(field) {
-          return !field.isVolatile();
+    $createFieldMaskForNonVolatileFields({fields = true, filter: otherFilter} = {}) {
+      const filter = function (field) {
+        if (field.isVolatile()) {
+          return false;
         }
-      });
+        if (otherFilter) {
+          return otherFilter(field);
+        }
+        return true;
+      };
+
+      return this.$createFieldMask({fields, filter});
+    }
+
+    $getFieldsWithLoader({fields = true, filter: otherFilter} = {}) {
+      const filter = function (field) {
+        if (!field.hasLoader()) {
+          return false;
+        }
+        if (otherFilter) {
+          return otherFilter(field);
+        }
+        return true;
+      };
+
+      return this.$getFields({fields, filter});
     }
 
     // === Utilities ===
