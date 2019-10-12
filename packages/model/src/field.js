@@ -148,6 +148,14 @@ export class Field extends Property {
     return this._isActive;
   }
 
+  activate() {
+    this._isActive = true;
+  }
+
+  deactivate() {
+    this._isActive = false;
+  }
+
   getValue({throwIfInactive = true, forkIfNotOwned = true} = {}) {
     if (!this._isActive) {
       if (throwIfInactive) {
