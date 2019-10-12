@@ -134,6 +134,31 @@ describe('Model', () => {
     expect(movie.isRestricted).toBe(true);
   });
 
+  test('Getters and setters', async () => {
+    class Session extends Model {
+      @field('string', {
+        getter() {
+          return this._token;
+        },
+        setter(value) {
+          this._token = value;
+        }
+      })
+      token;
+    }
+
+    const layer = new Layer({Session});
+    await layer.open();
+
+    const session = new layer.Session({token: 'abc123'});
+    expect(session.token).toBe('abc123');
+    expect(session._token).toBe('abc123');
+
+    session.token = 'xyz789';
+    expect(session.token).toBe('xyz789');
+    expect(session._token).toBe('xyz789');
+  });
+
   test('Inheritance', async () => {
     class Item extends Model {
       @field('string') id;

@@ -13,6 +13,8 @@ export class Field extends Property {
     let {
       type,
       default: defaultValue,
+      getter,
+      setter,
       isUnique = false,
       validators = [],
       ...unknownOptions
@@ -23,8 +25,10 @@ export class Field extends Property {
     this._options = options;
 
     ow(type, ow.string.nonEmpty);
-    ow(validators, ow.array);
+    ow(getter, ow.optional.function);
+    ow(setter, ow.optional.function);
     ow(isUnique, ow.boolean);
+    ow(validators, ow.array);
 
     validators = validators.map(validator =>
       mapFromOneOrMany(validator, validator => normalizeValidator(validator, {fieldName: name}))
@@ -85,11 +89,33 @@ export class Field extends Property {
     this._validators = validators;
     this._isArray = isArray;
     this._arrayIsOptional = arrayIsOptional;
-    this._default = defaultValue;
     this._isUnique = isUnique;
-    this._isActive = false;
-    this._value = undefined;
     this._source = undefined;
+
+    if (getter !== undefined || setter !== undefined) {
+      if (defaultValue !== undefined) {
+        throw new Error(
+          `A field with a getter or setter cannot have a default value (field: '${name}')`
+        );
+      }
+
+      if (getter !== undefined) {
+        this._getter = getter;
+      }
+
+      if (setter !== undefined) {
+        if (getter === undefined) {
+          throw new Error(`A field with a setter should have a getter (field: '${name}')`);
+        }
+        this._setter = setter;
+      }
+
+      this._isActive = true;
+    } else {
+      this._isActive = false;
+      this._value = undefined;
+      this._default = defaultValue;
+    }
   }
 
   fork(parent) {
@@ -130,6 +156,10 @@ export class Field extends Property {
       return undefined;
     }
 
+    if (this._getter !== undefined) {
+      return this._getter.call(this._parent);
+    }
+
     let value = this._value;
 
     if (value === undefined) {
@@ -146,14 +176,23 @@ export class Field extends Property {
   setValue(value, {source} = {}) {
     this.checkValue(value);
 
-    if (canBecomeObservable(value) && !isObservable(value)) {
-      value = createObservable(value);
+    this._source = source;
+
+    const previousValue = this.getValue({throwIfInactive: false});
+
+    if (this._setter !== undefined) {
+      if (value !== previousValue) {
+        this._setter.call(this._parent, value, previousValue);
+        this._parent.$notify();
+      }
+      return value;
     }
 
     this._isActive = true;
-    this._source = source;
 
-    const previousValue = this._value;
+    if (canBecomeObservable(value) && !isObservable(value)) {
+      value = createObservable(value);
+    }
 
     if (value !== previousValue) {
       this._value = value;
