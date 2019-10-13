@@ -5,10 +5,11 @@ import {StorableProperty} from './storable-property';
 
 export class StorableField extends StorableProperty(Field) {
   constructor(parent, name, options = {}) {
-    const {isVolatile = false, loader, ...unknownOptions} = options;
+    const {isVolatile = false, loader, saver, ...unknownOptions} = options;
 
     ow(isVolatile, ow.boolean);
     ow(loader, ow.optional.function);
+    ow(saver, ow.optional.function);
 
     super(parent, name, unknownOptions);
 
@@ -16,29 +17,30 @@ export class StorableField extends StorableProperty(Field) {
 
     this._isVolatile = isVolatile;
     this._loader = loader;
+    this._saver = saver;
   }
 
   isVolatile() {
     return this._isVolatile;
   }
 
-  async load() {
-    const loader = this._loader;
-
-    if (loader === undefined) {
-      throw new Error(
-        `Cannot use load() with a field that has no loader (field: '${this.getName()}')`
-      );
-    }
-
-    let value = this.getValue({throwIfInactive: false});
-    value = await loader.call(this.getParent(), value);
-    this.setValue(value);
-
-    return value;
-  }
-
   hasLoader() {
     return this._loader !== undefined;
+  }
+
+  async _callLoader() {
+    let value = this.getValue({throwIfInactive: false});
+    value = await this._loader.call(this.getParent(), value);
+    this.setValue(value);
+  }
+
+  hasSaver() {
+    return this._saver !== undefined;
+  }
+
+  async _callSaver() {
+    let value = this.getValue({throwIfInactive: false});
+    value = await this._saver.call(this.getParent(), value);
+    this.setValue(value);
   }
 }

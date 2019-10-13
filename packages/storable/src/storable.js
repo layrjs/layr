@@ -303,7 +303,7 @@ function makeStorable(Base) {
 
       for (const loadedStorable of loadedStorables) {
         for (const field of loadedStorable.$getFieldsWithLoader({fields})) {
-          await field.load();
+          await field._callLoader();
         }
       }
 
@@ -401,13 +401,20 @@ function makeStorable(Base) {
       }
 
       for (const storable of storables) {
+        const fields = storable.$createFieldMaskForActiveFields();
+        for (const field of storable.$getFieldsWithSaver({fields})) {
+          await field._callSaver();
+        }
+      }
+
+      for (const storable of storables) {
         await storable.$beforeSave();
       }
 
       if (this.$hasStore()) {
-        await this.__saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists});
+        storables = await this.__saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists});
       } else {
-        await super.$save(storables, {throwIfNotFound, throwIfAlreadyExists});
+        storables = await super.$save(storables, {throwIfNotFound, throwIfAlreadyExists});
       }
 
       for (const storable of storables) {
@@ -436,9 +443,11 @@ function makeStorable(Base) {
         throwIfAlreadyExists
       });
 
-      for (const serializedStorable of serializedStorables) {
-        this.$deserialize(serializedStorable, {source: storeName});
-      }
+      storables = serializedStorables.map(serializedStorable =>
+        this.$deserialize(serializedStorable, {source: storeName})
+      );
+
+      return storables;
     }
 
     async $save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
@@ -461,11 +470,11 @@ function makeStorable(Base) {
       }
 
       for (const storable of storables) {
-        this.$deleteInstance(storable);
+        await storable.$afterDelete();
       }
 
       for (const storable of storables) {
-        await storable.$afterDelete();
+        storable.$detach();
       }
 
       return storables;
@@ -663,6 +672,20 @@ function makeStorable(Base) {
     $getFieldsWithLoader({fields = true, filter: otherFilter} = {}) {
       const filter = function (field) {
         if (!field.hasLoader()) {
+          return false;
+        }
+        if (otherFilter) {
+          return otherFilter(field);
+        }
+        return true;
+      };
+
+      return this.$getFields({fields, filter});
+    }
+
+    $getFieldsWithSaver({fields = true, filter: otherFilter} = {}) {
+      const filter = function (field) {
+        if (!field.hasSaver()) {
           return false;
         }
         if (otherFilter) {
