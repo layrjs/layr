@@ -39,6 +39,10 @@ export class Entity extends Identity {
   // === Identity mapping ===
 
   static $getInstance(object, _previousInstance) {
+    if (this.$isDetached()) {
+      return undefined;
+    }
+
     if (object === undefined) {
       return undefined;
     }
@@ -80,8 +84,9 @@ export class Entity extends Identity {
     }
   }
 
-  static $deleteInstance(instance) {
-    instance.__deleteIndexes();
+  static $detach() {
+    this.__deleteIndexes();
+    return super.$detach();
   }
 
   static __getIndexes() {
@@ -103,28 +108,43 @@ export class Entity extends Identity {
     return indexes[name];
   }
 
+  static __deleteIndexes() {
+    if (this.$isDetached()) {
+      return;
+    }
+
+    this.__indexes = undefined;
+  }
+
   __setIndexes() {
     const id = this._id;
-
-    if (id !== undefined) {
-      this.__setIndex('id', id);
-    }
+    this.__setIndex('id', id);
 
     for (const field of this.$getUniqueFields()) {
       const name = field.getName();
       const value = field.getValue({throwIfInactive: false, forkIfNotOwned: false});
-      if (value !== undefined) {
-        this.__setIndex(name, value);
-      }
+      this.__setIndex(name, value);
     }
   }
 
   __setIndex(name, value) {
+    if (value === undefined) {
+      return;
+    }
+
     const index = this.constructor.__getIndex(name);
     index[value] = this;
   }
 
   __updateIndex(name, value, previousValue) {
+    if (value === previousValue) {
+      return;
+    }
+
+    if (this.$isDetached()) {
+      return;
+    }
+
     const index = this.constructor.__getIndex(name);
 
     if (previousValue !== undefined) {
@@ -141,21 +161,24 @@ export class Entity extends Identity {
 
   __deleteIndexes() {
     const id = this._id;
-
-    if (id !== undefined) {
-      this.__deleteIndex('id', id);
-    }
+    this.__deleteIndex('id', id);
 
     for (const field of this.$getUniqueFields()) {
       const name = field.getName();
       const value = field.getValue({throwIfInactive: false, forkIfNotOwned: false});
-      if (value !== undefined) {
-        this.__deleteIndex(name, value);
-      }
+      this.__deleteIndex(name, value);
     }
   }
 
   __deleteIndex(name, value) {
+    if (value === undefined) {
+      return;
+    }
+
+    if (this.$isDetached()) {
+      return;
+    }
+
     const index = this.constructor.__getIndex(name);
     index[value] = undefined;
   }

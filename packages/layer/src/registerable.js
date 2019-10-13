@@ -55,6 +55,14 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
+    static async $open() {
+      // Override this method to implement initialization logic
+    }
+
+    static async $close() {
+      // Override this method to implement deinitialization logic
+    }
+
     static $exposeProperty(name, type, options) {
       ow(type, ow.string.oneOf(['field', 'method']));
       const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array, ow.set);
@@ -123,12 +131,13 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       };
     }
 
-    static async $open() {
-      // Override this method to implement initialization logic
+    static $detach() {
+      this.__isDetached = true;
+      return this;
     }
 
-    static async $close() {
-      // Override this method to implement deinitialization logic
+    static $isDetached() {
+      return this.__isDetached === true;
     }
 
     static $callParentLayer(methodName, ...args) {
@@ -253,6 +262,14 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
+    async $open() {
+      // Override this method to implement initialization logic
+    }
+
+    async $close() {
+      // Override this method to implement deinitialization logic
+    }
+
     $exposeProperty(name, type, options) {
       this.constructor.$exposeProperty.call(this, name, type, options);
     }
@@ -321,12 +338,12 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       this.$deserialize(fork.$serialize());
     }
 
-    async $open() {
-      // Override this method to implement initialization logic
+    $detach() {
+      return this.constructor.$detach.call(this);
     }
 
-    async $close() {
-      // Override this method to implement deinitialization logic
+    $isDetached() {
+      return this.constructor.$isDetached() || this.constructor.$isDetached.call(this);
     }
 
     $callParentLayer(methodName, ...args) {

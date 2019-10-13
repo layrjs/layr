@@ -138,6 +138,17 @@ export class Layer {
     this._isOpen = false;
   }
 
+  async run(func) {
+    ow(func, ow.function);
+
+    await this.open();
+    try {
+      return await func(this);
+    } finally {
+      await this.close();
+    }
+  }
+
   isOpen() {
     return this._isOpen === true;
   }
@@ -162,6 +173,11 @@ export class Layer {
       // Since the layer has been forked, the registerable must be forked as well
       registerable = registerable.__fork();
       registerable.$setLayer(this);
+
+      if (this.__isDetached) {
+        registerable.$detach();
+      }
+
       this._registerables[name] = registerable;
     }
 
@@ -179,6 +195,20 @@ export class Layer {
             continue;
           }
           yield item;
+        }
+      }
+    };
+  }
+
+  _getOwnItems() {
+    const registerables = this._registerables;
+    return {
+      * [Symbol.iterator]() {
+        // eslint-disable-next-line guard-for-in
+        for (const name in registerables) {
+          if (hasOwnProperty(registerables, name)) {
+            yield registerables[name];
+          }
         }
       }
     };
@@ -203,6 +233,20 @@ export class Layer {
     const forkedLayer = Object.create(this);
     forkedLayer._registerables = Object.create(this._registerables);
     return forkedLayer;
+  }
+
+  // === Attachment ===
+
+  detach() {
+    for (const item of this._getOwnItems()) {
+      item.$detach();
+    }
+    this.__isDetached = true;
+    return this;
+  }
+
+  isDetached() {
+    return this.__isDetached === true;
   }
 
   // === Introspection ===

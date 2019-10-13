@@ -79,7 +79,7 @@ export class Identity extends Model {
       this._id = id;
       this.__onIdValueSet(id);
     } else if (this._id !== id) {
-      throw new Error(`Cannot change the id an Identity instance`);
+      throw new Error(`Cannot change the id of an Identity instance`);
     }
 
     this.__idSource = source;
