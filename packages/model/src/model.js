@@ -245,6 +245,22 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.$getField(name, {throwIfNotFound: false}) !== undefined;
   }
 
+  $fieldIsActive(name) {
+    return this.$getField(name).isActive();
+  }
+
+  $activateField(name) {
+    this.$getField(name).activate();
+  }
+
+  $deactivateField(name) {
+    this.$getField(name).deactivate();
+  }
+
+  $getFieldValue(name, {throwIfInactive = true} = {}) {
+    return this.$getField(name).getValue({throwIfInactive});
+  }
+
   $getFields({fields = true, filter: otherFilter} = {}) {
     if (FieldMask.isFieldMask(fields)) {
       fields = fields.serialize();
