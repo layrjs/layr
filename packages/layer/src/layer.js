@@ -16,7 +16,10 @@ const debugReceiving = debugModule('liaison:layer:receiving');
 // DEBUG=liaison:layer:* DEBUG_DEPTH=10
 
 export class Layer {
-  constructor(registerables, {name, parent} = {}) {
+  constructor(
+    registerables,
+    {name, parent, beforeInvokeReceivedQuery, afterInvokeReceivedQuery} = {}
+  ) {
     this._registerables = Object.create(null);
 
     if (registerables !== undefined) {
@@ -27,6 +30,14 @@ export class Layer {
 
     if (parent !== undefined) {
       this.setParent(parent);
+    }
+
+    if (beforeInvokeReceivedQuery !== undefined) {
+      this.setBeforeInvokeReceivedQuery(beforeInvokeReceivedQuery);
+    }
+
+    if (afterInvokeReceivedQuery !== undefined) {
+      this.setAfterInvokeReceivedQuery(afterInvokeReceivedQuery);
     }
   }
 
@@ -382,6 +393,12 @@ export class Layer {
     return this._parent !== undefined;
   }
 
+  // === Queries ===
+
+  invokeQuery(query) {
+    return invokeQuery(this, query);
+  }
+
   sendQuery(query) {
     const parent = this.getParent();
     const source = this.getName();
@@ -404,16 +421,16 @@ export class Layer {
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
     this._deserializeItems(items, {source, isReceiving: true});
     query = this.deserialize(query, {source});
-    return syncOrAsync(this.invokeQuery(query), result => {
-      result = this.serialize(result, {target: source});
-      items = this._serializeItems({target: source});
-      debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
-      return {result, items};
+    return syncOrAsync(this.callBeforeInvokeReceivedQuery(), () => {
+      return syncOrAsync(this.invokeQuery(query), result => {
+        result = this.serialize(result, {target: source});
+        items = this._serializeItems({target: source});
+        return syncOrAsync(this.callAfterInvokeReceivedQuery(), () => {
+          debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
+          return {result, items};
+        });
+      });
     });
-  }
-
-  invokeQuery(query) {
-    return invokeQuery(this, query);
   }
 
   _serializeItems({target, isSending} = {}) {
@@ -463,6 +480,38 @@ export class Layer {
       }
 
       item.$deserialize(serializedItem, {source});
+    }
+  }
+
+  getBeforeInvokeReceivedQuery() {
+    return this._beforeInvokeReceivedQuery;
+  }
+
+  setBeforeInvokeReceivedQuery(beforeInvokeReceivedQuery) {
+    ow(beforeInvokeReceivedQuery, ow.function);
+
+    this._beforeInvokeReceivedQuery = beforeInvokeReceivedQuery;
+  }
+
+  callBeforeInvokeReceivedQuery() {
+    if (this._beforeInvokeReceivedQuery) {
+      return this._beforeInvokeReceivedQuery(this);
+    }
+  }
+
+  getAfterInvokeReceivedQuery() {
+    return this._afterInvokeReceivedQuery;
+  }
+
+  setAfterInvokeReceivedQuery(afterInvokeReceivedQuery) {
+    ow(afterInvokeReceivedQuery, ow.function);
+
+    this._afterInvokeReceivedQuery = afterInvokeReceivedQuery;
+  }
+
+  callAfterInvokeReceivedQuery() {
+    if (this._afterInvokeReceivedQuery) {
+      return this._afterInvokeReceivedQuery(this);
     }
   }
 
