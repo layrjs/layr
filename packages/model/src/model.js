@@ -238,15 +238,6 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $setField(name, options = {}) {
-    if (this.$hasProperty(name)) {
-      const existingField = this.$getField(name);
-
-      const type = options.type;
-      if (type !== undefined && type !== existingField.getType()) {
-        throw new Error(`Cannot change the type of an existing field (name: '${name}')`);
-      }
-    }
-
     return this.$setProperty(this.constructor.$Field, name, options);
   }
 

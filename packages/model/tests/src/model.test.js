@@ -170,12 +170,6 @@ describe('Model', () => {
       @field('string') title;
     }
 
-    expect(() => {
-      return class Actor extends Item {
-        @field('number') id;
-      };
-    }).toThrow(/Cannot change the type of an existing field/);
-
     expect(
       Item.prototype
         .$getField('id')
