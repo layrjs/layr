@@ -302,8 +302,11 @@ function makeStorable(Base) {
       }
 
       for (const loadedStorable of loadedStorables) {
-        for (const field of loadedStorable.$getFieldsWithLoader({fields})) {
-          await field._callLoader();
+        for (const field of loadedStorable.$getFieldsWithHook('loader', {
+          fields,
+          includeInactiveFields: true
+        })) {
+          await field.callHook('loader');
         }
       }
 
@@ -401,9 +404,8 @@ function makeStorable(Base) {
       }
 
       for (const storable of storables) {
-        const fields = storable.$createFieldMaskForActiveFields();
-        for (const field of storable.$getFieldsWithSaver({fields})) {
-          await field._callSaver();
+        for (const field of storable.$getFieldsWithHook('saver')) {
+          await field.callHook('saver');
         }
       }
 
@@ -512,31 +514,8 @@ function makeStorable(Base) {
         return undefined;
       }
 
-      for (const property of this.prototype.$getProperties()) {
-        const name = property.getName();
-        const finder = property.getFinder();
-
-        if (!finder) {
-          continue;
-        }
-
-        const {[name]: value, ...remainingFilter} = filter;
-
-        if (value === undefined) {
-          continue;
-        }
-
-        let newFilter = await finder.call(this, value);
-
-        if (
-          isIdentity(newFilter) ||
-          (Array.isArray(newFilter) && newFilter.every(item => isIdentity(item)))
-        ) {
-          // The finder returned an $identity shortcut
-          newFilter = {$identity: newFilter};
-        }
-
-        filter = {...remainingFilter, ...newFilter};
+      for (const property of this.prototype.$getPropertiesWithHook('finder')) {
+        filter = await property.callHook('finder', filter);
       }
 
       return filter;
@@ -617,40 +596,71 @@ function makeStorable(Base) {
     // === Hooks ===
 
     async $afterLoad() {
+      for (const field of this.$getFieldsWithHook('afterLoad')) {
+        await field.callHook('afterLoad');
+      }
+
       for (const substorable of this.$getSubstorables()) {
         await substorable.$afterLoad();
       }
     }
 
     async $beforeSave() {
+      for (const field of this.$getFieldsWithHook('beforeSave')) {
+        await field.callHook('beforeSave');
+      }
+
       for (const substorable of this.$getSubstorables()) {
         await substorable.$beforeSave();
       }
     }
 
     async $afterSave() {
+      for (const field of this.$getFieldsWithHook('afterSave')) {
+        await field.callHook('afterSave');
+      }
+
       for (const substorable of this.$getSubstorables()) {
         await substorable.$afterSave();
       }
     }
 
     async $beforeDelete() {
+      for (const field of this.$getFieldsWithHook('beforeDelete')) {
+        await field.callHook('beforeDelete');
+      }
+
       for (const substorable of this.$getSubstorables()) {
         await substorable.$beforeDelete();
       }
     }
 
     async $afterDelete() {
+      for (const field of this.$getFieldsWithHook('afterDelete')) {
+        await field.callHook('afterDelete');
+      }
+
       for (const substorable of this.$getSubstorables()) {
         await substorable.$afterDelete();
       }
     }
 
     $getSubstorables() {
-      const filter = function (field) {
-        return typeof field.getScalar().getModel()?.isSubstorable === 'function';
+      const filter = function (_field) {
+        // TODO
+        return false;
       };
       return Array.from(this.$getFieldValues({filter})).map(result => result.value);
+    }
+
+    // === Storable properties ===
+
+    $getPropertiesWithHook(name) {
+      return this.$getProperties({
+        filter(property) {
+          return property.hasHook(name);
+        }
+      });
     }
 
     // === Storable fields ===
@@ -669,32 +679,16 @@ function makeStorable(Base) {
       return this.$createFieldMask({fields, filter});
     }
 
-    $getFieldsWithLoader({fields = true, filter: otherFilter} = {}) {
-      const filter = function (field) {
-        if (!field.hasLoader()) {
-          return false;
+    $getFieldsWithHook(name, {fields = true, includeInactiveFields = false} = {}) {
+      return this.$getFields({
+        fields,
+        filter(field) {
+          if (!includeInactiveFields && !field.isActive()) {
+            return false;
+          }
+          return field.hasHook(name);
         }
-        if (otherFilter) {
-          return otherFilter(field);
-        }
-        return true;
-      };
-
-      return this.$getFields({fields, filter});
-    }
-
-    $getFieldsWithSaver({fields = true, filter: otherFilter} = {}) {
-      const filter = function (field) {
-        if (!field.hasSaver()) {
-          return false;
-        }
-        if (otherFilter) {
-          return otherFilter(field);
-        }
-        return true;
-      };
-
-      return this.$getFields({fields, filter});
+      });
     }
 
     // === Utilities ===
