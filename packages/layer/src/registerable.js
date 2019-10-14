@@ -1,5 +1,5 @@
 import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
-import {syncOrAsync} from '@deepr/util';
+import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
 import {isSerializable} from './serializable';
@@ -94,7 +94,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     }
 
     // eslint-disable-next-line no-unused-vars
-    static async $exposedPropertyOperationIsAllowed({property, operation, setting}) {
+    static $exposedPropertyOperationIsAllowed({property, operation, setting}) {
       if (setting === true) {
         return true;
       }
@@ -143,7 +143,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     static $callParentLayer(methodName, ...args) {
       const layer = this.$getLayer();
       const query = this.__buildQuery(methodName, ...args);
-      return syncOrAsync(layer.sendQuery(query), ({result}) => result);
+      return possiblyAsync(layer.sendQuery(query), ({result}) => result);
     }
 
     static __buildQuery(methodName, ...args) {
@@ -286,8 +286,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return this.constructor.$hasExposedProperties.call(this);
     }
 
-    async $exposedPropertyOperationIsAllowed({property, operation, setting}) {
-      return await this.constructor.$exposedPropertyOperationIsAllowed.call(this, {
+    $exposedPropertyOperationIsAllowed({property, operation, setting}) {
+      return this.constructor.$exposedPropertyOperationIsAllowed.call(this, {
         property,
         operation,
         setting
@@ -417,7 +417,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     }
   };
 
-// === Exposition ===
+// === Property exposition ===
 
 export function expose(options = {}) {
   return function (target, name, descriptor) {

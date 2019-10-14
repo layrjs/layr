@@ -2,7 +2,7 @@ import {inspect} from 'util';
 import nanoid from 'nanoid';
 import {hasOwnProperty} from '@liaison/util';
 import {invokeQuery} from '@deepr/runtime';
-import {syncOrAsync} from '@deepr/util';
+import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import debugModule from 'debug';
 
@@ -407,7 +407,7 @@ export class Layer {
     query = this.serialize(query, {target});
     const items = this._serializeItems({isSending: true});
     debugSending(`[%s → %s] {query: %o, items: %o}`, source, target, query, items);
-    return syncOrAsync(parent.receiveQuery({query, items, source}), ({result, items}) => {
+    return possiblyAsync(parent.receiveQuery({query, items, source}), ({result, items}) => {
       debugSending(`[%s ← %s] {result: %o, items: %o}`, source, target, result, items);
       result = this.deserialize(result, {source: target});
       this._deserializeItems(items, {source: target});
@@ -421,11 +421,11 @@ export class Layer {
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
     this._deserializeItems(items, {source, isReceiving: true});
     query = this.deserialize(query, {source});
-    return syncOrAsync(this.callBeforeInvokeReceivedQuery(), () => {
-      return syncOrAsync(this.invokeQuery(query), result => {
+    return possiblyAsync(this.callBeforeInvokeReceivedQuery(), () => {
+      return possiblyAsync(this.invokeQuery(query), result => {
         result = this.serialize(result, {target: source});
         items = this._serializeItems({target: source});
-        return syncOrAsync(this.callAfterInvokeReceivedQuery(), () => {
+        return possiblyAsync(this.callAfterInvokeReceivedQuery(), () => {
           debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
           return {result, items};
         });
