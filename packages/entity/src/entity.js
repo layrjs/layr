@@ -1,5 +1,5 @@
 import {Identity} from '@liaison/identity';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 
 export class Entity extends Identity {
   $serialize({target, fields, _isDeep} = {}) {

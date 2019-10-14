@@ -1,4 +1,4 @@
-import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
+import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 

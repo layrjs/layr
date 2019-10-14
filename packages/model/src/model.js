@@ -1,6 +1,6 @@
 import {Observable} from '@liaison/observable';
 import {Registerable, Serializable} from '@liaison/layer';
-import {hasOwnProperty, getInheritedPropertyDescriptor} from '@liaison/util';
+import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
 import ow from 'ow';
 import isEmpty from 'lodash/isEmpty';
 import {inspect} from 'util';

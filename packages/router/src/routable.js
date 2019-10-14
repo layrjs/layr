@@ -1,4 +1,4 @@
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 
 import {Route} from './route';
 

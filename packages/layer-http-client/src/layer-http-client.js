@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 import nanoid from 'nanoid';
 import debugModule from 'debug';
 

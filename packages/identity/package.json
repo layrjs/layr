@@ -14,7 +14,7 @@
   "dependencies": {
     "cuid": "^2.1.6",
     "@liaison/model": "^0.1.2",
-    "@liaison/util": "^0.1.0",
+    "core-helpers": "^0.1.0",
     "lodash": "^4.17.11",
     "possibly-many": "^0.1.0"
   },

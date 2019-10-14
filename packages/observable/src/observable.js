@@ -1,4 +1,4 @@
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 
 export const Observable = (Base = Object) =>
   class Observable extends Base {

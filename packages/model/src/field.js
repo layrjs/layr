@@ -1,5 +1,5 @@
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 import {possiblyMany} from 'possibly-many';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';

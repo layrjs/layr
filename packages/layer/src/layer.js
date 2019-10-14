@@ -1,6 +1,6 @@
 import {inspect} from 'util';
 import nanoid from 'nanoid';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';

@@ -12,7 +12,7 @@
     "@liaison/model": "^0.1.0",
     "@liaison/promisable": "^0.1.0",
     "@liaison/trackable": "^0.1.0",
-    "@liaison/util": "^0.1.0",
+    "core-helpers": "^0.1.0",
     "lodash": "^4.17.11",
     "lru_map": "^0.3.3",
     "ow": "^0.13.2"

@@ -1,6 +1,6 @@
 import React from 'react';
 import {isModel} from '@liaison/model';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 
 import {useModel} from './hooks';
 

@@ -8,6 +8,6 @@
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/react-integration",
   "dependencies": {
     "@liaison/model": "^0.1.0",
-    "@liaison/util": "^0.1.0"
+    "core-helpers": "^0.1.0"
   }
 }

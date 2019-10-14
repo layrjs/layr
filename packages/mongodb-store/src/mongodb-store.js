@@ -1,6 +1,6 @@
 import {Registerable} from '@liaison/layer';
 import {MongoClient} from 'mongodb';
-import {hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from 'core-helpers';
 import groupBy from 'lodash/groupBy';
 import isPlainObject from 'lodash/isPlainObject';
 import ow from 'ow';
