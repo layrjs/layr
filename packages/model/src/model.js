@@ -1,6 +1,7 @@
 import {Observable} from '@liaison/observable';
 import {Registerable, Serializable} from '@liaison/layer';
 import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
+import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import isEmpty from 'lodash/isEmpty';
 import {inspect} from 'util';
@@ -99,27 +100,29 @@ export class Model extends Observable(Serializable(Registerable())) {
 
     const isNew = this.$isNew();
 
-    for (const name of this.$getFieldNames()) {
+    return possiblyAsync.forEach(this.$getFieldNames(), name => {
       const fieldMask = rootFieldMask.get(name);
       if (!fieldMask) {
-        continue;
+        return;
       }
 
       if (hasOwnProperty(object, name)) {
         const field = this.$getField(name);
         const value = object[name];
 
-        field.deserializeValue(value, {source, fields: fieldMask});
+        return possiblyAsync(field.deserializeValue(value, {source, fields: fieldMask}), () => {
+          if (source === undefined) {
+            field.setSource(sources[name]);
+          }
+        });
+      }
 
-        if (source === undefined) {
-          field.setSource(sources[name]);
-        }
-      } else if (isNew) {
+      if (isNew) {
         const field = this.$getField(name);
         const defaultValue = field.getDefaultValue();
         field.setValue(defaultValue);
       }
-    }
+    });
   }
 
   static $getInstance(object, previousInstance) {

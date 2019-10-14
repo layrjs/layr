@@ -339,7 +339,7 @@ export class Layer {
   }
 
   _deserializeArray(array, options) {
-    return array.map(item => this.deserialize(item, options));
+    return possiblyAsync.map(array, item => this.deserialize(item, options));
   }
 
   _deserializeObject(object, options) {
@@ -367,11 +367,7 @@ export class Layer {
   }
 
   _deserializePlainObject(object, options) {
-    const deserializedObject = {};
-    for (const [key, value] of Object.entries(object)) {
-      deserializedObject[key] = this.deserialize(value, options);
-    }
-    return deserializedObject;
+    return possiblyAsync.mapObject(object, value => this.deserialize(value, options));
   }
 
   // === Parent layer ===

@@ -1,3 +1,5 @@
+import {possiblyAsync} from 'possibly-async';
+
 export const Serializable = (Base = Object) =>
   class Serializable extends Base {
     constructor(object) {
@@ -38,8 +40,7 @@ export const Serializable = (Base = Object) =>
         instance.constructor = this;
         this.$setInstance(instance);
       }
-      instance.$deserialize(object, otherOptions);
-      return instance;
+      return possiblyAsync(instance.$deserialize(object, otherOptions), () => instance);
     }
 
     $deserialize(object) {

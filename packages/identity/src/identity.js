@@ -1,8 +1,9 @@
 import {Model} from '@liaison/model';
+import {possiblyAsync} from 'possibly-async';
+import {possiblyMany} from 'possibly-many';
 import {inspect} from 'util';
 import cuid from 'cuid';
 import isEmpty from 'lodash/isEmpty';
-import {possiblyMany} from 'possibly-many';
 
 export class Identity extends Model {
   constructor(object = {}) {
@@ -51,13 +52,13 @@ export class Identity extends Model {
   }
 
   $deserialize(object = {}, {source, ...otherOptions} = {}) {
-    super.$deserialize(object, {source, ...otherOptions});
-
-    const id = object._id;
-    if (id !== undefined) {
-      const idSource = source === undefined ? object._src?._id : source;
-      this.__setId(id, {source: idSource});
-    }
+    return possiblyAsync(super.$deserialize(object, {source, ...otherOptions}), () => {
+      const id = object._id;
+      if (id !== undefined) {
+        const idSource = source === undefined ? object._src?._id : source;
+        this.__setId(id, {source: idSource});
+      }
+    });
   }
 
   static $getInstance(object, previousInstance) {

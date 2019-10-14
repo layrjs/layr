@@ -1,5 +1,6 @@
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
 import {hasOwnProperty} from 'core-helpers';
+import {possiblyAsync} from 'possibly-async';
 import {possiblyMany} from 'possibly-many';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
@@ -288,11 +289,15 @@ export class Field extends Property {
   deserializeValue(value, {source, fields} = {}) {
     const previousValue = this.isActive() ? this.getValue() : undefined;
 
-    this.setValue(
-      possiblyMany.map(value, value =>
-        this._scalar.deserializeValue(value, {source, fields, previousValue})
+    return possiblyAsync(
+      possiblyAsync.possiblyMany(
+        possiblyMany.map(value, value =>
+          this._scalar.deserializeValue(value, {source, fields, previousValue})
+        )
       ),
-      {source}
+      value => {
+        this.setValue(value, {source});
+      }
     );
   }
 
