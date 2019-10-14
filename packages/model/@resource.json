@@ -13,7 +13,8 @@
     "@liaison/observable": "^0.1.0",
     "@liaison/util": "^0.1.0",
     "lodash": "^4.17.11",
-    "ow": "^0.13.2"
+    "ow": "^0.13.2",
+    "possibly-many": "^0.1.0"
   },
   "tests": {
     "@include": "./tests"

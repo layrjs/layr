@@ -1,5 +1,6 @@
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
-import {mapFromOneOrMany, hasOwnProperty} from '@liaison/util';
+import {hasOwnProperty} from '@liaison/util';
+import {possiblyMany} from 'possibly-many';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';
@@ -31,7 +32,7 @@ export class Field extends Property {
     ow(validators, ow.array);
 
     validators = validators.map(validator =>
-      mapFromOneOrMany(validator, validator => normalizeValidator(validator, {fieldName: name}))
+      possiblyMany.map(validator, validator => normalizeValidator(validator, {fieldName: name}))
     );
 
     this._type = type;
@@ -224,7 +225,7 @@ export class Field extends Property {
   }
 
   _forkValue() {
-    return mapFromOneOrMany(this._value, value => this._scalar._forkValue(value));
+    return possiblyMany.map(this._value, value => this._scalar._forkValue(value));
   }
 
   getValues() {
@@ -258,7 +259,7 @@ export class Field extends Property {
       );
     }
 
-    return mapFromOneOrMany(value, value => this._scalar.checkValue(value));
+    return possiblyMany.map(value, value => this._scalar.checkValue(value));
   }
 
   getSource() {
@@ -270,7 +271,7 @@ export class Field extends Property {
   }
 
   createValue(value) {
-    return this.setValue(mapFromOneOrMany(value, value => this._scalar.createValue(value)));
+    return this.setValue(possiblyMany.map(value, value => this._scalar.createValue(value)));
   }
 
   serializeValue({target, fields} = {}) {
@@ -281,14 +282,14 @@ export class Field extends Property {
     }
 
     const value = this.getValue();
-    return mapFromOneOrMany(value, value => this._scalar.serializeValue(value, {target, fields}));
+    return possiblyMany.map(value, value => this._scalar.serializeValue(value, {target, fields}));
   }
 
   deserializeValue(value, {source, fields} = {}) {
     const previousValue = this.isActive() ? this.getValue() : undefined;
 
     this.setValue(
-      mapFromOneOrMany(value, value =>
+      possiblyMany.map(value, value =>
         this._scalar.deserializeValue(value, {source, fields, previousValue})
       ),
       {source}

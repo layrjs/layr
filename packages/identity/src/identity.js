@@ -2,7 +2,7 @@ import {Model} from '@liaison/model';
 import {inspect} from 'util';
 import cuid from 'cuid';
 import isEmpty from 'lodash/isEmpty';
-import {findFromOneOrMany} from '@liaison/util';
+import {possiblyMany} from 'possibly-many';
 
 export class Identity extends Model {
   constructor(object = {}) {
@@ -61,7 +61,7 @@ export class Identity extends Model {
   }
 
   static $getInstance(object, previousInstance) {
-    return findFromOneOrMany(
+    return possiblyMany.find(
       previousInstance,
       previousInstance =>
         previousInstance?.constructor === this && previousInstance._id === object?._id
