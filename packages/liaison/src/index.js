@@ -5,4 +5,3 @@ export * from '@liaison/model';
 export * from '@liaison/observable';
 export * from '@liaison/router';
 export * from '@liaison/storable';
-export * from '@liaison/util';
