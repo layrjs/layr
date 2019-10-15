@@ -19,9 +19,8 @@ export class Model extends Observable(Serializable(Registerable())) {
       if (hasOwnProperty(object, name)) {
         const value = object[name];
         field.createValue(value);
-      } else {
-        const defaultValue = field.getDefaultValue();
-        field.setValue(defaultValue);
+      } else if (field.hasDefaultValue()) {
+        field.setValue(field.getDefaultValue());
       }
     }
   }
@@ -91,7 +90,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     };
   }
 
-  $deserialize(object = {}, {source, fields} = {}) {
+  $deserialize(object = {}, {source, fields, filter} = {}) {
     super.$deserialize(object);
 
     const sources = source === undefined ? object._src || {} : undefined;
@@ -100,27 +99,31 @@ export class Model extends Observable(Serializable(Registerable())) {
 
     const isNew = this.$isNew();
 
+    // TODO: Deserialize unique fields first
     return possiblyAsync.forEach(this.$getFieldNames(), name => {
       const fieldMask = rootFieldMask.get(name);
       if (!fieldMask) {
         return;
       }
 
+      const field = this.$getField(name);
+
       if (hasOwnProperty(object, name)) {
-        const field = this.$getField(name);
         const value = object[name];
 
-        return possiblyAsync(field.deserializeValue(value, {source, fields: fieldMask}), () => {
-          if (source === undefined) {
-            field.setSource(sources[name]);
+        return possiblyAsync(filter ? filter.call(this, field) : true, isNotFilteredOut => {
+          if (isNotFilteredOut) {
+            return possiblyAsync(field.deserializeValue(value, {source, fields: fieldMask}), () => {
+              if (source === undefined) {
+                field.setSource(sources[name]);
+              }
+            });
           }
         });
       }
 
-      if (isNew) {
-        const field = this.$getField(name);
-        const defaultValue = field.getDefaultValue();
-        field.setValue(defaultValue);
+      if (isNew && field.hasDefaultValue()) {
+        field.setValue(field.getDefaultValue());
       }
     });
   }
@@ -180,7 +183,7 @@ export class Model extends Observable(Serializable(Registerable())) {
         for (const name of model.$getPropertyNames()) {
           const property = model.$getProperty(name);
 
-          if (filter && !filter(property)) {
+          if (filter && !filter.call(this, property)) {
             continue;
           }
 
@@ -282,7 +285,7 @@ export class Model extends Observable(Serializable(Registerable())) {
       }
 
       if (otherFilter) {
-        return otherFilter(field);
+        return otherFilter.call(this, field);
       }
 
       return true;
@@ -329,7 +332,7 @@ export class Model extends Observable(Serializable(Registerable())) {
         return false;
       }
       if (otherFilter) {
-        return otherFilter(field);
+        return otherFilter.call(this, field);
       }
       return true;
     };
@@ -343,7 +346,7 @@ export class Model extends Observable(Serializable(Registerable())) {
         return false;
       }
       if (otherFilter) {
-        return otherFilter(field);
+        return otherFilter.call(this, field);
       }
       return true;
     };
@@ -518,7 +521,7 @@ export class Model extends Observable(Serializable(Registerable())) {
         return false;
       }
       if (otherFilter) {
-        return otherFilter(property);
+        return otherFilter.call(this, property);
       }
       return true;
     };

@@ -40,7 +40,12 @@ describe('Storable', () => {
     await rootLayer.open();
 
     let layer = rootLayer.fork();
-    let movie = new layer.Movie({title: 'Inception', year: 2010, secret: 'abc123'});
+    let movie = new layer.Movie({
+      title: 'Inception',
+      year: 2010,
+      reference: undefined,
+      secret: 'abc123'
+    });
     const id = movie.id;
 
     const nonVolatileFields = movie.$createFieldMaskForNonVolatileFields();

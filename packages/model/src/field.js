@@ -286,13 +286,13 @@ export class Field extends Property {
     return possiblyMany.map(value, value => this._scalar.serializeValue(value, {target, fields}));
   }
 
-  deserializeValue(value, {source, fields} = {}) {
+  deserializeValue(value, {source, fields, filter} = {}) {
     const previousValue = this.isActive() ? this.getValue() : undefined;
 
     return possiblyAsync(
       possiblyAsync.possiblyMany(
         possiblyMany.map(value, value =>
-          this._scalar.deserializeValue(value, {source, fields, previousValue})
+          this._scalar.deserializeValue(value, {source, fields, filter, previousValue})
         )
       ),
       value => {
@@ -465,7 +465,7 @@ class Scalar {
     return value.$serialize({target, fields, _isDeep: true});
   }
 
-  deserializeValue(value, {source, fields, previousValue}) {
+  deserializeValue(value, {source, fields, filter, previousValue}) {
     if (value === undefined) {
       throw new Error(`Cannot deserialize 'undefined' (field: '${this._field.getName()}')`);
     }
@@ -487,7 +487,7 @@ class Scalar {
       throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
     const Model = this._field.getLayer().get(type);
-    return Model.$deserialize(value, {source, fields, previousInstance: previousValue});
+    return Model.$deserialize(value, {source, fields, filter, previousInstance: previousValue});
   }
 
   hasValidators() {

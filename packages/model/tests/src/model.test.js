@@ -67,8 +67,8 @@ describe('Model', () => {
     await layer.open();
 
     let movie = new layer.Movie();
-    expect(movie.genres).toBe(undefined);
-    expect(movie.actors).toBe(undefined);
+    expect(movie.$fieldIsActive('genres')).toBe(false);
+    expect(movie.$fieldIsActive('actors')).toBe(false);
 
     movie = new layer.Movie({
       title: 'Inception',
@@ -126,7 +126,7 @@ describe('Model', () => {
     await layer.open();
 
     let movie = new layer.Movie();
-    expect(movie.title).toBeUndefined();
+    expect(movie.$fieldIsActive('title')).toBe(false);
     expect(movie.isRestricted).toBe(false);
 
     movie = new layer.Movie({title: 'Inception', isRestricted: true});
@@ -239,6 +239,8 @@ describe('Model', () => {
     await layer.open();
 
     let movie = new layer.Movie();
+    expect(movie.$getFailedValidators()).toBeUndefined();
+    movie.title = undefined;
     expect(movie.$getFailedValidators()).toEqual({title: ['required()']});
     movie.title = '';
     expect(movie.$getFailedValidators()).toEqual({title: ['notEmpty()']});
@@ -352,17 +354,19 @@ describe('Model', () => {
 
   test('Serialization', async () => {
     class Movie extends Model {
-      @expose() @field('string') title;
+      @field('string') title;
 
-      @expose() @field('string') country;
+      @field('string') country;
 
-      @expose() @field('Date') releasedOn;
+      @field('Date') releasedOn;
 
-      @expose() @field('string[]') genres;
+      @field('string[]') genres;
 
-      @expose() @field('TechnicalSpecs') technicalSpecs;
+      @field('TechnicalSpecs') technicalSpecs;
 
-      @expose() @field('Actor[]') actors;
+      @field('Actor[]') actors;
+
+      @field('boolean') isAvailable = true;
     }
 
     class TechnicalSpecs extends Model {
@@ -379,27 +383,14 @@ describe('Model', () => {
     // Simple serialization
 
     let movie = new layer.Movie();
-    expect(movie.$serialize()).toEqual({
-      _type: 'Movie',
-      _new: true,
-      title: null,
-      country: null,
-      releasedOn: null,
-      genres: null,
-      technicalSpecs: null,
-      actors: null
-    });
+    expect(movie.$serialize()).toEqual({_type: 'Movie', _new: true, isAvailable: true});
 
     movie.title = 'Inception';
     expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
-      country: null,
-      releasedOn: null,
-      genres: null,
-      technicalSpecs: null,
-      actors: null
+      isAvailable: true
     });
 
     movie.country = 'USA';
@@ -408,10 +399,7 @@ describe('Model', () => {
       _new: true,
       title: 'Inception',
       country: 'USA',
-      releasedOn: null,
-      genres: null,
-      technicalSpecs: null,
-      actors: null
+      isAvailable: true
     });
 
     movie.releasedOn = new Date(Date.UTC(2010, 6, 16));
@@ -421,9 +409,7 @@ describe('Model', () => {
       title: 'Inception',
       country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
-      genres: null,
-      technicalSpecs: null,
-      actors: null
+      isAvailable: true
     });
 
     movie.genres = ['action', 'adventure', 'sci-fi'];
@@ -434,8 +420,7 @@ describe('Model', () => {
       country: 'USA',
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
-      technicalSpecs: null,
-      actors: null
+      isAvailable: true
     });
 
     movie.technicalSpecs = new layer.TechnicalSpecs({aspectRatio: '2.39:1'});
@@ -447,7 +432,7 @@ describe('Model', () => {
       releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_type: 'TechnicalSpecs', _new: true, aspectRatio: '2.39:1'},
-      actors: null
+      isAvailable: true
     });
 
     movie.actors = [
@@ -465,7 +450,24 @@ describe('Model', () => {
       actors: [
         {_type: 'Actor', _new: true, fullName: 'Leonardo DiCaprio'},
         {_type: 'Actor', _new: true, fullName: 'Joseph Gordon-Levitt'}
-      ]
+      ],
+      isAvailable: true
+    });
+
+    movie.isAvailable = false;
+    expect(movie.$serialize()).toEqual({
+      _type: 'Movie',
+      _new: true,
+      title: 'Inception',
+      country: 'USA',
+      releasedOn: {_type: 'Date', _value: '2010-07-16T00:00:00.000Z'},
+      genres: ['action', 'adventure', 'sci-fi'],
+      technicalSpecs: {_type: 'TechnicalSpecs', _new: true, aspectRatio: '2.39:1'},
+      actors: [
+        {_type: 'Actor', _new: true, fullName: 'Leonardo DiCaprio'},
+        {_type: 'Actor', _new: true, fullName: 'Joseph Gordon-Levitt'}
+      ],
+      isAvailable: false
     });
 
     // Serialization of 'undefined'
@@ -532,17 +534,19 @@ describe('Model', () => {
 
   test('Deserialization', async () => {
     class Movie extends Model {
-      @expose() @field('string') title;
+      @field('string') title;
 
-      @expose() @field('string') country;
+      @field('string') country;
 
-      @expose() @field('Date') releasedOn;
+      @field('Date') releasedOn;
 
-      @expose() @field('string[]') genres;
+      @field('string[]') genres;
 
-      @expose() @field('TechnicalSpecs') technicalSpecs;
+      @field('TechnicalSpecs') technicalSpecs;
 
-      @expose() @field('Actor[]') actors;
+      @field('Actor[]') actors;
+
+      @field('boolean') isAvailable = true;
     }
 
     class TechnicalSpecs extends Model {
@@ -568,36 +572,20 @@ describe('Model', () => {
     });
 
     movie = layer.Movie.$deserialize({_new: true});
-    expect(movie.$serialize()).toEqual({
-      _type: 'Movie',
-      _new: true,
-      title: null,
-      country: null,
-      releasedOn: null,
-      genres: null,
-      technicalSpecs: null,
-      actors: null
-    });
+    expect(movie.$serialize()).toEqual({_type: 'Movie', _new: true, isAvailable: true});
 
     movie = layer.Movie.$deserialize({title: 'Inception'});
-    expect(movie.$serialize()).toEqual({
-      _type: 'Movie',
-      title: 'Inception'
-    });
+    expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception'});
 
-    movie = layer.Movie.$deserialize({_new: true, title: 'Inception'});
+    movie = layer.Movie.$deserialize({_new: true, title: 'Inception', isAvailable: false});
     expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
-      country: null,
-      releasedOn: null,
-      genres: null,
-      technicalSpecs: null,
-      actors: null
+      isAvailable: false
     });
 
-    movie = layer.Movie.$deserialize({
+    movie = layer.deserialize({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA',
@@ -624,13 +612,13 @@ describe('Model', () => {
 
     // Deserialization using the 'fields' option
 
-    movie = layer.Movie.$deserialize(
+    movie = layer.deserialize(
       {_type: 'Movie', title: 'Inception', country: 'USA'},
       {fields: {title: true}}
     );
     expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception'});
 
-    movie = layer.Movie.$deserialize(
+    movie = layer.deserialize(
       {
         _type: 'Movie',
         title: 'Inception',
@@ -658,48 +646,86 @@ describe('Model', () => {
       technicalSpecs: {_type: 'TechnicalSpecs', isColored: true},
       actors: [{_type: 'Actor', country: 'USA'}, {_type: 'Actor', country: 'USA'}]
     });
-  });
 
-  test.skip('Field exposition', async () => {
-    class BaseMovie extends Model {
-      @field('string') title;
+    // Deserialization with a synchronous filter
 
-      @field('string') secret;
-    }
-
-    class BackendMovie extends BaseMovie {
-      @expose() title;
-    }
-
-    class FrontendMovie extends BaseMovie {}
-
-    const backendLayer = new Layer({Movie: BackendMovie});
-    await backendLayer.open();
-    const frontendLayer = new Layer({Movie: FrontendMovie}, {parent: backendLayer});
-    await frontendLayer.open();
-
-    const frontendMovie = frontendLayer.Movie.$deserialize({title: 'Inception', secret: 'xyz123'});
-    expect(frontendMovie.$serialize()).toEqual({
-      _type: 'Movie',
-      title: 'Inception',
-      secret: 'xyz123'
-    });
-    expect(frontendMovie.$serialize({target: backendLayer.getName()})).toEqual({
-      _type: 'Movie',
-      title: 'Inception',
-      secret: 'xyz123'
-    });
-
-    const backendMovie = backendLayer.Movie.$deserialize({title: 'Inception', secret: 'xyz123'});
-    expect(backendMovie.$serialize()).toEqual({
-      _type: 'Movie',
-      title: 'Inception',
-      secret: 'xyz123'
-    });
-    expect(backendMovie.$serialize({target: frontendLayer.getName()})).toEqual({
+    movie = layer.deserialize(
+      {_type: 'Movie', title: 'Inception', country: 'USA'},
+      {
+        filter(field) {
+          return field.getName() === 'title';
+        }
+      }
+    );
+    expect(movie.then).toBeUndefined(); // movie is not a promise
+    expect(movie.$serialize()).toEqual({
       _type: 'Movie',
       title: 'Inception'
     });
+
+    // Deserialization with an asynchronous filter
+
+    const moviePromise = layer.deserialize(
+      {_type: 'Movie', title: 'Inception', country: 'USA'},
+      {
+        async filter(field) {
+          return field.getName() === 'title';
+        }
+      }
+    );
+    expect(typeof moviePromise.then).toBe('function'); // moviePromise is a promise
+    movie = await moviePromise;
+    expect(movie.$serialize()).toEqual({
+      _type: 'Movie',
+      title: 'Inception'
+    });
+  });
+
+  test('Property exposition', async () => {
+    class BaseMovie extends Model {
+      @field('string') title;
+
+      @field('number') rating;
+    }
+
+    async function createBackendLayer() {
+      class Movie extends BaseMovie {
+        @expose({get: true, set: true}) title;
+
+        @expose({get: true}) rating;
+
+        @expose({call: true}) getBackendFieldValue(name) {
+          return this[name];
+        }
+      }
+
+      const layer = new Layer({Movie}, {name: 'backend'});
+      await layer.open();
+
+      return layer;
+    }
+
+    async function createFrontendLayer(backendLayer) {
+      class Movie extends BaseMovie {}
+
+      const layer = new Layer({Movie}, {name: 'frontend', parent: backendLayer});
+      await layer.open();
+
+      return layer;
+    }
+
+    const backendLayer = await createBackendLayer();
+    const frontendLayer = await createFrontendLayer(backendLayer);
+
+    const movie = frontendLayer.Movie.$deserialize({});
+
+    movie.title = 'Inception';
+    expect(movie.getBackendFieldValue('title')).toBe('Inception');
+
+    movie.rating = 8;
+    expect(() => movie.getBackendFieldValue('rating')).toThrow(
+      /Field 'set' operation is not allowed/
+    );
   });
 
   test('Polymorphism', async () => {

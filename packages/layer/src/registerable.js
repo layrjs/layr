@@ -67,7 +67,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       ow(type, ow.string.oneOf(['field', 'method']));
       const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array, ow.set);
       if (type === 'field') {
-        ow(options, ow.object.exactShape({read: setting, write: setting}));
+        ow(options, ow.object.exactShape({get: setting, set: setting}));
       } else if (type === 'method') {
         ow(options, ow.object.exactShape({call: setting}));
       }
@@ -102,8 +102,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       if (setting === false) {
         return false;
       }
+    }
 
-      return undefined;
+    static $normalizeExposedPropertyOperationSetting(setting) {
+      return setting;
     }
 
     static $fork() {
@@ -294,6 +296,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       });
     }
 
+    $normalizeExposedPropertyOperationSetting(setting) {
+      return this.constructor.$normalizeExposedPropertyOperationSetting(setting);
+    }
+
     $fork() {
       const forkedLayer = this.$getLayer().fork();
       return this.$forkInto(forkedLayer);
@@ -308,7 +314,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       const constructorRegisteredName = this.constructor.$getRegisteredName();
       if (constructorRegisteredName) {
         const forkedConstructor = targetLayer.get(constructorRegisteredName);
-        let fork = forkedConstructor.$getInstance(this);
+        // OPTIMIZE: Serialize unique fields only
+        let fork = forkedConstructor.$getInstance(this.$serialize());
         if (!fork) {
           fork = this.__fork(forkedConstructor);
         }
@@ -375,7 +382,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     }
 
     __getParentRegistrable() {
-      let registeredName = this.$getRegisteredName();
+      const registeredName = this.$getRegisteredName();
 
       if (registeredName) {
         // The instance is registered
@@ -388,20 +395,28 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       }
 
       // Let's see if the class is registered
-      registeredName = this.constructor.$getRegisteredName();
+      const classRegisteredName = this.constructor.$getRegisteredName();
 
-      if (!registeredName) {
+      if (!classRegisteredName) {
         return undefined;
       }
 
-      const parentLayer = this.constructor.$getParentLayer({throwIfNotFound: false});
-      const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
+      const classParentLayer = this.constructor.$getParentLayer({throwIfNotFound: false});
+      const ParentRegistrable = classParentLayer?.get(classRegisteredName, {
+        throwIfNotFound: false
+      });
+
+      if (!ParentRegistrable) {
+        return undefined;
+      }
+
+      const parentRegistrable = ParentRegistrable.prototype;
 
       if (!isExposed(parentRegistrable)) {
         return undefined;
       }
 
-      return parentRegistrable.prototype;
+      return parentRegistrable;
     }
 
     $introspect() {

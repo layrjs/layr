@@ -414,19 +414,27 @@ export class Layer {
   receiveQuery({query, items, source} = {}) {
     const target = this.getName();
 
+    const setFilter = this._createExposedPropertyFilter('set');
+
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
-    this._deserializeItems(items, {source, isReceiving: true});
-    query = this.deserialize(query, {source});
-    return possiblyAsync(this.callBeforeInvokeReceivedQuery(), () => {
-      return possiblyAsync(this.invokeQuery(query), result => {
-        result = this.serialize(result, {target: source});
-        items = this._serializeItems({target: source});
-        return possiblyAsync(this.callAfterInvokeReceivedQuery(), () => {
-          debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
-          return {result, items};
+    return possiblyAsync(
+      this._deserializeItems(items, {source, filter: setFilter, isReceiving: true}),
+      () => {
+        return possiblyAsync(this.deserialize(query, {source, filter: setFilter}), query => {
+          return possiblyAsync(this.callBeforeInvokeReceivedQuery(), () => {
+            return possiblyAsync(this.invokeQuery(query), result => {
+              result = this.serialize(result, {target: source});
+              items = this._serializeItems({target: source});
+              // eslint-disable-next-line max-nested-callbacks
+              return possiblyAsync(this.callAfterInvokeReceivedQuery(), () => {
+                debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
+                return {result, items};
+              });
+            });
+          });
         });
-      });
-    });
+      }
+    );
   }
 
   _serializeItems({target, isSending} = {}) {
@@ -459,12 +467,12 @@ export class Layer {
     return hasSerializedItems ? serializedItems : undefined;
   }
 
-  _deserializeItems(serializedItems, {source, isReceiving} = {}) {
+  _deserializeItems(serializedItems, {source, filter, isReceiving} = {}) {
     if (serializedItems === undefined) {
       return;
     }
 
-    for (const [name, serializedItem] of Object.entries(serializedItems)) {
+    return possiblyAsync.forEach(Object.entries(serializedItems), ([name, serializedItem]) => {
       const item = this.get(name);
 
       if (isReceiving && !isExposed(item)) {
@@ -475,8 +483,40 @@ export class Layer {
         throw new Error(`Cannot receive an item that is not serializable (name: '${name}')`);
       }
 
-      item.$deserialize(serializedItem, {source});
-    }
+      return item.$deserialize(serializedItem, {source, filter});
+    });
+  }
+
+  _createExposedPropertyFilter(operation) {
+    return function (property) {
+      const name = property.getName();
+
+      const isAllowed = () => {
+        const exposedProperty = this.$getExposedProperty(name);
+
+        if (exposedProperty === undefined) {
+          return false;
+        }
+
+        let setting = exposedProperty[operation];
+
+        if (setting === undefined) {
+          return false;
+        }
+
+        // OPTIMIZE: Normalize once, when the property is exposed
+        setting = this.$normalizeExposedPropertyOperationSetting(setting);
+
+        return this.$exposedPropertyOperationIsAllowed({property, operation, setting});
+      };
+
+      return possiblyAsync(isAllowed(), isAllowed => {
+        if (!isAllowed) {
+          throw new Error(`Field '${operation}' operation is not allowed (field: '${name}')`);
+        }
+        return true;
+      });
+    };
   }
 
   getBeforeInvokeReceivedQuery() {

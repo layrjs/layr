@@ -671,7 +671,7 @@ function makeStorable(Base) {
           return false;
         }
         if (otherFilter) {
-          return otherFilter(field);
+          return otherFilter.call(this, field);
         }
         return true;
       };

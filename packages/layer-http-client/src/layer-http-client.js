@@ -97,6 +97,8 @@ export class LayerHTTPClient {
 
             ...(properties.prototype && {
               prototype: {
+                __isRegisterableProxy: true,
+
                 $getExposedProperty(name) {
                   return _getExposedProperty(properties.prototype, name);
                 }
