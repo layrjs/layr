@@ -1,5 +1,4 @@
 import {Model} from '@liaison/model';
-import {possiblyAsync} from 'possibly-async';
 import {possiblyMany} from 'possibly-many';
 import {inspect} from 'util';
 import cuid from 'cuid';
@@ -52,13 +51,13 @@ export class Identity extends Model {
   }
 
   $deserialize(object = {}, {source, ...otherOptions} = {}) {
-    return possiblyAsync(super.$deserialize(object, {source, ...otherOptions}), () => {
-      const id = object._id;
-      if (id !== undefined) {
-        const idSource = source === undefined ? object._src?._id : source;
-        this.__setId(id, {source: idSource});
-      }
-    });
+    const id = object._id;
+    if (id !== undefined) {
+      const idSource = source === undefined ? object._src?._id : source;
+      this.__setId(id, {source: idSource});
+    }
+
+    return super.$deserialize(object, {source, ...otherOptions});
   }
 
   static $getInstance(object, previousInstance) {
