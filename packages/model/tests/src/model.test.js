@@ -1,4 +1,4 @@
-import {Layer, expose} from '@liaison/layer';
+import {Layer} from '@liaison/layer';
 
 import {Model, field, validators, createValidator} from '../../..';
 
@@ -679,53 +679,6 @@ describe('Model', () => {
       _type: 'Movie',
       title: 'Inception'
     });
-  });
-
-  test('Property exposition', async () => {
-    class BaseMovie extends Model {
-      @field('string') title;
-
-      @field('number') rating;
-    }
-
-    async function createBackendLayer() {
-      class Movie extends BaseMovie {
-        @expose({get: true, set: true}) title;
-
-        @expose({get: true}) rating;
-
-        @expose({call: true}) getBackendFieldValue(name) {
-          return this[name];
-        }
-      }
-
-      const layer = new Layer({Movie}, {name: 'backend'});
-      await layer.open();
-
-      return layer;
-    }
-
-    async function createFrontendLayer(backendLayer) {
-      class Movie extends BaseMovie {}
-
-      const layer = new Layer({Movie}, {name: 'frontend', parent: backendLayer});
-      await layer.open();
-
-      return layer;
-    }
-
-    const backendLayer = await createBackendLayer();
-    const frontendLayer = await createFrontendLayer(backendLayer);
-
-    const movie = frontendLayer.Movie.$deserialize({});
-
-    movie.title = 'Inception';
-    expect(movie.getBackendFieldValue('title')).toBe('Inception');
-
-    movie.rating = 8;
-    expect(() => movie.getBackendFieldValue('rating')).toThrow(
-      /Field 'set' operation is not allowed/
-    );
   });
 
   test('Polymorphism', async () => {

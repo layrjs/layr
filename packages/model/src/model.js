@@ -54,40 +54,51 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Serialization ===
 
-  $serialize({target, fields} = {}) {
+  $serialize({target, fields, filter} = {}) {
     const serializedFields = {};
     const sources = {};
 
     const rootFieldMask = this.$createFieldMask({fields});
 
-    for (const field of this.$getActiveFields()) {
-      const name = field.getName();
+    return possiblyAsync(
+      possiblyAsync.forEach(this.$getActiveFields(), field => {
+        const name = field.getName();
 
-      const fieldMask = rootFieldMask.get(name);
-      if (!fieldMask) {
-        continue;
-      }
-
-      const value = field.serializeValue({target, fields: fieldMask});
-      if (value === undefined) {
-        continue;
-      }
-
-      serializedFields[name] = value;
-
-      if (target === undefined) {
-        const source = field.getSource();
-        if (source !== undefined) {
-          sources[name] = source;
+        const fieldMask = rootFieldMask.get(name);
+        if (!fieldMask) {
+          return;
         }
-      }
-    }
 
-    return {
-      ...super.$serialize(),
-      ...(!isEmpty(sources) && {_src: sources}),
-      ...serializedFields
-    };
+        return possiblyAsync(filter ? filter.call(this, field) : true, isNotFilteredOut => {
+          if (isNotFilteredOut) {
+            return possiblyAsync(
+              field.serializeValue({target, fields: fieldMask, filter}),
+              value => {
+                if (value === undefined) {
+                  return;
+                }
+
+                serializedFields[name] = value;
+
+                if (target === undefined) {
+                  const source = field.getSource();
+                  if (source !== undefined) {
+                    sources[name] = source;
+                  }
+                }
+              }
+            );
+          }
+        });
+      }),
+      () => {
+        return {
+          ...super.$serialize(),
+          ...(!isEmpty(sources) && {_src: sources}),
+          ...serializedFields
+        };
+      }
+    );
   }
 
   $deserialize(object = {}, {source, fields, filter} = {}) {

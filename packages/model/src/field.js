@@ -275,7 +275,7 @@ export class Field extends Property {
     return this.setValue(possiblyMany.map(value, value => this._scalar.createValue(value)));
   }
 
-  serializeValue({target, fields} = {}) {
+  serializeValue({target, fields, filter} = {}) {
     if (target !== undefined) {
       if (target === this._source) {
         return undefined;
@@ -283,7 +283,10 @@ export class Field extends Property {
     }
 
     const value = this.getValue();
-    return possiblyMany.map(value, value => this._scalar.serializeValue(value, {target, fields}));
+
+    return possiblyAsync.possiblyMany(
+      possiblyMany.map(value, value => this._scalar.serializeValue(value, {target, fields, filter}))
+    );
   }
 
   deserializeValue(value, {source, fields, filter} = {}) {
@@ -446,7 +449,7 @@ class Scalar {
     return value;
   }
 
-  serializeValue(value, {target, fields}) {
+  serializeValue(value, {target, fields, filter}) {
     if (value === undefined) {
       // In case the data is transported via JSON, we will lost all the 'undefined' values.
       // We don't want that because 'undefined' could mean that a field has been deleted.
@@ -462,7 +465,7 @@ class Scalar {
       return value;
     }
 
-    return value.$serialize({target, fields, _isDeep: true});
+    return value.$serialize({target, fields, filter, _isDeep: true});
   }
 
   deserializeValue(value, {source, fields, filter, previousValue}) {

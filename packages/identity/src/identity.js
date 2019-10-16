@@ -1,4 +1,5 @@
 import {Model} from '@liaison/model';
+import {possiblyAsync} from 'possibly-async';
 import {possiblyMany} from 'possibly-many';
 import {inspect} from 'util';
 import cuid from 'cuid';
@@ -20,34 +21,34 @@ export class Identity extends Model {
     this.$deserialize({...other.$serialize(), _id: undefined, _src: undefined});
   }
 
-  $serialize({target, fields} = {}) {
-    const {_type, _new: isNew, _src: sources = {}, ...otherProps} = super.$serialize({
-      target,
-      fields
-    });
+  $serialize({target, ...otherOptions} = {}) {
+    return possiblyAsync(
+      super.$serialize({target, ...otherOptions}),
+      ({_type, _new: isNew, _src: sources = {}, ...otherProps}) => {
+        const serializedIdentity = {_type};
 
-    const serializedIdentity = {_type};
-
-    if (isNew) {
-      serializedIdentity._new = true;
-    }
-
-    const id = this._id;
-    if (id !== undefined) {
-      serializedIdentity._id = id;
-
-      if (target === undefined) {
-        if (this.__idSource !== undefined) {
-          sources._id = this.__idSource;
+        if (isNew) {
+          serializedIdentity._new = true;
         }
+
+        const id = this._id;
+        if (id !== undefined) {
+          serializedIdentity._id = id;
+
+          if (target === undefined) {
+            if (this.__idSource !== undefined) {
+              sources._id = this.__idSource;
+            }
+          }
+        }
+
+        if (!isEmpty(sources)) {
+          serializedIdentity._src = sources;
+        }
+
+        return {...serializedIdentity, ...otherProps};
       }
-    }
-
-    if (!isEmpty(sources)) {
-      serializedIdentity._src = sources;
-    }
-
-    return {...serializedIdentity, ...otherProps};
+    );
   }
 
   $deserialize(object = {}, {source, ...otherOptions} = {}) {

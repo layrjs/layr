@@ -1,4 +1,4 @@
-import {Layer} from '@liaison/layer';
+import {Layer, expose} from '@liaison/layer';
 import {field} from '@liaison/model';
 
 import {Entity} from '../../..';
@@ -143,5 +143,71 @@ describe('Entity', () => {
       _id: 'd1',
       fullName: 'C. Nolan'
     });
+  });
+
+  test('Property exposition', async () => {
+    class BaseMovie extends Entity {
+      @field('string') title;
+
+      @field('number') rating;
+
+      @field('string') secret;
+    }
+
+    async function createBackendLayer() {
+      class Movie extends BaseMovie {
+        @expose({get: true, set: true}) title;
+
+        @expose({get: true}) rating;
+
+        @expose({set: true}) secret;
+
+        @expose({call: true}) getBackendFieldValue(name) {
+          return this[name];
+        }
+
+        @expose({call: true}) setBackendFieldValue(name, value) {
+          this[name] = value;
+        }
+      }
+
+      const layer = new Layer({Movie}, {name: 'backend'});
+      await layer.open();
+
+      return layer;
+    }
+
+    async function createFrontendLayer(backendLayer) {
+      class Movie extends BaseMovie {}
+
+      const layer = new Layer({Movie}, {name: 'frontend', parent: backendLayer});
+      await layer.open();
+
+      return layer;
+    }
+
+    const backendLayer = await createBackendLayer();
+    const frontendLayer = await createFrontendLayer(backendLayer);
+
+    const movie = new frontendLayer.Movie();
+
+    movie.title = 'Inception';
+    expect(movie.getBackendFieldValue('title')).toBe('Inception');
+
+    movie.setBackendFieldValue('title', 'Inception 2');
+    expect(movie.title).toBe('Inception 2');
+
+    movie.rating = 8;
+    expect(() => movie.getBackendFieldValue('rating')).toThrow(
+      /Field 'set' operation is not allowed/
+    );
+
+    movie.$deactivateField('rating');
+    movie.setBackendFieldValue('rating', 9);
+    expect(movie.rating).toBe(9);
+
+    expect(() => movie.setBackendFieldValue('secret', 'xyz123')).toThrow(
+      /Field 'get' operation is not allowed/
+    );
   });
 });

@@ -2,18 +2,18 @@ import {Identity} from '@liaison/identity';
 import {hasOwnProperty} from 'core-helpers';
 
 export class Entity extends Identity {
-  $serialize({target, fields, _isDeep} = {}) {
+  $serialize({_isDeep, ...otherOptions} = {}) {
     if (_isDeep) {
-      return this.$serializeReference({target});
+      return this.$serializeReference(otherOptions);
     }
-    return super.$serialize({target, fields});
+    return super.$serialize(otherOptions);
   }
 
-  $serializeReference({target} = {}) {
+  $serializeReference(options) {
     if (this.$isNew()) {
       throw new Error(`Cannot serialize a reference to a new entity`);
     }
-    return {...super.$serialize({target, fields: false}), _ref: true};
+    return {...super.$serialize({...options, fields: false}), _ref: true};
   }
 
   __createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack}) {

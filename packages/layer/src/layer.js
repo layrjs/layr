@@ -294,7 +294,7 @@ export class Layer {
   }
 
   _serializeArray(array, options) {
-    return array.map(item => this.serialize(item, options));
+    return possiblyAsync.map(array, item => this.serialize(item, options));
   }
 
   _serializeObject(object, options) {
@@ -315,12 +315,10 @@ export class Layer {
   }
 
   _serializePlainObject(object, options) {
-    const serializedObject = {};
-    for (const [key, value] of Object.entries(object)) {
-      serializedObject[key] = this.serialize(value, options);
-    }
-    return serializedObject;
+    return possiblyAsync.mapObject(object, value => this.serialize(value, options));
   }
+
+  // === Deserialization ===
 
   deserialize(value, options) {
     if (value === null) {
@@ -411,9 +409,13 @@ export class Layer {
     });
   }
 
+  /* eslint-disable max-nested-callbacks */
   receiveQuery({query, items, source} = {}) {
+    // TODO: Improve code readability!
+
     const target = this.getName();
 
+    const getFilter = this._createExposedPropertyFilter('get');
     const setFilter = this._createExposedPropertyFilter('set');
 
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
@@ -423,48 +425,67 @@ export class Layer {
         return possiblyAsync(this.deserialize(query, {source, filter: setFilter}), query => {
           return possiblyAsync(this.callBeforeInvokeReceivedQuery(), () => {
             return possiblyAsync(this.invokeQuery(query), result => {
-              result = this.serialize(result, {target: source});
-              items = this._serializeItems({target: source});
-              // eslint-disable-next-line max-nested-callbacks
-              return possiblyAsync(this.callAfterInvokeReceivedQuery(), () => {
-                debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
-                return {result, items};
-              });
+              return possiblyAsync(
+                this.serialize(result, {target: source, filter: getFilter}),
+                result => {
+                  return possiblyAsync(
+                    this._serializeItems({target: source, filter: getFilter}),
+                    items => {
+                      return possiblyAsync(this.callAfterInvokeReceivedQuery(), () => {
+                        debugReceiving(
+                          `[%s ← %s] {query: %o, items: %o}`,
+                          source,
+                          target,
+                          result,
+                          items
+                        );
+                        return {result, items};
+                      });
+                    }
+                  );
+                }
+              );
             });
           });
         });
       }
     );
   }
+  /* eslint-enable max-nested-callbacks */
 
-  _serializeItems({target, isSending} = {}) {
+  _serializeItems({target, filter, isSending} = {}) {
     const serializedItems = {};
     let hasSerializedItems = false;
 
-    for (const item of this.getItems()) {
-      if (typeof item !== 'object') {
-        continue;
-      }
-
-      const name = item.$getRegisteredName();
-
-      if (isSending) {
-        if (!this.getParent().get(name, {throwIfNotFound: false})) {
-          continue;
+    return possiblyAsync(
+      possiblyAsync.forEach(this.getItems(), item => {
+        if (typeof item !== 'object') {
+          return;
         }
-      } else if (!isExposed(item)) {
-        continue;
+
+        const name = item.$getRegisteredName();
+
+        if (isSending) {
+          if (!this.getParent().get(name, {throwIfNotFound: false})) {
+            return;
+          }
+        } else if (!isExposed(item)) {
+          return;
+        }
+
+        if (!isSerializable(item)) {
+          throw new Error(`Cannot send an item that is not serializable (name: '${name}')`);
+        }
+
+        return possiblyAsync(item.$serialize({target, filter}), serializedItem => {
+          serializedItems[name] = serializedItem;
+          hasSerializedItems = true;
+        });
+      }),
+      () => {
+        return hasSerializedItems ? serializedItems : undefined;
       }
-
-      if (!isSerializable(item)) {
-        throw new Error(`Cannot send an item that is not serializable (name: '${name}')`);
-      }
-
-      serializedItems[name] = item.$serialize({target});
-      hasSerializedItems = true;
-    }
-
-    return hasSerializedItems ? serializedItems : undefined;
+    );
   }
 
   _deserializeItems(serializedItems, {source, filter, isReceiving} = {}) {
