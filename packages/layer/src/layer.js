@@ -512,31 +512,22 @@ export class Layer {
     return function (property) {
       const name = property.getName();
 
-      const isAllowed = () => {
-        const exposedProperty = this.$getExposedProperty(name);
+      const exposedProperty = this.$getExposedProperty(name);
 
-        if (exposedProperty === undefined) {
-          return false;
-        }
+      if (exposedProperty === undefined) {
+        return false;
+      }
 
-        let setting = exposedProperty[operation];
+      let setting = exposedProperty[operation];
 
-        if (setting === undefined) {
-          return false;
-        }
+      if (setting === undefined) {
+        return false;
+      }
 
-        // OPTIMIZE: Normalize once, when the property is exposed
-        setting = this.$normalizeExposedPropertyOperationSetting(setting);
+      // OPTIMIZE: Normalize once, when the property is exposed
+      setting = this.$normalizeExposedPropertyOperationSetting(setting);
 
-        return this.$exposedPropertyOperationIsAllowed({property, operation, setting});
-      };
-
-      return possiblyAsync(isAllowed(), isAllowed => {
-        if (!isAllowed) {
-          throw new Error(`Field '${operation}' operation is not allowed (field: '${name}')`);
-        }
-        return true;
-      });
+      return this.$exposedPropertyOperationIsAllowed({property, operation, setting});
     };
   }
 

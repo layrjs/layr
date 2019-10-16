@@ -2,6 +2,7 @@ import {FieldMask, isModel} from '@liaison/model';
 import {isIdentity} from '@liaison/identity';
 import difference from 'lodash/difference';
 import uniq from 'lodash/uniq';
+import partition from 'lodash/partition';
 import ow from 'ow';
 
 import {StorableField} from './storable-field';
@@ -403,27 +404,38 @@ function makeStorable(Base) {
         return (await this.$save([storables], {throwIfNotFound, throwIfAlreadyExists}))[0];
       }
 
-      for (const storable of storables) {
-        for (const field of storable.$getFieldsWithHook('saver')) {
+      let [storablesToSave, emptyStorables] = partition(
+        storables,
+        storable => storable.$isNew() || !storable.$createFieldMaskForActiveFields().isEmpty()
+      );
+
+      for (const storableToSave of storablesToSave) {
+        for (const field of storableToSave.$getFieldsWithHook('saver')) {
           await field.callHook('saver');
         }
       }
 
-      for (const storable of storables) {
-        await storable.$beforeSave();
+      for (const storableToSave of storablesToSave) {
+        await storableToSave.$beforeSave();
       }
 
       if (this.$hasStore()) {
-        storables = await this.__saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists});
+        storablesToSave = await this.__saveToStore(storablesToSave, {
+          throwIfNotFound,
+          throwIfAlreadyExists
+        });
       } else {
-        storables = await super.$save(storables, {throwIfNotFound, throwIfAlreadyExists});
+        storablesToSave = await super.$save(storablesToSave, {
+          throwIfNotFound,
+          throwIfAlreadyExists
+        });
       }
 
-      for (const storable of storables) {
-        await storable.$afterSave();
+      for (const storableToSave of storablesToSave) {
+        await storableToSave.$afterSave();
       }
 
-      return storables;
+      return [...storablesToSave, ...emptyStorables];
     }
 
     static async __saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists}) {

@@ -199,15 +199,13 @@ describe('Entity', () => {
 
     movie.rating = 8;
     expect(() => movie.getBackendFieldValue('rating')).toThrow(
-      /Field 'set' operation is not allowed/
+      /Cannot get the value from an inactive field/
     );
 
-    movie.$deactivateField('rating');
     movie.setBackendFieldValue('rating', 9);
     expect(movie.rating).toBe(9);
 
-    expect(() => movie.setBackendFieldValue('secret', 'xyz123')).toThrow(
-      /Field 'get' operation is not allowed/
-    );
+    movie.setBackendFieldValue('secret', 'xyz123');
+    expect(movie.$fieldIsActive('secret')).toBe(false);
   });
 });
