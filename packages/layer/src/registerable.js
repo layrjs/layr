@@ -152,7 +152,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return {
         [`${this.$getRegisteredName()}=>`]: {
           [`${methodName}=>result`]: {
-            '([])': args
+            '()': args
           }
         }
       };
@@ -362,7 +362,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         return {
           [`${this.$getRegisteredName()}=>`]: {
             [`${methodName}=>result`]: {
-              '([])': args
+              '()': args
             }
           }
         };
@@ -371,7 +371,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return {
         '<=': this,
         [`${methodName}=>result`]: {
-          '([])': args
+          '()': args
         },
         '=>changes': true
       };

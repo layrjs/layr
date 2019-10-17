@@ -13,7 +13,7 @@
   "browser": "dist/browser/esm",
   "dependencies": {
     "debug": "^4.1.1",
-    "@deepr/runtime": "^0.2.0",
+    "@deepr/runtime": "^0.3.0",
     "possibly-async": "^0.1.0",
     "core-helpers": "^0.1.0",
     "nanoid": "^2.0.3",
