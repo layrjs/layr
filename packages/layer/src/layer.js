@@ -400,58 +400,58 @@ export class Layer {
 
     query = this.serialize(query, {target});
     const items = this._serializeItems({isSending: true});
+
     debugSending(`[%s → %s] {query: %o, items: %o}`, source, target, query, items);
+
     return possiblyAsync(parent.receiveQuery({query, items, source}), ({result, items}) => {
       debugSending(`[%s ← %s] {result: %o, items: %o}`, source, target, result, items);
+
       result = this.deserialize(result, {source: target});
       this._deserializeItems(items, {source: target});
+
       return result;
     });
   }
 
-  /* eslint-disable max-nested-callbacks */
   receiveQuery({query, items, source} = {}) {
-    // TODO: Improve code readability!
+    let result;
 
     const target = this.getName();
-
     const getFilter = this._createExposedPropertyFilter('get');
     const setFilter = this._createExposedPropertyFilter('set');
 
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
+
     return possiblyAsync(
       this._deserializeItems(items, {source, filter: setFilter, isReceiving: true}),
       () => {
-        return possiblyAsync(this.deserialize(query, {source, filter: setFilter}), query => {
-          return possiblyAsync(this.callBeforeInvokeReceivedQuery(), () => {
-            return possiblyAsync(this.invokeQuery(query), result => {
-              return possiblyAsync(
-                this.serialize(result, {target: source, filter: getFilter}),
-                result => {
-                  return possiblyAsync(
-                    this._serializeItems({target: source, filter: getFilter}),
-                    items => {
-                      return possiblyAsync(this.callAfterInvokeReceivedQuery(), () => {
-                        debugReceiving(
-                          `[%s ← %s] {query: %o, items: %o}`,
-                          source,
-                          target,
-                          result,
-                          items
-                        );
-                        return {result, items};
-                      });
-                    }
-                  );
-                }
-              );
-            });
-          });
-        });
+        return this.deserialize(query, {source, filter: setFilter});
+      },
+      deserializedQuery => {
+        query = deserializedQuery;
+        return this.callBeforeInvokeReceivedQuery();
+      },
+      () => {
+        return this.invokeQuery(query);
+      },
+      result => {
+        return this.serialize(result, {target: source, filter: getFilter});
+      },
+      serializedResult => {
+        result = serializedResult;
+        return this._serializeItems({target: source, filter: getFilter});
+      },
+      serializedItems => {
+        items = serializedItems;
+        return this.callAfterInvokeReceivedQuery();
+      },
+      () => {
+        debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
+
+        return {result, items};
       }
     );
   }
-  /* eslint-enable max-nested-callbacks */
 
   _serializeItems({target, filter, isSending} = {}) {
     const serializedItems = {};
@@ -510,6 +510,9 @@ export class Layer {
 
   _createExposedPropertyFilter(operation) {
     return function (property) {
+      // TODO: The Layer class shouldn't be concerned by Field instances
+      // Consider implementing a generic Property class accessible by Registrable
+
       const name = property.getName();
 
       const exposedProperty = this.$getExposedProperty(name);
