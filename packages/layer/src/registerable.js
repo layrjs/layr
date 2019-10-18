@@ -63,6 +63,29 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       // Override this method to implement deinitialization logic
     }
 
+    static $propertyOperationIsAllowed(name, operation) {
+      const exposedProperty = this.$getExposedProperty(name);
+
+      if (exposedProperty === undefined) {
+        return false;
+      }
+
+      let setting = exposedProperty[operation];
+
+      if (setting === undefined) {
+        return false;
+      }
+
+      // OPTIMIZE: Normalize once, when the property is exposed
+      setting = this.$normalizeExposedPropertyOperationSetting(setting);
+
+      return this.$exposedPropertyOperationIsAllowed({
+        property: exposedProperty,
+        operation,
+        setting
+      });
+    }
+
     static $exposeProperty(name, type, options) {
       ow(type, ow.string.oneOf(['field', 'method']));
       const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array, ow.set);
@@ -83,6 +106,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     static $getExposedProperty(name) {
       return this.__exposedProperties?.get(name);
+    }
+
+    static $hasExposedProperty(name) {
+      return this.__exposedProperties ? this.__exposedProperties.has(name) : false;
     }
 
     static $getExposedProperties() {
@@ -272,12 +299,20 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       // Override this method to implement deinitialization logic
     }
 
+    $propertyOperationIsAllowed(name, operation) {
+      return this.constructor.$propertyOperationIsAllowed.call(this, name, operation);
+    }
+
     $exposeProperty(name, type, options) {
       this.constructor.$exposeProperty.call(this, name, type, options);
     }
 
     $getExposedProperty(name) {
       return this.constructor.$getExposedProperty.call(this, name);
+    }
+
+    $hasExposedProperty(name) {
+      return this.constructor.$hasExposedProperty.call(this, name);
     }
 
     $getExposedProperties() {

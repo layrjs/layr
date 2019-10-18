@@ -225,6 +225,16 @@ export class Layer {
     };
   }
 
+  hasExposedItem(name) {
+    const item = this.get(name, {throwIfNotFound: false});
+
+    if (item === undefined) {
+      return false;
+    }
+
+    return item.$hasExposedProperties();
+  }
+
   getExposedItems({filter: otherFilter} = {}) {
     const filter = function (item) {
       if (!isExposed(item)) {
@@ -390,7 +400,23 @@ export class Layer {
   // === Queries ===
 
   invokeQuery(query) {
-    return invokeQuery(this, query);
+    const authorizer = this._createQueryAuthorizer();
+
+    return invokeQuery(this, query, {authorizer});
+  }
+
+  _createQueryAuthorizer() {
+    return function (name, operation) {
+      if (isLayer(this)) {
+        return this.hasExposedItem(name) && operation === 'get';
+      }
+
+      if (isRegisterable(this)) {
+        return this.$propertyOperationIsAllowed(name, operation);
+      }
+
+      return false;
+    };
   }
 
   sendQuery(query) {
@@ -515,22 +541,7 @@ export class Layer {
 
       const name = property.getName();
 
-      const exposedProperty = this.$getExposedProperty(name);
-
-      if (exposedProperty === undefined) {
-        return false;
-      }
-
-      let setting = exposedProperty[operation];
-
-      if (setting === undefined) {
-        return false;
-      }
-
-      // OPTIMIZE: Normalize once, when the property is exposed
-      setting = this.$normalizeExposedPropertyOperationSetting(setting);
-
-      return this.$exposedPropertyOperationIsAllowed({property, operation, setting});
+      return this.$propertyOperationIsAllowed(name, operation);
     };
   }
 
@@ -568,6 +579,10 @@ export class Layer {
 
   // === Utilities ===
 
+  static isLayer(object) {
+    return isLayer(object);
+  }
+
   [inspect.custom]() {
     const items = {};
     for (const item of this.getItems()) {
@@ -575,6 +590,10 @@ export class Layer {
     }
     return items;
   }
+}
+
+export function isLayer(object) {
+  return typeof object?.constructor?.isLayer === 'function';
 }
 
 const _primitiveTypes = {

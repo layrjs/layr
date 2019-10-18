@@ -62,17 +62,17 @@ function runTests({viaHTTP = false} = {}) {
       async function createBackendLayer() {
         async function layerCreator() {
           class Authenticator extends BaseAuthenticator {
-            @expose() signIn() {
+            @expose({call: true}) signIn() {
               this.token = '123456789';
             }
 
-            @expose() signOut() {
+            @expose({call: true}) signOut() {
               this.token = undefined;
             }
           }
 
           class Movie extends BaseMovie {
-            @expose() static get(id) {
+            @expose({call: true}) static get(id) {
               this.authorize();
               if (id === 'abc123') {
                 return this.$deserialize({
@@ -85,7 +85,7 @@ function runTests({viaHTTP = false} = {}) {
               throw new Error(`Movie not found (id: '${id}')`);
             }
 
-            @expose() rate(rating) {
+            @expose({call: true}) rate(rating) {
               this.constructor.authorize();
               this.ratingSum += rating;
               this.ratingCount += 1;
