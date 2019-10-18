@@ -256,6 +256,19 @@ export class Layer {
     return forkedLayer;
   }
 
+  // === Ghosting ===
+
+  getGhost() {
+    if (!this._ghost) {
+      this._ghost = this.fork();
+    }
+    return this._ghost;
+  }
+
+  get ghost() {
+    return this.getGhost();
+  }
+
   // === Attachment ===
 
   detach() {

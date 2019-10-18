@@ -160,6 +160,15 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       };
     }
 
+    static $getGhost() {
+      const ghostLayer = this.$getLayer().getGhost();
+      return this.$forkInto(ghostLayer);
+    }
+
+    static get $ghost() {
+      return this.$getGhost();
+    }
+
     static $detach() {
       this.__isDetached = true;
       return this;
@@ -378,6 +387,14 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         throw new Error(`Cannot merge an object that is not serializable`);
       }
       this.$deserialize(fork.$serialize());
+    }
+
+    $getGhost() {
+      return this.constructor.$getGhost.call(this);
+    }
+
+    get $ghost() {
+      return this.$getGhost();
     }
 
     $detach() {
