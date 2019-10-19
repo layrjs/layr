@@ -2,11 +2,11 @@ import {Identity} from '@liaison/identity';
 import {hasOwnProperty} from 'core-helpers';
 
 export class Entity extends Identity {
-  $serialize({_isDeep, ...otherOptions} = {}) {
-    if (_isDeep) {
+  $serialize({includeReferencedEntities, _isDeep, ...otherOptions} = {}) {
+    if (_isDeep && !includeReferencedEntities) {
       return this.$serializeReference(otherOptions);
     }
-    return super.$serialize(otherOptions);
+    return super.$serialize({includeReferencedEntities, ...otherOptions});
   }
 
   $serializeReference(options) {

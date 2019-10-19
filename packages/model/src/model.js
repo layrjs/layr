@@ -54,11 +54,11 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Serialization ===
 
-  $serialize({target, fields, filter} = {}) {
+  $serialize({target, fields, filter, includeReferencedEntities} = {}) {
     const serializedFields = {};
     const sources = {};
 
-    const rootFieldMask = this.$createFieldMask({fields});
+    const rootFieldMask = this.$createFieldMask({fields, includeReferencedEntities});
 
     return possiblyAsync(
       possiblyAsync.forEach(this.$getActiveFields(), field => {
@@ -72,7 +72,7 @@ export class Model extends Observable(Serializable(Registerable())) {
         return possiblyAsync(filter ? filter.call(this, field) : true, isNotFilteredOut => {
           if (isNotFilteredOut) {
             return possiblyAsync(
-              field.serializeValue({target, fields: fieldMask, filter}),
+              field.serializeValue({target, fields: fieldMask, filter, includeReferencedEntities}),
               value => {
                 if (value === undefined) {
                   return;
@@ -101,12 +101,12 @@ export class Model extends Observable(Serializable(Registerable())) {
     );
   }
 
-  $deserialize(object = {}, {source, fields, filter} = {}) {
+  $deserialize(object = {}, {source, fields, filter, includeReferencedEntities} = {}) {
     super.$deserialize(object);
 
     const sources = source === undefined ? object._src || {} : undefined;
 
-    const rootFieldMask = this.$createFieldMask({fields});
+    const rootFieldMask = this.$createFieldMask({fields, includeReferencedEntities});
 
     const isNew = this.$isNew();
 
@@ -124,11 +124,19 @@ export class Model extends Observable(Serializable(Registerable())) {
 
         return possiblyAsync(filter ? filter.call(this, field) : true, isNotFilteredOut => {
           if (isNotFilteredOut) {
-            return possiblyAsync(field.deserializeValue(value, {source, fields: fieldMask}), () => {
-              if (source === undefined) {
-                field.setSource(sources[name]);
+            return possiblyAsync(
+              field.deserializeValue(value, {
+                source,
+                fields: fieldMask,
+                filter,
+                includeReferencedEntities
+              }),
+              () => {
+                if (source === undefined) {
+                  field.setSource(sources[name]);
+                }
               }
-            });
+            );
           }
         });
       }

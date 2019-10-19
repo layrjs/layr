@@ -382,11 +382,15 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return fork;
     }
 
-    $merge(fork) {
+    $merge(fork, {includeReferencedEntities} = {}) {
+      // OPTIMIZE: Instead of serializing and deserializing everything,
+      // try to copy the new values only
+
       if (!isSerializable(fork)) {
         throw new Error(`Cannot merge an object that is not serializable`);
       }
-      this.$deserialize(fork.$serialize());
+
+      this.$deserialize(fork.$serialize({includeReferencedEntities}), {includeReferencedEntities});
     }
 
     $getGhost() {

@@ -275,7 +275,7 @@ export class Field extends Property {
     return this.setValue(possiblyMany.map(value, value => this._scalar.createValue(value)));
   }
 
-  serializeValue({target, fields, filter} = {}) {
+  serializeValue({target, ...otherOptions} = {}) {
     if (target !== undefined) {
       if (target === this._source) {
         return undefined;
@@ -285,17 +285,19 @@ export class Field extends Property {
     const value = this.getValue();
 
     return possiblyAsync.possiblyMany(
-      possiblyMany.map(value, value => this._scalar.serializeValue(value, {target, fields, filter}))
+      possiblyMany.map(value, value =>
+        this._scalar.serializeValue(value, {target, ...otherOptions})
+      )
     );
   }
 
-  deserializeValue(value, {source, fields, filter} = {}) {
+  deserializeValue(value, {source, ...otherOptions} = {}) {
     const previousValue = this.isActive() ? this.getValue() : undefined;
 
     return possiblyAsync(
       possiblyAsync.possiblyMany(
         possiblyMany.map(value, value =>
-          this._scalar.deserializeValue(value, {source, fields, filter, previousValue})
+          this._scalar.deserializeValue(value, {source, ...otherOptions, previousValue})
         )
       ),
       value => {
@@ -449,7 +451,7 @@ class Scalar {
     return value;
   }
 
-  serializeValue(value, {target, fields, filter}) {
+  serializeValue(value, {target, ...otherOptions}) {
     if (value === undefined) {
       // In case the data is transported via JSON, we will lost all the 'undefined' values.
       // We don't want that because 'undefined' could mean that a field has been deleted.
@@ -465,10 +467,10 @@ class Scalar {
       return value;
     }
 
-    return value.$serialize({target, fields, filter, _isDeep: true});
+    return value.$serialize({target, ...otherOptions, _isDeep: true});
   }
 
-  deserializeValue(value, {source, fields, filter, previousValue}) {
+  deserializeValue(value, {source, previousValue, ...otherOptions}) {
     if (value === undefined) {
       throw new Error(`Cannot deserialize 'undefined' (field: '${this._field.getName()}')`);
     }
@@ -490,7 +492,7 @@ class Scalar {
       throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
     }
     const Model = this._field.getLayer().get(type);
-    return Model.$deserialize(value, {source, fields, filter, previousInstance: previousValue});
+    return Model.$deserialize(value, {source, ...otherOptions, previousInstance: previousValue});
   }
 
   hasValidators() {
