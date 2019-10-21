@@ -204,7 +204,7 @@ export class Field extends Property {
       value = createObservable(value);
     }
 
-    if (value !== previousValue) {
+    if (value?.valueOf() !== previousValue?.valueOf()) {
       this._value = value;
 
       if (this._isUnique) {
