@@ -87,7 +87,7 @@ export function createObservable(target) {
 
       const result = Reflect.set(target, key, nextValue);
 
-      if (nextValue !== previousValue) {
+      if (nextValue?.valueOf() !== previousValue?.valueOf()) {
         if (isObservable(previousValue)) {
           previousValue.$unobserve(callObservers);
         }
