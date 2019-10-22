@@ -38,13 +38,13 @@ export const Serializable = (Base = Object) =>
       if (!instance) {
         instance = Object.create(this.prototype);
         instance.constructor = this;
-        this.$setInstance(instance);
       }
       return possiblyAsync(instance.$deserialize(object, otherOptions), () => instance);
     }
 
     $deserialize(object) {
       this.__isNew = Boolean(object?._new);
+      this.constructor.$setInstance(this);
     }
 
     // eslint-disable-next-line no-unused-vars

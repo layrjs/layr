@@ -3,6 +3,8 @@ import nanoid from 'nanoid';
 import {hasOwnProperty} from 'core-helpers';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
+import zip from 'lodash/zip';
+import isPromise from 'is-promise';
 import ow from 'ow';
 import debugModule from 'debug';
 
@@ -185,7 +187,7 @@ export class Layer {
       registerable = registerable.__fork();
       registerable.$setLayer(this);
 
-      if (this.__isDetached) {
+      if (this._isDetached) {
         registerable.$detach();
       }
 
@@ -275,12 +277,92 @@ export class Layer {
     for (const item of this._getOwnItems()) {
       item.$detach();
     }
-    this.__isDetached = true;
+    this._isDetached = true;
     return this;
   }
 
   isDetached() {
-    return this.__isDetached === true;
+    return this._isDetached === true;
+  }
+
+  // === Batching ===
+
+  // TODO: Reimplement from scratch
+
+  async batch(func) {
+    if (!this.isBatched()) {
+      this._setBatchState({count: 1, batchedQueries: []});
+    } else {
+      const {count} = this._getBatchState();
+      this._setBatchState({count: count + 1});
+    }
+
+    try {
+      const promises = await func(this);
+
+      ow(promises, ow.array);
+
+      for (const promise of promises) {
+        if (isPromise(promise)) {
+          // Let's ignore rejected promise for now so we can avoid
+          // unhandled promise rejection warning.
+          // Errors are caught later with `await promise`.
+          promise.catch(() => {});
+        }
+      }
+
+      while (true) {
+        await new Promise(resolve => setTimeout(resolve, 0)); // Prioritize microtasks
+
+        const {batchedQueries} = this._getBatchState();
+
+        if (batchedQueries.length === 0) {
+          break;
+        }
+
+        this._setBatchState({batchedQueries: []});
+
+        try {
+          const batchedQueryQueries = batchedQueries.map(batchedQuery => batchedQuery.query);
+          const batchedQueryResults = await this.sendQuery(batchedQueryQueries, {
+            ignoreBatch: true
+          });
+          for (const [{resolve}, result] of zip(batchedQueries, batchedQueryResults)) {
+            resolve(result);
+          }
+        } catch (error) {
+          for (const {reject} of batchedQueries) {
+            reject(error);
+          }
+        }
+      }
+
+      const results = [];
+
+      for (const promise of promises) {
+        results.push(await promise);
+      }
+
+      return results;
+    } finally {
+      const {count} = this._getBatchState();
+      this._setBatchState({count: count - 1});
+    }
+  }
+
+  isBatched() {
+    return this._batchState !== undefined && this._batchState.count > 0;
+  }
+
+  _getBatchState() {
+    return this._batchState;
+  }
+
+  _setBatchState(state) {
+    if (this._batchState === undefined) {
+      this._batchState = {};
+    }
+    Object.assign(this._batchState, state);
   }
 
   // === Introspection ===
@@ -432,7 +514,14 @@ export class Layer {
     };
   }
 
-  sendQuery(query) {
+  sendQuery(query, {ignoreBatch = false} = {}) {
+    if (this.isBatched() && !ignoreBatch) {
+      return new Promise((resolve, reject) => {
+        const {batchedQueries} = this._getBatchState();
+        batchedQueries.push({query, resolve, reject});
+      });
+    }
+
     const parent = this.getParent();
     const source = this.getName();
     const target = parent.getName();

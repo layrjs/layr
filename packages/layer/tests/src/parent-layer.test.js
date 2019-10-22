@@ -19,6 +19,12 @@ function runTests({viaHTTP = false} = {}) {
     }
 
     class BaseMovie extends Serializable(Registerable()) {
+      getAverageRating() {
+        let rating = this.ratingSum / this.ratingCount;
+        rating = Math.round(rating * 10) / 10;
+        return rating;
+      }
+
       $serialize() {
         return {
           ...super.$serialize(),
@@ -30,27 +36,11 @@ function runTests({viaHTTP = false} = {}) {
       }
 
       $deserialize({title, year, ratingSum, ratingCount} = {}) {
-        super.$deserialize();
         this.title = title;
         this.year = year;
         this.ratingSum = ratingSum;
         this.ratingCount = ratingCount;
-      }
-
-      static $getInstance(_object, _previousInstance) {
-        // Let's simulate an identity map
-        return this._instance;
-      }
-
-      static $setInstance(instance) {
-        // Let's simulate an identity map
-        this._instance = instance;
-      }
-
-      getAverageRating() {
-        let rating = this.ratingSum / this.ratingCount;
-        rating = Math.round(rating * 10) / 10;
-        return rating;
+        super.$deserialize();
       }
     }
 
@@ -74,6 +64,7 @@ function runTests({viaHTTP = false} = {}) {
           class Movie extends BaseMovie {
             @expose({call: true}) static get(id) {
               this.authorize();
+
               if (id === 'abc123') {
                 return this.$deserialize({
                   title: 'Inception',
@@ -82,6 +73,16 @@ function runTests({viaHTTP = false} = {}) {
                   ratingCount: 1
                 });
               }
+
+              if (id === 'abc456') {
+                return this.$deserialize({
+                  title: 'The Matrix',
+                  year: 1999,
+                  ratingSum: 18,
+                  ratingCount: 2
+                });
+              }
+
               throw new Error(`Movie not found (id: '${id}')`);
             }
 
@@ -125,7 +126,19 @@ function runTests({viaHTTP = false} = {}) {
       async function createFrontendLayer(backendLayer) {
         class Authenticator extends BaseAuthenticator {}
 
-        class Movie extends BaseMovie {}
+        class Movie extends BaseMovie {
+          // Let's simulate an identity map
+
+          static _instances = [];
+
+          static $getInstance(object, _previousInstance) {
+            return this._instances[object.title];
+          }
+
+          static $setInstance(instance) {
+            this._instances[instance.title] = instance;
+          }
+        }
 
         const authenticator = Authenticator.$deserialize();
 
@@ -184,6 +197,36 @@ function runTests({viaHTTP = false} = {}) {
       } else {
         await expect(frontendLayer.Movie.get('abc123')).rejects.toThrow(/Token is invalid/);
       }
+    });
+
+    test('Batch queries', async () => {
+      await frontendLayer.authenticator.signIn();
+
+      const [movie1, movie2] = await frontendLayer.batch(() => {
+        const ids = ['abc123', 'abc456'];
+
+        return ids.map(async id => {
+          await Promise.resolve(1);
+          const movie = await frontendLayer.Movie.get(id);
+          await Promise.resolve(1);
+          movie.isMarked = true;
+          return movie;
+        });
+      });
+
+      expect(movie1.title).toBe('Inception');
+      expect(movie1.year).toBe(2010);
+      expect(movie1.ratingSum).toBe(9);
+      expect(movie1.ratingCount).toBe(1);
+      expect(movie1.isMarked).toBe(true);
+
+      expect(movie2.title).toBe('The Matrix');
+      expect(movie2.year).toBe(1999);
+      expect(movie2.ratingSum).toBe(18);
+      expect(movie2.ratingCount).toBe(2);
+      expect(movie2.isMarked).toBe(true);
+
+      await frontendLayer.authenticator.signOut();
     });
   });
 }
