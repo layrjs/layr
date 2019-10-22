@@ -1,8 +1,8 @@
 import {FieldMask, isModel} from '@liaison/model';
 import {isIdentity} from '@liaison/identity';
-import difference from 'lodash/difference';
-import uniq from 'lodash/uniq';
-import partition from 'lodash/partition';
+import zip from 'lodash/zip';
+import unzip from 'lodash/unzip';
+import fill from 'lodash/fill';
 import ow from 'ow';
 
 import {StorableField} from './storable-field';
@@ -28,78 +28,85 @@ function makeStorable(Base) {
 
     static $Method = StorableMethod;
 
-    static async $get(keys, {fields, exclude, reload, throwIfNotFound = true} = {}) {
-      if (!Array.isArray(keys)) {
-        return (await this.$get([keys], {fields, reload, throwIfNotFound}))[0];
-      }
+    static async $get(key, {fields, exclude, reload, throwIfNotFound = true} = {}) {
+      const {name, value} = this.__extractKey(key);
 
-      const {name, values} = this.__extractKeys(keys);
+      let storable;
 
-      let storables;
       if (name === 'id') {
-        storables = values.map(
-          value => this.$getInstance({_id: value}) || this.$deserialize({_id: value})
-        );
+        storable = this.$getInstance({_id: value}) || this.$deserialize({_id: value});
       } else {
-        storables = await this.$getId(name, values, {exclude, reload, throwIfNotFound});
+        storable = await this.$getId(name, value, {exclude, reload, throwIfNotFound});
       }
 
-      return await this.$load(storables, {fields, reload, throwIfNotFound});
+      if (storable === undefined) {
+        return undefined;
+      }
+
+      return await this.$load(storable, {fields, reload, throwIfNotFound});
     }
 
-    static async $getId(name, values, {exclude, reload, throwIfNotFound}) {
+    static async $getMany(keys, {fields, exclude, reload, throwIfNotFound = true} = {}) {
+      if (!Array.isArray(fields)) {
+        fields = fill(Array(keys.length), fields);
+      }
+
+      return await this.$getLayer()
+        .fork()
+        .batch(batchedLayer => {
+          const BatchedStorable = this.$forkInto(batchedLayer);
+          return zip(keys, fields).map(async ([key, fields]) => {
+            const batchedStorable = await BatchedStorable.$get(key, {
+              fields,
+              exclude,
+              reload,
+              throwIfNotFound
+            });
+
+            if (batchedStorable === undefined) {
+              return undefined;
+            }
+
+            return this.$deserialize(
+              batchedStorable.$serialize({includeReferencedEntities: true}),
+              {includeReferencedEntities: true}
+            );
+          });
+        });
+    }
+
+    static async $getId(name, value, {exclude, reload, throwIfNotFound}) {
       // TODO: Consider removing this method
       // It should be possible to use any unique field as primary key
 
-      const {storables = [], missingValues = values} = !reload ?
-        this.__getIdFromMemory(name, values) :
-        {};
+      let storable = !reload ? this.__getIdFromMemory(name, value) : undefined;
 
-      if (missingValues.length === 0) {
-        return storables;
+      if (storable !== undefined) {
+        return storable;
       }
-
-      let missingStorables;
 
       if (this.$hasStore()) {
-        missingStorables = await this.__getIdFromStore(name, missingValues, {
-          exclude,
-          throwIfNotFound
-        });
+        storable = await this.__getIdFromStore(name, value, {exclude, throwIfNotFound});
       } else {
-        missingStorables = await super.$getId(name, missingValues, {
-          exclude,
-          reload,
-          throwIfNotFound
-        });
+        storable = await super.$getId(name, value, {exclude, reload, throwIfNotFound});
       }
 
-      return [...storables, ...missingStorables];
+      return storable;
     }
 
-    static __getIdFromMemory(name, values) {
-      const storables = [];
-      const missingValues = [];
+    static __getIdFromMemory(name, value) {
+      const storable = this.$getInstance({[name]: value}) || this.$deserialize({[name]: value});
 
       const storageSource = this.__getStoreOrParentLayerName();
 
-      for (const value of values) {
-        const storable = this.$getInstance({[name]: value}) || this.$deserialize({[name]: value});
-        if (storable.$getField(name).getSource() === storageSource) {
-          storables.push(storable);
-        } else {
-          missingValues.push(value);
-        }
+      if (storable.$getField(name).getSource() !== storageSource) {
+        return undefined;
       }
 
-      return {storables, missingValues};
+      return storable;
     }
 
-    static async __getIdFromStore(
-      name,
-      values,
-      {exclude: excludedStorables = [], throwIfNotFound}
-    ) {
+    static async __getIdFromStore(name, value, {exclude: excludedStorables = [], throwIfNotFound}) {
       if (!Array.isArray(excludedStorables)) {
         excludedStorables = [excludedStorables];
       }
@@ -123,266 +130,215 @@ function makeStorable(Base) {
       const store = this.$getStore();
       const storeName = this.$getStoreName();
 
-      let serializedStorables = await store.find(
-        {_type: this.$getRegisteredName(), [name]: values},
+      const serializedStorables = await store.find(
+        {_type: this.$getRegisteredName(), [name]: value},
         {fields: {[name]: true}}
       );
 
-      // TODO: Implement store.find() 'not-in' operator so we don't need to filter afterward
-      serializedStorables = serializedStorables.filter(
-        serializedStorable => !excludedIds.includes(serializedStorable._id)
-      );
-
-      const foundValues = serializedStorables.map(serializedStorable => serializedStorable[name]);
-
-      const uniqueValues = uniq(foundValues);
-      if (uniqueValues.length < foundValues.length) {
+      if (serializedStorables > 1) {
         throw new Error(`Found duplicated values in a unique field (name: '${name}')`);
       }
 
-      if (foundValues.length < values.length && throwIfNotFound) {
-        const missingValues = difference(values, foundValues);
-        throw new Error(`Item(s) not found (${name}(s): ${JSON.stringify(missingValues)})`);
+      let serializedStorable = serializedStorables[0];
+
+      // TODO: Implement store.find() 'not-in' operator so we don't need to filter afterward
+      if (serializedStorable !== undefined && excludedIds.includes(serializedStorable._id)) {
+        serializedStorable = undefined;
       }
 
-      const storables = serializedStorables.map(serializedStorable =>
-        this.$deserialize(serializedStorable, {source: storeName})
-      );
+      if (serializedStorable === undefined) {
+        if (throwIfNotFound) {
+          throw new Error(`Item not found (${name}: ${JSON.stringify(value)})`);
+        }
+        return undefined;
+      }
 
-      return storables;
+      const storable = this.$deserialize(serializedStorable, {source: storeName});
+
+      return storable;
     }
 
-    static __extractKeys(keys) {
-      let name;
-      const values = new Set();
+    static __extractKey(key) {
+      ow(key, ow.object);
 
-      for (const key of keys) {
-        ow(key, ow.object);
+      const names = Object.keys(key);
 
-        const keyNames = Object.keys(key);
-        if (keyNames.length !== 1) {
-          throw new Error(
-            `A key must be an object composed of one unique field (key: ${JSON.stringify(key)})`
-          );
-        }
-
-        const keyName = keyNames[0];
-
-        if (name === undefined) {
-          const isUnique = keyName === 'id' || this.prototype.$getField(keyName).isUnique();
-          if (!isUnique) {
-            throw new Error(`A key name must correspond to a unique field (name: '${keyName}')`);
-          }
-          name = keyName;
-        } else if (name !== keyName) {
-          throw new Error(
-            `Cannot handle different key names in a set of keys (keys: ${JSON.stringify(keys)})`
-          );
-        }
-
-        const keyValue = key[keyName];
-
-        if (keyValue === undefined) {
-          throw new Error(`A key value cannot be undefined (name: '${name}')`);
-        }
-
-        if (values.has(keyValue)) {
-          throw new Error(`A key value cannot be duplicated (name: '${name}')`);
-        }
-
-        values.add(keyValue);
+      if (names.length !== 1) {
+        throw new Error(
+          `A key must be an object composed of one unique field (key: ${JSON.stringify(key)})`
+        );
       }
 
-      return {name, values: Array.from(values)};
+      const name = names[0];
+
+      const isUnique = name === 'id' || this.prototype.$getField(name).isUnique();
+
+      if (!isUnique) {
+        throw new Error(`A key name must correspond to a unique field (name: '${name}')`);
+      }
+
+      const value = key[name];
+
+      if (value === undefined) {
+        throw new Error(`A key value cannot be undefined (name: '${name}')`);
+      }
+
+      return {name, value};
     }
 
-    static async $has(keys, {exclude, reload} = {}) {
-      if (!Array.isArray(keys)) {
-        keys = [keys];
-      }
-
-      const storables = await this.$get(keys, {
+    static async $has(key, {exclude, reload} = {}) {
+      const storable = await this.$get(key, {
         fields: false,
         exclude,
         reload,
         throwIfNotFound: false
       });
 
-      return storables.length === keys.length;
+      return storable !== undefined;
     }
 
-    static async $load(storables, {fields, reload, throwIfNotFound = true} = {}) {
-      if (!Array.isArray(storables)) {
-        return (await this.$load([storables], {fields, reload, throwIfNotFound}))[0];
+    static async $load(storable, {fields, reload, throwIfNotFound = true} = {}) {
+      return await storable.$load({fields, reload, throwIfNotFound});
+    }
+
+    static async $loadMany(storables, {fields, reload, throwIfNotFound = true} = {}) {
+      if (!Array.isArray(fields)) {
+        fields = fill(Array(storables.length), fields);
       }
 
-      fields = this.prototype.$createFieldMask({fields, includeReferencedEntities: true});
+      return await this.$getLayer()
+        .fork()
+        .batch(batchedLayer => {
+          return zip(storables, fields).map(async ([storable, fields]) => {
+            const batchedStorable = storable.$forkInto(batchedLayer);
 
-      const loadedStorables = await this.__load(storables, {fields, reload, throwIfNotFound});
+            const loadedStorable = await batchedStorable.$load({fields, reload, throwIfNotFound});
 
-      await this.__populate(loadedStorables, {fields, reload, throwIfNotFound});
+            if (loadedStorable === undefined) {
+              return undefined;
+            }
 
-      return loadedStorables;
+            storable.$merge(loadedStorable, {includeReferencedEntities: true});
+
+            return storable;
+          });
+        });
     }
 
-    static async $reload(storables, {fields, throwIfNotFound = true} = {}) {
-      return await this.$load(storables, {fields, reload: true, throwIfNotFound});
+    static async $reload(storable, {fields, throwIfNotFound = true} = {}) {
+      return await this.$load(storable, {fields, reload: true, throwIfNotFound});
+    }
+
+    static async $reloadMany(storables, {fields, throwIfNotFound = true} = {}) {
+      return await this.$loadMany(storables, {fields, reload: true, throwIfNotFound});
     }
 
     async $load({fields, reload, throwIfNotFound = true} = {}) {
-      return await this.constructor.$load(this, {fields, reload, throwIfNotFound});
+      const loadedStorable = await this.__load({fields, reload, throwIfNotFound});
+
+      if (loadedStorable === undefined) {
+        return undefined;
+      }
+
+      await loadedStorable.__populate({fields, reload, throwIfNotFound});
+
+      return loadedStorable;
     }
 
     async $reload({fields, throwIfNotFound = true} = {}) {
       return await this.$load({fields, reload: true, throwIfNotFound});
     }
 
-    static async __load(storablesToLoad, {fields, reload, throwIfNotFound}) {
-      // Remove fields of referenced entities
-      fields = this.prototype.$createFieldMask({fields, includeReferencedEntities: false});
-
-      let loadedStorables = [];
+    async __load({fields, reload, throwIfNotFound}) {
+      fields = this.$createFieldMask({fields});
 
       if (!reload) {
-        const {
-          loadedStorables: loadedStorablesFromMemory,
-          missingStorables,
-          missingFields
-        } = this.__loadFromMemory(storablesToLoad, {fields});
+        const storageSource = this.constructor.__getStoreOrParentLayerName();
 
-        loadedStorables = loadedStorablesFromMemory;
-        storablesToLoad = missingStorables;
+        const idIsMissing = this.$getIdSource() !== storageSource;
+
+        const existingFields = this.$createFieldMaskForSource(storageSource, {fields});
+        const missingFields = FieldMask.remove(fields, existingFields);
+
+        if (!idIsMissing && missingFields.isEmpty()) {
+          return this; // Nothing to load
+        }
+
         fields = missingFields;
       }
 
-      const actuallyLoadedStorables = await this.__loadFromStoreOrParentLayer(storablesToLoad, {
+      const loadedStorable = await this.__loadFromStoreOrParentLayer({
         fields,
         reload,
         throwIfNotFound
       });
 
-      loadedStorables = [...loadedStorables, ...actuallyLoadedStorables];
-
-      return loadedStorables;
+      return loadedStorable;
     }
 
-    static __loadFromMemory(storables, {fields}) {
-      const loadedStorables = [];
-      const missingStorables = [];
-      let allMissingFields = new FieldMask();
+    async __loadFromStoreOrParentLayer({fields, reload, throwIfNotFound}) {
+      let loadedStorable;
 
-      const storageSource = this.__getStoreOrParentLayerName();
-
-      for (const storable of storables) {
-        const idIsMissing = storable.$getIdSource() !== storageSource;
-        const existingFields = storable.$createFieldMaskForSource(storageSource, {fields});
-        const missingFields = FieldMask.remove(fields, existingFields);
-
-        if (idIsMissing || !missingFields.isEmpty()) {
-          missingStorables.push(storable);
-          allMissingFields = FieldMask.add(allMissingFields, missingFields);
-        } else {
-          loadedStorables.push(storable);
-        }
-      }
-
-      return {loadedStorables, missingStorables, missingFields: allMissingFields};
-    }
-
-    static async __loadFromStoreOrParentLayer(storablesToLoad, {fields, reload, throwIfNotFound}) {
-      if (storablesToLoad.length === 0) {
-        return storablesToLoad; // OPTIMIZATION
-      }
-
-      let loadedStorables;
-
-      if (this.$hasStore()) {
-        loadedStorables = await this.__loadFromStore(storablesToLoad, {fields, throwIfNotFound});
+      if (this.constructor.$hasStore()) {
+        loadedStorable = await this.__loadFromStore({fields, throwIfNotFound});
       } else {
-        loadedStorables = await super.$load(storablesToLoad, {fields, reload, throwIfNotFound});
+        loadedStorable = await super.$load({fields, reload, throwIfNotFound});
       }
 
-      for (const loadedStorable of loadedStorables) {
-        for (const field of loadedStorable.$getFieldsWithHook('loader', {
-          fields,
-          includeInactiveFields: true
-        })) {
-          await field.callHook('loader');
-        }
+      if (loadedStorable === undefined) {
+        return undefined;
       }
 
-      for (const loadedStorable of loadedStorables) {
-        await loadedStorable.$afterLoad({fields});
+      for (const field of loadedStorable.$getFieldsWithHook('loader', {
+        fields,
+        includeInactiveFields: true
+      })) {
+        await field.callHook('loader');
       }
 
-      return loadedStorables;
+      await loadedStorable.$afterLoad({fields});
+
+      return loadedStorable;
     }
 
-    static async __loadFromStore(storablesToLoad, {fields, throwIfNotFound}) {
-      const loadedStorables = [];
+    async __loadFromStore({fields, throwIfNotFound}) {
+      fields = this.$createFieldMaskForNonVolatileFields({fields});
 
-      fields = this.prototype.$createFieldMaskForNonVolatileFields({fields});
+      let serializedStorable = this.$serializeReference();
 
-      const store = this.$getStore();
-      const storeName = this.$getStoreName();
-
-      let missingStorables;
-      if (fields.isEmpty()) {
-        missingStorables = [];
-
-        for (const storableToLoad of storablesToLoad) {
-          const idIsMissing = storableToLoad.$getIdSource() !== storeName;
-          if (idIsMissing) {
-            missingStorables.push(storableToLoad);
-          } else {
-            loadedStorables.push(storableToLoad);
-          }
-        }
-      } else {
-        missingStorables = storablesToLoad;
-      }
-
-      if (missingStorables.length === 0) {
-        return loadedStorables;
-      }
-
-      let serializedStorables = missingStorables.map(storable => storable.$serializeReference());
-
+      const store = this.constructor.$getStore();
       const serializedFields = fields.serialize();
-
-      serializedStorables = await store.load(serializedStorables, {
+      serializedStorable = (await store.load([serializedStorable], {
         fields: serializedFields,
         throwIfNotFound
-      });
+      }))[0];
 
-      for (const serializedStorable of serializedStorables) {
-        // TODO: Modify MongoDBStore so we can get rid of the following test:
-        if (!serializedStorable._missed) {
-          loadedStorables.push(this.$deserialize(serializedStorable, {source: storeName}));
-        }
+      // TODO: Modify MongoDBStore so we can get rid of the following test:
+      if (serializedStorable._missed) {
+        return undefined;
       }
 
-      return loadedStorables;
+      const storeName = this.constructor.$getStoreName();
+      const loadedStorable = this.constructor.$deserialize(serializedStorable, {source: storeName});
+
+      return loadedStorable;
     }
 
-    static async __populate(storables, {fields, reload, throwIfNotFound}) {
-      const storablesByClass = new Map();
+    async __populate({fields, reload, throwIfNotFound}) {
+      fields = this.$createFieldMask({fields, includeReferencedEntities: true});
+
+      const storablesWithFields = new Map(); // {storable: fields}
 
       const traverse = (model, rootFields) => {
         for (const {value, fields} of model.$getFieldValues({fields: rootFields})) {
           if (isStorable(value)) {
             const storable = value;
-            const Storable = storable.constructor;
-
-            let entry = storablesByClass.get(Storable);
-
-            if (!entry) {
-              entry = {storables: new Set(), fields: new FieldMask()};
-              storablesByClass.set(Storable, entry);
+            if (!storablesWithFields.has(storable)) {
+              storablesWithFields.set(storable, fields);
+            } else {
+              const previousFields = storablesWithFields.get(storable);
+              storablesWithFields.set(storable, FieldMask.add(previousFields, fields));
             }
-
-            entry.storables.add(storable);
-            entry.fields = FieldMask.add(entry.fields, fields);
           } else if (isModel(value)) {
             const model = value;
             traverse(model);
@@ -390,119 +346,159 @@ function makeStorable(Base) {
         }
       };
 
-      for (const storable of storables) {
-        traverse(storable, fields);
+      traverse(this, fields);
+
+      if (storablesWithFields.size === 0) {
+        return;
       }
 
-      for (const [Storable, {storables, fields}] of storablesByClass.entries()) {
-        await Storable.$load(Array.from(storables), {fields, reload, throwIfNotFound});
-      }
-    }
+      const [storablesToLoad, fieldsToLoad] = unzip(Array.from(storablesWithFields.entries()));
 
-    static async $save(storables, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
-      if (!Array.isArray(storables)) {
-        return (await this.$save([storables], {throwIfNotFound, throwIfAlreadyExists}))[0];
-      }
-
-      let [storablesToSave, emptyStorables] = partition(
-        storables,
-        storable => storable.$isNew() || !storable.$createFieldMaskForActiveFields().isEmpty()
-      );
-
-      for (const storableToSave of storablesToSave) {
-        for (const field of storableToSave.$getFieldsWithHook('saver')) {
-          await field.callHook('saver');
-        }
-      }
-
-      for (const storableToSave of storablesToSave) {
-        await storableToSave.$beforeSave();
-      }
-
-      if (this.$hasStore()) {
-        storablesToSave = await this.__saveToStore(storablesToSave, {
-          throwIfNotFound,
-          throwIfAlreadyExists
-        });
-      } else {
-        storablesToSave = await super.$save(storablesToSave, {
-          throwIfNotFound,
-          throwIfAlreadyExists
-        });
-      }
-
-      for (const storableToSave of storablesToSave) {
-        await storableToSave.$afterSave();
-      }
-
-      return [...storablesToSave, ...emptyStorables];
-    }
-
-    static async __saveToStore(storables, {throwIfNotFound, throwIfAlreadyExists}) {
-      const fields = this.prototype.$createFieldMaskForNonVolatileFields();
-
-      for (const storable of storables) {
-        storable.$validate({fields});
-      }
-
-      const store = this.$getStore();
-      const storeName = this.$getStoreName();
-
-      let serializedStorables = storables.map(storable =>
-        storable.$serialize({fields, target: storeName})
-      );
-
-      serializedStorables = await store.save(serializedStorables, {
-        throwIfNotFound,
-        throwIfAlreadyExists
+      await this.constructor.$loadMany(storablesToLoad, {
+        fields: fieldsToLoad,
+        reload,
+        throwIfNotFound
       });
+    }
 
-      storables = serializedStorables.map(serializedStorable =>
-        this.$deserialize(serializedStorable, {source: storeName})
-      );
+    static async $save(storable, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
+      return await storable.$save({throwIfNotFound, throwIfAlreadyExists});
+    }
 
-      return storables;
+    static async $saveMany(storables, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
+      return await this.$getLayer()
+        .fork()
+        .batch(batchedLayer => {
+          return storables.map(async storable => {
+            const batchedStorable = storable.$forkInto(batchedLayer);
+
+            const savedStorable = await batchedStorable.$save({
+              throwIfNotFound,
+              throwIfAlreadyExists
+            });
+
+            if (savedStorable === undefined) {
+              return undefined;
+            }
+
+            storable.$merge(savedStorable);
+
+            return storable;
+          });
+        });
     }
 
     async $save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
-      return await this.constructor.$save(this, {throwIfNotFound, throwIfAlreadyExists});
-    }
-
-    static async $delete(storables, {throwIfNotFound = true} = {}) {
-      if (!Array.isArray(storables)) {
-        return (await this.$delete([storables], {throwIfNotFound}))[0];
+      if (!this.$isNew() && this.$createFieldMaskForActiveFields().isEmpty()) {
+        // Nothing to save
+        return this;
       }
 
-      for (const storable of storables) {
-        await storable.$beforeDelete();
+      for (const field of this.$getFieldsWithHook('saver')) {
+        await field.callHook('saver');
       }
 
-      if (this.$hasStore()) {
-        await this.__deleteFromStore(storables, {throwIfNotFound});
+      await this.$beforeSave();
+
+      let savedStorable;
+
+      if (this.constructor.$hasStore()) {
+        savedStorable = await this.__saveToStore({throwIfNotFound, throwIfAlreadyExists});
       } else {
-        await super.$delete(storables, {throwIfNotFound});
+        savedStorable = await super.$save({throwIfNotFound, throwIfAlreadyExists});
       }
 
-      for (const storable of storables) {
-        await storable.$afterDelete();
+      if (savedStorable === undefined) {
+        return undefined;
       }
 
-      for (const storable of storables) {
-        storable.$detach();
-      }
+      await savedStorable.$afterSave();
 
-      return storables;
+      return savedStorable;
     }
 
-    static async __deleteFromStore(storables, {throwIfNotFound}) {
-      const serializedStorables = storables.map(storable => storable.$serializeReference());
+    async __saveToStore({throwIfNotFound, throwIfAlreadyExists}) {
+      const fields = this.$createFieldMaskForNonVolatileFields();
 
-      const store = this.$getStore();
-      await store.delete(serializedStorables, {throwIfNotFound});
+      this.$validate({fields});
+
+      const storeName = this.constructor.$getStoreName();
+
+      let serializedStorable = this.$serialize({fields, target: storeName});
+
+      const store = this.constructor.$getStore();
+      serializedStorable = (await store.save([serializedStorable], {
+        throwIfNotFound,
+        throwIfAlreadyExists
+      }))[0];
+
+      // TODO: Modify MongoDBStore so we can get rid of the following test:
+      if (serializedStorable._missed || serializedStorable._existed) {
+        return undefined;
+      }
+
+      this.$deserialize(serializedStorable, {source: storeName});
+
+      return this;
+    }
+
+    static async $delete(storable, {throwIfNotFound = true} = {}) {
+      return await storable.$delete({throwIfNotFound});
+    }
+
+    static async $deleteMany(storables, {throwIfNotFound = true} = {}) {
+      return await this.$getLayer()
+        .fork()
+        .batch(batchedLayer => {
+          return storables.map(async storable => {
+            const batchedStorable = storable.$forkInto(batchedLayer);
+
+            const deletedStorable = await batchedStorable.$delete({throwIfNotFound});
+
+            if (deletedStorable === undefined) {
+              return undefined;
+            }
+
+            storable.$merge(deletedStorable);
+
+            return storable;
+          });
+        });
     }
 
     async $delete({throwIfNotFound = true} = {}) {
-      return await this.constructor.$delete(this, {throwIfNotFound});
+      await this.$beforeDelete();
+
+      let deletedStorable;
+
+      if (this.constructor.$hasStore()) {
+        deletedStorable = await this.__deleteFromStore({throwIfNotFound});
+      } else {
+        deletedStorable = await super.$delete({throwIfNotFound});
+      }
+
+      if (deletedStorable === undefined) {
+        return undefined;
+      }
+
+      await deletedStorable.$afterDelete();
+
+      deletedStorable.$detach();
+
+      return deletedStorable;
+    }
+
+    async __deleteFromStore({throwIfNotFound}) {
+      let serializedStorable = this.$serializeReference();
+
+      const store = this.constructor.$getStore();
+      serializedStorable = (await store.delete([serializedStorable], {throwIfNotFound}))[0];
+
+      if (serializedStorable._missed) {
+        return undefined;
+      }
+
+      return this;
     }
 
     static async $find({filter, sort, skip, limit, fields, reload, throwIfNotFound} = {}) {
@@ -516,7 +512,7 @@ function makeStorable(Base) {
         storables = await super.$find({filter, sort, skip, limit, fields: false});
       }
 
-      await this.$load(storables, {fields, reload, throwIfNotFound});
+      await this.$loadMany(storables, {fields, reload, throwIfNotFound});
 
       return storables;
     }

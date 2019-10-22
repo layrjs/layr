@@ -116,9 +116,7 @@ describe('Storable', () => {
     expect(movie.reference).toBe('movie-001');
 
     layer = rootLayer.fork();
-    await expect(layer.Movie.$get({reference: 'missing-ref'})).rejects.toThrow(
-      /Item\(s\) not found/
-    );
+    await expect(layer.Movie.$get({reference: 'missing-ref'})).rejects.toThrow(/Item not found/);
     expect(
       await layer.Movie.$get({reference: 'missing-ref'}, {throwIfNotFound: false})
     ).toBeUndefined();
@@ -401,7 +399,7 @@ describe('Storable', () => {
 
     layer = rootLayer.fork();
     movies = await layer.Movie.$find({fields: false});
-    await layer.Movie.$delete(movies);
+    await layer.Movie.$deleteMany(movies);
   });
 
   test.skip('Reloading storables', async () => {
@@ -477,6 +475,19 @@ describe('Storable', () => {
     // Will fetch both the 'Movie' and its director
     layer = rootLayer.fork();
     movie = await layer.Movie.$get({id: movieId});
+    expect(movie instanceof layer.Movie).toBe(true);
+    expect(movie.id).toBe(movieId);
+    expect(movie.title).toBe('Inception');
+    expect(movie.director instanceof layer.Director).toBe(true);
+    expect(movie.director.id).toBe(directorId);
+    expect(movie.director.fullName).toBe('Christopher Nolan');
+    expect(movie.director.country).toBe('USA');
+
+    // $getMany() should produce the same result
+    layer = rootLayer.fork();
+    const movies = await layer.Movie.$getMany([{id: movieId}]);
+    expect(movies).toHaveLength(1);
+    movie = movies[0];
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.id).toBe(movieId);
     expect(movie.title).toBe('Inception');
