@@ -60,8 +60,9 @@ export class Model extends Observable(Serializable(Registerable())) {
 
     const rootFieldMask = this.$createFieldMask({fields, includeReferencedEntities});
 
-    return possiblyAsync(
-      possiblyAsync.forEach(this.$getActiveFields(), field => {
+    return possiblyAsync.forEach(
+      this.$getActiveFields(),
+      field => {
         const name = field.getName();
 
         const fieldMask = rootFieldMask.get(name);
@@ -69,34 +70,45 @@ export class Model extends Observable(Serializable(Registerable())) {
           return;
         }
 
-        return possiblyAsync(filter ? filter.call(this, field) : true, isNotFilteredOut => {
-          if (isNotFilteredOut) {
-            return possiblyAsync(
-              field.serializeValue({target, fields: fieldMask, filter, includeReferencedEntities}),
-              value => {
-                if (value === undefined) {
-                  return;
-                }
+        return possiblyAsync(filter ? filter.call(this, field) : true, {
+          then: isNotFilteredOut => {
+            if (isNotFilteredOut) {
+              return possiblyAsync(
+                field.serializeValue({
+                  target,
+                  fields: fieldMask,
+                  filter,
+                  includeReferencedEntities
+                }),
+                {
+                  then: value => {
+                    if (value === undefined) {
+                      return;
+                    }
 
-                serializedFields[name] = value;
+                    serializedFields[name] = value;
 
-                if (target === undefined) {
-                  const source = field.getSource();
-                  if (source !== undefined) {
-                    sources[name] = source;
+                    if (target === undefined) {
+                      const source = field.getSource();
+                      if (source !== undefined) {
+                        sources[name] = source;
+                      }
+                    }
                   }
                 }
-              }
-            );
+              );
+            }
           }
         });
-      }),
-      () => {
-        return {
-          ...super.$serialize(),
-          ...(!isEmpty(sources) && {_src: sources}),
-          ...serializedFields
-        };
+      },
+      {
+        then: () => {
+          return {
+            ...super.$serialize(),
+            ...(!isEmpty(sources) && {_src: sources}),
+            ...serializedFields
+          };
+        }
       }
     );
   }
@@ -122,21 +134,25 @@ export class Model extends Observable(Serializable(Registerable())) {
       if (hasOwnProperty(object, name)) {
         const value = object[name];
 
-        return possiblyAsync(filter ? filter.call(this, field) : true, isNotFilteredOut => {
-          if (isNotFilteredOut) {
-            return possiblyAsync(
-              field.deserializeValue(value, {
-                source,
-                fields: fieldMask,
-                filter,
-                includeReferencedEntities
-              }),
-              () => {
-                if (source === undefined) {
-                  field.setSource(sources[name]);
+        return possiblyAsync(filter ? filter.call(this, field) : true, {
+          then: isNotFilteredOut => {
+            if (isNotFilteredOut) {
+              return possiblyAsync(
+                field.deserializeValue(value, {
+                  source,
+                  fields: fieldMask,
+                  filter,
+                  includeReferencedEntities
+                }),
+                {
+                  then: () => {
+                    if (source === undefined) {
+                      field.setSource(sources[name]);
+                    }
+                  }
                 }
-              }
-            );
+              );
+            }
           }
         });
       }

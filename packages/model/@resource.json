@@ -7,14 +7,13 @@
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/model",
   "dependencies": {
-    "cuid": "^2.1.6",
     "fn-name": "^2.0.1",
     "@liaison/layer": "^0.1.2",
     "@liaison/observable": "^0.1.0",
     "core-helpers": "^0.1.0",
     "lodash": "^4.17.11",
     "ow": "^0.13.2",
-    "possibly-async": "^0.1.0",
+    "possibly-async": "^0.2.0",
     "possibly-many": "^0.1.0"
   },
   "tests": {

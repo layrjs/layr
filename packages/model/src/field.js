@@ -294,14 +294,14 @@ export class Field extends Property {
   deserializeValue(value, {source, ...otherOptions} = {}) {
     const previousValue = this.isActive() ? this.getValue() : undefined;
 
-    return possiblyAsync(
-      possiblyAsync.possiblyMany(
-        possiblyMany.map(value, value =>
-          this._scalar.deserializeValue(value, {source, ...otherOptions, previousValue})
-        )
+    return possiblyAsync.possiblyMany(
+      possiblyMany.map(value, value =>
+        this._scalar.deserializeValue(value, {source, ...otherOptions, previousValue})
       ),
-      value => {
-        this.setValue(value, {source});
+      {
+        then: value => {
+          this.setValue(value, {source});
+        }
       }
     );
   }

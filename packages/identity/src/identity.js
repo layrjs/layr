@@ -22,9 +22,8 @@ export class Identity extends Model {
   }
 
   $serialize({target, ...otherOptions} = {}) {
-    return possiblyAsync(
-      super.$serialize({target, ...otherOptions}),
-      ({_type, _new: isNew, _src: sources = {}, ...otherProps}) => {
+    return possiblyAsync(super.$serialize({target, ...otherOptions}), {
+      then: ({_type, _new: isNew, _src: sources = {}, ...otherProps}) => {
         const serializedIdentity = {_type};
 
         if (isNew) {
@@ -48,7 +47,7 @@ export class Identity extends Model {
 
         return {...serializedIdentity, ...otherProps};
       }
-    );
+    });
   }
 
   $deserialize(object = {}, {source, ...otherOptions} = {}) {
