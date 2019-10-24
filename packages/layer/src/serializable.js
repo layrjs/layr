@@ -39,7 +39,7 @@ export const Serializable = (Base = Object) =>
         instance = Object.create(this.prototype);
         instance.constructor = this;
       }
-      return possiblyAsync(instance.$deserialize(object, otherOptions), () => instance);
+      return possiblyAsync(instance.$deserialize(object, otherOptions), {then: () => instance});
     }
 
     $deserialize(object) {

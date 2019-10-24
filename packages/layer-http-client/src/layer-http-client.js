@@ -16,61 +16,29 @@ export class LayerHTTPClient {
     this._url = url;
   }
 
-  getLayer() {
+  async getLayer() {
     let layer = this._layer;
 
     if (layer === undefined) {
       const url = this._url;
 
-      let isOpen;
-      let introspection;
+      debug(`Introspecting the remote layer (URL: '${url}')`);
+      const response = await fetch(url); // Introspect remote layer
+      if (response.status !== 200) {
+        throw new Error('An error occurred while introspecting the remote layer');
+      }
+      const introspection = await response.json();
+      if (introspection.name === undefined) {
+        introspection.name = nanoid(10);
+      }
+      debug(`Remote layer introspected (URL: '${url}')`);
 
       layer = {
-        async open() {
-          if (isOpen) {
-            throw new Error(`Cannot open a layer proxy that is already open`);
-          }
-
-          debug(`Introspecting the remote layer (URL: '${url}')`);
-          const response = await fetch(url); // Introspect remote layer
-          if (response.status !== 200) {
-            throw new Error('An error occurred while introspecting the remote layer');
-          }
-          introspection = await response.json();
-          if (introspection.name === undefined) {
-            introspection.name = nanoid(10);
-          }
-          debug(`Remote layer introspected (URL: '${url}')`);
-
-          isOpen = true;
-        },
-
-        async close() {
-          if (!isOpen) {
-            throw new Error(`Cannot close a layer proxy that is not open`);
-          }
-
-          introspection = undefined;
-          isOpen = false;
-        },
-
-        isOpen() {
-          return isOpen === true;
-        },
-
         getName() {
-          if (!this.isOpen()) {
-            throw new Error(`Cannot get the name of a closed layer proxy`);
-          }
-
           return introspection.name;
         },
 
         get(name, {throwIfNotFound = true} = {}) {
-          if (!this.isOpen()) {
-            throw new Error(`Cannot get an item from a closed layer proxy (name: '${name}')`);
-          }
-
           if (!hasOwnProperty(introspection.items, name)) {
             if (throwIfNotFound) {
               throw new Error(`Item not found in the layer proxy (name: '${name}')`);

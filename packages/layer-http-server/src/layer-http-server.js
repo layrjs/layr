@@ -37,25 +37,20 @@ export class LayerHTTPServer {
 
     koa.use(async ctx => {
       const layer = await this._layerCreator();
-      await layer.open();
 
-      try {
-        if (ctx.method === 'GET') {
-          ctx.body = layer.introspect();
-        } else if (ctx.method === 'POST') {
-          try {
-            const {query, items, source} = ctx.request.body;
-            const result = await layer.receiveQuery({query, items, source});
-            ctx.body = {result};
-          } catch (err) {
-            const error = {message: err.message};
-            ctx.body = {error};
-          }
-        } else {
-          throw new Error('Invalid HTTP request');
+      if (ctx.method === 'GET') {
+        ctx.body = layer.introspect();
+      } else if (ctx.method === 'POST') {
+        try {
+          const {query, items, source} = ctx.request.body;
+          const result = await layer.receiveQuery({query, items, source});
+          ctx.body = {result};
+        } catch (err) {
+          const error = {message: err.message};
+          ctx.body = {error};
         }
-      } finally {
-        await layer.close();
+      } else {
+        throw new Error('Invalid HTTP request');
       }
     });
 

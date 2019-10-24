@@ -15,14 +15,12 @@ describe('Layer', () => {
 
     const layer = new Layer({Item, Movie}, {name: 'layer'});
 
+    await layer.open();
+
     expect(layer.getName()).toBe('layer');
     expect(Movie.$getLayer()).toBe(layer);
     expect(Movie.$hasLayer()).toBe(true);
     expect(Movie.$getRegisteredName()).toBe('Movie');
-
-    expect(() => layer.Movie).toThrow(/Cannot get an item from a closed layer/);
-
-    await layer.open();
 
     expect(layer.Movie).toBe(Movie);
     expect([...layer.getItems()]).toEqual([Item, Movie]);
@@ -36,14 +34,15 @@ describe('Layer', () => {
     expect(movie.$getLayer({fallBackToClass: false, throwIfNotFound: false})).toBeUndefined();
     expect(movie.$hasLayer({fallBackToClass: false})).toBe(false);
 
-    await layer.close();
+    expect(() => layer.register({movie})).toThrow(/Cannot register an item in an open layer/);
 
+    await layer.close();
     layer.register({movie});
+    await layer.open();
+
     expect(movie.$getRegisteredName()).toBe('movie');
 
-    await layer.open();
     expect(layer.movie).toBe(movie);
-    await layer.close();
 
     const movie2 = new Movie({title: 'The Matrix'});
 
@@ -63,6 +62,8 @@ describe('Layer', () => {
 
     const anotherLayer = new Layer({Trailer}, {name: 'anotherLayer'});
     expect(anotherLayer.getName()).toBe('anotherLayer');
+
+    await layer.close();
   });
 
   test('Forking', async () => {
@@ -71,6 +72,7 @@ describe('Layer', () => {
     const store = new Store();
 
     const layer = new Layer({store});
+
     await layer.open();
 
     const sublayer = layer.fork();
@@ -78,6 +80,8 @@ describe('Layer', () => {
     sublayer.store.transaction = 12345;
     expect(sublayer.store.transaction).toBe(12345);
     expect(layer.store.transaction).toBeUndefined();
+
+    await layer.close();
   });
 
   test('Serialization', async () => {
@@ -101,6 +105,7 @@ describe('Layer', () => {
     }
 
     const layer = new Layer({Movie});
+
     await layer.open();
 
     let movie = new layer.Movie({title: 'Inception'});
@@ -149,5 +154,7 @@ describe('Layer', () => {
     movie = deserialized.payload.movies[0];
     expect(movie instanceof layer.Movie).toBe(true);
     expect(movie.title).toBe('Forest Gump');
+
+    await layer.close();
   });
 });

@@ -80,8 +80,7 @@ class Counter extends BaseCounter {
 
 // We connect to the backend layer
 const client = new LayerHTTPClient('http://localhost:3333');
-const backendLayer = client.getLayer();
-await backendLayer.open();
+const backendLayer = await client.getLayer();
 
 // We register the frontend class into a layer and we set the backend layer as parent
 const layer = new Layer({Counter}, {parent: backendLayer});

@@ -110,32 +110,19 @@ export class Layer {
 
   // === Opening and closing ===
 
-  async open() {
+  open() {
     if (this._isOpen) {
       throw new Error(`Cannot open a layer that is already open`);
     }
 
-    if (this._isOpen === false && !hasOwnProperty(this, '_isOpen')) {
-      throw new Error(`Cannot reopen a layer from a fork`);
-    }
-
-    if (this.hasParent() && !this.getParent().isOpen()) {
-      throw new Error(`The parent layer must be opened before the child one`);
-    }
-
-    this._isOpen = true;
-
-    try {
-      for (const item of this.getItems()) {
-        await item.$open();
+    return possiblyAsync.forEach(this.getItems(), item => item.$open(), {
+      then: () => {
+        this._isOpen = true;
       }
-    } catch (error) {
-      this._isOpen = false;
-      throw error;
-    }
+    });
   }
 
-  async close() {
+  close() {
     if (!this._isOpen) {
       throw new Error(`Cannot close a layer that is not open`);
     }
@@ -144,22 +131,11 @@ export class Layer {
       throw new Error(`Cannot close a layer from a fork`);
     }
 
-    for (const item of this.getItems()) {
-      await item.$close();
-    }
-
-    this._isOpen = false;
-  }
-
-  async run(func) {
-    ow(func, ow.function);
-
-    await this.open();
-    try {
-      return await func(this);
-    } finally {
-      await this.close();
-    }
+    return possiblyAsync.forEach(this.getItems(), item => item.$close(), {
+      then: () => {
+        this._isOpen = false;
+      }
+    });
   }
 
   isOpen() {
@@ -169,10 +145,6 @@ export class Layer {
   // === Getting items ===
 
   get(name, {throwIfNotFound = true} = {}) {
-    if (!this.isOpen()) {
-      throw new Error(`Cannot get an item from a closed layer (name: '${name}')`);
-    }
-
     let registerable = this._registerables[name];
 
     if (registerable === undefined) {
@@ -531,13 +503,15 @@ export class Layer {
 
     debugSending(`[%s → %s] {query: %o, items: %o}`, source, target, query, items);
 
-    return possiblyAsync(parent.receiveQuery({query, items, source}), ({result, items}) => {
-      debugSending(`[%s ← %s] {result: %o, items: %o}`, source, target, result, items);
+    return possiblyAsync(parent.receiveQuery({query, items, source}), {
+      then: ({result, items}) => {
+        debugSending(`[%s ← %s] {result: %o, items: %o}`, source, target, result, items);
 
-      result = this.deserialize(result, {source: target});
-      this._deserializeItems(items, {source: target});
+        result = this.deserialize(result, {source: target});
+        this._deserializeItems(items, {source: target});
 
-      return result;
+        return result;
+      }
     });
   }
 
@@ -550,43 +524,60 @@ export class Layer {
 
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
 
-    return possiblyAsync(
-      this._deserializeItems(items, {source, filter: setFilter, isReceiving: true}),
+    return possiblyAsync.call([
       () => {
-        return this.deserialize(query, {source, filter: setFilter});
-      },
-      deserializedQuery => {
-        query = deserializedQuery;
-        return this.callBeforeInvokeReceivedQuery();
+        this._deserializeItems(items, {source, filter: setFilter, isReceiving: true});
       },
       () => {
-        return this.invokeQuery(query);
-      },
-      result => {
-        return this.serialize(result, {target: source, filter: getFilter});
-      },
-      serializedResult => {
-        result = serializedResult;
-        return this._serializeItems({target: source, filter: getFilter});
-      },
-      serializedItems => {
-        items = serializedItems;
-        return this.callAfterInvokeReceivedQuery();
+        return this.open();
       },
       () => {
-        debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
+        return possiblyAsync.call(
+          [
+            () => {
+              return this.deserialize(query, {source, filter: setFilter});
+            },
+            deserializedQuery => {
+              query = deserializedQuery;
+              return this.callBeforeInvokeReceivedQuery();
+            },
+            () => {
+              return this.invokeQuery(query);
+            },
+            result => {
+              return this.serialize(result, {target: source, filter: getFilter});
+            },
+            serializedResult => {
+              result = serializedResult;
+              return this._serializeItems({target: source, filter: getFilter});
+            },
+            serializedItems => {
+              items = serializedItems;
+              return this.callAfterInvokeReceivedQuery();
+            },
+            () => {
+              debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
 
-        return {result, items};
+              return {result, items};
+            }
+          ],
+          {
+            finally: () => {
+              return this.close();
+            }
+          }
+        );
       }
-    );
+    ]);
   }
 
   _serializeItems({target, filter, isSending} = {}) {
     const serializedItems = {};
     let hasSerializedItems = false;
 
-    return possiblyAsync(
-      possiblyAsync.forEach(this.getItems(), item => {
+    return possiblyAsync.forEach(
+      this.getItems(),
+      item => {
         if (typeof item !== 'object') {
           return;
         }
@@ -605,13 +596,17 @@ export class Layer {
           throw new Error(`Cannot send an item that is not serializable (name: '${name}')`);
         }
 
-        return possiblyAsync(item.$serialize({target, filter}), serializedItem => {
-          serializedItems[name] = serializedItem;
-          hasSerializedItems = true;
+        return possiblyAsync(item.$serialize({target, filter}), {
+          then: serializedItem => {
+            serializedItems[name] = serializedItem;
+            hasSerializedItems = true;
+          }
         });
-      }),
-      () => {
-        return hasSerializedItems ? serializedItems : undefined;
+      },
+      {
+        then: () => {
+          return hasSerializedItems ? serializedItems : undefined;
+        }
       }
     );
   }

@@ -115,10 +115,8 @@ function runTests({viaHTTP = false} = {}) {
           await layerServer.start();
 
           const layerClient = new LayerHTTPClient('http://localhost:4444');
-          layer = layerClient.getLayer();
+          layer = await layerClient.getLayer();
         }
-
-        await layer.open();
 
         return {layer, layerServer};
       }
@@ -143,7 +141,6 @@ function runTests({viaHTTP = false} = {}) {
         const authenticator = Authenticator.$deserialize();
 
         const layer = new Layer({Movie, authenticator}, {name: 'frontend', parent: backendLayer});
-        await layer.open();
 
         return {layer};
       }
@@ -157,6 +154,8 @@ function runTests({viaHTTP = false} = {}) {
     });
 
     test('Parent call', async () => {
+      await frontendLayer.open();
+
       expect(frontendLayer.authenticator.token).toBeUndefined();
       if (!viaHTTP) {
         frontendLayer.authenticator.signIn();
@@ -197,9 +196,13 @@ function runTests({viaHTTP = false} = {}) {
       } else {
         await expect(frontendLayer.Movie.get('abc123')).rejects.toThrow(/Token is invalid/);
       }
+
+      await frontendLayer.close();
     });
 
     test('Batch queries', async () => {
+      await frontendLayer.open();
+
       await frontendLayer.authenticator.signIn();
 
       const [movie1, movie2] = await frontendLayer.batch(() => {
@@ -227,6 +230,8 @@ function runTests({viaHTTP = false} = {}) {
       expect(movie2.isMarked).toBe(true);
 
       await frontendLayer.authenticator.signOut();
+
+      await frontendLayer.close();
     });
   });
 }

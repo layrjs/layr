@@ -171,23 +171,19 @@ describe('Entity', () => {
         }
       }
 
-      const layer = new Layer({Movie}, {name: 'backend'});
-      await layer.open();
-
-      return layer;
+      return new Layer({Movie}, {name: 'backend'});
     }
 
     async function createFrontendLayer(backendLayer) {
       class Movie extends BaseMovie {}
 
-      const layer = new Layer({Movie}, {name: 'frontend', parent: backendLayer});
-      await layer.open();
-
-      return layer;
+      return new Layer({Movie}, {name: 'frontend', parent: backendLayer});
     }
 
     const backendLayer = await createBackendLayer();
     const frontendLayer = await createFrontendLayer(backendLayer);
+
+    frontendLayer.open();
 
     const movie = new frontendLayer.Movie();
 
@@ -207,5 +203,7 @@ describe('Entity', () => {
 
     movie.setBackendFieldValue('secret', 'xyz123');
     expect(movie.$fieldIsActive('secret')).toBe(false);
+
+    frontendLayer.close();
   });
 });

@@ -19,7 +19,7 @@
     "lodash": "^4.17.15",
     "nanoid": "^2.0.3",
     "ow": "^0.13.2",
-    "possibly-async": "^0.1.0"
+    "possibly-async": "^0.2.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

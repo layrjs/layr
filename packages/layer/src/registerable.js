@@ -55,11 +55,11 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
-    static async $open() {
+    static $open() {
       // Override this method to implement initialization logic
     }
 
-    static async $close() {
+    static $close() {
       // Override this method to implement deinitialization logic
     }
 
@@ -181,7 +181,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     static $callParentLayer(methodName, ...args) {
       const layer = this.$getLayer();
       const query = this.__buildQuery(methodName, ...args);
-      return possiblyAsync(layer.sendQuery(query), ({result}) => result);
+      return possiblyAsync(layer.sendQuery(query), {then: ({result}) => result});
     }
 
     static __buildQuery(methodName, ...args) {
@@ -300,11 +300,11 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
-    async $open() {
+    $open() {
       // Override this method to implement initialization logic
     }
 
-    async $close() {
+    $close() {
       // Override this method to implement deinitialization logic
     }
 
