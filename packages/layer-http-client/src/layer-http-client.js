@@ -103,7 +103,8 @@ export class LayerHTTPClient {
           );
 
           if (response.error) {
-            throw new Error(response.error.message);
+            const {message, ...otherAttributes} = response.error;
+            throw Object.assign(new Error(message), otherAttributes);
           }
 
           return response.result;

@@ -46,7 +46,7 @@ export class LayerHTTPServer {
           const result = await layer.receiveQuery({query, items, source});
           ctx.body = {result};
         } catch (err) {
-          const error = {message: err.message};
+          const error = {message: err.message, ...err};
           ctx.body = {error};
         }
       } else {
