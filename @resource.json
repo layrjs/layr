@@ -36,6 +36,12 @@
   "storable": {
     "@include": "./packages/storable"
   },
+  "hostedLayer": {
+    "@include": "./resources/hosted-layer"
+  },
+  "lambdaHostedLayer": {
+    "@include": "./resources/lambda-hosted-layer"
+  },
   "link": {
     "@type": "method",
     "@run": [
@@ -57,7 +63,10 @@
       "(@import shell/bash) run \"npm-link ./packages/react-integration\"",
       "(@import shell/bash) run \"npm-link ./packages/router\"",
       "(@import shell/bash) run \"npm-link ./packages/storable\"",
-      "(@import shell/bash) run \"npm-link ./packages/storable/tests\""
+      "(@import shell/bash) run \"npm-link ./packages/storable/tests\"",
+      "(@import shell/bash) run \"npm-link ./resources/hosted-layer\"",
+      "(@import shell/bash) run \"npm-link ./resources/hosted-layer/example\"",
+      "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer\""
     ]
   }
 }

@@ -1,0 +1,77 @@
+{
+  "@import": [
+    "resdir/resource#^0.1.0",
+    "1place/js-resource#^0.1.0"
+  ],
+  "id": "liaison/lambda-hosted-layer",
+  "version": "0.1.1",
+  "isPublic": true,
+  "authors": [
+    "Manuel Vila <hi@mvila.me>"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/resdir/resdir.git",
+  "files": [
+    "./dist"
+  ],
+  "dependencies": {},
+  "@export": {
+    "@import": "liaison/hosted-layer#^0.1.0",
+    "@name": "AWS Lambda Hosted Layer",
+    "@description": "Host layers on AWS using Lambda, API Gateway, Route 53 and ACM",
+    "@implementation": "./dist/cjs",
+    "deploy": {
+      "@type": "method",
+      "@description": "Deploy your layer to AWS Lambda"
+    },
+    "executionRole": {
+      "@type": "string",
+      "@description": "The name of the IAM role that Lambda assumes when it serves your layer",
+      "@isOptional": true
+    },
+    "memorySize": {
+      "@description": "The maximum amount of memory, in MB, allocated to your layer",
+      "@default": 128
+    },
+    "timeout": {
+      "@description": "The maximum execution time, in seconds, of the layer methods",
+      "@default": 3
+    },
+    "reservedConcurrentExecutions": {
+      "@type": "number",
+      "@description": "The number of concurrent executions reserved for this function"
+    },
+    "endpointType": {
+      "@description": "Type of the API Gateway endpoint (either 'regional' or 'edge')",
+      "@default": "regional"
+    },
+    "environment": {
+      "@type": "object",
+      "@isHidden": true
+    },
+    "aws": {
+      "@description": "Your AWS configuration",
+      "profile": {
+        "@type": "string",
+        "@description": "Your AWS profile"
+      },
+      "accessKeyId": {
+        "@type": "string",
+        "@description": "Your AWS access key ID"
+      },
+      "secretAccessKey": {
+        "@type": "string",
+        "@description": "Your AWS secret access key"
+      },
+      "region": {
+        "@description": "The AWS region in which your layer must be hosted",
+        "@examples": [
+          "us-west-1",
+          "eu-west-3",
+          "ap-northeast-1"
+        ],
+        "@default": "us-east-1"
+      }
+    }
+  }
+}

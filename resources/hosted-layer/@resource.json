@@ -1,0 +1,105 @@
+{
+  "@import": [
+    "resdir/resource#^0.1.0",
+    "1place/js-resource#^0.1.0"
+  ],
+  "id": "liaison/hosted-layer",
+  "version": "0.1.12",
+  "isPublic": true,
+  "authors": [
+    "Manuel Vila <hi@mvila.me>"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/resdir/resdir.git",
+  "files": [
+    "./dist"
+  ],
+  "dependencies": {
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "@koa/cors": "^3.0.0",
+    "koa-json-error": "^3.1.2",
+    "node-notifier": "^5.2.1",
+    "@resdir/console": "^0.1.16",
+    "@resdir/error": "^0.1.0",
+    "sleep-promise": "^8.0.1"
+  },
+  "@export": {
+    "@name": "Hosted Layer",
+    "@description": "Base resource for actual hosted layer implementations (e.g., liaison/lambda-hosted-layer)",
+    "@implementation": "./dist/cjs",
+    "domainName": {
+      "@type": "string",
+      "@description": "The domain name of your hosted layer",
+      "@examples": [
+        "api.mydomain.com"
+      ]
+    },
+    "files": {
+      "@type": "array",
+      "@description": "List of files and directories to deploy",
+      "@examples": [
+        [
+          "./dist/cjs",
+          "node_modules"
+        ]
+      ]
+    },
+    "main": {
+      "@type": "string",
+      "@description": "The file that exports your layer",
+      "@examples": [
+        [
+          "./dist/node/cjs/index.js",
+          "./lib/main.js"
+        ]
+      ]
+    },
+    "reinstallDependenciesWhileDeploying": {
+      "@type": "boolean",
+      "@isHidden": true
+    },
+    "deploy": {
+      "@type": "method",
+      "@description": "Deploy your layer",
+      "@before": [
+        "@build",
+        "validate"
+      ]
+    },
+    "validate": {
+      "@type": "method",
+      "@description": "Validate the layer definition"
+    },
+    "testServer": {
+      "@description": "A simple HTTP server to help you test your layer locally",
+      "@aliases": [
+        "server"
+      ],
+      "@implementation": "./dist/cjs/test-server",
+      "port": {
+        "@description": "The TCP port the test server should use",
+        "@default": 6789
+      },
+      "delay": {
+        "@description": "Delay (in millisecond) before responding (helps to simulate slow network)",
+        "@default": 0
+      },
+      "errorRate": {
+        "@description": "Rate (in percentage) of error in handling requests (helps to simulate unreliable network)",
+        "@default": 0
+      },
+      "start": {
+        "@type": "method",
+        "@description": "Start the test server",
+        "@input": {
+          "notify": {
+            "@type": "boolean",
+            "@description": "Show a notification when the server has started",
+            "@default": false
+          }
+        }
+      }
+    }
+  }
+}
