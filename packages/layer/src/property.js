@@ -1,5 +1,6 @@
-import {isExposed} from '@liaison/layer';
 import ow from 'ow';
+
+import {isExposed} from './registerable';
 
 export class Property {
   constructor(parent, name, options = {}) {
@@ -7,7 +8,7 @@ export class Property {
     ow(name, ow.string.nonEmpty);
     ow(options, ow.object);
 
-    const {...unknownOptions} = options;
+    const {expose, ...unknownOptions} = options;
 
     this._options = options;
 
@@ -18,6 +19,10 @@ export class Property {
 
     this._parent = parent;
     this._name = name;
+
+    if (expose !== undefined) {
+      parent.$exposeProperty(name, expose);
+    }
   }
 
   fork(parent) {

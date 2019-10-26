@@ -45,13 +45,12 @@ import {LayerHTTPServer} from '@liaison/layer-http-server';
 
 import {Counter as BaseCounter} from './shared';
 
-@expose()
 class Counter extends BaseCounter {
   // The counter's value can be exposed to the frontend
-  @expose() value;
+  @field({expose: {get: true, set: true}}) value;
 
   // The backend implements and exposes the "business logic"
-  @expose() increment() {
+  @method({expose: {call: true}}) increment() {
     this.value++;
   }
 }

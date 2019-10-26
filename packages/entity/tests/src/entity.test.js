@@ -1,5 +1,5 @@
-import {Layer, expose} from '@liaison/layer';
-import {field} from '@liaison/model';
+import {Layer} from '@liaison/layer';
+import {field, method} from '@liaison/model';
 
 import {Entity} from '../../..';
 
@@ -156,17 +156,17 @@ describe('Entity', () => {
 
     async function createBackendLayer() {
       class Movie extends BaseMovie {
-        @expose({get: true, set: true}) title;
+        @field({expose: {get: true, set: true}}) title;
 
-        @expose({get: true}) rating;
+        @field({expose: {get: true}}) rating;
 
-        @expose({set: true}) secret;
+        @field({expose: {set: true}}) secret;
 
-        @expose({call: true}) getBackendFieldValue(name) {
+        @method({expose: {call: true}}) getBackendFieldValue(name) {
           return this[name];
         }
 
-        @expose({call: true}) setBackendFieldValue(name, value) {
+        @method({expose: {call: true}}) setBackendFieldValue(name, value) {
           this[name] = value;
         }
       }

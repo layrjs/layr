@@ -169,93 +169,11 @@ export class Model extends Observable(Serializable(Registerable())) {
     }
   }
 
-  // === Properties ===
-
-  $getProperty(name, {throwIfNotFound = true} = {}) {
-    const properties = this.__getProperties();
-
-    let property = properties[name];
-
-    if (!property) {
-      if (throwIfNotFound) {
-        throw new Error(
-          `Property not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
-        );
-      }
-      return undefined;
-    }
-
-    if (!hasOwnProperty(properties, name)) {
-      property = property.fork(this);
-      properties[name] = property;
-    }
-
-    return property;
-  }
-
-  $setProperty(constructor, name, options = {}) {
-    if (this.$hasProperty(name)) {
-      const existingProperty = this.$getProperty(name);
-      options = {...existingProperty.getOptions(), ...options};
-    }
-
-    const properties = this.__getProperties();
-    const property = new constructor(this, name, options);
-    properties[name] = property;
-
-    return property;
-  }
-
-  $hasProperty(name) {
-    return this.$getProperty(name, {throwIfNotFound: false}) !== undefined;
-  }
-
-  $getProperties({filter} = {}) {
-    const model = this;
-
-    return {
-      * [Symbol.iterator]() {
-        for (const name of model.$getPropertyNames()) {
-          const property = model.$getProperty(name);
-
-          if (filter && !filter.call(this, property)) {
-            continue;
-          }
-
-          yield property;
-        }
-      }
-    };
-  }
-
-  $getPropertyNames() {
-    const properties = this.__properties;
-
-    return {
-      * [Symbol.iterator]() {
-        if (properties) {
-          // eslint-disable-next-line guard-for-in
-          for (const name in properties) {
-            yield name;
-          }
-        }
-      }
-    };
-  }
-
-  __getProperties() {
-    if (!this.__properties) {
-      this.__properties = Object.create(null);
-    } else if (!hasOwnProperty(this, '__properties')) {
-      this.__properties = Object.create(this.__properties);
-    }
-
-    return this.__properties;
-  }
-
   // === Fields ===
 
-  static $Field = Field;
+  static $getFieldConstructor() {
+    return Field;
+  }
 
   $getField(name, {throwIfNotFound = true} = {}) {
     const property = this.$getProperty(name, {throwIfNotFound: false});
@@ -279,7 +197,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $setField(name, options = {}) {
-    return this.$setProperty(this.constructor.$Field, name, options);
+    return this.__setProperty(this.constructor.$getFieldConstructor(), name, options);
   }
 
   $hasField(name) {
@@ -515,42 +433,42 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   // === Methods ===
 
-  static $Method = Method;
+  // --- Static methods ---
 
-  $getMethod(name, {throwIfNotFound = true} = {}) {
+  static $getMethodConstructor() {
+    return Method;
+  }
+
+  static $getMethod(name, {throwIfNotFound = true} = {}) {
     const property = this.$getProperty(name, {throwIfNotFound: false});
 
     if (!property) {
       if (throwIfNotFound) {
-        throw new Error(
-          `Method not found (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
-        );
+        throw new Error(`Method not found (name: '${name}')`);
       }
       return undefined;
     }
 
     if (!isMethod(property)) {
-      throw new Error(
-        `Found property is not a method (name: '${name}'), model: ${this.constructor.$getRegisteredName()}`
-      );
+      throw new Error(`Found property is not a method (name: '${name}')`);
     }
 
     return property;
   }
 
-  $setMethod(name, options = {}) {
+  static $setMethod(name, options = {}) {
     if (this.$hasProperty(name)) {
       this.$getMethod(name); // Make sure the property is a method
     }
 
-    return this.$setProperty(this.constructor.$Method, name, options);
+    return this.__setProperty(this.$getMethodConstructor(), name, options);
   }
 
-  $hasMethod(name) {
+  static $hasMethod(name) {
     return this.$getMethod(name, {throwIfNotFound: false}) !== undefined;
   }
 
-  $getMethods({filter: otherFilter} = {}) {
+  static $getMethods({filter: otherFilter} = {}) {
     const filter = function (property) {
       if (!isMethod(property)) {
         return false;
@@ -564,7 +482,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.$getProperties({filter});
   }
 
-  $getMethodNames() {
+  static $getMethodNames() {
     const methods = this.$getMethods();
 
     return {
@@ -575,6 +493,32 @@ export class Model extends Observable(Serializable(Registerable())) {
         }
       }
     };
+  }
+
+  // --- instance methods ---
+
+  $getMethodConstructor() {
+    return this.constructor.$getMethodConstructor.call(this);
+  }
+
+  $getMethod(name, {throwIfNotFound = true} = {}) {
+    return this.constructor.$getMethod.call(this, name, {throwIfNotFound});
+  }
+
+  $setMethod(name, options = {}) {
+    return this.constructor.$setMethod.call(this, name, options);
+  }
+
+  $hasMethod(name) {
+    return this.constructor.$hasMethod.call(this, name);
+  }
+
+  $getMethods({filter} = {}) {
+    return this.constructor.$getMethods.call(this, {filter});
+  }
+
+  $getMethodNames() {
+    return this.constructor.$getMethodNames.call(this);
   }
 
   // === Utilities ===

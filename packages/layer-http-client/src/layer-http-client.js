@@ -52,8 +52,7 @@ export class LayerHTTPClient {
             if (!hasOwnProperty(target, name)) {
               return undefined;
             }
-            const {_type: type} = target[name];
-            return {name, type};
+            return {name, ...target[name]};
           };
 
           const itemProxy = {

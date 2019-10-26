@@ -24,9 +24,13 @@ export const Storable = (Base, {storeName} = {}) => {
 
 function makeStorable(Base) {
   const Storable = class Storable extends Base {
-    static $Field = StorableField;
+    static $getFieldConstructor() {
+      return StorableField;
+    }
 
-    static $Method = StorableMethod;
+    static $getMethodConstructor() {
+      return StorableMethod;
+    }
 
     static async $get(key, {fields, exclude, reload, throwIfNotFound = true} = {}) {
       const {name, value} = this.__extractKey(key);

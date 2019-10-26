@@ -1,3 +1,4 @@
+import {Property} from '@liaison/layer';
 import {createObservable, isObservable, canBecomeObservable} from '@liaison/observable';
 import {hasOwnProperty} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
@@ -7,7 +8,6 @@ import compact from 'lodash/compact';
 import isPlainObject from 'lodash/isPlainObject';
 import ow from 'ow';
 
-import {Property} from './property';
 import {runValidators, normalizeValidator, REQUIRED_VALIDATOR_NAME} from './validation';
 
 export class Field extends Property {

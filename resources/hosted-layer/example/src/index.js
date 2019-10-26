@@ -1,5 +1,5 @@
-import {Model} from '@liaison/model';
-import {Layer, expose} from '@liaison/layer';
+import {Model, method} from '@liaison/model';
+import {Layer} from '@liaison/layer';
 
 // time curl -v -X GET http://localhost:6789
 
@@ -7,7 +7,7 @@ import {Layer, expose} from '@liaison/layer';
 
 export default async function createLayer() {
   class Clock extends Model {
-    @expose({call: true}) static getTime() {
+    @method({expose: {call: true}}) static getTime() {
       return new Date();
     }
   }

@@ -199,6 +199,8 @@ export class Layer {
     };
   }
 
+  // === Exposition ===
+
   hasExposedItem(name) {
     const item = this.get(name, {throwIfNotFound: false});
 
@@ -229,8 +231,6 @@ export class Layer {
     forkedLayer._registerables = Object.create(this._registerables);
     return forkedLayer;
   }
-
-  // === Ghosting ===
 
   getGhost() {
     if (!this._ghost) {

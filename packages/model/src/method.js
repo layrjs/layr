@@ -1,4 +1,4 @@
-import {Property} from './property';
+import {Property} from '@liaison/layer';
 
 export class Method extends Property {
   constructor(parent, name, options = {}) {

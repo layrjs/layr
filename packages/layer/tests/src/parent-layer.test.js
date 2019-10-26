@@ -1,4 +1,4 @@
-import {Layer, Registerable, Serializable, expose} from '../../..';
+import {Layer, Registerable, Serializable, property} from '../../..';
 import {LayerHTTPClient} from '@liaison/layer-http-client';
 import {LayerHTTPServer} from '@liaison/layer-http-server';
 
@@ -52,17 +52,17 @@ function runTests({viaHTTP = false} = {}) {
       async function createBackendLayer() {
         async function layerCreator() {
           class Authenticator extends BaseAuthenticator {
-            @expose({call: true}) signIn() {
+            @property({expose: {call: true}}) signIn() {
               this.token = '123456789';
             }
 
-            @expose({call: true}) signOut() {
+            @property({expose: {call: true}}) signOut() {
               this.token = undefined;
             }
           }
 
           class Movie extends BaseMovie {
-            @expose({call: true}) static get(id) {
+            @property({expose: {call: true}}) static get(id) {
               this.authorize();
 
               if (id === 'abc123') {
@@ -86,7 +86,7 @@ function runTests({viaHTTP = false} = {}) {
               throw new Error(`Movie not found (id: '${id}')`);
             }
 
-            @expose({call: true}) rate(rating) {
+            @property({expose: {call: true}}) rate(rating) {
               this.constructor.authorize();
               this.ratingSum += rating;
               this.ratingCount += 1;

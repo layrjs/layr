@@ -2,6 +2,7 @@ import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
+import {Property} from './property';
 import {isSerializable} from './serializable';
 import {MissingPropertyEmitter} from './missing-property-emitter';
 
@@ -9,7 +10,9 @@ const EMPTY_MAP = new Map();
 
 export const Registerable = (Base = MissingPropertyEmitter) =>
   class Registerable extends Base {
-    // === Static methods ===
+    // *** Static methods ***
+
+    // === Registration ===
 
     static $getRegisteredName() {
       return this.__registeredName;
@@ -55,6 +58,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
+    // === Opening and closing ===
+
     static $open() {
       // Override this method to implement initialization logic
     }
@@ -62,6 +67,94 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     static $close() {
       // Override this method to implement deinitialization logic
     }
+
+    // === Properties ===
+
+    static $getProperty(name, {throwIfNotFound = true} = {}) {
+      const properties = this.__getProperties();
+
+      let property = properties[name];
+
+      if (!property) {
+        if (throwIfNotFound) {
+          throw new Error(`Property not found (name: '${name}')`);
+        }
+        return undefined;
+      }
+
+      if (!hasOwnProperty(properties, name)) {
+        property = property.fork(this);
+        properties[name] = property;
+      }
+
+      return property;
+    }
+
+    static $setProperty(name, options = {}) {
+      return this.__setProperty(Property, name, options);
+    }
+
+    static __setProperty(constructor, name, options = {}) {
+      if (this.$hasProperty(name)) {
+        const existingProperty = this.$getProperty(name);
+        options = {...existingProperty.getOptions(), ...options};
+      }
+
+      const properties = this.__getProperties();
+      const property = new constructor(this, name, options);
+      properties[name] = property;
+
+      return property;
+    }
+
+    static $hasProperty(name) {
+      return this.$getProperty(name, {throwIfNotFound: false}) !== undefined;
+    }
+
+    static $getProperties({filter} = {}) {
+      const model = this;
+
+      return {
+        * [Symbol.iterator]() {
+          for (const name of model.$getPropertyNames()) {
+            const property = model.$getProperty(name);
+
+            if (filter && !filter.call(this, property)) {
+              continue;
+            }
+
+            yield property;
+          }
+        }
+      };
+    }
+
+    static $getPropertyNames() {
+      const properties = this.__properties;
+
+      return {
+        * [Symbol.iterator]() {
+          if (properties) {
+            // eslint-disable-next-line guard-for-in
+            for (const name in properties) {
+              yield name;
+            }
+          }
+        }
+      };
+    }
+
+    static __getProperties() {
+      if (!this.__properties) {
+        this.__properties = Object.create(null);
+      } else if (!hasOwnProperty(this, '__properties')) {
+        this.__properties = Object.create(this.__properties);
+      }
+
+      return this.__properties;
+    }
+
+    // === Property exposition ===
 
     static $propertyOperationIsAllowed(name, operation) {
       const exposedProperty = this.$getExposedProperty(name);
@@ -86,14 +179,9 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       });
     }
 
-    static $exposeProperty(name, type, options) {
-      ow(type, ow.string.oneOf(['field', 'method']));
-      const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array, ow.set);
-      if (type === 'field') {
-        ow(options, ow.object.exactShape({get: setting, set: setting}));
-      } else if (type === 'method') {
-        ow(options, ow.object.exactShape({call: setting}));
-      }
+    static $exposeProperty(name, options) {
+      const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array);
+      ow(options, ow.object.exactShape({get: setting, set: setting, call: setting}));
 
       if (!this.__exposedProperties) {
         this.__exposedProperties = new Map();
@@ -101,7 +189,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         this.__exposedProperties = new Map(this.__exposedProperties);
       }
 
-      this.__exposedProperties.set(name, {name, type, ...options});
+      this.__exposedProperties.set(name, {name, ...options});
     }
 
     static $getExposedProperty(name) {
@@ -134,6 +222,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     static $normalizeExposedPropertyOperationSetting(setting) {
       return setting;
     }
+
+    // === Forking ===
 
     static $fork() {
       const forkedLayer = this.$getLayer().fork();
@@ -169,6 +259,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return this.$getGhost();
     }
 
+    // === Attachment ===
+
     static $detach() {
       this.__isDetached = true;
       return this;
@@ -178,21 +270,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return this.__isDetached === true;
     }
 
-    static $callParentLayer(methodName, ...args) {
-      const layer = this.$getLayer();
-      const query = this.__buildQuery(methodName, ...args);
-      return possiblyAsync(layer.sendQuery(query), {then: ({result}) => result});
-    }
-
-    static __buildQuery(methodName, ...args) {
-      return {
-        [`${this.$getRegisteredName()}=>`]: {
-          [`${methodName}=>result`]: {
-            '()': args
-          }
-        }
-      };
-    }
+    // === Queries ===
 
     static $onMissingProperty(name) {
       if (typeof name === 'symbol' || name.startsWith('_')) {
@@ -210,8 +288,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         return undefined;
       }
 
-      if (exposedProperty.type !== 'method') {
-        throw new Error('Currently, only exposed methods are supported');
+      if (!exposedProperty.call) {
+        throw new Error('Currently, only callable exposed properties are supported');
       }
 
       return function (...args) {
@@ -236,13 +314,31 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return parentRegistrable;
     }
 
+    static $callParentLayer(methodName, ...args) {
+      const layer = this.$getLayer();
+      const query = this.__buildQuery(methodName, ...args);
+      return possiblyAsync(layer.sendQuery(query), {then: ({result}) => result});
+    }
+
+    static __buildQuery(methodName, ...args) {
+      return {
+        [`${this.$getRegisteredName()}=>`]: {
+          [`${methodName}=>result`]: {
+            '()': args
+          }
+        }
+      };
+    }
+
+    // === Utilities ===
+
     static $introspect() {
       const introspection = {
         _type: 'class'
       };
 
-      for (const {name, type} of this.$getExposedProperties().values()) {
-        introspection[name] = {_type: type};
+      for (const {name, ...attributes} of this.$getExposedProperties().values()) {
+        introspection[name] = attributes;
       }
 
       introspection.prototype = this.prototype.$introspect();
@@ -250,7 +346,9 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return introspection;
     }
 
-    // === Instance methods ===
+    // *** Instance methods ***
+
+    // === Registration ===
 
     $getRegisteredName() {
       return this.constructor.$getRegisteredName.call(this);
@@ -300,6 +398,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return layer ? layer.hasParent() : false;
     }
 
+    // === Opening and closing ===
+
     $open() {
       // Override this method to implement initialization logic
     }
@@ -308,12 +408,44 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       // Override this method to implement deinitialization logic
     }
 
+    // === Properties ===
+
+    $getProperty(name, {throwIfNotFound = true} = {}) {
+      return this.constructor.$getProperty.call(this, name, {throwIfNotFound});
+    }
+
+    $setProperty(name, options = {}) {
+      return this.constructor.$setProperty.call(this, name, options);
+    }
+
+    __setProperty(constructor, name, options = {}) {
+      return this.constructor.__setProperty.call(this, constructor, name, options);
+    }
+
+    $hasProperty(name) {
+      return this.constructor.$hasProperty.call(this, name);
+    }
+
+    $getProperties({filter} = {}) {
+      return this.constructor.$getProperties.call(this, {filter});
+    }
+
+    $getPropertyNames() {
+      return this.constructor.$getPropertyNames.call(this);
+    }
+
+    __getProperties() {
+      return this.constructor.__getProperties.call(this);
+    }
+
+    // === Property exposition ===
+
     $propertyOperationIsAllowed(name, operation) {
       return this.constructor.$propertyOperationIsAllowed.call(this, name, operation);
     }
 
-    $exposeProperty(name, type, options) {
-      this.constructor.$exposeProperty.call(this, name, type, options);
+    $exposeProperty(name, options) {
+      this.constructor.$exposeProperty.call(this, name, options);
     }
 
     $getExposedProperty(name) {
@@ -343,6 +475,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     $normalizeExposedPropertyOperationSetting(setting) {
       return this.constructor.$normalizeExposedPropertyOperationSetting(setting);
     }
+
+    // === Forking ===
 
     $fork() {
       const forkedLayer = this.$getLayer().fork();
@@ -401,6 +535,8 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return this.$getGhost();
     }
 
+    // === Attachment ===
+
     $detach() {
       return this.constructor.$detach.call(this);
     }
@@ -409,29 +545,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return this.constructor.$isDetached() || this.constructor.$isDetached.call(this);
     }
 
-    $callParentLayer(methodName, ...args) {
-      return this.constructor.$callParentLayer.call(this, methodName, ...args);
-    }
-
-    __buildQuery(methodName, ...args) {
-      if (this.$isRegistered()) {
-        return {
-          [`${this.$getRegisteredName()}=>`]: {
-            [`${methodName}=>result`]: {
-              '()': args
-            }
-          }
-        };
-      }
-
-      return {
-        '<=': this,
-        [`${methodName}=>result`]: {
-          '()': args
-        },
-        '=>changes': true
-      };
-    }
+    // === Queries ===
 
     $onMissingProperty(name) {
       return this.constructor.$onMissingProperty.call(this, name);
@@ -475,13 +589,39 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       return parentRegistrable;
     }
 
+    $callParentLayer(methodName, ...args) {
+      return this.constructor.$callParentLayer.call(this, methodName, ...args);
+    }
+
+    __buildQuery(methodName, ...args) {
+      if (this.$isRegistered()) {
+        return {
+          [`${this.$getRegisteredName()}=>`]: {
+            [`${methodName}=>result`]: {
+              '()': args
+            }
+          }
+        };
+      }
+
+      return {
+        '<=': this,
+        [`${methodName}=>result`]: {
+          '()': args
+        },
+        '=>changes': true
+      };
+    }
+
+    // === Utilities ===
+
     $introspect() {
       const introspection = {
         _type: 'instance'
       };
 
-      for (const {name, type} of this.$getExposedProperties().values()) {
-        introspection[name] = {_type: type};
+      for (const {name, ...attributes} of this.$getExposedProperties().values()) {
+        introspection[name] = attributes;
       }
 
       return introspection;
@@ -489,32 +629,6 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
   };
 
 // === Property exposition ===
-
-export function expose(options = {}) {
-  return function (target, name, descriptor) {
-    if (!isRegisterable(target)) {
-      throw new Error(`@expose() target must be a registerable`);
-    }
-    if (!(name && descriptor)) {
-      throw new Error(`@expose() must be used to decorate properties`);
-    }
-
-    if (descriptor.initializer !== undefined) {
-      // @expose() is used on an property defined in a parent class
-      // Examples: `@expose() title;` or `@expose() static $get;`
-      descriptor = getInheritedPropertyDescriptor(target, name);
-      if (descriptor === undefined) {
-        throw new Error(`Cannot expose an undefined property (name: '${name}')`);
-      }
-    }
-
-    const type = typeof descriptor.value === 'function' ? 'method' : 'field';
-
-    target.$exposeProperty(name, type, options);
-
-    return descriptor;
-  };
-}
 
 export function isExposed(target, name) {
   if (!isRegisterable(target)) {
@@ -533,4 +647,31 @@ export function isExposed(target, name) {
 
 export function isRegisterable(value) {
   return value?.__isRegisterableProxy || typeof value?.$getLayer === 'function';
+}
+
+// === Decorators ===
+
+export function property(options = {}) {
+  return function (target, name, descriptor) {
+    if (!(isRegisterable(target) || isRegisterable(target.prototype))) {
+      throw new Error(`@property() target must be a model`);
+    }
+
+    if (!(name && descriptor)) {
+      throw new Error(`@property() must be used to decorate methods`);
+    }
+
+    if (descriptor.initializer !== undefined) {
+      // @property() is used on an method defined in a parent class
+      // Examples: `@property() $get;` or `@property() static $get;`
+      descriptor = getInheritedPropertyDescriptor(target, name);
+      if (descriptor === undefined) {
+        throw new Error(`Cannot use @property() on an undefined property (name: '${name}')`);
+      }
+    }
+
+    target.$setProperty(name, options);
+
+    return descriptor;
+  };
 }
