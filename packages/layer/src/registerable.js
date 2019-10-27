@@ -1,12 +1,10 @@
 import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
-import ow from 'ow';
+import isEmpty from 'lodash/isEmpty';
 
 import {Property} from './property';
 import {isSerializable} from './serializable';
 import {MissingPropertyEmitter} from './missing-property-emitter';
-
-const EMPTY_MAP = new Map();
 
 export const Registerable = (Base = MissingPropertyEmitter) =>
   class Registerable extends Base {
@@ -156,71 +154,36 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     // === Property exposition ===
 
-    static $propertyOperationIsAllowed(name, operation) {
-      const exposedProperty = this.$getExposedProperty(name);
-
-      if (exposedProperty === undefined) {
-        return false;
-      }
-
-      let setting = exposedProperty[operation];
-
-      if (setting === undefined) {
-        return false;
-      }
-
-      // OPTIMIZE: Normalize once, when the property is exposed
-      setting = this.$normalizeExposedPropertyOperationSetting(setting);
-
-      return this.$exposedPropertyOperationIsAllowed({
-        property: exposedProperty,
-        operation,
-        setting
-      });
-    }
-
-    static $exposeProperty(name, options) {
-      const setting = ow.optional.any(ow.boolean, ow.string.nonEmpty, ow.array);
-      ow(options, ow.object.exactShape({get: setting, set: setting, call: setting}));
-
-      if (!this.__exposedProperties) {
-        this.__exposedProperties = new Map();
-      } else if (!hasOwnProperty(this, '__exposedProperties')) {
-        this.__exposedProperties = new Map(this.__exposedProperties);
-      }
-
-      this.__exposedProperties.set(name, {name, ...options});
-    }
-
-    static $getExposedProperty(name) {
-      return this.__exposedProperties?.get(name);
-    }
-
-    static $hasExposedProperty(name) {
-      return this.__exposedProperties ? this.__exposedProperties.has(name) : false;
-    }
-
     static $getExposedProperties() {
-      return this.__exposedProperties || EMPTY_MAP;
+      return this.$getProperties({filter: property => property.isExposed()});
     }
 
-    static $hasExposedProperties() {
-      return this.__exposedProperties !== undefined;
+    static $isExposed() {
+      const iterator = this.$getExposedProperties()[Symbol.iterator]();
+      return !iterator.next().done;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    static $exposedPropertyOperationIsAllowed({property, operation, setting}) {
+    static $getPropertyExposition(name, {throwIfNotFound = true} = {}) {
+      const property = this.$getProperty(name, {throwIfNotFound});
+      return property?.getExposition();
+    }
+
+    static $resolvePropertyOperationSetting(setting) {
       if (setting === true) {
         return true;
       }
+    }
 
-      if (setting === false) {
-        return false;
+    static $normalizePropertyOperationSetting(setting) {
+      if (setting === true) {
+        return true;
       }
     }
 
-    static $normalizeExposedPropertyOperationSetting(setting) {
-      return setting;
+    static $serializePropertyOperationSetting(setting) {
+      if (setting === true) {
+        return true;
+      }
     }
 
     // === Forking ===
@@ -283,12 +246,13 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         return undefined;
       }
 
-      const exposedProperty = parentRegistrable.$getExposedProperty(name);
-      if (!exposedProperty) {
+      const exposition = parentRegistrable.$getPropertyExposition(name, {throwIfNotFound: false});
+
+      if (exposition === undefined) {
         return undefined;
       }
 
-      if (!exposedProperty.call) {
+      if (exposition.call === undefined) {
         throw new Error('Currently, only callable exposed properties are supported');
       }
 
@@ -307,7 +271,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       const parentLayer = this.$getParentLayer({throwIfNotFound: false});
       const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
 
-      if (!isExposed(parentRegistrable)) {
+      if (!parentRegistrable?.$isExposed()) {
         return undefined;
       }
 
@@ -332,16 +296,14 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     // === Utilities ===
 
-    static $introspect() {
-      const introspection = {
-        _type: 'class'
-      };
+    static $introspect({propertyFilter} = {}) {
+      const introspection = this.prototype.$introspect.call(this);
 
-      for (const {name, ...attributes} of this.$getExposedProperties().values()) {
-        introspection[name] = attributes;
+      const prototypeIntrospection = this.prototype.$introspect({propertyFilter});
+
+      if (!isEmpty(prototypeIntrospection)) {
+        introspection.prototype = prototypeIntrospection;
       }
-
-      introspection.prototype = this.prototype.$introspect();
 
       return introspection;
     }
@@ -440,40 +402,28 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     // === Property exposition ===
 
-    $propertyOperationIsAllowed(name, operation) {
-      return this.constructor.$propertyOperationIsAllowed.call(this, name, operation);
-    }
-
-    $exposeProperty(name, options) {
-      this.constructor.$exposeProperty.call(this, name, options);
-    }
-
-    $getExposedProperty(name) {
-      return this.constructor.$getExposedProperty.call(this, name);
-    }
-
-    $hasExposedProperty(name) {
-      return this.constructor.$hasExposedProperty.call(this, name);
-    }
-
     $getExposedProperties() {
       return this.constructor.$getExposedProperties.call(this);
     }
 
-    $hasExposedProperties() {
-      return this.constructor.$hasExposedProperties.call(this);
+    $isExposed() {
+      return this.constructor.$isExposed.call(this);
     }
 
-    $exposedPropertyOperationIsAllowed({property, operation, setting}) {
-      return this.constructor.$exposedPropertyOperationIsAllowed.call(this, {
-        property,
-        operation,
-        setting
-      });
+    $getPropertyExposition(name, {throwIfNotFound = true} = {}) {
+      return this.constructor.$getPropertyExposition.call(this, name, {throwIfNotFound});
     }
 
-    $normalizeExposedPropertyOperationSetting(setting) {
-      return this.constructor.$normalizeExposedPropertyOperationSetting(setting);
+    $resolvePropertyOperationSetting(setting) {
+      return this.constructor.$resolvePropertyOperationSetting.call(this, setting);
+    }
+
+    $normalizePropertyOperationSetting(setting) {
+      return this.constructor.$normalizePropertyOperationSetting(setting);
+    }
+
+    $serializePropertyOperationSetting(setting) {
+      return this.constructor.$serializePropertyOperationSetting.call(this, setting);
     }
 
     // === Forking ===
@@ -558,7 +508,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         // The instance is registered
         const parentLayer = this.$getParentLayer({fallBackToClass: false, throwIfNotFound: false});
         const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
-        if (!isExposed(parentRegistrable)) {
+        if (!parentRegistrable?.$isExposed()) {
           return undefined;
         }
         return parentRegistrable;
@@ -582,7 +532,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
       const parentRegistrable = ParentRegistrable.prototype;
 
-      if (!isExposed(parentRegistrable)) {
+      if (!parentRegistrable.$isExposed()) {
         return undefined;
       }
 
@@ -615,38 +565,34 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     // === Utilities ===
 
-    $introspect() {
-      const introspection = {
-        _type: 'instance'
-      };
+    $introspect({propertyFilter} = {}) {
+      const introspection = {};
 
-      for (const {name, ...attributes} of this.$getExposedProperties().values()) {
-        introspection[name] = attributes;
+      const properties = {};
+
+      for (const property of this.$getProperties({filter: propertyFilter})) {
+        const name = property.getName();
+
+        properties[name] = {};
+
+        const serializedExposition = property.serializeExposition();
+        if (serializedExposition !== undefined) {
+          properties[name].exposition = serializedExposition;
+        }
+      }
+
+      if (!isEmpty(properties)) {
+        introspection.properties = properties;
       }
 
       return introspection;
     }
   };
 
-// === Property exposition ===
-
-export function isExposed(target, name) {
-  if (!isRegisterable(target)) {
-    return false;
-  }
-
-  if (!name) {
-    // isExposed() called with a class or an instance
-    return target.__isRegisterableProxy || target.$hasExposedProperties();
-  }
-
-  return target.$getExposedProperty(name) !== undefined;
-}
-
 // === Utilities ===
 
 export function isRegisterable(value) {
-  return value?.__isRegisterableProxy || typeof value?.$getLayer === 'function';
+  return value?.__isRegisterableMock || typeof value?.$getLayer === 'function';
 }
 
 // === Decorators ===
@@ -658,12 +604,12 @@ export function property(options = {}) {
     }
 
     if (!(name && descriptor)) {
-      throw new Error(`@property() must be used to decorate methods`);
+      throw new Error(`@property() must be used to decorate properties`);
     }
 
     if (descriptor.initializer !== undefined) {
-      // @property() is used on an method defined in a parent class
-      // Examples: `@property() $get;` or `@property() static $get;`
+      // @property() is used on an property defined in a parent class
+      // Examples: `@property() title;` or `@property() static find;`
       descriptor = getInheritedPropertyDescriptor(target, name);
       if (descriptor === undefined) {
         throw new Error(`Cannot use @property() on an undefined property (name: '${name}')`);

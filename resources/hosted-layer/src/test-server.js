@@ -63,7 +63,10 @@ export default () => ({
 
       if (ctx.method === 'GET') {
         print(formatBold('→ ') + formatBold(formatCode('introspect()', {addBackticks: false})));
-        const result = layer.introspect();
+        const result = layer.introspect({
+          itemFilter: item => item.$isExposed(),
+          propertyFilter: property => property.isExposed()
+        });
         ctx.body = result;
         print(formatBold('← ') + formatValue(result, {multiline: false}));
       } else if (ctx.method === 'POST') {

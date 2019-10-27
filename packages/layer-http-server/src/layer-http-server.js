@@ -39,7 +39,10 @@ export class LayerHTTPServer {
       const layer = await this._layerCreator();
 
       if (ctx.method === 'GET') {
-        ctx.body = layer.introspect();
+        ctx.body = layer.introspect({
+          itemFilter: item => item.$isExposed(),
+          propertyFilter: property => property.isExposed()
+        });
       } else if (ctx.method === 'POST') {
         try {
           const {query, items, source} = ctx.request.body;

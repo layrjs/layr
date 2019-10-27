@@ -3,12 +3,13 @@ import nanoid from 'nanoid';
 import {hasOwnProperty} from 'core-helpers';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
+import isEmpty from 'lodash/isEmpty';
 import zip from 'lodash/zip';
 import isPromise from 'is-promise';
 import ow from 'ow';
 import debugModule from 'debug';
 
-import {isRegisterable, isExposed} from './registerable';
+import {isRegisterable} from './registerable';
 import {isSerializable} from './serializable';
 
 const debugSending = debugModule('liaison:layer:sending');
@@ -199,31 +200,6 @@ export class Layer {
     };
   }
 
-  // === Exposition ===
-
-  hasExposedItem(name) {
-    const item = this.get(name, {throwIfNotFound: false});
-
-    if (item === undefined) {
-      return false;
-    }
-
-    return item.$hasExposedProperties();
-  }
-
-  getExposedItems({filter: otherFilter} = {}) {
-    const filter = function (item) {
-      if (!isExposed(item)) {
-        return false;
-      }
-      if (otherFilter) {
-        return otherFilter(item);
-      }
-      return true;
-    };
-    return this.getItems({filter});
-  }
-
   // === Forking ===
 
   fork() {
@@ -339,14 +315,19 @@ export class Layer {
 
   // === Introspection ===
 
-  introspect() {
+  introspect({itemFilter, propertyFilter} = {}) {
     const introspection = {
-      name: !this.nameHasBeenGenerated() ? this.getName() : undefined,
-      items: {}
+      name: !this.nameHasBeenGenerated() ? this.getName() : undefined
     };
 
-    for (const exposedItem of this.getExposedItems()) {
-      introspection.items[exposedItem.$getRegisteredName()] = exposedItem.$introspect();
+    const items = {};
+
+    for (const item of this.getItems({filter: itemFilter})) {
+      items[item.$getRegisteredName()] = item.$introspect({propertyFilter});
+    }
+
+    if (!isEmpty(items)) {
+      introspection.items = items;
     }
 
     return introspection;
@@ -475,11 +456,27 @@ export class Layer {
   _createQueryAuthorizer() {
     return function (name, operation) {
       if (isLayer(this)) {
-        return this.hasExposedItem(name) && operation === 'get';
+        if (operation !== 'get') {
+          return false;
+        }
+
+        const item = this.get(name, {throwIfNotFound: false});
+
+        if (item === undefined) {
+          return false;
+        }
+
+        return item.$isExposed();
       }
 
       if (isRegisterable(this)) {
-        return this.$propertyOperationIsAllowed(name, operation);
+        const property = this.$getProperty(name, {throwIfNotFound: false});
+
+        if (property === undefined) {
+          return false;
+        }
+
+        return property.operationIsAllowed(operation);
       }
 
       return false;
@@ -519,8 +516,8 @@ export class Layer {
     let result;
 
     const target = this.getName();
-    const getFilter = this._createExposedPropertyFilter('get');
-    const setFilter = this._createExposedPropertyFilter('set');
+    const getFilter = this._createPropertyExpositionFilter('get');
+    const setFilter = this._createPropertyExpositionFilter('set');
 
     debugReceiving(`[%s → %s] {query: %o, items: %o})`, source, target, query, items);
 
@@ -588,7 +585,7 @@ export class Layer {
           if (!this.getParent().get(name, {throwIfNotFound: false})) {
             return;
           }
-        } else if (!isExposed(item)) {
+        } else if (!item.$isExposed()) {
           return;
         }
 
@@ -619,7 +616,7 @@ export class Layer {
     return possiblyAsync.forEach(Object.entries(serializedItems), ([name, serializedItem]) => {
       const item = this.get(name);
 
-      if (isReceiving && !isExposed(item)) {
+      if (isReceiving && !item.$isExposed()) {
         throw new Error(`Cannot receive an item that is not exposed (name: '${name}')`);
       }
 
@@ -631,14 +628,9 @@ export class Layer {
     });
   }
 
-  _createExposedPropertyFilter(operation) {
+  _createPropertyExpositionFilter(operation) {
     return function (property) {
-      // TODO: The Layer class shouldn't be concerned by Field instances
-      // Consider implementing a generic Property class accessible by Registrable
-
-      const name = property.getName();
-
-      return this.$propertyOperationIsAllowed(name, operation);
+      return property.operationIsAllowed(operation);
     };
   }
 

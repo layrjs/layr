@@ -39,41 +39,66 @@ export class LayerHTTPClient {
         },
 
         get(name, {throwIfNotFound = true} = {}) {
-          if (!hasOwnProperty(introspection.items, name)) {
+          if (
+            !(hasOwnProperty(introspection, 'items') && hasOwnProperty(introspection.items, name))
+          ) {
             if (throwIfNotFound) {
               throw new Error(`Item not found in the layer proxy (name: '${name}')`);
             }
             return undefined;
           }
 
-          const properties = introspection.items[name];
+          const item = introspection.items[name];
 
-          const _getExposedProperty = function (target, name) {
-            if (!hasOwnProperty(target, name)) {
+          const _isExposed = function (target) {
+            if (target === undefined) {
               return undefined;
             }
-            return {name, ...target[name]};
+
+            return hasOwnProperty(target, 'properties');
           };
 
-          const itemProxy = {
-            __isRegisterableProxy: true, // TODO: Try to get rid of this
+          const _getPropertyExposition = function (target, name) {
+            if (!_isExposed(target)) {
+              return undefined;
+            }
 
-            $getExposedProperty(name) {
-              return _getExposedProperty(properties, name);
+            const properties = target.properties;
+
+            if (!hasOwnProperty(properties, name)) {
+              return undefined;
+            }
+
+            return properties[name].exposition;
+          };
+
+          const itemMock = {
+            __isRegisterableMock: true,
+
+            $isExposed() {
+              return _isExposed(item);
             },
 
-            ...(properties.prototype && {
-              prototype: {
-                __isRegisterableProxy: true,
+            $getPropertyExposition(name) {
+              return _getPropertyExposition(item, name);
+            },
 
-                $getExposedProperty(name) {
-                  return _getExposedProperty(properties.prototype, name);
+            ...(item.prototype && {
+              prototype: {
+                __isRegisterableMock: true,
+
+                $isExposed() {
+                  return _isExposed(item.prototype);
+                },
+
+                $getPropertyExposition(name) {
+                  return _getPropertyExposition(item.prototype, name);
                 }
               }
             })
           };
 
-          return itemProxy;
+          return itemMock;
         },
 
         async receiveQuery({query, items, source} = {}) {
