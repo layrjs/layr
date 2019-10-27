@@ -40,7 +40,7 @@ function makeStorable(Base) {
       if (name === 'id') {
         storable = this.$getInstance({_id: value}) || this.$deserialize({_id: value});
       } else {
-        storable = await this.$getId(name, value, {exclude, reload, throwIfNotFound});
+        storable = await this.__getId(name, value, {exclude, reload, throwIfNotFound});
       }
 
       if (storable === undefined) {
@@ -79,7 +79,7 @@ function makeStorable(Base) {
         });
     }
 
-    static async $getId(name, value, {exclude, reload, throwIfNotFound}) {
+    static async __getId(name, value, {exclude, reload, throwIfNotFound}) {
       // TODO: Consider removing this method
       // It should be possible to use any unique field as primary key
 
@@ -92,7 +92,10 @@ function makeStorable(Base) {
       if (this.$hasStore()) {
         storable = await this.__getIdFromStore(name, value, {exclude, throwIfNotFound});
       } else {
-        storable = await super.$getId(name, value, {exclude, reload, throwIfNotFound});
+        storable = await super.$get(
+          {[name]: value},
+          {fields: false, exclude, reload, throwIfNotFound}
+        );
       }
 
       return storable;
