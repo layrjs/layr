@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/layer-http-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Serve a layer through HTTP",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
