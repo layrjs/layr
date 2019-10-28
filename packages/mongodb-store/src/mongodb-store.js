@@ -19,6 +19,10 @@ export class MongoDBStore extends Registerable() {
     this._connectionString = connectionString;
   }
 
+  async $close() {
+    await this.disconnect();
+  }
+
   async connect() {
     await this._connectClient();
   }

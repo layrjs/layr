@@ -1,6 +1,6 @@
 {
   "name": "@liaison/mongodb-store",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A Liaison store using MongoDB",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
