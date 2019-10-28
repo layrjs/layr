@@ -22,6 +22,10 @@ Object.assign(util.inspect.defaultOptions, {depth: 10, colors: true, breakLength
 
 export default () => ({
   async start({notify}, environment) {
+    if (this.environment) {
+      Object.assign(process.env, this.environment);
+    }
+
     const layerCreator = this.getLayerCreator();
 
     const server = this.createServer(layerCreator, environment);

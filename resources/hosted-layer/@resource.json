@@ -4,7 +4,7 @@
     "1place/js-resource#^0.1.0"
   ],
   "id": "liaison/hosted-layer",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "isPublic": true,
   "authors": [
     "Manuel Vila <hi@mvila.me>"
@@ -80,6 +80,10 @@
       "port": {
         "@description": "The TCP port the test server should use",
         "@default": 6789
+      },
+      "environment": {
+        "@type": "object",
+        "@description": "Environment variables to set in the test server"
       },
       "delay": {
         "@description": "Delay (in millisecond) before responding (helps to simulate slow network)",

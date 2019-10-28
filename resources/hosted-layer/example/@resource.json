@@ -6,6 +6,9 @@
   "domainName": "layer.example.resdir.com",
   "main": "./dist/cjs/index.js",
   "testServer": {
+    "environment": {
+      "SECRET": "abc123"
+    },
     "delay": 0,
     "errorRate": 0
   },

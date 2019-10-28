@@ -10,6 +10,10 @@ export default async function createLayer() {
     @method({expose: {call: true}}) static getTime() {
       return new Date();
     }
+
+    @method({expose: {call: true}}) static getSecret() {
+      return process.env.SECRET;
+    }
   }
 
   return new Layer({Clock});
