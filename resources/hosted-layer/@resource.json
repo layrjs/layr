@@ -1,10 +1,10 @@
 {
   "@import": [
     "resdir/resource#^0.1.0",
-    "1place/js-resource#^0.1.0"
+    "1place/js-resource#^0.2.1"
   ],
   "id": "liaison/hosted-layer",
-  "version": "0.1.14",
+  "version": "0.1.16",
   "isPublic": true,
   "authors": [
     "Manuel Vila <hi@mvila.me>"
@@ -15,6 +15,7 @@
     "./dist"
   ],
   "dependencies": {
+    "fs-extra": "^8.1.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "@koa/cors": "^3.0.0",
@@ -24,9 +25,14 @@
     "@resdir/error": "^0.1.0",
     "sleep-promise": "^8.0.1"
   },
+  "transpiler": {
+    "run": {
+      "@listen": "@fileModified"
+    }
+  },
   "@export": {
     "@name": "Hosted Layer",
-    "@description": "Base resource for actual hosted layer implementations (e.g., liaison/lambda-hosted-layer)",
+    "@description": "Base resource for hosted layer",
     "@implementation": "./dist/cjs",
     "domainName": {
       "@type": "string",
@@ -34,6 +40,10 @@
       "@examples": [
         "api.mydomain.com"
       ]
+    },
+    "environment": {
+      "@type": "object",
+      "@description": "Environment variables made available in the hosted layer"
     },
     "files": {
       "@type": "array",
@@ -80,10 +90,6 @@
       "port": {
         "@description": "The TCP port the test server should use",
         "@default": 6789
-      },
-      "environment": {
-        "@type": "object",
-        "@description": "Environment variables to set in the test server"
       },
       "delay": {
         "@description": "Delay (in millisecond) before responding (helps to simulate slow network)",

@@ -22,8 +22,8 @@ Object.assign(util.inspect.defaultOptions, {depth: 10, colors: true, breakLength
 
 export default () => ({
   async start({notify}, environment) {
-    if (this.environment) {
-      Object.assign(process.env, this.environment);
+    if (this.$getParent().environment) {
+      Object.assign(process.env, this.$getParent().environment);
     }
 
     const layerCreator = this.getLayerCreator();
@@ -63,55 +63,47 @@ export default () => ({
     server.use(bodyParser({enableTypes: ['json'], jsonLimit: '8mb'}));
 
     server.use(async ctx => {
+      if (ctx.method !== 'POST') {
+        throw new Error('Invalid HTTP request');
+      }
+
       const layer = await createLayer();
 
-      if (ctx.method === 'GET') {
-        print(formatBold('→ ') + formatBold(formatCode('introspect()', {addBackticks: false})));
-        const result = layer.introspect({
-          itemFilter: item => item.$isExposed(),
-          propertyFilter: property => property.isExposed()
-        });
-        ctx.body = result;
-        print(formatBold('← ') + formatValue(result, {multiline: false}));
-      } else if (ctx.method === 'POST') {
-        const {query, items, source} = ctx.request.body;
+      const {query, items, source} = ctx.request.body;
 
-        print(
-          formatBold('→ ') +
-            formatBold(formatCode(`invoke(`, {addBackticks: false})) +
-            formatValue({query, items, source}, {multiline: false}) +
-            formatBold(formatCode(`)`, {addBackticks: false}))
-        );
+      print(
+        formatBold('→ ') +
+          formatBold(formatCode(`invoke(`, {addBackticks: false})) +
+          formatValue({query, items, source}, {multiline: false}) +
+          formatBold(formatCode(`)`, {addBackticks: false}))
+      );
 
-        try {
-          if (this.delay) {
-            await sleep(this.delay);
-          }
-
-          if (this.errorRate) {
-            const threshold = this.errorRate / 100;
-            // eslint-disable-next-line max-depth
-            if (Math.random() < threshold) {
-              throw new Error('A simulated error occurred while handling a request');
-            }
-          }
-
-          const result = await layer.receiveQuery({query, items, source});
-
-          ctx.body = {result};
-
-          print(formatBold('← ') + formatValue(result, {multiline: false}));
-        } catch (err) {
-          console.error(err);
-
-          const error = {message: err.message, ...err};
-
-          ctx.body = {error};
-
-          print(formatDanger(formatBold('← [ERROR] ') + formatValue(error, {multiline: false})));
+      try {
+        if (this.delay) {
+          await sleep(this.delay);
         }
-      } else {
-        throw new Error('Invalid HTTP request');
+
+        if (this.errorRate) {
+          const threshold = this.errorRate / 100;
+          // eslint-disable-next-line max-depth
+          if (Math.random() < threshold) {
+            throw new Error('A simulated error occurred while handling a request');
+          }
+        }
+
+        const result = await layer.receiveQuery({query, items, source});
+
+        ctx.body = {result};
+
+        print(formatBold('← ') + formatValue(result, {multiline: false}));
+      } catch (err) {
+        console.error(err);
+
+        const error = {message: err.message, ...err};
+
+        ctx.body = {error};
+
+        print(formatDanger(formatBold('← [ERROR] ') + formatValue(error, {multiline: false})));
       }
     });
 

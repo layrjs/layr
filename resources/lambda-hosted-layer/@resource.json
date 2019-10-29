@@ -1,10 +1,10 @@
 {
   "@import": [
     "resdir/resource#^0.1.0",
-    "1place/js-resource#^0.1.0"
+    "1place/js-resource#^0.2.1"
   ],
   "id": "liaison/lambda-hosted-layer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "isPublic": true,
   "authors": [
     "Manuel Vila <hi@mvila.me>"
@@ -12,9 +12,29 @@
   "license": "MIT",
   "repository": "https://github.com/resdir/resdir.git",
   "files": [
-    "./dist"
+    "./dist",
+    "./lambda-handler/dist"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "fs-extra": "^8.1.0",
+    "hasha": "^5.1.0",
+    "is-directory": "^0.3.1",
+    "lodash": "^4.17.4",
+    "recursive-readdir": "^2.2.2",
+    "@resdir/archive-manager": "^0.1.4",
+    "@resdir/aws-client": "^0.1.25",
+    "@resdir/aws-helpers": "^0.1.0",
+    "@resdir/console": "^0.1.16",
+    "@resdir/error": "^0.1.0",
+    "@resdir/file-manager": "^0.1.4",
+    "sleep-promise": "^8.0.1",
+    "tempy": "^0.3.0"
+  },
+  "transpiler": {
+    "run": {
+      "@listen": "@fileModified"
+    }
+  },
   "@export": {
     "@import": "liaison/hosted-layer#^0.1.0",
     "@name": "AWS Lambda Hosted Layer",
@@ -44,10 +64,6 @@
     "endpointType": {
       "@description": "Type of the API Gateway endpoint (either 'regional' or 'edge')",
       "@default": "regional"
-    },
-    "environment": {
-      "@type": "object",
-      "@isHidden": true
     },
     "aws": {
       "@description": "Your AWS configuration",
