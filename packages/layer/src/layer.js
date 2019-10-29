@@ -3,6 +3,7 @@ import nanoid from 'nanoid';
 import {hasOwnProperty} from 'core-helpers';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
+import isEqual from 'lodash/isEqual';
 import isEmpty from 'lodash/isEmpty';
 import zip from 'lodash/zip';
 import isPromise from 'is-promise';
@@ -315,15 +316,19 @@ export class Layer {
 
   // === Introspection ===
 
-  introspect({itemFilter, propertyFilter} = {}) {
+  $introspect({items: {filter} = {}, properties} = {}) {
     const introspection = {
       name: !this.nameHasBeenGenerated() ? this.getName() : undefined
     };
 
     const items = {};
 
-    for (const item of this.getItems({filter: itemFilter})) {
-      items[item.$getRegisteredName()] = item.$introspect({propertyFilter});
+    if (filter === '$isExposed') {
+      filter = item => item.$isExposed();
+    }
+
+    for (const item of this.getItems({filter})) {
+      items[item.$getRegisteredName()] = item.$introspect({properties});
     }
 
     if (!isEmpty(items)) {
@@ -454,8 +459,16 @@ export class Layer {
   }
 
   _createQueryAuthorizer() {
-    return function (name, operation) {
+    return function (name, operation, params) {
       if (isLayer(this)) {
+        if (
+          name === '$introspect' &&
+          operation === 'call' &&
+          isEqual(params, [{items: {filter: '$isExposed'}, properties: {filter: '$isExposed'}}])
+        ) {
+          return true;
+        }
+
         if (operation !== 'get') {
           return false;
         }

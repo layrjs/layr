@@ -36,24 +36,19 @@ export class LayerHTTPServer {
     koa.use(bodyParser({enableTypes: ['json'], jsonLimit: '8mb'}));
 
     koa.use(async ctx => {
+      if (ctx.method !== 'POST') {
+        throw new Error('Invalid HTTP request');
+      }
+
       const layer = await this._layerCreator();
 
-      if (ctx.method === 'GET') {
-        ctx.body = layer.introspect({
-          itemFilter: item => item.$isExposed(),
-          propertyFilter: property => property.isExposed()
-        });
-      } else if (ctx.method === 'POST') {
-        try {
-          const {query, items, source} = ctx.request.body;
-          const result = await layer.receiveQuery({query, items, source});
-          ctx.body = {result};
-        } catch (err) {
-          const error = {message: err.message, ...err};
-          ctx.body = {error};
-        }
-      } else {
-        throw new Error('Invalid HTTP request');
+      try {
+        const {query, items, source} = ctx.request.body;
+        const result = await layer.receiveQuery({query, items, source});
+        ctx.body = {result};
+      } catch (err) {
+        const error = {message: err.message, ...err};
+        ctx.body = {error};
       }
     });
 

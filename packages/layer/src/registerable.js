@@ -110,12 +110,12 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     }
 
     static $getProperties({filter} = {}) {
-      const model = this;
+      const registrable = this;
 
       return {
         * [Symbol.iterator]() {
-          for (const name of model.$getPropertyNames()) {
-            const property = model.$getProperty(name);
+          for (const name of registrable.$getPropertyNames()) {
+            const property = registrable.$getProperty(name);
 
             if (filter && !filter.call(this, property)) {
               continue;
@@ -296,10 +296,10 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     // === Utilities ===
 
-    static $introspect({propertyFilter} = {}) {
-      const introspection = this.prototype.$introspect.call(this);
+    static $introspect({properties} = {}) {
+      const introspection = this.prototype.$introspect.call(this, {properties});
 
-      const prototypeIntrospection = this.prototype.$introspect({propertyFilter});
+      const prototypeIntrospection = this.prototype.$introspect({properties});
 
       if (!isEmpty(prototypeIntrospection)) {
         introspection.prototype = prototypeIntrospection;
@@ -565,12 +565,16 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     // === Utilities ===
 
-    $introspect({propertyFilter} = {}) {
+    $introspect({properties: {filter} = {}} = {}) {
       const introspection = {};
 
       const properties = {};
 
-      for (const property of this.$getProperties({filter: propertyFilter})) {
+      if (filter === '$isExposed') {
+        filter = property => property.isExposed();
+      }
+
+      for (const property of this.$getProperties({filter})) {
         const name = property.getName();
 
         properties[name] = {};
@@ -600,7 +604,7 @@ export function isRegisterable(value) {
 export function property(options = {}) {
   return function (target, name, descriptor) {
     if (!(isRegisterable(target) || isRegisterable(target.prototype))) {
-      throw new Error(`@property() target must be a model`);
+      throw new Error(`@property() target must be a registrable`);
     }
 
     if (!(name && descriptor)) {

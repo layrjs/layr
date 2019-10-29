@@ -17,21 +17,12 @@ export class LayerHTTPClient {
   }
 
   async getLayer() {
-    let layer = this._layer;
+    const client = this;
+
+    let layer = client._layer;
 
     if (layer === undefined) {
-      const url = this._url;
-
-      debug(`Introspecting the remote layer (URL: '${url}')`);
-      const response = await fetch(url); // Introspect remote layer
-      if (response.status !== 200) {
-        throw new Error('An error occurred while introspecting the remote layer');
-      }
-      const introspection = await response.json();
-      if (introspection.name === undefined) {
-        introspection.name = nanoid(10);
-      }
-      debug(`Remote layer introspected (URL: '${url}')`);
+      const introspection = await client._getIntrospection();
 
       layer = {
         getName() {
@@ -102,42 +93,68 @@ export class LayerHTTPClient {
         },
 
         async receiveQuery({query, items, source} = {}) {
-          debug(
-            `Sending a query to the remote layer (URL: '${url}', query: ${JSON.stringify(
-              query
-            )}), items: ${JSON.stringify(items)})`
-          );
-
-          const fetchResponse = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({query, items, source})
-          });
-
-          if (fetchResponse.status !== 200) {
-            throw new Error('An error occurred while sending a query to the remote layer');
-          }
-
-          const response = await fetchResponse.json();
-
-          debug(
-            `Query sent to the remote layer (URL: '${url}'), response: ${JSON.stringify(response)}`
-          );
-
-          if (response.error) {
-            const {message, ...otherAttributes} = response.error;
-            throw Object.assign(new Error(message), otherAttributes);
-          }
-
-          return response.result;
+          return client._sendQuery({query, items, source});
         }
       };
 
-      this._layer = layer;
+      client._layer = layer;
     }
 
     return layer;
+  }
+
+  async _getIntrospection() {
+    const url = this._url;
+
+    debug(`Introspecting the remote layer (URL: '${url}')`);
+
+    const {result: introspection} = await this._sendQuery({
+      query: {
+        '$introspect=>': {
+          '()': [{items: {filter: '$isExposed'}, properties: {filter: '$isExposed'}}]
+        }
+      }
+    });
+
+    if (introspection.name === undefined) {
+      introspection.name = nanoid(10);
+    }
+
+    debug(`Remote layer introspected (URL: '${url}')`);
+
+    return introspection;
+  }
+
+  async _sendQuery({query, items, source}) {
+    const url = this._url;
+
+    debug(
+      `Sending a query to the remote layer (URL: '${url}', query: ${JSON.stringify(
+        query
+      )}), items: ${JSON.stringify(items)})`
+    );
+
+    const fetchResponse = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({query, items, source})
+    });
+
+    if (fetchResponse.status !== 200) {
+      throw new Error('An error occurred while sending a query to the remote layer');
+    }
+
+    const response = await fetchResponse.json();
+
+    debug(`Query sent to the remote layer (URL: '${url}'), response: ${JSON.stringify(response)}`);
+
+    if (response.error) {
+      const {message, ...otherAttributes} = response.error;
+      throw Object.assign(new Error(message), otherAttributes);
+    }
+
+    return response.result;
   }
 }
