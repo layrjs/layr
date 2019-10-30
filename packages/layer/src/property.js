@@ -15,7 +15,7 @@ export class Property {
 
     const unknownOption = Object.keys(unknownOptions)[0];
     if (unknownOption) {
-      throw new Error(`'${unknownOption}' option is unknown (field: '${name}')`);
+      throw new Error(`'${unknownOption}' option is unknown (property: '${name}')`);
     }
 
     this._parent = parent;
@@ -27,9 +27,9 @@ export class Property {
   }
 
   fork(parent) {
-    const forkedField = Object.create(this);
-    forkedField._parent = parent;
-    return forkedField;
+    const forkedProperty = Object.create(this);
+    forkedProperty._parent = parent;
+    return forkedProperty;
   }
 
   getParent() {
