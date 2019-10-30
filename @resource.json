@@ -36,6 +36,9 @@
   "storable": {
     "@include": "./packages/storable"
   },
+  "withRoles": {
+    "@include": "./packages/with-roles"
+  },
   "hostedLayer": {
     "@include": "./resources/hosted-layer"
   },
@@ -64,6 +67,7 @@
       "(@import shell/bash) run \"npm-link ./packages/router\"",
       "(@import shell/bash) run \"npm-link ./packages/storable\"",
       "(@import shell/bash) run \"npm-link ./packages/storable/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/with-roles\"",
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer\"",
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer/example\"",
       "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer\"",

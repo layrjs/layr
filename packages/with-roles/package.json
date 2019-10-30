@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/liaison",
-  "version": "0.1.1",
-  "description": "Convenience package exporting core Liaison's packages",
+  "name": "@liaison/with-roles",
+  "version": "0.1.0",
+  "description": "Simple role system for exposed properties",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/liaison",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/with-roles",
   "files": [
     "dist"
   ],
@@ -12,20 +12,16 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/entity": "^0.1.0",
-    "@liaison/identity": "^0.1.0",
-    "@liaison/layer": "^0.1.0",
-    "@liaison/model": "^0.1.0",
-    "@liaison/observable": "^0.1.0",
-    "@liaison/router": "^0.1.0",
-    "@liaison/storable": "^0.1.0",
-    "@liaison/with-roles": "^0.1.0"
+    "core-helpers": "^0.1.0",
+    "ow": "^0.14.0",
+    "possibly-async": "^0.2.2"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
     "properties": [
       "name",
       "version",
+      "private",
       "description",
       "keywords",
       "homepage",
@@ -41,8 +37,7 @@
       "dependencies",
       "peerDependencies",
       "optionalDependencies",
-      "devDependencies",
-      "private"
+      "devDependencies"
     ]
   }
 }
