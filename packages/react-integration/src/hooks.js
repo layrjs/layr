@@ -1,20 +1,5 @@
 import {useState, useEffect, useCallback, useRef} from 'react';
 
-export function useModel(model) {
-  const forceUpdate = useForceUpdate();
-
-  useEffect(
-    function () {
-      model.$observe(forceUpdate);
-
-      return function () {
-        model.$unobserve(forceUpdate);
-      };
-    },
-    [model]
-  );
-}
-
 export function useAsyncCallback(callback, inputs) {
   const [state, setState] = useState({});
   const isMounted = useIsMounted();
@@ -74,20 +59,10 @@ export function useAsyncMemo(func, inputs) {
   return [state.result, state.isExecuting === true, state.error, retry];
 }
 
-export function useDelay(duration = 100) {
-  const [isElapsed, setIsElapsed] = useState(false);
+export function useAsyncCall(func, inputs) {
+  const [, isExecuting, error, retry] = useAsyncMemo(func, inputs);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setIsElapsed(true);
-    }, duration);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, []);
-
-  return [isElapsed];
+  return [isExecuting, error, retry];
 }
 
 export function useIsMounted() {
@@ -118,4 +93,35 @@ export function useForceUpdate() {
   }, []);
 
   return forceUpdate;
+}
+
+export function useDelay(duration = 100) {
+  const [isElapsed, setIsElapsed] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsElapsed(true);
+    }, duration);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  return [isElapsed];
+}
+
+export function useModel(model) {
+  const forceUpdate = useForceUpdate();
+
+  useEffect(
+    function () {
+      model.$observe(forceUpdate);
+
+      return function () {
+        model.$unobserve(forceUpdate);
+      };
+    },
+    [model]
+  );
 }
