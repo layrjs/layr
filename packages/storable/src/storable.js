@@ -56,8 +56,8 @@ function makeStorable(Base) {
       }
 
       return await this.$getLayer()
-        .fork()
-        .batch(batchedLayer => {
+        .$fork()
+        .$batch(batchedLayer => {
           const BatchedStorable = this.$forkInto(batchedLayer);
           return zip(keys, fields).map(async ([key, fields]) => {
             const batchedStorable = await BatchedStorable.$get(key, {
@@ -106,7 +106,7 @@ function makeStorable(Base) {
 
       const storageSource = this.__getStoreOrParentLayerName();
 
-      if (storable.$getField(name).getSource() !== storageSource) {
+      if (storable.$getField(name).$getSource() !== storageSource) {
         return undefined;
       }
 
@@ -178,7 +178,7 @@ function makeStorable(Base) {
 
       const name = names[0];
 
-      const isUnique = name === 'id' || this.prototype.$getField(name).isUnique();
+      const isUnique = name === 'id' || this.prototype.$getField(name).$isUnique();
 
       if (!isUnique) {
         throw new Error(`A key name must correspond to a unique field (name: '${name}')`);
@@ -214,8 +214,8 @@ function makeStorable(Base) {
       }
 
       return await this.$getLayer()
-        .fork()
-        .batch(batchedLayer => {
+        .$fork()
+        .$batch(batchedLayer => {
           return zip(storables, fields).map(async ([storable, fields]) => {
             const batchedStorable = storable.$forkInto(batchedLayer);
 
@@ -265,9 +265,9 @@ function makeStorable(Base) {
         const idIsMissing = this.$getIdSource() !== storageSource;
 
         const existingFields = this.$createFieldMaskForSource(storageSource, {fields});
-        const missingFields = FieldMask.remove(fields, existingFields);
+        const missingFields = FieldMask.$remove(fields, existingFields);
 
-        if (!idIsMissing && missingFields.isEmpty()) {
+        if (!idIsMissing && missingFields.$isEmpty()) {
           return this; // Nothing to load
         }
 
@@ -300,7 +300,7 @@ function makeStorable(Base) {
         fields,
         includeInactiveFields: true
       })) {
-        await field.callHook('loader');
+        await field.$callHook('loader');
       }
 
       await loadedStorable.$afterLoad({fields});
@@ -314,7 +314,7 @@ function makeStorable(Base) {
       let serializedStorable = this.$serializeReference();
 
       const store = this.constructor.$getStore();
-      const serializedFields = fields.serialize();
+      const serializedFields = fields.$serialize();
       serializedStorable = (await store.load([serializedStorable], {
         fields: serializedFields,
         throwIfNotFound
@@ -326,7 +326,9 @@ function makeStorable(Base) {
       }
 
       const storeName = this.constructor.$getStoreName();
-      const loadedStorable = this.constructor.$deserialize(serializedStorable, {source: storeName});
+      const loadedStorable = this.constructor.$deserialize(serializedStorable, {
+        source: storeName
+      });
 
       return loadedStorable;
     }
@@ -343,8 +345,8 @@ function makeStorable(Base) {
             if (!storablesWithFields.has(storable)) {
               storablesWithFields.set(storable, fields);
             } else {
-              const previousFields = storablesWithFields.get(storable);
-              storablesWithFields.set(storable, FieldMask.add(previousFields, fields));
+              const previousFields = storablesWithFields.$get(storable);
+              storablesWithFields.set(storable, FieldMask.$add(previousFields, fields));
             }
           } else if (isModel(value)) {
             const model = value;
@@ -374,8 +376,8 @@ function makeStorable(Base) {
 
     static async $saveMany(storables, {throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
       return await this.$getLayer()
-        .fork()
-        .batch(batchedLayer => {
+        .$fork()
+        .$batch(batchedLayer => {
           return storables.map(async storable => {
             const batchedStorable = storable.$forkInto(batchedLayer);
 
@@ -396,13 +398,13 @@ function makeStorable(Base) {
     }
 
     async $save({throwIfNotFound = true, throwIfAlreadyExists = true} = {}) {
-      if (!this.$isNew() && this.$createFieldMaskForActiveFields().isEmpty()) {
+      if (!this.$isNew() && this.$createFieldMaskForActiveFields().$isEmpty()) {
         // Nothing to save
         return this;
       }
 
       for (const field of this.$getFieldsWithHook('saver')) {
-        await field.callHook('saver');
+        await field.$callHook('saver');
       }
 
       await this.$beforeSave();
@@ -455,8 +457,8 @@ function makeStorable(Base) {
 
     static async $deleteMany(storables, {throwIfNotFound = true} = {}) {
       return await this.$getLayer()
-        .fork()
-        .batch(batchedLayer => {
+        .$fork()
+        .$batch(batchedLayer => {
           return storables.map(async storable => {
             const batchedStorable = storable.$forkInto(batchedLayer);
 
@@ -546,7 +548,7 @@ function makeStorable(Base) {
       }
 
       for (const property of this.prototype.$getPropertiesWithHook('finder')) {
-        filter = await property.callHook('finder', filter);
+        filter = await property.$callHook('finder', filter);
       }
 
       return filter;
@@ -558,7 +560,7 @@ function makeStorable(Base) {
       const store = this.$getStore();
       const storeName = this.$getStoreName();
       const serializedFilter = this.__serializeFilter(filter);
-      const serializedFields = fields.serialize();
+      const serializedFields = fields.$serialize();
 
       const serializedStorables = await store.find(
         {_type: this.$getRegisteredName(), ...serializedFilter},
@@ -606,7 +608,7 @@ function makeStorable(Base) {
     }
 
     static $getStore() {
-      return this.$getLayer().get(this.__storeName);
+      return this.$getLayer().$get(this.__storeName);
     }
 
     static $hasStore() {
@@ -621,14 +623,14 @@ function makeStorable(Base) {
       if (this.__storeName !== undefined) {
         return this.__storeName;
       }
-      return this.$getParentLayer().getName();
+      return this.$getParentLayer().$getName();
     }
 
     // === Hooks ===
 
     async $afterLoad() {
       for (const field of this.$getFieldsWithHook('afterLoad')) {
-        await field.callHook('afterLoad');
+        await field.$callHook('afterLoad');
       }
 
       for (const substorable of this.$getSubstorables()) {
@@ -638,7 +640,7 @@ function makeStorable(Base) {
 
     async $beforeSave() {
       for (const field of this.$getFieldsWithHook('beforeSave')) {
-        await field.callHook('beforeSave');
+        await field.$callHook('beforeSave');
       }
 
       for (const substorable of this.$getSubstorables()) {
@@ -648,7 +650,7 @@ function makeStorable(Base) {
 
     async $afterSave() {
       for (const field of this.$getFieldsWithHook('afterSave')) {
-        await field.callHook('afterSave');
+        await field.$callHook('afterSave');
       }
 
       for (const substorable of this.$getSubstorables()) {
@@ -658,7 +660,7 @@ function makeStorable(Base) {
 
     async $beforeDelete() {
       for (const field of this.$getFieldsWithHook('beforeDelete')) {
-        await field.callHook('beforeDelete');
+        await field.$callHook('beforeDelete');
       }
 
       for (const substorable of this.$getSubstorables()) {
@@ -668,7 +670,7 @@ function makeStorable(Base) {
 
     async $afterDelete() {
       for (const field of this.$getFieldsWithHook('afterDelete')) {
-        await field.callHook('afterDelete');
+        await field.$callHook('afterDelete');
       }
 
       for (const substorable of this.$getSubstorables()) {
@@ -689,7 +691,7 @@ function makeStorable(Base) {
     $getPropertiesWithHook(name) {
       return this.$getProperties({
         filter(property) {
-          return property.hasHook(name);
+          return property.$hasHook(name);
         }
       });
     }
@@ -698,7 +700,7 @@ function makeStorable(Base) {
 
     $createFieldMaskForNonVolatileFields({fields = true, filter: otherFilter} = {}) {
       const filter = function (field) {
-        if (field.isVolatile()) {
+        if (field.$isVolatile()) {
           return false;
         }
         if (otherFilter) {
@@ -714,10 +716,10 @@ function makeStorable(Base) {
       return this.$getFields({
         fields,
         filter(field) {
-          if (!includeInactiveFields && !field.isActive()) {
+          if (!includeInactiveFields && !field.$isActive()) {
             return false;
           }
-          return field.hasHook(name);
+          return field.$hasHook(name);
         }
       });
     }

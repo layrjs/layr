@@ -13,7 +13,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     let movie = new layer.Movie({title: 'Inception', year: 2010});
     expect(movie instanceof layer.Movie).toBe(true);
@@ -38,7 +38,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie({
       title: 'Inception',
@@ -64,7 +64,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, Actor});
-    await layer.open();
+    await layer.$open();
 
     let movie = new layer.Movie();
     expect(movie.$fieldIsActive('genres')).toBe(false);
@@ -94,7 +94,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie();
 
@@ -123,7 +123,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     let movie = new layer.Movie();
     expect(movie.$fieldIsActive('title')).toBe(false);
@@ -148,7 +148,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Session});
-    await layer.open();
+    await layer.$open();
 
     const session = new layer.Session({token: 'abc123'});
     expect(session.token).toBe('abc123');
@@ -173,18 +173,18 @@ describe('Model', () => {
     expect(
       Item.prototype
         .$getField('id')
-        .getScalar()
-        .hasValidators()
+        .$getScalar()
+        .$hasValidators()
     ).toBe(false);
     expect(
       Movie.prototype
         .$getField('id')
-        .getScalar()
-        .hasValidators()
+        .$getScalar()
+        .$hasValidators()
     ).toBe(true);
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie({id: 'abc123', title: 'Inception'});
     expect(movie.id).toBe('abc123');
@@ -203,7 +203,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie({technicalSpecs: {aspectRatio: '2.39:1'}});
     expect(movie.technicalSpecs instanceof layer.TechnicalSpecs).toBe(true);
@@ -236,7 +236,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     let movie = new layer.Movie();
     expect(movie.$getFailedValidators()).toBeUndefined();
@@ -297,7 +297,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     let movie = new layer.Movie({title: 'Inception'});
     expect(movie.$isNew()).toBe(true);
@@ -328,7 +328,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie();
 
@@ -378,7 +378,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs, Actor});
-    await layer.open();
+    await layer.$open();
 
     // Simple serialization
 
@@ -503,7 +503,7 @@ describe('Model', () => {
     const otherName = 'xyz789';
 
     movie = layer.Movie.$deserialize({title: 'Inception'}, {source: backendName});
-    expect(movie.$getField('title').getSource()).toBe(backendName);
+    expect(movie.$getField('title').$getSource()).toBe(backendName);
     expect(movie.$serialize({target: backendName})).toEqual({_type: 'Movie'});
     expect(movie.$serialize({target: otherName})).toEqual({_type: 'Movie', title: 'Inception'});
     expect(movie.$serialize({target: undefined})).toEqual({
@@ -513,7 +513,7 @@ describe('Model', () => {
     });
 
     movie.country = 'USA';
-    expect(movie.$getField('country').getSource()).toBeUndefined();
+    expect(movie.$getField('country').$getSource()).toBeUndefined();
     expect(movie.$serialize({target: backendName})).toEqual({_type: 'Movie', country: 'USA'});
     expect(movie.$serialize({target: otherName})).toEqual({
       _type: 'Movie',
@@ -528,8 +528,8 @@ describe('Model', () => {
     });
 
     movie = layer.Movie.$deserialize(movie.$serialize());
-    expect(movie.$getField('title').getSource()).toBe(backendName);
-    expect(movie.$getField('country').getSource()).toBeUndefined();
+    expect(movie.$getField('title').$getSource()).toBe(backendName);
+    expect(movie.$getField('country').$getSource()).toBeUndefined();
   });
 
   test('Deserialization', async () => {
@@ -562,7 +562,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs, Actor});
-    await layer.open();
+    await layer.$open();
 
     // Simple deserialization
 
@@ -585,7 +585,7 @@ describe('Model', () => {
       isAvailable: false
     });
 
-    movie = layer.deserialize({
+    movie = layer.$deserialize({
       _type: 'Movie',
       title: 'Inception',
       country: 'USA',
@@ -612,13 +612,13 @@ describe('Model', () => {
 
     // Deserialization using the 'fields' option
 
-    movie = layer.deserialize(
+    movie = layer.$deserialize(
       {_type: 'Movie', title: 'Inception', country: 'USA'},
       {fields: {title: true}}
     );
     expect(movie.$serialize()).toEqual({_type: 'Movie', title: 'Inception'});
 
-    movie = layer.deserialize(
+    movie = layer.$deserialize(
       {
         _type: 'Movie',
         title: 'Inception',
@@ -649,11 +649,11 @@ describe('Model', () => {
 
     // Deserialization with a synchronous filter
 
-    movie = layer.deserialize(
+    movie = layer.$deserialize(
       {_type: 'Movie', title: 'Inception', country: 'USA'},
       {
         filter(field) {
-          return field.getName() === 'title';
+          return field.$getName() === 'title';
         }
       }
     );
@@ -665,11 +665,11 @@ describe('Model', () => {
 
     // Deserialization with an asynchronous filter
 
-    const moviePromise = layer.deserialize(
+    const moviePromise = layer.$deserialize(
       {_type: 'Movie', title: 'Inception', country: 'USA'},
       {
         async filter(field) {
-          return field.getName() === 'title';
+          return field.$getName() === 'title';
         }
       }
     );
@@ -703,7 +703,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, Identity, User, Organization, Actor});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie({title: 'Inception'});
     expect(movie.title).toBe('Inception');
@@ -729,7 +729,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     let movie = new layer.Movie({
       title: 'Inception',
@@ -742,7 +742,7 @@ describe('Model', () => {
       similarMovies: [{_type: 'Movie', _new: true, title: 'The Matrix'}]
     });
 
-    movie = layer.deserialize({
+    movie = layer.$deserialize({
       _type: 'Movie',
       _new: true,
       title: 'Inception',
@@ -769,7 +769,7 @@ describe('Model', () => {
     }
 
     const layer = new Layer({Movie, TechnicalSpecs});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie({
       title: 'Inception',

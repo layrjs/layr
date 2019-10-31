@@ -22,37 +22,37 @@ export class Property {
     this._name = name;
 
     if (expose !== undefined) {
-      this.setExposition(expose);
+      this.$setExposition(expose);
     }
   }
 
-  fork(parent) {
+  $fork(parent) {
     const forkedProperty = Object.create(this);
     forkedProperty._parent = parent;
     return forkedProperty;
   }
 
-  getParent() {
+  $getParent() {
     return this._parent;
   }
 
-  getName() {
+  $getName() {
     return this._name;
   }
 
-  getLayer({throwIfNotFound} = {}) {
+  $getLayer({throwIfNotFound} = {}) {
     return this._parent.$getLayer({throwIfNotFound});
   }
 
-  getOptions() {
+  $getOptions() {
     return this._options;
   }
 
-  getExposition() {
+  $getExposition() {
     return this._exposition;
   }
 
-  setExposition(exposition) {
+  $setExposition(exposition) {
     this._exposition = this._normalizeExposition(exposition);
   }
 
@@ -76,11 +76,11 @@ export class Property {
     return normalizedExposition;
   }
 
-  isExposed() {
+  $isExposed() {
     return this._exposition !== undefined;
   }
 
-  serializeExposition() {
+  $serializeExposition() {
     let serializedExposition = this._exposition;
 
     if (serializedExposition === undefined) {
@@ -94,7 +94,7 @@ export class Property {
     return serializedExposition;
   }
 
-  operationIsAllowed(operation) {
+  $operationIsAllowed(operation) {
     const setting = this._exposition?.[operation];
 
     if (setting === undefined) {
@@ -106,11 +106,11 @@ export class Property {
     });
   }
 
-  static isProperty(object) {
+  static $isProperty(object) {
     return isProperty(object);
   }
 }
 
 export function isProperty(object) {
-  return typeof object?.constructor?.isProperty === 'function';
+  return typeof object?.constructor?.$isProperty === 'function';
 }

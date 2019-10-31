@@ -4,7 +4,7 @@
     "1place/js-resource#^0.2.1"
   ],
   "id": "liaison/hosted-layer",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "isPublic": true,
   "authors": [
     "Manuel Vila <hi@mvila.me>"

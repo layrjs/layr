@@ -66,7 +66,7 @@ export const WithRoles = Base =>
     // === Static methods ===
 
     static $hasRole(name) {
-      return this.$getRoleDefinition(name).resolve();
+      return this.$getRoleDefinition(name).$resolve();
     }
 
     static $getRoleDefinition(name, {throwIfNotFound = true} = {}) {
@@ -83,7 +83,7 @@ export const WithRoles = Base =>
       }
 
       if (!hasOwnProperty(roleDefinitions, name)) {
-        roleDefinition = roleDefinition.fork(this);
+        roleDefinition = roleDefinition.$fork(this);
         roleDefinitions[name] = roleDefinition;
       }
 
@@ -134,7 +134,7 @@ export const WithRoles = Base =>
       const roleDefinition = this.$getRoleDefinition(name, {throwIfNotFound: false});
 
       if (roleDefinition) {
-        return roleDefinition.resolve();
+        return roleDefinition.$resolve();
       }
 
       // Fallback to the class if the role definition was not found in the instance

@@ -17,7 +17,7 @@ describe('Entity', () => {
     }
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     const newMovie = new layer.Movie({id: 'm1', title: 'Inception', year: 2010});
     expect(newMovie.id).toBe('m1');
@@ -57,7 +57,7 @@ describe('Entity', () => {
     }
 
     const layer = new Layer({Movie, Director});
-    await layer.open();
+    await layer.$open();
 
     const movie = new layer.Movie({
       id: 'm1',
@@ -96,7 +96,7 @@ describe('Entity', () => {
     }
 
     const layer = new Layer({Movie, Director});
-    await layer.open();
+    await layer.$open();
 
     const director = layer.Director.$deserialize({_id: 'd1', fullName: 'Christopher Nolan'});
     const movie = layer.Movie.$deserialize({
@@ -108,7 +108,7 @@ describe('Entity', () => {
 
     expect(movie.constructor.$layer === layer);
 
-    const forkedLayer = layer.fork();
+    const forkedLayer = layer.$fork();
     const forkedMovie = forkedLayer.Movie.$deserialize({_id: 'm1'});
 
     expect(forkedMovie).not.toBe(movie);
@@ -183,7 +183,7 @@ describe('Entity', () => {
     const backendLayer = await createBackendLayer();
     const frontendLayer = await createFrontendLayer(backendLayer);
 
-    frontendLayer.open();
+    frontendLayer.$open();
 
     const movie = new frontendLayer.Movie();
 
@@ -204,6 +204,6 @@ describe('Entity', () => {
     movie.setBackendFieldValue('secret', 'xyz123');
     expect(movie.$fieldIsActive('secret')).toBe(false);
 
-    frontendLayer.close();
+    frontendLayer.$close();
   });
 });

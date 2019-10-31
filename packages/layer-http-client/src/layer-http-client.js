@@ -16,7 +16,7 @@ export class LayerHTTPClient {
     this._url = url;
   }
 
-  async getLayer() {
+  async $getLayer() {
     const client = this;
 
     let layer = client._layer;
@@ -25,11 +25,11 @@ export class LayerHTTPClient {
       const introspection = await client._getIntrospection();
 
       layer = {
-        getName() {
+        $getName() {
           return introspection.name;
         },
 
-        get(name, {throwIfNotFound = true} = {}) {
+        $get(name, {throwIfNotFound = true} = {}) {
           if (
             !(hasOwnProperty(introspection, 'items') && hasOwnProperty(introspection.items, name))
           ) {
@@ -92,7 +92,7 @@ export class LayerHTTPClient {
           return itemMock;
         },
 
-        async receiveQuery({query, items, source} = {}) {
+        async $receiveQuery({query, items, source} = {}) {
           return client._sendQuery({query, items, source});
         }
       };

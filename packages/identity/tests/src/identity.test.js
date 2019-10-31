@@ -8,7 +8,7 @@ describe('Identity', () => {
     class Movie extends Identity {}
 
     const layer = new Layer({Movie});
-    await layer.open();
+    await layer.$open();
 
     let movie = new layer.Movie();
     const id = movie.id; // An 'id' should have been generated automatically
@@ -39,7 +39,7 @@ describe('Identity', () => {
     }
 
     const layer = new Layer({Movie, Actor});
-    await layer.open();
+    await layer.$open();
 
     const movie = layer.Movie.$deserialize({
       _type: 'Movie',

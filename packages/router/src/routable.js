@@ -6,7 +6,7 @@ export const Routable = (Base = Object) =>
   class Routable extends Base {
     static $getRoute(name) {
       const routes = this.$getRoutes();
-      return routes.get(name);
+      return routes.$get(name);
     }
 
     static $setRoute(name, pattern, options) {

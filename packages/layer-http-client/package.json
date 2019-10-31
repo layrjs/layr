@@ -1,6 +1,6 @@
 {
   "name": "@liaison/layer-http-client",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Connect to a layer through HTTP",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

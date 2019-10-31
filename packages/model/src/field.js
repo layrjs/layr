@@ -120,45 +120,45 @@ export class Field extends Property {
     }
   }
 
-  fork(parent) {
-    const forkedField = super.fork(parent);
-    forkedField._scalar = this._scalar.fork(forkedField);
+  $fork(parent) {
+    const forkedField = super.$fork(parent);
+    forkedField._scalar = this._scalar.$fork(forkedField);
     return forkedField;
   }
 
-  getType() {
+  $getType() {
     return this._type;
   }
 
-  isArray() {
+  $isArray() {
     return this._isArray;
   }
 
-  isUnique() {
+  $isUnique() {
     return this._isUnique;
   }
 
-  isOptional() {
+  $isOptional() {
     return this._arrayIsOptional;
   }
 
-  getScalar() {
+  $getScalar() {
     return this._scalar;
   }
 
-  isActive() {
+  $isActive() {
     return this._isActive;
   }
 
-  activate() {
+  $activate() {
     this._isActive = true;
   }
 
-  deactivate() {
+  $deactivate() {
     this._isActive = false;
   }
 
-  getValue({throwIfInactive = true, forkIfNotOwned = true} = {}) {
+  $getValue({throwIfInactive = true, forkIfNotOwned = true} = {}) {
     if (!this._isActive) {
       if (throwIfInactive) {
         throw new Error(`Cannot get the value from an inactive field (field: '${this._name}')`);
@@ -183,12 +183,12 @@ export class Field extends Property {
     return value;
   }
 
-  setValue(value, {source} = {}) {
-    this.checkValue(value);
+  $setValue(value, {source} = {}) {
+    this.$checkValue(value);
 
     this._source = source;
 
-    const previousValue = this.getValue({throwIfInactive: false});
+    const previousValue = this.$getValue({throwIfInactive: false});
 
     if (this._setter !== undefined) {
       if (value !== previousValue) {
@@ -229,11 +229,11 @@ export class Field extends Property {
     return possiblyMany.map(this._value, value => this._scalar._forkValue(value));
   }
 
-  getValues() {
+  $getValues() {
     const field = this;
     return {
       * [Symbol.iterator]() {
-        const value = field.getValue();
+        const value = field.$getValue();
         if (value !== undefined) {
           if (field._isArray) {
             for (const item of value) {
@@ -249,7 +249,7 @@ export class Field extends Property {
     };
   }
 
-  checkValue(value) {
+  $checkValue(value) {
     if (value === undefined) {
       return;
     }
@@ -260,58 +260,58 @@ export class Field extends Property {
       );
     }
 
-    return possiblyMany.map(value, value => this._scalar.checkValue(value));
+    return possiblyMany.map(value, value => this._scalar.$checkValue(value));
   }
 
-  getSource() {
+  $getSource() {
     return this._source;
   }
 
-  setSource(source) {
+  $setSource(source) {
     this._source = source;
   }
 
-  createValue(value) {
-    return this.setValue(possiblyMany.map(value, value => this._scalar.createValue(value)));
+  $createValue(value) {
+    return this.$setValue(possiblyMany.map(value, value => this._scalar.$createValue(value)));
   }
 
-  serializeValue({target, ...otherOptions} = {}) {
+  $serializeValue({target, ...otherOptions} = {}) {
     if (target !== undefined) {
       if (target === this._source) {
         return undefined;
       }
     }
 
-    const value = this.getValue();
+    const value = this.$getValue();
 
     return possiblyAsync.possiblyMany(
       possiblyMany.map(value, value =>
-        this._scalar.serializeValue(value, {target, ...otherOptions})
+        this._scalar.$serializeValue(value, {target, ...otherOptions})
       )
     );
   }
 
-  deserializeValue(value, {source, ...otherOptions} = {}) {
-    const previousValue = this.isActive() ? this.getValue() : undefined;
+  $deserializeValue(value, {source, ...otherOptions} = {}) {
+    const previousValue = this.$isActive() ? this.$getValue() : undefined;
 
     return possiblyAsync.possiblyMany(
       possiblyMany.map(value, value =>
-        this._scalar.deserializeValue(value, {source, ...otherOptions, previousValue})
+        this._scalar.$deserializeValue(value, {source, ...otherOptions, previousValue})
       ),
       {
         then: value => {
-          this.setValue(value, {source});
+          this.$setValue(value, {source});
         }
       }
     );
   }
 
-  hasValidators() {
+  $hasValidators() {
     return this._validators.length > 0;
   }
 
-  getFailedValidators({fields} = {}) {
-    const value = this.getValue();
+  $getFailedValidators({fields} = {}) {
+    const value = this.$getValue();
     if (this._isArray) {
       const values = value;
       if (values === undefined) {
@@ -322,7 +322,7 @@ export class Field extends Property {
       }
       let failedValidators = runValidators(values, this._validators);
       const failedScalarValidators = values.map(value =>
-        this._scalar.getFailedValidators(value, {fields})
+        this._scalar.$getFailedValidators(value, {fields})
       );
       if (!isEmpty(compact(failedScalarValidators))) {
         if (!failedValidators) {
@@ -332,10 +332,10 @@ export class Field extends Property {
       }
       return failedValidators;
     }
-    return this._scalar.getFailedValidators(value, {fields});
+    return this._scalar.$getFailedValidators(value, {fields});
   }
 
-  getDefaultValue() {
+  $getDefaultValue() {
     let value = this._default;
     while (typeof value === 'function') {
       value = value.call(this._parent);
@@ -343,7 +343,7 @@ export class Field extends Property {
     return value;
   }
 
-  hasDefaultValue() {
+  $hasDefaultValue() {
     return this._default !== undefined;
   }
 
@@ -364,13 +364,13 @@ export class Field extends Property {
     });
   }
 
-  static isField(object) {
+  static $isField(object) {
     return isField(object);
   }
 }
 
 export function isField(object) {
-  return typeof object?.constructor?.isField === 'function';
+  return typeof object?.constructor?.$isField === 'function';
 }
 
 class Scalar {
@@ -381,17 +381,17 @@ class Scalar {
     this._validators = validators;
   }
 
-  fork(field) {
+  $fork(field) {
     const forkedScalar = Object.create(this);
     forkedScalar._field = field;
     return forkedScalar;
   }
 
-  getType() {
+  $getType() {
     return this._type;
   }
 
-  isOptional() {
+  $isOptional() {
     return this._isOptional;
   }
 
@@ -402,21 +402,21 @@ class Scalar {
 
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
-      if (primitiveType.fork) {
-        return primitiveType.fork(value);
+      if (primitiveType.$fork) {
+        return primitiveType.$fork(value);
       }
       return value;
     }
 
-    return value.$forkInto(this._field.getLayer());
+    return value.$forkInto(this._field.$getLayer());
   }
 
-  checkValue(value) {
+  $checkValue(value) {
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
-      if (!primitiveType.check(value)) {
+      if (!primitiveType.$check(value)) {
         throw new Error(
-          `Type mismatch (field: '${this._field.getName()}', expected: '${
+          `Type mismatch (field: '${this._field.$getName()}', expected: '${
             this._type
           }', provided: '${typeof value}')`
         );
@@ -424,34 +424,34 @@ class Scalar {
       return;
     }
 
-    const Model = this.getModel();
+    const Model = this.$getModel();
     if (!(value instanceof Model)) {
       throw new Error(
-        `Type mismatch (field: '${this._field.getName()}', expected: '${this._type}', provided: '${
+        `Type mismatch (field: '${this._field.$getName()}', expected: '${this._type}', provided: '${
           value.constructor.name
         }')`
       );
     }
   }
 
-  createValue(value) {
+  $createValue(value) {
     if (value === undefined) {
       return undefined;
     }
 
-    if (this.isPrimitiveType()) {
+    if (this.$isPrimitiveType()) {
       return value;
     }
 
     if (isPlainObject(value)) {
-      const Model = this.getModel();
+      const Model = this.$getModel();
       return new Model(value);
     }
 
     return value;
   }
 
-  serializeValue(value, {target, ...otherOptions}) {
+  $serializeValue(value, {target, ...otherOptions}) {
     if (value === undefined) {
       // In case the data is transported via JSON, we will lost all the 'undefined' values.
       // We don't want that because 'undefined' could mean that a field has been deleted.
@@ -461,8 +461,8 @@ class Scalar {
 
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
-      if (primitiveType.serialize) {
-        return primitiveType.serialize(value);
+      if (primitiveType.$serialize) {
+        return primitiveType.$serialize(value);
       }
       return value;
     }
@@ -470,9 +470,9 @@ class Scalar {
     return value.$serialize({target, ...otherOptions, _isDeep: true});
   }
 
-  deserializeValue(value, {source, previousValue, ...otherOptions}) {
+  $deserializeValue(value, {source, previousValue, ...otherOptions}) {
     if (value === undefined) {
-      throw new Error(`Cannot deserialize 'undefined' (field: '${this._field.getName()}')`);
+      throw new Error(`Cannot deserialize 'undefined' (field: '${this._field.$getName()}')`);
     }
 
     if (value === null) {
@@ -481,50 +481,50 @@ class Scalar {
 
     const primitiveType = getPrimitiveType(this._type);
     if (primitiveType) {
-      if (primitiveType.deserialize) {
-        return primitiveType.deserialize(value);
+      if (primitiveType.$deserialize) {
+        return primitiveType.$deserialize(value);
       }
       return value;
     }
 
     const type = value._type;
     if (!type) {
-      throw new Error(`Cannot determine the type of a value (field: '${this._field.getName()}')`);
+      throw new Error(`Cannot determine the type of a value (field: '${this._field.$getName()}')`);
     }
-    const Model = this._field.getLayer().get(type);
+    const Model = this._field.$getLayer().$get(type);
     return Model.$deserialize(value, {source, ...otherOptions, previousInstance: previousValue});
   }
 
-  hasValidators() {
+  $hasValidators() {
     return this._validators.length > 0;
   }
 
-  getFailedValidators(value, {fields}) {
+  $getFailedValidators(value, {fields}) {
     if (value === undefined) {
       if (!this._isOptional) {
         return [REQUIRED_VALIDATOR_NAME];
       }
       return undefined;
     }
-    if (this.isPrimitiveType()) {
+    if (this.$isPrimitiveType()) {
       return runValidators(value, this._validators);
     }
     return value.$getFailedValidators({fields});
   }
 
-  isPrimitiveType() {
+  $isPrimitiveType() {
     return getPrimitiveType(this._type) !== undefined;
   }
 
-  getModel() {
-    if (this.isPrimitiveType()) {
+  $getModel() {
+    if (this.$isPrimitiveType()) {
       return undefined;
     }
-    return this._field.getLayer().get(this._type);
+    return this._field.$getLayer().$get(this._type);
   }
 
   _createFieldMask(fieldMask, {filter, includeReferencedEntities, _typeStack}) {
-    const Model = this.getModel();
+    const Model = this.$getModel();
     if (Model) {
       return Model.prototype.__createFieldMask(fieldMask, {
         filter,
@@ -541,22 +541,22 @@ class Scalar {
 
 const _primitiveTypes = {
   boolean: {
-    check(value) {
+    $check(value) {
       return typeof value === 'boolean';
     }
   },
   number: {
-    check(value) {
+    $check(value) {
       return typeof value === 'number';
     }
   },
   string: {
-    check(value) {
+    $check(value) {
       return typeof value === 'string';
     }
   },
   object: {
-    fork(value) {
+    $fork(value) {
       const _fork = object => {
         object = Object.create(this);
 
@@ -575,21 +575,21 @@ const _primitiveTypes = {
 
       return _fork(value);
     },
-    check(value) {
+    $check(value) {
       return isPlainObject(value);
     }
   },
   Date: {
-    fork(value) {
+    $fork(value) {
       return new Date(value);
     },
-    check(value) {
+    $check(value) {
       return value instanceof Date;
     },
-    serialize(date) {
+    $serialize(date) {
       return {_type: 'Date', _value: date.toISOString()};
     },
-    deserialize(object) {
+    $deserialize(object) {
       return new Date(object._value);
     }
   }

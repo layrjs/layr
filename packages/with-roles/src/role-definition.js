@@ -20,25 +20,25 @@ export class RoleDefinition {
     this._resolver = resolver;
   }
 
-  fork(parent) {
+  $fork(parent) {
     const forkedRoleDefinition = Object.create(this);
     forkedRoleDefinition._parent = parent;
     return forkedRoleDefinition;
   }
 
-  getParent() {
+  $getParent() {
     return this._parent;
   }
 
-  getName() {
+  $getName() {
     return this._name;
   }
 
-  getResolver() {
+  $getResolver() {
     return this._resolver;
   }
 
-  resolve() {
+  $resolve() {
     if (this._hasBeenResolved) {
       return this._resolvedValue;
     }

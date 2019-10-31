@@ -1,6 +1,6 @@
 {
   "name": "@liaison/router",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Route URLs to layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

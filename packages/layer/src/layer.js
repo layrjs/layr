@@ -27,29 +27,29 @@ export class Layer {
     this._registerables = Object.create(null);
 
     if (registerables !== undefined) {
-      this.register(registerables);
+      this.$register(registerables);
     }
 
-    this.setName(name);
+    this.$setName(name);
 
     if (parent !== undefined) {
-      this.setParent(parent);
+      this.$setParent(parent);
     }
 
     if (beforeInvokeReceivedQuery !== undefined) {
-      this.setBeforeInvokeReceivedQuery(beforeInvokeReceivedQuery);
+      this.$setBeforeInvokeReceivedQuery(beforeInvokeReceivedQuery);
     }
 
     if (afterInvokeReceivedQuery !== undefined) {
-      this.setAfterInvokeReceivedQuery(afterInvokeReceivedQuery);
+      this.$setAfterInvokeReceivedQuery(afterInvokeReceivedQuery);
     }
   }
 
-  getName() {
+  $getName() {
     return this._name;
   }
 
-  setName(name) {
+  $setName(name) {
     ow(name, ow.optional.string.nonEmpty);
 
     if (name !== undefined) {
@@ -62,13 +62,13 @@ export class Layer {
     this._nameHasBeenGenerated = true;
   }
 
-  nameHasBeenGenerated() {
+  $nameHasBeenGenerated() {
     return this._nameHasBeenGenerated;
   }
 
   // === Registration ===
 
-  register(registerables) {
+  $register(registerables) {
     if (registerables === null) {
       throw new Error(`Expected an object (received: null)`);
     }
@@ -95,7 +95,7 @@ export class Layer {
       throw new Error(`Name already registered (name: '${name}')`);
     }
 
-    if (this.isOpen()) {
+    if (this.$isOpen()) {
       throw new Error(`Cannot register an item in an open layer (name: '${name}')`);
     }
 
@@ -105,26 +105,26 @@ export class Layer {
 
     Object.defineProperty(this, name, {
       get() {
-        return this.get(name);
+        return this.$get(name);
       }
     });
   }
 
   // === Opening and closing ===
 
-  open() {
+  $open() {
     if (this._isOpen) {
       throw new Error(`Cannot open a layer that is already open`);
     }
 
-    return possiblyAsync.forEach(this.getItems(), item => item.$open(), {
+    return possiblyAsync.forEach(this.$getItems(), item => item.$open(), {
       then: () => {
         this._isOpen = true;
       }
     });
   }
 
-  close() {
+  $close() {
     if (!this._isOpen) {
       throw new Error(`Cannot close a layer that is not open`);
     }
@@ -133,20 +133,20 @@ export class Layer {
       throw new Error(`Cannot close a layer from a fork`);
     }
 
-    return possiblyAsync.forEach(this.getItems(), item => item.$close(), {
+    return possiblyAsync.forEach(this.$getItems(), item => item.$close(), {
       then: () => {
         this._isOpen = false;
       }
     });
   }
 
-  isOpen() {
+  $isOpen() {
     return this._isOpen === true;
   }
 
   // === Getting items ===
 
-  get(name, {throwIfNotFound = true} = {}) {
+  $get(name, {throwIfNotFound = true} = {}) {
     let registerable = this._registerables[name];
 
     if (registerable === undefined) {
@@ -171,13 +171,13 @@ export class Layer {
     return registerable;
   }
 
-  getItems({filter} = {}) {
+  $getItems({filter} = {}) {
     const layer = this;
     return {
       * [Symbol.iterator]() {
         // eslint-disable-next-line guard-for-in
         for (const name in layer._registerables) {
-          const item = layer.get(name);
+          const item = layer.$get(name);
           if (filter && !filter(item)) {
             continue;
           }
@@ -203,26 +203,26 @@ export class Layer {
 
   // === Forking ===
 
-  fork() {
+  $fork() {
     const forkedLayer = Object.create(this);
     forkedLayer._registerables = Object.create(this._registerables);
     return forkedLayer;
   }
 
-  getGhost() {
+  $getGhost() {
     if (!this._ghost) {
-      this._ghost = this.fork();
+      this._ghost = this.$fork();
     }
     return this._ghost;
   }
 
   get ghost() {
-    return this.getGhost();
+    return this.$getGhost();
   }
 
   // === Attachment ===
 
-  detach() {
+  $detach() {
     for (const item of this._getOwnItems()) {
       item.$detach();
     }
@@ -230,7 +230,7 @@ export class Layer {
     return this;
   }
 
-  isDetached() {
+  $isDetached() {
     return this._isDetached === true;
   }
 
@@ -238,8 +238,8 @@ export class Layer {
 
   // TODO: Reimplement from scratch
 
-  async batch(func) {
-    if (!this.isBatched()) {
+  async $batch(func) {
+    if (!this.$isBatched()) {
       this._setBatchState({count: 1, batchedQueries: []});
     } else {
       const {count} = this._getBatchState();
@@ -273,7 +273,7 @@ export class Layer {
 
         try {
           const batchedQueryQueries = batchedQueries.map(batchedQuery => batchedQuery.query);
-          const batchedQueryResults = await this.sendQuery(batchedQueryQueries, {
+          const batchedQueryResults = await this.$sendQuery(batchedQueryQueries, {
             ignoreBatch: true
           });
           for (const [{resolve}, result] of zip(batchedQueries, batchedQueryResults)) {
@@ -299,7 +299,7 @@ export class Layer {
     }
   }
 
-  isBatched() {
+  $isBatched() {
     return this._batchState !== undefined && this._batchState.count > 0;
   }
 
@@ -318,7 +318,7 @@ export class Layer {
 
   $introspect({items: {filter} = {}, properties} = {}) {
     const introspection = {
-      name: !this.nameHasBeenGenerated() ? this.getName() : undefined
+      name: !this.$nameHasBeenGenerated() ? this.$getName() : undefined
     };
 
     const items = {};
@@ -327,7 +327,7 @@ export class Layer {
       filter = item => item.$isExposed();
     }
 
-    for (const item of this.getItems({filter})) {
+    for (const item of this.$getItems({filter})) {
       items[item.$getRegisteredName()] = item.$introspect({properties});
     }
 
@@ -340,7 +340,7 @@ export class Layer {
 
   // === Serialization ===
 
-  serialize(value, options) {
+  $serialize(value, options) {
     if (value === null) {
       throw new Error(`The 'null' value is not allowed`);
     }
@@ -357,7 +357,7 @@ export class Layer {
   }
 
   _serializeArray(array, options) {
-    return possiblyAsync.map(array, item => this.serialize(item, options));
+    return possiblyAsync.map(array, item => this.$serialize(item, options));
   }
 
   _serializeObject(object, options) {
@@ -367,7 +367,7 @@ export class Layer {
 
     const primitiveType = getPrimitiveTypeFromValue(object);
     if (primitiveType) {
-      return primitiveType.serialize(object);
+      return primitiveType.$serialize(object);
     }
 
     if (typeof object.toJSON === 'function') {
@@ -378,12 +378,12 @@ export class Layer {
   }
 
   _serializePlainObject(object, options) {
-    return possiblyAsync.mapObject(object, value => this.serialize(value, options));
+    return possiblyAsync.mapObject(object, value => this.$serialize(value, options));
   }
 
   // === Deserialization ===
 
-  deserialize(value, options) {
+  $deserialize(value, options) {
     if (value === null) {
       throw new Error(`The 'null' value is not allowed`);
     }
@@ -400,7 +400,7 @@ export class Layer {
   }
 
   _deserializeArray(array, options) {
-    return possiblyAsync.map(array, item => this.deserialize(item, options));
+    return possiblyAsync.map(array, item => this.$deserialize(item, options));
   }
 
   _deserializeObject(object, options) {
@@ -420,20 +420,20 @@ export class Layer {
 
     const primitiveType = getPrimitiveType(type);
     if (primitiveType) {
-      return primitiveType.deserialize(object);
+      return primitiveType.$deserialize(object);
     }
 
-    const registerable = this.get(type);
+    const registerable = this.$get(type);
     return registerable.$deserialize(object, options);
   }
 
   _deserializePlainObject(object, options) {
-    return possiblyAsync.mapObject(object, value => this.deserialize(value, options));
+    return possiblyAsync.mapObject(object, value => this.$deserialize(value, options));
   }
 
   // === Parent layer ===
 
-  getParent({throwIfNotFound = true} = {}) {
+  $getParent({throwIfNotFound = true} = {}) {
     if (this._parent) {
       return this._parent;
     }
@@ -442,17 +442,17 @@ export class Layer {
     }
   }
 
-  setParent(parent) {
+  $setParent(parent) {
     this._parent = parent;
   }
 
-  hasParent() {
+  $hasParent() {
     return this._parent !== undefined;
   }
 
   // === Queries ===
 
-  invokeQuery(query) {
+  $invokeQuery(query) {
     const authorizer = this._createQueryAuthorizer();
 
     return invokeQuery(this, query, {authorizer});
@@ -473,7 +473,7 @@ export class Layer {
           return false;
         }
 
-        const item = this.get(name, {throwIfNotFound: false});
+        const item = this.$get(name, {throwIfNotFound: false});
 
         if (item === undefined) {
           return false;
@@ -489,35 +489,35 @@ export class Layer {
           return false;
         }
 
-        return property.operationIsAllowed(operation);
+        return property.$operationIsAllowed(operation);
       }
 
       return false;
     };
   }
 
-  sendQuery(query, {ignoreBatch = false} = {}) {
-    if (this.isBatched() && !ignoreBatch) {
+  $sendQuery(query, {ignoreBatch = false} = {}) {
+    if (this.$isBatched() && !ignoreBatch) {
       return new Promise((resolve, reject) => {
         const {batchedQueries} = this._getBatchState();
         batchedQueries.push({query, resolve, reject});
       });
     }
 
-    const parent = this.getParent();
-    const source = this.getName();
-    const target = parent.getName();
+    const parent = this.$getParent();
+    const source = this.$getName();
+    const target = parent.$getName();
 
-    query = this.serialize(query, {target});
+    query = this.$serialize(query, {target});
     const items = this._serializeItems({isSending: true});
 
     debugSending(`[%s → %s] {query: %o, items: %o}`, source, target, query, items);
 
-    return possiblyAsync(parent.receiveQuery({query, items, source}), {
+    return possiblyAsync(parent.$receiveQuery({query, items, source}), {
       then: ({result, items}) => {
         debugSending(`[%s ← %s] {result: %o, items: %o}`, source, target, result, items);
 
-        result = this.deserialize(result, {source: target});
+        result = this.$deserialize(result, {source: target});
         this._deserializeItems(items, {source: target});
 
         return result;
@@ -525,10 +525,10 @@ export class Layer {
     });
   }
 
-  receiveQuery({query, items, source} = {}) {
+  $receiveQuery({query, items, source} = {}) {
     let result;
 
-    const target = this.getName();
+    const target = this.$getName();
     const getFilter = this._createPropertyExpositionFilter('get');
     const setFilter = this._createPropertyExpositionFilter('set');
 
@@ -539,23 +539,23 @@ export class Layer {
         this._deserializeItems(items, {source, filter: setFilter, isReceiving: true});
       },
       () => {
-        return this.open();
+        return this.$open();
       },
       () => {
         return possiblyAsync.call(
           [
             () => {
-              return this.deserialize(query, {source, filter: setFilter});
+              return this.$deserialize(query, {source, filter: setFilter});
             },
             deserializedQuery => {
               query = deserializedQuery;
-              return this.callBeforeInvokeReceivedQuery();
+              return this.$callBeforeInvokeReceivedQuery();
             },
             () => {
-              return this.invokeQuery(query);
+              return this.$invokeQuery(query);
             },
             result => {
-              return this.serialize(result, {target: source, filter: getFilter});
+              return this.$serialize(result, {target: source, filter: getFilter});
             },
             serializedResult => {
               result = serializedResult;
@@ -563,7 +563,7 @@ export class Layer {
             },
             serializedItems => {
               items = serializedItems;
-              return this.callAfterInvokeReceivedQuery();
+              return this.$callAfterInvokeReceivedQuery();
             },
             () => {
               debugReceiving(`[%s ← %s] {query: %o, items: %o}`, source, target, result, items);
@@ -573,7 +573,7 @@ export class Layer {
           ],
           {
             finally: () => {
-              return this.close();
+              return this.$close();
             }
           }
         );
@@ -586,7 +586,7 @@ export class Layer {
     let hasSerializedItems = false;
 
     return possiblyAsync.forEach(
-      this.getItems(),
+      this.$getItems(),
       item => {
         if (typeof item !== 'object') {
           return;
@@ -595,7 +595,7 @@ export class Layer {
         const name = item.$getRegisteredName();
 
         if (isSending) {
-          if (!this.getParent().get(name, {throwIfNotFound: false})) {
+          if (!this.$getParent().$get(name, {throwIfNotFound: false})) {
             return;
           }
         } else if (!item.$isExposed()) {
@@ -627,7 +627,7 @@ export class Layer {
     }
 
     return possiblyAsync.forEach(Object.entries(serializedItems), ([name, serializedItem]) => {
-      const item = this.get(name);
+      const item = this.$get(name);
 
       if (isReceiving && !item.$isExposed()) {
         throw new Error(`Cannot receive an item that is not exposed (name: '${name}')`);
@@ -643,37 +643,37 @@ export class Layer {
 
   _createPropertyExpositionFilter(operation) {
     return function (property) {
-      return property.operationIsAllowed(operation);
+      return property.$operationIsAllowed(operation);
     };
   }
 
-  getBeforeInvokeReceivedQuery() {
+  $getBeforeInvokeReceivedQuery() {
     return this._beforeInvokeReceivedQuery;
   }
 
-  setBeforeInvokeReceivedQuery(beforeInvokeReceivedQuery) {
+  $setBeforeInvokeReceivedQuery(beforeInvokeReceivedQuery) {
     ow(beforeInvokeReceivedQuery, ow.function);
 
     this._beforeInvokeReceivedQuery = beforeInvokeReceivedQuery;
   }
 
-  callBeforeInvokeReceivedQuery() {
+  $callBeforeInvokeReceivedQuery() {
     if (this._beforeInvokeReceivedQuery) {
       return this._beforeInvokeReceivedQuery(this);
     }
   }
 
-  getAfterInvokeReceivedQuery() {
+  $getAfterInvokeReceivedQuery() {
     return this._afterInvokeReceivedQuery;
   }
 
-  setAfterInvokeReceivedQuery(afterInvokeReceivedQuery) {
+  $setAfterInvokeReceivedQuery(afterInvokeReceivedQuery) {
     ow(afterInvokeReceivedQuery, ow.function);
 
     this._afterInvokeReceivedQuery = afterInvokeReceivedQuery;
   }
 
-  callAfterInvokeReceivedQuery() {
+  $callAfterInvokeReceivedQuery() {
     if (this._afterInvokeReceivedQuery) {
       return this._afterInvokeReceivedQuery(this);
     }
@@ -681,13 +681,13 @@ export class Layer {
 
   // === Utilities ===
 
-  static isLayer(object) {
+  static $isLayer(object) {
     return isLayer(object);
   }
 
   [inspect.custom]() {
     const items = {};
-    for (const item of this.getItems()) {
+    for (const item of this.$getItems()) {
       items[item.$getRegisteredName()] = item;
     }
     return items;
@@ -695,15 +695,15 @@ export class Layer {
 }
 
 export function isLayer(object) {
-  return typeof object?.constructor?.isLayer === 'function';
+  return typeof object?.constructor?.$isLayer === 'function';
 }
 
 const _primitiveTypes = {
   Date: {
-    serialize(date) {
+    $serialize(date) {
       return {_type: 'Date', _value: date.toISOString()};
     },
-    deserialize(object) {
+    $deserialize(object) {
       return new Date(object._value);
     }
   }

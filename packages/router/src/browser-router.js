@@ -18,11 +18,11 @@ export class BrowserRouter extends Observable(Registerable()) {
     });
   }
 
-  getCurrentLocation() {
+  $getCurrentLocation() {
     return window.location;
   }
 
-  navigate(url, {replace = false, reload = false} = {}) {
+  $navigate(url, {replace = false, reload = false} = {}) {
     if (!reload) {
       window.history[replace ? 'replaceState' : 'pushState'](null, null, url);
       this.$notify();
@@ -31,16 +31,16 @@ export class BrowserRouter extends Observable(Registerable()) {
     }
   }
 
-  redirect(url) {
-    this.navigate(url, {replace: true});
+  $redirect(url) {
+    this.$navigate(url, {replace: true});
   }
 
-  reload(url, {replace = false} = {}) {
-    this.navigate(url, {replace, reload: true});
+  $reload(url, {replace = false} = {}) {
+    this.$navigate(url, {replace, reload: true});
   }
 
-  findRoute(url) {
-    for (const item of this.$getLayer().getItems({filter: isRoutable})) {
+  $findRoute(url) {
+    for (const item of this.$getLayer().$getItems({filter: isRoutable})) {
       const result = item.$findRoute(url);
       if (result) {
         return {target: item, ...result};
@@ -48,12 +48,12 @@ export class BrowserRouter extends Observable(Registerable()) {
     }
   }
 
-  findCurrentRoute() {
-    return this.findRoute(this.getCurrentLocation());
+  $findCurrentRoute() {
+    return this.$findRoute(this.$getCurrentLocation());
   }
 
-  getRoute(url) {
-    const result = this.findRoute(url);
+  $getRoute(url) {
+    const result = this.$findRoute(url);
 
     if (!result) {
       throw new Error(`Route not found (URL: '${url}')`);
@@ -64,12 +64,12 @@ export class BrowserRouter extends Observable(Registerable()) {
     return target[route.name];
   }
 
-  getCurrentRoute() {
-    return this.getRoute(this.getCurrentLocation());
+  $getCurrentRoute() {
+    return this.$getRoute(this.$getCurrentLocation());
   }
 
-  getParams(url) {
-    const result = this.findRoute(url);
+  $getParams(url) {
+    const result = this.$findRoute(url);
 
     if (!result) {
       throw new Error(`Route not found (URL: '${url}')`);
@@ -80,12 +80,12 @@ export class BrowserRouter extends Observable(Registerable()) {
     return params;
   }
 
-  getCurrentParams() {
-    return this.getParams(this.getCurrentLocation());
+  $getCurrentParams() {
+    return this.$getParams(this.$getCurrentLocation());
   }
 
-  callRoute(url, {fallback} = {}) {
-    const result = this.findRoute(url);
+  $callRoute(url, {fallback} = {}) {
+    const result = this.$findRoute(url);
 
     if (result) {
       const {target, route, params} = result;
@@ -99,15 +99,15 @@ export class BrowserRouter extends Observable(Registerable()) {
     throw new Error(`Route not found (URL: '${url}')`);
   }
 
-  callCurrentRoute({fallback} = {}) {
-    return this.callRoute(this.getCurrentLocation(), {fallback});
+  $callCurrentRoute({fallback} = {}) {
+    return this.$callRoute(this.$getCurrentLocation(), {fallback});
   }
 
-  addCustomRouteDecorator(decorator) {
+  $addCustomRouteDecorator(decorator) {
     this._customRouteDecorators.push(decorator);
   }
 
-  applyCustomRouteDecorators(target, func) {
+  $applyCustomRouteDecorators(target, func) {
     for (const customRouteDecorator of this._customRouteDecorators) {
       customRouteDecorator.call(target, func);
     }

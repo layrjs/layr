@@ -14,7 +14,7 @@ export async function handler(event, context) {
 
   try {
     const {query, items, source} = event;
-    const result = await layer.receiveQuery({query, items, source});
+    const result = await layer.$receiveQuery({query, items, source});
     return {result};
   } catch (err) {
     const error = {message: err.message, ...err};

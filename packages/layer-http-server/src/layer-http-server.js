@@ -44,7 +44,7 @@ export class LayerHTTPServer {
 
       try {
         const {query, items, source} = ctx.request.body;
-        const result = await layer.receiveQuery({query, items, source});
+        const result = await layer.$receiveQuery({query, items, source});
         ctx.body = {result};
       } catch (err) {
         const error = {message: err.message, ...err};
@@ -55,7 +55,7 @@ export class LayerHTTPServer {
     return koa;
   }
 
-  start() {
+  $start() {
     if (this._server) {
       throw new Error('Layer server already started');
     }
@@ -68,7 +68,7 @@ export class LayerHTTPServer {
     });
   }
 
-  stop() {
+  $stop() {
     if (!this._server) {
       throw new Error('Layer server has not been started');
     }

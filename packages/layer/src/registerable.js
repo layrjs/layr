@@ -48,12 +48,12 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     static $getParentLayer({throwIfNotFound = true} = {}) {
       const layer = this.$getLayer({throwIfNotFound});
-      return layer?.getParent({throwIfNotFound});
+      return layer?.$getParent({throwIfNotFound});
     }
 
     static $hasParentLayer() {
       const layer = this.$getLayer({throwIfNotFound: false});
-      return layer ? layer.hasParent() : false;
+      return layer ? layer.$hasParent() : false;
     }
 
     // === Opening and closing ===
@@ -81,7 +81,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       }
 
       if (!hasOwnProperty(properties, name)) {
-        property = property.fork(this);
+        property = property.$fork(this);
         properties[name] = property;
       }
 
@@ -95,7 +95,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     static __setProperty(constructor, name, options = {}) {
       if (this.$hasProperty(name)) {
         const existingProperty = this.$getProperty(name);
-        options = {...existingProperty.getOptions(), ...options};
+        options = {...existingProperty.$getOptions(), ...options};
       }
 
       const properties = this.__getProperties();
@@ -155,7 +155,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     // === Property exposition ===
 
     static $getExposedProperties() {
-      return this.$getProperties({filter: property => property.isExposed()});
+      return this.$getProperties({filter: property => property.$isExposed()});
     }
 
     static $isExposed() {
@@ -165,7 +165,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     static $getPropertyExposition(name, {throwIfNotFound = true} = {}) {
       const property = this.$getProperty(name, {throwIfNotFound});
-      return property?.getExposition();
+      return property?.$getExposition();
     }
 
     static $resolvePropertyOperationSetting(setting) {
@@ -189,14 +189,14 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     // === Forking ===
 
     static $fork() {
-      const forkedLayer = this.$getLayer().fork();
+      const forkedLayer = this.$getLayer().$fork();
       return this.$forkInto(forkedLayer);
     }
 
     static $forkInto(targetLayer) {
       const registeredName = this.$getRegisteredName();
       if (registeredName) {
-        return targetLayer.get(registeredName);
+        return targetLayer.$get(registeredName);
       }
 
       throw new Error('Cannot fork a registerable that is not registered');
@@ -214,7 +214,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     }
 
     static $getGhost() {
-      const ghostLayer = this.$getLayer().getGhost();
+      const ghostLayer = this.$getLayer().$getGhost();
       return this.$forkInto(ghostLayer);
     }
 
@@ -269,7 +269,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       }
 
       const parentLayer = this.$getParentLayer({throwIfNotFound: false});
-      const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
+      const parentRegistrable = parentLayer?.$get(registeredName, {throwIfNotFound: false});
 
       if (!parentRegistrable?.$isExposed()) {
         return undefined;
@@ -281,7 +281,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     static $callParentLayer(methodName, ...args) {
       const layer = this.$getLayer();
       const query = this.__buildQuery(methodName, ...args);
-      return possiblyAsync(layer.sendQuery(query), {then: ({result}) => result});
+      return possiblyAsync(layer.$sendQuery(query), {then: ({result}) => result});
     }
 
     static __buildQuery(methodName, ...args) {
@@ -352,12 +352,12 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     $getParentLayer({fallBackToClass = true, throwIfNotFound = true} = {}) {
       const layer = this.$getLayer({fallBackToClass, throwIfNotFound});
-      return layer?.getParent({throwIfNotFound});
+      return layer?.$getParent({throwIfNotFound});
     }
 
     $hasParentLayer({fallBackToClass = true} = {}) {
       const layer = this.$getLayer({fallBackToClass, throwIfNotFound: false});
-      return layer ? layer.hasParent() : false;
+      return layer ? layer.$hasParent() : false;
     }
 
     // === Opening and closing ===
@@ -429,19 +429,19 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
     // === Forking ===
 
     $fork() {
-      const forkedLayer = this.$getLayer().fork();
+      const forkedLayer = this.$getLayer().$fork();
       return this.$forkInto(forkedLayer);
     }
 
     $forkInto(targetLayer) {
       const registeredName = this.$getRegisteredName();
       if (registeredName) {
-        return targetLayer.get(registeredName);
+        return targetLayer.$get(registeredName);
       }
 
       const constructorRegisteredName = this.constructor.$getRegisteredName();
       if (constructorRegisteredName) {
-        const forkedConstructor = targetLayer.get(constructorRegisteredName);
+        const forkedConstructor = targetLayer.$get(constructorRegisteredName);
         // OPTIMIZE: Serialize unique fields only
         let fork = forkedConstructor.$getInstance(this.$serialize());
         if (!fork) {
@@ -455,7 +455,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
 
     __fork(forkedConstructor) {
       // Changing the constructor sounds a bit hacky
-      // TODO: Consider doing deserialize(serialize()) instead
+      // TODO: Consider doing $deserialize($serialize()) instead
 
       const fork = Object.create(this);
 
@@ -474,7 +474,9 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         throw new Error(`Cannot merge an object that is not serializable`);
       }
 
-      this.$deserialize(fork.$serialize({includeReferencedEntities}), {includeReferencedEntities});
+      this.$deserialize(fork.$serialize({includeReferencedEntities}), {
+        includeReferencedEntities
+      });
     }
 
     $getGhost() {
@@ -507,7 +509,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       if (registeredName) {
         // The instance is registered
         const parentLayer = this.$getParentLayer({fallBackToClass: false, throwIfNotFound: false});
-        const parentRegistrable = parentLayer?.get(registeredName, {throwIfNotFound: false});
+        const parentRegistrable = parentLayer?.$get(registeredName, {throwIfNotFound: false});
         if (!parentRegistrable?.$isExposed()) {
           return undefined;
         }
@@ -522,7 +524,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       }
 
       const classParentLayer = this.constructor.$getParentLayer({throwIfNotFound: false});
-      const ParentRegistrable = classParentLayer?.get(classRegisteredName, {
+      const ParentRegistrable = classParentLayer?.$get(classRegisteredName, {
         throwIfNotFound: false
       });
 
@@ -571,15 +573,15 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       const properties = {};
 
       if (filter === '$isExposed') {
-        filter = property => property.isExposed();
+        filter = property => property.$isExposed();
       }
 
       for (const property of this.$getProperties({filter})) {
-        const name = property.getName();
+        const name = property.$getName();
 
         properties[name] = {};
 
-        const serializedExposition = property.serializeExposition();
+        const serializedExposition = property.$serializeExposition();
         if (serializedExposition !== undefined) {
           properties[name].exposition = serializedExposition;
         }

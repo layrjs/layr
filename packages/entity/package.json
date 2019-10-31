@@ -1,6 +1,6 @@
 {
   "name": "@liaison/entity",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Base class adding entity to models",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

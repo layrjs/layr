@@ -62,7 +62,7 @@ function runTests({viaHTTP = false} = {}) {
           }
 
           class Movie extends BaseMovie {
-            @property({expose: {call: true}}) static get(id) {
+            @property({expose: {call: true}}) static $get(id) {
               this.authorize();
 
               if (id === 'abc123') {
@@ -112,10 +112,10 @@ function runTests({viaHTTP = false} = {}) {
           layer = await layerCreator();
         } else {
           layerServer = new LayerHTTPServer(layerCreator, {port: 4444});
-          await layerServer.start();
+          await layerServer.$start();
 
           const layerClient = new LayerHTTPClient('http://localhost:4444');
-          layer = await layerClient.getLayer();
+          layer = await layerClient.$getLayer();
         }
 
         return {layer, layerServer};
@@ -150,11 +150,11 @@ function runTests({viaHTTP = false} = {}) {
     });
 
     afterAll(async () => {
-      await backendLayerServer?.stop();
+      await backendLayerServer?.$stop();
     });
 
     test('Parent call', async () => {
-      await frontendLayer.open();
+      await frontendLayer.$open();
 
       expect(frontendLayer.authenticator.token).toBeUndefined();
       if (!viaHTTP) {
@@ -165,8 +165,8 @@ function runTests({viaHTTP = false} = {}) {
       expect(frontendLayer.authenticator.token).toBe('123456789');
 
       const movie = !viaHTTP ?
-        frontendLayer.Movie.get('abc123') :
-        await frontendLayer.Movie.get('abc123');
+        frontendLayer.Movie.$get('abc123') :
+        await frontendLayer.Movie.$get('abc123');
       expect(movie instanceof frontendLayer.Movie).toBe(true);
       expect(movie.title).toBe('Inception');
       expect(movie.year).toBe(2010);
@@ -192,25 +192,25 @@ function runTests({viaHTTP = false} = {}) {
       expect(frontendLayer.authenticator.token).toBeUndefined();
 
       if (!viaHTTP) {
-        expect(() => frontendLayer.Movie.get('abc123')).toThrow(/Token is invalid/);
+        expect(() => frontendLayer.Movie.$get('abc123')).toThrow(/Token is invalid/);
       } else {
-        await expect(frontendLayer.Movie.get('abc123')).rejects.toThrow(/Token is invalid/);
+        await expect(frontendLayer.Movie.$get('abc123')).rejects.toThrow(/Token is invalid/);
       }
 
-      await frontendLayer.close();
+      await frontendLayer.$close();
     });
 
     test('Batch queries', async () => {
-      await frontendLayer.open();
+      await frontendLayer.$open();
 
       await frontendLayer.authenticator.signIn();
 
-      const [movie1, movie2] = await frontendLayer.batch(() => {
+      const [movie1, movie2] = await frontendLayer.$batch(() => {
         const ids = ['abc123', 'abc456'];
 
         return ids.map(async id => {
           await Promise.resolve(1);
-          const movie = await frontendLayer.Movie.get(id);
+          const movie = await frontendLayer.Movie.$get(id);
           await Promise.resolve(1);
           movie.isMarked = true;
           return movie;
@@ -231,7 +231,7 @@ function runTests({viaHTTP = false} = {}) {
 
       await frontendLayer.authenticator.signOut();
 
-      await frontendLayer.close();
+      await frontendLayer.$close();
     });
   });
 }

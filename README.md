@@ -60,7 +60,7 @@ const layer = new Layer({Counter});
 
 // And we serve the layer through HTTP
 const server = new LayerHTTPServer(layer, {port: 3333});
-await server.start();
+await server.$start();
 ```
 
 Finally, let's build the frontend:
@@ -79,11 +79,11 @@ class Counter extends BaseCounter {
 
 // We connect to the backend layer
 const client = new LayerHTTPClient('http://localhost:3333');
-const backendLayer = await client.getLayer();
+const backendLayer = await client.$getLayer();
 
 // We register the frontend class into a layer and we set the backend layer as parent
 const layer = new Layer({Counter}, {parent: backendLayer});
-await layer.open();
+await layer.$open();
 
 // Lastly, we consume it
 const counter = new layer.Counter();

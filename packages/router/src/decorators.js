@@ -17,33 +17,33 @@ export function route(pattern, options) {
         throw new Error(`@route() can only be used on functions`);
       }
 
-      const router = this.$getLayer().get('router');
+      const router = this.$getLayer().$get('router');
 
-      func.getPath = function (params) {
+      func.$getPath = function (params) {
         return route.build(params);
       };
 
-      func.navigate = function (params, {replace = false} = {}) {
-        const path = this.getPath(params);
-        router.navigate(path, {replace});
+      func.$navigate = function (params, {replace = false} = {}) {
+        const path = this.$getPath(params);
+        router.$navigate(path, {replace});
       };
 
-      func.redirect = function (params) {
-        const path = this.getPath(params);
-        router.redirect(path);
+      func.$redirect = function (params) {
+        const path = this.$getPath(params);
+        router.$redirect(path);
       };
 
-      func.reload = function (params, {replace = false} = {}) {
-        const path = this.getPath(params);
-        router.reload(path, {replace});
+      func.$reload = function (params, {replace = false} = {}) {
+        const path = this.$getPath(params);
+        router.$reload(path, {replace});
       };
 
-      func.isActive = function (params) {
-        const path = this.getPath(params);
-        return router.getCurrentLocation().pathname === path;
+      func.$isActive = function (params) {
+        const path = this.$getPath(params);
+        return router.$getCurrentLocation().pathname === path;
       };
 
-      router.applyCustomRouteDecorators(this, func);
+      router.$applyCustomRouteDecorators(this, func);
     };
 
     let hasBeenDecorated = false;

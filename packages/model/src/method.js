@@ -9,11 +9,11 @@ export class Method extends Property {
     this._options = options;
   }
 
-  static isMethod(object) {
+  static $isMethod(object) {
     return isMethod(object);
   }
 }
 
 export function isMethod(object) {
-  return typeof object?.constructor?.isMethod === 'function';
+  return typeof object?.constructor?.$isMethod === 'function';
 }

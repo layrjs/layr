@@ -5,7 +5,7 @@ import {useForceUpdate} from './hooks';
 export function ReactRouterPlugin() {
   return function (router) {
     Object.assign(router, {
-      use() {
+      $useRouter() {
         const [isReady, setIsReady] = useState(false);
 
         const forceUpdate = useForceUpdate();
@@ -32,11 +32,11 @@ export function ReactRouterPlugin() {
         const handleClick = event => {
           if (!(event.shiftKey || event.ctrlKey || event.altKey || event.metaKey)) {
             event.preventDefault();
-            router.navigate(href);
+            router.$navigate(href);
           }
         };
 
-        const isActive = router.getCurrentLocation().pathname === href;
+        const isActive = router.$getCurrentLocation().pathname === href;
 
         if (isActive) {
           if (activeClassName) {
@@ -56,9 +56,9 @@ export function ReactRouterPlugin() {
       }
     });
 
-    router.addCustomRouteDecorator(function (func) {
+    router.$addCustomRouteDecorator(function (func) {
       func.Link = function ({params, ...props}) {
-        const href = func.getPath(params);
+        const href = func.$getPath(params);
         return router.Link({href, ...props});
       };
     });

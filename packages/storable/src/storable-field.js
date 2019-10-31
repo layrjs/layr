@@ -40,39 +40,39 @@ export class StorableField extends StorableProperty(Field) {
     this._afterDelete = afterDelete;
   }
 
-  isVolatile() {
+  $isVolatile() {
     return this._isVolatile;
   }
 
   async _callLoader() {
-    let value = this.getValue({throwIfInactive: false});
-    value = await this._loader.call(this.getParent(), value);
-    this.setValue(value);
+    let value = this.$getValue({throwIfInactive: false});
+    value = await this._loader.call(this.$getParent(), value);
+    this.$setValue(value);
   }
 
   async _callSaver() {
-    let value = this.getValue();
-    value = await this._saver.call(this.getParent(), value);
-    this.setValue(value);
+    let value = this.$getValue();
+    value = await this._saver.call(this.$getParent(), value);
+    this.$setValue(value);
   }
 
   async _callAfterLoad() {
-    await this._afterLoad.call(this.getParent(), this.getValue());
+    await this._afterLoad.call(this.$getParent(), this.$getValue());
   }
 
   async _callBeforeSave() {
-    await this._beforeSave.call(this.getParent(), this.getValue());
+    await this._beforeSave.call(this.$getParent(), this.$getValue());
   }
 
   async _callAfterSave() {
-    await this._afterSave.call(this.getParent(), this.getValue());
+    await this._afterSave.call(this.$getParent(), this.$getValue());
   }
 
   async _callBeforeDelete() {
-    await this._beforeDelete.call(this.getParent(), this.getValue());
+    await this._beforeDelete.call(this.$getParent(), this.$getValue());
   }
 
   async _callAfterDelete() {
-    await this._afterDelete.call(this.getParent(), this.getValue());
+    await this._afterDelete.call(this.$getParent(), this.$getValue());
   }
 }

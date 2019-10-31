@@ -1,6 +1,6 @@
 {
   "name": "@liaison/layer",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "The root of your backend, frontend, UI, or whatever layer you build",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

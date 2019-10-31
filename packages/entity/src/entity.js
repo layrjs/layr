@@ -76,7 +76,7 @@ export class Entity extends Identity {
     }
 
     for (const field of this.prototype.$getUniqueFields()) {
-      const name = field.getName();
+      const name = field.$getName();
       const instance = getInstanceBy(name);
       if (instance !== undefined) {
         return instance;
@@ -121,8 +121,8 @@ export class Entity extends Identity {
     this.__setIndex('id', id);
 
     for (const field of this.$getUniqueFields()) {
-      const name = field.getName();
-      const value = field.getValue({throwIfInactive: false, forkIfNotOwned: false});
+      const name = field.$getName();
+      const value = field.$getValue({throwIfInactive: false, forkIfNotOwned: false});
       this.__setIndex(name, value);
     }
   }
@@ -164,8 +164,8 @@ export class Entity extends Identity {
     this.__deleteIndex('id', id);
 
     for (const field of this.$getUniqueFields()) {
-      const name = field.getName();
-      const value = field.getValue({throwIfInactive: false, forkIfNotOwned: false});
+      const name = field.$getName();
+      const value = field.$getValue({throwIfInactive: false, forkIfNotOwned: false});
       this.__deleteIndex(name, value);
     }
   }

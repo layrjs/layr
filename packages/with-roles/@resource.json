@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/with-roles",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple role system for exposed properties",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

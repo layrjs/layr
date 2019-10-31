@@ -91,7 +91,7 @@ export default () => ({
           }
         }
 
-        const result = await layer.receiveQuery({query, items, source});
+        const result = await layer.$receiveQuery({query, items, source});
 
         ctx.body = {result};
 

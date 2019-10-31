@@ -7,7 +7,7 @@ import isEmpty from 'lodash/isEmpty';
 import {inspect} from 'util';
 
 import {Field, isField} from './field';
-import {FieldMask} from './field-mask';
+import {FieldMask, isFieldMask} from './field-mask';
 import {Method, isMethod} from './method';
 
 export class Model extends Observable(Serializable(Registerable())) {
@@ -15,12 +15,12 @@ export class Model extends Observable(Serializable(Registerable())) {
     super(object);
 
     for (const field of this.$getFields()) {
-      const name = field.getName();
+      const name = field.$getName();
       if (hasOwnProperty(object, name)) {
         const value = object[name];
-        field.createValue(value);
-      } else if (field.hasDefaultValue()) {
-        field.setValue(field.getDefaultValue());
+        field.$createValue(value);
+      } else if (field.$hasDefaultValue()) {
+        field.$setValue(field.$getDefaultValue());
       }
     }
   }
@@ -43,7 +43,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     for (const [name, value] of Object.entries(object)) {
       if (this.$hasField(name)) {
         const field = this.$getField(name);
-        field.createValue(value);
+        field.$createValue(value);
       }
     }
   }
@@ -63,9 +63,9 @@ export class Model extends Observable(Serializable(Registerable())) {
     return possiblyAsync.forEach(
       this.$getActiveFields(),
       field => {
-        const name = field.getName();
+        const name = field.$getName();
 
-        const fieldMask = rootFieldMask.get(name);
+        const fieldMask = rootFieldMask.$get(name);
         if (!fieldMask) {
           return;
         }
@@ -74,7 +74,7 @@ export class Model extends Observable(Serializable(Registerable())) {
           then: isNotFilteredOut => {
             if (isNotFilteredOut) {
               return possiblyAsync(
-                field.serializeValue({
+                field.$serializeValue({
                   target,
                   fields: fieldMask,
                   filter,
@@ -89,7 +89,7 @@ export class Model extends Observable(Serializable(Registerable())) {
                     serializedFields[name] = value;
 
                     if (target === undefined) {
-                      const source = field.getSource();
+                      const source = field.$getSource();
                       if (source !== undefined) {
                         sources[name] = source;
                       }
@@ -124,7 +124,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
     // TODO: Deserialize unique fields first
     return possiblyAsync.forEach(this.$getFieldNames(), name => {
-      const fieldMask = rootFieldMask.get(name);
+      const fieldMask = rootFieldMask.$get(name);
       if (!fieldMask) {
         return;
       }
@@ -138,7 +138,7 @@ export class Model extends Observable(Serializable(Registerable())) {
           then: isNotFilteredOut => {
             if (isNotFilteredOut) {
               return possiblyAsync(
-                field.deserializeValue(value, {
+                field.$deserializeValue(value, {
                   source,
                   fields: fieldMask,
                   filter,
@@ -147,7 +147,7 @@ export class Model extends Observable(Serializable(Registerable())) {
                 {
                   then: () => {
                     if (source === undefined) {
-                      field.setSource(sources[name]);
+                      field.$setSource(sources[name]);
                     }
                   }
                 }
@@ -157,8 +157,8 @@ export class Model extends Observable(Serializable(Registerable())) {
         });
       }
 
-      if (isNew && field.hasDefaultValue()) {
-        field.setValue(field.getDefaultValue());
+      if (isNew && field.$hasDefaultValue()) {
+        field.$setValue(field.$getDefaultValue());
       }
     });
   }
@@ -205,24 +205,24 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $fieldIsActive(name) {
-    return this.$getField(name).isActive();
+    return this.$getField(name).$isActive();
   }
 
   $activateField(name) {
-    this.$getField(name).activate();
+    this.$getField(name).$activate();
   }
 
   $deactivateField(name) {
-    this.$getField(name).deactivate();
+    this.$getField(name).$deactivate();
   }
 
   $getFieldValue(name, {throwIfInactive = true} = {}) {
-    return this.$getField(name).getValue({throwIfInactive});
+    return this.$getField(name).$getValue({throwIfInactive});
   }
 
   $getFields({fields = true, filter: otherFilter} = {}) {
-    if (FieldMask.isFieldMask(fields)) {
-      fields = fields.serialize();
+    if (isFieldMask(fields)) {
+      fields = fields.$serialize();
     }
 
     const filter = function (property) {
@@ -232,7 +232,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
       const field = property;
 
-      const name = field.getName();
+      const name = field.$getName();
       if (!(fields === true || fields[name])) {
         return false;
       }
@@ -254,7 +254,7 @@ export class Model extends Observable(Serializable(Registerable())) {
       * [Symbol.iterator]() {
         // eslint-disable-next-line guard-for-in
         for (const field of fields) {
-          yield field.getName();
+          yield field.$getName();
         }
       }
     };
@@ -268,10 +268,10 @@ export class Model extends Observable(Serializable(Registerable())) {
     return {
       * [Symbol.iterator]() {
         for (const field of model.$getActiveFields({fields: rootFieldMask, filter})) {
-          const name = field.getName();
-          const fieldMask = rootFieldMask.get(name);
+          const name = field.$getName();
+          const fieldMask = rootFieldMask.$get(name);
 
-          for (const value of field.getValues()) {
+          for (const value of field.$getValues()) {
             yield {value, fields: fieldMask};
           }
         }
@@ -281,7 +281,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   $getUniqueFields({fields = true, filter: otherFilter} = {}) {
     const filter = function (field) {
-      if (!field.isUnique()) {
+      if (!field.$isUnique()) {
         return false;
       }
       if (otherFilter) {
@@ -295,7 +295,7 @@ export class Model extends Observable(Serializable(Registerable())) {
 
   $getActiveFields({fields = true, filter: otherFilter} = {}) {
     const filter = function (field) {
-      if (!field.isActive()) {
+      if (!field.$isActive()) {
         return false;
       }
       if (otherFilter) {
@@ -317,8 +317,8 @@ export class Model extends Observable(Serializable(Registerable())) {
   $createFieldMask({fields = true, filter, includeReferencedEntities = false} = {}) {
     // TODO: Consider memoizing
 
-    if (FieldMask.isFieldMask(fields)) {
-      fields = fields.serialize();
+    if (isFieldMask(fields)) {
+      fields = fields.$serialize();
     }
 
     fields = this.__createFieldMask(fields, {
@@ -336,12 +336,12 @@ export class Model extends Observable(Serializable(Registerable())) {
     const normalizedFieldMask = {};
 
     for (const field of this.$getFields({filter})) {
-      const type = field.getScalar().getType();
+      const type = field.$getScalar().$getType();
       if (_typeStack.has(type)) {
         continue; // Avoid looping indefinitely when a circular type is encountered
       }
 
-      const name = field.getName();
+      const name = field.$getName();
 
       const fieldMask = typeof rootFieldMask === 'object' ? rootFieldMask[name] : rootFieldMask;
       if (!fieldMask) {
@@ -364,7 +364,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.$createFieldMask({
       fields,
       filter(field) {
-        return field.isActive();
+        return field.$isActive();
       }
     });
   }
@@ -373,7 +373,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.$createFieldMask({
       fields,
       filter(field) {
-        return field.getSource() === source;
+        return field.$getSource() === source;
       }
     });
   }
@@ -382,7 +382,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     return this.$createFieldMask({
       fields,
       filter(field) {
-        return field.isExposed();
+        return field.$isExposed();
       }
     });
   }
@@ -412,14 +412,14 @@ export class Model extends Observable(Serializable(Registerable())) {
     let result;
 
     for (const field of this.$getActiveFields()) {
-      const name = field.getName();
+      const name = field.$getName();
 
-      const fieldMask = rootFieldMask.get(name);
+      const fieldMask = rootFieldMask.$get(name);
       if (!fieldMask) {
         continue;
       }
 
-      const failedValidators = field.getFailedValidators({fields: fieldMask});
+      const failedValidators = field.$getFailedValidators({fields: fieldMask});
       if (!isEmpty(failedValidators)) {
         if (!result) {
           result = {};
@@ -489,7 +489,7 @@ export class Model extends Observable(Serializable(Registerable())) {
       * [Symbol.iterator]() {
         // eslint-disable-next-line guard-for-in
         for (const method of methods) {
-          yield method.getName();
+          yield method.$getName();
         }
       }
     };
@@ -550,8 +550,8 @@ export class Model extends Observable(Serializable(Registerable())) {
   [inspect.custom]() {
     const object = {};
     for (const field of this.$getActiveFields()) {
-      const name = field.getName();
-      const value = field.getValue();
+      const name = field.$getName();
+      const value = field.$getValue();
       if (value !== undefined) {
         object[name] = value;
       }
@@ -596,11 +596,11 @@ export function field(type, options = {}) {
       enumerable: false,
       get() {
         const field = this.$getField(name);
-        return field.getValue();
+        return field.$getValue();
       },
       set(value) {
         const field = this.$getField(name);
-        return field.setValue(value);
+        return field.$setValue(value);
       }
     };
   };

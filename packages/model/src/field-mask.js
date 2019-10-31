@@ -11,15 +11,15 @@ export class FieldMask {
     this._fields = fields;
   }
 
-  serialize() {
+  $serialize() {
     return cloneDeep(this._fields);
   }
 
   toJSON() {
-    return this.serialize();
+    return this.$serialize();
   }
 
-  get(name) {
+  $get(name) {
     if (typeof name !== 'string' || name === '') {
       throw new Error(`The 'name' paramter must be a non empty string`);
     }
@@ -37,7 +37,7 @@ export class FieldMask {
     return new FieldMask(subfields);
   }
 
-  has(name) {
+  $has(name) {
     if (typeof name !== 'string' || name === '') {
       throw new Error(`The 'name' parameter must be a non empty string`);
     }
@@ -45,7 +45,7 @@ export class FieldMask {
     return this._fields[name] !== undefined;
   }
 
-  set(name, subfields) {
+  $set(name, subfields) {
     if (typeof name !== 'string' || name === '') {
       throw new Error(`The 'name' paramter must be a non empty string`);
     }
@@ -59,14 +59,14 @@ export class FieldMask {
       throw new Error(`Expected a FieldMask (received: ${typeof subfields})`);
     }
 
-    this._fields[name] = subfields.serialize();
+    this._fields[name] = subfields.$serialize();
   }
 
-  isEmpty() {
+  $isEmpty() {
     return isEmpty(this._fields);
   }
 
-  includes(fields) {
+  $includes(fields) {
     if (!isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
     }
@@ -87,7 +87,7 @@ export class FieldMask {
     return _includes(this._fields, fields._fields);
   }
 
-  static isEqual(fields, otherFields) {
+  static $isEqual(fields, otherFields) {
     if (!isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
     }
@@ -99,7 +99,7 @@ export class FieldMask {
     return isEqual(fields._fields, otherFields._fields);
   }
 
-  static add(fields, otherFields) {
+  static $add(fields, otherFields) {
     if (!isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
     }
@@ -138,7 +138,7 @@ export class FieldMask {
     return new FieldMask(_merge(fields._fields, otherFields._fields));
   }
 
-  static remove(fields, otherFields) {
+  static $remove(fields, otherFields) {
     if (!isFieldMask(fields)) {
       throw new Error(`Expected a FieldMask (received: ${typeof fields})`);
     }
@@ -169,11 +169,11 @@ export class FieldMask {
     return new FieldMask(_remove(fields._fields, otherFields._fields));
   }
 
-  static isFieldMask(object) {
+  static $isFieldMask(object) {
     return isFieldMask(object);
   }
 }
 
 export function isFieldMask(object) {
-  return typeof object?.constructor?.isFieldMask === 'function';
+  return typeof object?.constructor?.$isFieldMask === 'function';
 }
