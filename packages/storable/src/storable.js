@@ -524,6 +524,22 @@ function makeStorable(Base) {
       return storables;
     }
 
+    static async $count({filter} = {}) {
+      let count;
+
+      filter = await this._resolveFilter(filter);
+
+      if (this.$hasStore()) {
+        // OPTIMIZE: Implement _countInStore()
+        const storables = await this.__findInStore({filter, fields: {}});
+        count = storables.length;
+      } else {
+        count = await super.$count({filter});
+      }
+
+      return count;
+    }
+
     static async _resolveFilter(filter) {
       if (filter === undefined) {
         return undefined;

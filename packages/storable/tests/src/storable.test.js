@@ -321,8 +321,6 @@ describe('Storable', () => {
     const rootLayer = new Layer({Movie, mongoDBStore}, {name: 'layer'});
     await rootLayer.open();
 
-    // Create
-
     let layer = rootLayer.fork();
     const movie1 = new layer.Movie({
       id: 'movie1',
@@ -399,6 +397,37 @@ describe('Storable', () => {
 
     layer = rootLayer.fork();
     movies = await layer.Movie.$find({fields: false});
+    await layer.Movie.$deleteMany(movies);
+  });
+
+  test('Counting storables', async () => {
+    class Movie extends Storable(Entity, {storeName: 'mongoDBStore'}) {
+      @field('string') title;
+    }
+
+    const rootLayer = new Layer({Movie, mongoDBStore}, {name: 'layer'});
+    await rootLayer.open();
+
+    let layer = rootLayer.fork();
+    for (const title of ['Inception', 'Forrest Gump', 'Léon']) {
+      const movie = new layer.Movie({title});
+      await movie.$save();
+    }
+
+    layer = rootLayer.fork();
+    let count = await layer.Movie.$count();
+    expect(count).toBe(3);
+
+    layer = rootLayer.fork();
+    count = await layer.Movie.$count({filter: {title: 'Léon'}});
+    expect(count).toBe(1);
+
+    layer = rootLayer.fork();
+    count = await layer.Movie.$count({filter: {title: 'The Matrix'}});
+    expect(count).toBe(0);
+
+    layer = rootLayer.fork();
+    const movies = await layer.Movie.$find({fields: false});
     await layer.Movie.$deleteMany(movies);
   });
 
