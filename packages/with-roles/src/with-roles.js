@@ -2,7 +2,7 @@ import {possiblyAsync} from 'possibly-async';
 import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
 
-import {RoleDefinition} from './role-definition';
+import {Role} from './role';
 
 export const WithRoles = Base =>
   class WithRoles extends Base {
@@ -17,7 +17,7 @@ export const WithRoles = Base =>
 
       const roles = setting;
 
-      return possiblyAsync.some(roles, role => this.$hasRole(role));
+      return possiblyAsync.some(roles, role => this.$resolveRole(role));
     }
 
     static $normalizePropertyOperationSetting(setting) {
@@ -65,63 +65,62 @@ export const WithRoles = Base =>
 
     // === Static methods ===
 
-    static $hasRole(name) {
-      return this.$getRoleDefinition(name).$resolve();
-    }
+    static $getRole(name, {throwIfNotFound = true} = {}) {
+      const roles = this.__getRoles();
 
-    static $getRoleDefinition(name, {throwIfNotFound = true} = {}) {
-      const roleDefinitions = this.__getRoleDefinitions();
+      let role = roles[name];
 
-      let roleDefinition = roleDefinitions[name];
-
-      if (!roleDefinition) {
+      if (!role) {
         if (throwIfNotFound) {
-          console.log(roleDefinitions);
-          throw new Error(`Role definition not found (name: '${name}')`);
+          throw new Error(`Role not found (name: '${name}')`);
         }
         return undefined;
       }
 
-      if (!hasOwnProperty(roleDefinitions, name)) {
-        roleDefinition = roleDefinition.$fork(this);
-        roleDefinitions[name] = roleDefinition;
+      if (!hasOwnProperty(roles, name)) {
+        role = role.$fork(this);
+        roles[name] = role;
       }
 
-      return roleDefinition;
+      return role;
     }
 
-    static $setRoleDefinition(name, resolver, options = {}) {
+    static $setRole(name, resolver, options = {}) {
       ow(name, ow.string.nonEmpty);
       ow(resolver, ow.function);
       ow(options, ow.object);
 
-      const roleDefinitions = this.__getRoleDefinitions();
-      const roleDefinition = new RoleDefinition(this, name, resolver, options);
-      roleDefinitions[name] = roleDefinition;
+      const roles = this.__getRoles();
+      const role = new Role(this, name, resolver, options);
+      roles[name] = role;
 
-      return roleDefinition;
+      return role;
     }
 
-    static $getRoleDefinitions() {
+    static $resolveRole(name) {
+      return this.$getRole(name).$resolve();
+    }
+
+    static $getRoles() {
       const withRoles = this;
       return {
         * [Symbol.iterator]() {
           // eslint-disable-next-line guard-for-in
-          for (const name in withRoles.__getRoleDefinitions()) {
-            yield withRoles.$getRoleDefinition(name);
+          for (const name in withRoles.__getRoles()) {
+            yield withRoles.$getRole(name);
           }
         }
       };
     }
 
-    static __getRoleDefinitions() {
-      if (!this.__roleDefinitions) {
-        this.__roleDefinitions = Object.create(null);
-      } else if (!hasOwnProperty(this, '__roleDefinitions')) {
-        this.__roleDefinitions = Object.create(this.__roleDefinitions);
+    static __getRoles() {
+      if (!this.__roles) {
+        this.__roles = Object.create(null);
+      } else if (!hasOwnProperty(this, '__roles')) {
+        this.__roles = Object.create(this.__roles);
       }
 
-      return this.__roleDefinitions;
+      return this.__roles;
     }
 
     static $isWithRoles(object) {
@@ -130,31 +129,31 @@ export const WithRoles = Base =>
 
     // === Instance methods ===
 
-    $hasRole(name) {
-      const roleDefinition = this.$getRoleDefinition(name, {throwIfNotFound: false});
+    $getRole(name, {throwIfNotFound = true} = {}) {
+      return this.constructor.$getRole.call(this, name, {throwIfNotFound});
+    }
 
-      if (roleDefinition) {
-        return roleDefinition.$resolve();
+    $setRole(name, resolver, options = {}) {
+      return this.constructor.$setRole.call(this, name, resolver, options);
+    }
+
+    $resolveRole(name) {
+      const role = this.$getRole(name, {throwIfNotFound: false});
+
+      if (role) {
+        return role.$resolve();
       }
 
-      // Fallback to the class if the role definition was not found in the instance
-      return this.constructor.$hasRole(name);
+      // Fallback to the class if the role was not found in the instance
+      return this.constructor.$resolveRole(name);
     }
 
-    $getRoleDefinition(name, {throwIfNotFound = true} = {}) {
-      return this.constructor.$getRoleDefinition.call(this, name, {throwIfNotFound});
+    $getRoles() {
+      return this.constructor.$getRoles.call(this);
     }
 
-    $setRoleDefinition(name, resolver, options = {}) {
-      return this.constructor.$setRoleDefinition.call(this, name, resolver, options);
-    }
-
-    $getRoleDefinitions() {
-      return this.constructor.$getRoleDefinitions.call(this);
-    }
-
-    __getRoleDefinitions() {
-      return this.constructor.__getRoleDefinitions.call(this);
+    __getRoles() {
+      return this.constructor.__getRoles.call(this);
     }
   };
 
@@ -166,14 +165,14 @@ export function isWithRoles(object) {
 
 // === Decorators ===
 
-export function role({name: actualName, ...otherOptions} = {}) {
-  return function (target, name, descriptor) {
+export function role(name, options = {}) {
+  return function (target, resolverName, descriptor) {
     if (!(isWithRoles(target) || isWithRoles(target.prototype))) {
       throw new Error(`@role() target must be a class using the WithRoles mixin`);
     }
 
-    if (!(name && descriptor)) {
-      throw new Error(`@role() must be used to decorate properties`);
+    if (!(resolverName && descriptor)) {
+      throw new Error(`@role() must be used to decorate methods`);
     }
 
     const resolver = descriptor.value;
@@ -182,7 +181,7 @@ export function role({name: actualName, ...otherOptions} = {}) {
       throw new Error(`@role() must be used to decorate methods`);
     }
 
-    target.$setRoleDefinition(actualName || name, resolver, otherOptions);
+    target.$setRole(name, resolver, options);
 
     return descriptor;
   };

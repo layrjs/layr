@@ -2,7 +2,7 @@ import {possiblyAsync} from 'possibly-async';
 import {inspect} from 'util';
 import ow from 'ow';
 
-export class RoleDefinition {
+export class Role {
   constructor(parent, name, resolver, options = {}) {
     ow(parent, ow.object);
     ow(name, ow.string.nonEmpty);
@@ -12,7 +12,7 @@ export class RoleDefinition {
 
     const unknownOption = Object.keys(unknownOptions)[0];
     if (unknownOption) {
-      throw new Error(`'${unknownOption}' option is unknown (role definition: '${name}')`);
+      throw new Error(`'${unknownOption}' option is unknown (role: '${name}')`);
     }
 
     this._parent = parent;
@@ -21,9 +21,9 @@ export class RoleDefinition {
   }
 
   $fork(parent) {
-    const forkedRoleDefinition = Object.create(this);
-    forkedRoleDefinition._parent = parent;
-    return forkedRoleDefinition;
+    const forkedRole = Object.create(this);
+    forkedRole._parent = parent;
+    return forkedRole;
   }
 
   $getParent() {
