@@ -12,13 +12,13 @@ Building a full web app is painful. We have to worry about the frontend, the bac
 
 Eventually, our well-architected application is composed of six layers: user interface, frontend model, API client, API server, backend model, and database. So every time we want to implement a new feature, we have to make changes in six different places. Conceptually, it is not complicated, but it is cumbersome.
 
-Liaison allows reducing the number of layers from six to three. First, we get rid of the API layers, and then we unify the frontend and backend models into what we call an "isomorphic model":
+Liaison allows reducing the number of layers from six to three. First, we get rid of the API layers, and then we unify the frontend and backend models into what we call a "cross-layer model":
 
 <p align="center">
-	<img src="assets/traditional-vs-isomorphic.svg" width="600" alt="Traditional vs isomorphic architectures">
+	<img src="assets/traditional-vs-liaison-architecture.svg" width="600" alt="Traditional vs liaison architecture">
 </p>
 
-Don't be intimidated by the term "isomorphic model", it is simple. It means that a model can live in different contexts (i.e., the frontend and the backend). And by adding some polymorphism (i.e., class inheritance), the model can change its shape and behave differently depending on the context it lives in. So, in fact, we will have two distinct models, one in the frontend and one in the backend, but they are two variations of the same thing.
+Don't be intimidated by the term "cross-layer model", it is simple. It means that a model can live in different contexts (i.e., the frontend and the backend), and by using polymorphism, it can change its shape and behavior depending on the context it lives in. So, in fact, we will have two distinct models, one in the frontend and one in the backend, but they are two variations of the same entity.
 
 To better understand, let's build a simple "counter" app involving a frontend and a backend.
 
@@ -40,13 +40,13 @@ Then, let's build the backend:
 `backend.js`:
 
 ```js
-import {Layer, expose} from '@liaison/liaison';
+import {Layer, field} from '@liaison/liaison';
 import {LayerHTTPServer} from '@liaison/layer-http-server';
 
 import {Counter as BaseCounter} from './shared';
 
 class Counter extends BaseCounter {
-  // The counter's value can be exposed to the frontend
+  // The counter's value is exposed to the frontend
   @field({expose: {get: true, set: true}}) value;
 
   // The backend implements and exposes the "business logic"
@@ -81,7 +81,7 @@ class Counter extends BaseCounter {
 const client = new LayerHTTPClient('http://localhost:3333');
 const backendLayer = await client.$getLayer();
 
-// We register the frontend class into a layer and we set the backend layer as parent
+// We register the frontend class into a layer which is a child of the backend
 const layer = new Layer({Counter}, {parent: backendLayer});
 await layer.$open();
 
@@ -91,19 +91,19 @@ await counter.increment();
 console.log(counter.value); // => 1
 ```
 
-This is it. By invoking `counter.increment()`, we get the counter's value incremented. Notice that the `increment()` method is not implemented in the frontend class or the shared class. It only exists in the backend class. So, how is it possible that we could call it from the frontend? It is because the frontend class is registered in a layer that has the backend as a parent. When a method is missing in the frontend, and a method with the same name is exposed in the backend, it is automatically invoked.
+This is it. By invoking `counter.increment()`, we get the counter's value incremented. Notice that the `increment()` method is not implemented in the frontend class or the shared class. It only exists in the backend class. So, how is it possible that we could call it from the frontend? This is because the frontend class is registered in a layer which is a child of the backend. When a method is missing in the frontend, and a method with the same name is exposed in the backend, it is automatically invoked.
 
-We have cross-layers class inheritance:
+Basically, we have some kind of cross-layer class inheritance:
 
 <p align="center">
-	<img src="assets/cross-layers-class-inheritance-example.svg" width="250" alt="Example of cross-layers class inheritance">
+	<img src="assets/cross-layer-class-inheritance.svg" width="250" alt="Cross-layer class inheritance">
 </p>
 
-From the frontend point of view, the operation is transparent. It doesn't need to know that some methods are invoked remotely. It just works. The current state of an instance (i.e., `counter`'s attributes) is automatically transported back and forth. When a method is executed in the backend, it has access to all attributes of the frontend's instance. And inversely, when some attributes change in the backend, they are reflected in the frontend.
+From the frontend point of view, the operation is transparent. It doesn't need to know that some methods are invoked remotely. It just works. The current state of an instance (i.e., `counter`'s attributes) is automatically transported back and forth. When a method is executed in the backend, it receives the attributes of the frontend's instance. And inversely, when some attributes change in the backend, they are reflected in the frontend.
 
-How about returning values from a remotely invoked method? It is possible to `return` anything that is serializable, including instances of the current class or any other class. As long as a class is registered with the same name in both the frontend and the backend, instances are automatically transported.
+How about returning values from a remotely invoked method? It is possible to `return` anything that is serializable, including instances of the current class or any other class. As long as a class is registered with the same name in both the frontend and the backend, instances can be automatically transported.
 
-How about overriding a method across the frontend and the backend? It's no different than with regular JavaScript; we use `super`. For example, we could override the `increment()` method to run additional code in the context of the frontend:
+How about overriding a method across the frontend and the backend? It's no different than with regular JavaScript; we use `super`. For example, we may override the `increment()` method to run additional code in the context of the frontend:
 
 `frontend.js`:
 
@@ -116,11 +116,11 @@ class Counter extends BaseCounter {
 }
 ```
 
-To put it simply, it is as if there is no physical separation between frontend and backend. When a local class inherits from a remote class through a parent layer, methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are automatically transported.
+To put it simply, it is like there is no physical separation between frontend and backend. When a local class inherits from a remote class through a parent layer, methods are executed locally or remotely depending on where they are implemented, and all instance's attributes are automatically transported.
 
 Building a frontend/backend application becomes as easy as building a standalone application.
 
-This is Liaison.
+In a nutshell, this is Liaison.
 
 ## Guide
 
