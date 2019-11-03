@@ -1,10 +1,10 @@
 <p align="center">
-	<img src="assets/liaison-logo.svg" width="200" alt="Liaison">
+	<img src="assets/liaison-logo-v2.svg" width="200" alt="Liaison">
 	<br>
 	<br>
 </p>
 
-> A new approach for developing full-stack JavaScript applications.
+> A love story between the frontend and the backend.
 
 ## Introduction
 
