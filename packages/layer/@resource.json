@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/layer",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "The root of your backend, frontend, UI, or whatever layer you build",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

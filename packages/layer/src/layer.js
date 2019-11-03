@@ -324,7 +324,7 @@ export class Layer {
     const items = {};
 
     if (filter === '$isExposed') {
-      filter = item => item.$isExposed();
+      filter = item => item.$isExposed() || item.prototype?.$isExposed();
     }
 
     for (const item of this.$getItems({filter})) {
