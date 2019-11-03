@@ -39,6 +39,12 @@
   "withRoles": {
     "@include": "./packages/with-roles"
   },
+  "counterExample": {
+    "@include": "./examples/counter"
+  },
+  "counterViaHTTPExample": {
+    "@include": "./examples/counter-via-http"
+  },
   "hostedLayer": {
     "@include": "./resources/hosted-layer"
   },
@@ -68,6 +74,8 @@
       "(@import shell/bash) run \"npm-link ./packages/storable\"",
       "(@import shell/bash) run \"npm-link ./packages/storable/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/with-roles\"",
+      "(@import shell/bash) run \"npm-link ./examples/counter\"",
+      "(@import shell/bash) run \"npm-link ./examples/counter-via-http\"",
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer\"",
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer/example\"",
       "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer\"",
