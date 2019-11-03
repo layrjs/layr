@@ -40,8 +40,7 @@ Then, let's build the backend:
 `backend.js`:
 
 ```js
-import {Layer, field} from '@liaison/liaison';
-import {LayerHTTPServer} from '@liaison/layer-http-server';
+import {Layer, field, method} from '@liaison/liaison';
 
 import {Counter as BaseCounter} from './shared';
 
@@ -49,18 +48,14 @@ class Counter extends BaseCounter {
   // The counter's value is exposed to the frontend
   @field({expose: {get: true, set: true}}) value;
 
-  // The backend implements and exposes the "business logic"
+  // And the "business logic" is exposed as well
   @method({expose: {call: true}}) increment() {
     this.value++;
   }
 }
 
 // We register the backend class into a layer
-const layer = new Layer({Counter});
-
-// And we serve the layer through HTTP
-const server = new LayerHTTPServer(layer, {port: 3333});
-await server.$start();
+export const backendLayer = new Layer({Counter});
 ```
 
 Finally, let's build the frontend:
@@ -69,24 +64,19 @@ Finally, let's build the frontend:
 
 ```js
 import {Layer} from '@liaison/liaison';
-import {LayerHTTPClient} from '@liaison/layer-http-client';
 
 import {Counter as BaseCounter} from './shared';
+import {backendLayer} from './backend';
 
 class Counter extends BaseCounter {
   // For now, the frontend class is nothing more than the base class
 }
 
-// We connect to the backend layer
-const client = new LayerHTTPClient('http://localhost:3333');
-const backendLayer = await client.$getLayer();
-
 // We register the frontend class into a layer which is a child of the backend
-const layer = new Layer({Counter}, {parent: backendLayer});
-await layer.$open();
+const frontendLayer = new Layer({Counter}, {parent: backendLayer});
 
 // Lastly, we consume it
-const counter = new layer.Counter();
+const counter = new frontendLayer.Counter();
 await counter.increment();
 console.log(counter.value); // => 1
 ```
@@ -102,6 +92,8 @@ Basically, we have some kind of cross-layer class inheritance:
 From the frontend point of view, the operation is transparent. It doesn't need to know that some methods are invoked remotely. It just works. The current state of an instance (i.e., `counter`'s attributes) is automatically transported back and forth. When a method is executed in the backend, it receives the attributes of the frontend's instance. And inversely, when some attributes change in the backend, they are reflected in the frontend.
 
 How about returning values from a remotely invoked method? It is possible to `return` anything that is serializable, including instances of the current class or any other class. As long as a class is registered with the same name in both the frontend and the backend, instances can be automatically transported.
+
+> Note that in this simple example, the backend is not exactly remote. Both the frontend and the backend run in the same JavaScript runtime. To make the backend actually remote, we can expose the backend layer through HTTP. See an [example here](examples/counter-via-http).
 
 How about overriding a method across the frontend and the backend? It's no different than with regular JavaScript; we use `super`. For example, we may override the `increment()` method to run additional code in the context of the frontend:
 
