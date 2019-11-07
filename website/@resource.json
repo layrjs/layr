@@ -1,0 +1,11 @@
+{
+  "@import": "aws/s3-hosted-website#^0.1.0",
+  "contentDirectory": "./content",
+  "customErrors": [
+    {
+      "errorCode": 404,
+      "responseCode": 200,
+      "responsePage": "index.html"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "@load": "./@resource.json",
+  "domainName": "liaison.dev",
+  "aws": {
+    "region": "us-west-2"
+  }
+}
