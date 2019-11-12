@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="assets/liaison-logo.svg" width="200" alt="Liaison">
+	<img src="assets/liaison-logo-with-icon.svg" width="200" alt="Liaison">
 	<br>
 	<br>
 </p>

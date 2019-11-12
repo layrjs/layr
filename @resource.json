@@ -51,6 +51,9 @@
   "lambdaHostedLayer": {
     "@include": "./resources/lambda-hosted-layer"
   },
+  "website": {
+    "@include": "./website"
+  },
   "link": {
     "@type": "method",
     "@run": [
@@ -79,7 +82,8 @@
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer\"",
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer/example\"",
       "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer\"",
-      "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer/examples/1\""
+      "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer/examples/1\"",
+      "(@import shell/bash) run \"npm-link ./website\""
     ]
   }
 }

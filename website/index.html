@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-54535670-6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-54535670-6');
+    </script>
+    <meta charset="utf-8" />
+    <title>Liaison – A love story between the frontend and the backend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      href="/assets/liaison-favicon-20191111.immutable.png"
+    />
+  </head>
+  <body>
+    <noscript><p>Sorry, this site requires JavaScript to be enabled.</p></noscript>
+    <div id="root"></div>
+    <script
+      crossorigin
+      src="https://cdn.jsdelivr.net/npm/@babel/polyfill@7.4.4/dist/polyfill.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://cdn.jsdelivr.net/npm/url-polyfill@1.1.7/url-polyfill.min.js"
+    ></script>
+    <script crossorigin src="${REACT_URL}"></script>
+    <script crossorigin src="${REACT_DOM_URL}"></script>
+    <script src="/bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "@load": "./@resource.json",
+  "contentDirectory": "./builds/dev",
+  "testServer": {
+    "port": 18887
+  },
+  "start": {
+    "@type": "method",
+    "@run": ["@build", "testServer start --notify"]
+  },
+  "bundler": {
+    "output": "./dist/dev/bundle.js",
+    "generateInlineSourceMaps": true
+  },
+  "copier": {
+    "destinationDirectory": "./builds/dev",
+    "clearDestination": true,
+    "files": [
+      {
+        "source": "./index.html",
+        "replacements": {
+          "${REACT_URL}": "https://cdn.jsdelivr.net/npm/react@16.11.0/umd/react.development.js",
+          "${REACT_DOM_URL}": "https://cdn.jsdelivr.net/npm/react-dom@16.11.0/umd/react-dom.development.js"
+        }
+      },
+      {
+        "source": "./dist/dev/bundle.js",
+        "destination": "./bundle.js"
+      },
+      "./assets"
+    ]
+  },
+  "freezer": {
+    "sourceDirectory": "./builds/dev"
+  }
+}

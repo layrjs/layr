@@ -1,0 +1,13 @@
+{
+  "apps": [
+    {
+      "name": "liaison/website",
+      "cwd": "./website",
+      "script": ".",
+      "args": "start --@dev",
+      "interpreter": "run",
+      "watch": ["@resource.json", "@resource.dev.json", "index.html", "src", "assets"],
+      "restart_delay": 15000
+    }
+  ]
+}
