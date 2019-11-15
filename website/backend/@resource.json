@@ -1,0 +1,16 @@
+{
+  "@import": [
+    "1place/js-resource#^0.2.0",
+    "liaison/lambda-hosted-layer#^0.1.0"
+  ],
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^8.5.1",
+    "@liaison/liaison": "^0.1.0",
+    "@liaison/mongodb-store": "^0.1.0",
+    "@liaison/liaison-website-shared": "^0.1.0",
+    "ow": "^0.13.2",
+    "slugify": "^1.3.5"
+  },
+  "main": "./dist/dev"
+}

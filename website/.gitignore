@@ -1,2 +1,3 @@
-/builds
-/dist
+builds
+dist
+*.private.*

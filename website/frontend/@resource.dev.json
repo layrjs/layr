@@ -25,7 +25,10 @@
       },
       {
         "source": "./dist/dev/bundle.js",
-        "destination": "./bundle.js"
+        "destination": "./bundle.js",
+        "replacements": {
+          "${BACKEND_URL}": "http://localhost:18888"
+        }
       },
       "./assets"
     ]

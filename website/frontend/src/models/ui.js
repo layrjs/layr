@@ -32,7 +32,7 @@ export class UI extends Registerable() {
         textOnTertiaryColor: this.colors.black,
         fontSize: '16px',
         lineHeight: 1.5,
-        borderColor: this.colors.blueGrey400,
+        borderColor: this.colors.blueGrey500,
         borderWidth: '1px',
         borderRadius: '.25rem',
         highlighted: {
@@ -112,6 +112,36 @@ export class UI extends Registerable() {
         color: theme.textColor,
         backgroundColor: theme.backgroundColor
       },
+      p: {
+        marginTop: '1rem',
+        marginBottom: '1rem'
+      },
+      'h1, h2, h3, h4, h5, h6': {
+        marginTop: '1.25rem',
+        marginBottom: '1.25rem',
+        fontWeight: '500',
+        lineHeight: theme.small.lineHeight,
+        color: theme.highlighted.textColor
+      },
+      h1: {fontSize: '2.488rem'},
+      h2: {fontSize: '2.074rem'},
+      h3: {fontSize: '1.728rem'},
+      h4: {fontSize: '1.44rem'},
+      h5: {fontSize: '1.2rem'},
+      h6: {fontSize: '1rem'},
+      hr: {
+        marginTop: '1.5rem',
+        marginBottom: '1.5rem',
+        border: 0,
+        borderTop: `${theme.borderWidth} solid ${theme.borderColor}`
+      },
+      'ol, ul, dl': {
+        marginTop: 0,
+        marginBottom: '1rem'
+      },
+      'ol ol, ul ul, ol ul, ul ol': {
+        marginBottom: 0
+      },
       a: {
         color: theme.link.primaryColor,
         textDecoration: theme.link.decoration
@@ -125,6 +155,61 @@ export class UI extends Registerable() {
       },
       small: {
         fontSize: theme.small.fontSize
+      },
+      'code, pre': {
+        fontFamily: "Menlo, Consolas, 'Liberation Mono', monospace"
+      },
+      pre: {
+        display: 'table',
+        tableLayout: 'fixed',
+        width: '100%',
+        marginTop: '1rem',
+        marginBottom: '1rem',
+        padding: '.25rem .5rem',
+        fontSize: '.85rem',
+        color: theme.highlighted.textColor,
+        backgroundColor: theme.highlighted.backgroundColor
+      },
+      code: {
+        padding: '.15rem .15rem',
+        fontSize: '.85rem',
+        color: theme.highlighted.textColor,
+        backgroundColor: theme.highlighted.backgroundColor
+      },
+      'pre code': {
+        display: 'table-cell !important',
+        overflowX: 'auto',
+        padding: 0,
+        fontSize: 'inherit',
+        color: 'inherit',
+        backgroundColor: 'transparent',
+        borderRadius: 0
+      },
+      table: {
+        display: 'block',
+        width: '100%',
+        overflow: 'auto',
+        marginTop: '1.5rem',
+        marginBottom: '1.5rem',
+        borderSpacing: 0,
+        borderCollapse: 'collapse',
+        borderColor: theme.borderColor
+      },
+      'table tr': {
+        borderTop: `${theme.borderWidth} solid ${theme.borderColor}`
+      },
+      'table th, table td': {
+        padding: '.3rem .6rem',
+        border: `${theme.borderWidth} solid ${theme.borderColor}`
+      },
+      'table th': {
+        fontWeight: '500'
+      },
+      blockquote: {
+        margin: '1.5rem 0',
+        paddingLeft: '1rem',
+        color: theme.muted.textColor,
+        borderLeft: `3px solid ${theme.borderColor}`
       }
     }
   ];

@@ -82,8 +82,7 @@
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer\"",
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer/example\"",
       "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer\"",
-      "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer/examples/1\"",
-      "(@import shell/bash) run \"npm-link ./website\""
+      "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer/examples/1\""
     ]
   }
 }

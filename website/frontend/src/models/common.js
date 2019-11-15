@@ -1,12 +1,39 @@
 import {Registerable} from '@liaison/liaison';
-import {view} from '@liaison/react-integration';
+import {view, useDelay} from '@liaison/react-integration';
 import {jsx, css} from '@emotion/core';
+import {useMemo} from 'react';
+import useMetaTags from 'react-metatags-hook';
 
 /** @jsx jsx */
 
 export class Common extends Registerable() {
+  @view() Layout({title, width = '650px', children}) {
+    const {ui} = this.$layer;
+
+    this.useTitle(title);
+
+    return (
+      <div>
+        <ui.FullHeight css={{display: 'flex', flexDirection: 'column'}}>
+          <this.Header />
+          <div
+            css={{
+              flexGrow: 1,
+              display: 'flex',
+              padding: '1.5rem',
+              justifyContent: 'center'
+            }}
+          >
+            <div css={{flexBasis: width}}>{children}</div>
+          </div>
+          <this.Footer />
+        </ui.FullHeight>
+      </div>
+    );
+  }
+
   @view() Header() {
-    const {Home, ui} = this.$layer;
+    const {Home, Blog, ui} = this.$layer;
 
     const theme = ui.useTheme();
 
@@ -41,7 +68,7 @@ export class Common extends Registerable() {
             <a href="https://github.com/liaisonjs/liaison">Docs</a>
           </li>
           <li css={menuItemStyle}>
-            <a href="https://github.com/liaisonjs/liaison/issues">Support</a>
+            <Blog.Main.Link>Blog</Blog.Main.Link>
           </li>
         </ul>
       </header>
@@ -49,7 +76,7 @@ export class Common extends Registerable() {
   }
 
   @view() Footer() {
-    const {ui} = this.$layer;
+    const {Blog, ui} = this.$layer;
 
     const theme = ui.useTheme();
 
@@ -65,7 +92,7 @@ export class Common extends Registerable() {
               <a href="https://github.com/liaisonjs/liaison">Docs</a>
             </li>
             <li css={menuItemStyle}>
-              <a href="https://github.com/liaisonjs/liaison/issues">Support</a>
+              <Blog.Main.Link>Blog</Blog.Main.Link>
             </li>
             <li css={menuItemStyle}>
               <a href="mailto:hello@liaison.dev" target="_blank" rel="noopener noreferrer">
@@ -115,6 +142,58 @@ export class Common extends Registerable() {
     return <div>Sorry, there is nothing here.</div>;
   }
 
+  @view() LoadingSpinner() {
+    const style = useMemo(
+      () => ({
+        borderRadius: '50%',
+        width: '40px',
+        height: '40px',
+        margin: '90px auto',
+        position: 'relative',
+        borderTop: '3px solid rgba(0, 0, 0, 0.1)',
+        borderRight: '3px solid rgba(0, 0, 0, 0.1)',
+        borderBottom: '3px solid rgba(0, 0, 0, 0.1)',
+        borderLeft: '3px solid #818a91',
+        transform: 'translateZ(0)',
+        animation: 'loading-spinner 0.5s infinite linear'
+      }),
+      []
+    );
+
+    return (
+      <this.Delayed>
+        <div className="loading-spinner" style={style}>
+          <style>
+            {`
+          @keyframes loading-spinner {
+            0% {transform: rotate(0deg);}
+            100% {transform: rotate(360deg);}
+          }
+          `}
+          </style>
+        </div>
+      </this.Delayed>
+    );
+  }
+
+  @view() ErrorMessage({error, onRetry}) {
+    const message = error?.displayMessage || 'Sorry, something went wrong.';
+
+    return (
+      <div role="alert">
+        <div>{message}</div>
+        {onRetry && (
+          <>
+            <hr />
+            <div>
+              <button onClick={onRetry}>Retry</button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
   @view() Scroller({id}) {
     const {ui} = this.$layer;
 
@@ -140,5 +219,25 @@ export class Common extends Registerable() {
         </a>
       </div>
     );
+  }
+
+  @view() Delayed({duration = 400, children}) {
+    const [isElapsed] = useDelay(duration);
+
+    if (isElapsed) {
+      return children;
+    }
+
+    return null;
+  }
+
+  useTitle(title) {
+    if (title === undefined) {
+      title = 'Liaison';
+    } else {
+      title = 'Liaison – ' + title;
+    }
+
+    useMetaTags({title});
   }
 }

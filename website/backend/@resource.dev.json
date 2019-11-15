@@ -1,0 +1,19 @@
+{
+  "@load": "./@resource.json",
+  "environment": {
+    "MONGODB_STORE_CONNECTION_STRING": "mongodb://username:password@localhost:18889/admin",
+    "JWT_SECRET": "d4eb51971fed99c339cb8817682cbfaf962a4c95e36b5615ceedad86cc1c958a5c0a77b86ffdbf32ca571c95ec0c4f31b76d1019ec1327fc8d2997649aa19d4f"
+  },
+  "testServer": {
+    "port": 18888,
+    "delay": 300,
+    "errorRate": 0
+  },
+  "start": {
+    "@type": "method",
+    "@run": ["@build", "testServer start --notify"]
+  },
+  "transpiler": {
+    "destination": "./dist/dev"
+  }
+}

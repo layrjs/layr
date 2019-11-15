@@ -1,0 +1,60 @@
+{
+  "@import": [
+    "aws/s3-hosted-website#^0.1.0",
+    "js/resource#^0.1.0"
+  ],
+  "customErrors": [
+    {
+      "errorCode": 404,
+      "responseCode": 200,
+      "responsePage": "index.html"
+    }
+  ],
+  "dependencies": {
+    "date-fns": "^2.7.0",
+    "dompurify": "^2.0.0",
+    "@emotion/core": "^10.0.22",
+    "emotion-normalize": "^10.1.0",
+    "emotion-theming": "^10.0.19",
+    "facepaint": "^1.2.1",
+    "@liaison/layer-http-client": "^0.1.0",
+    "@liaison/liaison": "^0.1.0",
+    "@liaison/liaison-website-shared": "^0.1.0",
+    "@liaison/react-integration": "^0.1.0",
+    "marked": "^0.7.0",
+    "material-design-palette": "^0.0.4",
+    "@react-hook/window-size": "^1.0.8",
+    "react-metatags-hook": "^1.1.1"
+  },
+  "build": {
+    "@type": "method",
+    "@run": [
+      "bundler run",
+      "copier run",
+      "freezer run"
+    ],
+    "@listen": "@build"
+  },
+  "bundler": {
+    "@import": "js/bundler#^0.2.0",
+    "entry": "./src/index.js",
+    "targets": {
+      "chrome": "51",
+      "safari": "10",
+      "firefox": "54"
+    },
+    "transpile": true,
+    "format": "iife",
+    "globals": {
+      "react": "React",
+      "react-dom": "ReactDOM"
+    }
+  },
+  "copier": {
+    "@import": "tool/file-copier#^0.1.0",
+    "sourceDirectory": "./"
+  },
+  "freezer": {
+    "@import": "website/freezer#^0.1.0"
+  }
+}

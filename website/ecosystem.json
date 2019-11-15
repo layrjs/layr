@@ -1,0 +1,36 @@
+{
+  "apps": [
+    {
+      "name": "liaison-website/database",
+      "cwd": "./database",
+      "script": "start.sh",
+      "interpreter": "bash",
+      "restart_delay": 15000
+    },
+    {
+      "name": "liaison-website/backend",
+      "cwd": "./backend",
+      "script": ".",
+      "args": "start --@dev",
+      "interpreter": "run",
+      "watch": ["@resource.json", "@resource.dev.json", "src", "../shared/dist"],
+      "restart_delay": 15000
+    },
+    {
+      "name": "liaison-website/frontend",
+      "cwd": "./frontend",
+      "script": ".",
+      "args": "start --@dev",
+      "interpreter": "run",
+      "watch": [
+        "@resource.json",
+        "@resource.dev.json",
+        "index.html",
+        "src",
+        "assets",
+        "../shared/dist"
+      ],
+      "restart_delay": 15000
+    }
+  ]
+}

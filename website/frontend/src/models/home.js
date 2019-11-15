@@ -9,6 +9,8 @@ export class Home extends Routable(Registerable()) {
   @route('/') @view() static Main() {
     const {common, ui} = this.$layer;
 
+    common.useTitle('A love story between the frontend and the backend');
+
     return (
       <div>
         <ui.FullHeight

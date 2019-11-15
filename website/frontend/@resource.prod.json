@@ -23,7 +23,10 @@
       },
       {
         "source": "./dist/prod/bundle.js",
-        "destination": "./bundle.js"
+        "destination": "./bundle.js",
+        "replacements": {
+          "${BACKEND_URL}": "https://backend.liaison.dev"
+        }
       },
       "./assets"
     ]
