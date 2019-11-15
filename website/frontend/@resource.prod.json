@@ -17,6 +17,7 @@
       {
         "source": "./index.html",
         "replacements": {
+          "${BACKEND_URL}": "https://backend.liaison.dev",
           "${REACT_URL}": "https://cdn.jsdelivr.net/npm/react@16.11.0/umd/react.production.min.js",
           "${REACT_DOM_URL}": "https://cdn.jsdelivr.net/npm/react-dom@16.11.0/umd/react-dom.production.min.js"
         }

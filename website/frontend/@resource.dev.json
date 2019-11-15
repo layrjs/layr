@@ -19,6 +19,7 @@
       {
         "source": "./index.html",
         "replacements": {
+          "${BACKEND_URL}": "http://localhost:18888",
           "${REACT_URL}": "https://cdn.jsdelivr.net/npm/react@16.11.0/umd/react.development.js",
           "${REACT_DOM_URL}": "https://cdn.jsdelivr.net/npm/react-dom@16.11.0/umd/react-dom.development.js"
         }

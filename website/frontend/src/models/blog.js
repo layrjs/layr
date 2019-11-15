@@ -8,6 +8,21 @@ import {jsx} from '@emotion/core';
 export class Blog extends Routable(Model) {
   @field('Article[]') loadedArticles;
 
+  @view() static Layout({children}) {
+    const {common, ui} = this.$layer;
+
+    const theme = ui.useTheme();
+
+    return (
+      <common.Layout title="Blog">
+        <h2>
+          <this.Main.Link css={{color: theme.muted.textColor}}>Blog</this.Main.Link>
+        </h2>
+        {children}
+      </common.Layout>
+    );
+  }
+
   @route('/blog') @view() static Main() {
     const Blog = useMemo(() => new this(), []);
 
@@ -19,9 +34,7 @@ export class Blog extends Routable(Model) {
   }
 
   @view() Main() {
-    const {Article, common, ui} = this.$layer;
-
-    const theme = ui.useTheme();
+    const {Article, common} = this.$layer;
 
     const [isLoading, loadingError, retryLoading] = useAsyncCall(async () => {
       try {
@@ -57,8 +70,7 @@ export class Blog extends Routable(Model) {
     }
 
     return (
-      <common.Layout title="Blog">
-        <h2 css={{color: theme.muted.textColor}}>Blog</h2>
+      <this.constructor.Layout>
         {loadedArticles.map((article, index) => {
           return (
             <div key={article.slug}>
@@ -67,7 +79,7 @@ export class Blog extends Routable(Model) {
             </div>
           );
         })}
-      </common.Layout>
+      </this.constructor.Layout>
     );
   }
 }

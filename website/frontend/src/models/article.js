@@ -32,27 +32,20 @@ export class Article extends Routable(BaseArticle(WithAuthor(Entity))) {
   }
 
   @view() Main() {
-    const {Blog, common, ui} = this.$layer;
-
-    const theme = ui.useTheme();
+    const {Blog} = this.$layer;
 
     const bodyHTML = {__html: DOMPurify.sanitize(marked(this.body))};
 
     return (
-      <common.Layout title={this.title}>
-        <h2>
-          <Blog.Main.Link css={{color: theme.muted.textColor}}>Blog</Blog.Main.Link>
-        </h2>
+      <Blog.Layout>
         <h2>{this.title}</h2>
         <this.Meta css={{marginTop: '-.75rem', marginBottom: '1.5rem'}} />
         <div dangerouslySetInnerHTML={bodyHTML} />
-      </common.Layout>
+      </Blog.Layout>
     );
   }
 
   @view() Preview() {
-    const descriptionHTML = {__html: DOMPurify.sanitize(marked(this.description))};
-
     return (
       <>
         <div
@@ -62,7 +55,7 @@ export class Article extends Routable(BaseArticle(WithAuthor(Entity))) {
           css={{cursor: 'pointer'}}
         >
           <h4>{this.title}</h4>
-          <div dangerouslySetInnerHTML={descriptionHTML} />
+          <div>{this.description}</div>
         </div>
         <this.Meta />
       </>
