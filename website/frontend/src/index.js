@@ -4,6 +4,10 @@ import ReactDOM from 'react-dom';
 import {createLayer} from './layer';
 
 (async () => {
+  if (!window.IS_SUPPORTED_BROWSER) {
+    return;
+  }
+
   let content;
 
   try {
