@@ -6,6 +6,14 @@ import normalize from 'emotion-normalize';
 import facepaint from 'facepaint';
 import MaterialDesignPalette from 'material-design-palette';
 import {useWindowHeight} from '@react-hook/window-size';
+import marked from 'marked';
+import highlightJS from 'highlight.js/lib/highlight';
+import javascript from 'highlight.js/lib/languages/javascript';
+import json from 'highlight.js/lib/languages/json';
+import DOMPurify from 'dompurify';
+
+highlightJS.registerLanguage('javascript', javascript);
+highlightJS.registerLanguage('json', json);
 
 /** @jsx jsx */
 
@@ -156,6 +164,32 @@ export class UI extends Registerable() {
       small: {
         fontSize: theme.small.fontSize
       },
+      table: {
+        display: 'block',
+        width: '100%',
+        overflow: 'auto',
+        marginTop: '1.5rem',
+        marginBottom: '1.5rem',
+        borderSpacing: 0,
+        borderCollapse: 'collapse',
+        borderColor: theme.borderColor
+      },
+      'table tr': {
+        borderTop: `${theme.borderWidth} solid ${theme.borderColor}`
+      },
+      'table th, table td': {
+        padding: '.3rem .6rem',
+        border: `${theme.borderWidth} solid ${theme.borderColor}`
+      },
+      'table th': {
+        fontWeight: '500'
+      },
+      blockquote: {
+        margin: '1.5rem 0',
+        paddingLeft: '1rem',
+        color: theme.muted.textColor,
+        borderLeft: `3px solid ${theme.borderColor}`
+      },
       'code, pre': {
         fontFamily: "Menlo, Consolas, 'Liberation Mono', monospace"
       },
@@ -185,31 +219,45 @@ export class UI extends Registerable() {
         backgroundColor: 'transparent',
         borderRadius: 0
       },
-      table: {
-        display: 'block',
-        width: '100%',
-        overflow: 'auto',
-        marginTop: '1.5rem',
-        marginBottom: '1.5rem',
-        borderSpacing: 0,
-        borderCollapse: 'collapse',
-        borderColor: theme.borderColor
-      },
-      'table tr': {
-        borderTop: `${theme.borderWidth} solid ${theme.borderColor}`
-      },
-      'table th, table td': {
-        padding: '.3rem .6rem',
-        border: `${theme.borderWidth} solid ${theme.borderColor}`
-      },
-      'table th': {
-        fontWeight: '500'
-      },
-      blockquote: {
-        margin: '1.5rem 0',
-        paddingLeft: '1rem',
+      '.hljs-comment, .hljs-quote': {
         color: theme.muted.textColor,
-        borderLeft: `3px solid ${theme.borderColor}`
+        fontStyle: 'italic'
+      },
+      '.hljs-doctag, .hljs-formula': {
+        color: theme.tertiaryColor
+      },
+      '.hljs-keyword': {
+        color: theme.secondaryColor
+      },
+      '.hljs-section, .hljs-name, .hljs-selector-tag, .hljs-deletion, .hljs-subst': {
+        color: theme.textColor
+      },
+      '.hljs-literal': {
+        color: theme.tertiaryColor
+      },
+      '.hljs-string, .hljs-regexp, .hljs-addition, .hljs-attribute, .hljs-meta-string': {
+        color: theme.tertiaryColor
+      },
+      '.hljs-built_in': {
+        color: theme.secondaryColor
+      },
+      '.hljs-class .hljs-title': {
+        color: theme.textColor
+      },
+      '.hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-type, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-number': {
+        color: theme.textColor
+      },
+      '.hljs-symbol, .hljs-bullet, .hljs-link, .hljs-meta, .hljs-selector-id': {
+        color: theme.tertiaryColor
+      },
+      '.hljs-emphasis': {
+        fontStyle: 'italic'
+      },
+      '.hljs-strong': {
+        fontWeight: 'bold'
+      },
+      '.hljs-link': {
+        textDecoration: 'underline'
       }
     }
   ];
@@ -337,5 +385,17 @@ export class UI extends Registerable() {
     const height = useWindowHeight(600);
 
     return <div css={{minHeight: height}} {...props} />;
+  }
+
+  @view() Markdown({children}) {
+    const html = DOMPurify.sanitize(
+      marked(children, {
+        highlight: (code, language) => {
+          return highlightJS.highlight(language, code).value;
+        }
+      })
+    );
+
+    return <div dangerouslySetInnerHTML={{__html: html}} />;
   }
 }

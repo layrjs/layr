@@ -2,6 +2,7 @@ import {field, method} from '@liaison/liaison';
 import {Article as BaseArticle} from '@liaison/liaison-website-shared';
 import slugify from 'slugify';
 import RSS from 'rss';
+import escape from 'lodash/escape';
 
 import {Entity} from './entity';
 import {WithAuthor} from './with-author';
@@ -41,7 +42,13 @@ export class Article extends BaseArticle(WithAuthor(Entity)) {
   // time curl -v -X POST -H "Content-Type: application/json" -d '{"query": {"Article=>": {"getRSSFeed=>result": {"()": []}}}, "source": "frontend"}' http://localhost:18888
   @method({expose: {call: 'anyone'}}) static async getRSSFeed() {
     const articles = await this.$find({
-      fields: {title: true, description: true, slug: true, createdAt: true},
+      fields: {
+        title: true,
+        description: true,
+        slug: true,
+        author: {firstName: true, lastName: true},
+        createdAt: true
+      },
       sort: {createdAt: -1},
       limit: 10
     });
@@ -56,12 +63,14 @@ export class Article extends BaseArticle(WithAuthor(Entity)) {
     for (const article of articles) {
       const url = `${FRONTEND_URL}/blog/articles/${article.slug}`;
 
-      const description = `<p>${article.description}</p>\n<a href="${url}">Read more...</a>`;
+      const description = `<p>${escape(
+        article.description
+      )}</p>\n<p><a href="${url}">Read more...</a></p>`;
 
       feed.item({
         title: article.title,
         description,
-        url,
+        author: article.author.getFullName(),
         date: article.createdAt,
         guid: article.slug
       });

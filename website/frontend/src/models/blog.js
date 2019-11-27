@@ -8,13 +8,13 @@ import {jsx} from '@emotion/core';
 export class Blog extends Routable(Model) {
   @field('Article[]') loadedArticles;
 
-  @view() static Layout({children}) {
+  @view() static Layout({title = 'Blog', children}) {
     const {common, ui} = this.$layer;
 
     const theme = ui.useTheme();
 
     return (
-      <common.Layout title="Blog">
+      <common.Layout title={title}>
         <h2>
           <this.Main.Link css={{color: theme.muted.textColor}}>Blog</this.Main.Link>
         </h2>

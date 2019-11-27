@@ -2,10 +2,8 @@ import {Routable, route} from '@liaison/liaison';
 import {view, useAsyncCallback} from '@liaison/react-integration';
 import {useMemo} from 'react';
 import {jsx} from '@emotion/core';
-import marked from 'marked';
-import DOMPurify from 'dompurify';
-import {Article as BaseArticle} from '@liaison/liaison-website-shared';
 import {format} from 'date-fns';
+import {Article as BaseArticle} from '@liaison/liaison-website-shared';
 
 import {Entity} from './entity';
 import {WithAuthor} from './with-author';
@@ -32,15 +30,13 @@ export class Article extends Routable(BaseArticle(WithAuthor(Entity))) {
   }
 
   @view() Main() {
-    const {Blog} = this.$layer;
-
-    const bodyHTML = {__html: DOMPurify.sanitize(marked(this.body))};
+    const {Blog, ui} = this.$layer;
 
     return (
-      <Blog.Layout>
+      <Blog.Layout title={this.title}>
         <h2>{this.title}</h2>
         <this.Meta css={{marginTop: '-.75rem', marginBottom: '1.5rem'}} />
-        <div dangerouslySetInnerHTML={bodyHTML} />
+        <ui.Markdown>{this.body}</ui.Markdown>
       </Blog.Layout>
     );
   }
