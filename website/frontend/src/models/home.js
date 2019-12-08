@@ -11,6 +11,8 @@ export class Home extends Routable(Registerable()) {
 
     common.useTitle('A love story between the frontend and the backend');
 
+    ui.useAnchor();
+
     return (
       <div>
         <ui.FullHeight

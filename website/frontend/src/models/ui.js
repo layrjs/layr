@@ -1,4 +1,5 @@
 import {Registerable} from '@liaison/liaison';
+import {useEffect} from 'react';
 import {view} from '@liaison/react-integration';
 import {jsx, Global} from '@emotion/core';
 import {ThemeProvider, useTheme} from 'emotion-theming';
@@ -379,6 +380,24 @@ export class UI extends Registerable() {
     }
 
     return <button css={css} {...props} />;
+  }
+
+  useAnchor() {
+    useEffect(() => {
+      const hash = window.location.hash;
+      if (!hash) {
+        return;
+      }
+
+      const id = hash.slice(1);
+
+      const element = document.getElementById(id);
+      if (!element) {
+        return;
+      }
+
+      element.scrollIntoView();
+    }, []);
   }
 
   @view() FullHeight({...props}) {

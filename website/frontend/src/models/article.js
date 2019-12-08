@@ -32,6 +32,8 @@ export class Article extends Routable(BaseArticle(WithAuthor(Entity))) {
   @view() Main() {
     const {Blog, ui} = this.$layer;
 
+    ui.useAnchor();
+
     return (
       <Blog.Layout title={this.title}>
         <h2>{this.title}</h2>
