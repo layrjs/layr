@@ -5,6 +5,7 @@
   ],
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cross-fetch": "^3.0.4",
     "jsonwebtoken": "^8.5.1",
     "@liaison/liaison": "^0.1.0",
     "@liaison/liaison-website-shared": "^0.1.0",
