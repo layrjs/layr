@@ -6,6 +6,7 @@ import {Article} from './models/article';
 import {Blog} from './models/blog';
 import {Common} from './models/common';
 import {Home} from './models/home';
+import {Newsletter} from './models/newsletter';
 import {Root} from './models/root';
 import {Session} from './models/session';
 import {UI} from './models/ui';
@@ -24,7 +25,7 @@ export async function createLayer() {
   const session = Session.$deserialize();
 
   return new Layer(
-    {Root, Home, Blog, Article, User, router, common, ui, session},
+    {Root, Home, Newsletter, Blog, Article, User, router, common, ui, session},
     {name: 'frontend', parent: backendLayer}
   );
 }

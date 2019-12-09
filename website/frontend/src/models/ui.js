@@ -54,6 +54,9 @@ export class UI extends Registerable() {
         },
         muted: {
           textColor: this.colors.blueGrey200,
+          primaryColor: this.colors.lightBlue800,
+          secondaryColor: this.colors.pink800,
+          textOnSecondaryColor: this.colors.blueGrey50,
           backgroundColor: this.colors.blueGrey900,
           borderColor: this.colors.blueGrey500
         },
@@ -90,6 +93,26 @@ export class UI extends Registerable() {
           large: {
             ...rootTheme.large,
             xPadding: '1.25rem',
+            yPadding: '.75rem'
+          }
+        },
+        input: {
+          ...rootTheme,
+          lineHeight: rootTheme.small.lineHeight,
+          xPadding: '.75rem',
+          yPadding: '.5rem',
+          highlighted: {
+            ...rootTheme.highlighted,
+            borderColor: rootTheme.secondaryColor
+          },
+          small: {
+            ...rootTheme.small,
+            xPadding: '.5rem',
+            yPadding: '.25rem'
+          },
+          large: {
+            ...rootTheme.large,
+            xPadding: '1rem',
             yPadding: '.75rem'
           }
         }
@@ -311,7 +334,6 @@ export class UI extends Registerable() {
       highlightedBorderColor = highlightedBackgroundColor;
     } else {
       textColor = theme.button.textColor;
-      backgroundColor = theme.button.backgroundColor;
       borderColor = theme.button.borderColor;
       highlightedBackgroundColor = theme.button.highlighted.backgroundColor;
       highlightedBorderColor = theme.button.highlighted.borderColor;
@@ -380,6 +402,66 @@ export class UI extends Registerable() {
     }
 
     return <button css={css} {...props} />;
+  }
+
+  @view() Input({small, large, ...props}) {
+    const theme = this.useTheme();
+
+    let xPadding;
+    let yPadding;
+    let fontSize;
+    let borderRadius;
+    if (small) {
+      xPadding = theme.input.small.xPadding;
+      yPadding = theme.input.small.yPadding;
+      fontSize = theme.input.small.fontSize;
+      borderRadius = theme.input.small.borderRadius;
+    } else if (large) {
+      xPadding = theme.input.large.xPadding;
+      yPadding = theme.input.large.yPadding;
+      fontSize = theme.input.large.fontSize;
+      borderRadius = theme.input.large.borderRadius;
+    } else {
+      xPadding = theme.input.xPadding;
+      yPadding = theme.input.yPadding;
+      fontSize = theme.input.fontSize;
+      borderRadius = theme.input.borderRadius;
+    }
+
+    let css = {
+      paddingTop: yPadding,
+      paddingRight: xPadding,
+      paddingBottom: yPadding,
+      paddingLeft: xPadding,
+      fontSize,
+      lineHeight: theme.input.lineHeight,
+      color: theme.input.textColor,
+      backgroundColor: theme.input.backgroundColor,
+      borderWidth: theme.input.borderWidth,
+      borderStyle: 'solid',
+      borderColor: theme.input.borderColor,
+      borderRadius,
+      outline: 'none',
+      boxShadow: 'none',
+      transition: 'border-color ease-in-out .15s',
+      ':focus': {
+        borderColor: theme.input.highlighted.borderColor
+      },
+      '::placeholder': {
+        color: theme.input.muted.textColor,
+        opacity: 1
+      }
+    };
+
+    if (props.disabled) {
+      css = {
+        ...css,
+        cursor: 'not-allowed',
+        opacity: 0.5
+      };
+    }
+
+    return <input css={css} {...props} />;
   }
 
   useAnchor() {

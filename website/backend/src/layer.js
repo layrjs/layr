@@ -2,8 +2,9 @@ import {Layer} from '@liaison/liaison';
 import {MongoDBStore} from '@liaison/mongodb-store';
 
 import {Article} from './models/article';
-import {User} from './models/user';
+import {Newsletter} from './models/newsletter';
 import {Session} from './models/session';
+import {User} from './models/user';
 import {JWT} from './jwt';
 import {MONGODB_STORE_CONNECTION_STRING, JWT_SECRET} from './environment';
 
@@ -21,7 +22,7 @@ const jwt = new JWT(jwtSecret);
 
 const session = Session.$deserialize();
 
-const layer = new Layer({Article, User, session, store, jwt}, {name: 'backend'});
+const layer = new Layer({Article, User, Newsletter, session, store, jwt}, {name: 'backend'});
 
 export async function createLayer() {
   return layer.$fork();

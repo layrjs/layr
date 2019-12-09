@@ -7,7 +7,9 @@ import {jsx} from '@emotion/core';
 
 export class Home extends Routable(Registerable()) {
   @route('/') @view() static Main() {
-    const {common, ui} = this.$layer;
+    const {Newsletter, common, ui} = this.$layer;
+
+    const theme = ui.useTheme();
 
     common.useTitle('A love story between the frontend and the backend');
 
@@ -23,7 +25,17 @@ export class Home extends Routable(Registerable()) {
           <common.Scroller id="coming-soon" />
         </ui.FullHeight>
         <ui.FullHeight id="coming-soon" css={{display: 'flex', flexDirection: 'column'}}>
-          <this.ComingSoon css={{flexGrow: 1}} />
+          <div css={{flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+            <div css={{flexBasis: 960, display: 'flex', flexDirection: 'column'}}>
+              <this.ComingSoon css={{flexGrow: 1}} />
+              <Newsletter.Subscription
+                css={{
+                  flexGrow: 1,
+                  borderTop: `${theme.borderWidth} solid ${theme.borderColor}`
+                }}
+              />
+            </div>
+          </div>
           <common.Footer />
         </ui.FullHeight>
       </div>
@@ -65,15 +77,15 @@ export class Home extends Routable(Registerable()) {
               textAlign: 'center'
             })}
           >
-            Coming in early&nbsp;2020.
+            Coming in early&nbsp;2020
           </div>
           <div
-            css={{
+            css={ui.responsive({
               marginTop: '.75rem',
-              fontSize: '1.5rem',
+              fontSize: ['1.5rem', '1.25rem'],
               color: theme.muted.textColor,
               textAlign: 'center'
-            }}
+            })}
           >
             In the meantime, you can head over to the GitHub repository.
           </div>
@@ -81,7 +93,7 @@ export class Home extends Routable(Registerable()) {
             secondary
             large
             onClick={() => location.assign('https://github.com/liaisonjs/liaison')}
-            css={{marginTop: '1.75rem'}}
+            css={{marginTop: '1.75rem', marginBottom: '.5rem'}}
           >
             GitHub
           </ui.Button>
