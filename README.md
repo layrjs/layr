@@ -8,7 +8,7 @@
 
 ## Overview
 
-This section still has to be written. In the meantime, please head over to [this article](https://liaison.dev/blog/articles/Do-We-Really-Need-A-Web-API-yq12wz) on the Liaison Blog.
+This section still has to be written. In the meantime, please head over to this [introductory article](https://www.freecodecamp.org/news/full-stack-unified-architecture/).
 
 ## Demo
 
