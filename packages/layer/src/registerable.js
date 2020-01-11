@@ -113,7 +113,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       const registrable = this;
 
       return {
-        * [Symbol.iterator]() {
+        *[Symbol.iterator]() {
           for (const name of registrable.$getPropertyNames()) {
             const property = registrable.$getProperty(name);
 
@@ -131,7 +131,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
       const properties = this.__properties;
 
       return {
-        * [Symbol.iterator]() {
+        *[Symbol.iterator]() {
           if (properties) {
             // eslint-disable-next-line guard-for-in
             for (const name in properties) {
@@ -256,7 +256,7 @@ export const Registerable = (Base = MissingPropertyEmitter) =>
         throw new Error('Currently, only callable exposed properties are supported');
       }
 
-      return function (...args) {
+      return function(...args) {
         return this.$callParentLayer(name, ...args);
       };
     }
@@ -604,7 +604,7 @@ export function isRegisterable(value) {
 // === Decorators ===
 
 export function property(options = {}) {
-  return function (target, name, descriptor) {
+  return function(target, name, descriptor) {
     if (!(isRegisterable(target) || isRegisterable(target.prototype))) {
       throw new Error(`@property() target must be a registrable`);
     }

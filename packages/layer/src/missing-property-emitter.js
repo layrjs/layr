@@ -1,4 +1,4 @@
-export let MissingPropertyEmitter = function () {};
+export let MissingPropertyEmitter = function() {};
 
 const handler = {
   get(target, name, receiver) {

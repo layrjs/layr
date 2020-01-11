@@ -225,7 +225,7 @@ export class Model extends Observable(Serializable(Registerable())) {
       fields = fields.$serialize();
     }
 
-    const filter = function (property) {
+    const filter = function(property) {
       if (!isField(property)) {
         return false;
       }
@@ -251,8 +251,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     const fields = this.$getFields();
 
     return {
-      * [Symbol.iterator]() {
-        // eslint-disable-next-line guard-for-in
+      *[Symbol.iterator]() {
         for (const field of fields) {
           yield field.$getName();
         }
@@ -266,7 +265,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     const model = this;
 
     return {
-      * [Symbol.iterator]() {
+      *[Symbol.iterator]() {
         for (const field of model.$getActiveFields({fields: rootFieldMask, filter})) {
           const name = field.$getName();
           const fieldMask = rootFieldMask.$get(name);
@@ -280,7 +279,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getUniqueFields({fields = true, filter: otherFilter} = {}) {
-    const filter = function (field) {
+    const filter = function(field) {
       if (!field.$isUnique()) {
         return false;
       }
@@ -294,7 +293,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   $getActiveFields({fields = true, filter: otherFilter} = {}) {
-    const filter = function (field) {
+    const filter = function(field) {
       if (!field.$isActive()) {
         return false;
       }
@@ -469,7 +468,7 @@ export class Model extends Observable(Serializable(Registerable())) {
   }
 
   static $getMethods({filter: otherFilter} = {}) {
-    const filter = function (property) {
+    const filter = function(property) {
       if (!isMethod(property)) {
         return false;
       }
@@ -486,8 +485,7 @@ export class Model extends Observable(Serializable(Registerable())) {
     const methods = this.$getMethods();
 
     return {
-      * [Symbol.iterator]() {
-        // eslint-disable-next-line guard-for-in
+      *[Symbol.iterator]() {
         for (const method of methods) {
           yield method.$getName();
         }
@@ -576,7 +574,7 @@ export function field(type, options = {}) {
     options = type;
   }
 
-  return function (target, name, descriptor) {
+  return function(target, name, descriptor) {
     if (!isModel(target)) {
       throw new Error(`@field() target must be a model`);
     }
@@ -607,7 +605,7 @@ export function field(type, options = {}) {
 }
 
 export function method(options = {}) {
-  return function (target, name, descriptor) {
+  return function(target, name, descriptor) {
     if (!(isModel(target) || isModel(target.prototype))) {
       throw new Error(`@method() target must be a model`);
     }

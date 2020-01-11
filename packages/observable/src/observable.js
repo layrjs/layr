@@ -39,15 +39,15 @@ export function createObservable(target) {
 
   const observers = new ObserverSet();
 
-  const addObserver = function (observer) {
+  const addObserver = function(observer) {
     observers.add(observer);
   };
 
-  const removeObserver = function (observer) {
+  const removeObserver = function(observer) {
     observers.remove(observer);
   };
 
-  const callObservers = function ({_observerStack} = {}) {
+  const callObservers = function({_observerStack} = {}) {
     observers.call({_observerStack});
   };
 

@@ -5,7 +5,7 @@ import {hasOwnProperty} from 'core-helpers';
 import {useModel} from './hooks';
 
 export function view() {
-  return function (target, name, {value: Component, configurable, enumerable}) {
+  return function(target, name, {value: Component, configurable, enumerable}) {
     if (typeof Component !== 'function') {
       throw new Error(`@view() can only be used on functions`);
     }

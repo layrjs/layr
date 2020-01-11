@@ -131,20 +131,20 @@ export class UI extends Registerable() {
   globalStyles = theme => [
     normalize,
     {
-      html: {
+      'html': {
         fontSize: theme.fontSize,
         boxSizing: 'border-box'
       },
       '*, *::before, *::after': {
         boxSizing: 'inherit'
       },
-      body: {
+      'body': {
         fontFamily: 'system-ui, sans-serif',
         lineHeight: theme.lineHeight,
         color: theme.textColor,
         backgroundColor: theme.backgroundColor
       },
-      p: {
+      'p': {
         marginTop: '1rem',
         marginBottom: '1rem'
       },
@@ -155,13 +155,13 @@ export class UI extends Registerable() {
         lineHeight: theme.small.lineHeight,
         color: theme.highlighted.textColor
       },
-      h1: {fontSize: '2.488rem'},
-      h2: {fontSize: '2.074rem'},
-      h3: {fontSize: '1.728rem'},
-      h4: {fontSize: '1.44rem'},
-      h5: {fontSize: '1.2rem'},
-      h6: {fontSize: '1rem'},
-      hr: {
+      'h1': {fontSize: '2.488rem'},
+      'h2': {fontSize: '2.074rem'},
+      'h3': {fontSize: '1.728rem'},
+      'h4': {fontSize: '1.44rem'},
+      'h5': {fontSize: '1.2rem'},
+      'h6': {fontSize: '1rem'},
+      'hr': {
         marginTop: '1.5rem',
         marginBottom: '1.5rem',
         border: 0,
@@ -174,7 +174,7 @@ export class UI extends Registerable() {
       'ol ol, ul ul, ol ul, ul ol': {
         marginBottom: 0
       },
-      a: {
+      'a': {
         color: theme.link.primaryColor,
         textDecoration: theme.link.decoration
       },
@@ -185,10 +185,10 @@ export class UI extends Registerable() {
       'a:focus': {
         outline: 'none'
       },
-      small: {
+      'small': {
         fontSize: theme.small.fontSize
       },
-      table: {
+      'table': {
         display: 'block',
         width: '100%',
         overflow: 'auto',
@@ -208,7 +208,7 @@ export class UI extends Registerable() {
       'table th': {
         fontWeight: '500'
       },
-      blockquote: {
+      'blockquote': {
         margin: '1.5rem 0',
         paddingLeft: '1rem',
         color: theme.muted.textColor,
@@ -217,7 +217,7 @@ export class UI extends Registerable() {
       'code, pre': {
         fontFamily: "Menlo, Consolas, 'Liberation Mono', monospace"
       },
-      pre: {
+      'pre': {
         display: 'table',
         tableLayout: 'fixed',
         width: '100%',
@@ -228,7 +228,7 @@ export class UI extends Registerable() {
         color: theme.highlighted.textColor,
         backgroundColor: theme.highlighted.backgroundColor
       },
-      code: {
+      'code': {
         padding: '.15rem .15rem',
         fontSize: '.85rem',
         color: theme.highlighted.textColor,
@@ -395,8 +395,8 @@ export class UI extends Registerable() {
     } else {
       css = {
         ...css,
-        cursor: 'not-allowed',
-        opacity: 0.5,
+        'cursor': 'not-allowed',
+        'opacity': 0.5,
         ':hover': {}
       };
     }
@@ -429,21 +429,21 @@ export class UI extends Registerable() {
     }
 
     let css = {
-      paddingTop: yPadding,
-      paddingRight: xPadding,
-      paddingBottom: yPadding,
-      paddingLeft: xPadding,
+      'paddingTop': yPadding,
+      'paddingRight': xPadding,
+      'paddingBottom': yPadding,
+      'paddingLeft': xPadding,
       fontSize,
-      lineHeight: theme.input.lineHeight,
-      color: theme.input.textColor,
-      backgroundColor: theme.input.backgroundColor,
-      borderWidth: theme.input.borderWidth,
-      borderStyle: 'solid',
-      borderColor: theme.input.borderColor,
+      'lineHeight': theme.input.lineHeight,
+      'color': theme.input.textColor,
+      'backgroundColor': theme.input.backgroundColor,
+      'borderWidth': theme.input.borderWidth,
+      'borderStyle': 'solid',
+      'borderColor': theme.input.borderColor,
       borderRadius,
-      outline: 'none',
-      boxShadow: 'none',
-      transition: 'border-color ease-in-out .15s',
+      'outline': 'none',
+      'boxShadow': 'none',
+      'transition': 'border-color ease-in-out .15s',
       ':focus': {
         borderColor: theme.input.highlighted.borderColor
       },

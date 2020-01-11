@@ -23,7 +23,7 @@ export default () => ({
     );
   },
 
-  async getACMCertificate({throwIfNotFound = true} = {}, environment) {
+  async getACMCertificate({throwIfNotFound = true} = {}, environment = undefined) {
     if (!this._acmCertificate) {
       this._acmCertificate = await findACMCertificate(
         {

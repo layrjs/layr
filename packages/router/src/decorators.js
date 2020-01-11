@@ -1,7 +1,7 @@
 import {isRoutable} from './routable';
 
 export function route(pattern, options) {
-  return function (
+  return function(
     target,
     name,
     {value: originalFunction, get: originalGet, configurable, enumerable}
@@ -12,33 +12,33 @@ export function route(pattern, options) {
 
     const route = target.$setRoute(name, pattern, options);
 
-    const decorate = function (func) {
+    const decorate = function(func) {
       if (typeof func !== 'function') {
         throw new Error(`@route() can only be used on functions`);
       }
 
       const router = this.$getLayer().$get('router');
 
-      func.$getPath = function (params) {
+      func.$getPath = function(params) {
         return route.build(params);
       };
 
-      func.$navigate = function (params, {replace = false} = {}) {
+      func.$navigate = function(params, {replace = false} = {}) {
         const path = this.$getPath(params);
         router.$navigate(path, {replace});
       };
 
-      func.$redirect = function (params) {
+      func.$redirect = function(params) {
         const path = this.$getPath(params);
         router.$redirect(path);
       };
 
-      func.$reload = function (params, {replace = false} = {}) {
+      func.$reload = function(params, {replace = false} = {}) {
         const path = this.$getPath(params);
         router.$reload(path, {replace});
       };
 
-      func.$isActive = function (params) {
+      func.$isActive = function(params) {
         const path = this.$getPath(params);
         return router.$getCurrentLocation().pathname === path;
       };
@@ -48,7 +48,7 @@ export function route(pattern, options) {
 
     let hasBeenDecorated = false;
 
-    const get = function () {
+    const get = function() {
       const func = originalGet ? originalGet.call(this) : originalFunction;
 
       if (!hasBeenDecorated) {

@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {useForceUpdate} from './hooks';
 
 export function ReactRouterPlugin() {
-  return function (router) {
+  return function(router) {
     Object.assign(router, {
       $useRouter() {
         const [isReady, setIsReady] = useState(false);
@@ -15,7 +15,7 @@ export function ReactRouterPlugin() {
 
           setIsReady(true);
 
-          return function () {
+          return function() {
             router.$unobserve(forceUpdate);
           };
         }, []);
@@ -56,8 +56,8 @@ export function ReactRouterPlugin() {
       }
     });
 
-    router.$addCustomRouteDecorator(function (func) {
-      func.Link = function ({params, ...props}) {
+    router.$addCustomRouteDecorator(function(func) {
+      func.Link = function({params, ...props}) {
         const href = func.$getPath(params);
         return router.Link({href, ...props});
       };

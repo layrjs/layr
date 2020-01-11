@@ -270,7 +270,7 @@ export default () => ({
     }
   },
 
-  async getAPIGatewayDomainName({throwIfNotFound = true} = {}, _environment) {
+  async getAPIGatewayDomainName({throwIfNotFound = true} = {}) {
     if (!this._apiGatewayDomainName) {
       const apiGateway = this.getAPIGatewayClient();
 

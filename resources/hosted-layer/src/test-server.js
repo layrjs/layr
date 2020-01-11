@@ -85,7 +85,6 @@ export default () => ({
 
         if (this.errorRate) {
           const threshold = this.errorRate / 100;
-          // eslint-disable-next-line max-depth
           if (Math.random() < threshold) {
             throw new Error('A simulated error occurred while handling a request');
           }

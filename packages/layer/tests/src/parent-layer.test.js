@@ -164,9 +164,9 @@ function runTests({viaHTTP = false} = {}) {
       }
       expect(frontendLayer.authenticator.token).toBe('123456789');
 
-      const movie = !viaHTTP ?
-        frontendLayer.Movie.$get('abc123') :
-        await frontendLayer.Movie.$get('abc123');
+      const movie = !viaHTTP
+        ? frontendLayer.Movie.$get('abc123')
+        : await frontendLayer.Movie.$get('abc123');
       expect(movie instanceof frontendLayer.Movie).toBe(true);
       expect(movie.title).toBe('Inception');
       expect(movie.year).toBe(2010);

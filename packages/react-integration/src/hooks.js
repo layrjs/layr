@@ -115,10 +115,10 @@ export function useModel(model) {
   const forceUpdate = useForceUpdate();
 
   useEffect(
-    function () {
+    function() {
       model.$observe(forceUpdate);
 
-      return function () {
+      return function() {
         model.$unobserve(forceUpdate);
       };
     },

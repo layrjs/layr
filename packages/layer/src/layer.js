@@ -174,7 +174,7 @@ export class Layer {
   $getItems({filter} = {}) {
     const layer = this;
     return {
-      * [Symbol.iterator]() {
+      *[Symbol.iterator]() {
         // eslint-disable-next-line guard-for-in
         for (const name in layer._registerables) {
           const item = layer.$get(name);
@@ -190,8 +190,7 @@ export class Layer {
   _getOwnItems() {
     const registerables = this._registerables;
     return {
-      * [Symbol.iterator]() {
-        // eslint-disable-next-line guard-for-in
+      *[Symbol.iterator]() {
         for (const name in registerables) {
           if (hasOwnProperty(registerables, name)) {
             yield registerables[name];
@@ -459,7 +458,7 @@ export class Layer {
   }
 
   _createQueryAuthorizer() {
-    return function (name, operation, params) {
+    return function(name, operation, params) {
       if (isLayer(this)) {
         if (
           name === '$introspect' &&
@@ -642,7 +641,7 @@ export class Layer {
   }
 
   _createPropertyExpositionFilter(operation) {
-    return function (property) {
+    return function(property) {
       return property.$operationIsAllowed(operation);
     };
   }

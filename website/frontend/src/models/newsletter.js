@@ -48,9 +48,9 @@ export class Newsletter extends Registerable() {
               textAlign: 'center'
             })}
           >
-            {!isSubscribed ?
-              'Know when Liaison is ready for production, and everything else.' :
-              "We'll keep you updated."}
+            {!isSubscribed
+              ? 'Know when Liaison is ready for production, and everything else.'
+              : "We'll keep you updated."}
           </div>
 
           {!isSubscribed && (

@@ -644,7 +644,10 @@ describe('Model', () => {
       title: 'Inception',
       genres: ['action', 'adventure', 'sci-fi'],
       technicalSpecs: {_type: 'TechnicalSpecs', isColored: true},
-      actors: [{_type: 'Actor', country: 'USA'}, {_type: 'Actor', country: 'USA'}]
+      actors: [
+        {_type: 'Actor', country: 'USA'},
+        {_type: 'Actor', country: 'USA'}
+      ]
     });
 
     // Deserialization with a synchronous filter

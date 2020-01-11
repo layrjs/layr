@@ -118,18 +118,30 @@ describe('MongoDBStore', () => {
       {_type: 'Movie', _id: 'abc123'},
       {_type: 'Movie', _id: 'xyz123'}
     ]);
-    movies = await store.load([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'xyz123'}], {
-      throwIfNotFound: false
-    });
+    movies = await store.load(
+      [
+        {_type: 'Movie', _id: 'abc123'},
+        {_type: 'Movie', _id: 'xyz123'}
+      ],
+      {
+        throwIfNotFound: false
+      }
+    );
     expect(movies).toEqual([
       {_type: 'Movie', _id: 'abc123', _missed: true},
       {_type: 'Movie', _id: 'xyz123', _missed: true}
     ]);
     expect(
-      store.delete([{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'xyz123'}])
+      store.delete([
+        {_type: 'Movie', _id: 'abc123'},
+        {_type: 'Movie', _id: 'xyz123'}
+      ])
     ).rejects.toThrow(/Document not found/);
     acknowledgement = await store.delete(
-      [{_type: 'Movie', _id: 'abc123'}, {_type: 'Movie', _id: 'xyz123'}],
+      [
+        {_type: 'Movie', _id: 'abc123'},
+        {_type: 'Movie', _id: 'xyz123'}
+      ],
       {throwIfNotFound: false}
     );
     expect(acknowledgement).toEqual([

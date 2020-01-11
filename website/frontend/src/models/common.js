@@ -128,7 +128,7 @@ export class Common extends Registerable() {
               href="https://1place.io/"
               target="_blank"
               rel="noopener noreferrer"
-              css={{color: theme.textColor, ':hover': {color: theme.highlighted.textColor}}}
+              css={{'color': theme.textColor, ':hover': {color: theme.highlighted.textColor}}}
             >
               1Place Inc.
             </a>
@@ -211,7 +211,7 @@ export class Common extends Registerable() {
             }
           }}
           css={{
-            color: theme.muted.textColor,
+            'color': theme.muted.textColor,
             ':hover': {color: theme.textColor, textDecoration: 'none'}
           }}
         >

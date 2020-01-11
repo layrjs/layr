@@ -104,7 +104,7 @@ export const WithRoles = Base =>
     static $getRoles() {
       const withRoles = this;
       return {
-        * [Symbol.iterator]() {
+        *[Symbol.iterator]() {
           // eslint-disable-next-line guard-for-in
           for (const name in withRoles.__getRoles()) {
             yield withRoles.$getRole(name);
@@ -166,7 +166,7 @@ export function isWithRoles(object) {
 // === Decorators ===
 
 export function role(name, options = {}) {
-  return function (target, resolverName, descriptor) {
+  return function(target, resolverName, descriptor) {
     if (!(isWithRoles(target) || isWithRoles(target.prototype))) {
       throw new Error(`@role() target must be a class using the WithRoles mixin`);
     }

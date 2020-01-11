@@ -683,7 +683,7 @@ function makeStorable(Base) {
     }
 
     $getSubstorables() {
-      const filter = function (_field) {
+      const filter = function(_field) {
         // TODO
         return false;
       };
@@ -703,7 +703,7 @@ function makeStorable(Base) {
     // === Storable fields ===
 
     $createFieldMaskForNonVolatileFields({fields = true, filter: otherFilter} = {}) {
-      const filter = function (field) {
+      const filter = function(field) {
         if (field.$isVolatile()) {
           return false;
         }

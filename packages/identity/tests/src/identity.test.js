@@ -64,7 +64,10 @@ describe('Identity', () => {
     movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
-      actors: [{_type: 'Actor', _id: 'a2'}, {_type: 'Actor', _id: 'a1'}]
+      actors: [
+        {_type: 'Actor', _id: 'a2'},
+        {_type: 'Actor', _id: 'a1'}
+      ]
     });
     expect(movie.actors).toEqual([actor2, actor1]);
     expect(actor1.id).toBe('a1');
@@ -78,7 +81,10 @@ describe('Identity', () => {
     movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
-      actors: [{_type: 'Actor', _id: 'a1'}, {_type: 'Actor', _id: 'a2', popularity: 80}]
+      actors: [
+        {_type: 'Actor', _id: 'a1'},
+        {_type: 'Actor', _id: 'a2', popularity: 80}
+      ]
     });
     expect(movie.actors).toEqual([actor1, actor2]);
     expect(actor1.id).toBe('a1');
@@ -114,7 +120,10 @@ describe('Identity', () => {
     movie.$deserialize({
       _type: 'Movie',
       _id: 'm1',
-      actors: [{_type: 'Actor', _id: 'a3'}, {_type: 'Actor', _id: 'a2'}]
+      actors: [
+        {_type: 'Actor', _id: 'a3'},
+        {_type: 'Actor', _id: 'a2'}
+      ]
     });
     expect(movie.actors).toEqual([actor3, actor2]);
     expect(actor2.id).toBe('a2');

@@ -41,7 +41,7 @@ export class LayerHTTPClient {
 
           const item = introspection.items[name];
 
-          const _isExposed = function (target) {
+          const _isExposed = function(target) {
             if (target === undefined) {
               return undefined;
             }
@@ -49,7 +49,7 @@ export class LayerHTTPClient {
             return hasOwnProperty(target, 'properties');
           };
 
-          const _getPropertyExposition = function (target, name) {
+          const _getPropertyExposition = function(target, name) {
             if (!_isExposed(target)) {
               return undefined;
             }

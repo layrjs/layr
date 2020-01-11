@@ -232,7 +232,7 @@ export class Field extends Property {
   $getValues() {
     const field = this;
     return {
-      * [Symbol.iterator]() {
+      *[Symbol.iterator]() {
         const value = field.$getValue();
         if (value !== undefined) {
           if (field._isArray) {
