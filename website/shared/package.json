@@ -9,7 +9,7 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/liaison": "^0.1.0",
+    "@liaison/liaison": "^0.1.3",
     "lodash": "^4.17.15"
   },
   "@managed": {

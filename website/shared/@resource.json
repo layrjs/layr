@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Shared code used by Liaison's website",
   "dependencies": {
-    "@liaison/liaison": "^0.1.0",
+    "@liaison/liaison": "^0.1.3",
     "lodash": "^4.17.15"
   }
 }

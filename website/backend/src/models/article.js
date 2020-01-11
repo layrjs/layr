@@ -41,17 +41,20 @@ export class Article extends BaseArticle(WithAuthor(Entity)) {
 
   // time curl -v -X POST -H "Content-Type: application/json" -d '{"query": {"Article=>": {"getRSSFeed=>result": {"()": []}}}, "source": "frontend"}' http://localhost:18888
   @method({expose: {call: 'anyone'}}) static async getRSSFeed() {
-    const articles = await this.$find({
-      fields: {
-        title: true,
-        description: true,
-        slug: true,
-        author: {firstName: true, lastName: true},
-        createdAt: true
-      },
-      sort: {createdAt: -1},
-      limit: 10
-    });
+    const articles = await this.$find(
+      {},
+      {
+        fields: {
+          title: true,
+          description: true,
+          slug: true,
+          author: {firstName: true, lastName: true},
+          createdAt: true
+        },
+        sort: {createdAt: -1},
+        limit: 10
+      }
+    );
 
     const feed = new RSS({
       title: 'Liaison Blog',

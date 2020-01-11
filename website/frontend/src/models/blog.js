@@ -38,17 +38,20 @@ export class Blog extends Routable(Model) {
 
     const [isLoading, loadingError, retryLoading] = useAsyncCall(async () => {
       try {
-        this.loadedArticles = await Article.$find({
-          fields: {
-            title: true,
-            description: true,
-            body: true,
-            slug: true,
-            author: {firstName: true, lastName: true, url: true},
-            createdAt: true
-          },
-          sort: {createdAt: -1}
-        });
+        this.loadedArticles = await Article.$find(
+          {},
+          {
+            fields: {
+              title: true,
+              description: true,
+              body: true,
+              slug: true,
+              author: {firstName: true, lastName: true, url: true},
+              createdAt: true
+            },
+            sort: {createdAt: -1}
+          }
+        );
       } catch (error) {
         error.displayMessage = 'Sorry, something went wrong while loading the articles.';
         throw error;

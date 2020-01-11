@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/liaison",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Convenience package exporting core Liaison's packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "@liaison/model": "^0.1.0",
     "@liaison/observable": "^0.1.0",
     "@liaison/router": "^0.1.0",
-    "@liaison/storable": "^0.1.0",
+    "@liaison/storable": "^0.1.6",
     "@liaison/with-roles": "^0.1.0"
   }
 }

@@ -357,23 +357,23 @@ describe('Storable', () => {
     expect(movies.map(movie => movie.id)).toEqual(['movie1', 'movie2', 'movie3']);
 
     layer = rootLayer.$fork();
-    movies = await layer.Movie.$find({filter: {genre: 'action'}});
+    movies = await layer.Movie.$find({genre: 'action'});
     expect(movies.map(movie => movie.id)).toEqual(['movie1', 'movie3']);
 
     layer = rootLayer.$fork();
-    movies = await layer.Movie.$find({filter: {genre: 'action', country: 'France'}});
+    movies = await layer.Movie.$find({genre: 'action', country: 'France'});
     expect(movies.map(movie => movie.id)).toEqual(['movie3']);
 
     layer = rootLayer.$fork();
-    movies = await layer.Movie.$find({filter: {genre: 'adventure'}});
+    movies = await layer.Movie.$find({genre: 'adventure'});
     expect(movies.map(movie => movie.id)).toEqual([]);
 
     layer = rootLayer.$fork();
-    movies = await layer.Movie.$find({skip: 1, limit: 1});
+    movies = await layer.Movie.$find(undefined, {skip: 1, limit: 1});
     expect(movies.map(movie => movie.id)).toEqual(['movie2']);
 
     layer = rootLayer.$fork();
-    movies = await layer.Movie.$find({fields: {title: true}});
+    movies = await layer.Movie.$find(undefined, {fields: {title: true}});
     expect(movies.map(movie => movie.$serialize())).toEqual([
       {
         _type: 'Movie',
@@ -396,7 +396,7 @@ describe('Storable', () => {
     ]);
 
     layer = rootLayer.$fork();
-    movies = await layer.Movie.$find({fields: false});
+    movies = await layer.Movie.$find(undefined, {fields: false});
     await layer.Movie.$deleteMany(movies);
   });
 
@@ -419,15 +419,15 @@ describe('Storable', () => {
     expect(count).toBe(3);
 
     layer = rootLayer.$fork();
-    count = await layer.Movie.$count({filter: {title: 'Léon'}});
+    count = await layer.Movie.$count({title: 'Léon'});
     expect(count).toBe(1);
 
     layer = rootLayer.$fork();
-    count = await layer.Movie.$count({filter: {title: 'The Matrix'}});
+    count = await layer.Movie.$count({title: 'The Matrix'});
     expect(count).toBe(0);
 
     layer = rootLayer.$fork();
-    const movies = await layer.Movie.$find({fields: false});
+    const movies = await layer.Movie.$find(undefined, {fields: false});
     await layer.Movie.$deleteMany(movies);
   });
 

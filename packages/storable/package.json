@@ -1,6 +1,6 @@
 {
   "name": "@liaison/storable",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Mixin adding persistence capabilities to Liaison's entities",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

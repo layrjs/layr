@@ -315,10 +315,12 @@ function makeStorable(Base) {
 
       const store = this.constructor.$getStore();
       const serializedFields = fields.$serialize();
-      serializedStorable = (await store.load([serializedStorable], {
-        fields: serializedFields,
-        throwIfNotFound
-      }))[0];
+      serializedStorable = (
+        await store.load([serializedStorable], {
+          fields: serializedFields,
+          throwIfNotFound
+        })
+      )[0];
 
       // TODO: Modify MongoDBStore so we can get rid of the following test:
       if (serializedStorable._missed) {
@@ -436,10 +438,12 @@ function makeStorable(Base) {
       let serializedStorable = this.$serialize({fields, target: storeName});
 
       const store = this.constructor.$getStore();
-      serializedStorable = (await store.save([serializedStorable], {
-        throwIfNotFound,
-        throwIfAlreadyExists
-      }))[0];
+      serializedStorable = (
+        await store.save([serializedStorable], {
+          throwIfNotFound,
+          throwIfAlreadyExists
+        })
+      )[0];
 
       // TODO: Modify MongoDBStore so we can get rid of the following test:
       if (serializedStorable._missed || serializedStorable._existed) {
@@ -510,15 +514,15 @@ function makeStorable(Base) {
       return this;
     }
 
-    static async $find({filter, sort, skip, limit, fields, reload, throwIfNotFound} = {}) {
+    static async $find(query, {sort, skip, limit, fields, reload, throwIfNotFound} = {}) {
       let storables;
 
-      filter = await this._resolveFilter(filter);
+      query = await this._resolveQuery(query);
 
       if (this.$hasStore()) {
-        storables = await this.__findInStore({filter, sort, skip, limit, fields: {}}); // TODO: Remove 'fields' option
+        storables = await this.__findInStore(query, {sort, skip, limit, fields: {}}); // TODO: Remove 'fields' option
       } else {
-        storables = await super.$find({filter, sort, skip, limit, fields: false});
+        storables = await super.$find(query, {sort, skip, limit, fields: false});
       }
 
       await this.$loadMany(storables, {fields, reload, throwIfNotFound});
@@ -526,44 +530,44 @@ function makeStorable(Base) {
       return storables;
     }
 
-    static async $count({filter} = {}) {
+    static async $count(query) {
       let count;
 
-      filter = await this._resolveFilter(filter);
+      query = await this._resolveQuery(query);
 
       if (this.$hasStore()) {
         // OPTIMIZE: Implement _countInStore()
-        const storables = await this.__findInStore({filter, fields: {}});
+        const storables = await this.__findInStore(query, {fields: {}});
         count = storables.length;
       } else {
-        count = await super.$count({filter});
+        count = await super.$count(query);
       }
 
       return count;
     }
 
-    static async _resolveFilter(filter) {
-      if (filter === undefined) {
+    static async _resolveQuery(query) {
+      if (query === undefined) {
         return undefined;
       }
 
       for (const property of this.prototype.$getPropertiesWithHook('finder')) {
-        filter = await property.$callHook('finder', filter);
+        query = await property.$callHook('finder', query);
       }
 
-      return filter;
+      return query;
     }
 
-    static async __findInStore({filter, sort, skip, limit, fields}) {
+    static async __findInStore(query, {sort, skip, limit, fields}) {
       fields = this.prototype.$createFieldMaskForNonVolatileFields({fields});
 
       const store = this.$getStore();
       const storeName = this.$getStoreName();
-      const serializedFilter = this.__serializeFilter(filter);
+      const serializedQuery = this.__serializeQuery(query);
       const serializedFields = fields.$serialize();
 
       const serializedStorables = await store.find(
-        {_type: this.$getRegisteredName(), ...serializedFilter},
+        {_type: this.$getRegisteredName(), ...serializedQuery},
         {sort, skip, limit, fields: serializedFields}
       );
 
@@ -574,20 +578,20 @@ function makeStorable(Base) {
       return storables;
     }
 
-    static __serializeFilter(filter) {
-      if (filter === undefined) {
+    static __serializeQuery(query) {
+      if (query === undefined) {
         return undefined;
       }
 
-      if (isIdentity(filter)) {
-        const identity = filter;
+      if (isIdentity(query)) {
+        const identity = query;
         // TODO: Consider including the '_type' of the model so we can support polymorphism
         return {_id: identity.id};
       }
 
-      const serializedFilter = {};
+      const serializedQuery = {};
 
-      for (let [name, value] of Object.entries(filter)) {
+      for (let [name, value] of Object.entries(query)) {
         if (name === '$identity') {
           let identities = value;
           if (!Array.isArray(identities)) {
@@ -597,14 +601,14 @@ function makeStorable(Base) {
           name = '_id';
           value = ids;
         } else if (Array.isArray(value)) {
-          value = value.map(value => this.__serializeFilter(value));
+          value = value.map(value => this.__serializeQuery(value));
         } else if (typeof value === 'object' && value !== null) {
-          value = this.__serializeFilter(value);
+          value = this.__serializeQuery(value);
         }
-        serializedFilter[name] = value;
+        serializedQuery[name] = value;
       }
 
-      return serializedFilter;
+      return serializedQuery;
     }
 
     static $getStore() {

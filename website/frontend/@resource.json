@@ -19,7 +19,7 @@
     "facepaint": "^1.2.1",
     "highlight.js": "^9.16.2",
     "@liaison/layer-http-client": "^0.1.0",
-    "@liaison/liaison": "^0.1.0",
+    "@liaison/liaison": "^0.1.3",
     "@liaison/liaison-website-shared": "^0.1.0",
     "@liaison/react-integration": "^0.1.0",
     "marked": "^0.7.0",
