@@ -347,7 +347,7 @@ function makeStorable(Base) {
             if (!storablesWithFields.has(storable)) {
               storablesWithFields.set(storable, fields);
             } else {
-              const previousFields = storablesWithFields.$get(storable);
+              const previousFields = storablesWithFields.get(storable);
               storablesWithFields.set(storable, FieldMask.$add(previousFields, fields));
             }
           } else if (isModel(value)) {
