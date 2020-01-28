@@ -1,5 +1,8 @@
 {
   "@import": "1place/js-repository#^0.1.0",
+  "component": {
+    "@include": "./packages/component"
+  },
   "entity": {
     "@include": "./packages/entity"
   },
@@ -51,12 +54,11 @@
   "lambdaHostedLayer": {
     "@include": "./resources/lambda-hosted-layer"
   },
-  "website": {
-    "@include": "./website"
-  },
   "link": {
     "@type": "method",
     "@run": [
+      "(@import shell/bash) run \"npm-link ./packages/component\"",
+      "(@import shell/bash) run \"npm-link ./packages/component/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/entity\"",
       "(@import shell/bash) run \"npm-link ./packages/entity/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/identity\"",
