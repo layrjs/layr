@@ -1,11 +1,14 @@
 import ow from 'ow';
 
+import {WithProperties} from './with-properties';
 import {serialize} from './serialization';
 import {deserialize} from './deserialization';
 import {isComponent} from './utilities';
 
-export const Component = (Base = Object) =>
-  class Component extends Base {
+export const Component = (Base = Object) => {
+  ow(Base, ow.function);
+
+  return class Component extends WithProperties(Base) {
     // === Creation ===
 
     constructor() {
@@ -65,6 +68,16 @@ export const Component = (Base = Object) =>
       Object.defineProperty(this, '__isNew', {value: false, configurable: true});
     }
 
+    // === Forking ===
+
+    static fork() {
+      return class extends this {};
+    }
+
+    fork() {
+      return Object.create(this);
+    }
+
     // === Serialization ===
 
     static toJSON() {
@@ -81,15 +94,10 @@ export const Component = (Base = Object) =>
       return deserialize(value, {knownComponents: [this]});
     }
 
-    // === Forking ===
-
-    static fork() {}
-
-    fork() {}
-
     // === Utilities ===
 
     static isComponent(object) {
       return isComponent(object);
     }
   };
+};

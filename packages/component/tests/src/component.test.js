@@ -1,4 +1,4 @@
-import {Component, serialize, deserialize, isComponent} from '../../..';
+import {Component, serialize, deserialize, isComponent, property} from '../../..';
 
 describe('Component', () => {
   test('Creation', async () => {
@@ -97,6 +97,30 @@ describe('Component', () => {
 
     movie.markAsNew();
     expect(movie.isNew()).toBe(true);
+  });
+
+  test('Forking', async () => {
+    class Movie extends Component() {
+      @property() static limit = 100;
+
+      @property() title = '';
+    }
+
+    const ForkedMovie = Movie.fork();
+
+    expect(ForkedMovie.limit).toBe(100);
+    ForkedMovie.limit = 500;
+    expect(ForkedMovie.limit).toBe(500);
+    expect(Movie.limit).toBe(100);
+
+    const movie = new Movie();
+
+    const forkedMovie = movie.fork();
+
+    expect(forkedMovie.title).toBe('');
+    forkedMovie.title = 'Inception';
+    expect(forkedMovie.title).toBe('Inception');
+    expect(movie.title).toBe('');
   });
 
   test('Class serialization', async () => {
@@ -215,6 +239,4 @@ describe('Component', () => {
     expect(Object.keys(cinema.movies[0])).toEqual(['title']);
     expect(cinema.movies[0].title).toBe('The Matrix');
   });
-
-  test('Forking', async () => {});
 });

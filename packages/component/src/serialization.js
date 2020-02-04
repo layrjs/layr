@@ -27,7 +27,7 @@ export function serialize(value, options) {
   };
 
   const serializeAttributes = function(source) {
-    return possiblyAsync.mapObject(source, value => serialize(value, options));
+    return possiblyAsync.mapObject(source, value => simpleSerialize(value, options));
   };
 
   options = {...options, objectHandler};
