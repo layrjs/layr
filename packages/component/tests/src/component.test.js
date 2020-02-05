@@ -45,7 +45,7 @@ describe('Component', () => {
     expect(Object.keys(movie)).toHaveLength(0);
   });
 
-  test('Checking if an object is a component', async () => {
+  test('Checking that an object is a component', async () => {
     expect(isComponent(undefined)).toBe(false);
     expect(isComponent(null)).toBe(false);
     expect(isComponent(true)).toBe(false);
@@ -67,9 +67,11 @@ describe('Component', () => {
     expect(Movie.getName()).toBe('Movie');
 
     Movie.setName('Film');
+
     expect(Movie.getName()).toBe('Film');
 
     Movie.setName('MotionPicture');
+
     expect(Movie.getName()).toBe('MotionPicture');
 
     // Make sure there are no enumerable properties
@@ -90,12 +92,15 @@ describe('Component', () => {
     class Movie extends Component() {}
 
     const movie = new Movie();
+
     expect(movie.isNew()).toBe(true);
 
     movie.markAsNotNew();
+
     expect(movie.isNew()).toBe(false);
 
     movie.markAsNew();
+
     expect(movie.isNew()).toBe(true);
   });
 
@@ -109,7 +114,9 @@ describe('Component', () => {
     const ForkedMovie = Movie.fork();
 
     expect(ForkedMovie.limit).toBe(100);
+
     ForkedMovie.limit = 500;
+
     expect(ForkedMovie.limit).toBe(500);
     expect(Movie.limit).toBe(100);
 
@@ -118,7 +125,9 @@ describe('Component', () => {
     const forkedMovie = movie.fork();
 
     expect(forkedMovie.title).toBe('');
+
     forkedMovie.title = 'Inception';
+
     expect(forkedMovie.title).toBe('Inception');
     expect(movie.title).toBe('');
   });
@@ -126,19 +135,26 @@ describe('Component', () => {
   test('Class serialization', async () => {
     class Movie extends Component() {}
 
-    expect(serialize(Movie)).toEqual({__Component: 'Movie'});
+    expect(serialize(Movie, {knownComponents: [Movie]})).toEqual({__Component: 'Movie'});
 
     class MovieWithLimit extends Movie {
       static limit = 100;
     }
 
-    expect(serialize(MovieWithLimit)).toEqual({__Component: 'MovieWithLimit', limit: 100});
+    expect(serialize(MovieWithLimit, {knownComponents: [MovieWithLimit]})).toEqual({
+      __Component: 'MovieWithLimit',
+      limit: 100
+    });
 
     class Cinema extends Component() {
       static MovieClass = MovieWithLimit;
     }
 
-    expect(serialize(Cinema)).toEqual({
+    expect(() => serialize(Cinema, {knownComponents: [Cinema]})).toThrow(
+      "The 'MovieWithLimit' component is unknown"
+    );
+
+    expect(serialize(Cinema, {knownComponents: [Cinema, MovieWithLimit]})).toEqual({
       __Component: 'Cinema',
       MovieClass: {__Component: 'MovieWithLimit', limit: 100}
     });
@@ -148,19 +164,29 @@ describe('Component', () => {
     class Movie extends Component() {}
 
     const movie = new Movie();
-    expect(serialize(movie)).toEqual({__component: 'Movie', __new: true});
+
+    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
+      __component: 'Movie',
+      __new: true
+    });
 
     movie.markAsNotNew();
-    expect(serialize(movie)).toEqual({__component: 'Movie'});
+
+    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({__component: 'Movie'});
 
     movie.title = 'Inception';
-    expect(serialize(movie)).toEqual({__component: 'Movie', title: 'Inception'});
+
+    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
+      __component: 'Movie',
+      title: 'Inception'
+    });
 
     class Director extends Component() {}
 
     movie.director = new Director();
     movie.director.name = 'Christopher Nolan';
-    expect(serialize(movie)).toEqual({
+
+    expect(serialize(movie, {knownComponents: [Movie, Director]})).toEqual({
       __component: 'Movie',
       title: 'Inception',
       director: {__component: 'Director', __new: true, name: 'Christopher Nolan'}
@@ -176,13 +202,14 @@ describe('Component', () => {
       {__Component: 'Movie', limit: 100},
       {knownComponents: [Movie]}
     );
+
     expect(DeserializedMovie).toBe(Movie);
     expect(Movie.limit).toBe(100);
 
     class Film extends Component() {}
 
     expect(() => deserialize({__Component: 'Movie'}, {knownComponents: [Film]})).toThrow(
-      "Cannot find the 'Movie' component"
+      "The 'Movie' component is unknown"
     );
   });
 
@@ -195,6 +222,7 @@ describe('Component', () => {
       {__component: 'Movie', title: 'Inception'},
       {knownComponents: [Movie]}
     );
+
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
     expect(movie.isNew()).toBe(false);
@@ -205,6 +233,7 @@ describe('Component', () => {
       {__component: 'Movie', __new: true, title: 'Inception'},
       {knownComponents: [Movie]}
     );
+
     expect(movie2).toBeInstanceOf(Movie);
     expect(movie2).not.toBe(Movie.prototype);
     expect(movie2.isNew()).toBe(true);
@@ -218,10 +247,12 @@ describe('Component', () => {
       {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
       {knownComponents: [Movie]}
     );
+
     expect(movie3.title).toBe('Inception');
     expect(movie3.duration).toBe(120);
 
     const movie4 = Movie.fromJSON({__component: 'Movie', title: 'Inception'});
+
     expect(movie4).toBeInstanceOf(Movie);
     expect(Object.keys(movie4)).toEqual(['title']);
     expect(movie4.title).toBe('Inception');
@@ -232,6 +263,7 @@ describe('Component', () => {
       {__component: 'Cinema', movies: [{__component: 'Movie', title: 'The Matrix'}]},
       {knownComponents: [Cinema, Movie]}
     );
+
     expect(cinema).toBeInstanceOf(Cinema);
     expect(Object.keys(cinema)).toEqual(['movies']);
     expect(cinema.movies).toHaveLength(1);

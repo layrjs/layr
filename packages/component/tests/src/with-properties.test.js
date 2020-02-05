@@ -15,16 +15,19 @@ describe('WithProperties', () => {
     expect(movie.title).toBe('');
 
     const classProperty = Movie.getProperty('limit');
+
     expect(isProperty(classProperty)).toBe(true);
     expect(classProperty.getName()).toBe('limit');
     expect(classProperty.getParent()).toBe(Movie);
 
     const prototypeProperty = Movie.prototype.getProperty('title');
+
     expect(isProperty(prototypeProperty)).toBe(true);
     expect(prototypeProperty.getName()).toBe('title');
     expect(prototypeProperty.getParent()).toBe(Movie.prototype);
 
     const instanceProperty = movie.getProperty('title');
+
     expect(isProperty(instanceProperty)).toBe(true);
     expect(instanceProperty.getName()).toBe('title');
     expect(instanceProperty.getParent()).toBe(movie);
@@ -41,11 +44,13 @@ describe('WithProperties', () => {
     }
 
     const classProperty = Movie.getProperty('limit');
+
     expect(isProperty(classProperty)).toBe(true);
     expect(classProperty.getName()).toBe('limit');
     expect(classProperty.getParent()).toBe(Movie);
 
     const prototypeProperty = Movie.prototype.getProperty('title');
+
     expect(isProperty(prototypeProperty)).toBe(true);
     expect(prototypeProperty.getName()).toBe('title');
     expect(prototypeProperty.getParent()).toBe(Movie.prototype);
@@ -53,11 +58,13 @@ describe('WithProperties', () => {
     class Film extends Movie {}
 
     const subclassProperty = Film.getProperty('limit');
+
     expect(isProperty(subclassProperty)).toBe(true);
     expect(subclassProperty.getName()).toBe('limit');
     expect(subclassProperty.getParent()).toBe(Film);
 
     const subclassPrototypeProperty = Film.prototype.getProperty('title');
+
     expect(isProperty(subclassPrototypeProperty)).toBe(true);
     expect(subclassPrototypeProperty.getName()).toBe('title');
     expect(subclassPrototypeProperty.getParent()).toBe(Film.prototype);
@@ -65,6 +72,7 @@ describe('WithProperties', () => {
     const movie = new Movie();
 
     const instanceProperty = movie.getProperty('title');
+
     expect(isProperty(instanceProperty)).toBe(true);
     expect(instanceProperty.getName()).toBe('title');
     expect(instanceProperty.getParent()).toBe(movie);
@@ -77,10 +85,13 @@ describe('WithProperties', () => {
     class Movie extends WithProperties() {}
 
     expect(Movie.hasProperty('limit')).toBe(false);
+
     let setPropertyResult = Movie.setProperty('limit');
+
     expect(Movie.hasProperty('limit')).toBe(true);
 
     let property = Movie.getProperty('limit');
+
     expect(property).toBe(setPropertyResult);
     expect(isProperty(property)).toBe(true);
     expect(property.getName()).toBe('limit');
@@ -89,10 +100,13 @@ describe('WithProperties', () => {
     class Film extends Movie {}
 
     expect(Film.hasProperty('limit')).toBe(true);
+
     setPropertyResult = Film.setProperty('limit');
+
     expect(Film.hasProperty('limit')).toBe(true);
 
     property = Film.getProperty('limit');
+
     expect(property).toBe(setPropertyResult);
     expect(isProperty(property)).toBe(true);
     expect(property.getName()).toBe('limit');
@@ -123,16 +137,19 @@ describe('WithProperties', () => {
     expect(movie.title).toBe('');
 
     const classProperty = Movie.getProperty('limit');
+
     expect(isProperty(classProperty)).toBe(true);
     expect(classProperty.getName()).toBe('limit');
     expect(classProperty.getParent()).toBe(Movie);
 
     const prototypeProperty = Movie.prototype.getProperty('title');
+
     expect(isProperty(prototypeProperty)).toBe(true);
     expect(prototypeProperty.getName()).toBe('title');
     expect(prototypeProperty.getParent()).toBe(Movie.prototype);
 
     const instanceProperty = movie.getProperty('title');
+
     expect(isProperty(instanceProperty)).toBe(true);
     expect(instanceProperty.getName()).toBe('title');
     expect(instanceProperty.getParent()).toBe(movie);
@@ -150,6 +167,7 @@ describe('WithProperties', () => {
     const movie = new Movie();
 
     let properties = movie.getProperties();
+
     expect(typeof properties[Symbol.iterator]).toBe('function');
     expect(Array.from(properties).map(property => property.getName())).toEqual([
       'title',
@@ -157,6 +175,7 @@ describe('WithProperties', () => {
     ]);
 
     const classProperties = Movie.getProperties();
+
     expect(typeof classProperties[Symbol.iterator]).toBe('function');
     expect(Array.from(classProperties)).toHaveLength(0);
 
@@ -167,6 +186,7 @@ describe('WithProperties', () => {
     const film = new Film();
 
     properties = film.getProperties();
+
     expect(typeof properties[Symbol.iterator]).toBe('function');
     expect(Array.from(properties).map(property => property.getName())).toEqual([
       'title',
@@ -180,6 +200,7 @@ describe('WithProperties', () => {
         return property.getName() !== 'duration';
       }
     });
+
     expect(typeof properties[Symbol.iterator]).toBe('function');
     expect(Array.from(properties).map(property => property.getName())).toEqual([
       'title',

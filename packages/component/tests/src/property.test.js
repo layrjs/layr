@@ -15,6 +15,7 @@ describe('Property', () => {
     const movie = new Movie();
 
     const property = new Property('title', movie);
+
     expect(isProperty(property)).toBe(true);
     expect(property.getName()).toBe('title');
     expect(property.getParent()).toBe(movie);
