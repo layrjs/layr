@@ -2,67 +2,55 @@ import {deserialize as simpleDeserialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
-import {isComponent} from './utilities';
+import {createComponentMap, getComponentFromComponentMap} from './utilities';
 
 export function deserialize(value, options) {
   ow(options, 'options', ow.optional.object.partialShape({knownComponents: ow.optional.array}));
 
-  const knownComponentMap = generateKnownComponentMap(options?.knownComponents);
-
-  const getComponent = function(name) {
-    const Component = knownComponentMap[name];
-    if (Component !== undefined) {
-      return Component;
-    }
-    throw new Error(`Cannot find the '${name}' component.`);
-  };
+  const knownComponentMap = createComponentMap(options?.knownComponents);
 
   const objectHandler = function(value) {
     const {__Component, __component, __new, ...attributes} = value;
 
+    let componentName;
+    let isComponentClass;
+
     if (__Component !== undefined) {
       // The value is a serialized component class
-      const Component = getComponent(__Component);
-      deserializeAttributes(Component, attributes);
-      return Component;
+      componentName = __Component;
+      isComponentClass = true;
+    } else if (__component !== undefined) {
+      componentName = __component;
+      isComponentClass = false;
     }
 
-    if (__component !== undefined) {
-      // The value is a serialized component instance
-      const Component = getComponent(__component);
-      const component = __new === true ? new Component() : Component.instantiate();
-      deserializeAttributes(component, attributes);
-      return component;
+    if (!componentName) {
+      return undefined;
     }
-  };
 
-  const deserializeAttributes = function(target, attributes) {
-    return possiblyAsync.forEach(Object.entries(attributes), ([key, value]) =>
-      possiblyAsync(simpleDeserialize(value, options), {
-        then: deserializedValue => {
-          target[key] = deserializedValue;
-        }
-      })
+    const Component = getComponentFromComponentMap(knownComponentMap, componentName);
+
+    let deserializedComponent;
+
+    if (isComponentClass) {
+      deserializedComponent = Component;
+    } else {
+      deserializedComponent = __new === true ? new Component() : Component.instantiate();
+    }
+
+    return possiblyAsync.forEach(
+      Object.entries(attributes),
+      ([key, value]) =>
+        possiblyAsync(simpleDeserialize(value, options), {
+          then: deserializedValue => {
+            deserializedComponent[key] = deserializedValue;
+          }
+        }),
+      {then: () => deserializedComponent}
     );
   };
 
   options = {...options, objectHandler};
 
   return simpleDeserialize(value, options);
-}
-
-function generateKnownComponentMap(knownComponents = []) {
-  const knownComponentMap = Object.create(null);
-
-  for (const knownComponent of knownComponents) {
-    if (!isComponent(knownComponent?.prototype)) {
-      throw new TypeError(
-        `Expected \`knownComponents\` items to be components but received type \`${typeof knownComponent}\``
-      );
-    }
-
-    knownComponentMap[knownComponent.getName()] = knownComponent;
-  }
-
-  return knownComponentMap;
 }

@@ -81,11 +81,11 @@ export const Component = (Base = Object) => {
     // === Serialization ===
 
     static toJSON() {
-      return serialize(this);
+      return serialize(this, {knownComponents: [this]});
     }
 
     toJSON() {
-      return serialize(this);
+      return serialize(this, {knownComponents: [this.constructor]});
     }
 
     // === Deserialization ===

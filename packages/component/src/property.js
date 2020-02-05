@@ -80,17 +80,9 @@ export class Property {
   }
 
   serializeExposure() {
-    let serializedExposure = this._exposure;
-
-    if (serializedExposure === undefined) {
-      return undefined;
-    }
-
-    serializedExposure = mapValues(serializedExposure, setting =>
+    return mapValues(this._exposure ?? {}, setting =>
       this._parent.serializePropertyOperationSetting(setting)
     );
-
-    return serializedExposure;
   }
 
   // === Forking ===

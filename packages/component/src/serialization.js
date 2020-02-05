@@ -2,32 +2,54 @@ import {serialize as simpleSerialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
-import {isComponent} from './utilities';
+import {isComponent, createComponentMap, getComponentFromComponentMap} from './utilities';
 
 export function serialize(value, options) {
-  ow(options, 'options', ow.optional.object);
+  ow(options, 'options', ow.optional.object.partialShape({knownComponents: ow.optional.array}));
+
+  const knownComponentMap = createComponentMap(options?.knownComponents);
 
   const objectHandler = function(value) {
+    let Component;
+    let isComponentClass;
+
     if (isComponent(value.prototype)) {
       // The value is a component class
-      return {
-        __Component: value.getName(),
-        ...serializeAttributes(value)
-      };
-    }
-
-    if (isComponent(value)) {
+      Component = value;
+      isComponentClass = true;
+    } else if (isComponent(value)) {
       // The value is a component instance
-      return {
-        __component: value.constructor.getName(),
-        ...(value.isNew() && {__new: true}),
-        ...serializeAttributes(value)
-      };
+      Component = value.constructor;
+      isComponentClass = false;
     }
-  };
 
-  const serializeAttributes = function(source) {
-    return possiblyAsync.mapObject(source, value => simpleSerialize(value, options));
+    if (!Component) {
+      return undefined;
+    }
+
+    const componentName = Component.getName();
+
+    // Make sure the component is known
+    getComponentFromComponentMap(knownComponentMap, componentName);
+
+    return possiblyAsync.mapObject(
+      value,
+      propertyValue => simpleSerialize(propertyValue, options),
+      {
+        then: serializedAttributes => {
+          return isComponentClass
+            ? {
+                __Component: componentName,
+                ...serializedAttributes
+              }
+            : {
+                __component: componentName,
+                ...(value.isNew() && {__new: true}),
+                ...serializedAttributes
+              };
+        }
+      }
+    );
   };
 
   options = {...options, objectHandler};
