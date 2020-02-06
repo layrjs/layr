@@ -42,6 +42,7 @@ export const WithProperties = (Base = Object) => {
 
     setProperty(name, options = {}) {
       ow(name, 'name', ow.string.nonEmpty);
+      ow(options, 'options', ow.object);
 
       let property = this.getProperty(name, {throwIfMissing: false});
 
@@ -155,6 +156,8 @@ export function isWithProperties(object) {
 }
 
 export function property(options = {}) {
+  ow(options, 'options', ow.object);
+
   return function(target, name, descriptor) {
     ow(target, 'target', ow.object);
     ow(name, 'name', ow.string.nonEmpty);
@@ -165,6 +168,26 @@ export function property(options = {}) {
     }
 
     target.setProperty(name, options);
+
+    return descriptor;
+  };
+}
+
+export function expose(exposure = {}) {
+  ow(exposure, 'exposure', ow.object);
+
+  return function(target, name, descriptor) {
+    ow(target, 'target', ow.object);
+    ow(name, 'name', ow.string.nonEmpty);
+    ow(descriptor, 'descriptor', ow.object);
+
+    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+      throw new Error(`@expose() target doesn't inherit from WithProperties`);
+    }
+
+    const property = target.setProperty(name);
+
+    property.setExposure(exposure);
 
     return descriptor;
   };

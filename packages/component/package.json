@@ -14,7 +14,6 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "debug": "^4.1.1",
-    "@deepr/runtime": "^0.3.0",
     "is-promise": "^2.1.0",
     "simple-serialization": "^0.1.0",
     "lodash": "^4.17.15",

@@ -39,7 +39,7 @@ export class Property {
     return this._exposure;
   }
 
-  setExposure(exposure) {
+  setExposure(exposure = {}) {
     this._exposure = this._normalizeExposure(exposure);
   }
 
