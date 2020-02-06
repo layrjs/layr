@@ -1,0 +1,47 @@
+{
+  "name": "@liaison/component-server",
+  "version": "0.1.0",
+  "description": "A server to locally serve your components",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component-server",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/node/cjs",
+  "module": "dist/node/esm",
+  "browser": "dist/browser/esm",
+  "dependencies": {
+    "core-helpers": "^0.1.0",
+    "debug": "^4.1.1",
+    "@deepr/runtime": "^0.3.0",
+    "@liaison/component": "^0.1.0",
+    "lodash": "^4.17.15",
+    "ow": "^0.15.0",
+    "possibly-async": "^0.2.0"
+  },
+  "@managed": {
+    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
+    "properties": [
+      "name",
+      "version",
+      "private",
+      "description",
+      "keywords",
+      "homepage",
+      "author",
+      "contributors",
+      "license",
+      "repository",
+      "files",
+      "main",
+      "module",
+      "browser",
+      "bin",
+      "dependencies",
+      "peerDependencies",
+      "optionalDependencies",
+      "devDependencies"
+    ]
+  }
+}

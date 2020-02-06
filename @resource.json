@@ -3,6 +3,12 @@
   "component": {
     "@include": "./packages/component"
   },
+  "componentClient": {
+    "@include": "./packages/component-client"
+  },
+  "componentServer": {
+    "@include": "./packages/component-server"
+  },
   "entity": {
     "@include": "./packages/entity"
   },
@@ -59,6 +65,10 @@
     "@run": [
       "(@import shell/bash) run \"npm-link ./packages/component\"",
       "(@import shell/bash) run \"npm-link ./packages/component/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/component-client\"",
+      "(@import shell/bash) run \"npm-link ./packages/component-client/tests\"",
+      "(@import shell/bash) run \"npm-link ./packages/component-server\"",
+      "(@import shell/bash) run \"npm-link ./packages/component-server/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/entity\"",
       "(@import shell/bash) run \"npm-link ./packages/entity/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/identity\"",
