@@ -5,9 +5,17 @@ import ow from 'ow';
 import {createComponentMap, getComponentFromComponentMap} from './utilities';
 
 export function deserialize(value, options) {
-  ow(options, 'options', ow.optional.object.partialShape({knownComponents: ow.optional.array}));
+  ow(
+    options,
+    'options',
+    ow.optional.object.partialShape({
+      knownComponents: ow.optional.array,
+      propertyFilter: ow.optional.function
+    })
+  );
 
   const knownComponentMap = createComponentMap(options?.knownComponents);
+  const propertyFilter = options?.propertyFilter;
 
   const objectHandler = function(value) {
     const {__Component, __component, __new, ...attributes} = value;
@@ -40,12 +48,30 @@ export function deserialize(value, options) {
 
     return possiblyAsync.forEach(
       Object.entries(attributes),
-      ([key, value]) =>
-        possiblyAsync(simpleDeserialize(value, options), {
-          then: deserializedValue => {
-            deserializedComponent[key] = deserializedValue;
+      ([propertyName, propertyValue]) => {
+        const property = deserializedComponent.getProperty(propertyName, {throwIfMissing: false});
+
+        if (property === undefined) {
+          return;
+        }
+
+        return possiblyAsync(
+          propertyFilter !== undefined
+            ? propertyFilter.call(deserializedComponent, property)
+            : true,
+          {
+            then: isNotFilteredOut => {
+              if (isNotFilteredOut) {
+                return possiblyAsync(simpleDeserialize(propertyValue, options), {
+                  then: deserializedPropertyValue => {
+                    deserializedComponent[propertyName] = deserializedPropertyValue;
+                  }
+                });
+              }
+            }
           }
-        }),
+        );
+      },
       {then: () => deserializedComponent}
     );
   };

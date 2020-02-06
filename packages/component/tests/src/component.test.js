@@ -138,7 +138,7 @@ describe('Component', () => {
     expect(serialize(Movie, {knownComponents: [Movie]})).toEqual({__Component: 'Movie'});
 
     class MovieWithLimit extends Movie {
-      static limit = 100;
+      @property() static limit = 100;
     }
 
     expect(serialize(MovieWithLimit, {knownComponents: [MovieWithLimit]})).toEqual({
@@ -147,7 +147,7 @@ describe('Component', () => {
     });
 
     class Cinema extends Component() {
-      static MovieClass = MovieWithLimit;
+      @property() static MovieClass = MovieWithLimit;
     }
 
     expect(() => serialize(Cinema, {knownComponents: [Cinema]})).toThrow(
@@ -161,27 +161,67 @@ describe('Component', () => {
   });
 
   test('Instance serialization', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component() {
+      @property() title;
+      @property() director;
+    }
 
     const movie = new Movie();
 
     expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
       __component: 'Movie',
-      __new: true
+      __new: true,
+      title: {__undefined: true},
+      director: {__undefined: true}
     });
 
     movie.markAsNotNew();
 
-    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({__component: 'Movie'});
+    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
+      __component: 'Movie',
+      title: {__undefined: true},
+      director: {__undefined: true}
+    });
 
     movie.title = 'Inception';
 
     expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
       __component: 'Movie',
+      title: 'Inception',
+      director: {__undefined: true}
+    });
+
+    expect(
+      serialize(movie, {
+        knownComponents: [Movie],
+        propertyFilter(property) {
+          expect(this).toBe(movie);
+          expect(property.getParent()).toBe(movie);
+          return property.getName() === 'title';
+        }
+      })
+    ).toEqual({
+      __component: 'Movie',
       title: 'Inception'
     });
 
-    class Director extends Component() {}
+    expect(
+      await serialize(movie, {
+        knownComponents: [Movie],
+        async propertyFilter(property) {
+          expect(this).toBe(movie);
+          expect(property.getParent()).toBe(movie);
+          return property.getName() === 'title';
+        }
+      })
+    ).toEqual({
+      __component: 'Movie',
+      title: 'Inception'
+    });
+
+    class Director extends Component() {
+      @property() name;
+    }
 
     movie.director = new Director();
     movie.director.name = 'Christopher Nolan';
@@ -194,7 +234,9 @@ describe('Component', () => {
   });
 
   test('Class deserialization', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component() {
+      @property() static limit;
+    }
 
     expect(Movie.limit).toBeUndefined();
 
@@ -215,7 +257,8 @@ describe('Component', () => {
 
   test('Instance deserialization', async () => {
     class Movie extends Component() {
-      duration = 0;
+      @property() title;
+      @property() duration = 0;
     }
 
     const movie = deserialize(
@@ -251,13 +294,45 @@ describe('Component', () => {
     expect(movie3.title).toBe('Inception');
     expect(movie3.duration).toBe(120);
 
-    const movie4 = Movie.fromJSON({__component: 'Movie', title: 'Inception'});
+    const movie4 = deserialize(
+      {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
+      {
+        knownComponents: [Movie],
+        propertyFilter(property) {
+          expect(this).toBeInstanceOf(Movie);
+          expect(property.getParent()).toBe(this);
+          return property.getName() === 'title';
+        }
+      }
+    );
 
-    expect(movie4).toBeInstanceOf(Movie);
-    expect(Object.keys(movie4)).toEqual(['title']);
     expect(movie4.title).toBe('Inception');
+    expect(movie4.duration).toBe(0);
 
-    class Cinema extends Component() {}
+    const movie5 = await deserialize(
+      {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
+      {
+        knownComponents: [Movie],
+        async propertyFilter(property) {
+          expect(this).toBeInstanceOf(Movie);
+          expect(property.getParent()).toBe(this);
+          return property.getName() === 'title';
+        }
+      }
+    );
+
+    expect(movie5.title).toBe('Inception');
+    expect(movie5.duration).toBe(0);
+
+    const movie6 = Movie.fromJSON({__component: 'Movie', title: 'Inception'});
+
+    expect(movie6).toBeInstanceOf(Movie);
+    expect(Object.keys(movie6)).toEqual(['title']);
+    expect(movie6.title).toBe('Inception');
+
+    class Cinema extends Component() {
+      @property() movies;
+    }
 
     const cinema = deserialize(
       {__component: 'Cinema', movies: [{__component: 'Movie', title: 'The Matrix'}]},
