@@ -136,6 +136,24 @@ export const WithProperties = (Base = Object) => {
       if (setting === true) {
         return true;
       }
+    },
+
+    // === Introspection ===
+
+    introspectProperties(options = {}) {
+      ow(options, 'options', ow.object.exactShape({filter: ow.optional.function}));
+
+      const {filter} = options;
+
+      const introspectedProperties = [];
+
+      for (const property of this.getProperties({filter})) {
+        const name = property.getName();
+        const serializedExposure = property.serializeExposure();
+        introspectedProperties.push({name, exposure: serializedExposure});
+      }
+
+      return introspectedProperties;
     }
   };
 

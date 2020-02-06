@@ -94,6 +94,22 @@ export const Component = (Base = Object) => {
       return deserialize(value, {knownComponents: [this]});
     }
 
+    // === Introspection ===
+
+    static introspect(options = {}) {
+      ow(options, 'options', ow.object.exactShape({propertyFilter: ow.optional.function}));
+
+      const {propertyFilter} = options;
+
+      return {
+        name: this.getName(),
+        properties: this.introspectProperties({filter: propertyFilter}),
+        prototype: {
+          properties: this.prototype.introspectProperties({filter: propertyFilter})
+        }
+      };
+    }
+
     // === Utilities ===
 
     static isComponent(object) {
