@@ -18,40 +18,70 @@ describe('ComponentClient', () => {
           );
         }
 
+        // client.getComponents()
         if (isEqual(query, {'introspect=>': {'()': []}})) {
           return {
             components: [
               {
                 name: 'Movie',
-                properties: [{name: 'find', exposure: {call: true}}],
-                prototype: {properties: [{name: 'title', exposure: {get: true, set: true}}]}
+                properties: [
+                  {name: 'token', exposure: {get: true, set: true}},
+                  {name: 'find', exposure: {call: true}}
+                ],
+                prototype: {
+                  properties: [
+                    {name: 'title', exposure: {get: true, set: true}},
+                    {name: 'isPlaying', exposure: {get: true}},
+                    {name: 'play', exposure: {call: true}}
+                  ]
+                }
               }
             ]
           };
         }
 
+        // Movie.find()
         if (
-          isEqual(query, {'<=': {__Component: 'Movie'}, 'find=>result': {'()': []}, '=>self': true})
+          isEqual(query, {
+            '<=': {__Component: 'Movie', token: 'abc123'},
+            'find=>result': {'()': []},
+            '=>self': true
+          })
         ) {
           return {
             result: [
               {__component: 'Movie', title: 'Inception'},
               {__component: 'Movie', title: 'The Matrix'}
             ],
-            self: {__Component: 'Movie'}
+            self: {__Component: 'Movie', token: 'abc123'}
           };
         }
 
+        // Movie.find({limit: 1})
         if (
           isEqual(query, {
-            '<=': {__Component: 'Movie'},
+            '<=': {__Component: 'Movie', token: 'abc123'},
             'find=>result': {'()': [{limit: 1}]},
             '=>self': true
           })
         ) {
           return {
             result: [{__component: 'Movie', title: 'Inception'}],
-            self: {__Component: 'Movie'}
+            self: {__Component: 'Movie', token: 'abc123'}
+          };
+        }
+
+        // movie.play()
+        if (
+          isEqual(query, {
+            '<=': {__component: 'Movie', title: 'Inception'},
+            'play=>result': {'()': []},
+            '=>self': true
+          })
+        ) {
+          return {
+            result: {__component: 'Movie', isPlaying: true},
+            self: {__component: 'Movie', isPlaying: true}
           };
         }
 
@@ -67,12 +97,24 @@ describe('ComponentClient', () => {
 
     client = new ComponentClient(server, {version: 1});
 
-    const [Movie] = client.getComponents();
+    const [RemoteMovie] = client.getComponents();
 
-    expect(isComponent(Movie.prototype)).toBe(true);
-    expect(Movie.getName()).toBe('Movie');
+    expect(isComponent(RemoteMovie.prototype)).toBe(true);
+    expect(RemoteMovie.getName()).toBe('Movie');
+    expect(RemoteMovie.getProperty('token').getExposure()).toEqual({get: true, set: true});
+    expect(typeof RemoteMovie.find).toBe('function');
+    expect(RemoteMovie.prototype.getProperty('title').getExposure()).toEqual({
+      get: true,
+      set: true
+    });
+    expect(RemoteMovie.prototype.getProperty('isPlaying').getExposure()).toEqual({get: true});
+    expect(typeof RemoteMovie.prototype.play).toBe('function');
 
-    expect(typeof Movie.find).toBe('function');
+    class Movie extends RemoteMovie {}
+
+    expect(() => Movie.find()).toThrow(/Received an unknown query/); // The token is missing
+
+    Movie.token = 'abc123';
 
     let movies = Movie.find();
 
@@ -87,5 +129,25 @@ describe('ComponentClient', () => {
     expect(movies).toHaveLength(1);
     expect(movies[0]).toBeInstanceOf(Movie);
     expect(movies[0].title).toBe('Inception');
+
+    let movie = Movie.instantiate();
+    movie.title = 'Inception';
+
+    movie = movie.play();
+
+    expect(movie).toBeInstanceOf(Movie);
+
+    // Since 'title' did not change, it should be transported back to the local component
+    expect(movie.title).toBeUndefined();
+
+    expect(movie.isPlaying).toBe(true);
+
+    movie = Movie.instantiate();
+    movie.title = 'Inception';
+
+    // Because 'set' is not exposed, 'isPlaying' should not be transported to the remote component
+    movie.isPlaying = true;
+
+    movie = movie.play();
   });
 });

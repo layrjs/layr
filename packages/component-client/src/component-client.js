@@ -1,4 +1,10 @@
-import {Component, serialize, deserialize} from '@liaison/component';
+import {
+  Component,
+  isComponent,
+  serialize,
+  deserialize,
+  createComponentMap
+} from '@liaison/component';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import debugModule from 'debug';
@@ -27,12 +33,40 @@ export class ComponentClient {
     this._version = version;
   }
 
+  getComponent(name, options = {}) {
+    ow(name, 'name', ow.string.nonEmpty);
+    ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+    const {throwIfMissing = true} = options;
+
+    const componentMap = this._getComponentMap();
+    const Component = componentMap[name];
+
+    if (Component === undefined) {
+      if (throwIfMissing) {
+        throw new Error(`The component '${name}' is missing in the component client`);
+      }
+      return undefined;
+    }
+
+    return Component;
+  }
+
   getComponents() {
     if (this._components === undefined) {
       this._components = this._createComponents();
     }
 
     return this._components;
+  }
+
+  _getComponentMap() {
+    if (this._componentMap === undefined) {
+      const components = this.getComponents();
+      this._componentMap = createComponentMap(components);
+    }
+
+    return this._componentMap;
   }
 
   sendQuery(query) {
@@ -103,10 +137,27 @@ export class ComponentClient {
 
       // TODO: if 'this' is in a layer, provide layer's components
       // through the 'componentProvider' serialize()/deserialize() parameter
-      const knownComponents = componentClient.getComponents();
+      const isComponentClass = !isComponent(this);
+      const LocalComponent = isComponentClass ? this : this.constructor;
+      const knownComponents = [LocalComponent];
 
-      const propertyFilter = function(_property) {
-        return true; // TODO
+      const propertyFilter = function(property) {
+        // Exclude properties that cannot be set in the remote components
+
+        const isComponentClass = !isComponent(this);
+        const LocalComponent = isComponentClass ? this : this.constructor;
+        const RemoteComponent = componentClient.getComponent(LocalComponent.getName());
+        const remoteComponent = isComponentClass ? RemoteComponent : RemoteComponent.prototype;
+
+        const remoteProperty = remoteComponent.getProperty(property.getName(), {
+          throwIfMissing: false
+        });
+
+        if (remoteProperty !== undefined) {
+          return remoteProperty.operationIsAllowed('set');
+        }
+
+        return false;
       };
 
       query = serialize(query, {knownComponents, propertyFilter, target: 'parent'});
