@@ -9,44 +9,11 @@
   "componentServer": {
     "@include": "./packages/component-server"
   },
-  "entity": {
-    "@include": "./packages/entity"
-  },
-  "identity": {
-    "@include": "./packages/identity"
-  },
-  "layer": {
-    "@include": "./packages/layer"
-  },
-  "layerHTTPClient": {
-    "@include": "./packages/layer-http-client"
-  },
-  "layerHTTPServer": {
-    "@include": "./packages/layer-http-server"
-  },
-  "liaison": {
-    "@include": "./packages/liaison"
-  },
   "model": {
     "@include": "./packages/model"
   },
-  "mongoDBStore": {
-    "@include": "./packages/mongodb-store"
-  },
   "observable": {
     "@include": "./packages/observable"
-  },
-  "reactIntegration": {
-    "@include": "./packages/react-integration"
-  },
-  "router": {
-    "@include": "./packages/router"
-  },
-  "storable": {
-    "@include": "./packages/storable"
-  },
-  "withRoles": {
-    "@include": "./packages/with-roles"
   },
   "counterExample": {
     "@include": "./examples/counter"
@@ -69,26 +36,10 @@
       "(@import shell/bash) run \"npm-link ./packages/component-client/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/component-server\"",
       "(@import shell/bash) run \"npm-link ./packages/component-server/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/entity\"",
-      "(@import shell/bash) run \"npm-link ./packages/entity/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/identity\"",
-      "(@import shell/bash) run \"npm-link ./packages/identity/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/layer\"",
-      "(@import shell/bash) run \"npm-link ./packages/layer/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/layer-http-client\"",
-      "(@import shell/bash) run \"npm-link ./packages/layer-http-server\"",
-      "(@import shell/bash) run \"npm-link ./packages/liaison\"",
       "(@import shell/bash) run \"npm-link ./packages/model\"",
       "(@import shell/bash) run \"npm-link ./packages/model/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/mongodb-store\"",
-      "(@import shell/bash) run \"npm-link ./packages/mongodb-store/tests\"",
       "(@import shell/bash) run \"npm-link ./packages/observable\"",
       "(@import shell/bash) run \"npm-link ./packages/observable/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/react-integration\"",
-      "(@import shell/bash) run \"npm-link ./packages/router\"",
-      "(@import shell/bash) run \"npm-link ./packages/storable\"",
-      "(@import shell/bash) run \"npm-link ./packages/storable/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/with-roles\"",
       "(@import shell/bash) run \"npm-link ./examples/counter\"",
       "(@import shell/bash) run \"npm-link ./examples/counter-via-http\"",
       "(@import shell/bash) run \"npm-link ./resources/hosted-layer\"",

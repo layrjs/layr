@@ -1,7 +1,0 @@
-{
-  "@import": "1place/jest#^0.1.0",
-  "dependencies": {
-    "@liaison/layer-http-client": "^0.1.0",
-    "@liaison/layer-http-server": "^0.1.0"
-  }
-}

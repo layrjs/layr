@@ -1,6 +1,0 @@
-{
-  "@import": "1place/jest#^0.1.0",
-  "dependencies": {
-    "mongodb-memory-server": "^5.1.3"
-  }
-}
