@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cross-fetch": "^3.0.4",
+    "jsonwebtoken": "^8.5.1",
+    "@liaison/liaison": "^0.1.3",
+    "@liaison/liaison-website-shared": "^0.1.0",
+    "@liaison/mongodb-store": "^0.1.0",
+    "lodash": "^4.17.15",
+    "ow": "^0.13.2",
+    "rss": "^1.2.2",
+    "slugify": "^1.3.5"
+  },
+  "@managed": {
+    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
+    "properties": [
+      "dependencies",
+      "peerDependencies",
+      "optionalDependencies",
+      "devDependencies"
+    ]
+  }
+}

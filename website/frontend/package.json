@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "date-fns": "^2.7.0",
+    "dompurify": "^2.0.0",
+    "@emotion/core": "^10.0.22",
+    "emotion-normalize": "^10.1.0",
+    "emotion-theming": "^10.0.19",
+    "facepaint": "^1.2.1",
+    "highlight.js": "^9.16.2",
+    "@liaison/layer-http-client": "^0.1.0",
+    "@liaison/liaison": "^0.1.3",
+    "@liaison/liaison-website-shared": "^0.1.0",
+    "@liaison/react-integration": "^0.1.0",
+    "marked": "^0.7.0",
+    "material-design-palette": "^0.0.4",
+    "@react-hook/window-size": "^1.0.8",
+    "react-metatags-hook": "^1.1.1"
+  },
+  "@managed": {
+    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
+    "properties": [
+      "dependencies",
+      "peerDependencies",
+      "optionalDependencies",
+      "devDependencies"
+    ]
+  }
+}
