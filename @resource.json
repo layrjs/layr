@@ -26,26 +26,5 @@
   },
   "lambdaHostedLayer": {
     "@include": "./resources/lambda-hosted-layer"
-  },
-  "link": {
-    "@type": "method",
-    "@run": [
-      "(@import shell/bash) run \"npm-link ./packages/component\"",
-      "(@import shell/bash) run \"npm-link ./packages/component/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/component-client\"",
-      "(@import shell/bash) run \"npm-link ./packages/component-client/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/component-server\"",
-      "(@import shell/bash) run \"npm-link ./packages/component-server/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/model\"",
-      "(@import shell/bash) run \"npm-link ./packages/model/tests\"",
-      "(@import shell/bash) run \"npm-link ./packages/observable\"",
-      "(@import shell/bash) run \"npm-link ./packages/observable/tests\"",
-      "(@import shell/bash) run \"npm-link ./examples/counter\"",
-      "(@import shell/bash) run \"npm-link ./examples/counter-via-http\"",
-      "(@import shell/bash) run \"npm-link ./resources/hosted-layer\"",
-      "(@import shell/bash) run \"npm-link ./resources/hosted-layer/example\"",
-      "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer\"",
-      "(@import shell/bash) run \"npm-link ./resources/lambda-hosted-layer/examples/1\""
-    ]
   }
 }

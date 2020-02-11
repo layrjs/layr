@@ -7,13 +7,5 @@
   },
   "shared": {
     "@include": "./shared"
-  },
-  "link": {
-    "@type": "method",
-    "@run": [
-      "(@import shell/bash) run \"npm-link ./backend\"",
-      "(@import shell/bash) run \"npm-link ./frontend\"",
-      "(@import shell/bash) run \"npm-link ./shared\""
-    ]
   }
 }
