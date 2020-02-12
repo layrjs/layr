@@ -1,4 +1,4 @@
-import {Component, serialize, deserialize, isComponent, property} from '../../..';
+import {Component, serialize, deserialize, isComponent, attribute} from '../../..';
 
 describe('Component', () => {
   test('Creation', async () => {
@@ -106,9 +106,9 @@ describe('Component', () => {
 
   test('Forking', async () => {
     class Movie extends Component() {
-      @property() static limit = 100;
+      @attribute() static limit = 100;
 
-      @property() title = '';
+      @attribute() title = '';
     }
 
     const ForkedMovie = Movie.fork();
@@ -138,7 +138,7 @@ describe('Component', () => {
     expect(serialize(Movie, {knownComponents: [Movie]})).toEqual({__Component: 'Movie'});
 
     class MovieWithLimit extends Movie {
-      @property() static limit = 100;
+      @attribute() static limit = 100;
     }
 
     expect(serialize(MovieWithLimit, {knownComponents: [MovieWithLimit]})).toEqual({
@@ -147,7 +147,7 @@ describe('Component', () => {
     });
 
     class Cinema extends Component() {
-      @property() static MovieClass = MovieWithLimit;
+      @attribute() static MovieClass = MovieWithLimit;
     }
 
     expect(() => serialize(Cinema, {knownComponents: [Cinema]})).toThrow(
@@ -162,8 +162,8 @@ describe('Component', () => {
 
   test('Instance serialization', async () => {
     class Movie extends Component() {
-      @property() title;
-      @property() director;
+      @attribute() title;
+      @attribute() director;
     }
 
     const movie = new Movie();
@@ -194,10 +194,10 @@ describe('Component', () => {
     expect(
       serialize(movie, {
         knownComponents: [Movie],
-        propertyFilter(property) {
+        attributeFilter(attribute) {
           expect(this).toBe(movie);
-          expect(property.getParent()).toBe(movie);
-          return property.getName() === 'title';
+          expect(attribute.getParent()).toBe(movie);
+          return attribute.getName() === 'title';
         }
       })
     ).toEqual({
@@ -208,10 +208,10 @@ describe('Component', () => {
     expect(
       await serialize(movie, {
         knownComponents: [Movie],
-        async propertyFilter(property) {
+        async attributeFilter(attribute) {
           expect(this).toBe(movie);
-          expect(property.getParent()).toBe(movie);
-          return property.getName() === 'title';
+          expect(attribute.getParent()).toBe(movie);
+          return attribute.getName() === 'title';
         }
       })
     ).toEqual({
@@ -220,7 +220,7 @@ describe('Component', () => {
     });
 
     class Director extends Component() {
-      @property() name;
+      @attribute() name;
     }
 
     movie.director = new Director();
@@ -235,7 +235,7 @@ describe('Component', () => {
 
   test('Class deserialization', async () => {
     class Movie extends Component() {
-      @property() static limit;
+      @attribute() static limit;
     }
 
     expect(Movie.limit).toBeUndefined();
@@ -257,8 +257,8 @@ describe('Component', () => {
 
   test('Instance deserialization', async () => {
     class Movie extends Component() {
-      @property() title;
-      @property() duration = 0;
+      @attribute() title;
+      @attribute() duration = 0;
     }
 
     const movie = deserialize(
@@ -269,8 +269,8 @@ describe('Component', () => {
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
     expect(movie.isNew()).toBe(false);
-    expect(Object.keys(movie)).toEqual(['title']);
     expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('duration').isActive()).toBe(false);
 
     const movie2 = deserialize(
       {__component: 'Movie', __new: true, title: 'Inception'},
@@ -280,9 +280,6 @@ describe('Component', () => {
     expect(movie2).toBeInstanceOf(Movie);
     expect(movie2).not.toBe(Movie.prototype);
     expect(movie2.isNew()).toBe(true);
-    expect(Object.keys(movie2)).toHaveLength(2);
-    expect(Object.keys(movie2)).toContain('title');
-    expect(Object.keys(movie2)).toContain('duration');
     expect(movie2.title).toBe('Inception');
     expect(movie2.duration).toBe(0);
 
@@ -298,10 +295,10 @@ describe('Component', () => {
       {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
       {
         knownComponents: [Movie],
-        propertyFilter(property) {
+        attributeFilter(attribute) {
           expect(this).toBeInstanceOf(Movie);
-          expect(property.getParent()).toBe(this);
-          return property.getName() === 'title';
+          expect(attribute.getParent()).toBe(this);
+          return attribute.getName() === 'title';
         }
       }
     );
@@ -313,10 +310,10 @@ describe('Component', () => {
       {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
       {
         knownComponents: [Movie],
-        async propertyFilter(property) {
+        async attributeFilter(attribute) {
           expect(this).toBeInstanceOf(Movie);
-          expect(property.getParent()).toBe(this);
-          return property.getName() === 'title';
+          expect(attribute.getParent()).toBe(this);
+          return attribute.getName() === 'title';
         }
       }
     );
@@ -327,11 +324,11 @@ describe('Component', () => {
     const movie6 = Movie.fromJSON({__component: 'Movie', title: 'Inception'});
 
     expect(movie6).toBeInstanceOf(Movie);
-    expect(Object.keys(movie6)).toEqual(['title']);
     expect(movie6.title).toBe('Inception');
+    expect(movie6.getAttribute('duration').isActive()).toBe(false);
 
     class Cinema extends Component() {
-      @property() movies;
+      @attribute() movies;
     }
 
     const cinema = deserialize(
@@ -340,10 +337,9 @@ describe('Component', () => {
     );
 
     expect(cinema).toBeInstanceOf(Cinema);
-    expect(Object.keys(cinema)).toEqual(['movies']);
     expect(cinema.movies).toHaveLength(1);
     expect(cinema.movies[0]).toBeInstanceOf(Movie);
-    expect(Object.keys(cinema.movies[0])).toEqual(['title']);
     expect(cinema.movies[0].title).toBe('The Matrix');
+    expect(cinema.movies[0].getAttribute('duration').isActive()).toBe(false);
   });
 });

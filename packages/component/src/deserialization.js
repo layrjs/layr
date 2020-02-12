@@ -10,12 +10,12 @@ export function deserialize(value, options) {
     'options',
     ow.optional.object.partialShape({
       knownComponents: ow.optional.array,
-      propertyFilter: ow.optional.function
+      attributeFilter: ow.optional.function
     })
   );
 
   const knownComponentMap = createComponentMap(options?.knownComponents);
-  const propertyFilter = options?.propertyFilter;
+  const attributeFilter = options?.attributeFilter;
 
   const objectHandler = function(value) {
     const {__Component, __component, __new, ...attributes} = value;
@@ -48,23 +48,25 @@ export function deserialize(value, options) {
 
     return possiblyAsync.forEach(
       Object.entries(attributes),
-      ([propertyName, propertyValue]) => {
-        const property = deserializedComponent.getProperty(propertyName, {throwIfMissing: false});
+      ([attributeName, attributeValue]) => {
+        const attribute = deserializedComponent.getAttribute(attributeName, {
+          throwIfMissing: false
+        });
 
-        if (property === undefined) {
+        if (attribute === undefined) {
           return;
         }
 
         return possiblyAsync(
-          propertyFilter !== undefined
-            ? propertyFilter.call(deserializedComponent, property)
+          attributeFilter !== undefined
+            ? attributeFilter.call(deserializedComponent, attribute)
             : true,
           {
             then: isNotFilteredOut => {
               if (isNotFilteredOut) {
-                return possiblyAsync(simpleDeserialize(propertyValue, options), {
-                  then: deserializedPropertyValue => {
-                    deserializedComponent[propertyName] = deserializedPropertyValue;
+                return possiblyAsync(simpleDeserialize(attributeValue, options), {
+                  then: deserializedAttributeValue => {
+                    attribute.setValue(deserializedAttributeValue);
                   }
                 });
               }

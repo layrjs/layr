@@ -26,12 +26,12 @@ export class ComponentServer {
 
     const root = this.getRoot(components);
 
-    const getFilter = function(property) {
-      return property.operationIsAllowed('get');
+    const getFilter = function(attribute) {
+      return attribute.operationIsAllowed('get');
     };
 
-    const setFilter = function(property) {
-      return property.operationIsAllowed('set');
+    const setFilter = function(attribute) {
+      return attribute.operationIsAllowed('set');
     };
 
     const authorizer = function(name, operation, _params) {
@@ -54,7 +54,7 @@ export class ComponentServer {
       () => {
         return deserialize(query, {
           knownComponents: components,
-          propertyFilter: setFilter,
+          attributeFilter: setFilter,
           source: 'child'
         });
       },
@@ -64,7 +64,7 @@ export class ComponentServer {
       result => {
         return serialize(result, {
           knownComponents: components,
-          propertyFilter: getFilter,
+          attributeFilter: getFilter,
           target: 'child'
         });
       }

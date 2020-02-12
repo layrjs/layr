@@ -10,12 +10,12 @@ export function serialize(value, options) {
     'options',
     ow.optional.object.partialShape({
       knownComponents: ow.optional.array,
-      propertyFilter: ow.optional.function
+      attributeFilter: ow.optional.function
     })
   );
 
   const knownComponentMap = createComponentMap(options?.knownComponents);
-  const propertyFilter = options?.propertyFilter;
+  const attributeFilter = options?.attributeFilter;
 
   const objectHandler = function(value) {
     let Component;
@@ -45,22 +45,18 @@ export function serialize(value, options) {
       : {__component: componentName, ...(value.isNew() && {__new: true})};
 
     return possiblyAsync.forEach(
-      Object.entries(value),
-      ([propertyName, propertyValue]) => {
-        const property = value.getProperty(propertyName, {throwIfMissing: false});
-
-        if (property === undefined) {
-          return;
-        }
-
+      value.getActiveAttributes(),
+      attribute => {
         return possiblyAsync(
-          propertyFilter !== undefined ? propertyFilter.call(value, property) : true,
+          attributeFilter !== undefined ? attributeFilter.call(value, attribute) : true,
           {
             then: isNotFilteredOut => {
               if (isNotFilteredOut) {
-                return possiblyAsync(simpleSerialize(propertyValue, options), {
-                  then: serializedPropertyValue => {
-                    serializedComponent[propertyName] = serializedPropertyValue;
+                const attributeName = attribute.getName();
+                const attributeValue = attribute.getValue();
+                return possiblyAsync(simpleSerialize(attributeValue, options), {
+                  then: serializedAttributeValue => {
+                    serializedComponent[attributeName] = serializedAttributeValue;
                   }
                 });
               }

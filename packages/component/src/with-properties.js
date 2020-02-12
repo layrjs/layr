@@ -1,7 +1,8 @@
 import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
 
-import {Property} from './property';
+import {Attribute, isAttribute} from './attribute';
+import {Method, isMethod} from './method';
 
 export const WithProperties = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -9,7 +10,7 @@ export const WithProperties = (Base = Object) => {
   class CommonWithProperties extends Base {}
 
   const commonMethods = {
-    // === Property items ===
+    // === Properties ===
 
     getProperty(name, options = {}) {
       ow(name, 'name', ow.string.nonEmpty);
@@ -40,18 +41,49 @@ export const WithProperties = (Base = Object) => {
       return property;
     },
 
-    setProperty(name, options = {}) {
+    setProperty(name, type, propertyOptions = {}, methodOptions = {}) {
       ow(name, 'name', ow.string.nonEmpty);
-      ow(options, 'options', ow.object);
+      ow(type, 'type', ow.string.oneOf(['attribute', 'method']));
+      ow(propertyOptions, 'propertyOptions', ow.object);
+      ow(
+        methodOptions,
+        'methodOptions',
+        ow.object.exactShape({returnDescriptor: ow.optional.boolean})
+      );
+
+      const {returnDescriptor = false} = methodOptions;
 
       let property = this.getProperty(name, {throwIfMissing: false});
 
       if (property === undefined) {
-        property = new Property(name, this, options);
+        const Property = type === 'attribute' ? Attribute : Method;
+        property = new Property(name, this, propertyOptions);
         const properties = this.__getProperties();
         properties[name] = property;
       } else {
-        property.setOptions(options);
+        if (property.getType() !== type) {
+          throw new Error(`Cannot change the type of the '${name}' property`);
+        }
+        property.setOptions(propertyOptions);
+      }
+
+      if (type === 'attribute') {
+        const descriptor = {
+          configurable: true,
+          enumerable: true,
+          get() {
+            return this.getAttribute(name).getValue();
+          },
+          set(value) {
+            return this.getAttribute(name).setValue(value);
+          }
+        };
+
+        if (returnDescriptor) {
+          return descriptor;
+        }
+
+        Object.defineProperty(this, name, descriptor);
       }
 
       return property;
@@ -60,10 +92,8 @@ export const WithProperties = (Base = Object) => {
     hasProperty(name) {
       ow(name, 'name', ow.string.nonEmpty);
 
-      return this.getProperty(name, {autoFork: false, throwIfMissing: false}) !== undefined;
+      return this.getProperty(name, {throwIfMissing: false, autoFork: false}) !== undefined;
     },
-
-    // === Property collection ===
 
     getProperties(options = {}) {
       ow(
@@ -138,6 +168,155 @@ export const WithProperties = (Base = Object) => {
       }
     },
 
+    // === Attributes ===
+
+    getAttribute(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({throwIfMissing: ow.optional.boolean, autoFork: ow.optional.boolean})
+      );
+
+      const {throwIfMissing = true, autoFork = true} = options;
+
+      const property = this.getProperty(name, {throwIfMissing, autoFork});
+
+      if (property === undefined) {
+        return undefined;
+      }
+
+      if (!isAttribute(property)) {
+        throw new Error(`The property '${name}' exists, but it is not an attribute`);
+      }
+
+      return property;
+    },
+
+    setAttribute(name, propertyOptions = {}, methodOptions = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(propertyOptions, 'propertyOptions', ow.object);
+      ow(methodOptions, 'methodOptions', ow.object);
+
+      return this.setProperty(name, 'attribute', propertyOptions, methodOptions);
+    },
+
+    hasAttribute(name) {
+      ow(name, 'name', ow.string.nonEmpty);
+
+      return this.getAttribute(name, {throwIfMissing: false, autoFork: false}) !== undefined;
+    },
+
+    getAttributes(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
+      );
+
+      const {filter: originalFilter, autoFork = true} = options;
+
+      const filter = function(property) {
+        if (!isAttribute(property)) {
+          return false;
+        }
+
+        if (originalFilter !== undefined) {
+          return originalFilter.call(this, property);
+        }
+
+        return true;
+      };
+
+      return this.getProperties({filter, autoFork});
+    },
+
+    getActiveAttributes(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
+      );
+
+      const {filter: originalFilter, autoFork = true} = options;
+
+      const filter = function(attribute) {
+        if (!attribute.isActive()) {
+          return false;
+        }
+
+        if (originalFilter !== undefined) {
+          return originalFilter.call(this, attribute);
+        }
+
+        return true;
+      };
+
+      return this.getAttributes({filter, autoFork});
+    },
+
+    // === Methods ===
+
+    getMethod(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({throwIfMissing: ow.optional.boolean, autoFork: ow.optional.boolean})
+      );
+
+      const {throwIfMissing = true, autoFork = true} = options;
+
+      const property = this.getProperty(name, {throwIfMissing, autoFork});
+
+      if (property === undefined) {
+        return undefined;
+      }
+
+      if (!isMethod(property)) {
+        throw new Error(`The property '${name}' exists, but it is not a method`);
+      }
+
+      return property;
+    },
+
+    setMethod(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(options, 'options', ow.object);
+
+      return this.setProperty(name, 'method', options);
+    },
+
+    hasMethod(name) {
+      ow(name, 'name', ow.string.nonEmpty);
+
+      return this.getMethod(name, {throwIfMissing: false, autoFork: false}) !== undefined;
+    },
+
+    getMethods(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
+      );
+
+      const {filter: originalFilter, autoFork = true} = options;
+
+      const filter = function(property) {
+        if (!isMethod(property)) {
+          return false;
+        }
+
+        if (originalFilter !== undefined) {
+          return originalFilter.call(this, property);
+        }
+
+        return true;
+      };
+
+      return this.getProperties({filter, autoFork});
+    },
+
     // === Introspection ===
 
     introspectProperties(options = {}) {
@@ -161,6 +340,16 @@ export const WithProperties = (Base = Object) => {
   Object.assign(CommonWithProperties.prototype, commonMethods);
 
   class WithProperties extends CommonWithProperties {
+    constructor(object = {}) {
+      super();
+
+      for (const attribute of this.getAttributes()) {
+        const name = attribute.getName();
+        const value = hasOwnProperty(object, name) ? object[name] : attribute.getDefaultValue();
+        attribute.setValue(value);
+      }
+    }
+
     static isWithProperties(object) {
       return isWithProperties(object);
     }
@@ -173,7 +362,7 @@ export function isWithProperties(object) {
   return typeof object?.constructor?.isWithProperties === 'function';
 }
 
-export function property(options = {}) {
+export function attribute(options = {}) {
   ow(options, 'options', ow.object);
 
   return function(target, name, descriptor) {
@@ -182,10 +371,61 @@ export function property(options = {}) {
     ow(descriptor, 'descriptor', ow.object);
 
     if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
-      throw new Error(`@property() target doesn't inherit from WithProperties`);
+      throw new Error(
+        `@attribute() target doesn't inherit from WithProperties (property name: '${name}')`
+      );
     }
 
-    target.setProperty(name, options);
+    if (
+      !(
+        (typeof descriptor.initializer === 'function' || descriptor.initializer === null) &&
+        descriptor.enumerable === true
+      )
+    ) {
+      throw new Error(
+        `@attribute() cannot be used without an attribute definition (property name: '${name}')`
+      );
+    }
+
+    if (isWithProperties(target.prototype)) {
+      // The target is a component class
+      const existingDescriptor = Object.getOwnPropertyDescriptor(target, name);
+      const initialValue = existingDescriptor.value;
+      options = {value: initialValue, ...options};
+    } else {
+      // The target is a component prototype
+      const defaultValue =
+        typeof descriptor.initializer === 'function' ? descriptor.initializer : undefined;
+      options = {default: defaultValue, ...options};
+    }
+
+    descriptor = target.setAttribute(name, options, {returnDescriptor: true});
+
+    return descriptor;
+  };
+}
+
+export function method(options = {}) {
+  ow(options, 'options', ow.object);
+
+  return function(target, name, descriptor) {
+    ow(target, 'target', ow.object);
+    ow(name, 'name', ow.string.nonEmpty);
+    ow(descriptor, 'descriptor', ow.object);
+
+    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+      throw new Error(
+        `@method() target doesn't inherit from WithProperties (property name: '${name}')`
+      );
+    }
+
+    if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
+      throw new Error(
+        `@method() cannot be used without a method definition (property name: '${name}')`
+      );
+    }
+
+    target.setMethod(name, options);
 
     return descriptor;
   };
@@ -200,7 +440,9 @@ export function expose(exposure = {}) {
     ow(descriptor, 'descriptor', ow.object);
 
     if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
-      throw new Error(`@expose() target doesn't inherit from WithProperties`);
+      throw new Error(
+        `@expose() target doesn't inherit from WithProperties (property name: '${name}')`
+      );
     }
 
     const property = target.setProperty(name);

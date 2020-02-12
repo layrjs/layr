@@ -141,7 +141,7 @@ export class ComponentClient {
       const LocalComponent = isComponentClass ? this : this.constructor;
       const knownComponents = [LocalComponent];
 
-      const propertyFilter = function(property) {
+      const attributeFilter = function(attribute) {
         // Exclude properties that cannot be set in the remote components
 
         const isComponentClass = !isComponent(this);
@@ -149,18 +149,18 @@ export class ComponentClient {
         const RemoteComponent = componentClient.getComponent(LocalComponent.getName());
         const remoteComponent = isComponentClass ? RemoteComponent : RemoteComponent.prototype;
 
-        const remoteProperty = remoteComponent.getProperty(property.getName(), {
+        const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {
           throwIfMissing: false
         });
 
-        if (remoteProperty !== undefined) {
-          return remoteProperty.operationIsAllowed('set');
+        if (remoteAttribute !== undefined) {
+          return remoteAttribute.operationIsAllowed('set');
         }
 
         return false;
       };
 
-      query = serialize(query, {knownComponents, propertyFilter, target: 'parent'});
+      query = serialize(query, {knownComponents, attributeFilter, target: 'parent'});
 
       return possiblyAsync(componentClient.sendQuery(query), {
         then: ({result}) => deserialize(result, {knownComponents, source: 'parent'})

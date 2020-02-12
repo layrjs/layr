@@ -11,8 +11,8 @@ export const Component = (Base = Object) => {
   return class Component extends WithProperties(Base) {
     // === Creation ===
 
-    constructor() {
-      super();
+    constructor(object = {}) {
+      super(object);
       this.markAsNew();
     }
 
