@@ -89,6 +89,26 @@ export const WithProperties = (Base = Object) => {
       return property;
     },
 
+    deleteProperty(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      const {throwIfMissing = true} = options;
+
+      const properties = this.__getProperties();
+
+      if (!hasOwnProperty(properties, name)) {
+        if (throwIfMissing) {
+          throw new Error(`Cannot delete the property '${name}' which is missing`);
+        }
+        return false;
+      }
+
+      delete properties[name];
+
+      return true;
+    },
+
     hasProperty(name) {
       ow(name, 'name', ow.string.nonEmpty);
 
