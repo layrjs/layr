@@ -30,7 +30,13 @@ export class Property {
   // === Options ===
 
   setOptions(options = {}) {
-    ow(options, 'options', ow.object.exactShape({}));
+    ow(options, 'options', ow.object.exactShape({exposure: ow.optional.object}));
+
+    const {exposure} = options;
+
+    if (exposure !== undefined) {
+      this.setExposure(exposure);
+    }
   }
 
   // === Exposure ===
