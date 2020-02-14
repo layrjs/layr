@@ -24,8 +24,10 @@ describe('ComponentServer', () => {
       components: [
         {
           name: 'Movie',
-          properties: [{name: 'find', exposure: {call: true}}],
-          prototype: {properties: [{name: 'title', exposure: {get: true, set: true}}]}
+          properties: [{name: 'find', type: 'method', exposure: {call: true}}],
+          prototype: {
+            properties: [{name: 'title', type: 'attribute', exposure: {get: true, set: true}}]
+          }
         }
       ]
     });
@@ -102,12 +104,12 @@ describe('ComponentServer', () => {
       })
     ).toEqual({__component: 'Movie'});
 
-    expect(
+    expect(() =>
       server.receiveQuery({
         '<=': {__component: 'Movie'},
         'title': true
       })
-    ).toEqual({title: {__undefined: true}});
+    ).toThrow("Cannot get the value from the 'title' attribute which is inactive");
 
     expect(
       server.receiveQuery({
@@ -120,7 +122,7 @@ describe('ComponentServer', () => {
         '<=': {__component: 'Movie', rating: 10},
         'rating': true
       })
-    ).toThrow("Cannot get the value of an attribute that is not allowed (name: 'rating')");
+    ).toThrow("Cannot get the value from the 'rating' attribute which is inactive");
   });
 
   test('Invoking methods', async () => {

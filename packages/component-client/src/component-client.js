@@ -107,13 +107,11 @@ export class ComponentClient {
   }
 
   _setComponentProperty(component, introspectedProperty) {
-    const {name, exposure} = introspectedProperty;
+    const {name, type, exposure} = introspectedProperty;
 
-    const property = component.setProperty(name);
+    component.setProperty(name, type, {exposure});
 
-    property.setExposure(exposure);
-
-    if (exposure.call) {
+    if (type === 'method') {
       Object.defineProperty(component, name, {
         value: this._createComponentMethod(name),
         writable: true,

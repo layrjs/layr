@@ -25,14 +25,14 @@ describe('ComponentClient', () => {
               {
                 name: 'Movie',
                 properties: [
-                  {name: 'token', exposure: {get: true, set: true}},
-                  {name: 'find', exposure: {call: true}}
+                  {name: 'token', type: 'attribute', exposure: {get: true, set: true}},
+                  {name: 'find', type: 'method', exposure: {call: true}}
                 ],
                 prototype: {
                   properties: [
-                    {name: 'title', exposure: {get: true, set: true}},
-                    {name: 'isPlaying', exposure: {get: true}},
-                    {name: 'play', exposure: {call: true}}
+                    {name: 'title', type: 'attribute', exposure: {get: true, set: true}},
+                    {name: 'isPlaying', type: 'attribute', exposure: {get: true}},
+                    {name: 'play', type: 'method', exposure: {call: true}}
                   ]
                 }
               }
@@ -101,13 +101,13 @@ describe('ComponentClient', () => {
 
     expect(isComponent(RemoteMovie.prototype)).toBe(true);
     expect(RemoteMovie.getName()).toBe('Movie');
-    expect(RemoteMovie.getProperty('token').getExposure()).toEqual({get: true, set: true});
+    expect(RemoteMovie.getAttribute('token').getExposure()).toEqual({get: true, set: true});
     expect(typeof RemoteMovie.find).toBe('function');
-    expect(RemoteMovie.prototype.getProperty('title').getExposure()).toEqual({
+    expect(RemoteMovie.prototype.getAttribute('title').getExposure()).toEqual({
       get: true,
       set: true
     });
-    expect(RemoteMovie.prototype.getProperty('isPlaying').getExposure()).toEqual({get: true});
+    expect(RemoteMovie.prototype.getAttribute('isPlaying').getExposure()).toEqual({get: true});
     expect(typeof RemoteMovie.prototype.play).toBe('function');
 
     class Movie extends RemoteMovie {}
@@ -137,8 +137,8 @@ describe('ComponentClient', () => {
 
     expect(movie).toBeInstanceOf(Movie);
 
-    // Since 'title' did not change, it should be transported back to the local component
-    expect(movie.title).toBeUndefined();
+    // Since 'title' did not change, it should not be transported back to the local component
+    expect(movie.getAttribute('title').isActive()).toBe(false);
 
     expect(movie.isPlaying).toBe(true);
 

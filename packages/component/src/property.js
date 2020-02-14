@@ -27,6 +27,10 @@ export class Property {
     return this._parent;
   }
 
+  getType() {
+    return 'property';
+  }
+
   // === Options ===
 
   setOptions(options = {}) {
@@ -99,6 +103,16 @@ export class Property {
     const forkedProperty = Object.create(this);
     forkedProperty._parent = parent;
     return forkedProperty;
+  }
+
+  // === Introspection ===
+
+  introspect() {
+    return {
+      name: this.getName(),
+      type: this.getType(),
+      exposure: this.serializeExposure()
+    };
   }
 
   // === Utilities ===

@@ -347,9 +347,7 @@ export const WithProperties = (Base = Object) => {
       const introspectedProperties = [];
 
       for (const property of this.getProperties({filter})) {
-        const name = property.getName();
-        const serializedExposure = property.serializeExposure();
-        introspectedProperties.push({name, exposure: serializedExposure});
+        introspectedProperties.push(property.introspect());
       }
 
       return introspectedProperties;
