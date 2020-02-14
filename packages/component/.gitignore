@@ -1,4 +1,5 @@
 .DS_STORE
 node_modules
 *.log
+/src/_test.js
 /dist

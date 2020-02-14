@@ -1,7 +1,9 @@
-import {Property, isProperty} from '../../..';
+import {Component, Property, isProperty} from '../../..';
 
 describe('Property', () => {
   test('Creation', async () => {
+    class Movie extends Component() {}
+
     expect(() => new Property()).toThrow(
       'Expected `name` to be of type `string` but received type `undefined`'
     );
@@ -10,31 +12,37 @@ describe('Property', () => {
       'Expected `parent` to be of type `object` but received type `undefined`'
     );
 
-    class Movie {}
+    expect(() => new Property('title', Movie, {unknownOption: 123})).toThrow(
+      'Did not expect property `unknownOption` to exist, got `123` in object `options`'
+    );
 
-    const movie = new Movie();
-
-    const property = new Property('title', movie);
+    let property = new Property('title', Movie.prototype);
 
     expect(isProperty(property)).toBe(true);
     expect(property.getName()).toBe('title');
-    expect(property.getParent()).toBe(movie);
+    expect(property.getParent()).toBe(Movie.prototype);
+    expect(property.getExposure()).toBeUndefined();
+
+    property = new Property('find', Movie, {exposure: {call: true}});
+
+    expect(isProperty(property)).toBe(true);
+    expect(property.getName()).toBe('find');
+    expect(property.getParent()).toBe(Movie);
+    expect(property.getExposure()).toEqual({call: true});
   });
 
-  test('Basic forking', async () => {
+  test('Forking', async () => {
     class Movie {}
 
-    const movie = new Movie();
-
-    const property = new Property('title', movie);
+    const property = new Property('title', Movie.prototype);
 
     expect(property.getName()).toBe('title');
-    expect(property.getParent()).toBe(movie);
+    expect(property.getParent()).toBe(Movie.prototype);
 
-    const forkedMovie = Object.create(movie);
-    const forkedProperty = property.fork(forkedMovie);
+    const movie = Object.create(Movie.prototype);
+    const forkedProperty = property.fork(movie);
 
     expect(forkedProperty.getName()).toBe('title');
-    expect(forkedProperty.getParent()).toBe(forkedMovie);
+    expect(forkedProperty.getParent()).toBe(movie);
   });
 });

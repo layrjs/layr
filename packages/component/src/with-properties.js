@@ -1,4 +1,4 @@
-import {hasOwnProperty} from 'core-helpers';
+import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
 import ow from 'ow';
 
 import {Attribute, isAttribute} from './attribute';
@@ -382,6 +382,28 @@ export function isWithProperties(object) {
   return typeof object?.constructor?.isWithProperties === 'function';
 }
 
+export function property(options = {}) {
+  ow(options, 'options', ow.object);
+
+  return function(target, name, descriptor) {
+    ow(target, 'target', ow.object);
+    ow(name, 'name', ow.string.nonEmpty);
+    ow(descriptor, 'descriptor', ow.object);
+
+    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+      throw new Error(
+        `@property() target doesn't inherit from WithProperties (property name: '${name}')`
+      );
+    }
+
+    if (typeof descriptor.value === 'function' && descriptor.enumerable === false) {
+      return method(options)(target, name, descriptor);
+    }
+
+    return attribute(options)(target, name, descriptor);
+  };
+}
+
 export function attribute(options = {}) {
   ow(options, 'options', ow.object);
 
@@ -403,25 +425,35 @@ export function attribute(options = {}) {
       )
     ) {
       throw new Error(
-        `@attribute() cannot be used without an attribute definition (property name: '${name}')`
+        `@attribute() cannot be used without an attribute declaration (property name: '${name}')`
       );
     }
 
+    // Normalize initializer that can be null in certain cases
+    const initializer =
+      typeof descriptor.initializer === 'function' ? descriptor.initializer : undefined;
+
     if (isWithProperties(target.prototype)) {
       // The target is a component class
-      const existingDescriptor = Object.getOwnPropertyDescriptor(target, name);
-      const initialValue = existingDescriptor.value;
-      options = {value: initialValue, ...options};
+      const property = target.getProperty(name, {throwIfMissing: false, autoFork: false});
+      if (property?.getParent() === target) {
+        // If the attribute already exists in the target, it means it was forked from
+        // the parent class as a side effect of the attribute declaration
+        // In this case, the new value should have already been set and there is nothing to do
+      } else {
+        // It is a new attribute or the attribute declaration didn't fork a parent attribute
+        const initialValue = initializer?.call(target);
+        options = {value: initialValue, ...options};
+      }
     } else {
       // The target is a component prototype
-      const defaultValue =
-        typeof descriptor.initializer === 'function' ? descriptor.initializer : undefined;
+      const defaultValue = initializer;
       options = {default: defaultValue, ...options};
     }
 
     descriptor = target.setAttribute(name, options, {returnDescriptor: true});
 
-    return descriptor;
+    return {...descriptor, __decoratedBy: '@attribute()'};
   };
 }
 
@@ -441,13 +473,49 @@ export function method(options = {}) {
 
     if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
       throw new Error(
-        `@method() cannot be used without a method definition (property name: '${name}')`
+        `@method() cannot be used without a method declaration (property name: '${name}')`
       );
     }
 
     target.setMethod(name, options);
 
-    return descriptor;
+    return {...descriptor, __decoratedBy: '@method()'};
+  };
+}
+
+export function inherit() {
+  return function(target, name, descriptor) {
+    ow(target, 'target', ow.object);
+    ow(name, 'name', ow.string.nonEmpty);
+    ow(descriptor, 'descriptor', ow.object);
+
+    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+      throw new Error(
+        `@inherit() target doesn't inherit from WithProperties (property name: '${name}')`
+      );
+    }
+
+    const property = target.getProperty(name, {throwIfMissing: false, autoFork: false});
+
+    if (property === undefined) {
+      throw new Error(
+        `@inherit() cannot be used with the property '${name}' which is missing in the parent class`
+      );
+    }
+
+    if (
+      isWithProperties(target.prototype) &&
+      isAttribute(property) &&
+      property.getParent() === target
+    ) {
+      // If the target is a component class and the inherited property is an attribute,
+      // we must roll back the attribute declaration that has reinitialized the value
+      target.deleteProperty(name);
+    }
+
+    descriptor = getInheritedPropertyDescriptor(target, name);
+
+    return {...descriptor, __decoratedBy: '@inherit()'};
   };
 }
 
@@ -465,9 +533,20 @@ export function expose(exposure = {}) {
       );
     }
 
-    const property = target.setProperty(name);
+    const {__decoratedBy: decoratedBy} = descriptor;
 
-    property.setExposure(exposure);
+    if (
+      decoratedBy === '@attribute()' ||
+      decoratedBy === '@method()' ||
+      decoratedBy === '@inherit()'
+    ) {
+      // @expose() is used after @property(), @attribute(), @method(), or @inherit()
+      const property = target.getProperty(name);
+      property.setExposure(exposure);
+      return descriptor;
+    }
+
+    descriptor = property({exposure})(target, name, descriptor);
 
     return descriptor;
   };

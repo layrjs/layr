@@ -1,6 +1,16 @@
-import {Attribute} from '../../..';
+import {Attribute, isAttribute} from '../../..';
 
 describe('Attribute', () => {
+  test('Creation', async () => {
+    class Movie {}
+
+    const attribute = new Attribute('limit', Movie);
+
+    expect(isAttribute(attribute)).toBe(true);
+    expect(attribute.getName()).toBe('limit');
+    expect(attribute.getParent()).toBe(Movie);
+  });
+
   test('Value', async () => {
     class Movie {}
 
