@@ -75,7 +75,13 @@ export class ComponentClient {
     const componentServer = this._componentServer;
     const version = this._version;
 
-    return componentServer.receiveQuery(query, {version});
+    debug(`Sending query to remote components (query: %o)`, query);
+    return possiblyAsync(componentServer.receiveQuery(query, {version}), {
+      then: result => {
+        debug(`Query sent to remote components (result: %o)`, result);
+        return result;
+      }
+    });
   }
 
   _createComponents() {
