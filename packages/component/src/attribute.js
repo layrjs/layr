@@ -129,14 +129,42 @@ export class Attribute extends Property {
     return value;
   }
 
+  // === Default value ===
+
   getDefaultValue() {
-    let value = this._default;
+    let value = this.getDefaultValueFunction();
 
     if (value !== undefined) {
       value = value.call(this.getParent());
     }
 
     return value;
+  }
+
+  getDefaultValueFunction() {
+    return this._default;
+  }
+
+  // === Introspection ===
+
+  introspect() {
+    const introspectedExposure = super.introspect();
+
+    if (introspectedExposure === undefined) {
+      return undefined;
+    }
+
+    if (this.isActive()) {
+      introspectedExposure.value = this.getValue();
+    }
+
+    const defaultValueFunction = this.getDefaultValueFunction();
+
+    if (defaultValueFunction !== undefined) {
+      introspectedExposure.default = defaultValueFunction;
+    }
+
+    return introspectedExposure;
   }
 
   // === Utilities ===

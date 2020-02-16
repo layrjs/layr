@@ -1,4 +1,4 @@
-import {Component, serialize, deserialize, isComponent, attribute} from '../../..';
+import {Component, serialize, deserialize, isComponent, attribute, method} from '../../..';
 
 describe('Component', () => {
   test('Creation', async () => {
@@ -341,5 +341,64 @@ describe('Component', () => {
     expect(cinema.movies[0]).toBeInstanceOf(Movie);
     expect(cinema.movies[0].title).toBe('The Matrix');
     expect(cinema.movies[0].getAttribute('duration').isActive()).toBe(false);
+  });
+
+  test('Introspection', async () => {
+    class Movie extends Component() {
+      @attribute() static limit = 100;
+      @attribute() static offset;
+      @method() static find() {}
+
+      @attribute() title = '';
+      @attribute() country;
+      @method() load() {}
+    }
+
+    const defaultTitle = Movie.prototype.getAttribute('title').getDefaultValueFunction();
+
+    expect(typeof defaultTitle).toBe('function');
+
+    expect(Movie.introspect()).toBeUndefined();
+
+    Movie.getAttribute('limit').setExposure({get: true});
+
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
+    });
+
+    Movie.getAttribute('limit').setExposure();
+    Movie.prototype.getAttribute('title').setExposure({get: true});
+
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      prototype: {
+        properties: [
+          {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}
+        ]
+      }
+    });
+
+    Movie.getAttribute('limit').setExposure({get: true});
+    Movie.getAttribute('offset').setExposure({get: true});
+    Movie.getMethod('find').setExposure({call: true});
+    Movie.prototype.getAttribute('country').setExposure({get: true});
+    Movie.prototype.getMethod('load').setExposure({call: true});
+
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      properties: [
+        {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
+        {name: 'offset', type: 'attribute', value: undefined, exposure: {get: true}},
+        {name: 'find', type: 'method', exposure: {call: true}}
+      ],
+      prototype: {
+        properties: [
+          {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}},
+          {name: 'country', type: 'attribute', exposure: {get: true}},
+          {name: 'load', type: 'method', exposure: {call: true}}
+        ]
+      }
+    });
   });
 });

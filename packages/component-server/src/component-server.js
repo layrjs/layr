@@ -106,9 +106,15 @@ export class ComponentServer {
     const root = Object.create(null);
 
     root.introspect = function() {
-      const introspectedComponents = components.map(component =>
-        component.introspect({propertyFilter: property => property.isExposed()})
-      );
+      const introspectedComponents = [];
+
+      for (const component of components) {
+        const introspectedComponent = component.introspect();
+
+        if (introspectedComponent !== undefined) {
+          introspectedComponents.push(introspectedComponent);
+        }
+      }
 
       return {components: introspectedComponents};
     };

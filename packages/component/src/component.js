@@ -96,18 +96,25 @@ export const Component = (Base = Object) => {
 
     // === Introspection ===
 
-    static introspect(options = {}) {
-      ow(options, 'options', ow.object.exactShape({propertyFilter: ow.optional.function}));
+    static introspect() {
+      const introspectedProperties = this.introspectProperties();
+      const introspectedPrototypeProperties = this.prototype.introspectProperties();
 
-      const {propertyFilter} = options;
+      if (introspectedProperties.length === 0 && introspectedPrototypeProperties.length === 0) {
+        return undefined;
+      }
 
-      return {
-        name: this.getName(),
-        properties: this.introspectProperties({filter: propertyFilter}),
-        prototype: {
-          properties: this.prototype.introspectProperties({filter: propertyFilter})
-        }
-      };
+      const introspectedComponent = {name: this.getName()};
+
+      if (introspectedProperties.length > 0) {
+        introspectedComponent.properties = introspectedProperties;
+      }
+
+      if (introspectedPrototypeProperties.length > 0) {
+        introspectedComponent.prototype = {properties: introspectedPrototypeProperties};
+      }
+
+      return introspectedComponent;
     }
 
     // === Utilities ===

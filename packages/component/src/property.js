@@ -1,5 +1,4 @@
 import {possiblyAsync} from 'possibly-async';
-import isEmpty from 'lodash/isEmpty';
 import mapValues from 'lodash/mapValues';
 import ow from 'ow';
 
@@ -57,24 +56,27 @@ export class Property {
     const setting = ow.optional.any(ow.boolean, ow.string, ow.array);
     ow(exposure, 'exposure', ow.object.exactShape({get: setting, set: setting, call: setting}));
 
-    let normalizedExposure = {};
+    let normalizedExposure;
 
     for (const [operation, setting] of Object.entries(exposure)) {
-      const normalizedSetting = this._parent.normalizePropertyOperationSetting(setting);
-      if (normalizedSetting !== undefined) {
-        normalizedExposure[operation] = normalizedSetting;
+      if (setting === undefined) {
+        continue;
       }
-    }
 
-    if (isEmpty(normalizedExposure)) {
-      normalizedExposure = undefined;
+      const normalizedSetting = this._parent.normalizePropertyOperationSetting(setting);
+
+      if (normalizedSetting === undefined) {
+        continue;
+      }
+
+      if (normalizedExposure === undefined) {
+        normalizedExposure = {};
+      }
+
+      normalizedExposure[operation] = normalizedSetting;
     }
 
     return normalizedExposure;
-  }
-
-  isExposed() {
-    return this._exposure !== undefined;
   }
 
   operationIsAllowed(operation) {
@@ -87,12 +89,6 @@ export class Property {
     return possiblyAsync(this._parent.resolvePropertyOperationSetting(setting), {
       then: resolvedSetting => resolvedSetting === true
     });
-  }
-
-  serializeExposure() {
-    return mapValues(this._exposure ?? {}, setting =>
-      this._parent.serializePropertyOperationSetting(setting)
-    );
   }
 
   // === Forking ===
@@ -108,11 +104,31 @@ export class Property {
   // === Introspection ===
 
   introspect() {
+    const introspectedExposure = this.introspectExposure();
+
+    if (introspectedExposure === undefined) {
+      return undefined;
+    }
+
     return {
       name: this.getName(),
       type: this.getType(),
-      exposure: this.serializeExposure()
+      exposure: introspectedExposure
     };
+  }
+
+  introspectExposure() {
+    const exposure = this.getExposure();
+
+    if (exposure === undefined) {
+      return undefined;
+    }
+
+    // We don't want to expose backend operation settings to the frontend
+    // So if there is a {call: 'admin'} exposure, we want to return {call: true}
+    const introspectedExposure = mapValues(exposure, () => true);
+
+    return introspectedExposure;
   }
 
   // === Utilities ===

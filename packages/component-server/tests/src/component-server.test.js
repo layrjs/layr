@@ -9,7 +9,7 @@ describe('ComponentServer', () => {
         @expose({call: true}) static find() {}
         @property() static limit;
 
-        @expose({get: true, set: true}) title;
+        @expose({get: true, set: true}) title = '';
         @property() rating;
       }
 
@@ -20,13 +20,23 @@ describe('ComponentServer', () => {
 
     const introspection = server.receiveQuery({'introspect=>': {'()': []}});
 
-    expect(introspection).toEqual({
+    expect(introspection).toStrictEqual({
       components: [
         {
           name: 'Movie',
           properties: [{name: 'find', type: 'method', exposure: {call: true}}],
           prototype: {
-            properties: [{name: 'title', type: 'attribute', exposure: {get: true, set: true}}]
+            properties: [
+              {
+                name: 'title',
+                type: 'attribute',
+                default: {
+                  __class: 'Function',
+                  __value: "function () {\n          return '';\n        }"
+                },
+                exposure: {get: true, set: true}
+              }
+            ]
           }
         }
       ]
@@ -56,14 +66,14 @@ describe('ComponentServer', () => {
       server.receiveQuery({
         '<=': {__Component: 'Movie'}
       })
-    ).toEqual({__Component: 'Movie', offset: 0});
+    ).toStrictEqual({__Component: 'Movie', offset: 0});
 
     expect(
       server.receiveQuery({
         '<=': {__Component: 'Movie'},
         'offset': true
       })
-    ).toEqual({offset: 0});
+    ).toStrictEqual({offset: 0});
 
     expect(() =>
       server.receiveQuery({
@@ -76,33 +86,33 @@ describe('ComponentServer', () => {
       server.receiveQuery({
         '<=': {__component: 'Movie', __new: true}
       })
-    ).toEqual({__component: 'Movie', __new: true, title: ''});
+    ).toStrictEqual({__component: 'Movie', __new: true, title: ''});
 
     expect(
       server.receiveQuery({
         '<=': {__component: 'Movie', __new: true},
         'title': true
       })
-    ).toEqual({title: ''});
+    ).toStrictEqual({title: ''});
 
     expect(
       server.receiveQuery({
         '<=': {__component: 'Movie', __new: true, title: 'Inception'}
       })
-    ).toEqual({__component: 'Movie', __new: true, title: 'Inception'});
+    ).toStrictEqual({__component: 'Movie', __new: true, title: 'Inception'});
 
     expect(
       server.receiveQuery({
         '<=': {__component: 'Movie', __new: true, title: 'Inception'},
         'title': true
       })
-    ).toEqual({title: 'Inception'});
+    ).toStrictEqual({title: 'Inception'});
 
     expect(
       server.receiveQuery({
         '<=': {__component: 'Movie'}
       })
-    ).toEqual({__component: 'Movie'});
+    ).toStrictEqual({__component: 'Movie'});
 
     expect(() =>
       server.receiveQuery({
@@ -115,7 +125,7 @@ describe('ComponentServer', () => {
       server.receiveQuery({
         '<=': {__component: 'Movie', rating: 10}
       })
-    ).toEqual({__component: 'Movie'});
+    ).toStrictEqual({__component: 'Movie'});
 
     expect(() =>
       server.receiveQuery({

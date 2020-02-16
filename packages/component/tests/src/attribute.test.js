@@ -1,8 +1,8 @@
-import {Attribute, isAttribute} from '../../..';
+import {Component, Attribute, isAttribute} from '../../..';
 
 describe('Attribute', () => {
   test('Creation', async () => {
-    class Movie {}
+    class Movie extends Component() {}
 
     const attribute = new Attribute('limit', Movie);
 
@@ -12,7 +12,7 @@ describe('Attribute', () => {
   });
 
   test('Value', async () => {
-    class Movie {}
+    class Movie extends Component() {}
 
     const movie = new Movie();
 
@@ -31,7 +31,7 @@ describe('Attribute', () => {
   });
 
   test('Accessors', async () => {
-    class Movie {}
+    class Movie extends Component() {}
 
     const movie = new Movie();
 
@@ -54,8 +54,21 @@ describe('Attribute', () => {
     expect(attribute.getValue()).toBe('Inception');
   });
 
+  test('Initial value', async () => {
+    class Movie extends Component() {}
+
+    let attribute = new Attribute('limit', Movie);
+
+    expect(attribute.isActive()).toBe(false);
+
+    attribute = new Attribute('limit', Movie, {value: 100});
+
+    expect(attribute.isActive()).toBe(true);
+    expect(attribute.getValue()).toBe(100);
+  });
+
   test('Default value', async () => {
-    class Movie {}
+    class Movie extends Component() {}
 
     const movie = new Movie();
 
@@ -74,7 +87,7 @@ describe('Attribute', () => {
   });
 
   test('Forking', async () => {
-    class Movie {}
+    class Movie extends Component() {}
 
     const movie = new Movie();
 
@@ -92,5 +105,34 @@ describe('Attribute', () => {
 
     expect(forkedAttribute.getValue()).toBe('Inception 2');
     expect(attribute.getValue()).toBe('Inception');
+  });
+
+  test('Introspection', async () => {
+    class Movie extends Component() {}
+
+    expect(new Attribute('limit', Movie, {exposure: {get: true}}).introspect()).toStrictEqual({
+      name: 'limit',
+      type: 'attribute',
+      exposure: {get: true}
+    });
+
+    expect(
+      new Attribute('limit', Movie, {value: 100, exposure: {get: true}}).introspect()
+    ).toStrictEqual({name: 'limit', type: 'attribute', value: 100, exposure: {get: true}});
+
+    const defaultTitle = function() {
+      return '';
+    };
+    expect(
+      new Attribute('title', Movie.prototype, {
+        default: defaultTitle,
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'title',
+      type: 'attribute',
+      default: defaultTitle,
+      exposure: {get: true}
+    });
   });
 });

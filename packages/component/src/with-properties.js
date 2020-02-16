@@ -176,15 +176,17 @@ export const WithProperties = (Base = Object) => {
       }
     },
 
-    normalizePropertyOperationSetting(setting) {
+    normalizePropertyOperationSetting(setting, options = {}) {
+      ow(options, 'options', ow.object.exactShape({throwIfInvalid: ow.optional.boolean}));
+
+      const {throwIfInvalid = true} = options;
+
       if (setting === true) {
         return true;
       }
-    },
 
-    serializePropertyOperationSetting(setting) {
-      if (setting === true) {
-        return true;
+      if (throwIfInvalid) {
+        throw new Error(`Invalid property operation setting: ${JSON.stringify(setting)}`);
       }
     },
 
@@ -339,15 +341,15 @@ export const WithProperties = (Base = Object) => {
 
     // === Introspection ===
 
-    introspectProperties(options = {}) {
-      ow(options, 'options', ow.object.exactShape({filter: ow.optional.function}));
-
-      const {filter} = options;
-
+    introspectProperties() {
       const introspectedProperties = [];
 
-      for (const property of this.getProperties({filter})) {
-        introspectedProperties.push(property.introspect());
+      for (const property of this.getProperties()) {
+        const introspectedProperty = property.introspect();
+
+        if (introspectedProperty !== undefined) {
+          introspectedProperties.push(introspectedProperty);
+        }
       }
 
       return introspectedProperties;

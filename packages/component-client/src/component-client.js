@@ -33,6 +33,8 @@ export class ComponentClient {
     this._version = version;
   }
 
+  // TODO: Make getComponent*() methods possibly async
+
   getComponent(name, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
@@ -69,21 +71,6 @@ export class ComponentClient {
     return this._componentMap;
   }
 
-  sendQuery(query) {
-    ow(query, 'query', ow.object);
-
-    const componentServer = this._componentServer;
-    const version = this._version;
-
-    debug(`Sending query to remote components (query: %o)`, query);
-    return possiblyAsync(componentServer.receiveQuery(query, {version}), {
-      then: result => {
-        debug(`Query sent to remote components (result: %o)`, result);
-        return result;
-      }
-    });
-  }
-
   _createComponents() {
     const {components: introspectedComponents} = this._introspectRemoteComponents();
 
@@ -113,9 +100,9 @@ export class ComponentClient {
   }
 
   _setComponentProperty(component, introspectedProperty) {
-    const {name, type, exposure} = introspectedProperty;
+    const {name, type, ...options} = introspectedProperty;
 
-    component.setProperty(name, type, {exposure});
+    component.setProperty(name, type, options);
 
     if (type === 'method') {
       Object.defineProperty(component, name, {
@@ -131,7 +118,7 @@ export class ComponentClient {
     const componentClient = this;
 
     return function(...args) {
-      let query = {
+      const query = {
         '<=': this,
         [`${name}=>result`]: {
           '()': args
@@ -145,29 +132,8 @@ export class ComponentClient {
       const LocalComponent = isComponentClass ? this : this.constructor;
       const knownComponents = [LocalComponent];
 
-      const attributeFilter = function(attribute) {
-        // Exclude properties that cannot be set in the remote components
-
-        const isComponentClass = !isComponent(this);
-        const LocalComponent = isComponentClass ? this : this.constructor;
-        const RemoteComponent = componentClient.getComponent(LocalComponent.getName());
-        const remoteComponent = isComponentClass ? RemoteComponent : RemoteComponent.prototype;
-
-        const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {
-          throwIfMissing: false
-        });
-
-        if (remoteAttribute !== undefined) {
-          return remoteAttribute.operationIsAllowed('set');
-        }
-
-        return false;
-      };
-
-      query = serialize(query, {knownComponents, attributeFilter, target: 'parent'});
-
-      return possiblyAsync(componentClient.sendQuery(query), {
-        then: ({result}) => deserialize(result, {knownComponents, source: 'parent'})
+      return possiblyAsync(componentClient.sendQuery(query, {knownComponents}), {
+        then: result => result.result
       });
     };
   }
@@ -180,5 +146,45 @@ export class ComponentClient {
     debug(`Remote components introspected`);
 
     return introspection;
+  }
+
+  sendQuery(query, options = {}) {
+    ow(query, 'query', ow.object);
+    ow(options, 'options', ow.object.exactShape({knownComponents: ow.optional.array}));
+
+    const {knownComponents} = options;
+
+    const componentClient = this;
+    const componentServer = this._componentServer;
+    const version = this._version;
+
+    const attributeFilter = function(attribute) {
+      // Exclude properties that cannot be set in the remote components
+
+      const isComponentClass = !isComponent(this);
+      const LocalComponent = isComponentClass ? this : this.constructor;
+      const RemoteComponent = componentClient.getComponent(LocalComponent.getName());
+      const remoteComponent = isComponentClass ? RemoteComponent : RemoteComponent.prototype;
+
+      const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {
+        throwIfMissing: false
+      });
+
+      if (remoteAttribute !== undefined) {
+        return remoteAttribute.operationIsAllowed('set');
+      }
+
+      return false;
+    };
+
+    query = serialize(query, {knownComponents, attributeFilter, target: 'parent'});
+
+    debug(`Sending query to remote components (query: %o)`, query);
+    return possiblyAsync(componentServer.receiveQuery(query, {version}), {
+      then: result => {
+        debug(`Query sent to remote components (result: %o)`, result);
+        return deserialize(result, {knownComponents, source: 'parent'});
+      }
+    });
   }
 }
