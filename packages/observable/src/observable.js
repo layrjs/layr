@@ -1,26 +1,46 @@
 import {hasOwnProperty} from 'core-helpers';
 
-export const Observable = (Base = Object) =>
-  class Observable extends Base {
-    $observe(observer) {
+export const Observable = (Base = Object) => {
+  if (typeof Base !== 'function') {
+    throw new Error('Cannot construct an Observable from a base that is not a class');
+    }
+
+  if (isObservable(Base)) {
+    return Base;
+    }
+
+  class Observable extends Base {}
+
+  const methods = {
+    addObserver(observer) {
       this.__getObservers().add(observer);
-    }
+    },
 
-    $unobserve(observer) {
+    removeObserver(observer) {
       this.__getObservers().remove(observer);
-    }
+    },
 
-    $notify({_observerStack} = {}) {
+    callObservers({_observerStack} = {}) {
       this.__getObservers().call({_observerStack});
-    }
+    },
 
     __getObservers() {
       if (!hasOwnProperty(this, '__observers')) {
         Object.defineProperty(this, '__observers', {value: new ObserverSet()});
       }
       return this.__observers;
+    },
+
+    isObservable(object) {
+      return isObservable(object);
     }
   };
+
+  Object.assign(Observable, methods);
+  Object.assign(Observable.prototype, methods);
+
+  return Observable;
+};
 
 export function createObservable(target) {
   if (!canBecomeObservable(target)) {
