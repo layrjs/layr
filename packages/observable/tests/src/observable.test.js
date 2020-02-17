@@ -1,4 +1,4 @@
-import {Observable, createObservable, isObservable, canBecomeObservable} from '../../..';
+import {Observable, createObservable, isObservable, canBeObserved} from '../../..';
 
 describe('Observable', () => {
   describe('Observable array', () => {
@@ -33,17 +33,17 @@ describe('Observable', () => {
       expect(JSON.stringify(observableArray)).toBe(JSON.stringify(originalArray));
     });
 
-    it('Should call observers when $notify() is called', () => {
+    it('Should call observers when callObservers() is called', () => {
       const observer = jest.fn();
-      observableArray.$observe(observer);
+      observableArray.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
-      observableArray.$notify();
+      observableArray.callObservers();
       expect(observer).toHaveBeenCalled();
     });
 
     it('Should call observers when changing an item', () => {
       const observer = jest.fn();
-      observableArray.$observe(observer);
+      observableArray.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
       observableArray[0] = 1;
       expect(observer).toHaveBeenCalled();
@@ -51,7 +51,7 @@ describe('Observable', () => {
 
     it('Should not call observers when setting an item with the same value', () => {
       const observer = jest.fn();
-      observableArray.$observe(observer);
+      observableArray.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
       observableArray[0] = 3;
       expect(observer).not.toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe('Observable', () => {
 
     it('Should call observers when changing array length', () => {
       const observer = jest.fn();
-      observableArray.$observe(observer);
+      observableArray.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
       observableArray.length = 0;
       expect(observer).toHaveBeenCalled();
@@ -67,10 +67,10 @@ describe('Observable', () => {
 
     it(`Shouldn't call removed observers`, () => {
       const observer1 = jest.fn();
-      observableArray.$observe(observer1);
+      observableArray.addObserver(observer1);
 
       const observer2 = jest.fn();
-      observableArray.$observe(observer2);
+      observableArray.addObserver(observer2);
 
       observableArray[0] = 4;
 
@@ -80,7 +80,7 @@ describe('Observable', () => {
       expect(numberOfCalls1).not.toBe(0);
       expect(numberOfCalls2).not.toBe(0);
 
-      observableArray.$unobserve(observer1);
+      observableArray.removeObserver(observer1);
 
       observableArray[0] = 5;
 
@@ -93,7 +93,7 @@ describe('Observable', () => {
         const observableItem = createObservable([]);
         observableArray[0] = observableItem;
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableItem.push(1);
         expect(observer).toHaveBeenCalled();
@@ -104,7 +104,7 @@ describe('Observable', () => {
         observableArray[0] = observableItem;
 
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
 
         observableArray[0] = null;
 
@@ -119,7 +119,7 @@ describe('Observable', () => {
     describe('Mutator methods', () => {
       it('Should call observers when using copyWithin()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.copyWithin(0, 1);
         expect(observer).toHaveBeenCalled();
@@ -127,7 +127,7 @@ describe('Observable', () => {
 
       it('Should call observers when using fill()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.fill(0);
         expect(observer).toHaveBeenCalled();
@@ -135,7 +135,7 @@ describe('Observable', () => {
 
       it('Should call observers when using pop()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.pop();
         expect(observer).toHaveBeenCalled();
@@ -143,7 +143,7 @@ describe('Observable', () => {
 
       it('Should call observers when using push()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.push(4);
         expect(observer).toHaveBeenCalled();
@@ -151,7 +151,7 @@ describe('Observable', () => {
 
       it('Should call observers when using reverse()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.reverse();
         expect(observer).toHaveBeenCalled();
@@ -159,7 +159,7 @@ describe('Observable', () => {
 
       it('Should call observers when using shift()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.shift();
         expect(observer).toHaveBeenCalled();
@@ -167,7 +167,7 @@ describe('Observable', () => {
 
       it('Should call observers when using sort()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.sort();
         expect(observer).toHaveBeenCalled();
@@ -175,7 +175,7 @@ describe('Observable', () => {
 
       it('Should call observers when using splice()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.splice(0, 1);
         expect(observer).toHaveBeenCalled();
@@ -183,7 +183,7 @@ describe('Observable', () => {
 
       it('Should call observers when using unshift()', () => {
         const observer = jest.fn();
-        observableArray.$observe(observer);
+        observableArray.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableArray.unshift(4);
         expect(observer).toHaveBeenCalled();
@@ -213,8 +213,8 @@ describe('Observable', () => {
     });
 
     it('Should be usable as the target of a new observable', () => {
-      const newObservableObject = createObservable(observableObject);
-      expect(isObservable(newObservableObject)).toBe(true);
+      const newCustomObservable = createObservable(observableObject);
+      expect(isObservable(newCustomObservable)).toBe(true);
     });
 
     it('Should be equal to the original object', () => {
@@ -225,17 +225,17 @@ describe('Observable', () => {
       expect(JSON.stringify(observableObject)).toBe(JSON.stringify(originalObject));
     });
 
-    it('Should call observers when $notify() is called', () => {
+    it('Should call observers when callObservers() is called', () => {
       const observer = jest.fn();
-      observableObject.$observe(observer);
+      observableObject.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
-      observableObject.$notify();
+      observableObject.callObservers();
       expect(observer).toHaveBeenCalled();
     });
 
     it('Should call observers when changing an attribute', () => {
       const observer = jest.fn();
-      observableObject.$observe(observer);
+      observableObject.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
       observableObject.id = 2;
       expect(observer).toHaveBeenCalled();
@@ -243,7 +243,7 @@ describe('Observable', () => {
 
     it('Should not call observers when setting an attribute with the same value', () => {
       const observer = jest.fn();
-      observableObject.$observe(observer);
+      observableObject.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
       observableObject.id = 1;
       expect(observer).not.toHaveBeenCalled();
@@ -251,10 +251,10 @@ describe('Observable', () => {
 
     it(`Shouldn't call removed observers`, () => {
       const observer1 = jest.fn();
-      observableObject.$observe(observer1);
+      observableObject.addObserver(observer1);
 
       const observer2 = jest.fn();
-      observableObject.$observe(observer2);
+      observableObject.addObserver(observer2);
 
       observableObject.id = 2;
 
@@ -264,7 +264,7 @@ describe('Observable', () => {
       expect(numberOfCalls1).not.toBe(0);
       expect(numberOfCalls2).not.toBe(0);
 
-      observableObject.$unobserve(observer1);
+      observableObject.removeObserver(observer1);
 
       observableObject.id = 3;
 
@@ -277,7 +277,7 @@ describe('Observable', () => {
         const observableAttribute = createObservable({id: 1});
         observableObject.attribute = observableAttribute;
         const observer = jest.fn();
-        observableObject.$observe(observer);
+        observableObject.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
         observableAttribute.id = 2;
         expect(observer).toHaveBeenCalled();
@@ -288,7 +288,7 @@ describe('Observable', () => {
         observableObject.attribute = observableAttribute;
 
         const observer = jest.fn();
-        observableObject.$observe(observer);
+        observableObject.addObserver(observer);
 
         delete observableObject.attribute;
 
@@ -301,11 +301,20 @@ describe('Observable', () => {
     });
   });
 
-  describe('Custom observable object', () => {
-    class ObservableObject extends Observable() {
+  describe('Custom observable', () => {
+    class BaseCustomObservable extends Observable() {
       constructor({id} = {}) {
         super();
         this._id = id;
+      }
+
+      static get limit() {
+        return this._limit;
+      }
+
+      static set limit(limit) {
+        this._limit = limit;
+        this.callObservers();
       }
 
       get id() {
@@ -314,81 +323,139 @@ describe('Observable', () => {
 
       set id(id) {
         this._id = id;
-        this.$notify();
+        this.callObservers();
       }
     }
 
-    let observableObject;
+    describe('Observable class', () => {
+      let CustomObservable;
 
-    beforeEach(() => {
-      observableObject = new ObservableObject({id: 1});
+      beforeEach(() => {
+        CustomObservable = class CustomObservable extends BaseCustomObservable {};
+      });
+
+      it('Should be an observable', () => {
+        expect(isObservable(CustomObservable)).toBe(true);
+      });
+
+      it('Should be usable as the target of a new observable', () => {
+        const NewCustomObservable = createObservable(CustomObservable);
+        expect(isObservable(NewCustomObservable)).toBe(true);
+      });
+
+      it('Should call observers when callObservers() is called', () => {
+        const observer = jest.fn();
+        CustomObservable.addObserver(observer);
+        expect(observer).not.toHaveBeenCalled();
+        CustomObservable.callObservers();
+        expect(observer).toHaveBeenCalled();
+      });
+
+      it('Should call observers when changing an attribute', () => {
+        const observer = jest.fn();
+        CustomObservable.addObserver(observer);
+        expect(observer).not.toHaveBeenCalled();
+        CustomObservable.limit = 2;
+        expect(observer).toHaveBeenCalled();
+      });
+
+      it(`Shouldn't call removed observers`, () => {
+        const observer1 = jest.fn();
+        CustomObservable.addObserver(observer1);
+
+        const observer2 = jest.fn();
+        CustomObservable.addObserver(observer2);
+
+        CustomObservable.limit = 2;
+
+        const numberOfCalls1 = observer1.mock.calls.length;
+        const numberOfCalls2 = observer2.mock.calls.length;
+
+        expect(numberOfCalls1).not.toBe(0);
+        expect(numberOfCalls2).not.toBe(0);
+
+        CustomObservable.removeObserver(observer1);
+
+        CustomObservable.limit = 3;
+
+        expect(observer1.mock.calls.length).toBe(numberOfCalls1);
+        expect(observer2.mock.calls.length).not.toBe(numberOfCalls1);
+      });
     });
 
-    it('Should be an observable', () => {
-      expect(isObservable(observableObject)).toBe(true);
-    });
+    describe('Observable instance', () => {
+      let customObservable;
 
-    it('Should be usable as the target of a new observable', () => {
-      const newObservableObject = createObservable(observableObject);
-      expect(isObservable(newObservableObject)).toBe(true);
-    });
+      beforeEach(() => {
+        customObservable = new BaseCustomObservable({id: 1});
+      });
 
-    it('Should call observers when $notify() is called', () => {
-      const observer = jest.fn();
-      observableObject.$observe(observer);
-      expect(observer).not.toHaveBeenCalled();
-      observableObject.$notify();
-      expect(observer).toHaveBeenCalled();
-    });
+      it('Should be an observable', () => {
+        expect(isObservable(customObservable)).toBe(true);
+      });
 
-    it('Should call observers when changing an attribute', () => {
-      const observer = jest.fn();
-      observableObject.$observe(observer);
-      expect(observer).not.toHaveBeenCalled();
-      observableObject.id = 2;
-      expect(observer).toHaveBeenCalled();
-    });
+      it('Should be usable as the target of a new observable', () => {
+        const newCustomObservable = createObservable(customObservable);
+        expect(isObservable(newCustomObservable)).toBe(true);
+      });
 
-    it(`Shouldn't call removed observers`, () => {
-      const observer1 = jest.fn();
-      observableObject.$observe(observer1);
+      it('Should call observers when callObservers() is called', () => {
+        const observer = jest.fn();
+        customObservable.addObserver(observer);
+        expect(observer).not.toHaveBeenCalled();
+        customObservable.callObservers();
+        expect(observer).toHaveBeenCalled();
+      });
 
-      const observer2 = jest.fn();
-      observableObject.$observe(observer2);
+      it('Should call observers when changing an attribute', () => {
+        const observer = jest.fn();
+        customObservable.addObserver(observer);
+        expect(observer).not.toHaveBeenCalled();
+        customObservable.id = 2;
+        expect(observer).toHaveBeenCalled();
+      });
 
-      observableObject.id = 2;
+      it(`Shouldn't call removed observers`, () => {
+        const observer1 = jest.fn();
+        customObservable.addObserver(observer1);
 
-      const numberOfCalls1 = observer1.mock.calls.length;
-      const numberOfCalls2 = observer2.mock.calls.length;
+        const observer2 = jest.fn();
+        customObservable.addObserver(observer2);
 
-      expect(numberOfCalls1).not.toBe(0);
-      expect(numberOfCalls2).not.toBe(0);
+        customObservable.id = 2;
 
-      observableObject.$unobserve(observer1);
+        const numberOfCalls1 = observer1.mock.calls.length;
+        const numberOfCalls2 = observer2.mock.calls.length;
 
-      observableObject.id = 3;
+        expect(numberOfCalls1).not.toBe(0);
+        expect(numberOfCalls2).not.toBe(0);
 
-      expect(observer1.mock.calls.length).toBe(numberOfCalls1);
-      expect(observer2.mock.calls.length).not.toBe(numberOfCalls1);
+        customObservable.removeObserver(observer1);
+
+        customObservable.id = 3;
+
+        expect(observer1.mock.calls.length).toBe(numberOfCalls1);
+        expect(observer2.mock.calls.length).not.toBe(numberOfCalls1);
+      });
     });
   });
 
   describe('Unobservable value', () => {
-    it('Should not be possible to $observe a primitive', () => {
-      expect(canBecomeObservable(true)).toBe(false);
+    it('Should not be possible to observe a primitive', () => {
+      expect(canBeObserved(true)).toBe(false);
 
-      expect(canBecomeObservable(1)).toBe(false);
+      expect(canBeObserved(1)).toBe(false);
 
-      expect(canBecomeObservable('Hello')).toBe(false);
+      expect(canBeObserved('Hello')).toBe(false);
 
-      expect(canBecomeObservable(new Date())).toBe(false);
+      expect(canBeObserved(new Date())).toBe(false);
 
-      expect(canBecomeObservable(undefined)).toBe(false);
+      expect(canBeObserved(undefined)).toBe(false);
 
-      expect(canBecomeObservable(null)).toBe(false);
+      expect(canBeObserved(null)).toBe(false);
 
       expect(() => createObservable('Hello')).toThrow(
-        /Observable target must be an object or an array/
+        'Cannot create an observable from a target that is not an object, an array, or a function'
       );
     });
   });
@@ -398,7 +465,7 @@ describe('Observable', () => {
       const observableObject = createObservable({});
 
       const observer = jest.fn();
-      observableObject.$observe(observer);
+      observableObject.addObserver(observer);
       expect(observer).not.toHaveBeenCalled();
       observableObject.circularReference = observableObject;
       expect(observer).toHaveBeenCalled();

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/observable",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Observe JavaScript objects, arrays, or your own classes",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

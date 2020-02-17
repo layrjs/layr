@@ -3,11 +3,11 @@ import {hasOwnProperty} from 'core-helpers';
 export const Observable = (Base = Object) => {
   if (typeof Base !== 'function') {
     throw new Error('Cannot construct an Observable from a base that is not a class');
-    }
+  }
 
   if (isObservable(Base)) {
     return Base;
-    }
+  }
 
   class Observable extends Base {}
 
@@ -43,37 +43,53 @@ export const Observable = (Base = Object) => {
 };
 
 export function createObservable(target) {
-  if (!canBecomeObservable(target)) {
-    throw new Error(`Observable target must be an object or an array`);
+  if (!canBeObserved(target)) {
+    throw new Error(
+      `Cannot create an observable from a target that is not an object, an array, or a function`
+    );
   }
 
   if (isObservable(target)) {
     return target;
   }
 
-  if ('$observe' in target || '$unobserve' in target || '$notify' in target) {
+  if (
+    'addObserver' in target ||
+    'removeObserver' in target ||
+    'callObservers' in target ||
+    'isObservable' in target
+  ) {
     throw new Error(
-      `Observable target cannot own or inherit a property named '$observe', '$unobserve' or '$notify'`
+      `Observable target cannot own or inherit a property named 'addObserver', 'removeObserver', 'callObservers' or 'isObservable'`
     );
   }
 
   const observers = new ObserverSet();
 
-  const addObserver = function(observer) {
+  const handleAddObserver = function(observer) {
     observers.add(observer);
   };
 
-  const removeObserver = function(observer) {
+  const handleRemoveObserver = function(observer) {
     observers.remove(observer);
   };
 
-  const callObservers = function({_observerStack} = {}) {
+  const handleCallObservers = function({_observerStack} = {}) {
     observers.call({_observerStack});
+  };
+
+  const handleIsObservable = function(object) {
+    return isObservable(object);
   };
 
   const handler = {
     has(target, key) {
-      if (key === '$observe' || key === '$unobserve' || key === '$notify') {
+      if (
+        key === 'addObserver' ||
+        key === 'removeObserver' ||
+        key === 'callObservers' ||
+        key === 'isObservable'
+      ) {
         return true;
       }
 
@@ -81,25 +97,34 @@ export function createObservable(target) {
     },
 
     get(target, key) {
-      if (key === '$observe') {
-        return addObserver;
+      if (key === 'addObserver') {
+        return handleAddObserver;
       }
 
-      if (key === '$unobserve') {
-        return removeObserver;
+      if (key === 'removeObserver') {
+        return handleRemoveObserver;
       }
 
-      if (key === '$notify') {
-        return callObservers;
+      if (key === 'callObservers') {
+        return handleCallObservers;
+      }
+
+      if (key === 'isObservable') {
+        return handleIsObservable;
       }
 
       return Reflect.get(target, key);
     },
 
     set(target, key, nextValue) {
-      if (key === '$observe' || key === '$unobserve' || key === '$notify') {
+      if (
+        key === 'addObserver' ||
+        key === 'removeObserver' ||
+        key === 'callObservers' ||
+        key === 'isObservable'
+      ) {
         throw new Error(
-          `Cannot set a property named '$observe', '$unobserve' or '$notify' in an observed object`
+          `Cannot set a property named 'addObserver', 'removeObserver', 'callObservers' or 'isObservable' in an observed object`
         );
       }
 
@@ -109,31 +134,36 @@ export function createObservable(target) {
 
       if (nextValue?.valueOf() !== previousValue?.valueOf()) {
         if (isObservable(previousValue)) {
-          previousValue.$unobserve(callObservers);
+          previousValue.removeObserver(handleCallObservers);
         }
         if (isObservable(nextValue)) {
-          nextValue.$observe(callObservers);
+          nextValue.addObserver(handleCallObservers);
         }
-        callObservers();
+        handleCallObservers();
       }
 
       return result;
     },
 
     deleteProperty(target, key) {
-      if (key === '$observe' || key === '$unobserve' || key === '$notify') {
+      if (
+        key === 'addObserver' ||
+        key === 'removeObserver' ||
+        key === 'callObservers' ||
+        key === 'isObservable'
+      ) {
         throw new Error(
-          `Cannot delete a property named '$observe', '$unobserve' or '$notify' in an observed object`
+          `Cannot delete a property named 'addObserver', 'removeObserver', 'callObservers' or 'isObservable' in an observed object`
         );
       }
 
       const previousValue = Reflect.get(target, key);
       if (isObservable(previousValue)) {
-        previousValue.$unobserve(callObservers);
+        previousValue.removeObserver(handleCallObservers);
       }
 
       const result = Reflect.deleteProperty(target, key);
-      callObservers();
+      handleCallObservers();
       return result;
     }
   };
@@ -148,7 +178,7 @@ export class ObserverSet {
 
   add(observer) {
     if (!(typeof observer === 'function' || isObservable(observer))) {
-      throw new Error(`'observer' must be a function or an observable`);
+      throw new Error(`Cannot add an observer that is not a function or an observable`);
     }
 
     this._observers.push(observer);
@@ -156,7 +186,7 @@ export class ObserverSet {
 
   remove(observer) {
     if (!(typeof observer === 'function' || isObservable(observer))) {
-      throw new Error(`'observer' must be a function or an observable`);
+      throw new Error(`Cannot remove an observer that is not a function or an observable`);
     }
 
     const index = this._observers.indexOf(observer);
@@ -177,7 +207,7 @@ export class ObserverSet {
           observer({_observerStack});
         } else {
           // The observer is an observable
-          observer.$notify({_observerStack});
+          observer.callObservers({_observerStack});
         }
       } finally {
         _observerStack.delete(observer);
@@ -187,15 +217,12 @@ export class ObserverSet {
 }
 
 export function isObservable(object) {
-  return (
-    typeof object === 'object' &&
-    object !== null &&
-    typeof object.$observe === 'function' &&
-    typeof object.$unobserve === 'function' &&
-    typeof object.$notify === 'function'
-  );
+  return typeof object?.isObservable === 'function';
 }
 
-export function canBecomeObservable(target) {
-  return typeof target === 'object' && target !== null && !(target instanceof Date);
+export function canBeObserved(target) {
+  return (
+    (typeof target === 'object' && target !== null && !(target instanceof Date)) ||
+    typeof target === 'function'
+  );
 }
