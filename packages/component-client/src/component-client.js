@@ -183,7 +183,7 @@ export class ComponentClient {
     return possiblyAsync(componentServer.receiveQuery(query, {version}), {
       then: result => {
         debug(`Query sent to remote components (result: %o)`, result);
-        return deserialize(result, {knownComponents, source: 'parent'});
+        return deserialize(result, {knownComponents, deserializeFunctions: true, source: 'parent'});
       }
     });
   }

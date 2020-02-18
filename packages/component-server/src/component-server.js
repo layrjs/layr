@@ -65,6 +65,7 @@ export class ComponentServer {
         return serialize(result, {
           knownComponents: components,
           attributeFilter: getFilter,
+          serializeFunctions: true,
           target: 'child'
         });
       }

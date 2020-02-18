@@ -30,10 +30,7 @@ describe('ComponentServer', () => {
               {
                 name: 'title',
                 type: 'attribute',
-                default: {
-                  __class: 'Function',
-                  __value: "function () {\n          return '';\n        }"
-                },
+                default: {__function: "function () {\n          return '';\n        }"},
                 exposure: {get: true, set: true}
               }
             ]

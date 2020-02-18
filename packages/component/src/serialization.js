@@ -10,24 +10,26 @@ export function serialize(value, options) {
     'options',
     ow.optional.object.partialShape({
       knownComponents: ow.optional.array,
-      attributeFilter: ow.optional.function
+      attributeFilter: ow.optional.function,
+      serializeFunctions: ow.optional.boolean
     })
   );
 
   const knownComponentMap = createComponentMap(options?.knownComponents);
   const attributeFilter = options?.attributeFilter;
+  const serializeFunctions = options?.serializeFunctions ?? false;
 
-  const objectHandler = function(value) {
+  const objectHandler = function(object) {
     let Component;
     let isComponentClass;
 
-    if (isComponent(value.prototype)) {
-      // The value is a component class
-      Component = value;
+    if (isComponent(object.prototype)) {
+      // The object is a component class
+      Component = object;
       isComponentClass = true;
-    } else if (isComponent(value)) {
-      // The value is a component instance
-      Component = value.constructor;
+    } else if (isComponent(object)) {
+      // The object is a component instance
+      Component = object.constructor;
       isComponentClass = false;
     }
 
@@ -42,13 +44,13 @@ export function serialize(value, options) {
 
     const serializedComponent = isComponentClass
       ? {__Component: componentName}
-      : {__component: componentName, ...(value.isNew() && {__new: true})};
+      : {__component: componentName, ...(object.isNew() && {__new: true})};
 
     return possiblyAsync.forEach(
-      value.getActiveAttributes(),
+      object.getActiveAttributes(),
       attribute => {
         return possiblyAsync(
-          attributeFilter !== undefined ? attributeFilter.call(value, attribute) : true,
+          attributeFilter !== undefined ? attributeFilter.call(object, attribute) : true,
           {
             then: isNotFilteredOut => {
               if (isNotFilteredOut) {
@@ -68,7 +70,36 @@ export function serialize(value, options) {
     );
   };
 
-  options = {...options, objectHandler};
+  let functionHandler;
+
+  if (serializeFunctions) {
+    functionHandler = function(func) {
+      const functionCode = serializeFunction(func);
+
+      if (functionCode.startsWith('class')) {
+        throw new Error('Cannot serialize a class');
+      }
+
+      const serializedFunction = {__function: functionCode};
+
+      return possiblyAsync.mapValues(
+        func,
+        attributeValue => simpleSerialize(attributeValue, options),
+        {
+          then: serializedAttributes => {
+            Object.assign(serializedFunction, serializedAttributes);
+            return serializedFunction;
+          }
+        }
+      );
+    };
+  }
+
+  options = {...options, objectHandler, functionHandler};
 
   return simpleSerialize(value, options);
+}
+
+function serializeFunction(func) {
+  return func.toString();
 }

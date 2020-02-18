@@ -38,7 +38,7 @@ describe('ComponentClient', () => {
                   {
                     name: 'isPlaying',
                     type: 'attribute',
-                    default: {__class: 'Function', __value: 'function() { return false; }'},
+                    default: {__function: 'function() { return false; }'},
                     exposure: {get: true}
                   },
                   {name: 'play', type: 'method', exposure: {call: true}}

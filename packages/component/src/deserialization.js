@@ -10,12 +10,14 @@ export function deserialize(value, options) {
     'options',
     ow.optional.object.partialShape({
       knownComponents: ow.optional.array,
-      attributeFilter: ow.optional.function
+      attributeFilter: ow.optional.function,
+      deserializeFunctions: ow.optional.boolean
     })
   );
 
   const knownComponentMap = createComponentMap(options?.knownComponents);
   const attributeFilter = options?.attributeFilter;
+  const deserializeFunctions = options?.deserializeFunctions ?? false;
 
   const objectHandler = function(value) {
     const {__Component, __component, __new, ...attributes} = value;
@@ -78,7 +80,47 @@ export function deserialize(value, options) {
     );
   };
 
-  options = {...options, objectHandler};
+  let functionHandler;
+
+  if (deserializeFunctions) {
+    functionHandler = function(object) {
+      const {__function, ...serializedAttributes} = object;
+
+      if (__function === undefined) {
+        return undefined;
+      }
+
+      const functionCode = __function;
+
+      return possiblyAsync.mapValues(
+        serializedAttributes,
+        attributeValue => simpleDeserialize(attributeValue, options),
+        {
+          then: deserializedAttributes => {
+            const {__context: context} = deserializedAttributes;
+            const deserializedFunction = deserializeFunction(functionCode, context);
+            Object.assign(deserializedFunction, deserializedAttributes);
+            return deserializedFunction;
+          }
+        }
+      );
+    };
+  }
+
+  options = {...options, objectHandler, functionHandler};
 
   return simpleDeserialize(value, options);
+}
+
+function deserializeFunction(functionCode, context) {
+  let evalCode = `(${functionCode});`;
+
+  if (context !== undefined) {
+    const contextKeys = Object.keys(context).join(', ');
+    const contextCode = `const {${contextKeys}} = context;`;
+    evalCode = `${contextCode} ${evalCode}`;
+  }
+
+  // eslint-disable-next-line no-eval
+  return eval(evalCode);
 }
