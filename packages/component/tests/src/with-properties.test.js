@@ -2,8 +2,10 @@ import {
   WithProperties,
   property,
   isProperty,
+  Attribute,
   attribute,
   isAttribute,
+  Method,
   method,
   isMethod,
   expose,
@@ -76,7 +78,7 @@ describe('WithProperties', () => {
 
       expect(Movie.hasProperty('limit')).toBe(false);
 
-      let setPropertyResult = Movie.setProperty('limit', 'attribute');
+      let setPropertyResult = Movie.setProperty('limit', Attribute);
 
       expect(Movie.hasProperty('limit')).toBe(true);
 
@@ -90,7 +92,7 @@ describe('WithProperties', () => {
 
       expect(Movie.hasProperty('find')).toBe(false);
 
-      setPropertyResult = Movie.setProperty('find', 'method');
+      setPropertyResult = Movie.setProperty('find', Method);
 
       expect(Movie.hasProperty('find')).toBe(true);
 
@@ -106,7 +108,7 @@ describe('WithProperties', () => {
 
       expect(Film.hasProperty('limit')).toBe(true);
 
-      setPropertyResult = Film.setProperty('limit', 'attribute');
+      setPropertyResult = Film.setProperty('limit', Attribute);
 
       expect(Film.hasProperty('limit')).toBe(true);
 

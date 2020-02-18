@@ -7,9 +7,13 @@ import {Method, isMethod} from './method';
 export const WithProperties = (Base = Object) => {
   ow(Base, 'Base', ow.function);
 
-  class CommonWithProperties extends Base {}
+  if (isWithProperties(Base)) {
+    return Base;
+  }
 
-  const commonMethods = {
+  class BaseWithProperties extends Base {}
+
+  const methods = {
     // === Properties ===
 
     getProperty(name, options = {}) {
@@ -41,33 +45,28 @@ export const WithProperties = (Base = Object) => {
       return property;
     },
 
-    setProperty(name, type, propertyOptions = {}, methodOptions = {}) {
+    setProperty(name, PropertyClass, propertyOptions = {}, options = {}) {
       ow(name, 'name', ow.string.nonEmpty);
-      ow(type, 'type', ow.string.oneOf(['attribute', 'method']));
+      ow(PropertyClass, 'PropertyClass', ow.function);
       ow(propertyOptions, 'propertyOptions', ow.object);
-      ow(
-        methodOptions,
-        'methodOptions',
-        ow.object.exactShape({returnDescriptor: ow.optional.boolean})
-      );
+      ow(options, 'options', ow.object.exactShape({returnDescriptor: ow.optional.boolean}));
 
-      const {returnDescriptor = false} = methodOptions;
+      const {returnDescriptor = false} = options;
 
       let property = this.getProperty(name, {throwIfMissing: false});
 
       if (property === undefined) {
-        const Property = type === 'attribute' ? Attribute : Method;
-        property = new Property(name, this, propertyOptions);
+        property = new PropertyClass(name, this, propertyOptions);
         const properties = this.__getProperties();
         properties[name] = property;
       } else {
-        if (property.getType() !== type) {
+        if (property.getType() !== PropertyClass.prototype.getType()) {
           throw new Error(`Cannot change the type of the '${name}' property`);
         }
         property.setOptions(propertyOptions);
       }
 
-      if (type === 'attribute') {
+      if (isAttribute(PropertyClass.prototype)) {
         const descriptor = {
           configurable: true,
           enumerable: true,
@@ -215,12 +214,12 @@ export const WithProperties = (Base = Object) => {
       return property;
     },
 
-    setAttribute(name, propertyOptions = {}, methodOptions = {}) {
+    setAttribute(name, propertyOptions = {}, options = {}) {
       ow(name, 'name', ow.string.nonEmpty);
       ow(propertyOptions, 'propertyOptions', ow.object);
-      ow(methodOptions, 'methodOptions', ow.object);
+      ow(options, 'options', ow.object);
 
-      return this.setProperty(name, 'attribute', propertyOptions, methodOptions);
+      return this.setProperty(name, Attribute, propertyOptions, options);
     },
 
     hasAttribute(name) {
@@ -306,7 +305,7 @@ export const WithProperties = (Base = Object) => {
       ow(name, 'name', ow.string.nonEmpty);
       ow(options, 'options', ow.object);
 
-      return this.setProperty(name, 'method', options);
+      return this.setProperty(name, Method, options);
     },
 
     hasMethod(name) {
@@ -353,13 +352,19 @@ export const WithProperties = (Base = Object) => {
       }
 
       return introspectedProperties;
+    },
+
+    // === Utilities ===
+
+    isWithProperties(object) {
+      return isWithProperties(object);
     }
   };
 
-  Object.assign(CommonWithProperties, commonMethods);
-  Object.assign(CommonWithProperties.prototype, commonMethods);
+  Object.assign(BaseWithProperties, methods);
+  Object.assign(BaseWithProperties.prototype, methods);
 
-  class WithProperties extends CommonWithProperties {
+  class WithProperties extends BaseWithProperties {
     constructor(object = {}) {
       super();
 
@@ -369,17 +374,13 @@ export const WithProperties = (Base = Object) => {
         attribute.setValue(value);
       }
     }
-
-    static isWithProperties(object) {
-      return isWithProperties(object);
-    }
   }
 
   return WithProperties;
 };
 
 export function isWithProperties(object) {
-  return typeof object?.constructor?.isWithProperties === 'function';
+  return typeof object?.isWithProperties === 'function';
 }
 
 export function property(options = {}) {
@@ -390,7 +391,7 @@ export function property(options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+    if (!isWithProperties(target)) {
       throw new Error(
         `@property() target doesn't inherit from WithProperties (property name: '${name}')`
       );
@@ -412,7 +413,7 @@ export function attribute(options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+    if (!isWithProperties(target)) {
       throw new Error(
         `@attribute() target doesn't inherit from WithProperties (property name: '${name}')`
       );
@@ -429,32 +430,38 @@ export function attribute(options = {}) {
       );
     }
 
-    // Normalize initializer that can be null in certain cases
-    const initializer =
-      typeof descriptor.initializer === 'function' ? descriptor.initializer : undefined;
-
-    if (isWithProperties(target.prototype)) {
-      // The target is a component class
-      const property = target.getProperty(name, {throwIfMissing: false, autoFork: false});
-      if (property?.getParent() === target) {
-        // If the attribute already exists in the target, it means it was forked from
-        // the parent class as a side effect of the attribute declaration
-        // In this case, the new value should have already been set and there is nothing to do
-      } else {
-        // It is a new attribute or the attribute declaration didn't fork a parent attribute
-        const initialValue = initializer?.call(target);
-        options = {value: initialValue, ...options};
-      }
-    } else {
-      // The target is a component prototype
-      const defaultValue = initializer;
-      options = {default: defaultValue, ...options};
-    }
-
-    descriptor = target.setAttribute(name, options, {returnDescriptor: true});
-
-    return {...descriptor, __decoratedBy: '@attribute()'};
+    return _decorateAttribute({target, name, descriptor, AttributeClass: Attribute, options});
   };
+}
+
+// Despite the following function looks private, it is exported and used by the
+// @field() decorator in @liaison/model
+export function _decorateAttribute({target, name, descriptor, AttributeClass, options}) {
+  // Normalize initializer that can be null in certain cases
+  const initializer =
+    typeof descriptor.initializer === 'function' ? descriptor.initializer : undefined;
+
+  if (typeof target === 'function') {
+    // The target is a component class
+    const property = target.getProperty(name, {throwIfMissing: false, autoFork: false});
+    if (property?.getParent() === target) {
+      // If the attribute already exists in the target, it means it was forked from
+      // the parent class as a side effect of the attribute declaration
+      // In this case, the new value should have already been set and there is nothing to do
+    } else {
+      // It is a new attribute or the attribute declaration didn't fork a parent attribute
+      const initialValue = initializer?.call(target);
+      options = {value: initialValue, ...options};
+    }
+  } else {
+    // The target is a component prototype
+    const defaultValue = initializer;
+    options = {default: defaultValue, ...options};
+  }
+
+  descriptor = target.setProperty(name, AttributeClass, options, {returnDescriptor: true});
+
+  return {...descriptor, __decoratedBy: '@attribute()'};
 }
 
 export function method(options = {}) {
@@ -465,7 +472,7 @@ export function method(options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+    if (!isWithProperties(target)) {
       throw new Error(
         `@method() target doesn't inherit from WithProperties (property name: '${name}')`
       );
@@ -477,7 +484,7 @@ export function method(options = {}) {
       );
     }
 
-    target.setMethod(name, options);
+    target.setProperty(name, Method, options);
 
     return {...descriptor, __decoratedBy: '@method()'};
   };
@@ -489,7 +496,7 @@ export function inherit() {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+    if (!isWithProperties(target)) {
       throw new Error(
         `@inherit() target doesn't inherit from WithProperties (property name: '${name}')`
       );
@@ -503,11 +510,7 @@ export function inherit() {
       );
     }
 
-    if (
-      isWithProperties(target.prototype) &&
-      isAttribute(property) &&
-      property.getParent() === target
-    ) {
+    if (typeof target === 'function' && isAttribute(property) && property.getParent() === target) {
       // If the target is a component class and the inherited property is an attribute,
       // we must roll back the attribute declaration that has reinitialized the value
       target.deleteProperty(name);
@@ -527,7 +530,7 @@ export function expose(exposure = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!(isWithProperties(target) || isWithProperties(target.prototype))) {
+    if (!isWithProperties(target)) {
       throw new Error(
         `@expose() target doesn't inherit from WithProperties (property name: '${name}')`
       );

@@ -1,6 +1,6 @@
 # @liaison/model
 
-Base class providing typed properties, validation and serialization.
+Base class extending the Component class to provide typed attributes, observability, and validation.
 
 ## Installation
 

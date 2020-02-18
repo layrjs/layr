@@ -1,10 +1,15 @@
 import {
   Component,
   isComponent,
+  Property,
+  Attribute,
+  Method,
+  isMethod,
   serialize,
   deserialize,
   createComponentMap
 } from '@liaison/component';
+import {Field} from '@liaison/model';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import debugModule from 'debug';
@@ -102,9 +107,23 @@ export class ComponentClient {
   _setComponentProperty(component, introspectedProperty) {
     const {name, type, ...options} = introspectedProperty;
 
-    component.setProperty(name, type, options);
+    let PropertyClass;
 
-    if (type === 'method') {
+    if (type === 'property') {
+      PropertyClass = Property;
+    } else if (type === 'attribute') {
+      PropertyClass = Attribute;
+    } else if (type === 'method') {
+      PropertyClass = Method;
+    } else if (type === 'field') {
+      PropertyClass = Field;
+    } else {
+      throw new Error(`Invalid property type (${type}) received from a component server`);
+    }
+
+    component.setProperty(name, PropertyClass, options);
+
+    if (isMethod(PropertyClass.prototype)) {
       Object.defineProperty(component, name, {
         value: this._createComponentMethod(name),
         writable: true,

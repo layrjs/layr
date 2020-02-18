@@ -8,6 +8,10 @@ import {isComponent} from './utilities';
 export const Component = (Base = Object) => {
   ow(Base, ow.function);
 
+  if (isComponent(Base.prototype)) {
+    return Base;
+  }
+
   return class Component extends WithProperties(Base) {
     // === Creation ===
 
