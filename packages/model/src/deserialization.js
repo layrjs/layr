@@ -1,7 +1,7 @@
 import {deserialize as deserializeComponent} from '@liaison/component';
 import ow from 'ow';
 
-import {Validator, isSerializedValidator} from './validator';
+import {Validator, isSerializedValidator} from './validation/validator';
 
 export function deserialize(value, options = {}) {
   ow(

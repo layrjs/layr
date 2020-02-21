@@ -1,7 +1,7 @@
 import {serialize as serializeComponent} from '@liaison/component';
 import ow from 'ow';
 
-import {isValidator} from './validator';
+import {isValidator} from './validation/validator';
 
 export function serialize(value, options = {}) {
   ow(
