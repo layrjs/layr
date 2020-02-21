@@ -5,11 +5,9 @@ import {
   Attribute,
   Method,
   isMethod,
-  serialize,
-  deserialize,
   createComponentMap
 } from '@liaison/component';
-import {Field} from '@liaison/model';
+import {Field, serialize, deserialize} from '@liaison/model';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import debugModule from 'debug';
