@@ -1,7 +1,7 @@
 import {Model, isModel, field, isField, method} from '../../..';
 
 describe('Model', () => {
-  test('Checking that an object is a model', async () => {
+  test('isModel()', async () => {
     expect(isModel(undefined)).toBe(false);
     expect(isModel(null)).toBe(false);
     expect(isModel(true)).toBe(false);
