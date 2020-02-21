@@ -4,22 +4,38 @@ import ow from 'ow';
 
 import {isComponent, createComponentMap, getComponentFromComponentMap} from './utilities';
 
-export function serialize(value, options) {
+export function serialize(value, options = {}) {
   ow(
     options,
     'options',
-    ow.optional.object.partialShape({
+    ow.object.partialShape({
+      objectHandler: ow.optional.function,
+      functionHandler: ow.optional.function,
       knownComponents: ow.optional.array,
       attributeFilter: ow.optional.function,
       serializeFunctions: ow.optional.boolean
     })
   );
 
-  const knownComponentMap = createComponentMap(options?.knownComponents);
-  const attributeFilter = options?.attributeFilter;
-  const serializeFunctions = options?.serializeFunctions ?? false;
+  const {
+    objectHandler: originalObjectHandler,
+    functionHandler: originalFunctionHandler,
+    knownComponents,
+    attributeFilter,
+    serializeFunctions = false
+  } = options;
+
+  const knownComponentMap = createComponentMap(knownComponents);
 
   const objectHandler = function(object) {
+    if (originalObjectHandler !== undefined) {
+      const serializedObject = originalObjectHandler(object);
+
+      if (serializedObject !== undefined) {
+        return serializedObject;
+      }
+    }
+
     let Component;
     let isComponentClass;
 
@@ -74,6 +90,14 @@ export function serialize(value, options) {
 
   if (serializeFunctions) {
     functionHandler = function(func) {
+      if (originalFunctionHandler !== undefined) {
+        const serializedFunction = originalFunctionHandler(func);
+
+        if (serializedFunction !== undefined) {
+          return serializedFunction;
+        }
+      }
+
       const functionCode = serializeFunction(func);
 
       if (functionCode.startsWith('class')) {
@@ -100,6 +124,6 @@ export function serialize(value, options) {
   return simpleSerialize(value, options);
 }
 
-function serializeFunction(func) {
+export function serializeFunction(func) {
   return func.toString();
 }
