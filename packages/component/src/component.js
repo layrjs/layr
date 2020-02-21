@@ -3,7 +3,7 @@ import ow from 'ow';
 import {WithProperties} from './with-properties';
 import {serialize} from './serialization';
 import {deserialize} from './deserialization';
-import {isComponent} from './utilities';
+import {isComponent, validateComponentName} from './utilities';
 
 export const Component = (Base = Object) => {
   ow(Base, ow.function);
@@ -49,11 +49,9 @@ export const Component = (Base = Object) => {
     }
 
     static setName(name) {
-      ow(name, 'name', ow.string.nonEmpty);
+      ow(name, 'name', ow.string);
 
-      if (name === 'Component') {
-        throw new Error("A component cannot be named 'Component");
-      }
+      validateComponentName(name);
 
       Object.defineProperty(this, '__name', {value: name, configurable: true});
     }

@@ -78,9 +78,18 @@ describe('Component', () => {
     expect(Object.keys(Movie)).toHaveLength(0);
 
     expect(() => Movie.setName()).toThrow();
-    expect(() => Movie.setName('')).toThrow();
     expect(() => Movie.setName(123)).toThrow();
-    expect(() => Movie.setName('Component')).toThrow();
+    expect(() => Movie.setName('')).toThrow('A component name cannot be empty');
+    expect(() => Movie.setName('Component')).toThrow("A component name cannot be 'Component'");
+    expect(() => Movie.setName('1Place')).toThrow(
+      "The specified component name ('1Place') is invalid"
+    );
+    expect(() => Movie.setName('motionPicture')).toThrow(
+      "The specified component name ('motionPicture') is invalid"
+    );
+    expect(() => Movie.setName('MotionPicture!')).toThrow(
+      "The specified component name ('MotionPicture!') is invalid"
+    );
 
     const Anonymous = (() => class extends Component() {})();
 
