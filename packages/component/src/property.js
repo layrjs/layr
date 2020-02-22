@@ -3,7 +3,7 @@ import mapValues from 'lodash/mapValues';
 import ow from 'ow';
 
 export class Property {
-  constructor(name, parent, options) {
+  constructor(name, parent, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(parent, 'parent', ow.object);
     ow(options, 'options', ow.optional.object);
@@ -11,9 +11,7 @@ export class Property {
     this._name = name;
     this._parent = parent;
 
-    if (options !== undefined) {
-      this.setOptions(options);
-    }
+    this.setOptions(options);
   }
 
   // === Basic properties ===

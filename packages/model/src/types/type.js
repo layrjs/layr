@@ -43,7 +43,7 @@ export class Type {
 
     if (!this._checkValue(value)) {
       throw new Error(
-        `Type mismatch (field name: '${field.getName()}', expected type: '${this.toString()}', received type: '${typeof value}')`
+        `Cannot assign a value of an unexpected type to the field '${field.getName()}' (expected type: '${this.toString()}', received type: '${typeof value}')`
       );
     }
   }

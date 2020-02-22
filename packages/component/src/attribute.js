@@ -32,13 +32,13 @@ export class Attribute extends Property {
     if (getter !== undefined || setter !== undefined) {
       if (hasInitialValue) {
         throw new Error(
-          `The '${this.getName()}' attribute cannot have both a getter or setter and an initial value`
+          `The '${this.getName()}' ${this.getType()} cannot have both a getter or setter and an initial value`
         );
       }
 
       if (hasDefaultValue) {
         throw new Error(
-          `The '${this.getName()}' attribute cannot have both a getter or setter and a default value`
+          `The '${this.getName()}' ${this.getType()} cannot have both a getter or setter and a default value`
         );
       }
 
@@ -49,22 +49,23 @@ export class Attribute extends Property {
       if (setter !== undefined) {
         if (getter === undefined) {
           throw new Error(
-            `The '${this.getName()}' attribute cannot have a setter without a getter`
+            `The '${this.getName()}' ${this.getType()} cannot have a setter without a getter`
           );
         }
         this._setter = setter;
       }
 
-      this._isActive = true;
-    } else {
-      if (hasInitialValue) {
-        this._value = initialValue;
-        this._isActive = true;
-      }
+      this.activate();
 
-      if (hasDefaultValue) {
-        this._default = defaultValue;
-      }
+      return;
+    }
+
+    if (hasInitialValue) {
+      this.setValue(initialValue);
+    }
+
+    if (hasDefaultValue) {
+      this._default = defaultValue;
     }
   }
 
@@ -96,7 +97,7 @@ export class Attribute extends Property {
     if (!this.isActive()) {
       if (throwIfInactive) {
         throw new Error(
-          `Cannot get the value from the '${this.getName()}' attribute which is inactive`
+          `Cannot get the value from the '${this.getName()}' ${this.getType()} which is inactive`
         );
       }
       return undefined;
@@ -116,17 +117,14 @@ export class Attribute extends Property {
   setValue(value) {
     if (this._setter !== undefined) {
       this._setter.call(this.getParent(), value);
-    } else {
-      const previousValue = this.getValue({throwIfInactive: false});
-
-      this.activate();
-
-      if (value?.valueOf() !== previousValue?.valueOf()) {
-        this._value = value;
-      }
+      return;
     }
 
-    return value;
+    const previousValue = this.getValue({throwIfInactive: false});
+    this._value = value;
+    this.activate();
+
+    return {previousValue, newValue: value};
   }
 
   // === Default value ===

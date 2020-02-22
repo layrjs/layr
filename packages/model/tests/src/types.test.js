@@ -14,10 +14,10 @@ describe('Types', () => {
 
     expect(() => type.checkValue('a', {field})).not.toThrow();
     expect(() => type.checkValue(1, {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'string', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'string', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'string', received type: 'undefined')"
     );
 
     type = new StringType({isOptional: true, field});
@@ -26,7 +26,7 @@ describe('Types', () => {
 
     expect(() => type.checkValue('a', {field})).not.toThrow();
     expect(() => type.checkValue(1, {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'string?', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'string?', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });
@@ -38,10 +38,10 @@ describe('Types', () => {
 
     expect(() => type.checkValue(1, {field})).not.toThrow();
     expect(() => type.checkValue('a', {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'undefined')"
     );
 
     type = new NumberType({isOptional: true, field});
@@ -50,7 +50,7 @@ describe('Types', () => {
 
     expect(() => type.checkValue(1, {field})).not.toThrow();
     expect(() => type.checkValue('a', {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });
@@ -64,22 +64,22 @@ describe('Types', () => {
     expect(() => type.checkValue([], {field})).not.toThrow();
     expect(() => type.checkValue([1], {field})).not.toThrow();
     expect(() => type.checkValue(1, {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: '[number]', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: '[number]', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: '[number]', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: '[number]', received type: 'undefined')"
     );
     expect(() => type.checkValue([undefined], {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'undefined')"
     );
     expect(() => type.checkValue([1, undefined], {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'undefined')"
     );
     expect(() => type.checkValue([undefined, 1], {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'undefined')"
     );
 
     elementType = new NumberType({isOptional: true, field});
@@ -90,10 +90,10 @@ describe('Types', () => {
     expect(() => type.checkValue([], {field})).not.toThrow();
     expect(() => type.checkValue([1], {field})).not.toThrow();
     expect(() => type.checkValue(1, {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: '[number?]?', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: '[number?]?', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], {field})).toThrow(
-      "Type mismatch (field name: 'field', expected type: 'number?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
     expect(() => type.checkValue([undefined], {field})).not.toThrow();

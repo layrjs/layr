@@ -126,7 +126,7 @@ describe('Model', () => {
     expect(Array.from(classFields)).toHaveLength(0);
 
     class Film extends Movie {
-      @field('Director') director;
+      @field('Director?') director;
     }
 
     const film = new Film();
@@ -153,11 +153,11 @@ describe('Model', () => {
 
   test('@field()', async () => {
     class Movie extends Model() {
-      @field('number') static limit = 100;
-      @field('string') static token;
+      @field('number?') static limit = 100;
+      @field('string?') static token;
 
-      @field('string') title = '';
-      @field('string') country;
+      @field('string?') title = '';
+      @field('string?') country;
     }
 
     let classField = Movie.getField('limit');
@@ -219,11 +219,11 @@ describe('Model', () => {
     ).toThrow("@field() cannot be used without a field declaration (property name: 'find')");
 
     class Film extends Movie {
-      @field('number') static limit;
-      @field('string') static token = '';
+      @field('number?') static limit;
+      @field('string?') static token = '';
 
-      @field('string') title;
-      @field('string') country = '';
+      @field('string?') title;
+      @field('string?') country = '';
     }
 
     classField = Film.getField('limit');
