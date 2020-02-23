@@ -1,7 +1,7 @@
 import ow from 'ow';
 
 import {getTypeOf} from './utilities';
-import {normalizeValidator} from '../validation/utilities';
+import {runValidators, normalizeValidator} from '../validation';
 
 export class Type {
   constructor(options = {}) {
@@ -55,5 +55,9 @@ export class Type {
     if (value === undefined) {
       return this.isOptional();
     }
+  }
+
+  runValidators(value) {
+    return runValidators(this.getValidators(), value, {isOptional: this.isOptional()});
   }
 }

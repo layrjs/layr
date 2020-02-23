@@ -1,4 +1,11 @@
-import {Validator, isValidator, runValidators, validators, normalizeValidator} from '../../..';
+import {
+  Validator,
+  isValidator,
+  runValidators,
+  requiredValidator,
+  validators,
+  normalizeValidator
+} from '../../..';
 
 describe('Validation', () => {
   describe('Validator', () => {
@@ -59,6 +66,9 @@ describe('Validation', () => {
 
       expect(runValidators([validator], 7)).toEqual([]);
       expect(runValidators([validator], 3)).toEqual([validator]);
+
+      expect(runValidators([validator], undefined)).toEqual([requiredValidator]);
+      expect(runValidators([validator], undefined, {isOptional: true})).toEqual([]);
     });
 
     test('Serialization', async () => {

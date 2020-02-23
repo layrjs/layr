@@ -96,7 +96,22 @@ export function isSerializedValidator(object) {
   return object !== undefined && hasOwnProperty(object, '__validator');
 }
 
-export function runValidators(validators, value) {
+function required(value) {
+  return value !== undefined;
+}
+
+export const requiredValidator = new Validator(required);
+
+export function runValidators(validators, value, options = {}) {
+  ow(validators, 'validators', ow.array);
+  ow(options, 'options', ow.object.exactShape({isOptional: ow.optional.boolean}));
+
+  const {isOptional = false} = options;
+
+  if (value === undefined) {
+    return isOptional ? [] : [requiredValidator];
+  }
+
   const failedValidators = [];
 
   for (const validator of validators) {
