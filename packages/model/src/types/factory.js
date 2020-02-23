@@ -3,6 +3,7 @@ import ow from 'ow';
 import {BooleanType} from './boolean-type';
 import {NumberType} from './number-type';
 import {StringType} from './string-type';
+import {ObjectType} from './object-type';
 import {ArrayType} from './array-type';
 import {ComponentType} from './component-type';
 
@@ -10,7 +11,8 @@ const TYPE_MAP = new Map(
   Object.entries({
     boolean: BooleanType,
     number: NumberType,
-    string: StringType
+    string: StringType,
+    object: ObjectType
   })
 );
 

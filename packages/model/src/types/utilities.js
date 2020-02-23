@@ -1,6 +1,10 @@
 import {isComponent, getComponentName} from '@liaison/component';
 
 export function getTypeOf(value) {
+  if (Array.isArray(value)) {
+    return 'array';
+  }
+
   if (value instanceof Date) {
     return 'date';
   }

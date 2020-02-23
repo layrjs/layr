@@ -3,6 +3,7 @@ import {
   BooleanType,
   NumberType,
   StringType,
+  ObjectType,
   ArrayType,
   ComponentType,
   createType,
@@ -42,6 +43,30 @@ describe('Types', () => {
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });
 
+  test('NumberType', async () => {
+    let type = new NumberType({field});
+
+    expect(type.toString()).toBe('number');
+
+    expect(() => type.checkValue(1, {field})).not.toThrow();
+    expect(() => type.checkValue('a', {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'string')"
+    );
+    expect(() => type.checkValue(undefined, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'undefined')"
+    );
+
+    type = new NumberType({isOptional: true, field});
+
+    expect(type.toString()).toBe('number?');
+
+    expect(() => type.checkValue(1, {field})).not.toThrow();
+    expect(() => type.checkValue('a', {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number?', received type: 'string')"
+    );
+    expect(() => type.checkValue(undefined, {field})).not.toThrow();
+  });
+
   test('StringType', async () => {
     let type = new StringType({field});
 
@@ -66,26 +91,38 @@ describe('Types', () => {
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });
 
-  test('NumberType', async () => {
-    let type = new NumberType({field});
+  test('ObjectType', async () => {
+    let type = new ObjectType({field});
 
-    expect(type.toString()).toBe('number');
+    class Movie extends Model() {}
 
-    expect(() => type.checkValue(1, {field})).not.toThrow();
+    const movie = new Movie();
+
+    expect(type.toString()).toBe('object');
+
+    expect(() => type.checkValue({}, {field})).not.toThrow();
+    expect(() => type.checkValue({title: 'Inception'}, {field})).not.toThrow();
     expect(() => type.checkValue('a', {field})).toThrow(
-      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'object', received type: 'string')"
+    );
+    expect(() => type.checkValue(movie, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'object', received type: 'movie')"
     );
     expect(() => type.checkValue(undefined, {field})).toThrow(
-      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'object', received type: 'undefined')"
     );
 
-    type = new NumberType({isOptional: true, field});
+    type = new ObjectType({isOptional: true, field});
 
-    expect(type.toString()).toBe('number?');
+    expect(type.toString()).toBe('object?');
 
-    expect(() => type.checkValue(1, {field})).not.toThrow();
+    expect(() => type.checkValue({}, {field})).not.toThrow();
+    expect(() => type.checkValue({title: 'Inception'}, {field})).not.toThrow();
+    expect(() => type.checkValue(movie, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'object?', received type: 'movie')"
+    );
     expect(() => type.checkValue('a', {field})).toThrow(
-      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'object?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });
