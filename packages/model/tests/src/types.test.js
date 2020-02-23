@@ -1,4 +1,12 @@
-import {StringType, NumberType, ArrayType, createType, validators} from '../../..';
+import {
+  Model,
+  StringType,
+  NumberType,
+  ArrayType,
+  ComponentType,
+  createType,
+  validators
+} from '../../..';
 
 describe('Types', () => {
   const field = {
@@ -99,6 +107,87 @@ describe('Types', () => {
     expect(() => type.checkValue([undefined], {field})).not.toThrow();
     expect(() => type.checkValue([1, undefined], {field})).not.toThrow();
     expect(() => type.checkValue([undefined, 1], {field})).not.toThrow();
+  });
+
+  test('ComponentType', async () => {
+    class Movie extends Model() {}
+
+    class Actor extends Model() {}
+
+    const movie = new Movie();
+    const actor = new Actor();
+
+    // Component class types
+
+    let type = new ComponentType({componentName: 'Movie', field});
+
+    expect(type.toString()).toBe('Movie');
+
+    expect(() => type.checkValue(Movie, {field})).not.toThrow();
+    expect(() => type.checkValue(Actor, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'Movie', received type: 'Actor')"
+    );
+    expect(() => type.checkValue(movie, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'Movie', received type: 'movie')"
+    );
+    expect(() => type.checkValue({}, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'Movie', received type: 'object')"
+    );
+    expect(() => type.checkValue(undefined, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'Movie', received type: 'undefined')"
+    );
+
+    type = new ComponentType({componentName: 'Movie', isOptional: true, field});
+
+    expect(type.toString()).toBe('Movie?');
+
+    expect(() => type.checkValue(Movie, {field})).not.toThrow();
+    expect(() => type.checkValue(Actor, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'Movie?', received type: 'Actor')"
+    );
+    expect(() => type.checkValue(movie, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'Movie?', received type: 'movie')"
+    );
+    expect(() => type.checkValue({}, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'Movie?', received type: 'object')"
+    );
+    expect(() => type.checkValue(undefined, {field})).not.toThrow();
+
+    // Component instance types
+
+    type = new ComponentType({componentName: 'movie', field});
+
+    expect(type.toString()).toBe('movie');
+
+    expect(() => type.checkValue(movie, {field})).not.toThrow();
+    expect(() => type.checkValue(actor, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'movie', received type: 'actor')"
+    );
+    expect(() => type.checkValue(Movie, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'movie', received type: 'Movie')"
+    );
+    expect(() => type.checkValue({}, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'movie', received type: 'object')"
+    );
+    expect(() => type.checkValue(undefined, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'movie', received type: 'undefined')"
+    );
+
+    type = new ComponentType({componentName: 'movie', isOptional: true, field});
+
+    expect(type.toString()).toBe('movie?');
+
+    expect(() => type.checkValue(movie, {field})).not.toThrow();
+    expect(() => type.checkValue(actor, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'movie?', received type: 'actor')"
+    );
+    expect(() => type.checkValue(Movie, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'movie?', received type: 'Movie')"
+    );
+    expect(() => type.checkValue({}, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'movie?', received type: 'object')"
+    );
+    expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });
 
   test('createType()', async () => {

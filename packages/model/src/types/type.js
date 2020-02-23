@@ -1,5 +1,6 @@
 import ow from 'ow';
 
+import {getTypeOf} from './utilities';
 import {normalizeValidator} from '../validation/utilities';
 
 export class Type {
@@ -43,7 +44,9 @@ export class Type {
 
     if (!this._checkValue(value)) {
       throw new Error(
-        `Cannot assign a value of an unexpected type to the field '${field.getName()}' (expected type: '${this.toString()}', received type: '${typeof value}')`
+        `Cannot assign a value of an unexpected type to the field '${field.getName()}' (expected type: '${this.toString()}', received type: '${getTypeOf(
+          value
+        )}')`
       );
     }
   }

@@ -1,4 +1,4 @@
-import {validateComponentName} from '@liaison/component';
+import {isComponent, getComponentName, validateComponentName} from '@liaison/component';
 import ow from 'ow';
 
 import {Type} from './type';
@@ -24,7 +24,11 @@ export class ComponentType extends Type {
     return `${this.getComponentName()}${super.toString()}`;
   }
 
-  // _checkValue(value) {
-  //   // TODO
-  // }
+  _checkValue(value) {
+    return (
+      super._checkValue(value) ??
+      ((isComponent(value?.prototype) || isComponent(value)) &&
+        getComponentName(value) === this.getComponentName())
+    );
+  }
 }
