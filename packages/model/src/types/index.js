@@ -1,4 +1,5 @@
 export * from './array-type';
+export * from './boolean-type';
 export * from './component-type';
 export * from './factory';
 export * from './number-type';

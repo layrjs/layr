@@ -1,7 +1,8 @@
 import {
   Model,
-  StringType,
+  BooleanType,
   NumberType,
+  StringType,
   ArrayType,
   ComponentType,
   createType,
@@ -14,6 +15,32 @@ describe('Types', () => {
       return 'field';
     }
   };
+
+  test('BooleanType', async () => {
+    let type = new BooleanType({field});
+
+    expect(type.toString()).toBe('boolean');
+
+    expect(() => type.checkValue(true, {field})).not.toThrow();
+    expect(() => type.checkValue(false, {field})).not.toThrow();
+    expect(() => type.checkValue(1, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'boolean', received type: 'number')"
+    );
+    expect(() => type.checkValue(undefined, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'boolean', received type: 'undefined')"
+    );
+
+    type = new BooleanType({isOptional: true, field});
+
+    expect(type.toString()).toBe('boolean?');
+
+    expect(() => type.checkValue(true, {field})).not.toThrow();
+    expect(() => type.checkValue(false, {field})).not.toThrow();
+    expect(() => type.checkValue(1, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'boolean?', received type: 'number')"
+    );
+    expect(() => type.checkValue(undefined, {field})).not.toThrow();
+  });
 
   test('StringType', async () => {
     let type = new StringType({field});
