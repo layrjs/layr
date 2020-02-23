@@ -1,4 +1,4 @@
-import {Model, Field, isField, NumberType} from '../../..';
+import {Model, Field, isField, NumberType, validators} from '../../..';
 
 describe('Field', () => {
   test('Creation', async () => {
@@ -19,15 +19,15 @@ describe('Field', () => {
 
     const field = new Field('title', movie, {valueType: 'string'});
 
-    expect(field.isActive()).toBe(false);
+    expect(field.hasValue()).toBe(false);
     expect(() => field.getValue()).toThrow(
-      "Cannot get the value from the 'title' field which is inactive"
+      "Cannot get the value of an unset field (field name: 'title')"
     );
-    expect(field.getValue({throwIfInactive: false})).toBeUndefined();
+    expect(field.getValue({throwIfUnset: false})).toBeUndefined();
 
     field.setValue('Inception');
 
-    expect(field.isActive()).toBe(true);
+    expect(field.hasValue()).toBe(true);
     expect(field.getValue()).toBe('Inception');
 
     expect(() => field.setValue(123)).toThrow(
@@ -36,6 +36,35 @@ describe('Field', () => {
     expect(() => field.setValue(undefined)).toThrow(
       "Cannot assign a value of an unexpected type to the field 'title' (expected type: 'string', received type: 'undefined')"
     );
+
+    field.unsetValue();
+
+    expect(field.hasValue()).toBe(false);
+  });
+
+  test('Validation', async () => {
+    class Movie extends Model() {}
+
+    const movie = new Movie();
+
+    const notEmpty = validators.notEmpty();
+    const field = new Field('title', movie, {valueType: 'string?', validators: [notEmpty]});
+
+    expect(() => field.runValidators()).toThrow(
+      "Cannot run the validators of an unset field (field name: 'title')"
+    );
+
+    field.setValue('Inception');
+
+    expect(field.runValidators()).toEqual([]);
+
+    field.setValue('');
+
+    expect(field.runValidators()).toEqual([notEmpty]);
+
+    field.setValue(undefined);
+
+    expect(field.runValidators()).toEqual([]);
   });
 
   test('Observability', async () => {
@@ -113,6 +142,23 @@ describe('Field', () => {
     // Modifying the previous array should not call the observers
     expect(tagsObserver).toHaveBeenCalledTimes(4);
     expect(movieObserver).toHaveBeenCalledTimes(6);
+
+    tags.unsetValue();
+
+    expect(tagsObserver).toHaveBeenCalledTimes(5);
+    expect(movieObserver).toHaveBeenCalledTimes(7);
+
+    tags.unsetValue();
+
+    // Calling unset again should not call the observers
+    expect(tagsObserver).toHaveBeenCalledTimes(5);
+    expect(movieObserver).toHaveBeenCalledTimes(7);
+
+    newTagArray[0] = 'drama';
+
+    // Modifying the detached array should not call the observers
+    expect(tagsObserver).toHaveBeenCalledTimes(5);
+    expect(movieObserver).toHaveBeenCalledTimes(7);
   });
 
   test.skip('Introspection', async () => {

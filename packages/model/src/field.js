@@ -36,7 +36,7 @@ export class Field extends Observable(Attribute) {
   setValue(value) {
     this.getValueType().checkValue(value, {field: this});
 
-    if (this._setter !== undefined) {
+    if (this._getter !== undefined) {
       return super.setValue(value);
     }
 
@@ -65,6 +65,39 @@ export class Field extends Observable(Attribute) {
     }
 
     return {previousValue, newValue};
+  }
+
+  unsetValue() {
+    if (!this.hasValue()) {
+      return;
+    }
+
+    const previousValue = this.getValue();
+
+    super.unsetValue();
+
+    this.callObservers();
+
+    const parent = this.getParent();
+
+    if (isObservable(previousValue)) {
+      previousValue.removeObserver(this);
+      previousValue.removeObserver(parent);
+    }
+
+    parent.callObservers();
+  }
+
+  // === Validation ===
+
+  runValidators() {
+    if (!this.hasValue()) {
+      throw new Error(
+        `Cannot run the validators of an unset ${this.getType()} (${this.getType()} name: '${this.getName()}')`
+      );
+    }
+
+    return this.getValueType().runValidators(this.getValue());
   }
 
   // === Utilities ===
