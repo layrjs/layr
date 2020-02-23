@@ -18,16 +18,20 @@ describe('Attribute', () => {
 
     const attribute = new Attribute('title', movie);
 
-    expect(attribute.isActive()).toBe(false);
+    expect(attribute.hasValue()).toBe(false);
     expect(() => attribute.getValue()).toThrow(
-      "Cannot get the value from the 'title' attribute which is inactive"
+      "Cannot get the value of an unset attribute (attribute name: 'title')"
     );
-    expect(attribute.getValue({throwIfInactive: false})).toBeUndefined();
+    expect(attribute.getValue({throwIfUnset: false})).toBeUndefined();
 
     attribute.setValue('Inception');
 
-    expect(attribute.isActive()).toBe(true);
+    expect(attribute.hasValue()).toBe(true);
     expect(attribute.getValue()).toBe('Inception');
+
+    attribute.unsetValue();
+
+    expect(attribute.hasValue()).toBe(false);
   });
 
   test('Accessors', async () => {
@@ -46,7 +50,7 @@ describe('Attribute', () => {
       }
     });
 
-    expect(attribute.isActive()).toBe(true);
+    expect(attribute.hasValue()).toBe(true);
     expect(attribute.getValue()).toBeUndefined();
 
     attribute.setValue('inception');
@@ -59,11 +63,11 @@ describe('Attribute', () => {
 
     let attribute = new Attribute('limit', Movie);
 
-    expect(attribute.isActive()).toBe(false);
+    expect(attribute.hasValue()).toBe(false);
 
     attribute = new Attribute('limit', Movie, {value: 100});
 
-    expect(attribute.isActive()).toBe(true);
+    expect(attribute.hasValue()).toBe(true);
     expect(attribute.getValue()).toBe(100);
   });
 

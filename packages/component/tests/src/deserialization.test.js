@@ -41,7 +41,7 @@ describe('Deserialization', () => {
     expect(movie).not.toBe(Movie.prototype);
     expect(movie.isNew()).toBe(false);
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('duration').isActive()).toBe(false);
+    expect(movie.getAttribute('duration').hasValue()).toBe(false);
 
     const movie2 = deserialize(
       {__component: 'movie', __new: true, title: 'Inception'},
@@ -104,7 +104,7 @@ describe('Deserialization', () => {
 
     expect(movie7).toBeInstanceOf(Movie);
     expect(movie7.title).toBe('Inception');
-    expect(movie7.getAttribute('duration').isActive()).toBe(false);
+    expect(movie7.getAttribute('duration').hasValue()).toBe(false);
 
     class Cinema extends Component() {
       @attribute() movies;
@@ -119,7 +119,7 @@ describe('Deserialization', () => {
     expect(cinema.movies).toHaveLength(1);
     expect(cinema.movies[0]).toBeInstanceOf(Movie);
     expect(cinema.movies[0].title).toBe('The Matrix');
-    expect(cinema.movies[0].getAttribute('duration').isActive()).toBe(false);
+    expect(cinema.movies[0].getAttribute('duration').hasValue()).toBe(false);
   });
 
   test('Functions', async () => {

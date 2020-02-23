@@ -8,6 +8,10 @@ export class Attribute extends Property {
     return 'attribute';
   }
 
+  getTypeArticle() {
+    return 'an';
+  }
+
   // === Options ===
 
   setOptions(options = {}) {
@@ -55,7 +59,7 @@ export class Attribute extends Property {
         this._setter = setter;
       }
 
-      this.activate();
+      this._hasValue = true;
 
       return;
     }
@@ -69,35 +73,21 @@ export class Attribute extends Property {
     }
   }
 
-  // === isActive mark ===
-
-  isActive() {
-    return this._isActive === true;
-  }
-
-  activate() {
-    this._isActive = true;
-  }
-
-  deactivate() {
-    this._isActive = false;
-  }
-
   // === Value ===
 
   getValue(options = {}) {
     ow(
       options,
       'options',
-      ow.object.exactShape({throwIfInactive: ow.optional.boolean, autoFork: ow.optional.boolean})
+      ow.object.exactShape({throwIfUnset: ow.optional.boolean, autoFork: ow.optional.boolean})
     );
 
-    const {throwIfInactive = true, autoFork = true} = options;
+    const {throwIfUnset = true, autoFork = true} = options;
 
-    if (!this.isActive()) {
-      if (throwIfInactive) {
+    if (!this.hasValue()) {
+      if (throwIfUnset) {
         throw new Error(
-          `Cannot get the value from the '${this.getName()}' ${this.getType()} which is inactive`
+          `Cannot get the value of an unset ${this.getType()} (${this.getType()} name: '${this.getName()}')`
         );
       }
       return undefined;
@@ -120,11 +110,31 @@ export class Attribute extends Property {
       return;
     }
 
-    const previousValue = this.getValue({throwIfInactive: false});
+    if (this._getter !== undefined) {
+      throw new Error(
+        `Cannot set the value of ${this.getTypeArticle()} ${this.getType()} that has a getter but no setter (${this.getType()} name: ${this.getName()})`
+      );
+    }
+
+    const previousValue = this.getValue({throwIfUnset: false});
     this._value = value;
-    this.activate();
+    this._hasValue = true;
 
     return {previousValue, newValue: value};
+  }
+
+  unsetValue() {
+    if (this._getter !== undefined) {
+      throw new Error(
+        `Cannot unset the value of ${this.getTypeArticle()} ${this.getType()} that has a getter (${this.getType()} name: ${this.getName()})`
+      );
+    }
+
+    this._hasValue = false;
+  }
+
+  hasValue() {
+    return this._hasValue === true;
   }
 
   // === Default value ===
@@ -152,7 +162,7 @@ export class Attribute extends Property {
       return undefined;
     }
 
-    if (this.isActive()) {
+    if (this.hasValue()) {
       introspectedExposure.value = this.getValue();
     }
 

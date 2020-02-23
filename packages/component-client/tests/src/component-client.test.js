@@ -121,13 +121,13 @@ describe('ComponentClient', () => {
 
     attribute = Movie.prototype.getAttribute('title');
 
-    expect(attribute.isActive()).toBe(false);
+    expect(attribute.hasValue()).toBe(false);
     expect(attribute.getDefaultValue()).toBeUndefined();
     expect(attribute.getExposure()).toEqual({get: true, set: true});
 
     attribute = Movie.prototype.getAttribute('isPlaying');
 
-    expect(attribute.isActive()).toBe(false);
+    expect(attribute.hasValue()).toBe(false);
     expect(attribute.getDefaultValue()).toBe(false);
     expect(attribute.getExposure()).toEqual({get: true});
 
@@ -168,7 +168,7 @@ describe('ComponentClient', () => {
     expect(movie).toBeInstanceOf(Movie);
 
     // Since 'title' did not change, it should not be transported back to the local component
-    expect(movie.getAttribute('title').isActive()).toBe(false);
+    expect(movie.getAttribute('title').hasValue()).toBe(false);
 
     expect(movie.isPlaying).toBe(true);
 

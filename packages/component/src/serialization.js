@@ -68,7 +68,7 @@ export function serialize(value, options = {}) {
     }
 
     return possiblyAsync.forEach(
-      object.getActiveAttributes(),
+      object.getAttributesWithValue(),
       attribute => {
         return possiblyAsync(
           attributeFilter !== undefined ? attributeFilter.call(object, attribute) : true,

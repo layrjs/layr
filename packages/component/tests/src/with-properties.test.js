@@ -261,7 +261,7 @@ describe('WithProperties', () => {
       expect(isAttribute(prop)).toBe(true);
       expect(prop.getName()).toBe('title');
       expect(prop.getParent()).toBe(Movie.prototype);
-      expect(prop.isActive()).toBe(false);
+      expect(prop.hasValue()).toBe(false);
 
       prop = Movie.prototype.getProperty('country');
 
@@ -269,7 +269,7 @@ describe('WithProperties', () => {
       expect(isAttribute(prop)).toBe(true);
       expect(prop.getName()).toBe('country');
       expect(prop.getParent()).toBe(Movie.prototype);
-      expect(prop.isActive()).toBe(false);
+      expect(prop.hasValue()).toBe(false);
 
       prop = Movie.prototype.getProperty('load');
 
@@ -502,14 +502,14 @@ describe('WithProperties', () => {
       expect(isAttribute(prototypeAttribute)).toBe(true);
       expect(prototypeAttribute.getName()).toBe('title');
       expect(prototypeAttribute.getParent()).toBe(Movie.prototype);
-      expect(prototypeAttribute.isActive()).toBe(false);
+      expect(prototypeAttribute.hasValue()).toBe(false);
 
       prototypeAttribute = Movie.prototype.getAttribute('country');
 
       expect(isAttribute(prototypeAttribute)).toBe(true);
       expect(prototypeAttribute.getName()).toBe('country');
       expect(prototypeAttribute.getParent()).toBe(Movie.prototype);
-      expect(prototypeAttribute.isActive()).toBe(false);
+      expect(prototypeAttribute.hasValue()).toBe(false);
 
       const movie = new Movie();
 
@@ -570,14 +570,14 @@ describe('WithProperties', () => {
       expect(isAttribute(prototypeAttribute)).toBe(true);
       expect(prototypeAttribute.getName()).toBe('title');
       expect(prototypeAttribute.getParent()).toBe(Film.prototype);
-      expect(prototypeAttribute.isActive()).toBe(false);
+      expect(prototypeAttribute.hasValue()).toBe(false);
 
       prototypeAttribute = Film.prototype.getAttribute('country');
 
       expect(isAttribute(prototypeAttribute)).toBe(true);
       expect(prototypeAttribute.getName()).toBe('country');
       expect(prototypeAttribute.getParent()).toBe(Film.prototype);
-      expect(prototypeAttribute.isActive()).toBe(false);
+      expect(prototypeAttribute.hasValue()).toBe(false);
 
       const film = new Film();
 
@@ -831,7 +831,7 @@ describe('WithProperties', () => {
       expect(isAttribute(property)).toBe(true);
       expect(property.getName()).toBe('title');
       expect(property.getParent()).toBe(Movie.prototype);
-      expect(property.isActive()).toBe(false);
+      expect(property.hasValue()).toBe(false);
       expect(property.getDefaultValue()).toBe('');
       expect(property.getExposure()).toEqual({get: true});
 
@@ -886,7 +886,7 @@ describe('WithProperties', () => {
       expect(isAttribute(prop)).toBe(true);
       expect(prop.getName()).toBe('title');
       expect(prop.getParent()).toBe(Movie.prototype);
-      expect(prop.isActive()).toBe(false);
+      expect(prop.hasValue()).toBe(false);
       expect(prop.getDefaultValue()).toBe('');
       expect(prop.getExposure()).toEqual({get: true});
 
@@ -895,7 +895,7 @@ describe('WithProperties', () => {
       expect(isAttribute(prop)).toBe(true);
       expect(prop.getName()).toBe('country');
       expect(prop.getParent()).toBe(Movie.prototype);
-      expect(prop.isActive()).toBe(false);
+      expect(prop.hasValue()).toBe(false);
       expect(prop.getDefaultValue()).toBeUndefined();
       expect(prop.getExposure()).toEqual({get: true});
 
@@ -947,7 +947,7 @@ describe('WithProperties', () => {
       expect(isAttribute(prop)).toBe(true);
       expect(prop.getName()).toBe('title');
       expect(prop.getParent()).toBe(Movie.prototype);
-      expect(prop.isActive()).toBe(false);
+      expect(prop.hasValue()).toBe(false);
       expect(prop.getDefaultValue()).toBe('');
       expect(prop.getExposure()).toEqual({get: true});
 

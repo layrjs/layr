@@ -116,7 +116,7 @@ describe('ComponentServer', () => {
         '<=': {__component: 'movie'},
         'title': true
       })
-    ).toThrow("Cannot get the value from the 'title' attribute which is inactive");
+    ).toThrow("Cannot get the value of an unset attribute (attribute name: 'title')");
 
     expect(
       server.receiveQuery({
@@ -129,7 +129,7 @@ describe('ComponentServer', () => {
         '<=': {__component: 'movie', rating: 10},
         'rating': true
       })
-    ).toThrow("Cannot get the value from the 'rating' attribute which is inactive");
+    ).toThrow("Cannot get the value of an unset attribute (attribute name: 'rating')");
   });
 
   test('Invoking methods', async () => {

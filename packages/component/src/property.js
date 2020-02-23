@@ -28,6 +28,10 @@ export class Property {
     return 'property';
   }
 
+  getTypeArticle() {
+    return 'a';
+  }
+
   // === Options ===
 
   setOptions(options = {}) {

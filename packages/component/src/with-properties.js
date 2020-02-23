@@ -252,7 +252,7 @@ export const WithProperties = (Base = Object) => {
       return this.getProperties({filter, autoFork});
     },
 
-    getActiveAttributes(options = {}) {
+    getAttributesWithValue(options = {}) {
       ow(
         options,
         'options',
@@ -262,7 +262,7 @@ export const WithProperties = (Base = Object) => {
       const {filter: originalFilter, autoFork = true} = options;
 
       const filter = function(attribute) {
-        if (!attribute.isActive()) {
+        if (!attribute.hasValue()) {
           return false;
         }
 
