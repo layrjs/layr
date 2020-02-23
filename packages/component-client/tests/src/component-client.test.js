@@ -52,45 +52,45 @@ describe('ComponentClient', () => {
       // Movie.find()
       if (
         isEqual(query, {
-          '<=': {__Component: 'Movie', token: 'abc123'},
+          '<=': {__component: 'Movie', token: 'abc123'},
           'find=>result': {'()': []},
           '=>self': true
         })
       ) {
         return {
           result: [
-            {__component: 'Movie', title: 'Inception'},
-            {__component: 'Movie', title: 'The Matrix'}
+            {__component: 'movie', title: 'Inception'},
+            {__component: 'movie', title: 'The Matrix'}
           ],
-          self: {__Component: 'Movie', token: 'abc123'}
+          self: {__component: 'Movie', token: 'abc123'}
         };
       }
 
       // Movie.find({limit: 1})
       if (
         isEqual(query, {
-          '<=': {__Component: 'Movie', token: 'abc123'},
+          '<=': {__component: 'Movie', token: 'abc123'},
           'find=>result': {'()': [{limit: 1}]},
           '=>self': true
         })
       ) {
         return {
-          result: [{__component: 'Movie', title: 'Inception'}],
-          self: {__Component: 'Movie', token: 'abc123'}
+          result: [{__component: 'movie', title: 'Inception'}],
+          self: {__component: 'Movie', token: 'abc123'}
         };
       }
 
       // movie.play()
       if (
         isEqual(query, {
-          '<=': {__component: 'Movie', title: 'Inception'},
+          '<=': {__component: 'movie', title: 'Inception'},
           'play=>result': {'()': []},
           '=>self': true
         })
       ) {
         return {
-          result: {__component: 'Movie', isPlaying: true},
-          self: {__component: 'Movie', isPlaying: true}
+          result: {__component: 'movie', isPlaying: true},
+          self: {__component: 'movie', isPlaying: true}
         };
       }
 

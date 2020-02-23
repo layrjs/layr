@@ -33,11 +33,7 @@ export const Component = (Base = Object) => {
 
       const {throwIfMissing = true} = options;
 
-      let name = this.__name ?? this.name;
-
-      if (name === 'Component') {
-        name = undefined;
-      }
+      const name = this.__name ?? this.name;
 
       if (typeof name === 'string' && name !== '') {
         return name;
@@ -51,7 +47,7 @@ export const Component = (Base = Object) => {
     static setName(name) {
       ow(name, 'name', ow.string);
 
-      validateComponentName(name);
+      validateComponentName(name, {allowInstances: false});
 
       Object.defineProperty(this, '__name', {value: name, configurable: true});
     }

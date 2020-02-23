@@ -5,7 +5,7 @@ describe('Serialization', () => {
     class BaseMovie extends Component() {}
 
     expect(serialize(BaseMovie, {knownComponents: [BaseMovie]})).toEqual({
-      __Component: 'BaseMovie'
+      __component: 'BaseMovie'
     });
 
     class Movie extends BaseMovie {
@@ -14,7 +14,7 @@ describe('Serialization', () => {
     }
 
     expect(serialize(Movie, {knownComponents: [Movie]})).toEqual({
-      __Component: 'Movie',
+      __component: 'Movie',
       limit: 100,
       offset: {__undefined: true}
     });
@@ -28,8 +28,8 @@ describe('Serialization', () => {
     );
 
     expect(serialize(Cinema, {knownComponents: [Cinema, Movie]})).toEqual({
-      __Component: 'Cinema',
-      MovieClass: {__Component: 'Movie', limit: 100, offset: {__undefined: true}}
+      __component: 'Cinema',
+      MovieClass: {__component: 'Movie', limit: 100, offset: {__undefined: true}}
     });
   });
 
@@ -42,7 +42,7 @@ describe('Serialization', () => {
     let movie = new Movie();
 
     expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
-      __component: 'Movie',
+      __component: 'movie',
       __new: true,
       title: '',
       director: {__undefined: true}
@@ -51,13 +51,13 @@ describe('Serialization', () => {
     movie = Movie.instantiate();
 
     expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
-      __component: 'Movie'
+      __component: 'movie'
     });
 
     movie.title = 'Inception';
 
     expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
-      __component: 'Movie',
+      __component: 'movie',
       title: 'Inception'
     });
 
@@ -69,9 +69,9 @@ describe('Serialization', () => {
     movie.director.name = 'Christopher Nolan';
 
     expect(serialize(movie, {knownComponents: [Movie, Director]})).toEqual({
-      __component: 'Movie',
+      __component: 'movie',
       title: 'Inception',
-      director: {__component: 'Director', __new: true, name: 'Christopher Nolan'}
+      director: {__component: 'director', __new: true, name: 'Christopher Nolan'}
     });
 
     expect(
@@ -84,7 +84,7 @@ describe('Serialization', () => {
         }
       })
     ).toEqual({
-      __component: 'Movie',
+      __component: 'movie',
       title: 'Inception'
     });
 
@@ -98,7 +98,7 @@ describe('Serialization', () => {
         }
       })
     ).toEqual({
-      __component: 'Movie',
+      __component: 'movie',
       title: 'Inception'
     });
   });

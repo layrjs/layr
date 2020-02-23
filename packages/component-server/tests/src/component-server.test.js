@@ -61,72 +61,72 @@ describe('ComponentServer', () => {
 
     expect(
       server.receiveQuery({
-        '<=': {__Component: 'Movie'}
+        '<=': {__component: 'Movie'}
       })
-    ).toStrictEqual({__Component: 'Movie', offset: 0});
+    ).toStrictEqual({__component: 'Movie', offset: 0});
 
     expect(
       server.receiveQuery({
-        '<=': {__Component: 'Movie'},
+        '<=': {__component: 'Movie'},
         'offset': true
       })
     ).toStrictEqual({offset: 0});
 
     expect(() =>
       server.receiveQuery({
-        '<=': {__Component: 'Movie'},
+        '<=': {__component: 'Movie'},
         'limit': true
       })
     ).toThrow("Cannot get the value of an attribute that is not allowed (name: 'limit')");
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie', __new: true}
+        '<=': {__component: 'movie', __new: true}
       })
-    ).toStrictEqual({__component: 'Movie', __new: true, title: ''});
+    ).toStrictEqual({__component: 'movie', __new: true, title: ''});
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie', __new: true},
+        '<=': {__component: 'movie', __new: true},
         'title': true
       })
     ).toStrictEqual({title: ''});
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie', __new: true, title: 'Inception'}
+        '<=': {__component: 'movie', __new: true, title: 'Inception'}
       })
-    ).toStrictEqual({__component: 'Movie', __new: true, title: 'Inception'});
+    ).toStrictEqual({__component: 'movie', __new: true, title: 'Inception'});
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie', __new: true, title: 'Inception'},
+        '<=': {__component: 'movie', __new: true, title: 'Inception'},
         'title': true
       })
     ).toStrictEqual({title: 'Inception'});
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie'}
+        '<=': {__component: 'movie'}
       })
-    ).toStrictEqual({__component: 'Movie'});
+    ).toStrictEqual({__component: 'movie'});
 
     expect(() =>
       server.receiveQuery({
-        '<=': {__component: 'Movie'},
+        '<=': {__component: 'movie'},
         'title': true
       })
     ).toThrow("Cannot get the value from the 'title' attribute which is inactive");
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie', rating: 10}
+        '<=': {__component: 'movie', rating: 10}
       })
-    ).toStrictEqual({__component: 'Movie'});
+    ).toStrictEqual({__component: 'movie'});
 
     expect(() =>
       server.receiveQuery({
-        '<=': {__component: 'Movie', rating: 10},
+        '<=': {__component: 'movie', rating: 10},
         'rating': true
       })
     ).toThrow("Cannot get the value from the 'rating' attribute which is inactive");
@@ -171,7 +171,7 @@ describe('ComponentServer', () => {
 
     expect(
       server.receiveQuery({
-        '<=': {__Component: 'Movie'},
+        '<=': {__component: 'Movie'},
         'exposedClassMethod=>': {
           '()': []
         }
@@ -180,7 +180,7 @@ describe('ComponentServer', () => {
 
     expect(
       await server.receiveQuery({
-        '<=': {__Component: 'Movie'},
+        '<=': {__component: 'Movie'},
         'exposedAsyncClassMethod=>': {
           '()': []
         }
@@ -189,7 +189,7 @@ describe('ComponentServer', () => {
 
     expect(() =>
       server.receiveQuery({
-        '<=': {__Component: 'Movie'},
+        '<=': {__component: 'Movie'},
         'unexposedClassMethod=>': {
           '()': []
         }
@@ -198,7 +198,7 @@ describe('ComponentServer', () => {
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie'},
+        '<=': {__component: 'movie'},
         'exposedInstanceMethod=>': {
           '()': []
         }
@@ -207,7 +207,7 @@ describe('ComponentServer', () => {
 
     expect(
       await server.receiveQuery({
-        '<=': {__component: 'Movie'},
+        '<=': {__component: 'movie'},
         'exposedAsyncInstanceMethod=>': {
           '()': []
         }
@@ -216,7 +216,7 @@ describe('ComponentServer', () => {
 
     expect(() =>
       server.receiveQuery({
-        '<=': {__component: 'Movie'},
+        '<=': {__component: 'movie'},
         'unexposedInstanceMethod=>': {
           '()': []
         }
@@ -225,7 +225,7 @@ describe('ComponentServer', () => {
 
     expect(
       server.receiveQuery({
-        '<=': {__component: 'Movie'},
+        '<=': {__component: 'movie'},
         'exposedInstanceMethodWithParameters=>': {
           '()': [1, 2]
         }

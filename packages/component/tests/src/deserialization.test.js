@@ -11,7 +11,7 @@ describe('Deserialization', () => {
     expect(Movie.offset).toBeUndefined();
 
     const DeserializedMovie = deserialize(
-      {__Component: 'Movie', limit: {__undefined: true}, offset: 30},
+      {__component: 'Movie', limit: {__undefined: true}, offset: 30},
       {knownComponents: [Movie]}
     );
 
@@ -21,7 +21,7 @@ describe('Deserialization', () => {
 
     class Film extends Component() {}
 
-    expect(() => deserialize({__Component: 'Movie'}, {knownComponents: [Film]})).toThrow(
+    expect(() => deserialize({__component: 'Movie'}, {knownComponents: [Film]})).toThrow(
       "The 'Movie' component is unknown"
     );
   });
@@ -33,7 +33,7 @@ describe('Deserialization', () => {
     }
 
     const movie = deserialize(
-      {__component: 'Movie', title: 'Inception'},
+      {__component: 'movie', title: 'Inception'},
       {knownComponents: [Movie]}
     );
 
@@ -44,7 +44,7 @@ describe('Deserialization', () => {
     expect(movie.getAttribute('duration').isActive()).toBe(false);
 
     const movie2 = deserialize(
-      {__component: 'Movie', __new: true, title: 'Inception'},
+      {__component: 'movie', __new: true, title: 'Inception'},
       {knownComponents: [Movie]}
     );
 
@@ -55,7 +55,7 @@ describe('Deserialization', () => {
     expect(movie2.duration).toBe(0);
 
     const movie3 = deserialize(
-      {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
+      {__component: 'movie', __new: true, title: 'Inception', duration: 120},
       {knownComponents: [Movie]}
     );
 
@@ -63,7 +63,7 @@ describe('Deserialization', () => {
     expect(movie3.duration).toBe(120);
 
     const movie4 = deserialize(
-      {__component: 'Movie', __new: true, duration: {__undefined: true}},
+      {__component: 'movie', __new: true, duration: {__undefined: true}},
       {knownComponents: [Movie]}
     );
 
@@ -71,7 +71,7 @@ describe('Deserialization', () => {
     expect(movie4.duration).toBeUndefined();
 
     const movie5 = deserialize(
-      {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
+      {__component: 'movie', __new: true, title: 'Inception', duration: 120},
       {
         knownComponents: [Movie],
         attributeFilter(attribute) {
@@ -86,7 +86,7 @@ describe('Deserialization', () => {
     expect(movie5.duration).toBe(0);
 
     const movie6 = await deserialize(
-      {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
+      {__component: 'movie', __new: true, title: 'Inception', duration: 120},
       {
         knownComponents: [Movie],
         async attributeFilter(attribute) {
@@ -100,7 +100,7 @@ describe('Deserialization', () => {
     expect(movie6.title).toBe('Inception');
     expect(movie6.duration).toBe(0);
 
-    const movie7 = Movie.fromJSON({__component: 'Movie', title: 'Inception'});
+    const movie7 = Movie.fromJSON({__component: 'movie', title: 'Inception'});
 
     expect(movie7).toBeInstanceOf(Movie);
     expect(movie7.title).toBe('Inception');
@@ -111,7 +111,7 @@ describe('Deserialization', () => {
     }
 
     const cinema = deserialize(
-      {__component: 'Cinema', movies: [{__component: 'Movie', title: 'The Matrix'}]},
+      {__component: 'cinema', movies: [{__component: 'movie', title: 'The Matrix'}]},
       {knownComponents: [Cinema, Movie]}
     );
 

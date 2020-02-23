@@ -2,7 +2,12 @@ import {deserialize as simpleDeserialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
-import {createComponentMap, getComponentFromComponentMap} from './utilities';
+import {
+  isComponentName,
+  getComponentClassNameFromComponentInstanceName,
+  createComponentMap,
+  getComponentFromComponentMap
+} from './utilities';
 
 export function deserialize(value, options = {}) {
   ow(
@@ -36,25 +41,30 @@ export function deserialize(value, options = {}) {
       }
     }
 
-    const {__Component, __component, __new, ...attributes} = object;
+    const {__component, __new, ...attributes} = object;
 
-    let componentName;
-    let isComponentClass;
-
-    if (__Component !== undefined) {
-      // The value is a serialized component class
-      componentName = __Component;
-      isComponentClass = true;
-    } else if (__component !== undefined) {
-      componentName = __component;
-      isComponentClass = false;
-    }
-
-    if (!componentName) {
+    if (__component === undefined) {
       return undefined;
     }
 
-    const Component = getComponentFromComponentMap(knownComponentMap, componentName);
+    let componentClassName;
+    let isComponentClass;
+
+    if (isComponentName(__component, {allowInstances: false})) {
+      // The value is a serialized component class
+      componentClassName = __component;
+      isComponentClass = true;
+    } else if (isComponentName(__component, {allowClasses: false})) {
+      // The value is a serialized component instance
+      componentClassName = getComponentClassNameFromComponentInstanceName(__component);
+      isComponentClass = false;
+    } else {
+      throw new Error(
+        `An invalid component name ('${__component}') was encountered while deserializing an object`
+      );
+    }
+
+    const Component = getComponentFromComponentMap(knownComponentMap, componentClassName);
 
     let deserializedComponent;
 

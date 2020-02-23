@@ -2,7 +2,12 @@ import {serialize as simpleSerialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
-import {isComponent, createComponentMap, getComponentFromComponentMap} from './utilities';
+import {
+  isComponent,
+  getComponentName,
+  createComponentMap,
+  getComponentFromComponentMap
+} from './utilities';
 
 export function serialize(value, options = {}) {
   ow(
@@ -53,14 +58,14 @@ export function serialize(value, options = {}) {
       return undefined;
     }
 
-    const componentName = Component.getName();
-
     // Make sure the component is known
-    getComponentFromComponentMap(knownComponentMap, componentName);
+    getComponentFromComponentMap(knownComponentMap, Component.getName());
 
-    const serializedComponent = isComponentClass
-      ? {__Component: componentName}
-      : {__component: componentName, ...(object.isNew() && {__new: true})};
+    const serializedComponent = {__component: getComponentName(object)};
+
+    if (!isComponentClass && object.isNew()) {
+      serializedComponent.__new = true;
+    }
 
     return possiblyAsync.forEach(
       object.getActiveAttributes(),

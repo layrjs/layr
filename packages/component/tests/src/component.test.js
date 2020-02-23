@@ -45,22 +45,6 @@ describe('Component', () => {
     expect(Object.keys(movie)).toHaveLength(0);
   });
 
-  test('Checking that an object is a component', async () => {
-    expect(isComponent(undefined)).toBe(false);
-    expect(isComponent(null)).toBe(false);
-    expect(isComponent(true)).toBe(false);
-    expect(isComponent(1)).toBe(false);
-    expect(isComponent({})).toBe(false);
-
-    class Movie extends Component() {}
-
-    expect(isComponent(Movie.prototype)).toBe(true);
-
-    const movie = new Movie();
-
-    expect(isComponent(movie)).toBe(true);
-  });
-
   test('Naming', async () => {
     class Movie extends Component() {}
 
@@ -80,7 +64,6 @@ describe('Component', () => {
     expect(() => Movie.setName()).toThrow();
     expect(() => Movie.setName(123)).toThrow();
     expect(() => Movie.setName('')).toThrow('A component name cannot be empty');
-    expect(() => Movie.setName('Component')).toThrow("A component name cannot be 'Component'");
     expect(() => Movie.setName('1Place')).toThrow(
       "The specified component name ('1Place') is invalid"
     );
@@ -90,11 +73,6 @@ describe('Component', () => {
     expect(() => Movie.setName('MotionPicture!')).toThrow(
       "The specified component name ('MotionPicture!') is invalid"
     );
-
-    const Anonymous = (() => class extends Component() {})();
-
-    expect(() => Anonymous.getName()).toThrow("Component's name is missing");
-    expect(Anonymous.getName({throwIfMissing: false})).toBeUndefined();
   });
 
   test('isNew mark', async () => {
