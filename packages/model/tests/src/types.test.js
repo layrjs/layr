@@ -5,6 +5,7 @@ import {
   StringType,
   ObjectType,
   DateType,
+  RegExpType,
   ArrayType,
   ComponentType,
   createType,
@@ -148,6 +149,30 @@ describe('Types', () => {
     expect(() => type.checkValue(new Date(), {field})).not.toThrow();
     expect(() => type.checkValue('a', {field})).toThrow(
       "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'date?', received type: 'string')"
+    );
+    expect(() => type.checkValue(undefined, {field})).not.toThrow();
+  });
+
+  test('RegExpType', async () => {
+    let type = new RegExpType({field});
+
+    expect(type.toString()).toBe('regExp');
+
+    expect(() => type.checkValue(/abc/, {field})).not.toThrow();
+    expect(() => type.checkValue('a', {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'regExp', received type: 'string')"
+    );
+    expect(() => type.checkValue(undefined, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'regExp', received type: 'undefined')"
+    );
+
+    type = new RegExpType({isOptional: true, field});
+
+    expect(type.toString()).toBe('regExp?');
+
+    expect(() => type.checkValue(/abc/, {field})).not.toThrow();
+    expect(() => type.checkValue('a', {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'regExp?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });

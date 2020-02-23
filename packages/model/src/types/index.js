@@ -5,6 +5,7 @@ export * from './date-type';
 export * from './factory';
 export * from './number-type';
 export * from './object-type';
+export * from './regexp-type';
 export * from './string-type';
 export * from './type';
 export * from './utilities';

@@ -5,6 +5,7 @@ import {NumberType} from './number-type';
 import {StringType} from './string-type';
 import {ObjectType} from './object-type';
 import {DateType} from './date-type';
+import {RegExpType} from './regexp-type';
 import {ArrayType} from './array-type';
 import {ComponentType} from './component-type';
 
@@ -14,7 +15,8 @@ const TYPE_MAP = new Map(
     number: NumberType,
     string: StringType,
     object: ObjectType,
-    date: DateType
+    date: DateType,
+    regExp: RegExpType
   })
 );
 
