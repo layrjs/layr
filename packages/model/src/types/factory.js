@@ -4,6 +4,7 @@ import {BooleanType} from './boolean-type';
 import {NumberType} from './number-type';
 import {StringType} from './string-type';
 import {ObjectType} from './object-type';
+import {DateType} from './date-type';
 import {ArrayType} from './array-type';
 import {ComponentType} from './component-type';
 
@@ -12,7 +13,8 @@ const TYPE_MAP = new Map(
     boolean: BooleanType,
     number: NumberType,
     string: StringType,
-    object: ObjectType
+    object: ObjectType,
+    date: DateType
   })
 );
 

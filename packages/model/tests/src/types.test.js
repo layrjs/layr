@@ -4,6 +4,7 @@ import {
   NumberType,
   StringType,
   ObjectType,
+  DateType,
   ArrayType,
   ComponentType,
   createType,
@@ -123,6 +124,30 @@ describe('Types', () => {
     );
     expect(() => type.checkValue('a', {field})).toThrow(
       "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'object?', received type: 'string')"
+    );
+    expect(() => type.checkValue(undefined, {field})).not.toThrow();
+  });
+
+  test('DateType', async () => {
+    let type = new DateType({field});
+
+    expect(type.toString()).toBe('date');
+
+    expect(() => type.checkValue(new Date(), {field})).not.toThrow();
+    expect(() => type.checkValue('a', {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'date', received type: 'string')"
+    );
+    expect(() => type.checkValue(undefined, {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'date', received type: 'undefined')"
+    );
+
+    type = new DateType({isOptional: true, field});
+
+    expect(type.toString()).toBe('date?');
+
+    expect(() => type.checkValue(new Date(), {field})).not.toThrow();
+    expect(() => type.checkValue('a', {field})).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'date?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {field})).not.toThrow();
   });
