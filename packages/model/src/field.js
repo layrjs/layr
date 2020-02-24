@@ -90,6 +90,33 @@ export class Field extends Observable(Attribute) {
 
   // === Validation ===
 
+  validate() {
+    const failedValidators = this.runValidators();
+
+    if (failedValidators.length === 0) {
+      return;
+    }
+
+    const details = failedValidators
+      .map(({validator, path}) => `${validator.getMessage()} (path: '${path}')`)
+      .join(', ');
+
+    const error = Object.assign(
+      new Error(
+        `The following error(s) occurred while validating the field '${this.getName()}': ${details}`
+      ),
+      {failedValidators}
+    );
+
+    throw error;
+  }
+
+  isValid() {
+    const failedValidators = this.runValidators();
+
+    return failedValidators.length === 0;
+  }
+
   runValidators() {
     if (!this.hasValue()) {
       throw new Error(
@@ -97,7 +124,9 @@ export class Field extends Observable(Attribute) {
       );
     }
 
-    return this.getValueType().runValidators(this.getValue());
+    const failedValidators = this.getValueType().runValidators(this.getValue());
+
+    return failedValidators;
   }
 
   // === Utilities ===

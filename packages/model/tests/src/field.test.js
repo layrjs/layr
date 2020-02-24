@@ -56,14 +56,22 @@ describe('Field', () => {
 
     field.setValue('Inception');
 
+    expect(() => field.validate()).not.toThrow();
+    expect(field.isValid()).toBe(true);
     expect(field.runValidators()).toEqual([]);
 
     field.setValue('');
 
-    expect(field.runValidators()).toEqual([notEmpty]);
+    expect(() => field.validate()).toThrow(
+      "The following error(s) occurred while validating the field 'title': The validator `notEmpty()` failed (path: '')"
+    );
+    expect(field.isValid()).toBe(false);
+    expect(field.runValidators()).toEqual([{validator: notEmpty, path: ''}]);
 
     field.setValue(undefined);
 
+    expect(() => field.validate()).not.toThrow();
+    expect(field.isValid()).toBe(true);
     expect(field.runValidators()).toEqual([]);
   });
 

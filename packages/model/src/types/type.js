@@ -58,6 +58,15 @@ export class Type {
   }
 
   runValidators(value) {
-    return runValidators(this.getValidators(), value, {isOptional: this.isOptional()});
+    const failedValidators = runValidators(this.getValidators(), value, {
+      isOptional: this.isOptional()
+    });
+
+    const failedValidatorsWithPath = failedValidators.map(failedValidator => ({
+      validator: failedValidator,
+      path: ''
+    }));
+
+    return failedValidatorsWithPath;
   }
 }

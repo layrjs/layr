@@ -1,8 +1,9 @@
-import {Component, _decorateAttribute} from '@liaison/component';
+import {Component, getComponentName, _decorateAttribute} from '@liaison/component';
 import {Observable} from '@liaison/observable';
 import ow from 'ow';
 
 import {Field, isField} from './field';
+import {joinFieldPath} from './utilities';
 
 export const Model = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -77,7 +78,7 @@ export const Model = (Base = Object) => {
       return this.getProperties({filter, autoFork});
     },
 
-    getActiveFields(options = {}) {
+    getFieldsWithValue(options = {}) {
       ow(
         options,
         'options',
@@ -87,7 +88,7 @@ export const Model = (Base = Object) => {
       const {filter: originalFilter, autoFork = true} = options;
 
       const filter = function(field) {
-        if (!field.isActive()) {
+        if (!field.hasValue()) {
           return false;
         }
 
@@ -99,6 +100,52 @@ export const Model = (Base = Object) => {
       };
 
       return this.getFields({filter, autoFork});
+    },
+
+    // === Validation ===
+
+    validate() {
+      const failedValidators = this.runValidators();
+
+      if (failedValidators.length === 0) {
+        return;
+      }
+
+      const details = failedValidators
+        .map(({validator, path}) => `${validator.getMessage()} (path: '${path}')`)
+        .join(', ');
+
+      const error = Object.assign(
+        new Error(
+          `The following error(s) occurred while validating the model '${getComponentName(
+            this
+          )}': ${details}`
+        ),
+        {failedValidators}
+      );
+
+      throw error;
+    },
+
+    isValid() {
+      const failedValidators = this.runValidators();
+
+      return failedValidators.length === 0;
+    },
+
+    runValidators() {
+      const failedValidators = [];
+
+      for (const field of this.getFieldsWithValue()) {
+        const name = field.getName();
+        const fieldFailedValidators = field.runValidators();
+
+        for (const {validator, path} of fieldFailedValidators) {
+          failedValidators.push({validator, path: joinFieldPath([name, path])});
+        }
+      }
+
+      return failedValidators;
     }
   };
 

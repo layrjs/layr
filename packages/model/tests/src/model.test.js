@@ -1,6 +1,28 @@
-import {Model, isModel, field, isField, method} from '../../..';
+import {Model, isModel, field, isField, method, validators} from '../../..';
 
 describe('Model', () => {
+  test('Creation', async () => {
+    class Movie extends Model() {
+      @field('string') title;
+      @field('string?') country;
+      @field('number') rating = 0;
+    }
+
+    const movie = new Movie({title: 'Inception'});
+
+    expect(isModel(Movie.prototype)).toBe(true);
+    expect(movie.getField('title').hasValue()).toBe(true);
+    expect(movie.title).toBe('Inception');
+    expect(movie.getField('country').hasValue()).toBe(true);
+    expect(movie.country).toBeUndefined();
+    expect(movie.getField('rating').hasValue()).toBe(true);
+    expect(movie.rating).toBe(0);
+
+    expect(() => new Movie()).toThrow(
+      "Cannot assign a value of an unexpected type to the field 'title' (expected type: 'string', received type: 'undefined')"
+    );
+  });
+
   test('isModel()', async () => {
     expect(isModel(undefined)).toBe(false);
     expect(isModel(null)).toBe(false);
@@ -181,14 +203,14 @@ describe('Model', () => {
     expect(isField(prototypeField)).toBe(true);
     expect(prototypeField.getName()).toBe('title');
     expect(prototypeField.getParent()).toBe(Movie.prototype);
-    expect(prototypeField.isActive()).toBe(false);
+    expect(prototypeField.hasValue()).toBe(false);
 
     prototypeField = Movie.prototype.getField('country');
 
     expect(isField(prototypeField)).toBe(true);
     expect(prototypeField.getName()).toBe('country');
     expect(prototypeField.getParent()).toBe(Movie.prototype);
-    expect(prototypeField.isActive()).toBe(false);
+    expect(prototypeField.hasValue()).toBe(false);
 
     const movie = new Movie();
 
@@ -247,14 +269,14 @@ describe('Model', () => {
     expect(isField(prototypeField)).toBe(true);
     expect(prototypeField.getName()).toBe('title');
     expect(prototypeField.getParent()).toBe(Film.prototype);
-    expect(prototypeField.isActive()).toBe(false);
+    expect(prototypeField.hasValue()).toBe(false);
 
     prototypeField = Film.prototype.getField('country');
 
     expect(isField(prototypeField)).toBe(true);
     expect(prototypeField.getName()).toBe('country');
     expect(prototypeField.getParent()).toBe(Film.prototype);
-    expect(prototypeField.isActive()).toBe(false);
+    expect(prototypeField.hasValue()).toBe(false);
 
     const film = new Film();
 
@@ -273,5 +295,96 @@ describe('Model', () => {
     expect(instanceField.getParent()).toBe(film);
     expect(instanceField.getValue()).toBe('');
     expect(film.country).toBe('');
+  });
+
+  test('Validation', async () => {
+    const notEmpty = validators.notEmpty();
+    const maxLength = validators.maxLength(3);
+
+    class Movie extends Model() {
+      @field('string', {validators: [notEmpty]}) title = '';
+      @field('[string]', {validators: [maxLength, [notEmpty]]}) tags = [];
+      @field('person?') director;
+      @field('[person]') actors = [];
+    }
+
+    class Person extends Model() {
+      @field('string', {validators: [notEmpty]}) name = '';
+    }
+
+    const movie = new Movie();
+
+    expect(() => movie.validate()).toThrow(
+      "The following error(s) occurred while validating the model 'movie': The validator `notEmpty()` failed (path: 'title')"
+    );
+    expect(movie.isValid()).toBe(false);
+    expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'title'}]);
+
+    movie.title = 'Inception';
+
+    expect(() => movie.validate()).not.toThrow();
+    expect(movie.isValid()).toBe(true);
+    expect(movie.runValidators()).toEqual([]);
+
+    movie.tags = ['action'];
+
+    expect(() => movie.validate()).not.toThrow();
+    expect(movie.isValid()).toBe(true);
+    expect(movie.runValidators()).toEqual([]);
+
+    movie.tags.push('adventure');
+
+    expect(() => movie.validate()).not.toThrow();
+    expect(movie.isValid()).toBe(true);
+    expect(movie.runValidators()).toEqual([]);
+
+    movie.tags.push('');
+
+    expect(() => movie.validate()).toThrow(
+      "The following error(s) occurred while validating the model 'movie': The validator `notEmpty()` failed (path: 'tags[2]')"
+    );
+    expect(movie.isValid()).toBe(false);
+    expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'tags[2]'}]);
+
+    movie.tags.push('sci-fi');
+
+    expect(() => movie.validate()).toThrow(
+      "The following error(s) occurred while validating the model 'movie': The validator `maxLength(3)` failed (path: 'tags'), The validator `notEmpty()` failed (path: 'tags[2]')"
+    );
+    expect(movie.isValid()).toBe(false);
+    expect(movie.runValidators()).toEqual([
+      {validator: maxLength, path: 'tags'},
+      {validator: notEmpty, path: 'tags[2]'}
+    ]);
+
+    movie.tags.splice(2, 1);
+
+    movie.director = new Person();
+
+    expect(() => movie.validate()).toThrow(
+      "The following error(s) occurred while validating the model 'movie': The validator `notEmpty()` failed (path: 'director.name')"
+    );
+    expect(movie.isValid()).toBe(false);
+    expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'director.name'}]);
+
+    movie.director.name = 'Christopher Nolan';
+
+    expect(() => movie.validate()).not.toThrow();
+    expect(movie.isValid()).toBe(true);
+    expect(movie.runValidators()).toEqual([]);
+
+    movie.actors.push(new Person());
+
+    expect(() => movie.validate()).toThrow(
+      "The following error(s) occurred while validating the model 'movie': The validator `notEmpty()` failed (path: 'actors[0].name')"
+    );
+    expect(movie.isValid()).toBe(false);
+    expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'actors[0].name'}]);
+
+    movie.actors[0].name = 'Leonardo DiCaprio';
+
+    expect(() => movie.validate()).not.toThrow();
+    expect(movie.isValid()).toBe(true);
+    expect(movie.runValidators()).toEqual([]);
   });
 });

@@ -1,6 +1,7 @@
 import ow from 'ow';
 
 import {Type} from './type';
+import {joinFieldPath} from '../utilities';
 
 export class ArrayType extends Type {
   constructor(options = {}) {
@@ -51,13 +52,20 @@ export class ArrayType extends Type {
   }
 
   runValidators(values) {
-    const results = super.runValidators(values);
+    const failedValidators = super.runValidators(values);
 
     if (values !== undefined) {
       const elementType = this.getElementType();
-      results.push(values.map(value => elementType.runValidators(value)));
+
+      values.forEach((value, index) => {
+        const elementFailedValidators = elementType.runValidators(value);
+
+        for (const {validator, path} of elementFailedValidators) {
+          failedValidators.push({validator, path: joinFieldPath([`[${index}]`, path])});
+        }
+      });
     }
 
-    return results;
+    return failedValidators;
   }
 }
