@@ -303,7 +303,7 @@ describe('Model', () => {
 
     class Movie extends Model() {
       @field('string', {validators: [notEmpty]}) title = '';
-      @field('[string]', {validators: [maxLength, [notEmpty]]}) tags = [];
+      @field('[string]', {validators: [maxLength], items: {validators: [notEmpty]}}) tags = [];
       @field('person?') director;
       @field('[person]') actors = [];
     }

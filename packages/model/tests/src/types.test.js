@@ -179,8 +179,8 @@ describe('Types', () => {
   });
 
   test('ArrayType', async () => {
-    let elementType = new NumberType({field});
-    let type = new ArrayType({elementType, field});
+    let itemType = new NumberType({field});
+    let type = new ArrayType({itemType, field});
 
     expect(type.toString()).toBe('[number]');
 
@@ -205,8 +205,8 @@ describe('Types', () => {
       "Cannot assign a value of an unexpected type to the field 'field' (expected type: 'number', received type: 'undefined')"
     );
 
-    elementType = new NumberType({isOptional: true, field});
-    type = new ArrayType({isOptional: true, elementType, field});
+    itemType = new NumberType({isOptional: true, field});
+    type = new ArrayType({isOptional: true, itemType, field});
 
     expect(type.toString()).toBe('[number?]?');
 
@@ -320,15 +320,15 @@ describe('Types', () => {
 
     expect(type).toBeInstanceOf(ArrayType);
     expect(type.isOptional()).toBe(false);
-    expect(type.getElementType()).toBeInstanceOf(NumberType);
-    expect(type.getElementType().isOptional()).toBe(false);
+    expect(type.getItemType()).toBeInstanceOf(NumberType);
+    expect(type.getItemType().isOptional()).toBe(false);
 
     type = createType('[number?]?', {field});
 
     expect(type).toBeInstanceOf(ArrayType);
     expect(type.isOptional()).toBe(true);
-    expect(type.getElementType()).toBeInstanceOf(NumberType);
-    expect(type.getElementType().isOptional()).toBe(true);
+    expect(type.getItemType()).toBeInstanceOf(NumberType);
+    expect(type.getItemType().isOptional()).toBe(true);
 
     type = createType('string', {field});
 
@@ -340,17 +340,17 @@ describe('Types', () => {
     expect(type.getValidators()).toEqual([notEmpty]);
 
     const integer = validators.integer();
-    type = createType('[number]', {validators: [notEmpty, [integer]], field});
+    type = createType('[number]', {validators: [notEmpty], items: {validators: [integer]}, field});
 
     expect(type.getValidators()).toEqual([notEmpty]);
-    expect(type.getElementType().getValidators()).toEqual([integer]);
+    expect(type.getItemType().getValidators()).toEqual([integer]);
 
-    type = createType('[[number]]', {validators: [[[integer]]], field});
+    type = createType('[[number]]', {items: {items: {validators: [integer]}}, field});
 
     expect(
       type
-        .getElementType()
-        .getElementType()
+        .getItemType()
+        .getItemType()
         .getValidators()
     ).toEqual([integer]);
   });
@@ -380,7 +380,7 @@ describe('Types', () => {
     expect(type.runValidators('')).toEqual([{validator: notEmpty, path: ''}]);
     expect(type.runValidators(undefined)).toEqual([]);
 
-    type = createType('[string]', {field, validators: [notEmpty, [notEmpty]]});
+    type = createType('[string]', {field, validators: [notEmpty], items: {validators: [notEmpty]}});
 
     expect(type.runValidators(['Inception'])).toEqual([]);
     expect(type.runValidators([])).toEqual([{validator: notEmpty, path: ''}]);
@@ -390,7 +390,7 @@ describe('Types', () => {
       {validator: requiredValidator, path: '[1]'}
     ]);
 
-    type = createType('[[string]]', {field, validators: [[[notEmpty]]]});
+    type = createType('[[string]]', {field, items: {items: {validators: [notEmpty]}}});
 
     expect(type.runValidators([['Inception', '']])).toEqual([
       {validator: notEmpty, path: '[0][1]'}

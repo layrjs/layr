@@ -15,12 +15,16 @@ export class Field extends Observable(Attribute) {
     ow(
       options,
       'options',
-      ow.object.partialShape({valueType: ow.string.nonEmpty, validators: ow.optional.array})
+      ow.object.partialShape({
+        valueType: ow.string.nonEmpty,
+        validators: ow.optional.array,
+        items: ow.optional.object
+      })
     );
 
-    const {valueType, validators = [], ...otherOptions} = options;
+    const {valueType, validators = [], items, ...otherOptions} = options;
 
-    this._valueType = createType(valueType, {validators, field: this});
+    this._valueType = createType(valueType, {validators, items, field: this});
 
     super.setOptions(otherOptions);
   }

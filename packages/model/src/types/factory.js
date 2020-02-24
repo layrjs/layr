@@ -22,9 +22,17 @@ const TYPE_MAP = new Map(
 
 export function createType(specifier, options = {}) {
   ow(specifier, 'specifier', ow.string.nonEmpty);
-  ow(options, 'options', ow.object.exactShape({validators: ow.optional.array, field: ow.object}));
+  ow(
+    options,
+    'options',
+    ow.object.exactShape({
+      validators: ow.optional.array,
+      items: ow.optional.object,
+      field: ow.object
+    })
+  );
 
-  const {validators = [], field} = options;
+  const {validators = [], items, field} = options;
 
   let isOptional;
 
@@ -34,7 +42,15 @@ export function createType(specifier, options = {}) {
   }
 
   if (specifier.startsWith('[') && specifier.endsWith(']')) {
-    return createArrayType(specifier, {isOptional, validators, field});
+    const itemSpecifier = specifier.slice(1, -1);
+    const itemType = createType(itemSpecifier, {...items, field});
+    return new ArrayType({itemType, isOptional, validators, field});
+  }
+
+  if (items !== undefined) {
+    throw new Error(
+      `The 'items' option cannot be specified for a type that is not an array (type: '${specifier}')`
+    );
   }
 
   const typeName = specifier;
@@ -48,26 +64,4 @@ export function createType(specifier, options = {}) {
   const componentName = typeName;
 
   return new ComponentType({componentName, isOptional, validators, field});
-}
-
-function createArrayType(specifier, {isOptional, validators, field}) {
-  const elementSpecifier = specifier.slice(1, -1);
-
-  let elementValidators;
-
-  const elementValidatorsIndex = validators.findIndex(validator => Array.isArray(validator));
-
-  if (elementValidatorsIndex !== -1) {
-    elementValidators = validators[elementValidatorsIndex];
-    validators = [
-      ...validators.slice(0, elementValidatorsIndex),
-      ...validators.slice(elementValidatorsIndex + 1)
-    ];
-  } else {
-    elementValidators = [];
-  }
-
-  const elementType = createType(elementSpecifier, {validators: elementValidators, field});
-
-  return new ArrayType({elementType, isOptional, validators, field});
 }

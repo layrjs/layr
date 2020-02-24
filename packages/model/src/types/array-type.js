@@ -9,23 +9,23 @@ export class ArrayType extends Type {
       options,
       'options',
       ow.object.partialShape({
-        elementType: ow.object.instanceOf(Type)
+        itemType: ow.object.instanceOf(Type)
       })
     );
 
-    const {elementType, ...otherOptions} = options;
+    const {itemType, ...otherOptions} = options;
 
     super(otherOptions);
 
-    this._elementType = elementType;
+    this._itemType = itemType;
   }
 
-  getElementType() {
-    return this._elementType;
+  getItemType() {
+    return this._itemType;
   }
 
   toString() {
-    return `[${this.getElementType().toString()}]${super.toString()}`;
+    return `[${this.getItemType().toString()}]${super.toString()}`;
   }
 
   checkValue(values, options = {}) {
@@ -40,10 +40,10 @@ export class ArrayType extends Type {
       return;
     }
 
-    const elementType = this.getElementType();
+    const itemType = this.getItemType();
 
     for (const value of values) {
-      elementType.checkValue(value, {field});
+      itemType.checkValue(value, {field});
     }
   }
 
@@ -55,12 +55,12 @@ export class ArrayType extends Type {
     const failedValidators = super.runValidators(values);
 
     if (values !== undefined) {
-      const elementType = this.getElementType();
+      const itemType = this.getItemType();
 
       values.forEach((value, index) => {
-        const elementFailedValidators = elementType.runValidators(value);
+        const failedItemValidators = itemType.runValidators(value);
 
-        for (const {validator, path} of elementFailedValidators) {
+        for (const {validator, path} of failedItemValidators) {
           failedValidators.push({validator, path: joinFieldPath([`[${index}]`, path])});
         }
       });
