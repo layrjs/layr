@@ -2,6 +2,8 @@ import {possiblyAsync} from 'possibly-async';
 import mapValues from 'lodash/mapValues';
 import ow from 'ow';
 
+import {getTypeOf} from './utilities';
+
 export class Property {
   constructor(name, parent, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
@@ -22,14 +24,6 @@ export class Property {
 
   getParent() {
     return this._parent;
-  }
-
-  getType() {
-    return 'property';
-  }
-
-  getTypeArticle() {
-    return 'a';
   }
 
   // === Options ===
@@ -114,7 +108,7 @@ export class Property {
 
     return {
       name: this.getName(),
-      type: this.getType(),
+      type: getTypeOf(this),
       exposure: introspectedExposure
     };
   }
@@ -140,6 +134,10 @@ export class Property {
   }
 }
 
+export function isPropertyClass(object) {
+  return typeof object?.isProperty === 'function';
+}
+
 export function isProperty(object) {
-  return typeof object?.constructor?.isProperty === 'function';
+  return isPropertyClass(object?.constructor) === true;
 }

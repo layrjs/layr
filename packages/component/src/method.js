@@ -1,15 +1,15 @@
 import {Property} from './property';
 
 export class Method extends Property {
-  getType() {
-    return 'method';
-  }
-
   static isMethod(object) {
     return isMethod(object);
   }
 }
 
+export function isMethodClass(object) {
+  return typeof object?.isMethod === 'function';
+}
+
 export function isMethod(object) {
-  return typeof object?.constructor?.isMethod === 'function';
+  return isMethodClass(object?.constructor) === true;
 }

@@ -1,4 +1,4 @@
-import {Model, isModel, field, isField, method, validators} from '../../..';
+import {Model, isModelClass, isModel, field, isField, method, validators} from '../../..';
 
 describe('Model', () => {
   test('Creation', async () => {
@@ -10,7 +10,7 @@ describe('Model', () => {
 
     const movie = new Movie({title: 'Inception'});
 
-    expect(isModel(Movie.prototype)).toBe(true);
+    expect(isModelClass(Movie)).toBe(true);
     expect(movie.getField('title').hasValue()).toBe(true);
     expect(movie.title).toBe('Inception');
     expect(movie.getField('country').hasValue()).toBe(true);
@@ -21,6 +21,23 @@ describe('Model', () => {
     expect(() => new Movie()).toThrow(
       "Cannot assign a value of an unexpected type to the field 'title' (expected type: 'string', received type: 'undefined')"
     );
+  });
+
+  test('isModelClass()', async () => {
+    expect(isModelClass(undefined)).toBe(false);
+    expect(isModelClass(null)).toBe(false);
+    expect(isModelClass(true)).toBe(false);
+    expect(isModelClass(1)).toBe(false);
+    expect(isModelClass({})).toBe(false);
+
+    class Movie extends Model() {}
+
+    expect(isModelClass(Movie)).toBe(true);
+    expect(isModelClass(Movie.prototype)).toBe(false);
+
+    const movie = new Movie();
+
+    expect(isModelClass(movie)).toBe(false);
   });
 
   test('isModel()', async () => {

@@ -14,11 +14,13 @@ import {
 } from '../../..';
 
 describe('Types', () => {
-  const field = {
+  class Field {
     getName() {
       return 'field';
     }
-  };
+  }
+
+  const field = new Field();
 
   test('BooleanType', async () => {
     let type = new BooleanType({field});

@@ -1,14 +1,15 @@
 import {
   Component,
-  isComponent,
+  isComponentClass,
   Property,
   Attribute,
   Method,
-  isMethod,
+  isMethodClass,
   createComponentMap
 } from '@liaison/component';
 import {Field, serialize, deserialize} from '@liaison/model';
 import {possiblyAsync} from 'possibly-async';
+import {getClassOf} from 'core-helpers';
 import ow from 'ow';
 import debugModule from 'debug';
 
@@ -121,7 +122,7 @@ export class ComponentClient {
 
     component.setProperty(name, PropertyClass, options);
 
-    if (isMethod(PropertyClass.prototype)) {
+    if (isMethodClass(PropertyClass)) {
       Object.defineProperty(component, name, {
         value: this._createComponentMethod(name),
         writable: true,
@@ -145,9 +146,7 @@ export class ComponentClient {
 
       // TODO: if 'this' is in a layer, provide layer's components
       // through the 'componentProvider' serialize()/deserialize() parameter
-      const isComponentClass = !isComponent(this);
-      const LocalComponent = isComponentClass ? this : this.constructor;
-      const knownComponents = [LocalComponent];
+      const knownComponents = [getClassOf(this)];
 
       return possiblyAsync(componentClient.sendQuery(query, {knownComponents}), {
         then: result => result.result
@@ -178,10 +177,10 @@ export class ComponentClient {
     const attributeFilter = function(attribute) {
       // Exclude properties that cannot be set in the remote components
 
-      const isComponentClass = !isComponent(this);
-      const LocalComponent = isComponentClass ? this : this.constructor;
+      const isClass = isComponentClass(this);
+      const LocalComponent = isClass ? this : this.constructor;
       const RemoteComponent = componentClient.getComponent(LocalComponent.getName());
-      const remoteComponent = isComponentClass ? RemoteComponent : RemoteComponent.prototype;
+      const remoteComponent = isClass ? RemoteComponent : RemoteComponent.prototype;
 
       const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {
         throwIfMissing: false

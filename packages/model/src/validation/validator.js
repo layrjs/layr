@@ -1,5 +1,4 @@
-import {hasOwnProperty} from 'core-helpers';
-import fnName from 'fn-name';
+import {hasOwnProperty, getFunctionName} from 'core-helpers';
 import ow from 'ow';
 
 import {serializeFunction, deserializeFunction} from '@liaison/component';
@@ -20,7 +19,7 @@ export class Validator {
     let {name, arguments: args = [], message} = options;
 
     if (name === undefined) {
-      name = fnName(func) || 'anonymous';
+      name = getFunctionName(func) || 'anonymous';
     }
 
     if (message === undefined) {

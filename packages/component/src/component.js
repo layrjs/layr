@@ -3,12 +3,12 @@ import ow from 'ow';
 import {WithProperties} from './with-properties';
 import {serialize} from './serialization';
 import {deserialize} from './deserialization';
-import {isComponent, validateComponentName} from './utilities';
+import {isComponentClass, isComponent, validateComponentName} from './utilities';
 
 export const Component = (Base = Object) => {
   ow(Base, ow.function);
 
-  if (isComponent(Base.prototype)) {
+  if (isComponentClass(Base)) {
     return Base;
   }
 

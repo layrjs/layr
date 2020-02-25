@@ -1,13 +1,18 @@
+import {getTypeOf as coreGetTypeOf} from 'core-helpers';
 import lowerFirst from 'lodash/lowerFirst';
 import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
+export function isComponentClass(object) {
+  return typeof object?.isComponent === 'function';
+}
+
 export function isComponent(object) {
-  return typeof object?.constructor?.isComponent === 'function';
+  return isComponentClass(object?.constructor) === true;
 }
 
 export function getComponentName(object) {
-  if (isComponent(object.prototype)) {
+  if (isComponentClass(object)) {
     // The object is a component class
     return object.getName();
   }
@@ -73,9 +78,11 @@ export function createComponentMap(components = []) {
   const componentMap = Object.create(null);
 
   for (const knownComponent of components) {
-    if (!isComponent(knownComponent?.prototype)) {
+    if (!isComponentClass(knownComponent)) {
       throw new TypeError(
-        `Expected \`components\` items to be components but received type \`${typeof knownComponent}\``
+        `Expected \`components\` items to be components but received type \`${getTypeOf(
+          knownComponent
+        )}\``
       );
     }
 
@@ -93,4 +100,12 @@ export function getComponentFromComponentMap(componentMap, name) {
   }
 
   return Component;
+}
+
+export function getTypeOf(value) {
+  if (isComponentClass(value) || isComponent(value)) {
+    return getComponentName(value);
+  }
+
+  return coreGetTypeOf(value);
 }

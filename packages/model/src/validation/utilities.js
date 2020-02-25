@@ -1,3 +1,4 @@
+import {getTypeOf} from '@liaison/component';
 import ow from 'ow';
 
 import {validators} from './validator-builders';
@@ -13,12 +14,16 @@ export function normalizeValidator(validator, options = {}) {
   }
 
   if (typeof validator !== 'function') {
-    throw new Error(`The specified validator is not a function (field name: '${field.getName()}')`);
+    throw new Error(
+      `The specified validator is not a function (${getTypeOf(field)} name: '${field.getName()}')`
+    );
   }
 
   if (Object.values(validators).includes(validator)) {
     throw new Error(
-      `The specified validator is a validator builder that has not been called (field name: '${field.getName()}')`
+      `The specified validator is a validator builder that has not been called (${getTypeOf(
+        field
+      )} name: '${field.getName()}')`
     );
   }
 

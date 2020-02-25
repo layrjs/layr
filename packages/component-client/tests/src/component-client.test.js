@@ -1,4 +1,4 @@
-import {isComponent} from '@liaison/component';
+import {isComponentClass} from '@liaison/component';
 import isEqual from 'lodash/isEqual';
 
 import {ComponentClient} from '../../..';
@@ -109,7 +109,7 @@ describe('ComponentClient', () => {
 
     const [Movie] = client.getComponents();
 
-    expect(isComponent(Movie.prototype)).toBe(true);
+    expect(isComponentClass(Movie)).toBe(true);
     expect(Movie.getName()).toBe('Movie');
 
     let attribute = Movie.getAttribute('token');

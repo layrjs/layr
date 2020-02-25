@@ -8,7 +8,7 @@ import {joinFieldPath} from './utilities';
 export const Model = (Base = Object) => {
   ow(Base, 'Base', ow.function);
 
-  if (isModel(Base)) {
+  if (isModelClass(Base)) {
     return Base;
   }
 
@@ -161,8 +161,12 @@ export const Model = (Base = Object) => {
   return Model;
 };
 
+export function isModelClass(object) {
+  return typeof object?.isModel === 'function';
+}
+
 export function isModel(object) {
-  return typeof object?.constructor?.isModel === 'function';
+  return isModelClass(object?.constructor) === true;
 }
 
 export function field(valueType, options = {}) {
@@ -176,7 +180,7 @@ export function field(valueType, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!(isModel(target) || isModel(target.prototype))) {
+    if (!(isModelClass(target) || isModel(target))) {
       throw new Error(`@field() target doesn't inherit from Model (property name: '${name}')`);
     }
 

@@ -1,14 +1,10 @@
-import {Attribute} from '@liaison/component';
+import {Attribute, getTypeOf} from '@liaison/component';
 import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
 import ow from 'ow';
 
 import {createType} from './types/factory';
 
 export class Field extends Observable(Attribute) {
-  getType() {
-    return 'field';
-  }
-
   // === Options ===
 
   setOptions(options = {}) {
@@ -107,7 +103,9 @@ export class Field extends Observable(Attribute) {
 
     const error = Object.assign(
       new Error(
-        `The following error(s) occurred while validating the field '${this.getName()}': ${details}`
+        `The following error(s) occurred while validating the ${getTypeOf(
+          this
+        )} '${this.getName()}': ${details}`
       ),
       {failedValidators}
     );
@@ -124,7 +122,9 @@ export class Field extends Observable(Attribute) {
   runValidators() {
     if (!this.hasValue()) {
       throw new Error(
-        `Cannot run the validators of an unset ${this.getType()} (${this.getType()} name: '${this.getName()}')`
+        `Cannot run the validators of an unset ${getTypeOf(this)} (${getTypeOf(
+          this
+        )} name: '${this.getName()}')`
       );
     }
 
@@ -140,6 +140,10 @@ export class Field extends Observable(Attribute) {
   }
 }
 
+export function isFieldClass(object) {
+  return typeof object?.isField === 'function';
+}
+
 export function isField(object) {
-  return typeof object?.constructor?.isField === 'function';
+  return isFieldClass(object?.constructor) === true;
 }

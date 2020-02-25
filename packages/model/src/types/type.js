@@ -1,6 +1,6 @@
+import {getTypeOf} from '@liaison/component';
 import ow from 'ow';
 
-import {getTypeOf} from './utilities';
 import {runValidators, normalizeValidator} from '../validation';
 
 export class Type {
@@ -44,7 +44,9 @@ export class Type {
 
     if (!this._checkValue(value)) {
       throw new Error(
-        `Cannot assign a value of an unexpected type to the field '${field.getName()}' (expected type: '${this.toString()}', received type: '${getTypeOf(
+        `Cannot assign a value of an unexpected type to the ${getTypeOf(
+          field
+        )} '${field.getName()}' (expected type: '${this.toString()}', received type: '${getTypeOf(
           value
         )}')`
       );

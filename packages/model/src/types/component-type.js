@@ -1,8 +1,13 @@
-import {isComponent, getComponentName, validateComponentName} from '@liaison/component';
+import {
+  isComponentClass,
+  isComponent,
+  getComponentName,
+  validateComponentName
+} from '@liaison/component';
 import ow from 'ow';
 
 import {Type} from './type';
-import {isModel} from '../model';
+import {isModelClass, isModel} from '../model';
 
 export class ComponentType extends Type {
   constructor(options = {}) {
@@ -28,7 +33,7 @@ export class ComponentType extends Type {
   _checkValue(value) {
     return (
       super._checkValue(value) ??
-      ((isComponent(value?.prototype) || isComponent(value)) &&
+      ((isComponentClass(value) || isComponent(value)) &&
         getComponentName(value) === this.getComponentName())
     );
   }
@@ -36,7 +41,7 @@ export class ComponentType extends Type {
   runValidators(value) {
     const failedValidators = super.runValidators(value);
 
-    if (isModel(value?.prototype) || isModel(value)) {
+    if (isModelClass(value) || isModel(value)) {
       const modelFailedValidators = value.runValidators();
       failedValidators.push(...modelFailedValidators);
     }

@@ -1,4 +1,4 @@
-import {isComponent} from '@liaison/component';
+import {isComponentClass, isComponent} from '@liaison/component';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
@@ -41,7 +41,7 @@ export class ComponentServer {
         return true;
       }
 
-      if (isComponent(this.prototype) || isComponent(this)) {
+      if (isComponentClass(this) || isComponent(this)) {
         const property = this.getProperty(name, {throwIfMissing: false});
 
         if (property !== undefined) {
@@ -95,7 +95,7 @@ export class ComponentServer {
     }
 
     for (const component of components) {
-      if (!isComponent(component.prototype)) {
+      if (!isComponentClass(component)) {
         throw new Error(
           "The 'componentProvider' function returned an array containing an item that is not a component"
         );

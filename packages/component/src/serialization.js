@@ -1,8 +1,10 @@
 import {serialize as simpleSerialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
+import {isES2015Class} from 'core-helpers';
 import ow from 'ow';
 
 import {
+  isComponentClass,
   isComponent,
   getComponentName,
   createComponentMap,
@@ -42,19 +44,15 @@ export function serialize(value, options = {}) {
     }
 
     let Component;
-    let isComponentClass;
+    let isClass;
 
-    if (isComponent(object.prototype)) {
-      // The object is a component class
+    if (isComponentClass(object)) {
       Component = object;
-      isComponentClass = true;
+      isClass = true;
     } else if (isComponent(object)) {
-      // The object is a component instance
       Component = object.constructor;
-      isComponentClass = false;
-    }
-
-    if (Component === undefined) {
+      isClass = false;
+    } else {
       return undefined;
     }
 
@@ -63,7 +61,7 @@ export function serialize(value, options = {}) {
 
     const serializedComponent = {__component: getComponentName(object)};
 
-    if (!isComponentClass && object.isNew()) {
+    if (!isClass && object.isNew()) {
       serializedComponent.__new = true;
     }
 
@@ -103,11 +101,11 @@ export function serialize(value, options = {}) {
         }
       }
 
-      const functionCode = serializeFunction(func);
-
-      if (functionCode.startsWith('class')) {
+      if (isES2015Class(func)) {
         throw new Error('Cannot serialize a class');
       }
+
+      const functionCode = serializeFunction(func);
 
       const serializedFunction = {__function: functionCode};
 

@@ -1,6 +1,30 @@
-import {Component, isComponent, getComponentName, isComponentName} from '../../..';
+import {
+  Component,
+  isComponentClass,
+  isComponent,
+  getComponentName,
+  isComponentName,
+  getTypeOf
+} from '../../..';
 
 describe('Utilities', () => {
+  test('isComponentClass()', async () => {
+    expect(isComponentClass(undefined)).toBe(false);
+    expect(isComponentClass(null)).toBe(false);
+    expect(isComponentClass(true)).toBe(false);
+    expect(isComponentClass(1)).toBe(false);
+    expect(isComponentClass({})).toBe(false);
+
+    class Movie extends Component() {}
+
+    expect(isComponentClass(Movie)).toBe(true);
+    expect(isComponentClass(Movie.prototype)).toBe(false);
+
+    const movie = new Movie();
+
+    expect(isComponentClass(movie)).toBe(false);
+  });
+
   test('isComponent()', async () => {
     expect(isComponent(undefined)).toBe(false);
     expect(isComponent(null)).toBe(false);
@@ -47,5 +71,19 @@ describe('Utilities', () => {
 
     expect(() => isComponentName(undefined)).toThrow();
     expect(() => isComponentName(1)).toThrow();
+  });
+
+  test('getTypeOf()', async () => {
+    class Movie extends Component() {}
+
+    const movie = new Movie();
+
+    expect(getTypeOf(Movie)).toBe('Movie');
+    expect(getTypeOf(movie)).toBe('movie');
+
+    Movie.setName('Film');
+
+    expect(getTypeOf(Movie)).toBe('Film');
+    expect(getTypeOf(movie)).toBe('film');
   });
 });

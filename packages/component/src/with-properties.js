@@ -1,8 +1,9 @@
 import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
 import ow from 'ow';
 
-import {Attribute, isAttribute} from './attribute';
+import {Attribute, isAttributeClass, isAttribute} from './attribute';
 import {Method, isMethod} from './method';
+import {getTypeOf} from './utilities';
 
 export const WithProperties = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -60,13 +61,13 @@ export const WithProperties = (Base = Object) => {
         const properties = this.__getProperties();
         properties[name] = property;
       } else {
-        if (property.getType() !== PropertyClass.prototype.getType()) {
+        if (getTypeOf(property) !== getTypeOf(PropertyClass.prototype)) {
           throw new Error(`Cannot change the type of the '${name}' property`);
         }
         property.setOptions(propertyOptions);
       }
 
-      if (isAttribute(PropertyClass.prototype)) {
+      if (isAttributeClass(PropertyClass)) {
         const descriptor = {
           configurable: true,
           enumerable: true,

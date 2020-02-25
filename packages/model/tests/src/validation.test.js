@@ -178,11 +178,13 @@ describe('Validation', () => {
 
   describe('Utilities', () => {
     test('Normalization', async () => {
-      const field = {
+      class Field {
         getName() {
           return 'field';
         }
-      };
+      }
+
+      const field = new Field();
 
       let validator = new Validator(value => value > 0);
       let normalizedValidator = normalizeValidator(validator, {field});
