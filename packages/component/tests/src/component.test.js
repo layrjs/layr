@@ -3,37 +3,57 @@ import {Component, isComponent, attribute, method} from '../../..';
 describe('Component', () => {
   test('Creation', async () => {
     class Movie extends Component() {
-      constructor() {
-        super();
-        this.title = '';
-      }
+      @attribute() title = '';
+      @attribute() country = '';
 
-      duration = undefined;
+      instanceAttribute = true;
     }
 
     // Make sure there are no enumerable properties in the class
     expect(Object.keys(Movie)).toHaveLength(0);
 
-    const movie = new Movie();
+    let movie = new Movie();
 
     expect(isComponent(movie)).toBe(true);
     expect(movie).toBeInstanceOf(Movie);
 
-    expect(Object.keys(movie)).toHaveLength(2);
-    expect(Object.keys(movie)).toContain('title');
-    expect(Object.keys(movie)).toContain('duration');
+    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
+    expect(movie.instanceAttribute).toBe(true);
     expect(movie.title).toBe('');
-    expect(movie.duration).toBe(undefined);
+    expect(movie.country).toBe('');
+
+    movie = new Movie({title: 'Inception'});
+
+    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
+    expect(movie.instanceAttribute).toBe(true);
+    expect(movie.title).toBe('Inception');
+    expect(movie.country).toBe('');
+
+    movie = new Movie({}, {attributeSelector: false});
+
+    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
+    expect(movie.instanceAttribute).toBe(true);
+    expect(movie.getAttribute('title').isSet()).toBe(false);
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    movie = new Movie({}, {attributeSelector: {title: true}});
+
+    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
+    expect(movie.instanceAttribute).toBe(true);
+    expect(movie.title).toBe('');
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    movie = new Movie({title: 'Inception', country: 'USA'}, {attributeSelector: {country: true}});
+
+    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
+    expect(movie.instanceAttribute).toBe(true);
+    expect(movie.getAttribute('title').isSet()).toBe(false);
+    expect(movie.country).toBe('USA');
   });
 
   test('Instantiation', async () => {
     class Movie extends Component() {
-      constructor() {
-        super();
-        this.title = '';
-      }
-
-      duration = undefined;
+      instanceAttribute = true;
     }
 
     const movie = Movie.instantiate();

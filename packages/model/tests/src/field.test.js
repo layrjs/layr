@@ -19,7 +19,7 @@ describe('Field', () => {
 
     const field = new Field('title', movie, {valueType: 'string'});
 
-    expect(field.hasValue()).toBe(false);
+    expect(field.isSet()).toBe(false);
     expect(() => field.getValue()).toThrow(
       "Cannot get the value of an unset field (field name: 'title')"
     );
@@ -27,7 +27,7 @@ describe('Field', () => {
 
     field.setValue('Inception');
 
-    expect(field.hasValue()).toBe(true);
+    expect(field.isSet()).toBe(true);
     expect(field.getValue()).toBe('Inception');
 
     expect(() => field.setValue(123)).toThrow(
@@ -39,7 +39,7 @@ describe('Field', () => {
 
     field.unsetValue();
 
-    expect(field.hasValue()).toBe(false);
+    expect(field.isSet()).toBe(false);
   });
 
   test('Validation', async () => {

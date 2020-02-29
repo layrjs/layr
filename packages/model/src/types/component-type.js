@@ -38,6 +38,10 @@ export class ComponentType extends Type {
     );
   }
 
+  _expandAttributeSelector(normalizedAttributeSelector, _options) {
+    return normalizedAttributeSelector !== false; // TODO
+  }
+
   runValidators(value) {
     const failedValidators = super.runValidators(value);
 

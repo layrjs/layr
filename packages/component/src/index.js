@@ -1,5 +1,7 @@
 export * from './attribute';
+export * from './attribute-selector';
 export * from './component';
+export * from './decorators';
 export * from './deserialization';
 export * from './method';
 export * from './property';

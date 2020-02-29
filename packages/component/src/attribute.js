@@ -3,6 +3,7 @@ import a from 'indefinite';
 import ow from 'ow';
 
 import {Property} from './property';
+import {AttributeSelector} from './attribute-selector';
 import {getTypeOf} from './utilities';
 
 export class Attribute extends Property {
@@ -57,7 +58,7 @@ export class Attribute extends Property {
         this._setter = setter;
       }
 
-      this._hasValue = true;
+      this._isSet = true;
 
       return;
     }
@@ -82,7 +83,7 @@ export class Attribute extends Property {
 
     const {throwIfUnset = true, autoFork = true} = options;
 
-    if (!this.hasValue()) {
+    if (!this.isSet()) {
       if (throwIfUnset) {
         throw new Error(
           `Cannot get the value of an unset ${getTypeOf(this)} (${getTypeOf(
@@ -120,7 +121,7 @@ export class Attribute extends Property {
 
     const previousValue = this.getValue({throwIfUnset: false});
     this._value = value;
-    this._hasValue = true;
+    this._isSet = true;
 
     return {previousValue, newValue: value};
   }
@@ -134,11 +135,11 @@ export class Attribute extends Property {
       );
     }
 
-    this._hasValue = false;
+    this._isSet = false;
   }
 
-  hasValue() {
-    return this._hasValue === true;
+  isSet() {
+    return this._isSet === true;
   }
 
   // === Default value ===
@@ -157,6 +158,12 @@ export class Attribute extends Property {
     return this._default;
   }
 
+  // Attribute selectors
+
+  _expandAttributeSelector(normalizedAttributeSelector, _options) {
+    return normalizedAttributeSelector;
+  }
+
   // === Introspection ===
 
   introspect() {
@@ -166,7 +173,7 @@ export class Attribute extends Property {
       return undefined;
     }
 
-    if (this.hasValue()) {
+    if (this.isSet()) {
       introspectedExposure.value = this.getValue();
     }
 

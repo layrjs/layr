@@ -68,7 +68,7 @@ export class Field extends Observable(Attribute) {
   }
 
   unsetValue() {
-    if (!this.hasValue()) {
+    if (!this.isSet()) {
       return;
     }
 
@@ -86,6 +86,12 @@ export class Field extends Observable(Attribute) {
     }
 
     parent.callObservers();
+  }
+
+  // Attribute selectors
+
+  _expandAttributeSelector(normalizedAttributeSelector, options) {
+    return this.getValueType()._expandAttributeSelector(normalizedAttributeSelector, options);
   }
 
   // === Validation ===
@@ -120,7 +126,7 @@ export class Field extends Observable(Attribute) {
   }
 
   runValidators() {
-    if (!this.hasValue()) {
+    if (!this.isSet()) {
       throw new Error(
         `Cannot run the validators of an unset ${getTypeOf(this)} (${getTypeOf(
           this

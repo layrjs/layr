@@ -59,6 +59,10 @@ export class Type {
     }
   }
 
+  _expandAttributeSelector(normalizedAttributeSelector, _options) {
+    return normalizedAttributeSelector !== false;
+  }
+
   runValidators(value) {
     const failedValidators = runValidators(this.getValidators(), value, {
       isOptional: this.isOptional()

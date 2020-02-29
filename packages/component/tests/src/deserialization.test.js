@@ -41,7 +41,7 @@ describe('Deserialization', () => {
     expect(movie).not.toBe(Movie.prototype);
     expect(movie.isNew()).toBe(false);
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('duration').hasValue()).toBe(false);
+    expect(movie.getAttribute('duration').isSet()).toBe(false);
 
     const movie2 = deserialize(
       {__component: 'movie', __new: true, title: 'Inception'},
@@ -83,28 +83,13 @@ describe('Deserialization', () => {
     );
 
     expect(movie5.title).toBe('Inception');
-    expect(movie5.duration).toBe(0);
+    expect(movie.getAttribute('duration').isSet()).toBe(false);
 
-    const movie6 = await deserialize(
-      {__component: 'movie', __new: true, title: 'Inception', duration: 120},
-      {
-        knownComponents: [Movie],
-        async attributeFilter(attribute) {
-          expect(this).toBeInstanceOf(Movie);
-          expect(attribute.getParent()).toBe(this);
-          return attribute.getName() === 'title';
-        }
-      }
-    );
+    const movie8 = Movie.fromJSON({__component: 'movie', title: 'Inception'});
 
-    expect(movie6.title).toBe('Inception');
-    expect(movie6.duration).toBe(0);
-
-    const movie7 = Movie.fromJSON({__component: 'movie', title: 'Inception'});
-
-    expect(movie7).toBeInstanceOf(Movie);
-    expect(movie7.title).toBe('Inception');
-    expect(movie7.getAttribute('duration').hasValue()).toBe(false);
+    expect(movie8).toBeInstanceOf(Movie);
+    expect(movie8.title).toBe('Inception');
+    expect(movie8.getAttribute('duration').isSet()).toBe(false);
 
     class Cinema extends Component() {
       @attribute() movies;
@@ -119,7 +104,7 @@ describe('Deserialization', () => {
     expect(cinema.movies).toHaveLength(1);
     expect(cinema.movies[0]).toBeInstanceOf(Movie);
     expect(cinema.movies[0].title).toBe('The Matrix');
-    expect(cinema.movies[0].getAttribute('duration').hasValue()).toBe(false);
+    expect(cinema.movies[0].getAttribute('duration').isSet()).toBe(false);
   });
 
   test('Functions', async () => {

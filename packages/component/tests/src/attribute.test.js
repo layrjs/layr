@@ -18,7 +18,7 @@ describe('Attribute', () => {
 
     const attribute = new Attribute('title', movie);
 
-    expect(attribute.hasValue()).toBe(false);
+    expect(attribute.isSet()).toBe(false);
     expect(() => attribute.getValue()).toThrow(
       "Cannot get the value of an unset attribute (attribute name: 'title')"
     );
@@ -26,12 +26,12 @@ describe('Attribute', () => {
 
     attribute.setValue('Inception');
 
-    expect(attribute.hasValue()).toBe(true);
+    expect(attribute.isSet()).toBe(true);
     expect(attribute.getValue()).toBe('Inception');
 
     attribute.unsetValue();
 
-    expect(attribute.hasValue()).toBe(false);
+    expect(attribute.isSet()).toBe(false);
   });
 
   test('Accessors', async () => {
@@ -50,7 +50,7 @@ describe('Attribute', () => {
       }
     });
 
-    expect(attribute.hasValue()).toBe(true);
+    expect(attribute.isSet()).toBe(true);
     expect(attribute.getValue()).toBeUndefined();
 
     attribute.setValue('inception');
@@ -63,11 +63,11 @@ describe('Attribute', () => {
 
     let attribute = new Attribute('limit', Movie);
 
-    expect(attribute.hasValue()).toBe(false);
+    expect(attribute.isSet()).toBe(false);
 
     attribute = new Attribute('limit', Movie, {value: 100});
 
-    expect(attribute.hasValue()).toBe(true);
+    expect(attribute.isSet()).toBe(true);
     expect(attribute.getValue()).toBe(100);
   });
 

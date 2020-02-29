@@ -15,8 +15,11 @@ export const Component = (Base = Object) => {
   return class Component extends WithProperties(Base) {
     // === Creation ===
 
-    constructor(object = {}) {
-      super(object);
+    constructor(object = {}, options) {
+      ow(object, 'object', ow.object);
+
+      super(object, options);
+
       this.markAsNew();
     }
 

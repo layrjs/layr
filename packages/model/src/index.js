@@ -1,5 +1,6 @@
 export * from '@liaison/component';
 
+export * from './decorators';
 export * from './deserialization';
 export * from './field';
 export * from './model';

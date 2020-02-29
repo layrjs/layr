@@ -1,8 +1,9 @@
-import {hasOwnProperty, getInheritedPropertyDescriptor} from 'core-helpers';
+import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
 
 import {Attribute, isAttributeClass, isAttribute} from './attribute';
 import {Method, isMethod} from './method';
+import {AttributeSelector} from './attribute-selector';
 import {getTypeOf} from './utilities';
 
 export const WithProperties = (Base = Object) => {
@@ -119,12 +120,26 @@ export const WithProperties = (Base = Object) => {
       ow(
         options,
         'options',
-        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
+        ow.object.exactShape({
+          filter: ow.optional.function,
+          attributesOnly: ow.optional.boolean,
+          setAttributesOnly: ow.optional.boolean,
+          methodsOnly: ow.optional.boolean,
+          autoFork: ow.optional.boolean
+        })
       );
 
-      const {filter, autoFork = true} = options;
+      const {
+        filter: originalFilter,
+        attributesOnly = false,
+        setAttributesOnly = false,
+        methodsOnly = false,
+        autoFork = true
+      } = options;
 
       const component = this;
+
+      const filter = createFilter(originalFilter, {attributesOnly, setAttributesOnly, methodsOnly});
 
       return {
         *[Symbol.iterator]() {
@@ -233,48 +248,88 @@ export const WithProperties = (Base = Object) => {
       ow(
         options,
         'options',
-        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
+        ow.object.exactShape({
+          filter: ow.optional.function,
+          setAttributesOnly: ow.optional.boolean,
+          autoFork: ow.optional.boolean
+        })
       );
 
-      const {filter: originalFilter, autoFork = true} = options;
+      const {filter, setAttributesOnly = false, autoFork = true} = options;
 
-      const filter = function(property) {
-        if (!isAttribute(property)) {
-          return false;
-        }
-
-        if (originalFilter !== undefined) {
-          return originalFilter.call(this, property);
-        }
-
-        return true;
-      };
-
-      return this.getProperties({filter, autoFork});
+      return this.getProperties({filter, attributesOnly: true, setAttributesOnly, autoFork});
     },
 
-    getAttributesWithValue(options = {}) {
+    // === Attribute selectors ===
+
+    expandAttributeSelector(attributeSelector, options = {}) {
       ow(
         options,
         'options',
-        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
+        ow.object.exactShape({
+          filter: ow.optional.function,
+          setAttributesOnly: ow.optional.boolean,
+          depth: ow.optional.number,
+          _attributeStack: ow.optional.set
+        })
       );
 
-      const {filter: originalFilter, autoFork = true} = options;
+      attributeSelector = AttributeSelector.normalize(attributeSelector);
 
-      const filter = function(attribute) {
-        if (!attribute.hasValue()) {
-          return false;
+      let {
+        filter,
+        setAttributesOnly = false,
+        depth = Number.MAX_SAFE_INTEGER, // TODO
+        _attributeStack = new Set()
+      } = options;
+
+      if (depth < 0) {
+        return attributeSelector;
+      }
+
+      depth -= 1;
+
+      let expandedAttributeSelector = {};
+
+      if (attributeSelector === false) {
+        return expandedAttributeSelector; // Optimization
+      }
+
+      for (const attribute of this.getAttributes({filter, setAttributesOnly})) {
+        const name = attribute.getName();
+
+        const subattributeSelector = AttributeSelector.get(attributeSelector, name);
+
+        if (subattributeSelector === false) {
+          continue;
         }
 
-        if (originalFilter !== undefined) {
-          return originalFilter.call(this, attribute);
+        if (_attributeStack.has(attribute)) {
+          continue; // Avoid looping indefinitely when a circular attribute is encountered
         }
 
-        return true;
-      };
+        _attributeStack.add(attribute);
 
-      return this.getAttributes({filter, autoFork});
+        const expandedSubattributeSelector = attribute._expandAttributeSelector(
+          subattributeSelector,
+          {
+            filter,
+            setAttributesOnly,
+            depth,
+            _attributeStack
+          }
+        );
+
+        _attributeStack.delete(attribute);
+
+        expandedAttributeSelector = AttributeSelector.set(
+          expandedAttributeSelector,
+          name,
+          expandedSubattributeSelector
+        );
+      }
+
+      return expandedAttributeSelector;
     },
 
     // === Methods ===
@@ -366,12 +421,35 @@ export const WithProperties = (Base = Object) => {
   Object.assign(BaseWithProperties.prototype, methods);
 
   class WithProperties extends BaseWithProperties {
-    constructor(object = {}) {
+    constructor(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          attributeSelector: ow.optional.any
+        })
+      );
+
+      let {attributeSelector = true} = options;
+
+      attributeSelector = AttributeSelector.normalize(attributeSelector);
+
       super();
+
+      if (attributeSelector === false) {
+        return this; // Optimization
+      }
 
       for (const attribute of this.getAttributes()) {
         const name = attribute.getName();
+
+        if (AttributeSelector.get(attributeSelector, name) === false) {
+          continue;
+        }
+
         const value = hasOwnProperty(object, name) ? object[name] : attribute.getDefaultValue();
+
         attribute.setValue(value);
       }
     }
@@ -384,174 +462,39 @@ export function isWithProperties(object) {
   return typeof object?.isWithProperties === 'function';
 }
 
-export function property(options = {}) {
-  ow(options, 'options', ow.object);
+function createFilter(originalFilter, options = {}) {
+  ow(originalFilter, 'originalFilter', ow.optional.function);
+  ow(
+    options,
+    'options',
+    ow.object.exactShape({
+      attributesOnly: ow.optional.boolean,
+      setAttributesOnly: ow.optional.boolean,
+      methodsOnly: ow.optional.boolean
+    })
+  );
 
-  return function(target, name, descriptor) {
-    ow(target, 'target', ow.object);
-    ow(name, 'name', ow.string.nonEmpty);
-    ow(descriptor, 'descriptor', ow.object);
+  const {attributesOnly = false, setAttributesOnly = false, methodsOnly = false} = options;
 
-    if (!isWithProperties(target)) {
-      throw new Error(
-        `@property() target doesn't inherit from WithProperties (property name: '${name}')`
-      );
+  const filter = function(property) {
+    if ((attributesOnly || setAttributesOnly) && !isAttribute(property)) {
+      return false;
     }
 
-    if (typeof descriptor.value === 'function' && descriptor.enumerable === false) {
-      return method(options)(target, name, descriptor);
+    if (setAttributesOnly && !property.isSet()) {
+      return false;
     }
 
-    return attribute(options)(target, name, descriptor);
+    if (methodsOnly && !isMethod(property)) {
+      return false;
+    }
+
+    if (originalFilter !== undefined) {
+      return originalFilter.call(this, property);
+    }
+
+    return true;
   };
-}
 
-export function attribute(options = {}) {
-  ow(options, 'options', ow.object);
-
-  return function(target, name, descriptor) {
-    ow(target, 'target', ow.object);
-    ow(name, 'name', ow.string.nonEmpty);
-    ow(descriptor, 'descriptor', ow.object);
-
-    if (!isWithProperties(target)) {
-      throw new Error(
-        `@attribute() target doesn't inherit from WithProperties (property name: '${name}')`
-      );
-    }
-
-    if (
-      !(
-        (typeof descriptor.initializer === 'function' || descriptor.initializer === null) &&
-        descriptor.enumerable === true
-      )
-    ) {
-      throw new Error(
-        `@attribute() cannot be used without an attribute declaration (property name: '${name}')`
-      );
-    }
-
-    return _decorateAttribute({target, name, descriptor, AttributeClass: Attribute, options});
-  };
-}
-
-// Despite the following function looks private, it is exported and used by the
-// @field() decorator in @liaison/model
-export function _decorateAttribute({target, name, descriptor, AttributeClass, options}) {
-  // Normalize initializer that can be null in certain cases
-  const initializer =
-    typeof descriptor.initializer === 'function' ? descriptor.initializer : undefined;
-
-  if (typeof target === 'function') {
-    // The target is a component class
-    const property = target.getProperty(name, {throwIfMissing: false, autoFork: false});
-    if (property?.getParent() === target) {
-      // If the attribute already exists in the target, it means it was forked from
-      // the parent class as a side effect of the attribute declaration
-      // In this case, the new value should have already been set and there is nothing to do
-    } else {
-      // It is a new attribute or the attribute declaration didn't fork a parent attribute
-      const initialValue = initializer?.call(target);
-      options = {value: initialValue, ...options};
-    }
-  } else {
-    // The target is a component prototype
-    const defaultValue = initializer;
-    options = {default: defaultValue, ...options};
-  }
-
-  descriptor = target.setProperty(name, AttributeClass, options, {returnDescriptor: true});
-
-  return {...descriptor, __decoratedBy: '@attribute()'};
-}
-
-export function method(options = {}) {
-  ow(options, 'options', ow.object);
-
-  return function(target, name, descriptor) {
-    ow(target, 'target', ow.object);
-    ow(name, 'name', ow.string.nonEmpty);
-    ow(descriptor, 'descriptor', ow.object);
-
-    if (!isWithProperties(target)) {
-      throw new Error(
-        `@method() target doesn't inherit from WithProperties (property name: '${name}')`
-      );
-    }
-
-    if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
-      throw new Error(
-        `@method() cannot be used without a method declaration (property name: '${name}')`
-      );
-    }
-
-    target.setProperty(name, Method, options);
-
-    return {...descriptor, __decoratedBy: '@method()'};
-  };
-}
-
-export function inherit() {
-  return function(target, name, descriptor) {
-    ow(target, 'target', ow.object);
-    ow(name, 'name', ow.string.nonEmpty);
-    ow(descriptor, 'descriptor', ow.object);
-
-    if (!isWithProperties(target)) {
-      throw new Error(
-        `@inherit() target doesn't inherit from WithProperties (property name: '${name}')`
-      );
-    }
-
-    const property = target.getProperty(name, {throwIfMissing: false, autoFork: false});
-
-    if (property === undefined) {
-      throw new Error(
-        `@inherit() cannot be used with the property '${name}' which is missing in the parent class`
-      );
-    }
-
-    if (typeof target === 'function' && isAttribute(property) && property.getParent() === target) {
-      // If the target is a component class and the inherited property is an attribute,
-      // we must roll back the attribute declaration that has reinitialized the value
-      target.deleteProperty(name);
-    }
-
-    descriptor = getInheritedPropertyDescriptor(target, name);
-
-    return {...descriptor, __decoratedBy: '@inherit()'};
-  };
-}
-
-export function expose(exposure = {}) {
-  ow(exposure, 'exposure', ow.object);
-
-  return function(target, name, descriptor) {
-    ow(target, 'target', ow.object);
-    ow(name, 'name', ow.string.nonEmpty);
-    ow(descriptor, 'descriptor', ow.object);
-
-    if (!isWithProperties(target)) {
-      throw new Error(
-        `@expose() target doesn't inherit from WithProperties (property name: '${name}')`
-      );
-    }
-
-    const {__decoratedBy: decoratedBy} = descriptor;
-
-    if (
-      decoratedBy === '@attribute()' ||
-      decoratedBy === '@method()' ||
-      decoratedBy === '@inherit()'
-    ) {
-      // @expose() is used after @property(), @attribute(), @method(), or @inherit()
-      const property = target.getProperty(name);
-      property.setExposure(exposure);
-      return descriptor;
-    }
-
-    descriptor = property({exposure})(target, name, descriptor);
-
-    return descriptor;
-  };
+  return filter;
 }

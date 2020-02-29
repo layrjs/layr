@@ -51,6 +51,10 @@ export class ArrayType extends Type {
     return super._checkValue(values) ?? Array.isArray(values);
   }
 
+  _expandAttributeSelector(normalizedAttributeSelector, options) {
+    return this.getItemType()._expandAttributeSelector(normalizedAttributeSelector, options);
+  }
+
   runValidators(values) {
     const failedValidators = super.runValidators(values);
 
