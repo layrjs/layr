@@ -3,7 +3,6 @@ import a from 'indefinite';
 import ow from 'ow';
 
 import {Property} from './property';
-import {AttributeSelector} from './attribute-selector';
 import {getTypeOf} from './utilities';
 
 export class Attribute extends Property {
