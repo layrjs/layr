@@ -12,29 +12,29 @@ export class Field extends Observable(Attribute) {
       options,
       'options',
       ow.object.partialShape({
-        valueType: ow.string.nonEmpty,
+        type: ow.string.nonEmpty,
         validators: ow.optional.array,
         items: ow.optional.object
       })
     );
 
-    const {valueType, validators = [], items, ...otherOptions} = options;
+    const {type, validators = [], items, ...otherOptions} = options;
 
-    this._valueType = createType(valueType, {validators, items, field: this});
+    this._type = createType(type, {validators, items, field: this});
 
     super.setOptions(otherOptions);
   }
 
   // === Value type ===
 
-  getValueType() {
-    return this._valueType;
+  getType() {
+    return this._type;
   }
 
   // === Value ===
 
   setValue(value) {
-    this.getValueType().checkValue(value, {field: this});
+    this.getType().checkValue(value, {field: this});
 
     if (this._getter !== undefined) {
       return super.setValue(value);
@@ -91,7 +91,7 @@ export class Field extends Observable(Attribute) {
   // Attribute selectors
 
   _expandAttributeSelector(normalizedAttributeSelector, options) {
-    return this.getValueType()._expandAttributeSelector(normalizedAttributeSelector, {
+    return this.getType()._expandAttributeSelector(normalizedAttributeSelector, {
       ...options,
       field: this
     });
@@ -137,7 +137,7 @@ export class Field extends Observable(Attribute) {
       );
     }
 
-    const failedValidators = this.getValueType().runValidators(this.getValue());
+    const failedValidators = this.getType().runValidators(this.getValue());
 
     return failedValidators;
   }

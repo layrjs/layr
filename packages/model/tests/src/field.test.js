@@ -4,12 +4,12 @@ describe('Field', () => {
   test('Creation', async () => {
     class Movie extends Model() {}
 
-    const field = new Field('limit', Movie, {valueType: 'number'});
+    const field = new Field('limit', Movie, {type: 'number'});
 
     expect(isField(field)).toBe(true);
     expect(field.getName()).toBe('limit');
     expect(field.getParent()).toBe(Movie);
-    expect(field.getValueType()).toBeInstanceOf(NumberType);
+    expect(field.getType()).toBeInstanceOf(NumberType);
   });
 
   test('Value', async () => {
@@ -17,7 +17,7 @@ describe('Field', () => {
 
     const movie = new Movie();
 
-    const field = new Field('title', movie, {valueType: 'string'});
+    const field = new Field('title', movie, {type: 'string'});
 
     expect(field.isSet()).toBe(false);
     expect(() => field.getValue()).toThrow(
@@ -48,7 +48,7 @@ describe('Field', () => {
     const movie = new Movie();
 
     const notEmpty = validators.notEmpty();
-    const field = new Field('title', movie, {valueType: 'string?', validators: [notEmpty]});
+    const field = new Field('title', movie, {type: 'string?', validators: [notEmpty]});
 
     expect(() => field.runValidators()).toThrow(
       "Cannot run the validators of an unset field (field name: 'title')"
@@ -83,7 +83,7 @@ describe('Field', () => {
     const movieObserver = jest.fn();
     movie.addObserver(movieObserver);
 
-    const title = new Field('title', movie, {valueType: 'string'});
+    const title = new Field('title', movie, {type: 'string'});
 
     const titleObserver = jest.fn();
     title.addObserver(titleObserver);
@@ -107,7 +107,7 @@ describe('Field', () => {
     expect(titleObserver).toHaveBeenCalledTimes(2);
     expect(movieObserver).toHaveBeenCalledTimes(2);
 
-    const tags = new Field('title', movie, {valueType: '[string]'});
+    const tags = new Field('title', movie, {type: '[string]'});
 
     const tagsObserver = jest.fn();
     tags.addObserver(tagsObserver);

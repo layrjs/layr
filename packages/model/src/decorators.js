@@ -4,11 +4,11 @@ import ow from 'ow';
 import {isModelClass, isModel} from './model';
 import {Field} from './field';
 
-export function field(valueType, options = {}) {
-  ow(valueType, 'valueType', ow.string.nonEmpty);
+export function field(type, options = {}) {
+  ow(type, 'type', ow.string.nonEmpty);
   ow(options, 'options', ow.object);
 
-  options = {...options, valueType};
+  options = {...options, type};
 
   return function(target, name, descriptor) {
     ow(target, 'target', ow.object);

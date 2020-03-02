@@ -92,7 +92,7 @@ describe('Model', () => {
 
     expect(Movie.hasField('limit')).toBe(false);
 
-    let setFieldResult = Movie.setField('limit', {valueType: 'number'});
+    let setFieldResult = Movie.setField('limit', {type: 'number'});
 
     expect(Movie.hasField('limit')).toBe(true);
 
@@ -103,7 +103,7 @@ describe('Model', () => {
     expect(field.getName()).toBe('limit');
     expect(field.getParent()).toBe(Movie);
 
-    expect(() => Movie.setField('find', {valueType: 'number'})).toThrow(
+    expect(() => Movie.setField('find', {type: 'number'})).toThrow(
       "Cannot change the type of the 'find' property"
     );
 
@@ -111,7 +111,7 @@ describe('Model', () => {
 
     expect(Film.hasField('limit')).toBe(true);
 
-    setFieldResult = Film.setField('limit', {valueType: 'number'});
+    setFieldResult = Film.setField('limit', {type: 'number'});
 
     expect(Film.hasField('limit')).toBe(true);
 
@@ -122,7 +122,7 @@ describe('Model', () => {
     expect(field.getName()).toBe('limit');
     expect(field.getParent()).toBe(Film);
 
-    expect(() => Film.setField('find', {valueType: 'number'})).toThrow(
+    expect(() => Film.setField('find', {type: 'number'})).toThrow(
       "Cannot change the type of the 'find' property"
     );
   });
