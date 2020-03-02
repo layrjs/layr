@@ -42,7 +42,7 @@ export class Type {
 
     const {field} = options;
 
-    if (!this._checkValue(value)) {
+    if (!this._checkValue(value, {field})) {
       throw new Error(
         `Cannot assign a value of an unexpected type to the ${getTypeOf(
           field
@@ -53,7 +53,8 @@ export class Type {
     }
   }
 
-  _checkValue(value) {
+  // eslint-disable-next-line no-unused-vars
+  _checkValue(value, options) {
     if (value === undefined) {
       return this.isOptional();
     }

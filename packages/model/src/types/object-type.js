@@ -7,7 +7,7 @@ export class ObjectType extends Type {
     return `object${super.toString()}`;
   }
 
-  _checkValue(value) {
-    return super._checkValue(value) ?? isPlainObject(value);
+  _checkValue(value, options) {
+    return super._checkValue(value, options) ?? isPlainObject(value);
   }
 }

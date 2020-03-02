@@ -47,8 +47,8 @@ export class ArrayType extends Type {
     }
   }
 
-  _checkValue(values) {
-    return super._checkValue(values) ?? Array.isArray(values);
+  _checkValue(values, options) {
+    return super._checkValue(values, options) ?? Array.isArray(values);
   }
 
   _expandAttributeSelector(normalizedAttributeSelector, options) {

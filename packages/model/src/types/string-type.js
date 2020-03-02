@@ -5,7 +5,7 @@ export class StringType extends Type {
     return `string${super.toString()}`;
   }
 
-  _checkValue(value) {
-    return super._checkValue(value) ?? typeof value === 'string';
+  _checkValue(value, options) {
+    return super._checkValue(value, options) ?? typeof value === 'string';
   }
 }

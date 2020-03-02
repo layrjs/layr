@@ -39,11 +39,11 @@ export function isComponentName(name, options = {}) {
   const {allowClasses = true, allowInstances = true} = options;
 
   if (allowClasses && COMPONENT_CLASS_NAME_PATTERN.test(name)) {
-    return true;
+    return 'componentClassName';
   }
 
   if (allowInstances && COMPONENT_INSTANCE_NAME_PATTERN.test(name)) {
-    return true;
+    return 'componentInstanceName';
   }
 
   return false;
@@ -63,9 +63,13 @@ export function validateComponentName(name, options = {}) {
     throw new Error('A component name cannot be empty');
   }
 
-  if (!isComponentName(name, {allowClasses, allowInstances})) {
+  const isComponentNameResult = isComponentName(name, {allowClasses, allowInstances});
+
+  if (!isComponentNameResult) {
     throw new Error(`The specified component name ('${name}') is invalid`);
   }
+
+  return isComponentNameResult;
 }
 
 export function getComponentClassNameFromComponentInstanceName(name) {
@@ -77,16 +81,16 @@ export function getComponentClassNameFromComponentInstanceName(name) {
 export function createComponentMap(components = []) {
   const componentMap = Object.create(null);
 
-  for (const knownComponent of components) {
-    if (!isComponentClass(knownComponent)) {
+  for (const component of components) {
+    if (!isComponentClass(component)) {
       throw new TypeError(
         `Expected \`components\` items to be components but received type \`${getTypeOf(
-          knownComponent
+          component
         )}\``
       );
     }
 
-    componentMap[knownComponent.getName()] = knownComponent;
+    componentMap[component.getName()] = component;
   }
 
   return componentMap;

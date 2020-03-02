@@ -3,7 +3,13 @@ import ow from 'ow';
 import {WithProperties} from './with-properties';
 import {serialize} from './serialization';
 import {deserialize} from './deserialization';
-import {isComponentClass, isComponent, validateComponentName} from './utilities';
+import {
+  isComponentClass,
+  isComponent,
+  validateComponentName,
+  getComponentClassNameFromComponentInstanceName,
+  getTypeOf
+} from './utilities';
 
 export const Component = (Base = Object) => {
   ow(Base, ow.function);
@@ -53,6 +59,58 @@ export const Component = (Base = Object) => {
       validateComponentName(name, {allowInstances: false});
 
       Object.defineProperty(this, '__name', {value: name, configurable: true});
+    }
+
+    // === Related components ===
+
+    // TODO: Handle forking
+
+    static getRelatedComponent(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      const {throwIfMissing = true} = options;
+
+      const nameIsComponentClassName = validateComponentName(name) === 'componentClassName';
+
+      const className = nameIsComponentClassName
+        ? name
+        : getComponentClassNameFromComponentInstanceName(name);
+
+      const relatedComponents = this.__getRelatedComponents();
+      const Component = relatedComponents[className];
+
+      if (Component === undefined) {
+        if (throwIfMissing) {
+          throw new Error(`Cannot get the related component class '${className}'`);
+        }
+        return undefined;
+      }
+
+      return nameIsComponentClassName ? Component : Component.prototype;
+    }
+
+    static registerRelatedComponent(Component) {
+      if (!isComponentClass(Component)) {
+        throw new Error(
+          `Expected a component class, but received a value of type '${getTypeOf(Component)}'`
+        );
+      }
+
+      const relatedComponents = this.__getRelatedComponents();
+
+      relatedComponents[Component.getName()] = Component;
+    }
+
+    static __getRelatedComponents() {
+      if (this.__relatedComponents === undefined) {
+        Object.defineProperty(this, '__relatedComponents', {
+          value: Object.create(null),
+          configurable: true
+        });
+      }
+
+      return this.__relatedComponents;
     }
 
     // === isNew mark ===

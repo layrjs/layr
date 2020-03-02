@@ -54,12 +54,12 @@ describe('Utilities', () => {
   });
 
   test('isComponentName()', async () => {
-    expect(isComponentName('Movie')).toBe(true);
-    expect(isComponentName('movie')).toBe(true);
-    expect(isComponentName('MotionPicture')).toBe(true);
-    expect(isComponentName('motionPicture')).toBe(true);
-    expect(isComponentName('Prefix_Movie')).toBe(true);
-    expect(isComponentName('prefix_Movie')).toBe(true);
+    expect(isComponentName('Movie')).toBe('componentClassName');
+    expect(isComponentName('movie')).toBe('componentInstanceName');
+    expect(isComponentName('MotionPicture')).toBe('componentClassName');
+    expect(isComponentName('motionPicture')).toBe('componentInstanceName');
+    expect(isComponentName('Prefix_Movie')).toBe('componentClassName');
+    expect(isComponentName('prefix_Movie')).toBe('componentInstanceName');
 
     expect(isComponentName('$Movie')).toBe(false);
     expect(isComponentName('_Movie')).toBe(false);

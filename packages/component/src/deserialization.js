@@ -52,11 +52,13 @@ export function deserialize(value, options = {}) {
     let componentClassName;
     let isComponentClass;
 
-    if (isComponentName(__component, {allowInstances: false})) {
+    const isComponentNameResult = isComponentName(__component);
+
+    if (isComponentNameResult === 'componentClassName') {
       // The value is a serialized component class
       componentClassName = __component;
       isComponentClass = true;
-    } else if (isComponentName(__component, {allowClasses: false})) {
+    } else if (isComponentNameResult === 'componentInstanceName') {
       // The value is a serialized component instance
       componentClassName = getComponentClassNameFromComponentInstanceName(__component);
       isComponentClass = false;

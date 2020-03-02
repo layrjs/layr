@@ -95,6 +95,32 @@ describe('Component', () => {
     );
   });
 
+  test('Related components', async () => {
+    class Movie extends Component() {}
+
+    class Director extends Component() {}
+
+    class Actor extends Component() {}
+
+    expect(Movie.getRelatedComponent('Director', {throwIfMissing: false})).toBe(undefined);
+
+    Movie.registerRelatedComponent(Director);
+    Movie.registerRelatedComponent(Actor);
+
+    expect(Movie.getRelatedComponent('Director')).toBe(Director);
+    expect(Movie.getRelatedComponent('Actor')).toBe(Actor);
+    expect(Movie.getRelatedComponent('Producer', {throwIfMissing: false})).toBe(undefined);
+    expect(() => Movie.getRelatedComponent('Producer')).toThrow(
+      "Cannot get the related component class 'Producer'"
+    );
+    expect(Movie.getRelatedComponent('director')).toBe(Director.prototype);
+    expect(Movie.getRelatedComponent('actor')).toBe(Actor.prototype);
+    expect(Movie.getRelatedComponent('producer', {throwIfMissing: false})).toBe(undefined);
+    expect(() => Movie.getRelatedComponent('producer')).toThrow(
+      "Cannot get the related component class 'Producer'"
+    );
+  });
+
   test('isNew mark', async () => {
     class Movie extends Component() {}
 

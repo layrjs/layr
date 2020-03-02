@@ -1,9 +1,5 @@
-import {
-  isComponentClass,
-  isComponent,
-  getComponentName,
-  validateComponentName
-} from '@liaison/component';
+import {validateComponentName} from '@liaison/component';
+import {isPrototypeOf, getClassOf} from 'core-helpers';
 import ow from 'ow';
 
 import {Type} from './type';
@@ -26,20 +22,34 @@ export class ComponentType extends Type {
     return this._componentName;
   }
 
+  _getComponent({field}) {
+    return getClassOf(field.getParent()).getRelatedComponent(this.getComponentName());
+  }
+
   toString() {
     return `${this.getComponentName()}${super.toString()}`;
   }
 
-  _checkValue(value) {
-    return (
-      super._checkValue(value) ??
-      ((isComponentClass(value) || isComponent(value)) &&
-        getComponentName(value) === this.getComponentName())
-    );
+  _checkValue(value, {field}) {
+    const result = super._checkValue(value, {field});
+
+    if (result !== undefined) {
+      return result;
+    }
+
+    const component = this._getComponent({field});
+
+    return value === component || isPrototypeOf(component, value);
   }
 
-  _expandAttributeSelector(normalizedAttributeSelector, _options) {
-    return normalizedAttributeSelector !== false; // TODO
+  _expandAttributeSelector(normalizedAttributeSelector, {field, ...options}) {
+    if (normalizedAttributeSelector === false) {
+      return false;
+    }
+
+    const component = this._getComponent({field});
+
+    return component.expandAttributeSelector(normalizedAttributeSelector, options);
   }
 
   runValidators(value) {

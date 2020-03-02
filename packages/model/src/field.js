@@ -91,7 +91,10 @@ export class Field extends Observable(Attribute) {
   // Attribute selectors
 
   _expandAttributeSelector(normalizedAttributeSelector, options) {
-    return this.getValueType()._expandAttributeSelector(normalizedAttributeSelector, options);
+    return this.getValueType()._expandAttributeSelector(normalizedAttributeSelector, {
+      ...options,
+      field: this
+    });
   }
 
   // === Validation ===

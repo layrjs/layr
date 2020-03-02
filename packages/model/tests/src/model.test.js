@@ -190,6 +190,35 @@ describe('Model', () => {
     expect(Array.from(fields).map(property => property.getName())).toEqual(['title', 'director']);
   });
 
+  test('expandAttributeSelector()', async () => {
+    class Movie extends Model() {
+      @field('string') title = '';
+      @field('number') duration = 0;
+      @field('person?') director;
+      @field('[person]') actors = [];
+    }
+
+    class Person extends Model() {
+      @field('string') name = '';
+    }
+
+    Movie.registerRelatedComponent(Person);
+
+    expect(Movie.prototype.expandAttributeSelector(true)).toStrictEqual({
+      title: true,
+      duration: true,
+      director: {name: true},
+      actors: {name: true}
+    });
+
+    expect(Movie.prototype.expandAttributeSelector(true, {depth: 0})).toStrictEqual({
+      title: true,
+      duration: true,
+      director: true,
+      actors: true
+    });
+  });
+
   test('Validation', async () => {
     const notEmpty = validators.notEmpty();
     const maxLength = validators.maxLength(3);
@@ -204,6 +233,8 @@ describe('Model', () => {
     class Person extends Model() {
       @field('string', {validators: [notEmpty]}) name = '';
     }
+
+    Movie.registerRelatedComponent(Person);
 
     const movie = new Movie();
 

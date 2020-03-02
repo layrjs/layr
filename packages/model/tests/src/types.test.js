@@ -15,12 +15,21 @@ import {
 
 describe('Types', () => {
   class Field {
+    constructor(name, parent) {
+      this._name = name;
+      this._parent = parent;
+    }
+
     getName() {
-      return 'field';
+      return this._name;
+    }
+
+    getParent() {
+      return this._parent;
     }
   }
 
-  const field = new Field();
+  const field = new Field('field');
 
   test('BooleanType', async () => {
     let type = new BooleanType({field});
@@ -230,6 +239,13 @@ describe('Types', () => {
     class Movie extends Model() {}
 
     class Actor extends Model() {}
+
+    class Registry extends Model() {}
+
+    Registry.registerRelatedComponent(Movie);
+    Registry.registerRelatedComponent(Actor);
+
+    const field = new Field('field', Registry);
 
     const movie = new Movie();
     const actor = new Actor();

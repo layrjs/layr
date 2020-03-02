@@ -5,7 +5,7 @@ export class DateType extends Type {
     return `date${super.toString()}`;
   }
 
-  _checkValue(value) {
-    return super._checkValue(value) ?? value instanceof Date;
+  _checkValue(value, options) {
+    return super._checkValue(value, options) ?? value instanceof Date;
   }
 }

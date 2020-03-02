@@ -268,7 +268,6 @@ export const WithProperties = (Base = Object) => {
         'options',
         ow.object.exactShape({
           filter: ow.optional.function,
-          setAttributesOnly: ow.optional.boolean,
           depth: ow.optional.number,
           _attributeStack: ow.optional.set
         })
@@ -278,7 +277,6 @@ export const WithProperties = (Base = Object) => {
 
       let {
         filter,
-        setAttributesOnly = false,
         depth = Number.MAX_SAFE_INTEGER, // TODO
         _attributeStack = new Set()
       } = options;
@@ -295,7 +293,7 @@ export const WithProperties = (Base = Object) => {
         return expandedAttributeSelector; // Optimization
       }
 
-      for (const attribute of this.getAttributes({filter, setAttributesOnly})) {
+      for (const attribute of this.getAttributes({filter})) {
         const name = attribute.getName();
 
         const subattributeSelector = AttributeSelector.get(attributeSelector, name);
@@ -314,7 +312,6 @@ export const WithProperties = (Base = Object) => {
           subattributeSelector,
           {
             filter,
-            setAttributesOnly,
             depth,
             _attributeStack
           }

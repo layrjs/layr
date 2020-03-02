@@ -5,7 +5,7 @@ export class RegExpType extends Type {
     return `regExp${super.toString()}`;
   }
 
-  _checkValue(value) {
-    return super._checkValue(value) ?? value instanceof RegExp;
+  _checkValue(value, options) {
+    return super._checkValue(value, options) ?? value instanceof RegExp;
   }
 }

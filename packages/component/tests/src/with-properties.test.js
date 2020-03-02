@@ -392,17 +392,6 @@ describe('WithProperties', () => {
         title: true,
         duration: true
       });
-
-      expect(
-        Movie.prototype.expandAttributeSelector(true, {setAttributesOnly: true})
-      ).toStrictEqual({});
-
-      const movie = Object.create(Movie.prototype);
-      movie.title = 'Inception';
-
-      expect(movie.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
-        title: true
-      });
     });
   });
 

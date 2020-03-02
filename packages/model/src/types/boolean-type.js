@@ -5,7 +5,7 @@ export class BooleanType extends Type {
     return `boolean${super.toString()}`;
   }
 
-  _checkValue(value) {
-    return super._checkValue(value) ?? typeof value === 'boolean';
+  _checkValue(value, options) {
+    return super._checkValue(value, options) ?? typeof value === 'boolean';
   }
 }
