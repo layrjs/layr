@@ -142,6 +142,20 @@ export class ModelAttribute extends Observable(Attribute) {
     return failedValidators;
   }
 
+  // === Introspection ===
+
+  introspect() {
+    const introspection = super.introspect();
+
+    if (introspection === undefined) {
+      return undefined;
+    }
+
+    Object.assign(introspection, this.getType().introspect());
+
+    return introspection;
+  }
+
   // === Utilities ===
 
   static isModelAttribute(object) {

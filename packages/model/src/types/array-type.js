@@ -1,3 +1,4 @@
+import isEmpty from 'lodash/isEmpty';
 import ow from 'ow';
 
 import {Type} from './type';
@@ -71,5 +72,18 @@ export class ArrayType extends Type {
     }
 
     return failedValidators;
+  }
+
+  introspect() {
+    const introspection = super.introspect();
+
+    const itemIntrospection = this.getItemType().introspect();
+    delete itemIntrospection.valueType;
+
+    if (!isEmpty(itemIntrospection)) {
+      introspection.items = itemIntrospection;
+    }
+
+    return introspection;
   }
 }

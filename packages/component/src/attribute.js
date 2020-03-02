@@ -166,23 +166,26 @@ export class Attribute extends Property {
   // === Introspection ===
 
   introspect() {
-    const introspectedExposure = super.introspect();
+    const introspection = super.introspect();
 
-    if (introspectedExposure === undefined) {
+    if (introspection === undefined) {
       return undefined;
     }
 
-    if (this.isSet()) {
-      introspectedExposure.value = this.getValue();
+    const exposure = this.getExposure();
+    const getIsExposed = exposure !== undefined ? hasOwnProperty(exposure, 'get') : false;
+
+    if (getIsExposed && this.isSet()) {
+      introspection.value = this.getValue();
     }
 
     const defaultValueFunction = this.getDefaultValueFunction();
 
     if (defaultValueFunction !== undefined) {
-      introspectedExposure.default = defaultValueFunction;
+      introspection.default = defaultValueFunction;
     }
 
-    return introspectedExposure;
+    return introspection;
   }
 
   // === Utilities ===

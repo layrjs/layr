@@ -116,6 +116,8 @@ export class ComponentClient {
       PropertyClass = Method;
     } else if (type === 'modelAttribute') {
       PropertyClass = ModelAttribute;
+      options.type = options.valueType;
+      delete options.valueType;
     } else {
       throw new Error(`Invalid property type (${type}) received from a component server`);
     }

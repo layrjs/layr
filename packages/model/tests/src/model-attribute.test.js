@@ -172,31 +172,76 @@ describe('ModelAttribute', () => {
     expect(movieObserver).toHaveBeenCalledTimes(7);
   });
 
-  test.skip('Introspection', async () => {
+  test('Introspection', async () => {
     class Movie extends Model() {}
 
-    expect(new ModelAttribute('limit', Movie, {exposure: {get: true}}).introspect()).toStrictEqual({
+    expect(
+      new ModelAttribute('limit', Movie, {
+        type: 'number',
+        value: 100,
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
       name: 'limit',
       type: 'modelAttribute',
+      valueType: 'number',
+      value: 100,
       exposure: {get: true}
     });
 
-    expect(
-      new ModelAttribute('limit', Movie, {value: 100, exposure: {get: true}}).introspect()
-    ).toStrictEqual({name: 'limit', type: 'modelAttribute', value: 100, exposure: {get: true}});
+    const notEmpty = validators.notEmpty();
 
-    const defaultTitle = function() {
-      return '';
-    };
     expect(
       new ModelAttribute('title', Movie.prototype, {
-        default: defaultTitle,
+        type: 'string?',
+        validators: [notEmpty],
         exposure: {get: true}
       }).introspect()
     ).toStrictEqual({
       name: 'title',
       type: 'modelAttribute',
-      default: defaultTitle,
+      valueType: 'string?',
+      validators: [notEmpty],
+      exposure: {get: true}
+    });
+
+    expect(
+      new ModelAttribute('tags', Movie.prototype, {
+        type: '[string]',
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'tags',
+      type: 'modelAttribute',
+      valueType: '[string]',
+      exposure: {get: true}
+    });
+
+    expect(
+      new ModelAttribute('tags', Movie.prototype, {
+        type: '[string]',
+        items: {validators: [notEmpty]},
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'tags',
+      type: 'modelAttribute',
+      valueType: '[string]',
+      items: {validators: [notEmpty]},
+      exposure: {get: true}
+    });
+
+    expect(
+      new ModelAttribute('tags', Movie.prototype, {
+        type: '[[string]]',
+        items: {items: {validators: [notEmpty]}},
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'tags',
+      type: 'modelAttribute',
+      valueType: '[[string]]',
+      items: {items: {validators: [notEmpty]}},
       exposure: {get: true}
     });
   });

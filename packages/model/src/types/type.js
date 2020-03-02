@@ -76,4 +76,16 @@ export class Type {
 
     return failedValidatorsWithPath;
   }
+
+  introspect() {
+    const introspection = {valueType: this.toString()};
+
+    const validators = this.getValidators();
+
+    if (validators.length > 0) {
+      introspection.validators = validators;
+    }
+
+    return introspection;
+  }
 }

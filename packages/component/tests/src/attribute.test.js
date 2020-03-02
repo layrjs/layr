@@ -121,6 +121,10 @@ describe('Attribute', () => {
     });
 
     expect(
+      new Attribute('limit', Movie, {value: 100, exposure: {set: true}}).introspect()
+    ).toStrictEqual({name: 'limit', type: 'attribute', exposure: {set: true}});
+
+    expect(
       new Attribute('limit', Movie, {value: 100, exposure: {get: true}}).introspect()
     ).toStrictEqual({name: 'limit', type: 'attribute', value: 100, exposure: {get: true}});
 
