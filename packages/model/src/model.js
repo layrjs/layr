@@ -153,6 +153,10 @@ export const Model = (Base = Object) => {
   Object.assign(BaseModel.prototype, methods);
 
   class Model extends BaseModel {
+    static getComponentType() {
+      return 'Model';
+    }
+
     static isModel(object) {
       return isModel(object);
     }

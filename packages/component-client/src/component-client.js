@@ -7,13 +7,14 @@ import {
   isMethodClass,
   createComponentMap
 } from '@liaison/component';
-import {ModelAttribute, serialize, deserialize} from '@liaison/model';
+import {Model, ModelAttribute, serialize, deserialize} from '@liaison/model';
 import {possiblyAsync} from 'possibly-async';
 import {getClassOf} from 'core-helpers';
 import ow from 'ow';
 import debugModule from 'debug';
 
-const ComponentClass = Component();
+const BaseComponentClass = Component();
+const BaseModelClass = Model();
 
 const debug = debugModule('liaison:component-client');
 
@@ -84,11 +85,23 @@ export class ComponentClient {
   }
 
   _createComponent(introspectedComponent) {
+    const {name, type, properties, prototype} = introspectedComponent;
+
+    let ComponentClass;
+
+    if (type === 'Component') {
+      ComponentClass = BaseComponentClass;
+    } else if (type === 'Model') {
+      ComponentClass = BaseModelClass;
+    } else {
+      throw new Error(`Unknown component type (${type}) received from a component server`);
+    }
+
     const Component = class Component extends ComponentClass {};
 
-    Component.setName(introspectedComponent.name);
-    this._setComponentProperties(Component, introspectedComponent.properties);
-    this._setComponentProperties(Component.prototype, introspectedComponent.prototype?.properties);
+    Component.setName(name);
+    this._setComponentProperties(Component, properties);
+    this._setComponentProperties(Component.prototype, prototype?.properties);
 
     return Component;
   }
@@ -119,7 +132,7 @@ export class ComponentClient {
       options.type = options.valueType;
       delete options.valueType;
     } else {
-      throw new Error(`Invalid property type (${type}) received from a component server`);
+      throw new Error(`Unknown property type (${type}) received from a component server`);
     }
 
     component.setProperty(name, PropertyClass, options);

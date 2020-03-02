@@ -4,6 +4,8 @@ import ow from 'ow';
 import {isModelClass, isModel} from './model';
 import {ModelAttribute} from './model-attribute';
 
+export {attribute as componentAttribute} from '@liaison/component';
+
 export function modelAttribute(type, options = {}, {_decoratorName = 'modelAttribute'} = {}) {
   ow(type, 'type', ow.string.nonEmpty);
   ow(options, 'options', ow.object);

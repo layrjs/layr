@@ -18,7 +18,7 @@ export const Component = (Base = Object) => {
     return Base;
   }
 
-  return class Component extends WithProperties(Base) {
+  class Component extends WithProperties(Base) {
     // === Creation ===
 
     constructor(object = {}, options) {
@@ -155,6 +155,10 @@ export const Component = (Base = Object) => {
 
     // === Introspection ===
 
+    static getComponentType() {
+      return 'Component';
+    }
+
     static introspect() {
       const introspectedProperties = this.introspectProperties();
       const introspectedPrototypeProperties = this.prototype.introspectProperties();
@@ -163,7 +167,7 @@ export const Component = (Base = Object) => {
         return undefined;
       }
 
-      const introspectedComponent = {name: this.getName()};
+      const introspectedComponent = {name: this.getName(), type: this.getComponentType()};
 
       if (introspectedProperties.length > 0) {
         introspectedComponent.properties = introspectedProperties;
@@ -181,5 +185,7 @@ export const Component = (Base = Object) => {
     static isComponent(object) {
       return isComponent(object);
     }
-  };
+  }
+
+  return Component;
 };

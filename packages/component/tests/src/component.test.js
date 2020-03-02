@@ -186,6 +186,7 @@ describe('Component', () => {
 
     expect(Movie.introspect()).toStrictEqual({
       name: 'Movie',
+      type: 'Component',
       properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
     });
 
@@ -194,6 +195,7 @@ describe('Component', () => {
 
     expect(Movie.introspect()).toStrictEqual({
       name: 'Movie',
+      type: 'Component',
       prototype: {
         properties: [
           {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}
@@ -209,6 +211,7 @@ describe('Component', () => {
 
     expect(Movie.introspect()).toStrictEqual({
       name: 'Movie',
+      type: 'Component',
       properties: [
         {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
         {name: 'offset', type: 'attribute', value: undefined, exposure: {get: true}},

@@ -1,4 +1,11 @@
-import {Component, property, expose} from '@liaison/component';
+import {
+  Component,
+  componentAttribute,
+  expose,
+  Model,
+  modelAttribute,
+  validators
+} from '@liaison/model';
 
 import {ComponentServer} from '../../..';
 
@@ -7,10 +14,10 @@ describe('ComponentServer', () => {
     const provider = function() {
       class Movie extends Component() {
         @expose({call: true}) static find() {}
-        @property() static limit;
+        @componentAttribute() static limit;
 
         @expose({get: true, set: true}) title = '';
-        @property() rating;
+        @componentAttribute() rating;
       }
 
       return [Movie];
@@ -24,6 +31,7 @@ describe('ComponentServer', () => {
       components: [
         {
           name: 'Movie',
+          type: 'Component',
           properties: [{name: 'find', type: 'method', exposure: {call: true}}],
           prototype: {
             properties: [
@@ -44,14 +52,56 @@ describe('ComponentServer', () => {
     );
   });
 
+  test('Introspecting models', async () => {
+    const provider = function() {
+      class Movie extends Model() {
+        @expose({get: true, set: true})
+        @modelAttribute('string', {validators: [validators.notEmpty()]})
+        title;
+      }
+
+      return [Movie];
+    };
+
+    const server = new ComponentServer(provider);
+
+    const introspection = server.receiveQuery({'introspect=>': {'()': []}});
+
+    expect(introspection).toStrictEqual({
+      components: [
+        {
+          name: 'Movie',
+          type: 'Model',
+          prototype: {
+            properties: [
+              {
+                name: 'title',
+                type: 'modelAttribute',
+                valueType: 'string',
+                validators: [
+                  {
+                    __validator: 'value => value.length > 0',
+                    name: 'notEmpty',
+                    message: 'The validator `notEmpty()` failed'
+                  }
+                ],
+                exposure: {get: true, set: true}
+              }
+            ]
+          }
+        }
+      ]
+    });
+  });
+
   test('Accessing attributes', async () => {
     const provider = function() {
       class Movie extends Component() {
-        @property() static limit = 100;
+        @componentAttribute() static limit = 100;
         @expose({get: true, set: true}) static offset = 0;
 
         @expose({get: true, set: true}) title = '';
-        @property() rating;
+        @componentAttribute() rating;
       }
 
       return [Movie];

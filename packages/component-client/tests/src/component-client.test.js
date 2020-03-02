@@ -1,4 +1,4 @@
-import {isComponentClass} from '@liaison/component';
+import {isComponentClass, isModelClass} from '@liaison/model';
 import isEqual from 'lodash/isEqual';
 
 import {ComponentClient} from '../../..';
@@ -23,6 +23,7 @@ describe('ComponentClient', () => {
           components: [
             {
               name: 'Movie',
+              type: 'Component',
               properties: [
                 {
                   name: 'token',
@@ -42,6 +43,27 @@ describe('ComponentClient', () => {
                     exposure: {get: true}
                   },
                   {name: 'play', type: 'method', exposure: {call: true}}
+                ]
+              }
+            },
+            {
+              name: 'Film',
+              type: 'Model',
+              prototype: {
+                properties: [
+                  {
+                    name: 'title',
+                    type: 'modelAttribute',
+                    valueType: 'string',
+                    validators: [
+                      {
+                        __validator: 'value => value.length > 0',
+                        name: 'notEmpty',
+                        message: 'The validator `notEmpty()` failed'
+                      }
+                    ],
+                    exposure: {get: true, set: true}
+                  }
                 ]
               }
             }
@@ -132,6 +154,43 @@ describe('ComponentClient', () => {
     expect(attribute.getExposure()).toEqual({get: true});
 
     expect(typeof Movie.prototype.play).toBe('function');
+  });
+
+  test('Getting models', async () => {
+    let client = new ComponentClient(server);
+
+    client = new ComponentClient(server, {version: 1});
+
+    const [, Film] = client.getComponents();
+
+    expect(isModelClass(Film)).toBe(true);
+    expect(Film.getName()).toBe('Film');
+
+    const attribute = Film.prototype.getAttribute('title');
+
+    expect(attribute.isSet()).toBe(false);
+    expect(attribute.getDefaultValue()).toBeUndefined();
+    expect(attribute.getExposure()).toEqual({get: true, set: true});
+    expect(attribute.getType().toString()).toBe('string');
+    expect(attribute.getType().getValidators()).toHaveLength(1);
+    expect(
+      attribute
+        .getType()
+        .getValidators()[0]
+        .getName()
+    ).toBe('notEmpty');
+    expect(
+      attribute
+        .getType()
+        .getValidators()[0]
+        .getFunction()('Inception')
+    ).toBe(true);
+    expect(
+      attribute
+        .getType()
+        .getValidators()[0]
+        .getFunction()('')
+    ).toBe(false);
   });
 
   test('Invoking methods', async () => {
