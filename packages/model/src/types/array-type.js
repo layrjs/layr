@@ -1,7 +1,7 @@
 import ow from 'ow';
 
 import {Type} from './type';
-import {joinFieldPath} from '../utilities';
+import {joinModelAttributePath} from '../utilities';
 
 export class ArrayType extends Type {
   constructor(options = {}) {
@@ -29,11 +29,11 @@ export class ArrayType extends Type {
   }
 
   checkValue(values, options = {}) {
-    ow(options, 'options', ow.object.exactShape({field: ow.object}));
+    ow(options, 'options', ow.object.exactShape({modelAttribute: ow.object}));
 
-    const {field} = options;
+    const {modelAttribute} = options;
 
-    super.checkValue(values, {field});
+    super.checkValue(values, {modelAttribute});
 
     if (values === undefined) {
       // `values` is undefined and isOptional() is true
@@ -43,7 +43,7 @@ export class ArrayType extends Type {
     const itemType = this.getItemType();
 
     for (const value of values) {
-      itemType.checkValue(value, {field});
+      itemType.checkValue(value, {modelAttribute});
     }
   }
 
@@ -65,7 +65,7 @@ export class ArrayType extends Type {
         const failedItemValidators = itemType.runValidators(value);
 
         for (const {validator, path} of failedItemValidators) {
-          failedValidators.push({validator, path: joinFieldPath([`[${index}]`, path])});
+          failedValidators.push({validator, path: joinModelAttributePath([`[${index}]`, path])});
         }
       });
     }

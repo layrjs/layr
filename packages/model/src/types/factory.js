@@ -28,11 +28,11 @@ export function createType(specifier, options = {}) {
     ow.object.exactShape({
       validators: ow.optional.array,
       items: ow.optional.object,
-      field: ow.object
+      modelAttribute: ow.object
     })
   );
 
-  const {validators = [], items, field} = options;
+  const {validators = [], items, modelAttribute} = options;
 
   let isOptional;
 
@@ -43,8 +43,8 @@ export function createType(specifier, options = {}) {
 
   if (specifier.startsWith('[') && specifier.endsWith(']')) {
     const itemSpecifier = specifier.slice(1, -1);
-    const itemType = createType(itemSpecifier, {...items, field});
-    return new ArrayType({itemType, isOptional, validators, field});
+    const itemType = createType(itemSpecifier, {...items, modelAttribute});
+    return new ArrayType({itemType, isOptional, validators, modelAttribute});
   }
 
   if (items !== undefined) {
@@ -58,10 +58,10 @@ export function createType(specifier, options = {}) {
   const Type = TYPE_MAP.get(typeName);
 
   if (Type !== undefined) {
-    return new Type({isOptional, validators, field});
+    return new Type({isOptional, validators, modelAttribute});
   }
 
   const componentName = typeName;
 
-  return new ComponentType({componentName, isOptional, validators, field});
+  return new ComponentType({componentName, isOptional, validators, modelAttribute});
 }

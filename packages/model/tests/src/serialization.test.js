@@ -1,10 +1,10 @@
-import {Model, field, serialize} from '../../..';
+import {Model, attribute, serialize} from '../../..';
 
 describe('Serialization', () => {
   test('Model instances', async () => {
     class Movie extends Model() {
-      @field('string') title;
-      @field('string?') country;
+      @attribute('string') title;
+      @attribute('string?') country;
     }
 
     const movie = new Movie({title: 'Inception'});

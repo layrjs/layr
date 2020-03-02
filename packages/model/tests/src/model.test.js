@@ -1,25 +1,33 @@
-import {Model, isModelClass, isModel, field, isField, method, validators} from '../../..';
+import {
+  Model,
+  isModelClass,
+  isModel,
+  attribute,
+  isModelAttribute,
+  method,
+  validators
+} from '../../..';
 
 describe('Model', () => {
   test('Creation', async () => {
     class Movie extends Model() {
-      @field('string') title;
-      @field('string?') country;
-      @field('number') rating = 0;
+      @attribute('string') title;
+      @attribute('string?') country;
+      @attribute('number') rating = 0;
     }
 
     const movie = new Movie({title: 'Inception'});
 
     expect(isModelClass(Movie)).toBe(true);
-    expect(movie.getField('title').isSet()).toBe(true);
+    expect(movie.getModelAttribute('title').isSet()).toBe(true);
     expect(movie.title).toBe('Inception');
-    expect(movie.getField('country').isSet()).toBe(true);
+    expect(movie.getModelAttribute('country').isSet()).toBe(true);
     expect(movie.country).toBeUndefined();
-    expect(movie.getField('rating').isSet()).toBe(true);
+    expect(movie.getModelAttribute('rating').isSet()).toBe(true);
     expect(movie.rating).toBe(0);
 
     expect(() => new Movie()).toThrow(
-      "Cannot assign a value of an unexpected type to the field 'title' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the modelAttribute 'title' (expected type: 'string', received type: 'undefined')"
     );
   });
 
@@ -56,97 +64,97 @@ describe('Model', () => {
     expect(isModel(movie)).toBe(true);
   });
 
-  test('getField()', async () => {
+  test('getModelAttribute()', async () => {
     class Movie extends Model() {
-      @field('number') static limit = 100;
+      @attribute('number') static limit = 100;
 
       @method() static find() {}
 
-      @field('string') title = '';
+      @attribute('string') title = '';
     }
 
-    const classField = Movie.getField('limit');
+    const classModelAttribute = Movie.getModelAttribute('limit');
 
-    expect(isField(classField)).toBe(true);
-    expect(classField.getName()).toBe('limit');
-    expect(classField.getParent()).toBe(Movie);
+    expect(isModelAttribute(classModelAttribute)).toBe(true);
+    expect(classModelAttribute.getName()).toBe('limit');
+    expect(classModelAttribute.getParent()).toBe(Movie);
 
-    expect(() => Movie.getField('find')).toThrow(
-      "The property 'find' exists, but it is not a field"
+    expect(() => Movie.getModelAttribute('find')).toThrow(
+      "The property 'find' exists, but it is not a modelAttribute"
     );
 
-    const prototypeField = Movie.prototype.getField('title');
+    const prototypeModelAttribute = Movie.prototype.getModelAttribute('title');
 
-    expect(isField(prototypeField)).toBe(true);
-    expect(prototypeField.getName()).toBe('title');
-    expect(prototypeField.getParent()).toBe(Movie.prototype);
+    expect(isModelAttribute(prototypeModelAttribute)).toBe(true);
+    expect(prototypeModelAttribute.getName()).toBe('title');
+    expect(prototypeModelAttribute.getParent()).toBe(Movie.prototype);
 
-    expect(() => Movie.getField('offset')).toThrow("The property 'offset' is missing");
-    expect(Movie.getField('offset', {throwIfMissing: false})).toBeUndefined();
+    expect(() => Movie.getModelAttribute('offset')).toThrow("The property 'offset' is missing");
+    expect(Movie.getModelAttribute('offset', {throwIfMissing: false})).toBeUndefined();
   });
 
-  test('setField()', async () => {
+  test('setModelAttribute()', async () => {
     class Movie extends Model() {
       @method() static find() {}
     }
 
-    expect(Movie.hasField('limit')).toBe(false);
+    expect(Movie.hasModelAttribute('limit')).toBe(false);
 
-    let setFieldResult = Movie.setField('limit', {type: 'number'});
+    let setModelAttributeResult = Movie.setModelAttribute('limit', {type: 'number'});
 
-    expect(Movie.hasField('limit')).toBe(true);
+    expect(Movie.hasModelAttribute('limit')).toBe(true);
 
-    let field = Movie.getField('limit');
+    let modelAttribute = Movie.getModelAttribute('limit');
 
-    expect(field).toBe(setFieldResult);
-    expect(isField(field)).toBe(true);
-    expect(field.getName()).toBe('limit');
-    expect(field.getParent()).toBe(Movie);
+    expect(modelAttribute).toBe(setModelAttributeResult);
+    expect(isModelAttribute(modelAttribute)).toBe(true);
+    expect(modelAttribute.getName()).toBe('limit');
+    expect(modelAttribute.getParent()).toBe(Movie);
 
-    expect(() => Movie.setField('find', {type: 'number'})).toThrow(
+    expect(() => Movie.setModelAttribute('find', {type: 'number'})).toThrow(
       "Cannot change the type of the 'find' property"
     );
 
     class Film extends Movie {}
 
-    expect(Film.hasField('limit')).toBe(true);
+    expect(Film.hasModelAttribute('limit')).toBe(true);
 
-    setFieldResult = Film.setField('limit', {type: 'number'});
+    setModelAttributeResult = Film.setModelAttribute('limit', {type: 'number'});
 
-    expect(Film.hasField('limit')).toBe(true);
+    expect(Film.hasModelAttribute('limit')).toBe(true);
 
-    field = Film.getField('limit');
+    modelAttribute = Film.getModelAttribute('limit');
 
-    expect(field).toBe(setFieldResult);
-    expect(isField(field)).toBe(true);
-    expect(field.getName()).toBe('limit');
-    expect(field.getParent()).toBe(Film);
+    expect(modelAttribute).toBe(setModelAttributeResult);
+    expect(isModelAttribute(modelAttribute)).toBe(true);
+    expect(modelAttribute.getName()).toBe('limit');
+    expect(modelAttribute.getParent()).toBe(Film);
 
-    expect(() => Film.setField('find', {type: 'number'})).toThrow(
+    expect(() => Film.setModelAttribute('find', {type: 'number'})).toThrow(
       "Cannot change the type of the 'find' property"
     );
   });
 
-  test('hasField()', async () => {
+  test('hasModelAttribute()', async () => {
     class Movie extends Model() {
-      @field('number') static limit = 100;
+      @attribute('number') static limit = 100;
 
       @method() static find() {}
     }
 
-    expect(Movie.hasField('limit')).toBe(true);
-    expect(Movie.hasField('offset')).toBe(false);
-    expect(Movie.prototype.hasField('limit')).toBe(false);
+    expect(Movie.hasModelAttribute('limit')).toBe(true);
+    expect(Movie.hasModelAttribute('offset')).toBe(false);
+    expect(Movie.prototype.hasModelAttribute('limit')).toBe(false);
 
-    expect(() => Movie.hasField('find')).toThrow(
-      "The property 'find' exists, but it is not a field"
+    expect(() => Movie.hasModelAttribute('find')).toThrow(
+      "The property 'find' exists, but it is not a modelAttribute"
     );
   });
 
-  test('getFields()', async () => {
+  test('getModelAttributes()', async () => {
     class Movie extends Model() {
-      @field('string') title = '';
-      @field('number') duration = 0;
+      @attribute('string') title = '';
+      @attribute('number') duration = 0;
 
       @method() load() {}
       @method() save() {}
@@ -154,52 +162,58 @@ describe('Model', () => {
 
     const movie = new Movie();
 
-    let fields = movie.getFields();
+    let modelAttributes = movie.getModelAttributes();
 
-    expect(typeof fields[Symbol.iterator]).toBe('function');
-    expect(Array.from(fields).map(property => property.getName())).toEqual(['title', 'duration']);
+    expect(typeof modelAttributes[Symbol.iterator]).toBe('function');
+    expect(Array.from(modelAttributes).map(property => property.getName())).toEqual([
+      'title',
+      'duration'
+    ]);
 
-    const classFields = Movie.getFields();
+    const classModelAttributes = Movie.getModelAttributes();
 
-    expect(typeof classFields[Symbol.iterator]).toBe('function');
-    expect(Array.from(classFields)).toHaveLength(0);
+    expect(typeof classModelAttributes[Symbol.iterator]).toBe('function');
+    expect(Array.from(classModelAttributes)).toHaveLength(0);
 
     class Film extends Movie {
-      @field('Director?') director;
+      @attribute('Director?') director;
     }
 
     const film = new Film();
 
-    fields = film.getFields();
+    modelAttributes = film.getModelAttributes();
 
-    expect(typeof fields[Symbol.iterator]).toBe('function');
-    expect(Array.from(fields).map(property => property.getName())).toEqual([
+    expect(typeof modelAttributes[Symbol.iterator]).toBe('function');
+    expect(Array.from(modelAttributes).map(property => property.getName())).toEqual([
       'title',
       'duration',
       'director'
     ]);
 
-    fields = film.getFields({
+    modelAttributes = film.getModelAttributes({
       filter(property) {
         expect(property.getParent() === this);
         return property.getName() !== 'duration';
       }
     });
 
-    expect(typeof fields[Symbol.iterator]).toBe('function');
-    expect(Array.from(fields).map(property => property.getName())).toEqual(['title', 'director']);
+    expect(typeof modelAttributes[Symbol.iterator]).toBe('function');
+    expect(Array.from(modelAttributes).map(property => property.getName())).toEqual([
+      'title',
+      'director'
+    ]);
   });
 
   test('expandAttributeSelector()', async () => {
     class Movie extends Model() {
-      @field('string') title = '';
-      @field('number') duration = 0;
-      @field('person?') director;
-      @field('[person]') actors = [];
+      @attribute('string') title = '';
+      @attribute('number') duration = 0;
+      @attribute('person?') director;
+      @attribute('[person]') actors = [];
     }
 
     class Person extends Model() {
-      @field('string') name = '';
+      @attribute('string') name = '';
     }
 
     Movie.registerRelatedComponent(Person);
@@ -224,14 +238,14 @@ describe('Model', () => {
     const maxLength = validators.maxLength(3);
 
     class Movie extends Model() {
-      @field('string', {validators: [notEmpty]}) title = '';
-      @field('[string]', {validators: [maxLength], items: {validators: [notEmpty]}}) tags = [];
-      @field('person?') director;
-      @field('[person]') actors = [];
+      @attribute('string', {validators: [notEmpty]}) title = '';
+      @attribute('[string]', {validators: [maxLength], items: {validators: [notEmpty]}}) tags = [];
+      @attribute('person?') director;
+      @attribute('[person]') actors = [];
     }
 
     class Person extends Model() {
-      @field('string', {validators: [notEmpty]}) name = '';
+      @attribute('string', {validators: [notEmpty]}) name = '';
     }
 
     Movie.registerRelatedComponent(Person);

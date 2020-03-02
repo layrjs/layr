@@ -4,7 +4,7 @@ import ow from 'ow';
 
 import {createType} from './types/factory';
 
-export class Field extends Observable(Attribute) {
+export class ModelAttribute extends Observable(Attribute) {
   // === Options ===
 
   setOptions(options = {}) {
@@ -20,7 +20,7 @@ export class Field extends Observable(Attribute) {
 
     const {type, validators = [], items, ...otherOptions} = options;
 
-    this._type = createType(type, {validators, items, field: this});
+    this._type = createType(type, {validators, items, modelAttribute: this});
 
     super.setOptions(otherOptions);
   }
@@ -34,7 +34,7 @@ export class Field extends Observable(Attribute) {
   // === Value ===
 
   setValue(value) {
-    this.getType().checkValue(value, {field: this});
+    this.getType().checkValue(value, {modelAttribute: this});
 
     if (this._getter !== undefined) {
       return super.setValue(value);
@@ -93,7 +93,7 @@ export class Field extends Observable(Attribute) {
   _expandAttributeSelector(normalizedAttributeSelector, options) {
     return this.getType()._expandAttributeSelector(normalizedAttributeSelector, {
       ...options,
-      field: this
+      modelAttribute: this
     });
   }
 
@@ -144,15 +144,15 @@ export class Field extends Observable(Attribute) {
 
   // === Utilities ===
 
-  static isField(object) {
-    return isField(object);
+  static isModelAttribute(object) {
+    return isModelAttribute(object);
   }
 }
 
-export function isFieldClass(object) {
-  return typeof object?.isField === 'function';
+export function isModelAttributeClass(object) {
+  return typeof object?.isModelAttribute === 'function';
 }
 
-export function isField(object) {
-  return isFieldClass(object?.constructor) === true;
+export function isModelAttribute(object) {
+  return isModelAttributeClass(object?.constructor) === true;
 }

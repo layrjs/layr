@@ -2,8 +2,8 @@ import {Component, getComponentName} from '@liaison/component';
 import {Observable} from '@liaison/observable';
 import ow from 'ow';
 
-import {Field, isField} from './field';
-import {joinFieldPath} from './utilities';
+import {ModelAttribute, isModelAttribute} from './model-attribute';
+import {joinModelAttributePath} from './utilities';
 
 export const Model = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -15,9 +15,9 @@ export const Model = (Base = Object) => {
   class BaseModel extends Observable(Component(Base)) {}
 
   const methods = {
-    // === Fields ===
+    // === Model attributes ===
 
-    getField(name, options = {}) {
+    getModelAttribute(name, options = {}) {
       ow(name, 'name', ow.string.nonEmpty);
       ow(
         options,
@@ -33,28 +33,28 @@ export const Model = (Base = Object) => {
         return undefined;
       }
 
-      if (!isField(property)) {
-        throw new Error(`The property '${name}' exists, but it is not a field`);
+      if (!isModelAttribute(property)) {
+        throw new Error(`The property '${name}' exists, but it is not a modelAttribute`);
       }
 
       return property;
     },
 
-    setField(name, propertyOptions = {}, options = {}) {
+    setModelAttribute(name, propertyOptions = {}, options = {}) {
       ow(name, 'name', ow.string.nonEmpty);
       ow(propertyOptions, 'propertyOptions', ow.object);
       ow(options, 'options', ow.object);
 
-      return this.setProperty(name, Field, propertyOptions, options);
+      return this.setProperty(name, ModelAttribute, propertyOptions, options);
     },
 
-    hasField(name) {
+    hasModelAttribute(name) {
       ow(name, 'name', ow.string.nonEmpty);
 
-      return this.getField(name, {throwIfMissing: false, autoFork: false}) !== undefined;
+      return this.getModelAttribute(name, {throwIfMissing: false, autoFork: false}) !== undefined;
     },
 
-    getFields(options = {}) {
+    getModelAttributes(options = {}) {
       ow(
         options,
         'options',
@@ -64,7 +64,7 @@ export const Model = (Base = Object) => {
       const {filter: originalFilter, autoFork = true} = options;
 
       const filter = function(property) {
-        if (!isField(property)) {
+        if (!isModelAttribute(property)) {
           return false;
         }
 
@@ -78,7 +78,7 @@ export const Model = (Base = Object) => {
       return this.getProperties({filter, autoFork});
     },
 
-    getFieldsWithValue(options = {}) {
+    getModelAttributesWithValue(options = {}) {
       ow(
         options,
         'options',
@@ -87,19 +87,19 @@ export const Model = (Base = Object) => {
 
       const {filter: originalFilter, autoFork = true} = options;
 
-      const filter = function(field) {
-        if (!field.isSet()) {
+      const filter = function(modelAttribute) {
+        if (!modelAttribute.isSet()) {
           return false;
         }
 
         if (originalFilter !== undefined) {
-          return originalFilter.call(this, field);
+          return originalFilter.call(this, modelAttribute);
         }
 
         return true;
       };
 
-      return this.getFields({filter, autoFork});
+      return this.getModelAttributes({filter, autoFork});
     },
 
     // === Validation ===
@@ -136,12 +136,12 @@ export const Model = (Base = Object) => {
     runValidators() {
       const failedValidators = [];
 
-      for (const field of this.getFieldsWithValue()) {
-        const name = field.getName();
-        const fieldFailedValidators = field.runValidators();
+      for (const modelAttribute of this.getModelAttributesWithValue()) {
+        const name = modelAttribute.getName();
+        const modelAttributeFailedValidators = modelAttribute.runValidators();
 
-        for (const {validator, path} of fieldFailedValidators) {
-          failedValidators.push({validator, path: joinFieldPath([name, path])});
+        for (const {validator, path} of modelAttributeFailedValidators) {
+          failedValidators.push({validator, path: joinModelAttributePath([name, path])});
         }
       }
 

@@ -11,14 +11,14 @@ export class Type {
       ow.object.exactShape({
         isOptional: ow.optional.boolean,
         validators: ow.optional.array,
-        field: ow.object
+        modelAttribute: ow.object
       })
     );
 
-    const {isOptional, validators = [], field} = options;
+    const {isOptional, validators = [], modelAttribute} = options;
 
     const normalizedValidators = validators.map(validator =>
-      normalizeValidator(validator, {field})
+      normalizeValidator(validator, {modelAttribute})
     );
 
     this._isOptional = isOptional;
@@ -38,15 +38,15 @@ export class Type {
   }
 
   checkValue(value, options = {}) {
-    ow(options, 'options', ow.object.exactShape({field: ow.object}));
+    ow(options, 'options', ow.object.exactShape({modelAttribute: ow.object}));
 
-    const {field} = options;
+    const {modelAttribute} = options;
 
-    if (!this._checkValue(value, {field})) {
+    if (!this._checkValue(value, {modelAttribute})) {
       throw new Error(
         `Cannot assign a value of an unexpected type to the ${getTypeOf(
-          field
-        )} '${field.getName()}' (expected type: '${this.toString()}', received type: '${getTypeOf(
+          modelAttribute
+        )} '${modelAttribute.getName()}' (expected type: '${this.toString()}', received type: '${getTypeOf(
           value
         )}')`
       );

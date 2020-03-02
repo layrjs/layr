@@ -1,7 +1,7 @@
 import compact from 'lodash/compact';
 import ow from 'ow';
 
-export function joinFieldPath(path) {
+export function joinModelAttributePath(path) {
   ow(path, 'path', ow.array);
 
   const compactedPath = compact(path);

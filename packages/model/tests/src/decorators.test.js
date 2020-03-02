@@ -1,127 +1,129 @@
-import {Model, field, isField} from '../../..';
+import {Model, attribute, isModelAttribute} from '../../..';
 
 describe('Decorators', () => {
-  test('@field()', async () => {
+  test('@attribute()', async () => {
     class Movie extends Model() {
-      @field('number?') static limit = 100;
-      @field('string?') static token;
+      @attribute('number?') static limit = 100;
+      @attribute('string?') static token;
 
-      @field('string?') title = '';
-      @field('string?') country;
+      @attribute('string?') title = '';
+      @attribute('string?') country;
     }
 
-    let classField = Movie.getField('limit');
+    let classModelAttribute = Movie.getModelAttribute('limit');
 
-    expect(isField(classField)).toBe(true);
-    expect(classField.getName()).toBe('limit');
-    expect(classField.getParent()).toBe(Movie);
-    expect(classField.getValue()).toBe(100);
+    expect(isModelAttribute(classModelAttribute)).toBe(true);
+    expect(classModelAttribute.getName()).toBe('limit');
+    expect(classModelAttribute.getParent()).toBe(Movie);
+    expect(classModelAttribute.getValue()).toBe(100);
     expect(Movie.limit).toBe(100);
 
-    classField = Movie.getField('token');
+    classModelAttribute = Movie.getModelAttribute('token');
 
-    expect(isField(classField)).toBe(true);
-    expect(classField.getName()).toBe('token');
-    expect(classField.getParent()).toBe(Movie);
-    expect(classField.getValue()).toBeUndefined();
+    expect(isModelAttribute(classModelAttribute)).toBe(true);
+    expect(classModelAttribute.getName()).toBe('token');
+    expect(classModelAttribute.getParent()).toBe(Movie);
+    expect(classModelAttribute.getValue()).toBeUndefined();
     expect(Movie.token).toBeUndefined();
 
-    let prototypeField = Movie.prototype.getField('title');
+    let prototypeModelAttribute = Movie.prototype.getModelAttribute('title');
 
-    expect(isField(prototypeField)).toBe(true);
-    expect(prototypeField.getName()).toBe('title');
-    expect(prototypeField.getParent()).toBe(Movie.prototype);
-    expect(prototypeField.isSet()).toBe(false);
+    expect(isModelAttribute(prototypeModelAttribute)).toBe(true);
+    expect(prototypeModelAttribute.getName()).toBe('title');
+    expect(prototypeModelAttribute.getParent()).toBe(Movie.prototype);
+    expect(prototypeModelAttribute.isSet()).toBe(false);
 
-    prototypeField = Movie.prototype.getField('country');
+    prototypeModelAttribute = Movie.prototype.getModelAttribute('country');
 
-    expect(isField(prototypeField)).toBe(true);
-    expect(prototypeField.getName()).toBe('country');
-    expect(prototypeField.getParent()).toBe(Movie.prototype);
-    expect(prototypeField.isSet()).toBe(false);
+    expect(isModelAttribute(prototypeModelAttribute)).toBe(true);
+    expect(prototypeModelAttribute.getName()).toBe('country');
+    expect(prototypeModelAttribute.getParent()).toBe(Movie.prototype);
+    expect(prototypeModelAttribute.isSet()).toBe(false);
 
     const movie = new Movie();
 
-    let instanceField = movie.getField('title');
+    let instanceModelAttribute = movie.getModelAttribute('title');
 
-    expect(isField(instanceField)).toBe(true);
-    expect(instanceField.getName()).toBe('title');
-    expect(instanceField.getParent()).toBe(movie);
-    expect(instanceField.getValue()).toBe('');
+    expect(isModelAttribute(instanceModelAttribute)).toBe(true);
+    expect(instanceModelAttribute.getName()).toBe('title');
+    expect(instanceModelAttribute.getParent()).toBe(movie);
+    expect(instanceModelAttribute.getValue()).toBe('');
     expect(movie.title).toBe('');
 
-    instanceField = movie.getField('country');
+    instanceModelAttribute = movie.getModelAttribute('country');
 
-    expect(isField(instanceField)).toBe(true);
-    expect(instanceField.getName()).toBe('country');
-    expect(instanceField.getParent()).toBe(movie);
-    expect(instanceField.getValue()).toBeUndefined();
+    expect(isModelAttribute(instanceModelAttribute)).toBe(true);
+    expect(instanceModelAttribute.getName()).toBe('country');
+    expect(instanceModelAttribute.getParent()).toBe(movie);
+    expect(instanceModelAttribute.getValue()).toBeUndefined();
     expect(movie.country).toBeUndefined();
 
-    expect(() => Movie.getField('offset')).toThrow("The property 'offset' is missing");
-    expect(Movie.getField('offset', {throwIfMissing: false})).toBeUndefined();
+    expect(() => Movie.getModelAttribute('offset')).toThrow("The property 'offset' is missing");
+    expect(Movie.getModelAttribute('offset', {throwIfMissing: false})).toBeUndefined();
 
     expect(
       () =>
         class Film extends Movie {
-          @field('string') static find() {}
+          @attribute('string') static find() {}
         }
-    ).toThrow("@field() cannot be used without a field declaration (property name: 'find')");
+    ).toThrow(
+      "@attribute() cannot be used without an attribute declaration (property name: 'find')"
+    );
 
     class Film extends Movie {
-      @field('number?') static limit;
-      @field('string?') static token = '';
+      @attribute('number?') static limit;
+      @attribute('string?') static token = '';
 
-      @field('string?') title;
-      @field('string?') country = '';
+      @attribute('string?') title;
+      @attribute('string?') country = '';
     }
 
-    classField = Film.getField('limit');
+    classModelAttribute = Film.getModelAttribute('limit');
 
-    expect(isField(classField)).toBe(true);
-    expect(classField.getName()).toBe('limit');
-    expect(classField.getParent()).toBe(Film);
-    expect(classField.getValue()).toBeUndefined();
+    expect(isModelAttribute(classModelAttribute)).toBe(true);
+    expect(classModelAttribute.getName()).toBe('limit');
+    expect(classModelAttribute.getParent()).toBe(Film);
+    expect(classModelAttribute.getValue()).toBeUndefined();
     expect(Film.limit).toBeUndefined();
 
-    classField = Film.getField('token');
+    classModelAttribute = Film.getModelAttribute('token');
 
-    expect(isField(classField)).toBe(true);
-    expect(classField.getName()).toBe('token');
-    expect(classField.getParent()).toBe(Film);
-    expect(classField.getValue()).toBe('');
+    expect(isModelAttribute(classModelAttribute)).toBe(true);
+    expect(classModelAttribute.getName()).toBe('token');
+    expect(classModelAttribute.getParent()).toBe(Film);
+    expect(classModelAttribute.getValue()).toBe('');
     expect(Film.token).toBe('');
 
-    prototypeField = Film.prototype.getField('title');
+    prototypeModelAttribute = Film.prototype.getModelAttribute('title');
 
-    expect(isField(prototypeField)).toBe(true);
-    expect(prototypeField.getName()).toBe('title');
-    expect(prototypeField.getParent()).toBe(Film.prototype);
-    expect(prototypeField.isSet()).toBe(false);
+    expect(isModelAttribute(prototypeModelAttribute)).toBe(true);
+    expect(prototypeModelAttribute.getName()).toBe('title');
+    expect(prototypeModelAttribute.getParent()).toBe(Film.prototype);
+    expect(prototypeModelAttribute.isSet()).toBe(false);
 
-    prototypeField = Film.prototype.getField('country');
+    prototypeModelAttribute = Film.prototype.getModelAttribute('country');
 
-    expect(isField(prototypeField)).toBe(true);
-    expect(prototypeField.getName()).toBe('country');
-    expect(prototypeField.getParent()).toBe(Film.prototype);
-    expect(prototypeField.isSet()).toBe(false);
+    expect(isModelAttribute(prototypeModelAttribute)).toBe(true);
+    expect(prototypeModelAttribute.getName()).toBe('country');
+    expect(prototypeModelAttribute.getParent()).toBe(Film.prototype);
+    expect(prototypeModelAttribute.isSet()).toBe(false);
 
     const film = new Film();
 
-    instanceField = film.getField('title');
+    instanceModelAttribute = film.getModelAttribute('title');
 
-    expect(isField(instanceField)).toBe(true);
-    expect(instanceField.getName()).toBe('title');
-    expect(instanceField.getParent()).toBe(film);
-    expect(instanceField.getValue()).toBeUndefined();
+    expect(isModelAttribute(instanceModelAttribute)).toBe(true);
+    expect(instanceModelAttribute.getName()).toBe('title');
+    expect(instanceModelAttribute.getParent()).toBe(film);
+    expect(instanceModelAttribute.getValue()).toBeUndefined();
     expect(film.title).toBeUndefined();
 
-    instanceField = film.getField('country');
+    instanceModelAttribute = film.getModelAttribute('country');
 
-    expect(isField(instanceField)).toBe(true);
-    expect(instanceField.getName()).toBe('country');
-    expect(instanceField.getParent()).toBe(film);
-    expect(instanceField.getValue()).toBe('');
+    expect(isModelAttribute(instanceModelAttribute)).toBe(true);
+    expect(instanceModelAttribute.getName()).toBe('country');
+    expect(instanceModelAttribute.getParent()).toBe(film);
+    expect(instanceModelAttribute.getValue()).toBe('');
     expect(film.country).toBe('');
   });
 });

@@ -1,10 +1,10 @@
-import {Model, field, deserialize} from '../../..';
+import {Model, attribute, deserialize} from '../../..';
 
 describe('Deserialization', () => {
   test('Model instances', async () => {
     class Movie extends Model() {
-      @field('string') title;
-      @field('string?') country;
+      @attribute('string') title;
+      @attribute('string?') country;
     }
 
     let movie = deserialize(
@@ -21,7 +21,7 @@ describe('Deserialization', () => {
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie.isNew()).toBe(false);
-    expect(movie.getField('title').isSet()).toBe(false);
+    expect(movie.getModelAttribute('title').isSet()).toBe(false);
     expect(movie.country).toBe('USA');
 
     movie = deserialize(
@@ -37,7 +37,7 @@ describe('Deserialization', () => {
     expect(() =>
       deserialize({__component: 'movie', __new: true, country: 'USA'}, {knownComponents: [Movie]})
     ).toThrow(
-      "Cannot assign a value of an unexpected type to the field 'title' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the modelAttribute 'title' (expected type: 'string', received type: 'undefined')"
     );
   });
 });

@@ -57,7 +57,7 @@ export function attribute(options = {}) {
 }
 
 // Despite the following function looks private, it is exported and used by the
-// @field() decorator in @liaison/model
+// @attribute() decorator in @liaison/model
 export function _decorateAttribute({target, name, descriptor, AttributeClass, options}) {
   // Normalize initializer that can be null in certain cases
   const initializer =

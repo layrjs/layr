@@ -7,7 +7,7 @@ import {
   isMethodClass,
   createComponentMap
 } from '@liaison/component';
-import {Field, serialize, deserialize} from '@liaison/model';
+import {ModelAttribute, serialize, deserialize} from '@liaison/model';
 import {possiblyAsync} from 'possibly-async';
 import {getClassOf} from 'core-helpers';
 import ow from 'ow';
@@ -114,8 +114,8 @@ export class ComponentClient {
       PropertyClass = Attribute;
     } else if (type === 'method') {
       PropertyClass = Method;
-    } else if (type === 'field') {
-      PropertyClass = Field;
+    } else if (type === 'modelAttribute') {
+      PropertyClass = ModelAttribute;
     } else {
       throw new Error(`Invalid property type (${type}) received from a component server`);
     }

@@ -178,32 +178,32 @@ describe('Validation', () => {
 
   describe('Utilities', () => {
     test('Normalization', async () => {
-      class Field {
+      class ModelAttribute {
         getName() {
-          return 'field';
+          return 'modelAttribute';
         }
       }
 
-      const field = new Field();
+      const modelAttribute = new ModelAttribute();
 
       let validator = new Validator(value => value > 0);
-      let normalizedValidator = normalizeValidator(validator, {field});
+      let normalizedValidator = normalizeValidator(validator, {modelAttribute});
 
       expect(normalizedValidator).toBe(validator);
 
       validator = validators.notEmpty();
-      normalizedValidator = normalizeValidator(validator, {field});
+      normalizedValidator = normalizeValidator(validator, {modelAttribute});
 
       expect(normalizedValidator).toBe(validator);
 
       validator = validators.notEmpty;
 
-      expect(() => normalizeValidator(validator, {field})).toThrow(
-        "The specified validator is a validator builder that has not been called (field name: 'field')"
+      expect(() => normalizeValidator(validator, {modelAttribute})).toThrow(
+        "The specified validator is a validator builder that has not been called (modelAttribute name: 'modelAttribute')"
       );
 
       validator = value => value > 0;
-      normalizedValidator = normalizeValidator(validator, {field});
+      normalizedValidator = normalizeValidator(validator, {modelAttribute});
 
       expect(isValidator(normalizedValidator));
       expect(normalizedValidator.getName()).toBe('validator');

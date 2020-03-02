@@ -22,32 +22,32 @@ export class ComponentType extends Type {
     return this._componentName;
   }
 
-  _getComponent({field}) {
-    return getClassOf(field.getParent()).getRelatedComponent(this.getComponentName());
+  _getComponent({modelAttribute}) {
+    return getClassOf(modelAttribute.getParent()).getRelatedComponent(this.getComponentName());
   }
 
   toString() {
     return `${this.getComponentName()}${super.toString()}`;
   }
 
-  _checkValue(value, {field}) {
-    const result = super._checkValue(value, {field});
+  _checkValue(value, {modelAttribute}) {
+    const result = super._checkValue(value, {modelAttribute});
 
     if (result !== undefined) {
       return result;
     }
 
-    const component = this._getComponent({field});
+    const component = this._getComponent({modelAttribute});
 
     return value === component || isPrototypeOf(component, value);
   }
 
-  _expandAttributeSelector(normalizedAttributeSelector, {field, ...options}) {
+  _expandAttributeSelector(normalizedAttributeSelector, {modelAttribute, ...options}) {
     if (normalizedAttributeSelector === false) {
       return false;
     }
 
-    const component = this._getComponent({field});
+    const component = this._getComponent({modelAttribute});
 
     return component.expandAttributeSelector(normalizedAttributeSelector, options);
   }
