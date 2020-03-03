@@ -1,5 +1,6 @@
 import {Component, getComponentName} from '@liaison/component';
 import {Observable} from '@liaison/observable';
+import {getClassOf} from 'core-helpers';
 import ow from 'ow';
 
 import {ModelAttribute, isModelAttribute} from './model-attribute';
@@ -58,10 +59,14 @@ export const Model = (Base = Object) => {
       ow(
         options,
         'options',
-        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
+        ow.object.exactShape({
+          filter: ow.optional.function,
+          setAttributesOnly: ow.optional.boolean,
+          autoFork: ow.optional.boolean
+        })
       );
 
-      const {filter: originalFilter, autoFork = true} = options;
+      const {filter: originalFilter, setAttributesOnly = false, autoFork = true} = options;
 
       const filter = function(property) {
         if (!isModelAttribute(property)) {
@@ -75,31 +80,7 @@ export const Model = (Base = Object) => {
         return true;
       };
 
-      return this.getProperties({filter, autoFork});
-    },
-
-    getModelAttributesWithValue(options = {}) {
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({filter: ow.optional.function, autoFork: ow.optional.boolean})
-      );
-
-      const {filter: originalFilter, autoFork = true} = options;
-
-      const filter = function(modelAttribute) {
-        if (!modelAttribute.isSet()) {
-          return false;
-        }
-
-        if (originalFilter !== undefined) {
-          return originalFilter.call(this, modelAttribute);
-        }
-
-        return true;
-      };
-
-      return this.getModelAttributes({filter, autoFork});
+      return this.getProperties({filter, setAttributesOnly, autoFork});
     },
 
     // === Validation ===
@@ -117,9 +98,9 @@ export const Model = (Base = Object) => {
 
       const error = Object.assign(
         new Error(
-          `The following error(s) occurred while validating the model '${getComponentName(
-            this
-          )}': ${details}`
+          `The following error(s) occurred while validating the ${getClassOf(this)
+            .getComponentType()
+            .toLowerCase()} '${getComponentName(this)}': ${details}`
         ),
         {failedValidators}
       );
@@ -136,7 +117,7 @@ export const Model = (Base = Object) => {
     runValidators() {
       const failedValidators = [];
 
-      for (const modelAttribute of this.getModelAttributesWithValue()) {
+      for (const modelAttribute of this.getModelAttributes({setAttributesOnly: true})) {
         const name = modelAttribute.getName();
         const modelAttributeFailedValidators = modelAttribute.runValidators();
 
