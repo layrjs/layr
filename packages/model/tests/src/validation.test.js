@@ -184,6 +184,8 @@ describe('Validation', () => {
         }
       }
 
+      ModelAttribute.humanName = 'Attribute';
+
       const modelAttribute = new ModelAttribute();
 
       let validator = new Validator(value => value > 0);
@@ -199,7 +201,7 @@ describe('Validation', () => {
       validator = validators.notEmpty;
 
       expect(() => normalizeValidator(validator, {modelAttribute})).toThrow(
-        "The specified validator is a validator builder that has not been called (modelAttribute name: 'modelAttribute')"
+        "The specified validator is a validator builder that has not been called (attribute name: 'modelAttribute')"
       );
 
       validator = value => value > 0;

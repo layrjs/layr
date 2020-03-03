@@ -93,7 +93,9 @@ export const Component = (Base = Object) => {
     static registerRelatedComponent(Component) {
       if (!isComponentClass(Component)) {
         throw new Error(
-          `Expected a component class, but received a value of type '${getTypeOf(Component)}'`
+          `Expected a component class, but received a value of type '${getTypeOf(Component, {
+            humanize: true
+          })}'`
         );
       }
 

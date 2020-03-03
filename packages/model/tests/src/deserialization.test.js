@@ -37,7 +37,7 @@ describe('Deserialization', () => {
     expect(() =>
       deserialize({__component: 'movie', __new: true, country: 'USA'}, {knownComponents: [Movie]})
     ).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'title' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'title' (expected type: 'string', received type: 'undefined')"
     );
   });
 });

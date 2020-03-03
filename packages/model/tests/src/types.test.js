@@ -29,6 +29,8 @@ describe('Types', () => {
     }
   }
 
+  ModelAttribute.humanName = 'Attribute';
+
   const modelAttribute = new ModelAttribute('modelAttribute');
 
   test('BooleanType', async () => {
@@ -39,10 +41,10 @@ describe('Types', () => {
     expect(() => type.checkValue(true, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(false, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(1, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'boolean', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'boolean', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'boolean', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'boolean', received type: 'undefined')"
     );
 
     type = new BooleanType({isOptional: true, modelAttribute});
@@ -52,7 +54,7 @@ describe('Types', () => {
     expect(() => type.checkValue(true, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(false, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(1, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'boolean?', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'boolean?', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
   });
@@ -64,10 +66,10 @@ describe('Types', () => {
 
     expect(() => type.checkValue(1, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
     );
 
     type = new NumberType({isOptional: true, modelAttribute});
@@ -76,7 +78,7 @@ describe('Types', () => {
 
     expect(() => type.checkValue(1, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
   });
@@ -88,10 +90,10 @@ describe('Types', () => {
 
     expect(() => type.checkValue('a', {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(1, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'string', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'string', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'string', received type: 'undefined')"
     );
 
     type = new StringType({isOptional: true, modelAttribute});
@@ -100,7 +102,7 @@ describe('Types', () => {
 
     expect(() => type.checkValue('a', {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(1, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'string?', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'string?', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
   });
@@ -117,13 +119,13 @@ describe('Types', () => {
     expect(() => type.checkValue({}, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue({title: 'Inception'}, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'object', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'object', received type: 'string')"
     );
     expect(() => type.checkValue(movie, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'object', received type: 'movie')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'object', received type: 'movie')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'object', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'object', received type: 'undefined')"
     );
 
     type = new ObjectType({isOptional: true, modelAttribute});
@@ -133,10 +135,10 @@ describe('Types', () => {
     expect(() => type.checkValue({}, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue({title: 'Inception'}, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(movie, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'object?', received type: 'movie')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'object?', received type: 'movie')"
     );
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'object?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'object?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
   });
@@ -148,10 +150,10 @@ describe('Types', () => {
 
     expect(() => type.checkValue(new Date(), {modelAttribute})).not.toThrow();
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'date', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'date', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'date', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'date', received type: 'undefined')"
     );
 
     type = new DateType({isOptional: true, modelAttribute});
@@ -160,7 +162,7 @@ describe('Types', () => {
 
     expect(() => type.checkValue(new Date(), {modelAttribute})).not.toThrow();
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'date?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'date?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
   });
@@ -172,10 +174,10 @@ describe('Types', () => {
 
     expect(() => type.checkValue(/abc/, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'regExp', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'regExp', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'regExp', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'regExp', received type: 'undefined')"
     );
 
     type = new RegExpType({isOptional: true, modelAttribute});
@@ -184,7 +186,7 @@ describe('Types', () => {
 
     expect(() => type.checkValue(/abc/, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue('a', {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'regExp?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'regExp?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
   });
@@ -198,22 +200,22 @@ describe('Types', () => {
     expect(() => type.checkValue([], {modelAttribute})).not.toThrow();
     expect(() => type.checkValue([1], {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(1, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: '[number]', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: '[number]', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: '[number]', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: '[number]', received type: 'undefined')"
     );
     expect(() => type.checkValue([undefined], {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
     );
     expect(() => type.checkValue([1, undefined], {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
     );
     expect(() => type.checkValue([undefined, 1], {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number', received type: 'undefined')"
     );
 
     itemType = new NumberType({isOptional: true, modelAttribute});
@@ -224,10 +226,10 @@ describe('Types', () => {
     expect(() => type.checkValue([], {modelAttribute})).not.toThrow();
     expect(() => type.checkValue([1], {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(1, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: '[number?]?', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: '[number?]?', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'number?', received type: 'string')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'number?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue([undefined], {modelAttribute})).not.toThrow();
@@ -258,16 +260,16 @@ describe('Types', () => {
 
     expect(() => type.checkValue(Movie, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(Actor, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'Movie', received type: 'Actor')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'Movie', received type: 'Actor')"
     );
     expect(() => type.checkValue(movie, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'Movie', received type: 'movie')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'Movie', received type: 'movie')"
     );
     expect(() => type.checkValue({}, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'Movie', received type: 'object')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'Movie', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'Movie', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'Movie', received type: 'undefined')"
     );
 
     type = new ComponentType({componentName: 'Movie', isOptional: true, modelAttribute});
@@ -276,13 +278,13 @@ describe('Types', () => {
 
     expect(() => type.checkValue(Movie, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(Actor, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'Movie?', received type: 'Actor')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'Movie?', received type: 'Actor')"
     );
     expect(() => type.checkValue(movie, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'Movie?', received type: 'movie')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'Movie?', received type: 'movie')"
     );
     expect(() => type.checkValue({}, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'Movie?', received type: 'object')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'Movie?', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
 
@@ -294,16 +296,16 @@ describe('Types', () => {
 
     expect(() => type.checkValue(movie, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(actor, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'movie', received type: 'actor')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'movie', received type: 'actor')"
     );
     expect(() => type.checkValue(Movie, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'movie', received type: 'Movie')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'movie', received type: 'Movie')"
     );
     expect(() => type.checkValue({}, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'movie', received type: 'object')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'movie', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'movie', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'movie', received type: 'undefined')"
     );
 
     type = new ComponentType({componentName: 'movie', isOptional: true, modelAttribute});
@@ -312,13 +314,13 @@ describe('Types', () => {
 
     expect(() => type.checkValue(movie, {modelAttribute})).not.toThrow();
     expect(() => type.checkValue(actor, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'movie?', received type: 'actor')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'movie?', received type: 'actor')"
     );
     expect(() => type.checkValue(Movie, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'movie?', received type: 'Movie')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'movie?', received type: 'Movie')"
     );
     expect(() => type.checkValue({}, {modelAttribute})).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'modelAttribute' (expected type: 'movie?', received type: 'object')"
+      "Cannot assign a value of an unexpected type to the attribute 'modelAttribute' (expected type: 'movie?', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, {modelAttribute})).not.toThrow();
   });

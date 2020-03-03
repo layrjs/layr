@@ -84,7 +84,9 @@ export function createComponentMap(components = []) {
   for (const component of components) {
     if (!isComponentClass(component)) {
       throw new TypeError(
-        `Expected 'components' items to be components but received type '${getTypeOf(component)}'`
+        `Expected 'components' items to be components but received type '${getTypeOf(component, {
+          humanize: true
+        })}'`
       );
     }
 
@@ -104,10 +106,10 @@ export function getComponentFromComponentMap(componentMap, name) {
   return Component;
 }
 
-export function getTypeOf(value) {
+export function getTypeOf(value, options) {
   if (isComponentClass(value) || isComponent(value)) {
     return getComponentName(value);
   }
 
-  return coreGetTypeOf(value);
+  return coreGetTypeOf(value, options);
 }

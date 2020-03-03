@@ -170,7 +170,8 @@ export const AttributeSelector = {
 
     throw new Error(
       `Expected a valid attribute selector, but received a value of type '${getTypeOf(
-        attributeSelector
+        attributeSelector,
+        {humanize: true}
       )}'`
     );
   }

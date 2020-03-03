@@ -112,9 +112,9 @@ export class ModelAttribute extends Observable(Attribute) {
 
     const error = Object.assign(
       new Error(
-        `The following error(s) occurred while validating the ${getTypeOf(
-          this
-        )} '${this.getName()}': ${details}`
+        `The following error(s) occurred while validating the ${getTypeOf(this, {
+          humanize: true
+        })} '${this.getName()}': ${details}`
       ),
       {failedValidators}
     );
@@ -131,9 +131,9 @@ export class ModelAttribute extends Observable(Attribute) {
   runValidators() {
     if (!this.isSet()) {
       throw new Error(
-        `Cannot run the validators of an unset ${getTypeOf(this)} (${getTypeOf(
-          this
-        )} name: '${this.getName()}')`
+        `Cannot run the validators of an unset ${getTypeOf(this, {
+          humanize: true
+        })} (${getTypeOf(this, {humanize: true})} name: '${this.getName()}')`
       );
     }
 
@@ -162,6 +162,8 @@ export class ModelAttribute extends Observable(Attribute) {
     return isModelAttribute(object);
   }
 }
+
+ModelAttribute.humanName = 'Attribute';
 
 export function isModelAttributeClass(object) {
   return typeof object?.isModelAttribute === 'function';

@@ -15,16 +15,17 @@ export function normalizeValidator(validator, options = {}) {
 
   if (typeof validator !== 'function') {
     throw new Error(
-      `The specified validator is not a function (${getTypeOf(
-        modelAttribute
-      )} name: '${modelAttribute.getName()}')`
+      `The specified validator is not a function (${getTypeOf(modelAttribute, {
+        humanize: true
+      })} name: '${modelAttribute.getName()}')`
     );
   }
 
   if (Object.values(validators).includes(validator)) {
     throw new Error(
       `The specified validator is a validator builder that has not been called (${getTypeOf(
-        modelAttribute
+        modelAttribute,
+        {humanize: true}
       )} name: '${modelAttribute.getName()}')`
     );
   }

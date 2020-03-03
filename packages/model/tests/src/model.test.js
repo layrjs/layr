@@ -27,7 +27,7 @@ describe('Model', () => {
     expect(movie.rating).toBe(0);
 
     expect(() => new Movie()).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'title' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'title' (expected type: 'string', received type: 'undefined')"
     );
   });
 
@@ -80,7 +80,7 @@ describe('Model', () => {
     expect(classModelAttribute.getParent()).toBe(Movie);
 
     expect(() => Movie.getModelAttribute('find')).toThrow(
-      "The property 'find' exists, but it is not a modelAttribute"
+      "The property 'find' exists, but it is not a model attribute"
     );
 
     const prototypeModelAttribute = Movie.prototype.getModelAttribute('title');
@@ -147,7 +147,7 @@ describe('Model', () => {
     expect(Movie.prototype.hasModelAttribute('limit')).toBe(false);
 
     expect(() => Movie.hasModelAttribute('find')).toThrow(
-      "The property 'find' exists, but it is not a modelAttribute"
+      "The property 'find' exists, but it is not a model attribute"
     );
   });
 

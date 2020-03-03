@@ -21,7 +21,7 @@ describe('ModelAttribute', () => {
 
     expect(modelAttribute.isSet()).toBe(false);
     expect(() => modelAttribute.getValue()).toThrow(
-      "Cannot get the value of an unset modelAttribute (modelAttribute name: 'title')"
+      "Cannot get the value of an unset attribute (attribute name: 'title')"
     );
     expect(modelAttribute.getValue({throwIfUnset: false})).toBeUndefined();
 
@@ -31,10 +31,10 @@ describe('ModelAttribute', () => {
     expect(modelAttribute.getValue()).toBe('Inception');
 
     expect(() => modelAttribute.setValue(123)).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'title' (expected type: 'string', received type: 'number')"
+      "Cannot assign a value of an unexpected type to the attribute 'title' (expected type: 'string', received type: 'number')"
     );
     expect(() => modelAttribute.setValue(undefined)).toThrow(
-      "Cannot assign a value of an unexpected type to the modelAttribute 'title' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type to the attribute 'title' (expected type: 'string', received type: 'undefined')"
     );
 
     modelAttribute.unsetValue();
@@ -54,7 +54,7 @@ describe('ModelAttribute', () => {
     });
 
     expect(() => modelAttribute.runValidators()).toThrow(
-      "Cannot run the validators of an unset modelAttribute (modelAttribute name: 'title')"
+      "Cannot run the validators of an unset attribute (attribute name: 'title')"
     );
 
     modelAttribute.setValue('Inception');
@@ -66,7 +66,7 @@ describe('ModelAttribute', () => {
     modelAttribute.setValue('');
 
     expect(() => modelAttribute.validate()).toThrow(
-      "The following error(s) occurred while validating the modelAttribute 'title': The validator `notEmpty()` failed (path: '')"
+      "The following error(s) occurred while validating the attribute 'title': The validator `notEmpty()` failed (path: '')"
     );
     expect(modelAttribute.isValid()).toBe(false);
     expect(modelAttribute.runValidators()).toEqual([{validator: notEmpty, path: ''}]);
