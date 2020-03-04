@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@liaison/model": "^0.2.0",
+    "@liaison/entity": "^0.2.0",
     "lodash": "^4.17.15"
   },
   "@managed": {

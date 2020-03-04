@@ -1,9 +1,7 @@
-import {isComponentClass, isComponent} from '@liaison/component';
+import {isComponentClass, isComponent, serialize, deserialize} from '@liaison/entity';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
-
-import {serialize, deserialize} from '@liaison/model';
 
 export class ComponentServer {
   constructor(componentProvider, options = {}) {

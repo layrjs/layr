@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/component-client",
-  "version": "0.1.0",
-  "description": "A client to consume your locally served components",
+  "name": "@liaison/entity",
+  "version": "0.2.0",
+  "description": "Base class extending Liaison's Model class to provide identifier attributes and an entity manager",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component-client",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/entity",
   "files": [
     "dist"
   ],
@@ -13,11 +13,10 @@
   "browser": "dist/browser/esm",
   "dependencies": {
     "core-helpers": "^0.1.0",
-    "debug": "^4.1.1",
-    "@liaison/entity": "^0.2.0",
-    "lodash": "^4.17.15",
-    "ow": "^0.15.0",
-    "possibly-async": "^0.2.0"
+    "cuid": "^2.1.8",
+    "@liaison/model": "^0.2.0",
+    "lodash": "^4.17.11",
+    "ow": "^0.13.2"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

@@ -5,9 +5,15 @@ import {
   Attribute,
   Method,
   isMethodClass,
-  createComponentMap
-} from '@liaison/component';
-import {Model, ModelAttribute, serialize, deserialize} from '@liaison/model';
+  createComponentMap,
+  Model,
+  ModelAttribute,
+  Entity,
+  PrimaryIdentifierAttribute,
+  SecondaryIdentifierAttribute,
+  serialize,
+  deserialize
+} from '@liaison/entity';
 import {possiblyAsync} from 'possibly-async';
 import {getClassOf} from 'core-helpers';
 import ow from 'ow';
@@ -15,6 +21,7 @@ import debugModule from 'debug';
 
 const BaseComponentClass = Component();
 const BaseModelClass = Model();
+const BaseEntityClass = Entity();
 
 const debug = debugModule('liaison:component-client');
 
@@ -93,6 +100,8 @@ export class ComponentClient {
       ComponentClass = BaseComponentClass;
     } else if (type === 'Model') {
       ComponentClass = BaseModelClass;
+    } else if (type === 'Entity') {
+      ComponentClass = BaseEntityClass;
     } else {
       throw new Error(`Unknown component type (${type}) received from a component server`);
     }
@@ -129,6 +138,14 @@ export class ComponentClient {
       PropertyClass = Method;
     } else if (type === 'modelAttribute') {
       PropertyClass = ModelAttribute;
+      options.type = options.valueType;
+      delete options.valueType;
+    } else if (type === 'primaryIdentifierAttribute') {
+      PropertyClass = PrimaryIdentifierAttribute;
+      options.type = options.valueType;
+      delete options.valueType;
+    } else if (type === 'secondaryIdentifierAttribute') {
+      PropertyClass = SecondaryIdentifierAttribute;
       options.type = options.valueType;
       delete options.valueType;
     } else {

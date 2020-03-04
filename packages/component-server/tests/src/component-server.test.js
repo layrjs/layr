@@ -4,8 +4,11 @@ import {
   expose,
   Model,
   modelAttribute,
+  Entity,
+  primaryIdentifier,
+  secondaryIdentifier,
   validators
-} from '@liaison/model';
+} from '@liaison/entity';
 
 import {ComponentServer} from '../../..';
 
@@ -86,6 +89,54 @@ describe('ComponentServer', () => {
                   }
                 ],
                 exposure: {get: true, set: true}
+              }
+            ]
+          }
+        }
+      ]
+    });
+  });
+
+  test('Introspecting entities', async () => {
+    const provider = function() {
+      class User extends Entity() {
+        @expose({get: true, set: true})
+        @primaryIdentifier()
+        id;
+
+        @expose({get: true, set: true})
+        @secondaryIdentifier()
+        email;
+      }
+
+      return [User];
+    };
+
+    const server = new ComponentServer(provider);
+
+    const introspection = server.receiveQuery({'introspect=>': {'()': []}});
+
+    expect(introspection).toStrictEqual({
+      components: [
+        {
+          name: 'User',
+          type: 'Entity',
+          prototype: {
+            properties: [
+              {
+                name: 'id',
+                type: 'primaryIdentifierAttribute',
+                exposure: {get: true, set: true},
+                default: {
+                  __function: 'function () {\n    return this.constructor.generateId();\n  }'
+                },
+                valueType: 'string'
+              },
+              {
+                name: 'email',
+                type: 'secondaryIdentifierAttribute',
+                exposure: {get: true, set: true},
+                valueType: 'string'
               }
             ]
           }

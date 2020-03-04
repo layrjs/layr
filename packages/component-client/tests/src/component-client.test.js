@@ -1,4 +1,11 @@
-import {isComponentClass, isModelClass} from '@liaison/model';
+import {
+  isComponentClass,
+  isModelClass,
+  isModelAttribute,
+  isEntityClass,
+  isPrimaryIdentifierAttribute,
+  isSecondaryIdentifierAttribute
+} from '@liaison/entity';
 import isEqual from 'lodash/isEqual';
 
 import {ComponentClient} from '../../..';
@@ -62,6 +69,27 @@ describe('ComponentClient', () => {
                         message: 'The validator `notEmpty()` failed'
                       }
                     ],
+                    exposure: {get: true, set: true}
+                  }
+                ]
+              }
+            },
+            {
+              name: 'User',
+              type: 'Entity',
+              prototype: {
+                properties: [
+                  {
+                    name: 'id',
+                    type: 'primaryIdentifierAttribute',
+                    valueType: 'string',
+                    default: {__function: 'function() { return this.constructor.generateId(); }'},
+                    exposure: {get: true, set: true}
+                  },
+                  {
+                    name: 'email',
+                    type: 'secondaryIdentifierAttribute',
+                    valueType: 'string',
                     exposure: {get: true, set: true}
                   }
                 ]
@@ -168,6 +196,7 @@ describe('ComponentClient', () => {
 
     const attribute = Film.prototype.getAttribute('title');
 
+    expect(isModelAttribute(attribute)).toBe(true);
     expect(attribute.isSet()).toBe(false);
     expect(attribute.getDefaultValue()).toBeUndefined();
     expect(attribute.getExposure()).toEqual({get: true, set: true});
@@ -191,6 +220,31 @@ describe('ComponentClient', () => {
         .getValidators()[0]
         .getFunction()('')
     ).toBe(false);
+  });
+
+  test('Getting entities', async () => {
+    let client = new ComponentClient(server);
+
+    client = new ComponentClient(server, {version: 1});
+
+    const [, , User] = client.getComponents();
+
+    expect(isEntityClass(User)).toBe(true);
+    expect(User.getName()).toBe('User');
+
+    let attribute = User.prototype.getAttribute('id');
+
+    expect(isPrimaryIdentifierAttribute(attribute)).toBe(true);
+    expect(attribute.getType().toString()).toBe('string');
+    expect(typeof attribute.getDefaultValueFunction()).toBe('function');
+    expect(attribute.getExposure()).toEqual({get: true, set: true});
+
+    attribute = User.prototype.getAttribute('email');
+
+    expect(isSecondaryIdentifierAttribute(attribute)).toBe(true);
+    expect(attribute.getType().toString()).toBe('string');
+    expect(attribute.getDefaultValueFunction()).toBeUndefined();
+    expect(attribute.getExposure()).toEqual({get: true, set: true});
   });
 
   test('Invoking methods', async () => {

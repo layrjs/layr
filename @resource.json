@@ -9,6 +9,9 @@
   "componentServer": {
     "@include": "./packages/component-server"
   },
+  "entity": {
+    "@include": "./packages/entity"
+  },
   "model": {
     "@include": "./packages/model"
   },
