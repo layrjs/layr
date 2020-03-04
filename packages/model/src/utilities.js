@@ -1,6 +1,14 @@
 import compact from 'lodash/compact';
 import ow from 'ow';
 
+export function isModelClass(object) {
+  return typeof object?.isModel === 'function';
+}
+
+export function isModel(object) {
+  return isModelClass(object?.constructor) === true;
+}
+
 export function joinModelAttributePath(path) {
   ow(path, 'path', ow.array);
 

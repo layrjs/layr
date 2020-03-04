@@ -1,8 +1,8 @@
 import {_decorateAttribute} from '@liaison/component';
 import ow from 'ow';
 
-import {isModelClass, isModel} from './model';
 import {ModelAttribute} from './model-attribute';
+import {isModelClass, isModel} from './utilities';
 
 export {attribute as componentAttribute} from '@liaison/component';
 

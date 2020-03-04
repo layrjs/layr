@@ -3,7 +3,7 @@ import {isPrototypeOf, getClassOf} from 'core-helpers';
 import ow from 'ow';
 
 import {Type} from './type';
-import {isModelClass, isModel} from '../model';
+import {isModelClass, isModel} from '../utilities';
 
 export class ComponentType extends Type {
   constructor(options = {}) {

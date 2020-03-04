@@ -4,7 +4,7 @@ import {getClassOf} from 'core-helpers';
 import ow from 'ow';
 
 import {ModelAttribute, isModelAttribute} from './model-attribute';
-import {joinModelAttributePath} from './utilities';
+import {isModelClass, isModel, joinModelAttributePath} from './utilities';
 
 export const Model = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -145,11 +145,3 @@ export const Model = (Base = Object) => {
 
   return Model;
 };
-
-export function isModelClass(object) {
-  return typeof object?.isModel === 'function';
-}
-
-export function isModel(object) {
-  return isModelClass(object?.constructor) === true;
-}
