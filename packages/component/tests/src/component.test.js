@@ -51,20 +51,6 @@ describe('Component', () => {
     expect(movie.country).toBe('USA');
   });
 
-  test('Instantiation', async () => {
-    class Movie extends Component() {
-      instanceAttribute = true;
-    }
-
-    const movie = Movie.instantiate();
-
-    expect(isComponent(movie)).toBe(true);
-    expect(movie).toBeInstanceOf(Movie);
-
-    // Make sure the initializers have not be called
-    expect(Object.keys(movie)).toHaveLength(0);
-  });
-
   test('Naming', async () => {
     class Movie extends Component() {}
 

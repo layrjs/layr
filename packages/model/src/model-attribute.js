@@ -72,9 +72,7 @@ export class ModelAttribute extends Observable(Attribute) {
       return;
     }
 
-    const previousValue = this.getValue();
-
-    super.unsetValue();
+    const {previousValue} = super.unsetValue();
 
     this.callObservers();
 
@@ -86,6 +84,8 @@ export class ModelAttribute extends Observable(Attribute) {
     }
 
     parent.callObservers();
+
+    return {previousValue};
   }
 
   // Attribute selectors

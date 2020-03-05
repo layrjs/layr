@@ -2,8 +2,6 @@ import {deserialize as simpleDeserialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
-import {AttributeSelector} from './attribute-selector';
-
 import {
   isComponentName,
   getComponentClassNameFromComponentInstanceName,
@@ -74,16 +72,8 @@ export function deserialize(value, options = {}) {
 
     if (isComponentClass) {
       deserializedComponent = Component;
-    } else if (__new === true) {
-      let attributeSelector = Component.prototype.expandAttributeSelector(true, {depth: 0});
-      const deserializedAttributeSelector = AttributeSelector.fromNames(Object.keys(attributes));
-      attributeSelector = AttributeSelector.remove(
-        attributeSelector,
-        deserializedAttributeSelector
-      );
-      deserializedComponent = new Component({}, {attributeSelector});
     } else {
-      deserializedComponent = Component.instantiate();
+      deserializedComponent = Component.__instantiate(attributes, {isNew: __new});
     }
 
     return possiblyAsync.forEach(

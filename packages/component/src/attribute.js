@@ -141,7 +141,11 @@ export class Attribute extends Property {
       );
     }
 
+    const previousValue = this.getValue({throwIfUnset: false});
+    this._value = undefined;
     this._isSet = false;
+
+    return {previousValue};
   }
 
   isSet() {

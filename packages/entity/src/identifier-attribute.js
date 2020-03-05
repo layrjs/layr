@@ -28,6 +28,34 @@ export class IdentifierAttribute extends ModelAttribute {
     super.setOptions({type, ...otherOptions});
   }
 
+  // === Value ===
+
+  setValue(value) {
+    const {previousValue, newValue} = super.setValue(value);
+
+    const entity = this.getParent();
+    const entityManager = entity.constructor.__getEntityManager();
+    const name = this.getName();
+    entityManager.updateEntity(entity, name, {previousValue, newValue});
+
+    return {previousValue, newValue};
+  }
+
+  unsetValue() {
+    if (!this.isSet()) {
+      return;
+    }
+
+    const {previousValue} = super.unsetValue();
+
+    const entity = this.getParent();
+    const entityManager = entity.constructor.__getEntityManager();
+    const name = this.getName();
+    entityManager.updateEntity(entity, name, {previousValue});
+
+    return {previousValue};
+  }
+
   // === Utilities ===
 
   static isIdentifierAttribute(object) {

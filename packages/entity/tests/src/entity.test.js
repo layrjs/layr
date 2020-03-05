@@ -255,4 +255,47 @@ describe('Entity', () => {
     expect(id2.length >= 25);
     expect(id2).not.toBe(id1);
   });
+
+  test('Entity management', async () => {
+    class User extends Entity() {
+      @primaryIdentifier() id;
+      @secondaryIdentifier() email;
+    }
+
+    const user1 = User.fromJSON({__component: 'user', id: 'abc123'});
+
+    expect(() => new User({id: 'abc123'})).toThrow(
+      "Duplicate value found in an identifier attribute (attribute name: 'id')"
+    );
+
+    expect(() => User.fromJSON({__component: 'user', __new: true, id: 'abc123'})).toThrow(
+      'Cannot instantiate a new entity when an existing entity with a matching identifier is not new'
+    );
+
+    const user2 = User.fromJSON({__component: 'user', id: 'abc123'});
+
+    expect(user2).toBe(user1);
+
+    const user3 = User.fromJSON({__component: 'user', id: 'xyz789'});
+
+    expect(user3).not.toBe(user1);
+
+    const user4 = User.fromJSON({__component: 'user', email: 'hi@hello.com'});
+
+    expect(user4).not.toBe(user1);
+
+    const user5 = User.fromJSON({__component: 'user', email: 'hi@hello.com'});
+
+    expect(user5).toBe(user4);
+
+    user4.email = 'salut@bonjour.com';
+
+    const user6 = User.fromJSON({__component: 'user', email: 'hi@hello.com'});
+
+    expect(user6).not.toBe(user4);
+
+    expect(() => {
+      user4.email = 'hi@hello.com';
+    }).toThrow("Duplicate value found in an identifier attribute (attribute name: 'email')");
+  });
 });

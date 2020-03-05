@@ -272,7 +272,7 @@ describe('ComponentClient', () => {
     expect(movies[0]).toBeInstanceOf(Movie);
     expect(movies[0].title).toBe('Inception');
 
-    let movie = Movie.instantiate();
+    let movie = Object.create(Movie.prototype);
 
     movie.title = 'Inception';
 
@@ -285,7 +285,7 @@ describe('ComponentClient', () => {
 
     expect(movie.isPlaying).toBe(true);
 
-    movie = Movie.instantiate();
+    movie = Object.create(Movie.prototype);
     movie.title = 'Inception';
 
     // Because 'set' is not exposed, 'isPlaying' should not be transported to the remote component

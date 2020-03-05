@@ -3,6 +3,7 @@ import ow from 'ow';
 import {WithProperties} from './with-properties';
 import {serialize} from './serialization';
 import {deserialize} from './deserialization';
+import {AttributeSelector} from './attribute-selector';
 import {
   isComponentClass,
   isComponent,
@@ -31,7 +32,26 @@ export const Component = (Base = Object) => {
 
     // === Instantiation ===
 
-    static instantiate() {
+    static __instantiate(object = {}, options = {}) {
+      // TODO: Make this method more meaningful
+      // We should probably integrate the deserialization into the class
+
+      ow(object, 'object', ow.object);
+      ow(options, 'options', ow.object.exactShape({isNew: ow.optional.boolean}));
+
+      const {isNew = false} = options;
+
+      if (isNew === true) {
+        let attributeSelector = this.prototype.expandAttributeSelector(true, {depth: 0});
+        const deserializedAttributeSelector = AttributeSelector.fromNames(Object.keys(object));
+        attributeSelector = AttributeSelector.remove(
+          attributeSelector,
+          deserializedAttributeSelector
+        );
+
+        return new this({}, {attributeSelector});
+      }
+
       return Object.create(this.prototype);
     }
 
@@ -135,8 +155,22 @@ export const Component = (Base = Object) => {
       return class extends this {};
     }
 
-    fork() {
-      return Object.create(this);
+    fork(Component) {
+      // TODO: Altering the constructor sounds wrong
+      ow(Component, 'Component', ow.optional.function);
+
+      const forkedComponent = Object.create(this);
+
+      if (Component !== undefined) {
+        Object.defineProperty(forkedComponent, 'constructor', {
+          value: Component,
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+      }
+
+      return forkedComponent;
     }
 
     // === Serialization ===

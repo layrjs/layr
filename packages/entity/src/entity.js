@@ -1,5 +1,6 @@
 import {Model, getComponentName} from '@liaison/model';
 import cuid from 'cuid';
+import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
 
 import {isIdentifierAttribute} from './identifier-attribute';
@@ -11,6 +12,7 @@ import {
   SecondaryIdentifierAttribute,
   isSecondaryIdentifierAttribute
 } from './secondary-identifier-attribute';
+import {EntityManager} from './entity-manager';
 import {isEntity, isEntityClass} from './utilities';
 
 export const Entity = (Base = Object) => {
@@ -21,6 +23,34 @@ export const Entity = (Base = Object) => {
   }
 
   class Entity extends Model(Base) {
+    // === Instantiation ===
+
+    static __instantiate(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
+      ow(options, 'options', ow.object.exactShape({isNew: ow.optional.boolean}));
+
+      const {isNew = false} = options;
+
+      const entityManager = this.__getEntityManager();
+      const entity = entityManager.getEntity(object);
+
+      if (entity !== undefined) {
+        if (isNew && !entity.isNew()) {
+          throw new Error(
+            `Cannot instantiate a new entity when an existing entity with a matching identifier is not new`
+          );
+        }
+
+        if (!isNew && entity.isNew()) {
+          entity.markAsNotNew();
+        }
+
+        return entity;
+      }
+
+      return super.__instantiate(object, options);
+    }
+
     // === Identifier attributes ===
 
     getIdentifierAttribute(name, options = {}) {
@@ -188,6 +218,18 @@ export const Entity = (Base = Object) => {
       };
 
       return this.getProperties({filter, setAttributesOnly, autoFork});
+    }
+
+    // === Entity manager ===
+
+    static __getEntityManager() {
+      if (this.__entityManager === undefined) {
+        Object.defineProperty(this, '__entityManager', {value: new EntityManager(this)});
+      } else if (!hasOwnProperty(this, '__entityManager')) {
+        Object.defineProperty(this, '__entityManager', {value: this.__entityManager.fork(this)});
+      }
+
+      return this.__entityManager;
     }
 
     // === Introspection ===
