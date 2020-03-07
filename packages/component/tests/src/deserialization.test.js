@@ -10,19 +10,33 @@ describe('Deserialization', () => {
     expect(Movie.limit).toBe(100);
     expect(Movie.offset).toBeUndefined();
 
-    const DeserializedMovie = deserialize(
-      {__component: 'Movie', limit: {__undefined: true}, offset: 30},
-      {knownComponents: [Movie]}
-    );
+    let DeserializedMovie = Movie.deserialize({
+      __component: 'Movie',
+      limit: {__undefined: true},
+      offset: 30
+    });
 
     expect(DeserializedMovie).toBe(Movie);
     expect(Movie.limit).toBeUndefined();
     expect(Movie.offset).toBe(30);
 
-    class Film extends Component() {}
+    DeserializedMovie = Movie.deserialize({
+      limit: 1000,
+      offset: {__undefined: true}
+    });
 
-    expect(() => deserialize({__component: 'Movie'}, {knownComponents: [Film]})).toThrow(
-      "The 'Movie' component is unknown"
+    expect(DeserializedMovie).toBe(Movie);
+    expect(Movie.limit).toBe(1000);
+    expect(Movie.offset).toBeUndefined();
+
+    DeserializedMovie = Movie.deserialize();
+
+    expect(DeserializedMovie).toBe(Movie);
+    expect(Movie.limit).toBe(1000);
+    expect(Movie.offset).toBeUndefined();
+
+    expect(() => Movie.deserialize({__component: 'Film'})).toThrow(
+      "An unexpected component name was encountered while deserializing an object (encountered name: 'Film', expected name: 'Movie')"
     );
   });
 
@@ -32,10 +46,7 @@ describe('Deserialization', () => {
       @attribute() duration = 0;
     }
 
-    const movie = deserialize(
-      {__component: 'movie', title: 'Inception'},
-      {knownComponents: [Movie]}
-    );
+    const movie = Movie.prototype.deserialize({__component: 'movie', title: 'Inception'});
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
@@ -43,10 +54,7 @@ describe('Deserialization', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
-    const movie2 = deserialize(
-      {__component: 'movie', __new: true, title: 'Inception'},
-      {knownComponents: [Movie]}
-    );
+    const movie2 = Movie.prototype.deserialize({__new: true, title: 'Inception'});
 
     expect(movie2).toBeInstanceOf(Movie);
     expect(movie2).not.toBe(Movie.prototype);
@@ -54,26 +62,19 @@ describe('Deserialization', () => {
     expect(movie2.title).toBe('Inception');
     expect(movie2.duration).toBe(0);
 
-    const movie3 = deserialize(
-      {__component: 'movie', __new: true, title: 'Inception', duration: 120},
-      {knownComponents: [Movie]}
-    );
+    const movie3 = Movie.prototype.deserialize({__new: true, title: 'Inception', duration: 120});
 
     expect(movie3.title).toBe('Inception');
     expect(movie3.duration).toBe(120);
 
-    const movie4 = deserialize(
-      {__component: 'movie', __new: true, duration: {__undefined: true}},
-      {knownComponents: [Movie]}
-    );
+    const movie4 = Movie.prototype.deserialize({__new: true, duration: {__undefined: true}});
 
     expect(movie4.title).toBeUndefined();
     expect(movie4.duration).toBeUndefined();
 
-    const movie5 = deserialize(
-      {__component: 'movie', __new: true, title: 'Inception', duration: 120},
+    const movie5 = Movie.prototype.deserialize(
+      {__new: true, title: 'Inception', duration: 120},
       {
-        knownComponents: [Movie],
         attributeFilter(attribute) {
           expect(this).toBeInstanceOf(Movie);
           expect(attribute.getParent()).toBe(this);
@@ -85,20 +86,19 @@ describe('Deserialization', () => {
     expect(movie5.title).toBe('Inception');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
-    const movie8 = Movie.fromJSON({__component: 'movie', title: 'Inception'});
-
-    expect(movie8).toBeInstanceOf(Movie);
-    expect(movie8.title).toBe('Inception');
-    expect(movie8.getAttribute('duration').isSet()).toBe(false);
-
     class Cinema extends Component() {
       @attribute() movies;
     }
 
-    const cinema = deserialize(
-      {__component: 'cinema', movies: [{__component: 'movie', title: 'The Matrix'}]},
-      {knownComponents: [Cinema, Movie]}
-    );
+    expect(() =>
+      Cinema.prototype.deserialize({movies: [{__component: 'movie', title: 'The Matrix'}]})
+    ).toThrow("Cannot get the related component 'movie'");
+
+    Cinema.prototype.registerRelatedComponent(Movie.prototype);
+
+    const cinema = Cinema.prototype.deserialize({
+      movies: [{__component: 'movie', title: 'The Matrix'}]
+    });
 
     expect(cinema).toBeInstanceOf(Cinema);
     expect(cinema.movies).toHaveLength(1);

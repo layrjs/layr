@@ -1,8 +1,8 @@
 import {
   Component,
   isComponentClass,
-  isComponent,
-  getComponentName,
+  isComponentInstance,
+  isComponentClassOrInstance,
   isComponentName,
   getTypeOf
 } from '../../..';
@@ -25,32 +25,37 @@ describe('Utilities', () => {
     expect(isComponentClass(movie)).toBe(false);
   });
 
-  test('isComponent()', async () => {
-    expect(isComponent(undefined)).toBe(false);
-    expect(isComponent(null)).toBe(false);
-    expect(isComponent(true)).toBe(false);
-    expect(isComponent(1)).toBe(false);
-    expect(isComponent({})).toBe(false);
+  test('isComponentInstance()', async () => {
+    expect(isComponentInstance(undefined)).toBe(false);
+    expect(isComponentInstance(null)).toBe(false);
+    expect(isComponentInstance(true)).toBe(false);
+    expect(isComponentInstance(1)).toBe(false);
+    expect(isComponentInstance({})).toBe(false);
 
     class Movie extends Component() {}
 
-    expect(isComponent(Movie.prototype)).toBe(true);
+    expect(isComponentInstance(Movie.prototype)).toBe(true);
 
     const movie = new Movie();
 
-    expect(isComponent(movie)).toBe(true);
+    expect(isComponentInstance(movie)).toBe(true);
   });
 
-  test('getComponentName()', async () => {
+  test('isComponentClassOrInstance()', async () => {
+    expect(isComponentClassOrInstance(undefined)).toBe(false);
+    expect(isComponentClassOrInstance(null)).toBe(false);
+    expect(isComponentClassOrInstance(true)).toBe(false);
+    expect(isComponentClassOrInstance(1)).toBe(false);
+    expect(isComponentClassOrInstance({})).toBe(false);
+
     class Movie extends Component() {}
 
-    expect(getComponentName(Movie)).toBe('Movie');
+    expect(isComponentClassOrInstance(Movie)).toBe(true);
+    expect(isComponentClassOrInstance(Movie.prototype)).toBe(true);
 
     const movie = new Movie();
 
-    expect(getComponentName(movie)).toBe('movie');
-
-    expect(() => getComponentName({})).toThrow('The specified object is not a component');
+    expect(isComponentClassOrInstance(movie)).toBe(true);
   });
 
   test('isComponentName()', async () => {
@@ -81,7 +86,7 @@ describe('Utilities', () => {
     expect(getTypeOf(Movie)).toBe('Movie');
     expect(getTypeOf(movie)).toBe('movie');
 
-    Movie.setName('Film');
+    Movie.setComponentName('Film');
 
     expect(getTypeOf(Movie)).toBe('Film');
     expect(getTypeOf(movie)).toBe('film');

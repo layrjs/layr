@@ -4,16 +4,14 @@ describe('Serialization', () => {
   test('Component classes', async () => {
     class BaseMovie extends Component() {}
 
-    expect(serialize(BaseMovie, {knownComponents: [BaseMovie]})).toEqual({
-      __component: 'BaseMovie'
-    });
+    expect(BaseMovie.serialize()).toEqual({__component: 'BaseMovie'});
 
     class Movie extends BaseMovie {
       @attribute() static limit = 100;
       @attribute() static offset;
     }
 
-    expect(serialize(Movie, {knownComponents: [Movie]})).toEqual({
+    expect(Movie.serialize()).toEqual({
       __component: 'Movie',
       limit: 100,
       offset: {__undefined: true}
@@ -23,11 +21,7 @@ describe('Serialization', () => {
       @attribute() static MovieClass = Movie;
     }
 
-    expect(() => serialize(Cinema, {knownComponents: [Cinema]})).toThrow(
-      "The 'Movie' component is unknown"
-    );
-
-    expect(serialize(Cinema, {knownComponents: [Cinema, Movie]})).toEqual({
+    expect(Cinema.serialize()).toEqual({
       __component: 'Cinema',
       MovieClass: {__component: 'Movie', limit: 100, offset: {__undefined: true}}
     });
@@ -41,7 +35,7 @@ describe('Serialization', () => {
 
     let movie = new Movie();
 
-    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
+    expect(movie.serialize()).toEqual({
       __component: 'movie',
       __new: true,
       title: '',
@@ -50,13 +44,13 @@ describe('Serialization', () => {
 
     movie = Object.create(Movie.prototype);
 
-    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
+    expect(movie.serialize()).toEqual({
       __component: 'movie'
     });
 
     movie.title = 'Inception';
 
-    expect(serialize(movie, {knownComponents: [Movie]})).toEqual({
+    expect(movie.serialize()).toEqual({
       __component: 'movie',
       title: 'Inception'
     });
@@ -68,15 +62,14 @@ describe('Serialization', () => {
     movie.director = new Director();
     movie.director.name = 'Christopher Nolan';
 
-    expect(serialize(movie, {knownComponents: [Movie, Director]})).toEqual({
+    expect(movie.serialize()).toEqual({
       __component: 'movie',
       title: 'Inception',
       director: {__component: 'director', __new: true, name: 'Christopher Nolan'}
     });
 
     expect(
-      serialize(movie, {
-        knownComponents: [Movie],
+      movie.serialize({
         attributeFilter(attribute) {
           expect(this).toBe(movie);
           expect(attribute.getParent()).toBe(movie);
@@ -89,8 +82,7 @@ describe('Serialization', () => {
     });
 
     expect(
-      await serialize(movie, {
-        knownComponents: [Movie],
+      await movie.serialize({
         async attributeFilter(attribute) {
           expect(this).toBe(movie);
           expect(attribute.getParent()).toBe(movie);

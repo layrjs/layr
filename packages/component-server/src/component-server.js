@@ -1,4 +1,9 @@
-import {isComponentClass, isComponent, serialize, deserialize} from '@liaison/entity';
+import {
+  isComponentClass,
+  isComponentClassOrInstance,
+  serialize,
+  deserialize
+} from '@liaison/entity';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
@@ -39,7 +44,7 @@ export class ComponentServer {
         return true;
       }
 
-      if (isComponentClass(this) || isComponent(this)) {
+      if (isComponentClassOrInstance(this)) {
         const property = this.getProperty(name, {throwIfMissing: false});
 
         if (property !== undefined) {

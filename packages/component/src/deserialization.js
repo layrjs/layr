@@ -2,13 +2,6 @@ import {deserialize as simpleDeserialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
-import {
-  isComponentName,
-  getComponentClassNameFromComponentInstanceName,
-  createComponentMap,
-  getComponentFromComponentMap
-} from './utilities';
-
 export function deserialize(value, options = {}) {
   ow(
     options,
@@ -16,8 +9,7 @@ export function deserialize(value, options = {}) {
     ow.object.partialShape({
       objectHandler: ow.optional.function,
       functionHandler: ow.optional.function,
-      knownComponents: ow.optional.array,
-      attributeFilter: ow.optional.function,
+      componentGetter: ow.optional.function,
       deserializeFunctions: ow.optional.boolean
     })
   );
@@ -25,12 +17,10 @@ export function deserialize(value, options = {}) {
   const {
     objectHandler: originalObjectHandler,
     functionHandler: originalFunctionHandler,
-    knownComponents,
-    attributeFilter,
-    deserializeFunctions = false
+    componentGetter,
+    deserializeFunctions = false,
+    ...otherOptions
   } = options;
-
-  const knownComponentMap = createComponentMap(knownComponents);
 
   const objectHandler = function(object) {
     if (originalObjectHandler !== undefined) {
@@ -41,71 +31,19 @@ export function deserialize(value, options = {}) {
       }
     }
 
-    const {__component, __new, ...attributes} = object;
+    const {__component: componentName} = object;
 
-    if (__component === undefined) {
+    if (componentName === undefined) {
       return undefined;
     }
 
-    let componentClassName;
-    let isComponentClass;
-
-    const isComponentNameResult = isComponentName(__component);
-
-    if (isComponentNameResult === 'componentClassName') {
-      // The value is a serialized component class
-      componentClassName = __component;
-      isComponentClass = true;
-    } else if (isComponentNameResult === 'componentInstanceName') {
-      // The value is a serialized component instance
-      componentClassName = getComponentClassNameFromComponentInstanceName(__component);
-      isComponentClass = false;
-    } else {
-      throw new Error(
-        `An invalid component name ('${__component}') was encountered while deserializing an object`
-      );
+    if (componentGetter === undefined) {
+      throw new Error("Cannot deserialize a component without a 'componentGetter'");
     }
 
-    const Component = getComponentFromComponentMap(knownComponentMap, componentClassName);
+    const component = componentGetter(componentName);
 
-    let deserializedComponent;
-
-    if (isComponentClass) {
-      deserializedComponent = Component;
-    } else {
-      deserializedComponent = Component.__instantiate(attributes, {isNew: __new});
-    }
-
-    return possiblyAsync.forEach(
-      Object.entries(attributes),
-      ([attributeName, attributeValue]) => {
-        const attribute = deserializedComponent.getAttribute(attributeName, {
-          throwIfMissing: false
-        });
-
-        if (attribute === undefined) {
-          return;
-        }
-
-        return possiblyAsync(
-          attributeFilter !== undefined
-            ? attributeFilter.call(deserializedComponent, attribute)
-            : true,
-          {
-            then: isNotFilteredOut => {
-              if (isNotFilteredOut) {
-                return possiblyAsync(simpleDeserialize(attributeValue, options), {
-                  then: deserializedAttributeValue => {
-                    attribute.setValue(deserializedAttributeValue);
-                  }
-                });
-              }
-            }
-          }
-        );
-      },
-      {then: () => deserializedComponent}
-    );
+    return component.deserialize(object, options);
   };
 
   let functionHandler;
@@ -130,7 +68,8 @@ export function deserialize(value, options = {}) {
 
       return possiblyAsync.mapValues(
         serializedAttributes,
-        attributeValue => simpleDeserialize(attributeValue, options),
+        attributeValue =>
+          simpleDeserialize(attributeValue, {...otherOptions, objectHandler, functionHandler}),
         {
           then: deserializedAttributes => {
             const {__context: context} = deserializedAttributes;
@@ -143,9 +82,7 @@ export function deserialize(value, options = {}) {
     };
   }
 
-  options = {...options, objectHandler, functionHandler};
-
-  return simpleDeserialize(value, options);
+  return simpleDeserialize(value, {...otherOptions, objectHandler, functionHandler});
 }
 
 export function deserializeFunction(functionCode, context) {

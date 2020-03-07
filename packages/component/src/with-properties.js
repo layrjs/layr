@@ -13,9 +13,42 @@ export const WithProperties = (Base = Object) => {
     return Base;
   }
 
-  class BaseWithProperties extends Base {}
+  class WithProperties extends Base {
+    constructor(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          attributeSelector: ow.optional.any
+        })
+      );
 
-  const methods = {
+      let {attributeSelector = true} = options;
+
+      attributeSelector = AttributeSelector.normalize(attributeSelector);
+
+      super();
+
+      if (attributeSelector === false) {
+        return this; // Optimization
+      }
+
+      for (const attribute of this.getAttributes()) {
+        const name = attribute.getName();
+
+        if (AttributeSelector.get(attributeSelector, name) === false) {
+          continue;
+        }
+
+        const value = hasOwnProperty(object, name) ? object[name] : attribute.getDefaultValue();
+
+        attribute.setValue(value);
+      }
+    }
+  }
+
+  const classAndInstanceMethods = {
     // === Properties ===
 
     getProperty(name, options = {}) {
@@ -414,43 +447,8 @@ export const WithProperties = (Base = Object) => {
     }
   };
 
-  Object.assign(BaseWithProperties, methods);
-  Object.assign(BaseWithProperties.prototype, methods);
-
-  class WithProperties extends BaseWithProperties {
-    constructor(object = {}, options = {}) {
-      ow(object, 'object', ow.object);
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({
-          attributeSelector: ow.optional.any
-        })
-      );
-
-      let {attributeSelector = true} = options;
-
-      attributeSelector = AttributeSelector.normalize(attributeSelector);
-
-      super();
-
-      if (attributeSelector === false) {
-        return this; // Optimization
-      }
-
-      for (const attribute of this.getAttributes()) {
-        const name = attribute.getName();
-
-        if (AttributeSelector.get(attributeSelector, name) === false) {
-          continue;
-        }
-
-        const value = hasOwnProperty(object, name) ? object[name] : attribute.getDefaultValue();
-
-        attribute.setValue(value);
-      }
-    }
-  }
+  Object.assign(WithProperties, classAndInstanceMethods);
+  Object.assign(WithProperties.prototype, classAndInstanceMethods);
 
   return WithProperties;
 };

@@ -160,7 +160,7 @@ describe('ComponentClient', () => {
     const [Movie] = client.getComponents();
 
     expect(isComponentClass(Movie)).toBe(true);
-    expect(Movie.getName()).toBe('Movie');
+    expect(Movie.getComponentName()).toBe('Movie');
 
     let attribute = Movie.getAttribute('token');
 
@@ -192,7 +192,7 @@ describe('ComponentClient', () => {
     const [, Film] = client.getComponents();
 
     expect(isModelClass(Film)).toBe(true);
-    expect(Film.getName()).toBe('Film');
+    expect(Film.getComponentName()).toBe('Film');
 
     const attribute = Film.prototype.getAttribute('title');
 
@@ -230,7 +230,7 @@ describe('ComponentClient', () => {
     const [, , User] = client.getComponents();
 
     expect(isEntityClass(User)).toBe(true);
-    expect(User.getName()).toBe('User');
+    expect(User.getComponentName()).toBe('User');
 
     let attribute = User.prototype.getAttribute('id');
 

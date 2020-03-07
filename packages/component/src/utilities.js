@@ -1,5 +1,4 @@
 import {getTypeOf as coreGetTypeOf} from 'core-helpers';
-import lowerFirst from 'lodash/lowerFirst';
 import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
@@ -7,22 +6,46 @@ export function isComponentClass(object) {
   return typeof object?.isComponent === 'function';
 }
 
-export function isComponent(object) {
+export function isComponentInstance(object) {
   return isComponentClass(object?.constructor) === true;
 }
 
-export function getComponentName(object) {
-  if (isComponentClass(object)) {
-    // The object is a component class
-    return object.getName();
-  }
+export function isComponent(object) {
+  return isComponentInstance(object);
+}
 
-  if (isComponent(object)) {
-    // The object is a component instance
-    return lowerFirst(object.constructor.getName());
-  }
+export function isComponentClassOrInstance(object) {
+  return isComponentClass(object) || isComponentInstance(object);
+}
 
-  throw new Error('The specified object is not a component');
+export function validateIsComponentClass(object) {
+  if (!isComponentClass(object)) {
+    throw new Error(
+      `Expected a component class, but received a value of type '${getTypeOf(object, {
+        humanize: true
+      })}'`
+    );
+  }
+}
+
+export function validateIsComponentInstance(object) {
+  if (!isComponentInstance(object)) {
+    throw new Error(
+      `Expected a component instance, but received a value of type '${getTypeOf(object, {
+        humanize: true
+      })}'`
+    );
+  }
+}
+
+export function validateIsComponentClassOrInstance(object) {
+  if (!isComponentClassOrInstance(object)) {
+    throw new Error(
+      `Expected a component class or instance, but received a value of type '${getTypeOf(object, {
+        humanize: true
+      })}'`
+    );
+  }
 }
 
 const COMPONENT_CLASS_NAME_PATTERN = /^[A-Z][A-Za-z0-9_]*$/;
@@ -72,6 +95,18 @@ export function validateComponentName(name, options = {}) {
   return isComponentNameResult;
 }
 
+export function getComponentClassNameFromComponentName(name) {
+  ow(name, 'name', ow.string);
+
+  const validateComponentNameResult = validateComponentName(name);
+
+  if (validateComponentNameResult === 'componentClassName') {
+    return name;
+  }
+
+  return getComponentClassNameFromComponentInstanceName(name);
+}
+
 export function getComponentClassNameFromComponentInstanceName(name) {
   ow(name, 'name', ow.string);
 
@@ -82,15 +117,9 @@ export function createComponentMap(components = []) {
   const componentMap = Object.create(null);
 
   for (const component of components) {
-    if (!isComponentClass(component)) {
-      throw new TypeError(
-        `Expected 'components' items to be components but received type '${getTypeOf(component, {
-          humanize: true
-        })}'`
-      );
-    }
+    validateIsComponentClassOrInstance(component);
 
-    componentMap[component.getName()] = component;
+    componentMap[component.getComponentName()] = component;
   }
 
   return componentMap;
@@ -107,8 +136,8 @@ export function getComponentFromComponentMap(componentMap, name) {
 }
 
 export function getTypeOf(value, options) {
-  if (isComponentClass(value) || isComponent(value)) {
-    return getComponentName(value);
+  if (isComponentClassOrInstance(value)) {
+    return value.getComponentName();
   }
 
   return coreGetTypeOf(value, options);

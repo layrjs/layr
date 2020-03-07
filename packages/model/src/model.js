@@ -1,6 +1,5 @@
-import {Component, getComponentName} from '@liaison/component';
+import {Component} from '@liaison/component';
 import {Observable} from '@liaison/observable';
-import {getClassOf} from 'core-helpers';
 import ow from 'ow';
 
 import {ModelAttribute, isModelAttribute} from './model-attribute';
@@ -13,9 +12,21 @@ export const Model = (Base = Object) => {
     return Base;
   }
 
-  class BaseModel extends Observable(Component(Base)) {}
+  class Model extends Observable(Component(Base)) {
+    static getComponentType() {
+      return 'Model';
+    }
 
-  const methods = {
+    getComponentType() {
+      return 'model';
+    }
+
+    static isModel(object) {
+      return isModel(object);
+    }
+  }
+
+  const classAndInstanceMethods = {
     // === Model attributes ===
 
     getModelAttribute(name, options = {}) {
@@ -98,9 +109,7 @@ export const Model = (Base = Object) => {
 
       const error = Object.assign(
         new Error(
-          `The following error(s) occurred while validating the ${getClassOf(this)
-            .getComponentType()
-            .toLowerCase()} '${getComponentName(this)}': ${details}`
+          `The following error(s) occurred while validating the ${this.getComponentType()} '${this.getComponentName()}': ${details}`
         ),
         {failedValidators}
       );
@@ -130,18 +139,8 @@ export const Model = (Base = Object) => {
     }
   };
 
-  Object.assign(BaseModel, methods);
-  Object.assign(BaseModel.prototype, methods);
-
-  class Model extends BaseModel {
-    static getComponentType() {
-      return 'Model';
-    }
-
-    static isModel(object) {
-      return isModel(object);
-    }
-  }
+  Object.assign(Model, classAndInstanceMethods);
+  Object.assign(Model.prototype, classAndInstanceMethods);
 
   return Model;
 };

@@ -1,4 +1,4 @@
-import {Model, getComponentName} from '@liaison/model';
+import {Model} from '@liaison/model';
 import cuid from 'cuid';
 import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
@@ -93,9 +93,7 @@ export const Entity = (Base = Object) => {
 
       if (throwIfMissing) {
         throw new Error(
-          `The ${this.constructor.getComponentType().toLowerCase()} '${getComponentName(
-            this
-          )}' doesn't have a primary identifier attribute`
+          `The ${this.getComponentType()} '${this.getComponentName()}' doesn't have a primary identifier attribute`
         );
       }
     }
@@ -236,6 +234,10 @@ export const Entity = (Base = Object) => {
 
     static getComponentType() {
       return 'Entity';
+    }
+
+    getComponentType() {
+      return 'entity';
     }
 
     // === Utilities ===

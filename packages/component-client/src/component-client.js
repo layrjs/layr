@@ -108,7 +108,7 @@ export class ComponentClient {
 
     const Component = class Component extends ComponentClass {};
 
-    Component.setName(name);
+    Component.setComponentName(name);
     this._setComponentProperties(Component, properties);
     this._setComponentProperties(Component.prototype, prototype?.properties);
 
@@ -211,7 +211,7 @@ export class ComponentClient {
 
       const isClass = isComponentClass(this);
       const LocalComponent = isClass ? this : this.constructor;
-      const RemoteComponent = componentClient.getComponent(LocalComponent.getName());
+      const RemoteComponent = componentClient.getComponent(LocalComponent.getComponentName());
       const remoteComponent = isClass ? RemoteComponent : RemoteComponent.prototype;
 
       const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {

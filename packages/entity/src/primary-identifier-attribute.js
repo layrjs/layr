@@ -1,4 +1,3 @@
-import {getComponentName} from '@liaison/model';
 import ow from 'ow';
 
 import {IdentifierAttribute} from './identifier-attribute';
@@ -26,9 +25,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
       existingPrimaryIdentifierAttribute.getName() !== name
     ) {
       throw new Error(
-        `The ${parent.constructor.getComponentType().toLowerCase()} '${getComponentName(
-          parent
-        )}' has already a primary identifier attribute`
+        `The ${parent.getComponentType()} '${parent.getComponentName()}' has already a primary identifier attribute`
       );
     }
 

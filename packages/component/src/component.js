@@ -1,3 +1,5 @@
+import {possiblyAsync} from 'possibly-async';
+import lowerFirst from 'lodash/lowerFirst';
 import ow from 'ow';
 
 import {WithProperties} from './with-properties';
@@ -7,9 +9,8 @@ import {AttributeSelector} from './attribute-selector';
 import {
   isComponentClass,
   isComponent,
-  validateComponentName,
-  getComponentClassNameFromComponentInstanceName,
-  getTypeOf
+  validateIsComponentClassOrInstance,
+  validateComponentName
 } from './utilities';
 
 export const Component = (Base = Object) => {
@@ -32,18 +33,15 @@ export const Component = (Base = Object) => {
 
     // === Instantiation ===
 
-    static __instantiate(object = {}, options = {}) {
-      // TODO: Make this method more meaningful
-      // We should probably integrate the deserialization into the class
-
-      ow(object, 'object', ow.object);
+    static __instantiate(attributes = {}, options = {}) {
+      ow(attributes, 'attributes', ow.object);
       ow(options, 'options', ow.object.exactShape({isNew: ow.optional.boolean}));
 
       const {isNew = false} = options;
 
       if (isNew === true) {
         let attributeSelector = this.prototype.expandAttributeSelector(true, {depth: 0});
-        const deserializedAttributeSelector = AttributeSelector.fromNames(Object.keys(object));
+        const deserializedAttributeSelector = AttributeSelector.fromNames(Object.keys(attributes));
         attributeSelector = AttributeSelector.remove(
           attributeSelector,
           deserializedAttributeSelector
@@ -57,7 +55,7 @@ export const Component = (Base = Object) => {
 
     // === Naming ===
 
-    static getName(options = {}) {
+    static getComponentName(options = {}) {
       ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
 
       const {throwIfMissing = true} = options;
@@ -73,66 +71,18 @@ export const Component = (Base = Object) => {
       }
     }
 
-    static setName(name) {
+    getComponentName(options = {}) {
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      return lowerFirst(this.constructor.getComponentName(options));
+    }
+
+    static setComponentName(name) {
       ow(name, 'name', ow.string);
 
       validateComponentName(name, {allowInstances: false});
 
       Object.defineProperty(this, '__name', {value: name, configurable: true});
-    }
-
-    // === Related components ===
-
-    // TODO: Handle forking
-
-    static getRelatedComponent(name, options = {}) {
-      ow(name, 'name', ow.string.nonEmpty);
-      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
-
-      const {throwIfMissing = true} = options;
-
-      const nameIsComponentClassName = validateComponentName(name) === 'componentClassName';
-
-      const className = nameIsComponentClassName
-        ? name
-        : getComponentClassNameFromComponentInstanceName(name);
-
-      const relatedComponents = this.__getRelatedComponents();
-      const Component = relatedComponents[className];
-
-      if (Component === undefined) {
-        if (throwIfMissing) {
-          throw new Error(`Cannot get the related component class '${className}'`);
-        }
-        return undefined;
-      }
-
-      return nameIsComponentClassName ? Component : Component.prototype;
-    }
-
-    static registerRelatedComponent(Component) {
-      if (!isComponentClass(Component)) {
-        throw new Error(
-          `Expected a component class, but received a value of type '${getTypeOf(Component, {
-            humanize: true
-          })}'`
-        );
-      }
-
-      const relatedComponents = this.__getRelatedComponents();
-
-      relatedComponents[Component.getName()] = Component;
-    }
-
-    static __getRelatedComponents() {
-      if (this.__relatedComponents === undefined) {
-        Object.defineProperty(this, '__relatedComponents', {
-          value: Object.create(null),
-          configurable: true
-        });
-      }
-
-      return this.__relatedComponents;
     }
 
     // === isNew mark ===
@@ -173,26 +123,14 @@ export const Component = (Base = Object) => {
       return forkedComponent;
     }
 
-    // === Serialization ===
-
-    static toJSON() {
-      return serialize(this, {knownComponents: [this]});
-    }
-
-    toJSON() {
-      return serialize(this, {knownComponents: [this.constructor]});
-    }
-
-    // === Deserialization ===
-
-    static fromJSON(value) {
-      return deserialize(value, {knownComponents: [this]});
-    }
-
     // === Introspection ===
 
     static getComponentType() {
       return 'Component';
+    }
+
+    getComponentType() {
+      return 'component';
     }
 
     static introspect() {
@@ -203,7 +141,7 @@ export const Component = (Base = Object) => {
         return undefined;
       }
 
-      const introspectedComponent = {name: this.getName(), type: this.getComponentType()};
+      const introspectedComponent = {name: this.getComponentName(), type: this.getComponentType()};
 
       if (introspectedProperties.length > 0) {
         introspectedComponent.properties = introspectedProperties;
@@ -222,6 +160,160 @@ export const Component = (Base = Object) => {
       return isComponent(object);
     }
   }
+
+  const classAndInstanceMethods = {
+    // === Related components ===
+
+    // TODO: Handle forking
+
+    getRelatedComponent(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      const {throwIfMissing = true} = options;
+
+      validateComponentName(name);
+
+      const relatedComponents = this.__getRelatedComponents();
+      const relatedComponent = relatedComponents[name];
+
+      if (relatedComponent !== undefined) {
+        return relatedComponent;
+      }
+
+      if (throwIfMissing) {
+        throw new Error(`Cannot get the related component '${name}'`);
+      }
+    },
+
+    registerRelatedComponent(component) {
+      validateIsComponentClassOrInstance(component);
+
+      const relatedComponents = this.__getRelatedComponents();
+      const componentName = component.getComponentName();
+      relatedComponents[componentName] = component;
+    },
+
+    __getRelatedComponents() {
+      if (this.__relatedComponents === undefined) {
+        Object.defineProperty(this, '__relatedComponents', {
+          value: Object.create(null),
+          configurable: true
+        });
+      }
+
+      return this.__relatedComponents;
+    },
+
+    // === Serialization ===
+
+    serialize(options = {}) {
+      ow(options, 'options', ow.object);
+
+      const serializedComponent = {__component: this.getComponentName()};
+
+      if (isComponent(this) && this.isNew()) {
+        serializedComponent.__new = true;
+      }
+
+      return possiblyAsync(this.__serializeAttributes(serializedComponent, options), {
+        then: () => serializedComponent
+      });
+    },
+
+    __serializeAttributes(serializedComponent, options) {
+      ow(serializedComponent, 'serializedComponent', ow.object);
+      ow(options, 'options', ow.object.partialShape({attributeFilter: ow.optional.function}));
+
+      const {attributeFilter} = options;
+
+      return possiblyAsync.forEach(this.getAttributes({setAttributesOnly: true}), attribute => {
+        return possiblyAsync(
+          attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
+          {
+            then: isNotFilteredOut => {
+              if (isNotFilteredOut) {
+                const attributeName = attribute.getName();
+                const attributeValue = attribute.getValue();
+                return possiblyAsync(serialize(attributeValue, options), {
+                  then: serializedAttributeValue => {
+                    serializedComponent[attributeName] = serializedAttributeValue;
+                  }
+                });
+              }
+            }
+          }
+        );
+      });
+    },
+
+    // === Deserialization ===
+
+    deserialize(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
+      ow(options, 'options', ow.object);
+
+      const expectedComponentName = this.getComponentName();
+
+      const {__component: componentName = expectedComponentName, __new, ...attributes} = object;
+
+      validateComponentName(componentName);
+
+      if (componentName !== expectedComponentName) {
+        throw new Error(
+          `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
+        );
+      }
+
+      const deserializedComponent = isComponentClass(this)
+        ? this
+        : this.constructor.__instantiate(attributes, {isNew: __new});
+
+      return possiblyAsync(deserializedComponent.__deserializeAttributes(attributes, options), {
+        then: () => deserializedComponent
+      });
+    },
+
+    __deserializeAttributes(attributes, options) {
+      ow(attributes, 'attributes', ow.object);
+      ow(options, 'options', ow.object.partialShape({attributeFilter: ow.optional.function}));
+
+      const {attributeFilter} = options;
+
+      const componentGetter = name => this.getRelatedComponent(name);
+
+      return possiblyAsync.forEach(
+        Object.entries(attributes),
+        ([attributeName, attributeValue]) => {
+          const attribute = this.getAttribute(attributeName, {
+            throwIfMissing: false
+          });
+
+          if (attribute === undefined) {
+            return;
+          }
+
+          return possiblyAsync(
+            attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
+            {
+              then: isNotFilteredOut => {
+                if (isNotFilteredOut) {
+                  return possiblyAsync(deserialize(attributeValue, {...options, componentGetter}), {
+                    then: deserializedAttributeValue => {
+                      attribute.setValue(deserializedAttributeValue);
+                    }
+                  });
+                }
+              }
+            }
+          );
+        }
+      );
+    }
+  };
+
+  Object.assign(Component, classAndInstanceMethods);
+  Object.assign(Component.prototype, classAndInstanceMethods);
 
   return Component;
 };

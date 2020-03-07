@@ -54,29 +54,29 @@ describe('Component', () => {
   test('Naming', async () => {
     class Movie extends Component() {}
 
-    expect(Movie.getName()).toBe('Movie');
+    expect(Movie.getComponentName()).toBe('Movie');
 
-    Movie.setName('Film');
+    Movie.setComponentName('Film');
 
-    expect(Movie.getName()).toBe('Film');
+    expect(Movie.getComponentName()).toBe('Film');
 
-    Movie.setName('MotionPicture');
+    Movie.setComponentName('MotionPicture');
 
-    expect(Movie.getName()).toBe('MotionPicture');
+    expect(Movie.getComponentName()).toBe('MotionPicture');
 
     // Make sure there are no enumerable properties
     expect(Object.keys(Movie)).toHaveLength(0);
 
-    expect(() => Movie.setName()).toThrow();
-    expect(() => Movie.setName(123)).toThrow();
-    expect(() => Movie.setName('')).toThrow('A component name cannot be empty');
-    expect(() => Movie.setName('1Place')).toThrow(
+    expect(() => Movie.setComponentName()).toThrow();
+    expect(() => Movie.setComponentName(123)).toThrow();
+    expect(() => Movie.setComponentName('')).toThrow('A component name cannot be empty');
+    expect(() => Movie.setComponentName('1Place')).toThrow(
       "The specified component name ('1Place') is invalid"
     );
-    expect(() => Movie.setName('motionPicture')).toThrow(
+    expect(() => Movie.setComponentName('motionPicture')).toThrow(
       "The specified component name ('motionPicture') is invalid"
     );
-    expect(() => Movie.setName('MotionPicture!')).toThrow(
+    expect(() => Movie.setComponentName('MotionPicture!')).toThrow(
       "The specified component name ('MotionPicture!') is invalid"
     );
   });
@@ -88,22 +88,32 @@ describe('Component', () => {
 
     class Actor extends Component() {}
 
-    expect(Movie.getRelatedComponent('Director', {throwIfMissing: false})).toBe(undefined);
+    expect(Movie.getRelatedComponent('Director', {throwIfMissing: false})).toBeUndefined();
 
     Movie.registerRelatedComponent(Director);
     Movie.registerRelatedComponent(Actor);
 
     expect(Movie.getRelatedComponent('Director')).toBe(Director);
     expect(Movie.getRelatedComponent('Actor')).toBe(Actor);
-    expect(Movie.getRelatedComponent('Producer', {throwIfMissing: false})).toBe(undefined);
+    expect(Movie.getRelatedComponent('Producer', {throwIfMissing: false})).toBeUndefined();
     expect(() => Movie.getRelatedComponent('Producer')).toThrow(
-      "Cannot get the related component class 'Producer'"
+      "Cannot get the related component 'Producer'"
     );
-    expect(Movie.getRelatedComponent('director')).toBe(Director.prototype);
-    expect(Movie.getRelatedComponent('actor')).toBe(Actor.prototype);
-    expect(Movie.getRelatedComponent('producer', {throwIfMissing: false})).toBe(undefined);
-    expect(() => Movie.getRelatedComponent('producer')).toThrow(
-      "Cannot get the related component class 'Producer'"
+
+    expect(
+      Movie.prototype.getRelatedComponent('director', {throwIfMissing: false})
+    ).toBeUndefined();
+
+    Movie.prototype.registerRelatedComponent(Director.prototype);
+    Movie.prototype.registerRelatedComponent(Actor.prototype);
+
+    expect(Movie.prototype.getRelatedComponent('director')).toBe(Director.prototype);
+    expect(Movie.prototype.getRelatedComponent('actor')).toBe(Actor.prototype);
+    expect(
+      Movie.prototype.getRelatedComponent('producer', {throwIfMissing: false})
+    ).toBeUndefined();
+    expect(() => Movie.prototype.getRelatedComponent('producer')).toThrow(
+      "Cannot get the related component 'producer'"
     );
   });
 

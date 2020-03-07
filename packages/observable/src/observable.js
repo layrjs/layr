@@ -11,7 +11,7 @@ export const Observable = (Base = Object) => {
 
   class Observable extends Base {}
 
-  const methods = {
+  const classAndInstanceMethods = {
     addObserver(observer) {
       this.__getObservers().add(observer);
     },
@@ -36,8 +36,8 @@ export const Observable = (Base = Object) => {
     }
   };
 
-  Object.assign(Observable, methods);
-  Object.assign(Observable.prototype, methods);
+  Object.assign(Observable, classAndInstanceMethods);
+  Object.assign(Observable.prototype, classAndInstanceMethods);
 
   return Observable;
 };

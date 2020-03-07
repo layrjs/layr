@@ -1,5 +1,5 @@
 import {validateComponentName} from '@liaison/component';
-import {isPrototypeOf, getClassOf} from 'core-helpers';
+import {isPrototypeOf} from 'core-helpers';
 import ow from 'ow';
 
 import {Type} from './type';
@@ -23,7 +23,7 @@ export class ComponentType extends Type {
   }
 
   _getComponent({modelAttribute}) {
-    return getClassOf(modelAttribute.getParent()).getRelatedComponent(this.getComponentName());
+    return modelAttribute.getParent().getRelatedComponent(this.getComponentName());
   }
 
   toString() {
