@@ -1,5 +1,5 @@
 import {
-  WithProperties,
+  Component,
   isProperty,
   Attribute,
   attribute,
@@ -12,7 +12,7 @@ import {
 describe('WithProperties', () => {
   describe('Properties', () => {
     test('getProperty()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -66,12 +66,14 @@ describe('WithProperties', () => {
       expect(instanceProperty.getName()).toBe('title');
       expect(instanceProperty.getParent()).toBe(movie);
 
-      expect(() => Movie.getProperty('offset')).toThrow("The property 'offset' is missing");
+      expect(() => Movie.getProperty('offset')).toThrow(
+        "The property 'offset' is missing (component name: 'Movie')"
+      );
       expect(Movie.getProperty('offset', {throwIfMissing: false})).toBeUndefined();
     });
 
     test('setProperty()', async () => {
-      class Movie extends WithProperties() {}
+      class Movie extends Component() {}
 
       expect(Movie.hasProperty('limit')).toBe(false);
 
@@ -118,7 +120,7 @@ describe('WithProperties', () => {
     });
 
     test('hasProperty()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -131,7 +133,7 @@ describe('WithProperties', () => {
     });
 
     test('getProperties()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() title = '';
         @attribute() duration = 0;
 
@@ -190,7 +192,7 @@ describe('WithProperties', () => {
     });
 
     test('getPropertyNames()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() title = '';
         @attribute() duration = 0;
 
@@ -218,7 +220,7 @@ describe('WithProperties', () => {
 
   describe('Attributes', () => {
     test('getAttribute()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -233,7 +235,7 @@ describe('WithProperties', () => {
       expect(classAttribute.getParent()).toBe(Movie);
 
       expect(() => Movie.getAttribute('find')).toThrow(
-        "The property 'find' exists, but it is not an attribute"
+        "A property with the specified name was found, but it is not an attribute (component name: 'Movie', method name: 'find')"
       );
 
       const prototypeAttribute = Movie.prototype.getAttribute('title');
@@ -269,7 +271,7 @@ describe('WithProperties', () => {
     });
 
     test('setAttribute()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @method() static find() {}
       }
 
@@ -287,7 +289,7 @@ describe('WithProperties', () => {
       expect(attribute.getParent()).toBe(Movie);
 
       expect(() => Movie.setAttribute('find')).toThrow(
-        "Cannot change the type of the 'find' property"
+        "Cannot change the type of a property (component name: 'Movie', method name: 'find')"
       );
 
       class Film extends Movie {}
@@ -306,12 +308,12 @@ describe('WithProperties', () => {
       expect(attribute.getParent()).toBe(Film);
 
       expect(() => Film.setAttribute('find')).toThrow(
-        "Cannot change the type of the 'find' property"
+        "Cannot change the type of a property (component name: 'Film', method name: 'find')"
       );
     });
 
     test('hasAttribute()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -322,12 +324,12 @@ describe('WithProperties', () => {
       expect(Movie.prototype.hasAttribute('limit')).toBe(false);
 
       expect(() => Movie.hasAttribute('find')).toThrow(
-        "The property 'find' exists, but it is not an attribute"
+        "A property with the specified name was found, but it is not an attribute (component name: 'Movie', method name: 'find')"
       );
     });
 
     test('getAttributes()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() title = '';
         @attribute() duration = 0;
 
@@ -380,7 +382,7 @@ describe('WithProperties', () => {
     });
 
     test('expandAttributeSelector()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() title = '';
         @attribute() duration = 0;
       }
@@ -397,7 +399,7 @@ describe('WithProperties', () => {
 
   describe('Methods', () => {
     test('getMethod()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -412,7 +414,7 @@ describe('WithProperties', () => {
       expect(classMethod.getParent()).toBe(Movie);
 
       expect(() => Movie.getMethod('limit')).toThrow(
-        "The property 'limit' exists, but it is not a method"
+        "A property with the specified name was found, but it is not a method (component name: 'Movie', attribute name: 'limit')"
       );
 
       const prototypeMethod = Movie.prototype.getMethod('load');
@@ -448,7 +450,7 @@ describe('WithProperties', () => {
     });
 
     test('setMethod()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() static limit = 100;
       }
 
@@ -466,7 +468,7 @@ describe('WithProperties', () => {
       expect(method.getParent()).toBe(Movie);
 
       expect(() => Movie.setMethod('limit')).toThrow(
-        "Cannot change the type of the 'limit' property"
+        "Cannot change the type of a property (component name: 'Movie', attribute name: 'limit')"
       );
 
       class Film extends Movie {}
@@ -485,12 +487,12 @@ describe('WithProperties', () => {
       expect(method.getParent()).toBe(Film);
 
       expect(() => Film.setMethod('limit')).toThrow(
-        "Cannot change the type of the 'limit' property"
+        "Cannot change the type of a property (component name: 'Film', attribute name: 'limit')"
       );
     });
 
     test('hasMethod()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -501,12 +503,12 @@ describe('WithProperties', () => {
       expect(Movie.prototype.hasMethod('find')).toBe(false);
 
       expect(() => Movie.hasMethod('limit')).toThrow(
-        "The property 'limit' exists, but it is not a method"
+        "A property with the specified name was found, but it is not a method (component name: 'Movie', attribute name: 'limit')"
       );
     });
 
     test('getMethods()', async () => {
-      class Movie extends WithProperties() {
+      class Movie extends Component() {
         @attribute() title = '';
         @attribute() duration = 0;
 

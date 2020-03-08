@@ -15,10 +15,10 @@ export function secondaryIdentifier(type, options) {
 }
 
 function identifier(IdentifierAttributeClass, decoratorName, type, options = {}) {
-  ow(type, 'type', ow.optional.string.nonEmpty);
-  ow(options, 'options', ow.object);
   ow(IdentifierAttributeClass, 'IdentifierAttributeClass', ow.function);
   ow(decoratorName, 'decoratorName', ow.string.nonEmpty);
+  ow(type, 'type', ow.optional.string.nonEmpty);
+  ow(options, 'options', ow.object);
 
   options = {...options, type};
 

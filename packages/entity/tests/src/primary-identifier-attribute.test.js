@@ -44,7 +44,7 @@ describe('PrimaryIdentifierAttribute', () => {
     expect(idAttribute.getValue()).toBe('abc123');
 
     expect(() => idAttribute.setValue('xyz789')).toThrow(
-      "The value of a primary identifier attribute cannot be modified (attribute name: 'id')"
+      "The value of a primary identifier attribute cannot be modified (entity name: 'movie', attribute name: 'id')"
     );
   });
 

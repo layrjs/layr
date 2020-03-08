@@ -34,7 +34,7 @@ export class ComponentClient {
 
     if (typeof componentServer.receiveQuery !== 'function') {
       throw new Error(
-        'ComponentClient constructor expects a ComponentServer instance to be passed as the first parameter'
+        'The ComponentClient constructor expects a ComponentServer instance to be passed as the first parameter'
       );
     }
 

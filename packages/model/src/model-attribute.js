@@ -131,9 +131,7 @@ export class ModelAttribute extends Observable(Attribute) {
   runValidators() {
     if (!this.isSet()) {
       throw new Error(
-        `Cannot run the validators of an unset ${getHumanTypeOf(this)} (${getHumanTypeOf(
-          this
-        )} name: '${this.getName()}')`
+        `Cannot run the validators of an unset ${getHumanTypeOf(this)} (${this.describe()})`
       );
     }
 

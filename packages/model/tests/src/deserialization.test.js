@@ -29,7 +29,7 @@ describe('Deserialization', () => {
     expect(movie.country).toBe('USA');
 
     expect(() => Movie.prototype.deserialize({__new: true, country: 'USA'})).toThrow(
-      "Cannot assign a value of an unexpected type to the attribute 'title' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (model name: 'movie', attribute name: 'title', expected type: 'string', received type: 'undefined')"
     );
   });
 });

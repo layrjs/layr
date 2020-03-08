@@ -45,7 +45,7 @@ export const Entity = (Base = Object) => {
       if (entity !== undefined) {
         if (isNew && !entity.isNew()) {
           throw new Error(
-            `Cannot instantiate a new entity when an existing entity with a matching identifier is not new`
+            `Cannot mark as new an existing non-new entity (${entity.describeComponent()})`
           );
         }
 
@@ -78,7 +78,9 @@ export const Entity = (Base = Object) => {
       }
 
       if (!isIdentifierAttribute(property)) {
-        throw new Error(`The property '${name}' exists, but it is not an identifier attribute`);
+        throw new Error(
+          `A property with the specified name was found, but it is not an identifier attribute (${property.describe()})`
+        );
       }
 
       return property;
@@ -124,7 +126,7 @@ export const Entity = (Base = Object) => {
 
       if (!isSecondaryIdentifierAttribute(property)) {
         throw new Error(
-          `The property '${name}' exists, but it is not a secondary identifier attribute`
+          `A property with the specified name was found, but it is not a secondary identifier attribute (${property.describe()})`
         );
       }
 

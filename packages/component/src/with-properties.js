@@ -67,7 +67,7 @@ export const WithProperties = (Base = Object) => {
 
       if (property === undefined) {
         if (throwIfMissing) {
-          throw new Error(`The property '${name}' is missing`);
+          throw new Error(`The property '${name}' is missing (${this.describeComponent()})`);
         }
         return undefined;
       }
@@ -96,7 +96,7 @@ export const WithProperties = (Base = Object) => {
         properties[name] = property;
       } else {
         if (getTypeOf(property) !== getTypeOf(PropertyClass.prototype)) {
-          throw new Error(`Cannot change the type of the '${name}' property`);
+          throw new Error(`Cannot change the type of a property (${property.describe()})`);
         }
         property.setOptions(propertyOptions);
       }
@@ -133,7 +133,7 @@ export const WithProperties = (Base = Object) => {
 
       if (!hasOwnProperty(properties, name)) {
         if (throwIfMissing) {
-          throw new Error(`Cannot delete the property '${name}' which is missing`);
+          throw new Error(`Cannot delete a missing property (property name: '${name}')`);
         }
         return false;
       }
@@ -234,7 +234,9 @@ export const WithProperties = (Base = Object) => {
       }
 
       if (throwIfInvalid) {
-        throw new Error(`Invalid property operation setting: ${JSON.stringify(setting)}`);
+        throw new Error(
+          `The specified property operation setting (${JSON.stringify(setting)}) is invalid`
+        );
       }
     },
 
@@ -257,7 +259,9 @@ export const WithProperties = (Base = Object) => {
       }
 
       if (!isAttribute(property)) {
-        throw new Error(`The property '${name}' exists, but it is not an attribute`);
+        throw new Error(
+          `A property with the specified name was found, but it is not an attribute (${property.describe()})`
+        );
       }
 
       return property;
@@ -381,7 +385,9 @@ export const WithProperties = (Base = Object) => {
       }
 
       if (!isMethod(property)) {
-        throw new Error(`The property '${name}' exists, but it is not a method`);
+        throw new Error(
+          `A property with the specified name was found, but it is not a method (${property.describe()})`
+        );
       }
 
       return property;

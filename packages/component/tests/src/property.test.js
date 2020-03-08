@@ -39,11 +39,11 @@ describe('Property', () => {
     });
 
     expect(() => new Property('find', Movie, {exposure: {call: false}})).toThrow(
-      'Invalid property operation setting: false'
+      'The specified property operation setting (false) is invalid'
     );
 
     expect(() => new Property('find', Movie, {exposure: {call: 'admin'}})).toThrow(
-      'Invalid property operation setting: "admin"'
+      'The specified property operation setting ("admin") is invalid'
     );
 
     class Film extends Component() {

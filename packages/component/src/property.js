@@ -2,7 +2,7 @@ import {possiblyAsync} from 'possibly-async';
 import mapValues from 'lodash/mapValues';
 import ow from 'ow';
 
-import {getTypeOf} from './utilities';
+import {getTypeOf, getHumanTypeOf} from './utilities';
 
 export class Property {
   constructor(name, parent, options = {}) {
@@ -131,6 +131,12 @@ export class Property {
 
   static isProperty(object) {
     return isProperty(object);
+  }
+
+  describe() {
+    return `${this.getParent().describeComponent()}, ${getHumanTypeOf(
+      this
+    )} name: '${this.getName()}'`;
   }
 }
 

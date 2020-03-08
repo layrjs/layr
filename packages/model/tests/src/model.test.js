@@ -27,7 +27,7 @@ describe('Model', () => {
     expect(movie.rating).toBe(0);
 
     expect(() => new Movie()).toThrow(
-      "Cannot assign a value of an unexpected type to the attribute 'title' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (model name: 'movie', attribute name: 'title', expected type: 'string', received type: 'undefined')"
     );
   });
 
@@ -80,7 +80,7 @@ describe('Model', () => {
     expect(classModelAttribute.getParent()).toBe(Movie);
 
     expect(() => Movie.getModelAttribute('find')).toThrow(
-      "The property 'find' exists, but it is not a model attribute"
+      "A property with the specified name was found, but it is not a model attribute (model name: 'Movie', method name: 'find')"
     );
 
     const prototypeModelAttribute = Movie.prototype.getModelAttribute('title');
@@ -112,7 +112,7 @@ describe('Model', () => {
     expect(modelAttribute.getParent()).toBe(Movie);
 
     expect(() => Movie.setModelAttribute('find', {type: 'number'})).toThrow(
-      "Cannot change the type of the 'find' property"
+      "Cannot change the type of a property (model name: 'Movie', method name: 'find')"
     );
 
     class Film extends Movie {}
@@ -131,7 +131,7 @@ describe('Model', () => {
     expect(modelAttribute.getParent()).toBe(Film);
 
     expect(() => Film.setModelAttribute('find', {type: 'number'})).toThrow(
-      "Cannot change the type of the 'find' property"
+      "Cannot change the type of a property (model name: 'Film', method name: 'find')"
     );
   });
 
@@ -147,7 +147,7 @@ describe('Model', () => {
     expect(Movie.prototype.hasModelAttribute('limit')).toBe(false);
 
     expect(() => Movie.hasModelAttribute('find')).toThrow(
-      "The property 'find' exists, but it is not a model attribute"
+      "A property with the specified name was found, but it is not a model attribute (model name: 'Movie', method name: 'find')"
     );
   });
 

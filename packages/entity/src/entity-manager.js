@@ -81,7 +81,7 @@ export class EntityManager {
     if (newValue !== undefined) {
       if (index[newValue] !== undefined) {
         throw new Error(
-          `Duplicate value found in an identifier attribute (attribute name: '${attributeName}')`
+          `An entity with the same identifier already exists (${entity.describeComponent()}, attribute name: '${attributeName}')`
         );
       }
 

@@ -44,9 +44,7 @@ export class Type {
 
     if (!this._checkValue(value, {modelAttribute})) {
       throw new Error(
-        `Cannot assign a value of an unexpected type to the ${getHumanTypeOf(
-          modelAttribute
-        )} '${modelAttribute.getName()}' (expected type: '${this.toString()}', received type: '${getHumanTypeOf(
+        `Cannot assign a value of an unexpected type (${modelAttribute.describe()}, expected type: '${this.toString()}', received type: '${getHumanTypeOf(
           value
         )}')`
       );

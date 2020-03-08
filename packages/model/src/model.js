@@ -46,7 +46,9 @@ export const Model = (Base = Object) => {
       }
 
       if (!isModelAttribute(property)) {
-        throw new Error(`The property '${name}' exists, but it is not a model attribute`);
+        throw new Error(
+          `A property with the specified name was found, but it is not a model attribute (${property.describe()})`
+        );
       }
 
       return property;

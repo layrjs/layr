@@ -29,7 +29,7 @@ describe('Entity', () => {
     expect(user.username).toBe('hi');
 
     expect(() => new User()).toThrow(
-      "Cannot assign a value of an unexpected type to the attribute 'email' (expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (entity name: 'user', attribute name: 'email', expected type: 'string', received type: 'undefined')"
     );
   });
 
@@ -75,7 +75,7 @@ describe('Entity', () => {
     expect(identifierAttribute.getParent()).toBe(User.prototype);
 
     expect(() => User.prototype.getIdentifierAttribute('name')).toThrow(
-      "The property 'name' exists, but it is not an identifier attribute"
+      "A property with the specified name was found, but it is not an identifier attribute (entity name: 'user', attribute name: 'name')"
     );
   });
 
@@ -112,7 +112,7 @@ describe('Entity', () => {
     expect(identifierAttribute.getParent()).toBe(User.prototype);
 
     expect(() => User.prototype.getSecondaryIdentifierAttribute('id')).toThrow(
-      "The property 'id' exists, but it is not a secondary identifier attribute"
+      "A property with the specified name was found, but it is not a secondary identifier attribute (entity name: 'user', attribute name: 'id')"
     );
   });
 
@@ -170,7 +170,7 @@ describe('Entity', () => {
     expect(User.prototype.hasIdentifierAttribute('username')).toBe(false);
 
     expect(() => User.prototype.hasIdentifierAttribute('name')).toThrow(
-      "The property 'name' exists, but it is not an identifier attribute"
+      "A property with the specified name was found, but it is not an identifier attribute (entity name: 'user', attribute name: 'name')"
     );
   });
 
@@ -199,10 +199,10 @@ describe('Entity', () => {
     expect(User.prototype.hasSecondaryIdentifierAttribute('username')).toBe(false);
 
     expect(() => User.prototype.hasSecondaryIdentifierAttribute('id')).toThrow(
-      "The property 'id' exists, but it is not a secondary identifier attribute"
+      "A property with the specified name was found, but it is not a secondary identifier attribute (entity name: 'user', attribute name: 'id')"
     );
     expect(() => User.prototype.hasSecondaryIdentifierAttribute('name')).toThrow(
-      "The property 'name' exists, but it is not an identifier attribute"
+      "A property with the specified name was found, but it is not an identifier attribute (entity name: 'user', attribute name: 'name')"
     );
   });
 
@@ -265,11 +265,11 @@ describe('Entity', () => {
     const user1 = User.prototype.deserialize({id: 'abc123'});
 
     expect(() => new User({id: 'abc123'})).toThrow(
-      "Duplicate value found in an identifier attribute (attribute name: 'id')"
+      "An entity with the same identifier already exists (entity name: 'user', attribute name: 'id')"
     );
 
     expect(() => User.prototype.deserialize({__new: true, id: 'abc123'})).toThrow(
-      'Cannot instantiate a new entity when an existing entity with a matching identifier is not new'
+      "Cannot mark as new an existing non-new entity (entity name: 'user')"
     );
 
     const user2 = User.prototype.deserialize({id: 'abc123'});
@@ -296,6 +296,8 @@ describe('Entity', () => {
 
     expect(() => {
       user4.email = 'hi@hello.com';
-    }).toThrow("Duplicate value found in an identifier attribute (attribute name: 'email')");
+    }).toThrow(
+      "An entity with the same identifier already exists (entity name: 'user', attribute name: 'email')"
+    );
   });
 });

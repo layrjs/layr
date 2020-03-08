@@ -1,5 +1,6 @@
 import {hasOwnProperty} from 'core-helpers';
 import a from 'indefinite';
+import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
 import {Property} from './property';
@@ -30,17 +31,17 @@ export class Attribute extends Property {
     if (getter !== undefined || setter !== undefined) {
       if (hasInitialValue) {
         throw new Error(
-          `The '${this.getName()}' ${getHumanTypeOf(
-            this
-          )} cannot have both a getter or setter and an initial value`
+          `${upperFirst(
+            a(getHumanTypeOf(this))
+          )} cannot have both a getter or setter and an initial value (${this.describe()})`
         );
       }
 
       if (hasDefaultValue) {
         throw new Error(
-          `The '${this.getName()}' ${getHumanTypeOf(
-            this
-          )} cannot have both a getter or setter and a default value`
+          `${upperFirst(
+            a(getHumanTypeOf(this))
+          )} cannot have both a getter or setter and a default value (${this.describe()})`
         );
       }
 
@@ -51,7 +52,9 @@ export class Attribute extends Property {
       if (setter !== undefined) {
         if (getter === undefined) {
           throw new Error(
-            `The '${this.getName()}' ${getHumanTypeOf(this)} cannot have a setter without a getter`
+            `${upperFirst(
+              a(getHumanTypeOf(this))
+            )} cannot have a setter without a getter (${this.describe()})`
           );
         }
         this._setter = setter;
@@ -85,9 +88,7 @@ export class Attribute extends Property {
     if (!this.isSet()) {
       if (throwIfUnset) {
         throw new Error(
-          `Cannot get the value of an unset ${getHumanTypeOf(this)} (${getHumanTypeOf(
-            this
-          )} name: '${this.getName()}')`
+          `Cannot get the value of an unset ${getHumanTypeOf(this)} (${this.describe()})`
         );
       }
       return undefined;
@@ -114,7 +115,7 @@ export class Attribute extends Property {
       throw new Error(
         `Cannot set the value of ${a(
           getHumanTypeOf(this)
-        )} that has a getter but no setter (${getHumanTypeOf(this)} name: ${this.getName()})`
+        )} that has a getter but no setter (${this.describe()})`
       );
     }
 
@@ -128,9 +129,9 @@ export class Attribute extends Property {
   unsetValue() {
     if (this._getter !== undefined) {
       throw new Error(
-        `Cannot unset the value of ${a(getHumanTypeOf(this))} that has a getter (${getHumanTypeOf(
-          this
-        )} name: ${this.getName()})`
+        `Cannot unset the value of ${a(
+          getHumanTypeOf(this)
+        )} that has a getter (${this.describe()})`
       );
     }
 

@@ -73,7 +73,7 @@ export const Component = (Base = Object) => {
       }
 
       if (throwIfMissing) {
-        throw new Error("Component's name is missing");
+        throw new Error('The name of the component is missing');
       }
     }
 
@@ -157,7 +157,7 @@ export const Component = (Base = Object) => {
       }
 
       if (throwIfMissing) {
-        throw new Error(`Cannot get the related component '${name}'`);
+        throw new Error(`Cannot get the related component '${name}' (${this.describeComponent()})`);
       }
     },
 
@@ -302,6 +302,12 @@ export const Component = (Base = Object) => {
       };
 
       return introspectedComponent;
+    },
+
+    // === Utilities ===
+
+    describeComponent() {
+      return `${lowerFirst(this.getComponentType())} name: '${this.getComponentName()}'`;
     }
   };
 

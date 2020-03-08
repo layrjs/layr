@@ -1,4 +1,3 @@
-import {getHumanTypeOf} from '@liaison/component';
 import ow from 'ow';
 
 import {validators} from './validator-builders';
@@ -14,18 +13,12 @@ export function normalizeValidator(validator, options = {}) {
   }
 
   if (typeof validator !== 'function') {
-    throw new Error(
-      `The specified validator is not a function (${getHumanTypeOf(
-        modelAttribute
-      )} name: '${modelAttribute.getName()}')`
-    );
+    throw new Error(`The specified validator is not a function (${modelAttribute.describe()})`);
   }
 
   if (Object.values(validators).includes(validator)) {
     throw new Error(
-      `The specified validator is a validator builder that has not been called (${getHumanTypeOf(
-        modelAttribute
-      )} name: '${modelAttribute.getName()}')`
+      `The specified validator is a validator builder that has not been called (${modelAttribute.describe()})`
     );
   }
 

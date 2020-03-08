@@ -20,7 +20,7 @@ describe('Attribute', () => {
 
     expect(attribute.isSet()).toBe(false);
     expect(() => attribute.getValue()).toThrow(
-      "Cannot get the value of an unset attribute (attribute name: 'title')"
+      "Cannot get the value of an unset attribute (component name: 'movie', attribute name: 'title')"
     );
     expect(attribute.getValue({throwIfUnset: false})).toBeUndefined();
 
@@ -56,6 +56,17 @@ describe('Attribute', () => {
     attribute.setValue('inception');
 
     expect(attribute.getValue()).toBe('Inception');
+
+    expect(
+      () =>
+        new Attribute('title', movie, {
+          setter(title) {
+            this._title = title;
+          }
+        })
+    ).toThrow(
+      "An attribute cannot have a setter without a getter (component name: 'movie', attribute name: 'title')"
+    );
   });
 
   test('Initial value', async () => {
@@ -69,6 +80,18 @@ describe('Attribute', () => {
 
     expect(attribute.isSet()).toBe(true);
     expect(attribute.getValue()).toBe(100);
+
+    expect(
+      () =>
+        new Attribute('limit', Movie, {
+          value: 100,
+          getter() {
+            return 100;
+          }
+        })
+    ).toThrow(
+      "An attribute cannot have both a getter or setter and an initial value (component name: 'Movie', attribute name: 'limit')"
+    );
   });
 
   test('Default value', async () => {
@@ -88,6 +111,20 @@ describe('Attribute', () => {
     const attributeWithoutDefault = new Attribute('duration', movie);
 
     expect(attributeWithoutDefault.getDefaultValue()).toBe(undefined);
+
+    expect(
+      () =>
+        new Attribute('title', movie, {
+          default() {
+            return '';
+          },
+          getter() {
+            return '';
+          }
+        })
+    ).toThrow(
+      "An attribute cannot have both a getter or setter and a default value (component name: 'movie', attribute name: 'title')"
+    );
   });
 
   test('Forking', async () => {

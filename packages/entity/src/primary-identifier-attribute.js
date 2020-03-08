@@ -60,7 +60,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
 
     if (previousValue !== undefined && value !== previousValue) {
       throw new Error(
-        `The value of a primary identifier attribute cannot be modified (attribute name: '${this.getName()}')`
+        `The value of a primary identifier attribute cannot be modified (${this.describe()})`
       );
     }
 

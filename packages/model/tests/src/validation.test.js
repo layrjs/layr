@@ -182,6 +182,10 @@ describe('Validation', () => {
         getName() {
           return 'modelAttribute';
         }
+
+        describe() {
+          return `attribute name: '${this.getName()}'`;
+        }
       }
 
       ModelAttribute.humanName = 'Attribute';
