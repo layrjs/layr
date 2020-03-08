@@ -1,8 +1,9 @@
 import {
-  isComponentClass,
   isComponentClassOrInstance,
   serialize,
-  deserialize
+  deserialize,
+  createComponentMap,
+  getComponentFromComponentMap
 } from '@liaison/entity';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
@@ -31,6 +32,10 @@ export class ComponentServer {
 
     const root = this.getRoot(components);
 
+    const componentMap = createComponentMap(components);
+
+    const componentGetter = name => getComponentFromComponentMap(componentMap, name);
+
     const getFilter = function(attribute) {
       return attribute.operationIsAllowed('get');
     };
@@ -58,7 +63,7 @@ export class ComponentServer {
     return possiblyAsync.call([
       () => {
         return deserialize(query, {
-          knownComponents: components,
+          componentGetter,
           attributeFilter: setFilter,
           source: 'child'
         });
@@ -68,7 +73,6 @@ export class ComponentServer {
       },
       result => {
         return serialize(result, {
-          knownComponents: components,
           attributeFilter: getFilter,
           serializeFunctions: true,
           target: 'child'
@@ -98,7 +102,7 @@ export class ComponentServer {
     }
 
     for (const component of components) {
-      if (!isComponentClass(component)) {
+      if (!isComponentClassOrInstance(component)) {
         throw new Error(
           "The 'componentProvider' function returned an array containing an item that is not a component"
         );

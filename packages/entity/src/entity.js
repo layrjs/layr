@@ -23,7 +23,15 @@ export const Entity = (Base = Object) => {
   }
 
   class Entity extends Model(Base) {
-    // === Instantiation ===
+    static getComponentType() {
+      return 'Entity';
+    }
+
+    getComponentType() {
+      return 'entity';
+    }
+
+    // === Creation ===
 
     static __instantiate(object = {}, options = {}) {
       ow(object, 'object', ow.object);
@@ -228,16 +236,6 @@ export const Entity = (Base = Object) => {
       }
 
       return this.__entityManager;
-    }
-
-    // === Introspection ===
-
-    static getComponentType() {
-      return 'Entity';
-    }
-
-    getComponentType() {
-      return 'entity';
     }
 
     // === Utilities ===

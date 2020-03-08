@@ -126,13 +126,13 @@ export function createComponentMap(components = []) {
 }
 
 export function getComponentFromComponentMap(componentMap, name) {
-  const Component = componentMap[name];
+  const component = componentMap[name];
 
-  if (Component === undefined) {
-    throw new Error(`The '${name}' component is unknown`);
+  if (component === undefined) {
+    throw new Error(`The component '${name}' is unknown`);
   }
 
-  return Component;
+  return component;
 }
 
 export function getTypeOf(value, options) {

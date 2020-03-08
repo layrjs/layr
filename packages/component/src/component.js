@@ -21,6 +21,14 @@ export const Component = (Base = Object) => {
   }
 
   class Component extends WithProperties(Base) {
+    static getComponentType() {
+      return 'Component';
+    }
+
+    getComponentType() {
+      return 'component';
+    }
+
     // === Creation ===
 
     constructor(object = {}, options) {
@@ -30,8 +38,6 @@ export const Component = (Base = Object) => {
 
       this.markAsNew();
     }
-
-    // === Instantiation ===
 
     static __instantiate(attributes = {}, options = {}) {
       ow(attributes, 'attributes', ow.object);
@@ -121,37 +127,6 @@ export const Component = (Base = Object) => {
       }
 
       return forkedComponent;
-    }
-
-    // === Introspection ===
-
-    static getComponentType() {
-      return 'Component';
-    }
-
-    getComponentType() {
-      return 'component';
-    }
-
-    static introspect() {
-      const introspectedProperties = this.introspectProperties();
-      const introspectedPrototypeProperties = this.prototype.introspectProperties();
-
-      if (introspectedProperties.length === 0 && introspectedPrototypeProperties.length === 0) {
-        return undefined;
-      }
-
-      const introspectedComponent = {name: this.getComponentName(), type: this.getComponentType()};
-
-      if (introspectedProperties.length > 0) {
-        introspectedComponent.properties = introspectedProperties;
-      }
-
-      if (introspectedPrototypeProperties.length > 0) {
-        introspectedComponent.prototype = {properties: introspectedPrototypeProperties};
-      }
-
-      return introspectedComponent;
     }
 
     // === Utilities ===
@@ -309,6 +284,24 @@ export const Component = (Base = Object) => {
           );
         }
       );
+    },
+
+    // === Introspection ===
+
+    introspect() {
+      const introspectedProperties = this.introspectProperties();
+
+      if (introspectedProperties.length === 0) {
+        return undefined;
+      }
+
+      const introspectedComponent = {
+        name: this.getComponentName(),
+        type: this.getComponentType(),
+        properties: introspectedProperties
+      };
+
+      return introspectedComponent;
     }
   };
 

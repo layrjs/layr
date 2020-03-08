@@ -1,5 +1,6 @@
 import {
   isComponentClass,
+  isComponentInstance,
   isModelClass,
   isModelAttribute,
   isEntityClass,
@@ -39,61 +40,59 @@ describe('ComponentClient', () => {
                   exposure: {get: true, set: true}
                 },
                 {name: 'find', type: 'method', exposure: {call: true}}
-              ],
-              prototype: {
-                properties: [
-                  {name: 'title', type: 'attribute', exposure: {get: true, set: true}},
-                  {
-                    name: 'isPlaying',
-                    type: 'attribute',
-                    default: {__function: 'function() { return false; }'},
-                    exposure: {get: true}
-                  },
-                  {name: 'play', type: 'method', exposure: {call: true}}
-                ]
-              }
+              ]
             },
             {
-              name: 'Film',
-              type: 'Model',
-              prototype: {
-                properties: [
-                  {
-                    name: 'title',
-                    type: 'modelAttribute',
-                    valueType: 'string',
-                    validators: [
-                      {
-                        __validator: 'value => value.length > 0',
-                        name: 'notEmpty',
-                        message: 'The validator `notEmpty()` failed'
-                      }
-                    ],
-                    exposure: {get: true, set: true}
-                  }
-                ]
-              }
+              name: 'movie',
+              type: 'component',
+              properties: [
+                {name: 'title', type: 'attribute', exposure: {get: true, set: true}},
+                {
+                  name: 'isPlaying',
+                  type: 'attribute',
+                  default: {__function: 'function() { return false; }'},
+                  exposure: {get: true}
+                },
+                {name: 'play', type: 'method', exposure: {call: true}}
+              ]
             },
             {
-              name: 'User',
-              type: 'Entity',
-              prototype: {
-                properties: [
-                  {
-                    name: 'id',
-                    type: 'primaryIdentifierAttribute',
-                    valueType: 'string',
-                    default: {__function: 'function() { return this.constructor.generateId(); }'},
-                    exposure: {get: true, set: true}
-                  },
-                  {
-                    name: 'email',
-                    type: 'secondaryIdentifierAttribute',
-                    valueType: 'string',
-                    exposure: {get: true, set: true}
-                  }
-                ]
-              }
+              name: 'film',
+              type: 'model',
+              properties: [
+                {
+                  name: 'title',
+                  type: 'modelAttribute',
+                  valueType: 'string',
+                  validators: [
+                    {
+                      __validator: 'value => value.length > 0',
+                      name: 'notEmpty',
+                      message: 'The validator `notEmpty()` failed'
+                    }
+                  ],
+                  exposure: {get: true, set: true}
+                }
+              ]
+            },
+            {
+              name: 'user',
+              type: 'entity',
+              properties: [
+                {
+                  name: 'id',
+                  type: 'primaryIdentifierAttribute',
+                  valueType: 'string',
+                  default: {__function: 'function() { return this.constructor.generateId(); }'},
+                  exposure: {get: true, set: true}
+                },
+                {
+                  name: 'email',
+                  type: 'secondaryIdentifierAttribute',
+                  valueType: 'string',
+                  exposure: {get: true, set: true}
+                }
+              ]
             }
           ]
         };
@@ -157,7 +156,7 @@ describe('ComponentClient', () => {
 
     client = new ComponentClient(server, {version: 1});
 
-    const [Movie] = client.getComponents();
+    const {Movie, movie} = client.getComponents();
 
     expect(isComponentClass(Movie)).toBe(true);
     expect(Movie.getComponentName()).toBe('Movie');
@@ -169,19 +168,23 @@ describe('ComponentClient', () => {
 
     expect(typeof Movie.find).toBe('function');
 
-    attribute = Movie.prototype.getAttribute('title');
+    expect(isComponentInstance(movie)).toBe(true);
+    expect(movie.getComponentName()).toBe('movie');
+    expect(movie).toBe(Movie.prototype);
+
+    attribute = movie.getAttribute('title');
 
     expect(attribute.isSet()).toBe(false);
     expect(attribute.getDefaultValue()).toBeUndefined();
     expect(attribute.getExposure()).toEqual({get: true, set: true});
 
-    attribute = Movie.prototype.getAttribute('isPlaying');
+    attribute = movie.getAttribute('isPlaying');
 
     expect(attribute.isSet()).toBe(false);
     expect(attribute.getDefaultValue()).toBe(false);
     expect(attribute.getExposure()).toEqual({get: true});
 
-    expect(typeof Movie.prototype.play).toBe('function');
+    expect(typeof movie.play).toBe('function');
   });
 
   test('Getting models', async () => {
@@ -189,12 +192,15 @@ describe('ComponentClient', () => {
 
     client = new ComponentClient(server, {version: 1});
 
-    const [, Film] = client.getComponents();
+    const {Film, film} = client.getComponents();
 
     expect(isModelClass(Film)).toBe(true);
     expect(Film.getComponentName()).toBe('Film');
 
-    const attribute = Film.prototype.getAttribute('title');
+    expect(isComponentInstance(film)).toBe(true);
+    expect(film.getComponentName()).toBe('film');
+
+    const attribute = film.getAttribute('title');
 
     expect(isModelAttribute(attribute)).toBe(true);
     expect(attribute.isSet()).toBe(false);
@@ -227,19 +233,22 @@ describe('ComponentClient', () => {
 
     client = new ComponentClient(server, {version: 1});
 
-    const [, , User] = client.getComponents();
+    const {User, user} = client.getComponents();
 
     expect(isEntityClass(User)).toBe(true);
     expect(User.getComponentName()).toBe('User');
 
-    let attribute = User.prototype.getAttribute('id');
+    expect(isComponentInstance(user)).toBe(true);
+    expect(user.getComponentName()).toBe('user');
+
+    let attribute = user.getAttribute('id');
 
     expect(isPrimaryIdentifierAttribute(attribute)).toBe(true);
     expect(attribute.getType().toString()).toBe('string');
     expect(typeof attribute.getDefaultValueFunction()).toBe('function');
     expect(attribute.getExposure()).toEqual({get: true, set: true});
 
-    attribute = User.prototype.getAttribute('email');
+    attribute = user.getAttribute('email');
 
     expect(isSecondaryIdentifierAttribute(attribute)).toBe(true);
     expect(attribute.getType().toString()).toBe('string');
@@ -250,9 +259,7 @@ describe('ComponentClient', () => {
   test('Invoking methods', async () => {
     const client = new ComponentClient(server, {version: 1});
 
-    const [RemoteMovie] = client.getComponents();
-
-    class Movie extends RemoteMovie {}
+    const {Movie} = client.getComponents();
 
     expect(() => Movie.find()).toThrow(/Received an unknown query/); // The token is missing
 
@@ -272,9 +279,7 @@ describe('ComponentClient', () => {
     expect(movies[0]).toBeInstanceOf(Movie);
     expect(movies[0].title).toBe('Inception');
 
-    let movie = Object.create(Movie.prototype);
-
-    movie.title = 'Inception';
+    let movie = Movie.prototype.deserialize({title: 'Inception'});
 
     movie = movie.play();
 
@@ -285,8 +290,7 @@ describe('ComponentClient', () => {
 
     expect(movie.isPlaying).toBe(true);
 
-    movie = Object.create(Movie.prototype);
-    movie.title = 'Inception';
+    movie = Movie.prototype.deserialize({title: 'Inception'});
 
     // Because 'set' is not exposed, 'isPlaying' should not be transported to the remote component
     movie.isPlaying = true;

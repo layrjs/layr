@@ -1,11 +1,11 @@
 import {
   Component,
-  isComponentClass,
+  validateComponentName,
+  getComponentClassNameFromComponentInstanceName,
   Property,
   Attribute,
   Method,
   isMethodClass,
-  createComponentMap,
   Model,
   ModelAttribute,
   Entity,
@@ -15,13 +15,12 @@ import {
   deserialize
 } from '@liaison/entity';
 import {possiblyAsync} from 'possibly-async';
-import {getClassOf} from 'core-helpers';
 import ow from 'ow';
 import debugModule from 'debug';
 
-const BaseComponentClass = Component();
-const BaseModelClass = Model();
-const BaseEntityClass = Entity();
+const BaseComponent = Component();
+const BaseModel = Model();
+const BaseEntity = Entity();
 
 const debug = debugModule('liaison:component-client');
 
@@ -53,81 +52,100 @@ export class ComponentClient {
 
     const {throwIfMissing = true} = options;
 
-    const componentMap = this._getComponentMap();
-    const Component = componentMap[name];
+    const components = this.getComponents();
+    const component = components[name];
 
-    if (Component === undefined) {
-      if (throwIfMissing) {
-        throw new Error(`The component '${name}' is missing in the component client`);
-      }
-      return undefined;
+    if (component !== undefined) {
+      return component;
     }
 
-    return Component;
+    if (throwIfMissing) {
+      throw new Error(`The component '${name}' is missing in the component client`);
+    }
   }
 
   getComponents() {
     if (this._components === undefined) {
-      this._components = this._createComponents();
+      this._createComponents();
     }
 
     return this._components;
   }
 
-  _getComponentMap() {
-    if (this._componentMap === undefined) {
-      const components = this.getComponents();
-      this._componentMap = createComponentMap(components);
-    }
-
-    return this._componentMap;
-  }
-
   _createComponents() {
+    this._components = Object.create(null);
+
     const {components: introspectedComponents} = this._introspectRemoteComponents();
 
-    return introspectedComponents.map(introspectedComponent =>
-      this._createComponent(introspectedComponent)
-    );
+    for (const introspectedComponent of introspectedComponents) {
+      this._createComponent(introspectedComponent);
+    }
   }
 
-  _createComponent(introspectedComponent) {
-    const {name, type, properties, prototype} = introspectedComponent;
+  _createComponent({name, type, properties}) {
+    let component = this._components[name];
 
-    let ComponentClass;
+    if (component === undefined) {
+      const validateComponentNameResult = validateComponentName(name);
 
-    if (type === 'Component') {
-      ComponentClass = BaseComponentClass;
-    } else if (type === 'Model') {
-      ComponentClass = BaseModelClass;
-    } else if (type === 'Entity') {
-      ComponentClass = BaseEntityClass;
-    } else {
-      throw new Error(`Unknown component type (${type}) received from a component server`);
+      if (validateComponentNameResult === 'componentClassName') {
+        component = this._createComponentClass({name, type});
+      } else {
+        component = this._createComponentPrototype({name, type});
+      }
+
+      this._components[name] = component;
+    } else if (component.getComponentType() !== type) {
+      throw new Error(
+        `Cannot change the type of an existing component (component name: '${name}', current type: '${component.getComponentType()}', specified type: '${type}')`
+      );
     }
 
-    const Component = class Component extends ComponentClass {};
+    if (properties !== undefined) {
+      for (const property of properties) {
+        this._setComponentProperty(component, property);
+      }
+    }
+
+    return component;
+  }
+
+  _createComponentClass({name, type}) {
+    validateComponentName(name, {allowInstances: false});
+    validateComponentName(type, {allowInstances: false});
+
+    let BaseComponentClass;
+
+    if (type === 'Component') {
+      BaseComponentClass = BaseComponent;
+    } else if (type === 'Model') {
+      BaseComponentClass = BaseModel;
+    } else if (type === 'Entity') {
+      BaseComponentClass = BaseEntity;
+    } else {
+      throw new Error(`Unknown component class type ('${type}') received from a component server`);
+    }
+
+    const Component = class Component extends BaseComponentClass {};
 
     Component.setComponentName(name);
-    this._setComponentProperties(Component, properties);
-    this._setComponentProperties(Component.prototype, prototype?.properties);
 
     return Component;
   }
 
-  _setComponentProperties(component, introspectedProperties) {
-    if (introspectedProperties === undefined) {
-      return;
-    }
+  _createComponentPrototype({name, type}) {
+    validateComponentName(name, {allowClasses: false});
+    validateComponentName(type, {allowClasses: false});
 
-    for (const introspectedProperty of introspectedProperties) {
-      this._setComponentProperty(component, introspectedProperty);
-    }
+    const Component = this._createComponent({
+      name: getComponentClassNameFromComponentInstanceName(name),
+      type: getComponentClassNameFromComponentInstanceName(type)
+    });
+
+    return Component.prototype;
   }
 
-  _setComponentProperty(component, introspectedProperty) {
-    const {name, type, ...options} = introspectedProperty;
-
+  _setComponentProperty(component, {name, type, ...options}) {
     let PropertyClass;
 
     if (type === 'property') {
@@ -176,11 +194,7 @@ export class ComponentClient {
         '=>self': true
       };
 
-      // TODO: if 'this' is in a layer, provide layer's components
-      // through the 'componentProvider' serialize()/deserialize() parameter
-      const knownComponents = [getClassOf(this)];
-
-      return possiblyAsync(componentClient.sendQuery(query, {knownComponents}), {
+      return possiblyAsync(componentClient.sendQuery(query), {
         then: result => result.result
       });
     };
@@ -196,24 +210,21 @@ export class ComponentClient {
     return introspection;
   }
 
-  sendQuery(query, options = {}) {
+  sendQuery(query) {
     ow(query, 'query', ow.object);
-    ow(options, 'options', ow.object.exactShape({knownComponents: ow.optional.array}));
-
-    const {knownComponents} = options;
 
     const componentClient = this;
     const componentServer = this._componentServer;
     const version = this._version;
 
+    const componentGetter = function(name) {
+      return componentClient.getComponent(name);
+    };
+
     const attributeFilter = function(attribute) {
       // Exclude properties that cannot be set in the remote components
 
-      const isClass = isComponentClass(this);
-      const LocalComponent = isClass ? this : this.constructor;
-      const RemoteComponent = componentClient.getComponent(LocalComponent.getComponentName());
-      const remoteComponent = isClass ? RemoteComponent : RemoteComponent.prototype;
-
+      const remoteComponent = componentClient.getComponent(this.getComponentName());
       const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {
         throwIfMissing: false
       });
@@ -225,13 +236,13 @@ export class ComponentClient {
       return false;
     };
 
-    query = serialize(query, {knownComponents, attributeFilter, target: 'parent'});
+    query = serialize(query, {attributeFilter, target: 'parent'});
 
     debug(`Sending query to remote components (query: %o)`, query);
     return possiblyAsync(componentServer.receiveQuery(query, {version}), {
       then: result => {
         debug(`Query sent to remote components (result: %o)`, result);
-        return deserialize(result, {knownComponents, deserializeFunctions: true, source: 'parent'});
+        return deserialize(result, {componentGetter, deserializeFunctions: true, source: 'parent'});
       }
     });
   }

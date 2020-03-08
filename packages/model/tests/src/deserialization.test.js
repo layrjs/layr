@@ -1,4 +1,4 @@
-import {Model, attribute, deserialize} from '../../..';
+import {Model, attribute} from '../../..';
 
 describe('Deserialization', () => {
   test('Model instances', async () => {
@@ -7,36 +7,28 @@ describe('Deserialization', () => {
       @attribute('string?') country;
     }
 
-    let movie = deserialize(
-      {__component: 'movie', title: 'Inception', country: 'USA'},
-      {knownComponents: [Movie]}
-    );
+    let movie = Movie.prototype.deserialize({title: 'Inception', country: 'USA'});
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie.isNew()).toBe(false);
     expect(movie.title).toBe('Inception');
     expect(movie.country).toBe('USA');
 
-    movie = deserialize({__component: 'movie', country: 'USA'}, {knownComponents: [Movie]});
+    movie = Movie.prototype.deserialize({country: 'USA'});
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie.isNew()).toBe(false);
     expect(movie.getModelAttribute('title').isSet()).toBe(false);
     expect(movie.country).toBe('USA');
 
-    movie = deserialize(
-      {__component: 'movie', __new: true, title: 'Inception', country: 'USA'},
-      {knownComponents: [Movie]}
-    );
+    movie = Movie.prototype.deserialize({__new: true, title: 'Inception', country: 'USA'});
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie.isNew()).toBe(true);
     expect(movie.title).toBe('Inception');
     expect(movie.country).toBe('USA');
 
-    expect(() =>
-      deserialize({__component: 'movie', __new: true, country: 'USA'}, {knownComponents: [Movie]})
-    ).toThrow(
+    expect(() => Movie.prototype.deserialize({__new: true, country: 'USA'})).toThrow(
       "Cannot assign a value of an unexpected type to the attribute 'title' (expected type: 'string', received type: 'undefined')"
     );
   });

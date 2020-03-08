@@ -216,7 +216,7 @@ describe('Model', () => {
       @attribute('string') name = '';
     }
 
-    Movie.registerRelatedComponent(Person);
+    Movie.prototype.registerRelatedComponent(Person.prototype);
 
     expect(Movie.prototype.expandAttributeSelector(true)).toStrictEqual({
       title: true,
@@ -248,7 +248,7 @@ describe('Model', () => {
       @attribute('string', {validators: [notEmpty]}) name = '';
     }
 
-    Movie.registerRelatedComponent(Person);
+    Movie.prototype.registerRelatedComponent(Person.prototype);
 
     const movie = new Movie();
 
