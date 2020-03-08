@@ -4,9 +4,14 @@ import ow from 'ow';
 import {ModelAttribute} from './model-attribute';
 import {isModelClass, isModel} from './utilities';
 
-export {attribute as componentAttribute} from '@liaison/component';
+import {attribute as componentAttribute} from '@liaison/component';
 
-export function modelAttribute(type, options = {}, {_decoratorName = 'modelAttribute'} = {}) {
+export function attribute(type, options = {}) {
+  if (typeof type !== 'string') {
+    options = type;
+    return componentAttribute(options);
+  }
+
   ow(type, 'type', ow.string.nonEmpty);
   ow(options, 'options', ow.object);
 
@@ -18,9 +23,7 @@ export function modelAttribute(type, options = {}, {_decoratorName = 'modelAttri
     ow(descriptor, 'descriptor', ow.object);
 
     if (!(isModelClass(target) || isModel(target))) {
-      throw new Error(
-        `@${_decoratorName}() target doesn't inherit from Model (property name: '${name}')`
-      );
+      throw new Error(`@attribute() target doesn't inherit from Model (property name: '${name}')`);
     }
 
     if (
@@ -30,14 +33,10 @@ export function modelAttribute(type, options = {}, {_decoratorName = 'modelAttri
       )
     ) {
       throw new Error(
-        `@${_decoratorName}() cannot be used without an attribute declaration (property name: '${name}')`
+        `@attribute() cannot be used without an attribute declaration (property name: '${name}')`
       );
     }
 
     return _decorateAttribute({target, name, descriptor, AttributeClass: ModelAttribute, options});
   };
-}
-
-export function attribute(type, options) {
-  return modelAttribute(type, options, {_decoratorName: 'attribute'});
 }

@@ -1,9 +1,8 @@
 import {
   Component,
-  componentAttribute,
   expose,
   Model,
-  modelAttribute,
+  attribute,
   Entity,
   primaryIdentifier,
   secondaryIdentifier,
@@ -17,10 +16,10 @@ describe('ComponentServer', () => {
     const provider = function() {
       class Movie extends Component() {
         @expose({call: true}) static find() {}
-        @componentAttribute() static limit;
+        @attribute() static limit;
 
         @expose({get: true, set: true}) title = '';
-        @componentAttribute() rating;
+        @attribute() rating;
       }
 
       return [Movie, Movie.prototype];
@@ -61,7 +60,7 @@ describe('ComponentServer', () => {
     const provider = function() {
       class Movie extends Model() {
         @expose({get: true, set: true})
-        @modelAttribute('string', {validators: [validators.notEmpty()]})
+        @attribute('string', {validators: [validators.notEmpty()]})
         title;
       }
 
@@ -146,11 +145,11 @@ describe('ComponentServer', () => {
   test('Accessing attributes', async () => {
     const provider = function() {
       class Movie extends Component() {
-        @componentAttribute() static limit = 100;
+        @attribute() static limit = 100;
         @expose({get: true, set: true}) static offset = 0;
 
         @expose({get: true, set: true}) title = '';
-        @componentAttribute() rating;
+        @attribute() rating;
       }
 
       return [Movie, Movie.prototype];

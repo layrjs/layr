@@ -1,10 +1,11 @@
-import {Model, attribute, isModelAttribute} from '../../..';
+import {Model, attribute, isModelAttribute, isAttribute} from '../../..';
 
 describe('Decorators', () => {
   test('@attribute()', async () => {
     class Movie extends Model() {
       @attribute('number?') static limit = 100;
       @attribute('string?') static token;
+      @attribute() static anything;
 
       @attribute('string?') title = '';
       @attribute('string?') country;
@@ -25,6 +26,15 @@ describe('Decorators', () => {
     expect(classModelAttribute.getParent()).toBe(Movie);
     expect(classModelAttribute.getValue()).toBeUndefined();
     expect(Movie.token).toBeUndefined();
+
+    const classAttribute = Movie.getAttribute('anything');
+
+    expect(isAttribute(classAttribute)).toBe(true);
+    expect(isModelAttribute(classAttribute)).toBe(false);
+    expect(classAttribute.getName()).toBe('anything');
+    expect(classAttribute.getParent()).toBe(Movie);
+    expect(classAttribute.getValue()).toBeUndefined();
+    expect(Movie.anything).toBeUndefined();
 
     let prototypeModelAttribute = Movie.prototype.getModelAttribute('title');
 
