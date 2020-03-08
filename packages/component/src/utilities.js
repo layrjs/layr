@@ -21,9 +21,7 @@ export function isComponentClassOrInstance(object) {
 export function validateIsComponentClass(object) {
   if (!isComponentClass(object)) {
     throw new Error(
-      `Expected a component class, but received a value of type '${getTypeOf(object, {
-        humanize: true
-      })}'`
+      `Expected a component class, but received a value of type '${getHumanTypeOf(object)}'`
     );
   }
 }
@@ -31,9 +29,7 @@ export function validateIsComponentClass(object) {
 export function validateIsComponentInstance(object) {
   if (!isComponentInstance(object)) {
     throw new Error(
-      `Expected a component instance, but received a value of type '${getTypeOf(object, {
-        humanize: true
-      })}'`
+      `Expected a component instance, but received a value of type '${getHumanTypeOf(object)}'`
     );
   }
 }
@@ -41,9 +37,9 @@ export function validateIsComponentInstance(object) {
 export function validateIsComponentClassOrInstance(object) {
   if (!isComponentClassOrInstance(object)) {
     throw new Error(
-      `Expected a component class or instance, but received a value of type '${getTypeOf(object, {
-        humanize: true
-      })}'`
+      `Expected a component class or instance, but received a value of type '${getHumanTypeOf(
+        object
+      )}'`
     );
   }
 }
@@ -141,4 +137,8 @@ export function getTypeOf(value, options) {
   }
 
   return coreGetTypeOf(value, options);
+}
+
+export function getHumanTypeOf(value) {
+  return getTypeOf(value, {humanize: true});
 }

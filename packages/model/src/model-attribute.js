@@ -1,4 +1,4 @@
-import {Attribute, getTypeOf} from '@liaison/component';
+import {Attribute, getHumanTypeOf} from '@liaison/component';
 import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
 import ow from 'ow';
 
@@ -112,9 +112,9 @@ export class ModelAttribute extends Observable(Attribute) {
 
     const error = Object.assign(
       new Error(
-        `The following error(s) occurred while validating the ${getTypeOf(this, {
-          humanize: true
-        })} '${this.getName()}': ${details}`
+        `The following error(s) occurred while validating the ${getHumanTypeOf(
+          this
+        )} '${this.getName()}': ${details}`
       ),
       {failedValidators}
     );
@@ -131,9 +131,9 @@ export class ModelAttribute extends Observable(Attribute) {
   runValidators() {
     if (!this.isSet()) {
       throw new Error(
-        `Cannot run the validators of an unset ${getTypeOf(this, {
-          humanize: true
-        })} (${getTypeOf(this, {humanize: true})} name: '${this.getName()}')`
+        `Cannot run the validators of an unset ${getHumanTypeOf(this)} (${getHumanTypeOf(
+          this
+        )} name: '${this.getName()}')`
       );
     }
 

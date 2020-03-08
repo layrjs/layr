@@ -1,4 +1,4 @@
-import {ModelAttribute, getTypeOf} from '@liaison/model';
+import {ModelAttribute, getHumanTypeOf} from '@liaison/model';
 import ow from 'ow';
 
 export class IdentifierAttribute extends ModelAttribute {
@@ -11,17 +11,17 @@ export class IdentifierAttribute extends ModelAttribute {
 
     if (type.endsWith('?')) {
       throw new Error(
-        `The value of an identifier attribute cannot be optional (${getTypeOf(this, {
-          humanize: true
-        })} name: '${this.getName()}', specified type: '${type}')`
+        `The value of an identifier attribute cannot be optional (${getHumanTypeOf(
+          this
+        )} name: '${this.getName()}', specified type: '${type}')`
       );
     }
 
     if (type !== 'string' && type !== 'number') {
       throw new Error(
-        `The type of an identifier attribute must be 'string' or 'number' (${getTypeOf(this, {
-          humanize: true
-        })} name: '${this.getName()}', specified type: '${type}')`
+        `The type of an identifier attribute must be 'string' or 'number' (${getHumanTypeOf(
+          this
+        )} name: '${this.getName()}', specified type: '${type}')`
       );
     }
 

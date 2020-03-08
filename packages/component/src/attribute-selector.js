@@ -3,7 +3,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import isPlainObject from 'lodash/isPlainObject';
 import ow from 'ow';
 
-import {getTypeOf} from './utilities';
+import {getHumanTypeOf} from './utilities';
 
 export const AttributeSelector = {
   fromNames(names) {
@@ -169,9 +169,8 @@ export const AttributeSelector = {
     }
 
     throw new Error(
-      `Expected a valid attribute selector, but received a value of type '${getTypeOf(
-        attributeSelector,
-        {humanize: true}
+      `Expected a valid attribute selector, but received a value of type '${getHumanTypeOf(
+        attributeSelector
       )}'`
     );
   }

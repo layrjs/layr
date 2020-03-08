@@ -1,4 +1,4 @@
-import {getTypeOf} from '@liaison/component';
+import {getHumanTypeOf} from '@liaison/component';
 import ow from 'ow';
 
 import {runValidators, normalizeValidator} from '../validation';
@@ -44,11 +44,10 @@ export class Type {
 
     if (!this._checkValue(value, {modelAttribute})) {
       throw new Error(
-        `Cannot assign a value of an unexpected type to the ${getTypeOf(modelAttribute, {
-          humanize: true
-        })} '${modelAttribute.getName()}' (expected type: '${this.toString()}', received type: '${getTypeOf(
-          value,
-          {humanize: true}
+        `Cannot assign a value of an unexpected type to the ${getHumanTypeOf(
+          modelAttribute
+        )} '${modelAttribute.getName()}' (expected type: '${this.toString()}', received type: '${getHumanTypeOf(
+          value
         )}')`
       );
     }
