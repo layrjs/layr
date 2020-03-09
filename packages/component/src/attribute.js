@@ -4,6 +4,7 @@ import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
 import {Property} from './property';
+import {fork} from './forking';
 import {getHumanTypeOf} from './utilities';
 
 export class Attribute extends Property {
@@ -99,7 +100,7 @@ export class Attribute extends Property {
     }
 
     if (autoFork && !hasOwnProperty(this, '_value')) {
-      this._value = forkValue(this._value);
+      this._value = fork(this._value);
     }
 
     return this._value;
@@ -206,8 +207,4 @@ export function isAttributeClass(object) {
 
 export function isAttribute(object) {
   return isAttributeClass(object?.constructor) === true;
-}
-
-function forkValue(value) {
-  return value; // TODO
 }

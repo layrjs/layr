@@ -111,20 +111,21 @@ export const Component = (Base = Object) => {
       return class extends this {};
     }
 
+    // eslint-disable-next-line no-unused-vars
     fork(Component) {
       // TODO: Altering the constructor sounds wrong
-      ow(Component, 'Component', ow.optional.function);
+      // ow(Component, 'Component', ow.optional.function);
 
       const forkedComponent = Object.create(this);
 
-      if (Component !== undefined) {
-        Object.defineProperty(forkedComponent, 'constructor', {
-          value: Component,
-          writable: true,
-          enumerable: false,
-          configurable: true
-        });
-      }
+      // if (Component !== undefined) {
+      //   Object.defineProperty(forkedComponent, 'constructor', {
+      //     value: Component,
+      //     writable: true,
+      //     enumerable: false,
+      //     configurable: true
+      //   });
+      // }
 
       return forkedComponent;
     }

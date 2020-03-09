@@ -133,34 +133,6 @@ describe('Component', () => {
     expect(movie.isNew()).toBe(true);
   });
 
-  test('Forking', async () => {
-    class Movie extends Component() {
-      @attribute() static limit = 100;
-
-      @attribute() title = '';
-    }
-
-    const ForkedMovie = Movie.fork();
-
-    expect(ForkedMovie.limit).toBe(100);
-
-    ForkedMovie.limit = 500;
-
-    expect(ForkedMovie.limit).toBe(500);
-    expect(Movie.limit).toBe(100);
-
-    const movie = new Movie();
-
-    const forkedMovie = movie.fork();
-
-    expect(forkedMovie.title).toBe('');
-
-    forkedMovie.title = 'Inception';
-
-    expect(forkedMovie.title).toBe('Inception');
-    expect(movie.title).toBe('');
-  });
-
   test('Introspection', async () => {
     class Movie extends Component() {
       @attribute() static limit = 100;
