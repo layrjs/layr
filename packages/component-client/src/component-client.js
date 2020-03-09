@@ -74,15 +74,26 @@ export class ComponentClient {
 
   _createComponents() {
     this._components = Object.create(null);
+    this.__relatedComponentNames = new Map();
 
     const {components: introspectedComponents} = this._introspectRemoteComponents();
 
     for (const introspectedComponent of introspectedComponents) {
       this._createComponent(introspectedComponent);
     }
+
+    for (const [component, relatedComponentNames] of this.__relatedComponentNames.entries()) {
+      for (const relatedComponentName of relatedComponentNames) {
+        const relatedComponent = this._components[relatedComponentName];
+
+        if (relatedComponent !== undefined) {
+          component.registerRelatedComponent(relatedComponent);
+        }
+      }
+    }
   }
 
-  _createComponent({name, type, properties}) {
+  _createComponent({name, type, properties, relatedComponents}) {
     let component = this._components[name];
 
     if (component === undefined) {
@@ -105,6 +116,10 @@ export class ComponentClient {
       for (const property of properties) {
         this._setComponentProperty(component, property);
       }
+    }
+
+    if (relatedComponents !== undefined) {
+      this.__relatedComponentNames.set(component, relatedComponents);
     }
 
     return component;

@@ -172,6 +172,12 @@ describe('Component', () => {
       @method() load() {}
     }
 
+    class Cinema extends Component() {
+      @attribute() movies;
+    }
+
+    Cinema.prototype.registerRelatedComponent(Movie.prototype);
+
     const defaultTitle = Movie.prototype.getAttribute('title').getDefaultValueFunction();
 
     expect(typeof defaultTitle).toBe('function');
@@ -202,12 +208,29 @@ describe('Component', () => {
 
     expect(Movie.prototype.introspect()).toBeUndefined();
 
+    expect(Cinema.prototype.introspect()).toBeUndefined();
+
+    Cinema.prototype.getAttribute('movies').setExposure({get: true});
+
+    expect(Cinema.prototype.introspect()).toStrictEqual({
+      name: 'cinema',
+      type: 'component',
+      properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
+    });
+
     Movie.prototype.getAttribute('title').setExposure({get: true});
 
     expect(Movie.prototype.introspect()).toStrictEqual({
       name: 'movie',
       type: 'component',
       properties: [{name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}]
+    });
+
+    expect(Cinema.prototype.introspect()).toStrictEqual({
+      name: 'cinema',
+      type: 'component',
+      properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}],
+      relatedComponents: ['movie']
     });
 
     Movie.prototype.getAttribute('country').setExposure({get: true});

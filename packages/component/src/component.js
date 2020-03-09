@@ -169,6 +169,10 @@ export const Component = (Base = Object) => {
       relatedComponents[componentName] = component;
     },
 
+    getRelatedComponents() {
+      return Object.values(this.__getRelatedComponents());
+    },
+
     __getRelatedComponents() {
       if (this.__relatedComponents === undefined) {
         Object.defineProperty(this, '__relatedComponents', {
@@ -301,7 +305,25 @@ export const Component = (Base = Object) => {
         properties: introspectedProperties
       };
 
+      const introspectedRelatedComponents = this.__introspectRelatedComponents();
+
+      if (introspectedRelatedComponents.length > 0) {
+        introspectedComponent.relatedComponents = introspectedRelatedComponents;
+      }
+
       return introspectedComponent;
+    },
+
+    __introspectRelatedComponents() {
+      const introspectedRelatedComponents = [];
+
+      for (const relatedComponent of this.getRelatedComponents()) {
+        if (relatedComponent.introspectProperties().length > 0) {
+          introspectedRelatedComponents.push(relatedComponent.getComponentName());
+        }
+      }
+
+      return introspectedRelatedComponents;
     },
 
     // === Utilities ===

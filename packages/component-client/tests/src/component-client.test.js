@@ -57,6 +57,18 @@ describe('ComponentClient', () => {
               ]
             },
             {
+              name: 'cinema',
+              type: 'component',
+              properties: [
+                {
+                  name: 'movies',
+                  type: 'attribute',
+                  exposure: {get: true}
+                }
+              ],
+              relatedComponents: ['movie']
+            },
+            {
               name: 'film',
               type: 'model',
               properties: [
@@ -156,7 +168,7 @@ describe('ComponentClient', () => {
 
     client = new ComponentClient(server, {version: 1});
 
-    const {Movie, movie} = client.getComponents();
+    const {Movie, movie, Cinema, cinema} = client.getComponents();
 
     expect(isComponentClass(Movie)).toBe(true);
     expect(Movie.getComponentName()).toBe('Movie');
@@ -185,6 +197,11 @@ describe('ComponentClient', () => {
     expect(attribute.getExposure()).toEqual({get: true});
 
     expect(typeof movie.play).toBe('function');
+
+    expect(isComponentInstance(cinema)).toBe(true);
+    expect(cinema.getComponentName()).toBe('cinema');
+    expect(cinema).toBe(Cinema.prototype);
+    expect(cinema.getRelatedComponents()).toEqual([movie]);
   });
 
   test('Getting models', async () => {

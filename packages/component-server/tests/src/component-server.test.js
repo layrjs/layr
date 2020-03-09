@@ -22,7 +22,13 @@ describe('ComponentServer', () => {
         @attribute() rating;
       }
 
-      return [Movie, Movie.prototype];
+      class Cinema extends Component() {
+        @expose({get: true}) @attribute() movies;
+      }
+
+      Cinema.prototype.registerRelatedComponent(Movie.prototype);
+
+      return [Movie, Movie.prototype, Cinema.prototype];
     };
 
     const server = new ComponentServer(provider);
@@ -47,6 +53,18 @@ describe('ComponentServer', () => {
               exposure: {get: true, set: true}
             }
           ]
+        },
+        {
+          name: 'cinema',
+          type: 'component',
+          properties: [
+            {
+              name: 'movies',
+              type: 'attribute',
+              exposure: {get: true}
+            }
+          ],
+          relatedComponents: ['movie']
         }
       ]
     });
