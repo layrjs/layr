@@ -1,8 +1,9 @@
-import {hasOwnProperty} from 'core-helpers';
+import {hasOwnProperty, getClassOf} from 'core-helpers';
 import ow from 'ow';
 
+import {Property} from './property';
 import {Attribute, isAttributeClass, isAttribute} from './attribute';
-import {Method, isMethod} from './method';
+import {Method, isMethodClass, isMethod} from './method';
 import {AttributeSelector} from './attribute-selector';
 import {getTypeOf} from './utilities';
 
@@ -14,6 +15,24 @@ export const WithProperties = (Base = Object) => {
   }
 
   class WithProperties extends Base {
+    static getPropertyClass(type) {
+      ow(type, 'type', ow.string.nonEmpty);
+
+      if (type === 'property') {
+        return Property;
+      }
+
+      if (type === 'attribute') {
+        return Attribute;
+      }
+
+      if (type === 'method') {
+        return Method;
+      }
+
+      throw new Error(`The specified property type ('${type}') is unknown`);
+    }
+
     constructor(object = {}, options = {}) {
       ow(object, 'object', ow.object);
       ow(
@@ -84,9 +103,16 @@ export const WithProperties = (Base = Object) => {
       ow(name, 'name', ow.string.nonEmpty);
       ow(PropertyClass, 'PropertyClass', ow.function);
       ow(propertyOptions, 'propertyOptions', ow.object);
-      ow(options, 'options', ow.object.exactShape({returnDescriptor: ow.optional.boolean}));
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          methodCreator: ow.optional.function,
+          returnDescriptor: ow.optional.boolean
+        })
+      );
 
-      const {returnDescriptor = false} = options;
+      const {methodCreator, returnDescriptor = false} = options;
 
       let property = this.getProperty(name, {throwIfMissing: false});
 
@@ -118,6 +144,15 @@ export const WithProperties = (Base = Object) => {
         }
 
         Object.defineProperty(this, name, descriptor);
+      }
+
+      if (isMethodClass(PropertyClass) && methodCreator !== undefined) {
+        Object.defineProperty(this, name, {
+          value: methodCreator(name),
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
       }
 
       return property;
@@ -444,6 +479,20 @@ export const WithProperties = (Base = Object) => {
       }
 
       return introspectedProperties;
+    },
+
+    unintrospectProperties(introspectedProperties, options = {}) {
+      ow(introspectedProperties, 'introspectedProperties', ow.array);
+      ow(options, 'options', ow.object.exactShape({methodCreator: ow.optional.function}));
+
+      const {methodCreator} = options;
+
+      for (const introspectedProperty of introspectedProperties) {
+        const {type, ...introspectedPropertyWithoutType} = introspectedProperty;
+        const PropertyClass = getClassOf(this).getPropertyClass(type);
+        const {name, options} = PropertyClass.unintrospect(introspectedPropertyWithoutType);
+        this.setProperty(name, PropertyClass, options, {methodCreator});
+      }
     },
 
     // === Utilities ===

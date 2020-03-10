@@ -4,7 +4,7 @@ import {
   deserialize,
   createComponentMap,
   getComponentFromComponentMap
-} from '@liaison/entity';
+} from '@liaison/component';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';

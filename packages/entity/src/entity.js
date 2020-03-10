@@ -31,6 +31,20 @@ export const Entity = (Base = Object) => {
       return 'entity';
     }
 
+    static getPropertyClass(type) {
+      ow(type, 'type', ow.string.nonEmpty);
+
+      if (type === 'primaryIdentifierAttribute') {
+        return PrimaryIdentifierAttribute;
+      }
+
+      if (type === 'secondaryIdentifierAttribute') {
+        return SecondaryIdentifierAttribute;
+      }
+
+      return super.getPropertyClass(type);
+    }
+
     // === Creation ===
 
     static __instantiate(object = {}, options = {}) {

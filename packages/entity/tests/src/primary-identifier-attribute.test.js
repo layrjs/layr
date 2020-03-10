@@ -84,4 +84,36 @@ describe('PrimaryIdentifierAttribute', () => {
       exposure: {get: true}
     });
   });
+
+  test('Unintrospection', async () => {
+    expect(
+      PrimaryIdentifierAttribute.unintrospect({
+        name: 'id',
+        valueType: 'string',
+        default: primaryIdentifierAttributeStringDefaultValue,
+        exposure: {get: true}
+      })
+    ).toEqual({
+      name: 'id',
+      options: {
+        type: 'string',
+        default: primaryIdentifierAttributeStringDefaultValue,
+        exposure: {get: true}
+      }
+    });
+
+    expect(
+      PrimaryIdentifierAttribute.unintrospect({
+        name: 'id',
+        valueType: 'number',
+        exposure: {get: true}
+      })
+    ).toEqual({
+      name: 'id',
+      options: {
+        type: 'number',
+        exposure: {get: true}
+      }
+    });
+  });
 });

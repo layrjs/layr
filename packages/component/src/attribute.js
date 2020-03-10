@@ -172,9 +172,9 @@ export class Attribute extends Property {
   // === Introspection ===
 
   introspect() {
-    const introspection = super.introspect();
+    const introspectedAttribute = super.introspect();
 
-    if (introspection === undefined) {
+    if (introspectedAttribute === undefined) {
       return undefined;
     }
 
@@ -182,16 +182,45 @@ export class Attribute extends Property {
     const getIsExposed = exposure !== undefined ? hasOwnProperty(exposure, 'get') : false;
 
     if (getIsExposed && this.isSet()) {
-      introspection.value = this.getValue();
+      introspectedAttribute.value = this.getValue();
     }
 
     const defaultValueFunction = this.getDefaultValueFunction();
 
     if (defaultValueFunction !== undefined) {
-      introspection.default = defaultValueFunction;
+      introspectedAttribute.default = defaultValueFunction;
     }
 
-    return introspection;
+    return introspectedAttribute;
+  }
+
+  static unintrospect(introspectedAttribute) {
+    ow(
+      introspectedAttribute,
+      'introspectedAttribute',
+      ow.object.partialShape({value: ow.optional.any, default: ow.optional.function})
+    );
+
+    const {
+      value: initialValue,
+      default: defaultValue,
+      ...introspectedProperty
+    } = introspectedAttribute;
+
+    const hasInitialValue = 'value' in introspectedAttribute;
+    const hasDefaultValue = 'default' in introspectedAttribute;
+
+    const {name, options} = super.unintrospect(introspectedProperty);
+
+    if (hasInitialValue) {
+      options.value = initialValue;
+    }
+
+    if (hasDefaultValue) {
+      options.default = defaultValue;
+    }
+
+    return {name, options};
   }
 
   // === Utilities ===

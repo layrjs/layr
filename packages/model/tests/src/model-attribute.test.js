@@ -201,7 +201,13 @@ describe('ModelAttribute', () => {
       name: 'title',
       type: 'modelAttribute',
       valueType: 'string?',
-      validators: [notEmpty],
+      validators: [
+        {
+          name: 'notEmpty',
+          function: notEmpty.getFunction(),
+          message: 'The validator `notEmpty()` failed'
+        }
+      ],
       exposure: {get: true}
     });
 
@@ -227,7 +233,15 @@ describe('ModelAttribute', () => {
       name: 'tags',
       type: 'modelAttribute',
       valueType: '[string]',
-      items: {validators: [notEmpty]},
+      items: {
+        validators: [
+          {
+            name: 'notEmpty',
+            function: notEmpty.getFunction(),
+            message: 'The validator `notEmpty()` failed'
+          }
+        ]
+      },
       exposure: {get: true}
     });
 
@@ -241,8 +255,108 @@ describe('ModelAttribute', () => {
       name: 'tags',
       type: 'modelAttribute',
       valueType: '[[string]]',
-      items: {items: {validators: [notEmpty]}},
+      items: {
+        items: {
+          validators: [
+            {
+              name: 'notEmpty',
+              function: notEmpty.getFunction(),
+              message: 'The validator `notEmpty()` failed'
+            }
+          ]
+        }
+      },
       exposure: {get: true}
     });
+  });
+
+  test('Unintrospection', async () => {
+    expect(
+      ModelAttribute.unintrospect({
+        name: 'limit',
+        valueType: 'number',
+        value: 100,
+        exposure: {get: true}
+      })
+    ).toEqual({
+      name: 'limit',
+      options: {type: 'number', value: 100, exposure: {get: true}}
+    });
+
+    const notEmptyFunction = validators.notEmpty().getFunction();
+
+    let {name, options} = ModelAttribute.unintrospect({
+      name: 'title',
+      valueType: 'string?',
+      validators: [
+        {
+          name: 'notEmpty',
+          function: notEmptyFunction,
+          message: 'The validator `notEmpty()` failed'
+        }
+      ],
+      exposure: {get: true}
+    });
+
+    expect(name).toBe('title');
+    expect(options.type).toBe('string?');
+    expect(options.validators).toHaveLength(1);
+    expect(options.validators[0].getName()).toBe('notEmpty');
+    expect(options.validators[0].getFunction()).toBe(notEmptyFunction);
+    expect(options.validators[0].getMessage()).toBe('The validator `notEmpty()` failed');
+    expect(options.exposure).toEqual({get: true});
+
+    ({name, options} = ModelAttribute.unintrospect({
+      name: 'tags',
+      valueType: '[string]',
+      items: {
+        validators: [
+          {
+            name: 'notEmpty',
+            function: notEmptyFunction,
+            message: 'The validator `notEmpty()` failed'
+          }
+        ]
+      },
+      exposure: {get: true}
+    }));
+
+    expect(name).toBe('tags');
+    expect(options.type).toBe('[string]');
+    expect(options.validators).toBeUndefined();
+    expect(options.items.validators).toHaveLength(1);
+    expect(options.items.validators[0].getName()).toBe('notEmpty');
+    expect(options.items.validators[0].getFunction()).toBe(notEmptyFunction);
+    expect(options.items.validators[0].getMessage()).toBe('The validator `notEmpty()` failed');
+    expect(options.exposure).toEqual({get: true});
+
+    ({name, options} = ModelAttribute.unintrospect({
+      name: 'tags',
+      valueType: '[[string]]',
+      items: {
+        items: {
+          validators: [
+            {
+              name: 'notEmpty',
+              function: notEmptyFunction,
+              message: 'The validator `notEmpty()` failed'
+            }
+          ]
+        }
+      },
+      exposure: {get: true}
+    }));
+
+    expect(name).toBe('tags');
+    expect(options.type).toBe('[[string]]');
+    expect(options.validators).toBeUndefined();
+    expect(options.items.validators).toBeUndefined();
+    expect(options.items.items.validators).toHaveLength(1);
+    expect(options.items.items.validators[0].getName()).toBe('notEmpty');
+    expect(options.items.items.validators[0].getFunction()).toBe(notEmptyFunction);
+    expect(options.items.items.validators[0].getMessage()).toBe(
+      'The validator `notEmpty()` failed'
+    );
+    expect(options.exposure).toEqual({get: true});
   });
 });

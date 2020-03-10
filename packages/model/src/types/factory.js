@@ -8,6 +8,7 @@ import {DateType} from './date-type';
 import {RegExpType} from './regexp-type';
 import {ArrayType} from './array-type';
 import {ComponentType} from './component-type';
+import {Validator} from '../validation';
 
 const TYPE_MAP = new Map(
   Object.entries({
@@ -64,4 +65,28 @@ export function createType(specifier, options = {}) {
   const componentName = typeName;
 
   return new ComponentType({componentName, isOptional, validators, modelAttribute});
+}
+
+export function unintrospectType({
+  valueType,
+  validators: introspectedValidators,
+  items: introspectedItems
+}) {
+  let unintrospectedValidators;
+  let unintrospectedItems;
+
+  if (introspectedValidators !== undefined) {
+    unintrospectedValidators = introspectedValidators.map(introspectedValidator => {
+      const {name, function: func, arguments: args, message} = Validator.unintrospect(
+        introspectedValidator
+      );
+      return new Validator(func, {name, arguments: args, message});
+    });
+  }
+
+  if (introspectedItems !== undefined) {
+    unintrospectedItems = unintrospectType(introspectedItems);
+  }
+
+  return {type: valueType, validators: unintrospectedValidators, items: unintrospectedItems};
 }

@@ -21,6 +21,16 @@ export const Model = (Base = Object) => {
       return 'model';
     }
 
+    static getPropertyClass(type) {
+      ow(type, 'type', ow.string.nonEmpty);
+
+      if (type === 'modelAttribute') {
+        return ModelAttribute;
+      }
+
+      return super.getPropertyClass(type);
+    }
+
     static isModel(object) {
       return isModel(object);
     }

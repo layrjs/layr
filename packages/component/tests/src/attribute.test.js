@@ -168,6 +168,7 @@ describe('Attribute', () => {
     const defaultTitle = function() {
       return '';
     };
+
     expect(
       new Attribute('title', Movie.prototype, {
         default: defaultTitle,
@@ -178,6 +179,31 @@ describe('Attribute', () => {
       type: 'attribute',
       default: defaultTitle,
       exposure: {get: true}
+    });
+  });
+
+  test('Unintrospection', async () => {
+    expect(Attribute.unintrospect({name: 'limit', exposure: {get: true}})).toStrictEqual({
+      name: 'limit',
+      options: {exposure: {get: true}}
+    });
+
+    expect(
+      Attribute.unintrospect({name: 'limit', value: 100, exposure: {get: true}})
+    ).toStrictEqual({
+      name: 'limit',
+      options: {value: 100, exposure: {get: true}}
+    });
+
+    const defaultTitle = function() {
+      return '';
+    };
+
+    expect(
+      Attribute.unintrospect({name: 'title', default: defaultTitle, exposure: {get: true}})
+    ).toStrictEqual({
+      name: 'title',
+      options: {default: defaultTitle, exposure: {get: true}}
     });
   });
 });

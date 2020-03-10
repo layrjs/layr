@@ -2,7 +2,7 @@ import {Attribute, getHumanTypeOf} from '@liaison/component';
 import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
 import ow from 'ow';
 
-import {createType} from './types/factory';
+import {createType, unintrospectType} from './types/factory';
 
 export class ModelAttribute extends Observable(Attribute) {
   // === Options ===
@@ -143,15 +143,46 @@ export class ModelAttribute extends Observable(Attribute) {
   // === Introspection ===
 
   introspect() {
-    const introspection = super.introspect();
+    const introspectedModelAttribute = super.introspect();
 
-    if (introspection === undefined) {
+    if (introspectedModelAttribute === undefined) {
       return undefined;
     }
 
-    Object.assign(introspection, this.getType().introspect());
+    Object.assign(introspectedModelAttribute, this.getType().introspect());
 
-    return introspection;
+    return introspectedModelAttribute;
+  }
+
+  static unintrospect(introspectedModelAttribute) {
+    ow(
+      introspectedModelAttribute,
+      'introspectedModelAttribute',
+      ow.object.partialShape({
+        valueType: ow.string.nonEmpty,
+        validators: ow.optional.array,
+        items: ow.optional.object
+      })
+    );
+
+    const {
+      valueType,
+      validators: introspectedValidators,
+      items: introspectedItems,
+      ...introspectedAttribute
+    } = introspectedModelAttribute;
+
+    const {name, options} = super.unintrospect(introspectedAttribute);
+
+    const {type, validators, items} = unintrospectType({
+      valueType,
+      validators: introspectedValidators,
+      items: introspectedItems
+    });
+
+    Object.assign(options, {type, validators, items});
+
+    return {name, options};
   }
 
   // === Utilities ===

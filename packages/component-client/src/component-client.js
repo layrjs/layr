@@ -1,26 +1,13 @@
 import {
-  Component,
   validateComponentName,
   getComponentClassNameFromComponentInstanceName,
-  Property,
-  Attribute,
-  Method,
-  isMethodClass,
-  Model,
-  ModelAttribute,
-  Entity,
-  PrimaryIdentifierAttribute,
-  SecondaryIdentifierAttribute,
+  createComponentMap,
   serialize,
   deserialize
-} from '@liaison/entity';
+} from '@liaison/component';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import debugModule from 'debug';
-
-const BaseComponent = Component();
-const BaseModel = Model();
-const BaseEntity = Entity();
 
 const debug = debugModule('liaison:component-client');
 
@@ -30,7 +17,11 @@ const debug = debugModule('liaison:component-client');
 export class ComponentClient {
   constructor(componentServer, options = {}) {
     ow(componentServer, 'componentServer', ow.object);
-    ow(options, 'options', ow.object.exactShape({version: ow.optional.number.integer}));
+    ow(
+      options,
+      'options',
+      ow.object.exactShape({version: ow.optional.number.integer, baseComponents: ow.optional.array})
+    );
 
     if (typeof componentServer.receiveQuery !== 'function') {
       throw new Error(
@@ -38,10 +29,11 @@ export class ComponentClient {
       );
     }
 
-    const {version} = options;
+    const {version, baseComponents = []} = options;
 
     this._componentServer = componentServer;
     this._version = version;
+    this._baseComponents = createComponentMap(baseComponents);
   }
 
   // TODO: Make getComponent*() methods possibly async
@@ -105,17 +97,16 @@ export class ComponentClient {
         component = this._createComponentPrototype({name, type});
       }
 
+      component.unintrospect(
+        {name, properties},
+        {methodCreator: this._createComponentMethod.bind(this)}
+      );
+
       this._components[name] = component;
     } else if (component.getComponentType() !== type) {
       throw new Error(
         `Cannot change the type of an existing component (component name: '${name}', current type: '${component.getComponentType()}', specified type: '${type}')`
       );
-    }
-
-    if (properties !== undefined) {
-      for (const property of properties) {
-        this._setComponentProperty(component, property);
-      }
     }
 
     if (relatedComponents !== undefined) {
@@ -129,23 +120,13 @@ export class ComponentClient {
     validateComponentName(name, {allowInstances: false});
     validateComponentName(type, {allowInstances: false});
 
-    let BaseComponentClass;
+    const BaseComponent = this._baseComponents[type];
 
-    if (type === 'Component') {
-      BaseComponentClass = BaseComponent;
-    } else if (type === 'Model') {
-      BaseComponentClass = BaseModel;
-    } else if (type === 'Entity') {
-      BaseComponentClass = BaseEntity;
-    } else {
-      throw new Error(`Unknown component class type ('${type}') received from a component server`);
+    if (BaseComponent === undefined) {
+      throw new Error(`Unknown base component ('${type}') received from a component server`);
     }
 
-    const Component = class Component extends BaseComponentClass {};
-
-    Component.setComponentName(name);
-
-    return Component;
+    return class Component extends BaseComponent {};
   }
 
   _createComponentPrototype({name, type}) {
@@ -158,43 +139,6 @@ export class ComponentClient {
     });
 
     return Component.prototype;
-  }
-
-  _setComponentProperty(component, {name, type, ...options}) {
-    let PropertyClass;
-
-    if (type === 'property') {
-      PropertyClass = Property;
-    } else if (type === 'attribute') {
-      PropertyClass = Attribute;
-    } else if (type === 'method') {
-      PropertyClass = Method;
-    } else if (type === 'modelAttribute') {
-      PropertyClass = ModelAttribute;
-      options.type = options.valueType;
-      delete options.valueType;
-    } else if (type === 'primaryIdentifierAttribute') {
-      PropertyClass = PrimaryIdentifierAttribute;
-      options.type = options.valueType;
-      delete options.valueType;
-    } else if (type === 'secondaryIdentifierAttribute') {
-      PropertyClass = SecondaryIdentifierAttribute;
-      options.type = options.valueType;
-      delete options.valueType;
-    } else {
-      throw new Error(`Unknown property type (${type}) received from a component server`);
-    }
-
-    component.setProperty(name, PropertyClass, options);
-
-    if (isMethodClass(PropertyClass)) {
-      Object.defineProperty(component, name, {
-        value: this._createComponentMethod(name),
-        writable: true,
-        enumerable: false,
-        configurable: true
-      });
-    }
   }
 
   _createComponentMethod(name) {

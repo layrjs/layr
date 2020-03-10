@@ -15,7 +15,7 @@
     "core-helpers": "^0.1.0",
     "debug": "^4.1.1",
     "@deepr/runtime": "^0.3.0",
-    "@liaison/entity": "^0.2.0",
+    "@liaison/component": "^0.1.0",
     "lodash": "^4.17.15",
     "ow": "^0.15.0",
     "possibly-async": "^0.2.0"

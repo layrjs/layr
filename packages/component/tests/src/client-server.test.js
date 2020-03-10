@@ -19,7 +19,7 @@ describe('Client-server', () => {
 
     const server = new ComponentServer(provider);
 
-    const client = new ComponentClient(server);
+    const client = new ComponentClient(server, {baseComponents: [Component()]});
 
     const {Counter} = client.getComponents();
 
@@ -51,7 +51,7 @@ describe('Client-server', () => {
 
     const server = new ComponentServer(provider);
 
-    const client = new ComponentClient(server);
+    const client = new ComponentClient(server, {baseComponents: [Component()]});
 
     const {Counter} = client.getComponents();
 

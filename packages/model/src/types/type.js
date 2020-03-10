@@ -76,14 +76,14 @@ export class Type {
   }
 
   introspect() {
-    const introspection = {valueType: this.toString()};
+    const introspectedType = {valueType: this.toString()};
 
-    const validators = this.getValidators();
+    const introspectedValidators = this.getValidators().map(validator => validator.introspect());
 
-    if (validators.length > 0) {
-      introspection.validators = validators;
+    if (introspectedValidators.length > 0) {
+      introspectedType.validators = introspectedValidators;
     }
 
-    return introspection;
+    return introspectedType;
   }
 }

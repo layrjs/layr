@@ -75,15 +75,15 @@ export class ArrayType extends Type {
   }
 
   introspect() {
-    const introspection = super.introspect();
+    const introspectedArrayType = super.introspect();
 
-    const itemIntrospection = this.getItemType().introspect();
-    delete itemIntrospection.valueType;
+    const introspectedItemType = this.getItemType().introspect();
+    delete introspectedItemType.valueType;
 
-    if (!isEmpty(itemIntrospection)) {
-      introspection.items = itemIntrospection;
+    if (!isEmpty(introspectedItemType)) {
+      introspectedArrayType.items = introspectedItemType;
     }
 
-    return introspection;
+    return introspectedArrayType;
   }
 }

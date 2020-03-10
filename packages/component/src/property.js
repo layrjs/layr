@@ -127,6 +127,18 @@ export class Property {
     return introspectedExposure;
   }
 
+  static unintrospect(introspectedProperty) {
+    ow(
+      introspectedProperty,
+      'introspectedProperty',
+      ow.object.exactShape({name: ow.string.nonEmpty, exposure: ow.optional.object})
+    );
+
+    const {name, ...options} = introspectedProperty;
+
+    return {name, options};
+  }
+
   // === Utilities ===
 
   static isProperty(object) {

@@ -71,7 +71,7 @@ describe('Validation', () => {
       expect(runValidators([validator], undefined, {isOptional: true})).toEqual([]);
     });
 
-    test('Serialization', async () => {
+    test('Introspection', async () => {
       const validatorFunction = (value, number) => value > number;
 
       const validator = new Validator(validatorFunction, {
@@ -80,28 +80,12 @@ describe('Validation', () => {
         message: 'The value is not greater than 5'
       });
 
-      expect(validator.serialize()).toStrictEqual({
-        __validator: '(value, number) => value > number',
+      expect(validator.introspect()).toStrictEqual({
         name: 'greaterThan',
+        function: validatorFunction,
         arguments: [5],
         message: 'The value is not greater than 5'
       });
-    });
-
-    test('Deserialization', async () => {
-      const validator = Validator.deserialize({
-        __validator: '(value, number) => value > number',
-        name: 'greaterThan',
-        arguments: [5],
-        message: 'The value is not greater than 5'
-      });
-
-      expect(isValidator(validator));
-      expect(validator.getName()).toBe('greaterThan');
-      expect(typeof validator.getFunction()).toBe('function');
-      expect(validator.getFunction().toString()).toBe('(value, number) => value > number');
-      expect(validator.getArguments()).toEqual([5]);
-      expect(validator.getMessage()).toBe('The value is not greater than 5');
     });
   });
 

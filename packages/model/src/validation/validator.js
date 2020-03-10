@@ -1,8 +1,6 @@
 import {hasOwnProperty, getFunctionName} from 'core-helpers';
 import ow from 'ow';
 
-import {serializeFunction, deserializeFunction} from '@liaison/component';
-
 export class Validator {
   constructor(func, options = {}) {
     ow(func, 'func', ow.function);
@@ -53,33 +51,25 @@ export class Validator {
     return this.getFunction()(value, ...this.getArguments());
   }
 
-  serialize() {
-    const functionCode = serializeFunction(this.getFunction());
-
-    const serializedValidator = {
-      __validator: functionCode,
-      name: this.getName()
+  introspect() {
+    const introspectedValidator = {
+      name: this.getName(),
+      function: this.getFunction()
     };
 
     const args = this.getArguments();
 
     if (args.length > 0) {
-      serializedValidator.arguments = args;
+      introspectedValidator.arguments = args;
     }
 
-    serializedValidator.message = this.getMessage();
+    introspectedValidator.message = this.getMessage();
 
-    return serializedValidator;
+    return introspectedValidator;
   }
 
-  static deserialize(object) {
-    const {__validator: functionCode, name, arguments: args = [], message} = object;
-
-    const func = deserializeFunction(functionCode);
-
-    const deserializedValidator = new this(func, {name, arguments: args, message});
-
-    return deserializedValidator;
+  static unintrospect(introspectedValidators) {
+    return {...introspectedValidators};
   }
 
   static isValidator(object) {

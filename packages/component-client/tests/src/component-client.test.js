@@ -1,8 +1,11 @@
 import {
+  Component,
   isComponentClass,
   isComponentInstance,
+  Model,
   isModelClass,
   isModelAttribute,
+  Entity,
   isEntityClass,
   isPrimaryIdentifierAttribute,
   isSecondaryIdentifierAttribute
@@ -78,8 +81,8 @@ describe('ComponentClient', () => {
                   valueType: 'string',
                   validators: [
                     {
-                      __validator: 'value => value.length > 0',
                       name: 'notEmpty',
+                      function: {__function: 'value => value.length > 0'},
                       message: 'The validator `notEmpty()` failed'
                     }
                   ],
@@ -166,7 +169,10 @@ describe('ComponentClient', () => {
       "The component client version (undefined) doesn't match the component server version (1)"
     );
 
-    client = new ComponentClient(server, {version: 1});
+    client = new ComponentClient(server, {
+      version: 1,
+      baseComponents: [Component(), Model(), Entity()]
+    });
 
     const {Movie, movie, Cinema, cinema} = client.getComponents();
 
@@ -205,9 +211,10 @@ describe('ComponentClient', () => {
   });
 
   test('Getting models', async () => {
-    let client = new ComponentClient(server);
-
-    client = new ComponentClient(server, {version: 1});
+    const client = new ComponentClient(server, {
+      version: 1,
+      baseComponents: [Component(), Model(), Entity()]
+    });
 
     const {Film, film} = client.getComponents();
 
@@ -246,9 +253,10 @@ describe('ComponentClient', () => {
   });
 
   test('Getting entities', async () => {
-    let client = new ComponentClient(server);
-
-    client = new ComponentClient(server, {version: 1});
+    const client = new ComponentClient(server, {
+      version: 1,
+      baseComponents: [Component(), Model(), Entity()]
+    });
 
     const {User, user} = client.getComponents();
 
@@ -274,7 +282,10 @@ describe('ComponentClient', () => {
   });
 
   test('Invoking methods', async () => {
-    const client = new ComponentClient(server, {version: 1});
+    const client = new ComponentClient(server, {
+      version: 1,
+      baseComponents: [Component(), Model(), Entity()]
+    });
 
     const {Movie} = client.getComponents();
 

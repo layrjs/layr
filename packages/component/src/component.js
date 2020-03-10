@@ -1,3 +1,4 @@
+import {isClass} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import lowerFirst from 'lodash/lowerFirst';
 import ow from 'ow';
@@ -325,6 +326,26 @@ export const Component = (Base = Object) => {
       }
 
       return introspectedRelatedComponents;
+    },
+
+    unintrospect(introspectedComponent, options = {}) {
+      ow(
+        introspectedComponent,
+        'introspectedComponent',
+        ow.object.partialShape({name: ow.string.nonEmpty, properties: ow.optional.array})
+      );
+      ow(options, 'options', ow.object.exactShape({methodCreator: ow.optional.function}));
+
+      const {name, properties: introspectedProperties} = introspectedComponent;
+      const {methodCreator} = options;
+
+      if (isClass(this)) {
+        this.setComponentName(name);
+      }
+
+      if (introspectedProperties !== undefined) {
+        this.unintrospectProperties(introspectedProperties, {methodCreator});
+      }
     },
 
     // === Utilities ===

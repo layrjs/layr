@@ -101,8 +101,8 @@ describe('ComponentServer', () => {
               valueType: 'string',
               validators: [
                 {
-                  __validator: 'value => value.length > 0',
                   name: 'notEmpty',
+                  function: {__function: 'value => value.length > 0'},
                   message: 'The validator `notEmpty()` failed'
                 }
               ],

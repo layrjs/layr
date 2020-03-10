@@ -50,4 +50,17 @@ describe('SecondaryIdentifierAttribute', () => {
       exposure: {get: true}
     });
   });
+
+  test('Unintrospection', async () => {
+    expect(
+      SecondaryIdentifierAttribute.unintrospect({
+        name: 'email',
+        valueType: 'string',
+        exposure: {get: true}
+      })
+    ).toEqual({
+      name: 'email',
+      options: {type: 'string', exposure: {get: true}}
+    });
+  });
 });

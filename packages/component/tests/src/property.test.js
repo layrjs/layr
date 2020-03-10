@@ -125,4 +125,11 @@ describe('Property', () => {
       new Property('title', Movie.prototype, {exposure: {get: true, set: 'admin'}}).introspect()
     ).toStrictEqual({name: 'title', type: 'property', exposure: {get: true, set: true}});
   });
+
+  test('Unintrospection', async () => {
+    expect(Property.unintrospect({name: 'title', exposure: {get: true, set: true}})).toStrictEqual({
+      name: 'title',
+      options: {exposure: {get: true, set: true}}
+    });
+  });
 });

@@ -218,4 +218,44 @@ describe('Component', () => {
       ]
     });
   });
+
+  test('Unintrospection', async () => {
+    class UnintrospectedComponent extends Component() {}
+
+    UnintrospectedComponent.unintrospect({
+      name: 'Movie',
+      properties: [
+        {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
+        {name: 'find', type: 'method', exposure: {call: true}}
+      ]
+    });
+
+    expect(UnintrospectedComponent.getComponentName()).toBe('Movie');
+    expect(UnintrospectedComponent.limit).toBe(100);
+    expect(UnintrospectedComponent.getAttribute('limit').getExposure()).toStrictEqual({get: true});
+    expect(UnintrospectedComponent.getMethod('find').getExposure()).toStrictEqual({call: true});
+
+    const defaultTitle = function() {
+      return '';
+    };
+
+    const unintrospectedComponent = UnintrospectedComponent.prototype;
+
+    unintrospectedComponent.unintrospect({
+      name: 'movie',
+      properties: [{name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}]
+    });
+
+    expect(unintrospectedComponent.getComponentName()).toBe('movie');
+    expect(unintrospectedComponent.getAttribute('title').getDefaultValueFunction()).toBe(
+      defaultTitle
+    );
+    expect(unintrospectedComponent.getAttribute('title').getExposure()).toStrictEqual({
+      get: true
+    });
+
+    const movie = new UnintrospectedComponent();
+
+    expect(movie.title).toBe('');
+  });
 });
