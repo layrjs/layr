@@ -1,4 +1,4 @@
-import {Model} from '@liaison/model';
+import {ModelMixin} from '@liaison/model';
 import cuid from 'cuid';
 import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
@@ -15,20 +15,16 @@ import {
 import {EntityManager} from './entity-manager';
 import {isEntity, isEntityClass} from './utilities';
 
-export const Entity = (Base = Object) => {
+export const EntityMixin = (Base = Object) => {
   ow(Base, 'Base', ow.function);
 
   if (isEntityClass(Base)) {
     return Base;
   }
 
-  class Entity extends Model(Base) {
+  class EntityMixin extends ModelMixin(Base) {
     static getComponentType() {
       return 'Entity';
-    }
-
-    getComponentType() {
-      return 'entity';
     }
 
     static getPropertyClass(type) {
@@ -265,5 +261,7 @@ export const Entity = (Base = Object) => {
     }
   }
 
-  return Entity;
+  return EntityMixin;
 };
+
+export class Entity extends EntityMixin() {}

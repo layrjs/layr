@@ -171,7 +171,7 @@ describe('ComponentClient', () => {
 
     client = new ComponentClient(server, {
       version: 1,
-      baseComponents: [Component(), Model(), Entity()]
+      baseComponents: [Component, Model, Entity]
     });
 
     const {Movie, movie, Cinema, cinema} = client.getComponents();
@@ -213,7 +213,7 @@ describe('ComponentClient', () => {
   test('Getting models', async () => {
     const client = new ComponentClient(server, {
       version: 1,
-      baseComponents: [Component(), Model(), Entity()]
+      baseComponents: [Component, Model, Entity]
     });
 
     const {Film, film} = client.getComponents();
@@ -255,7 +255,7 @@ describe('ComponentClient', () => {
   test('Getting entities', async () => {
     const client = new ComponentClient(server, {
       version: 1,
-      baseComponents: [Component(), Model(), Entity()]
+      baseComponents: [Component, Model, Entity]
     });
 
     const {User, user} = client.getComponents();
@@ -284,7 +284,7 @@ describe('ComponentClient', () => {
   test('Invoking methods', async () => {
     const client = new ComponentClient(server, {
       version: 1,
-      baseComponents: [Component(), Model(), Entity()]
+      baseComponents: [Component, Model, Entity]
     });
 
     const {Movie} = client.getComponents();

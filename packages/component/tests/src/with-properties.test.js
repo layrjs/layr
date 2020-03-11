@@ -12,7 +12,7 @@ import {
 describe('WithProperties', () => {
   describe('Properties', () => {
     test('getProperty()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -73,7 +73,7 @@ describe('WithProperties', () => {
     });
 
     test('setProperty()', async () => {
-      class Movie extends Component() {}
+      class Movie extends Component {}
 
       expect(Movie.hasProperty('limit')).toBe(false);
 
@@ -120,7 +120,7 @@ describe('WithProperties', () => {
     });
 
     test('hasProperty()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -133,7 +133,7 @@ describe('WithProperties', () => {
     });
 
     test('getProperties()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() title = '';
         @attribute() duration = 0;
 
@@ -192,7 +192,7 @@ describe('WithProperties', () => {
     });
 
     test('getPropertyNames()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() title = '';
         @attribute() duration = 0;
 
@@ -220,7 +220,7 @@ describe('WithProperties', () => {
 
   describe('Attributes', () => {
     test('getAttribute()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -271,7 +271,7 @@ describe('WithProperties', () => {
     });
 
     test('setAttribute()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @method() static find() {}
       }
 
@@ -313,7 +313,7 @@ describe('WithProperties', () => {
     });
 
     test('hasAttribute()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -329,7 +329,7 @@ describe('WithProperties', () => {
     });
 
     test('getAttributes()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() title = '';
         @attribute() duration = 0;
 
@@ -382,7 +382,7 @@ describe('WithProperties', () => {
     });
 
     test('expandAttributeSelector()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() title = '';
         @attribute() duration = 0;
       }
@@ -399,7 +399,7 @@ describe('WithProperties', () => {
 
   describe('Methods', () => {
     test('getMethod()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -450,7 +450,7 @@ describe('WithProperties', () => {
     });
 
     test('setMethod()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
       }
 
@@ -492,7 +492,7 @@ describe('WithProperties', () => {
     });
 
     test('hasMethod()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
 
         @method() static find() {}
@@ -508,7 +508,7 @@ describe('WithProperties', () => {
     });
 
     test('getMethods()', async () => {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() title = '';
         @attribute() duration = 0;
 

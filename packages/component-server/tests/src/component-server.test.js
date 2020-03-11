@@ -14,7 +14,7 @@ import {ComponentServer} from '../../..';
 describe('ComponentServer', () => {
   test('Introspecting components', async () => {
     const provider = function() {
-      class Movie extends Component() {
+      class Movie extends Component {
         @expose({call: true}) static find() {}
         @attribute() static limit;
 
@@ -22,7 +22,7 @@ describe('ComponentServer', () => {
         @attribute() rating;
       }
 
-      class Cinema extends Component() {
+      class Cinema extends Component {
         @expose({get: true}) @attribute() movies;
       }
 
@@ -76,7 +76,7 @@ describe('ComponentServer', () => {
 
   test('Introspecting models', async () => {
     const provider = function() {
-      class Movie extends Model() {
+      class Movie extends Model {
         @expose({get: true, set: true})
         @attribute('string', {validators: [validators.notEmpty()]})
         title;
@@ -116,7 +116,7 @@ describe('ComponentServer', () => {
 
   test('Introspecting entities', async () => {
     const provider = function() {
-      class User extends Entity() {
+      class User extends Entity {
         @expose({get: true, set: true})
         @primaryIdentifier()
         id;
@@ -162,7 +162,7 @@ describe('ComponentServer', () => {
 
   test('Accessing attributes', async () => {
     const provider = function() {
-      class Movie extends Component() {
+      class Movie extends Component {
         @attribute() static limit = 100;
         @expose({get: true, set: true}) static offset = 0;
 
@@ -254,7 +254,7 @@ describe('ComponentServer', () => {
 
   test('Invoking methods', async () => {
     const provider = function() {
-      class Movie extends Component() {
+      class Movie extends Component {
         @expose({call: true}) static exposedClassMethod() {
           return 'exposedClassMethod()';
         }

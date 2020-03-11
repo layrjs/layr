@@ -6,7 +6,7 @@ import {Entity, primaryIdentifier, attribute, expose} from '../../..';
 describe('Client-server', () => {
   test('Simple entity', async () => {
     const provider = function() {
-      class Counter extends Entity() {
+      class Counter extends Entity {
         @expose({get: true, set: true}) @primaryIdentifier() id;
 
         @expose({get: true, set: true}) @attribute('number') value = 0;
@@ -21,7 +21,7 @@ describe('Client-server', () => {
 
     const server = new ComponentServer(provider);
 
-    const client = new ComponentClient(server, {baseComponents: [Entity()]});
+    const client = new ComponentClient(server, {baseComponents: [Entity]});
 
     const {Counter} = client.getComponents();
 

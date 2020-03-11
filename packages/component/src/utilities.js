@@ -1,5 +1,6 @@
 import {getTypeOf as coreGetTypeOf} from 'core-helpers';
 import upperFirst from 'lodash/upperFirst';
+import lowerFirst from 'lodash/lowerFirst';
 import ow from 'ow';
 
 export function isComponentClass(object) {
@@ -107,6 +108,12 @@ export function getComponentClassNameFromComponentInstanceName(name) {
   ow(name, 'name', ow.string);
 
   return upperFirst(name);
+}
+
+export function getComponentInstanceNameFromComponentClassName(name) {
+  ow(name, 'name', ow.string);
+
+  return lowerFirst(name);
 }
 
 export function createComponentMap(components = []) {

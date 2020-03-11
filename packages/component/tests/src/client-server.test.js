@@ -6,7 +6,7 @@ import {Component, expose} from '../../..';
 describe('Client-server', () => {
   test('Using class properties', async () => {
     const provider = function() {
-      class Counter extends Component() {
+      class Counter extends Component {
         @expose({get: true, set: true}) static value = 0;
 
         @expose({call: true}) static increment() {
@@ -19,7 +19,7 @@ describe('Client-server', () => {
 
     const server = new ComponentServer(provider);
 
-    const client = new ComponentClient(server, {baseComponents: [Component()]});
+    const client = new ComponentClient(server, {baseComponents: [Component]});
 
     const {Counter} = client.getComponents();
 
@@ -36,7 +36,7 @@ describe('Client-server', () => {
 
   test('Using instance properties', async () => {
     const provider = function() {
-      class Counter extends Component() {
+      class Counter extends Component {
         @expose({get: true, set: true}) value = 0;
 
         @expose({call: true}) increment() {
@@ -51,7 +51,7 @@ describe('Client-server', () => {
 
     const server = new ComponentServer(provider);
 
-    const client = new ComponentClient(server, {baseComponents: [Component()]});
+    const client = new ComponentClient(server, {baseComponents: [Component]});
 
     const {Counter} = client.getComponents();
 

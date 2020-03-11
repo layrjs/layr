@@ -2,7 +2,7 @@ import {Component, deserialize, attribute} from '../../..';
 
 describe('Deserialization', () => {
   test('Component classes', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() static limit = 100;
       @attribute() static offset;
     }
@@ -41,7 +41,7 @@ describe('Deserialization', () => {
   });
 
   test('Component instances', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() title;
       @attribute() duration = 0;
     }
@@ -86,7 +86,7 @@ describe('Deserialization', () => {
     expect(movie5.title).toBe('Inception');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
-    class Cinema extends Component() {
+    class Cinema extends Component {
       @attribute() movies;
     }
 

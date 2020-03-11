@@ -11,23 +11,24 @@ import {
   isComponentClass,
   isComponent,
   validateIsComponentClassOrInstance,
-  validateComponentName
+  validateComponentName,
+  getComponentInstanceNameFromComponentClassName
 } from './utilities';
 
-export const Component = (Base = Object) => {
+export const ComponentMixin = (Base = Object) => {
   ow(Base, ow.function);
 
   if (isComponentClass(Base)) {
     return Base;
   }
 
-  class Component extends WithProperties(Base) {
+  class ComponentMixin extends WithProperties(Base) {
     static getComponentType() {
       return 'Component';
     }
 
     getComponentType() {
-      return 'component';
+      return getComponentInstanceNameFromComponentClassName(this.constructor.getComponentType());
     }
 
     // === Creation ===
@@ -81,7 +82,9 @@ export const Component = (Base = Object) => {
     getComponentName(options = {}) {
       ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
 
-      return lowerFirst(this.constructor.getComponentName(options));
+      return getComponentInstanceNameFromComponentClassName(
+        this.constructor.getComponentName(options)
+      );
     }
 
     static setComponentName(name) {
@@ -355,8 +358,10 @@ export const Component = (Base = Object) => {
     }
   };
 
-  Object.assign(Component, classAndInstanceMethods);
-  Object.assign(Component.prototype, classAndInstanceMethods);
+  Object.assign(ComponentMixin, classAndInstanceMethods);
+  Object.assign(ComponentMixin.prototype, classAndInstanceMethods);
 
-  return Component;
+  return ComponentMixin;
 };
+
+export class Component extends ComponentMixin() {}

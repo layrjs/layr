@@ -9,7 +9,7 @@ import {
 
 describe('PrimaryIdentifierAttribute', () => {
   test('Creation', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     let idAttribute = new PrimaryIdentifierAttribute('id', Movie.prototype);
 
@@ -29,7 +29,7 @@ describe('PrimaryIdentifierAttribute', () => {
   });
 
   test('Value', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     const idAttribute = new PrimaryIdentifierAttribute('id', Movie.prototype);
 
@@ -49,7 +49,7 @@ describe('PrimaryIdentifierAttribute', () => {
   });
 
   test('Generated ids', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     const idAttribute = new PrimaryIdentifierAttribute('id', Movie.prototype);
 
@@ -60,7 +60,7 @@ describe('PrimaryIdentifierAttribute', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     expect(
       new PrimaryIdentifierAttribute('id', Movie.prototype, {exposure: {get: true}}).introspect()

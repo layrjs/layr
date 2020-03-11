@@ -2,7 +2,7 @@ import {Model, attribute, isModelAttribute, isAttribute} from '../../..';
 
 describe('Decorators', () => {
   test('@attribute()', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('number?') static limit = 100;
       @attribute('string?') static token;
       @attribute() static anything;

@@ -12,7 +12,7 @@ import {
 
 describe('Decorators', () => {
   test('@property()', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @property() static limit = 100;
       @property() static token;
       @property() static find() {}
@@ -102,7 +102,7 @@ describe('Decorators', () => {
   });
 
   test('@attribute()', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() static limit = 100;
       @attribute() static token;
 
@@ -228,7 +228,7 @@ describe('Decorators', () => {
   });
 
   test('@method()', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @method() static find() {}
 
       @method() load() {}
@@ -270,7 +270,7 @@ describe('Decorators', () => {
   });
 
   test('@expose() used with an attribute or a method declaration', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @expose({get: true}) static limit = 100;
       @expose({call: true}) static find() {}
 
@@ -314,7 +314,7 @@ describe('Decorators', () => {
   });
 
   test('@expose() used after @property(), @attribute(), or @method()', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @expose({get: true}) @property() static limit = 100;
       @expose({get: true}) @property() static token;
       @expose({call: true}) @property() static find() {}
@@ -378,7 +378,7 @@ describe('Decorators', () => {
   });
 
   test('@expose() used after @inherit()', async () => {
-    class BaseMovie extends Component() {
+    class BaseMovie extends Component {
       @property() static limit = 100;
       @property() static find() {}
 

@@ -2,7 +2,7 @@ import {Model, attribute, serialize} from '../../..';
 
 describe('Serialization', () => {
   test('Model instances', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('string') title;
       @attribute('string?') country;
     }

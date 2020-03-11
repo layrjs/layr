@@ -1,24 +1,20 @@
-import {Component} from '@liaison/component';
+import {ComponentMixin} from '@liaison/component';
 import {Observable} from '@liaison/observable';
 import ow from 'ow';
 
 import {ModelAttribute, isModelAttribute} from './model-attribute';
 import {isModelClass, isModel, joinModelAttributePath} from './utilities';
 
-export const Model = (Base = Object) => {
+export const ModelMixin = (Base = Object) => {
   ow(Base, 'Base', ow.function);
 
   if (isModelClass(Base)) {
     return Base;
   }
 
-  class Model extends Observable(Component(Base)) {
+  class ModelMixin extends Observable(ComponentMixin(Base)) {
     static getComponentType() {
       return 'Model';
-    }
-
-    getComponentType() {
-      return 'model';
     }
 
     static getPropertyClass(type) {
@@ -151,8 +147,10 @@ export const Model = (Base = Object) => {
     }
   };
 
-  Object.assign(Model, classAndInstanceMethods);
-  Object.assign(Model.prototype, classAndInstanceMethods);
+  Object.assign(ModelMixin, classAndInstanceMethods);
+  Object.assign(ModelMixin.prototype, classAndInstanceMethods);
 
-  return Model;
+  return ModelMixin;
 };
+
+export class Model extends ModelMixin() {}

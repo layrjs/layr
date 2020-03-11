@@ -2,7 +2,7 @@ import {Component, serialize, attribute} from '../../..';
 
 describe('Serialization', () => {
   test('Component classes', async () => {
-    class BaseMovie extends Component() {}
+    class BaseMovie extends Component {}
 
     expect(BaseMovie.serialize()).toEqual({__component: 'BaseMovie'});
 
@@ -17,7 +17,7 @@ describe('Serialization', () => {
       offset: {__undefined: true}
     });
 
-    class Cinema extends Component() {
+    class Cinema extends Component {
       @attribute() static MovieClass = Movie;
     }
 
@@ -28,7 +28,7 @@ describe('Serialization', () => {
   });
 
   test('Component instances', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() title = '';
       @attribute() director;
     }
@@ -55,7 +55,7 @@ describe('Serialization', () => {
       title: 'Inception'
     });
 
-    class Director extends Component() {
+    class Director extends Component {
       @attribute() name;
     }
 

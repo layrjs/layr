@@ -10,7 +10,7 @@ import {
 
 describe('Model', () => {
   test('Creation', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('string') title;
       @attribute('string?') country;
       @attribute('number') rating = 0;
@@ -38,7 +38,7 @@ describe('Model', () => {
     expect(isModelClass(1)).toBe(false);
     expect(isModelClass({})).toBe(false);
 
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     expect(isModelClass(Movie)).toBe(true);
     expect(isModelClass(Movie.prototype)).toBe(false);
@@ -55,7 +55,7 @@ describe('Model', () => {
     expect(isModel(1)).toBe(false);
     expect(isModel({})).toBe(false);
 
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     expect(isModel(Movie.prototype)).toBe(true);
 
@@ -65,7 +65,7 @@ describe('Model', () => {
   });
 
   test('getModelAttribute()', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('number') static limit = 100;
 
       @method() static find() {}
@@ -94,7 +94,7 @@ describe('Model', () => {
   });
 
   test('setModelAttribute()', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @method() static find() {}
     }
 
@@ -136,7 +136,7 @@ describe('Model', () => {
   });
 
   test('hasModelAttribute()', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('number') static limit = 100;
 
       @method() static find() {}
@@ -152,7 +152,7 @@ describe('Model', () => {
   });
 
   test('getModelAttributes()', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('string') title = '';
       @attribute('number') duration = 0;
 
@@ -205,14 +205,14 @@ describe('Model', () => {
   });
 
   test('expandAttributeSelector()', async () => {
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('string') title = '';
       @attribute('number') duration = 0;
       @attribute('person?') director;
       @attribute('[person]') actors = [];
     }
 
-    class Person extends Model() {
+    class Person extends Model {
       @attribute('string') name = '';
     }
 
@@ -237,14 +237,14 @@ describe('Model', () => {
     const notEmpty = validators.notEmpty();
     const maxLength = validators.maxLength(3);
 
-    class Movie extends Model() {
+    class Movie extends Model {
       @attribute('string', {validators: [notEmpty]}) title = '';
       @attribute('[string]', {validators: [maxLength], items: {validators: [notEmpty]}}) tags = [];
       @attribute('person?') director;
       @attribute('[person]') actors = [];
     }
 
-    class Person extends Model() {
+    class Person extends Model {
       @attribute('string', {validators: [notEmpty]}) name = '';
     }
 

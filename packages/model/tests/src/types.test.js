@@ -114,7 +114,7 @@ describe('Types', () => {
   test('ObjectType', async () => {
     let type = new ObjectType({modelAttribute});
 
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     const movie = new Movie();
 
@@ -242,11 +242,11 @@ describe('Types', () => {
   });
 
   test('ComponentType', async () => {
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
-    class Actor extends Model() {}
+    class Actor extends Model {}
 
-    class Registry extends Model() {}
+    class Registry extends Model {}
 
     Registry.registerRelatedComponent(Movie);
     Registry.registerRelatedComponent(Movie.prototype);

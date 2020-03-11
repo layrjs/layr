@@ -2,7 +2,7 @@ import {Component, Property, isProperty} from '../../..';
 
 describe('Property', () => {
   test('Creation', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     expect(() => new Property()).toThrow(
       'Expected `name` to be of type `string` but received type `undefined`'
@@ -24,7 +24,7 @@ describe('Property', () => {
   });
 
   test('Exposure', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     expect(new Property('find', Movie).getExposure()).toBeUndefined();
 
@@ -46,7 +46,7 @@ describe('Property', () => {
       'The specified property operation setting ("admin") is invalid'
     );
 
-    class Film extends Component() {
+    class Film extends Component {
       static normalizePropertyOperationSetting(setting, {throwIfInvalid = true} = {}) {
         const normalizedSetting = super.normalizePropertyOperationSetting(setting, {
           throwIfInvalid: false
@@ -80,7 +80,7 @@ describe('Property', () => {
   });
 
   test('Forking', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const property = new Property('title', Movie.prototype);
 
@@ -95,7 +95,7 @@ describe('Property', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       normalizePropertyOperationSetting(setting, {throwIfInvalid = true} = {}) {
         const normalizedSetting = super.normalizePropertyOperationSetting(setting, {
           throwIfInvalid: false

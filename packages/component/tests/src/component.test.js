@@ -2,7 +2,7 @@ import {Component, isComponent, attribute, method} from '../../..';
 
 describe('Component', () => {
   test('Creation', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() title = '';
       @attribute() country = '';
 
@@ -52,7 +52,7 @@ describe('Component', () => {
   });
 
   test('Naming', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     expect(Movie.getComponentName()).toBe('Movie');
 
@@ -82,11 +82,11 @@ describe('Component', () => {
   });
 
   test('Related components', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
-    class Director extends Component() {}
+    class Director extends Component {}
 
-    class Actor extends Component() {}
+    class Actor extends Component {}
 
     expect(Movie.getRelatedComponent('Director', {throwIfMissing: false})).toBeUndefined();
 
@@ -118,7 +118,7 @@ describe('Component', () => {
   });
 
   test('isNew mark', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const movie = new Movie();
 
@@ -134,7 +134,7 @@ describe('Component', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() static limit = 100;
       @attribute() static offset;
       @method() static find() {}
@@ -144,7 +144,7 @@ describe('Component', () => {
       @method() load() {}
     }
 
-    class Cinema extends Component() {
+    class Cinema extends Component {
       @attribute() movies;
     }
 
@@ -220,7 +220,7 @@ describe('Component', () => {
   });
 
   test('Unintrospection', async () => {
-    class UnintrospectedComponent extends Component() {}
+    class UnintrospectedComponent extends Component {}
 
     UnintrospectedComponent.unintrospect({
       name: 'Movie',

@@ -2,7 +2,7 @@ import {Component, attribute} from '../../..';
 
 describe('Forking', () => {
   test('Simple component', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() static limit = 100;
 
       @attribute() title;
@@ -42,11 +42,11 @@ describe('Forking', () => {
   });
 
   test('Nested component', async () => {
-    class Movie extends Component() {
+    class Movie extends Component {
       @attribute() director;
     }
 
-    class Director extends Component() {
+    class Director extends Component {
       @attribute() name;
     }
 

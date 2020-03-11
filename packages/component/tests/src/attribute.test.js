@@ -2,7 +2,7 @@ import {Component, Attribute, isAttribute} from '../../..';
 
 describe('Attribute', () => {
   test('Creation', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const attribute = new Attribute('limit', Movie);
 
@@ -12,7 +12,7 @@ describe('Attribute', () => {
   });
 
   test('Value', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const movie = new Movie();
 
@@ -35,7 +35,7 @@ describe('Attribute', () => {
   });
 
   test('Accessors', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const movie = new Movie();
 
@@ -70,7 +70,7 @@ describe('Attribute', () => {
   });
 
   test('Initial value', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     let attribute = new Attribute('limit', Movie);
 
@@ -95,7 +95,7 @@ describe('Attribute', () => {
   });
 
   test('Default value', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const movie = new Movie();
 
@@ -128,7 +128,7 @@ describe('Attribute', () => {
   });
 
   test('Forking', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const movie = new Movie();
 
@@ -149,7 +149,7 @@ describe('Attribute', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     expect(new Attribute('limit', Movie, {exposure: {get: true}}).introspect()).toStrictEqual({
       name: 'limit',

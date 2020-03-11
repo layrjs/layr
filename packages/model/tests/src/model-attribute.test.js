@@ -2,7 +2,7 @@ import {Model, ModelAttribute, isModelAttribute, NumberType, validators} from '.
 
 describe('ModelAttribute', () => {
   test('Creation', async () => {
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     const modelAttribute = new ModelAttribute('limit', Movie, {type: 'number'});
 
@@ -13,7 +13,7 @@ describe('ModelAttribute', () => {
   });
 
   test('Value', async () => {
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     const movie = new Movie();
 
@@ -43,7 +43,7 @@ describe('ModelAttribute', () => {
   });
 
   test('Validation', async () => {
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     const movie = new Movie();
 
@@ -79,7 +79,7 @@ describe('ModelAttribute', () => {
   });
 
   test('Observability', async () => {
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     const movie = new Movie();
 
@@ -173,7 +173,7 @@ describe('ModelAttribute', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Model() {}
+    class Movie extends Model {}
 
     expect(
       new ModelAttribute('limit', Movie, {

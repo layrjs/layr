@@ -2,7 +2,7 @@ import {Entity, IdentifierAttribute, isIdentifierAttribute, StringType, NumberTy
 
 describe('IdentifierAttribute', () => {
   test('Creation', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     let idAttribute = new IdentifierAttribute('id', Movie.prototype);
 
@@ -28,7 +28,7 @@ describe('IdentifierAttribute', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     const defaultValueFunction = function() {
       return this.constructor.generateId();

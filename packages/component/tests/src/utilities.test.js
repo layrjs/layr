@@ -15,7 +15,7 @@ describe('Utilities', () => {
     expect(isComponentClass(1)).toBe(false);
     expect(isComponentClass({})).toBe(false);
 
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     expect(isComponentClass(Movie)).toBe(true);
     expect(isComponentClass(Movie.prototype)).toBe(false);
@@ -32,7 +32,7 @@ describe('Utilities', () => {
     expect(isComponentInstance(1)).toBe(false);
     expect(isComponentInstance({})).toBe(false);
 
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     expect(isComponentInstance(Movie.prototype)).toBe(true);
 
@@ -48,7 +48,7 @@ describe('Utilities', () => {
     expect(isComponentClassOrInstance(1)).toBe(false);
     expect(isComponentClassOrInstance({})).toBe(false);
 
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     expect(isComponentClassOrInstance(Movie)).toBe(true);
     expect(isComponentClassOrInstance(Movie.prototype)).toBe(true);
@@ -79,7 +79,7 @@ describe('Utilities', () => {
   });
 
   test('getTypeOf()', async () => {
-    class Movie extends Component() {}
+    class Movie extends Component {}
 
     const movie = new Movie();
 

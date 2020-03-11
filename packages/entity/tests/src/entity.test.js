@@ -12,7 +12,7 @@ import {
 
 describe('Entity', () => {
   test('Creation', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
       @secondaryIdentifier() username;
@@ -34,7 +34,7 @@ describe('Entity', () => {
   });
 
   test('isEntityClass()', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     expect(isEntityClass(Movie)).toBe(true);
     expect(isEntityClass(Movie.prototype)).toBe(false);
@@ -45,7 +45,7 @@ describe('Entity', () => {
   });
 
   test('isEntity()', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     expect(isEntity(Movie)).toBe(false);
     expect(isEntity(Movie.prototype)).toBe(true);
@@ -56,7 +56,7 @@ describe('Entity', () => {
   });
 
   test('getIdentifierAttribute()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
       @attribute('string') name;
@@ -80,7 +80,7 @@ describe('Entity', () => {
   });
 
   test('getPrimaryIdentifierAttribute()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
     }
 
@@ -90,7 +90,7 @@ describe('Entity', () => {
     expect(identifierAttribute.getName()).toBe('id');
     expect(identifierAttribute.getParent()).toBe(User.prototype);
 
-    class Movie extends Entity() {
+    class Movie extends Entity {
       @secondaryIdentifier() slug;
     }
 
@@ -100,7 +100,7 @@ describe('Entity', () => {
   });
 
   test('getSecondaryIdentifierAttribute()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
     }
@@ -117,7 +117,7 @@ describe('Entity', () => {
   });
 
   test('setPrimaryIdentifierAttribute()', async () => {
-    class User extends Entity() {}
+    class User extends Entity {}
 
     expect(User.prototype.hasPrimaryIdentifierAttribute()).toBe(false);
 
@@ -138,7 +138,7 @@ describe('Entity', () => {
   });
 
   test('setSecondaryIdentifierAttribute()', async () => {
-    class User extends Entity() {}
+    class User extends Entity {}
 
     expect(User.prototype.hasSecondaryIdentifierAttribute('email')).toBe(false);
 
@@ -159,7 +159,7 @@ describe('Entity', () => {
   });
 
   test('hasIdentifierAttribute()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
       @attribute('string') name;
@@ -175,13 +175,13 @@ describe('Entity', () => {
   });
 
   test('hasPrimaryIdentifierAttribute()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
     }
 
     expect(User.prototype.hasPrimaryIdentifierAttribute()).toBe(true);
 
-    class Movie extends Entity() {
+    class Movie extends Entity {
       @secondaryIdentifier() slug;
     }
 
@@ -189,7 +189,7 @@ describe('Entity', () => {
   });
 
   test('hasSecondaryIdentifierAttribute()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
       @attribute('string') name;
@@ -207,7 +207,7 @@ describe('Entity', () => {
   });
 
   test('getIdentifierAttributes()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
       @secondaryIdentifier() username;
@@ -225,7 +225,7 @@ describe('Entity', () => {
   });
 
   test('getSecondaryIdentifierAttributes()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
       @secondaryIdentifier() username;
@@ -242,7 +242,7 @@ describe('Entity', () => {
   });
 
   test('generateId()', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     const id1 = Movie.generateId();
 
@@ -257,7 +257,7 @@ describe('Entity', () => {
   });
 
   test('Entity management', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
     }

@@ -7,7 +7,7 @@ import {
 
 describe('SecondaryIdentifierAttribute', () => {
   test('Creation', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     const emailAttribute = new SecondaryIdentifierAttribute('email', Movie.prototype);
 
@@ -18,7 +18,7 @@ describe('SecondaryIdentifierAttribute', () => {
   });
 
   test('Value', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     const emailAttribute = new SecondaryIdentifierAttribute('email', Movie.prototype);
 
@@ -36,7 +36,7 @@ describe('SecondaryIdentifierAttribute', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Entity() {}
+    class Movie extends Entity {}
 
     expect(
       new SecondaryIdentifierAttribute('email', Movie.prototype, {

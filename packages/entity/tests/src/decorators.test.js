@@ -14,7 +14,7 @@ describe('Decorators', () => {
   test('@primaryIdentifier()', async () => {
     const notEmpty = validators.notEmpty();
 
-    class Movie1 extends Entity() {
+    class Movie1 extends Entity {
       @primaryIdentifier() id;
     }
 
@@ -27,7 +27,7 @@ describe('Decorators', () => {
     expect(idAttribute.getType().getValidators()).toEqual([]);
     expect(typeof idAttribute.getDefaultValueFunction()).toBe('function');
 
-    class Movie2 extends Entity() {
+    class Movie2 extends Entity {
       @primaryIdentifier(undefined, {validators: [notEmpty]}) id;
     }
 
@@ -40,7 +40,7 @@ describe('Decorators', () => {
     expect(idAttribute.getType().getValidators()).toEqual([notEmpty]);
     expect(typeof idAttribute.getDefaultValueFunction()).toBe('function');
 
-    class Movie3 extends Entity() {
+    class Movie3 extends Entity {
       @primaryIdentifier('number') id;
     }
 
@@ -53,7 +53,7 @@ describe('Decorators', () => {
     expect(idAttribute.getType().getValidators()).toEqual([]);
     expect(idAttribute.getDefaultValueFunction()).toBeUndefined();
 
-    class Movie4 extends Entity() {
+    class Movie4 extends Entity {
       @primaryIdentifier('number') id = Math.random();
     }
 
@@ -66,7 +66,7 @@ describe('Decorators', () => {
     expect(idAttribute.getType().getValidators()).toEqual([]);
     expect(typeof idAttribute.getDefaultValueFunction()).toBe('function');
 
-    class Movie5 extends Entity() {
+    class Movie5 extends Entity {
       @primaryIdentifier('number', {validators: [notEmpty]}) id;
     }
 
@@ -81,21 +81,21 @@ describe('Decorators', () => {
 
     expect(
       () =>
-        class Movie extends Entity() {
+        class Movie extends Entity {
           @primaryIdentifier() static id;
         }
     ).toThrow("@primaryIdentifier() cannot be used with a static attribute (property name: 'id')");
 
     expect(
       () =>
-        class Movie extends Model() {
+        class Movie extends Model {
           @primaryIdentifier() id;
         }
     ).toThrow("@primaryIdentifier() target doesn't inherit from Entity (property name: 'id')");
 
     expect(
       () =>
-        class Movie extends Entity() {
+        class Movie extends Entity {
           @primaryIdentifier() id() {}
         }
     ).toThrow(
@@ -104,7 +104,7 @@ describe('Decorators', () => {
 
     expect(
       () =>
-        class Movie extends Entity() {
+        class Movie extends Entity {
           @primaryIdentifier() id;
           @primaryIdentifier() slug;
         }
@@ -112,7 +112,7 @@ describe('Decorators', () => {
   });
 
   test('@secondaryIdentifier()', async () => {
-    class User extends Entity() {
+    class User extends Entity {
       @secondaryIdentifier() email;
       @secondaryIdentifier() username;
     }
