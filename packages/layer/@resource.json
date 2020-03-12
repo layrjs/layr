@@ -1,0 +1,18 @@
+{
+  "@import": "1place/npm-package#^0.2.0",
+  "name": "@liaison/layer",
+  "version": "0.2.0",
+  "description": "A simple way to gather all your components together",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer",
+  "dependencies": {
+    "core-helpers": "^0.1.0",
+    "@liaison/component": "^0.1.0",
+    "lodash": "^4.17.11",
+    "ow": "^0.13.2"
+  },
+  "tests": {
+    "@include": "./tests"
+  }
+}

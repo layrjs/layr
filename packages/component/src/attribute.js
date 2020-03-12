@@ -1,5 +1,4 @@
 import {hasOwnProperty} from 'core-helpers';
-import a from 'indefinite';
 import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
@@ -33,7 +32,7 @@ export class Attribute extends Property {
       if (hasInitialValue) {
         throw new Error(
           `${upperFirst(
-            a(getHumanTypeOf(this))
+            this.describeType()
           )} cannot have both a getter or setter and an initial value (${this.describe()})`
         );
       }
@@ -41,7 +40,7 @@ export class Attribute extends Property {
       if (hasDefaultValue) {
         throw new Error(
           `${upperFirst(
-            a(getHumanTypeOf(this))
+            this.describeType()
           )} cannot have both a getter or setter and a default value (${this.describe()})`
         );
       }
@@ -54,7 +53,7 @@ export class Attribute extends Property {
         if (getter === undefined) {
           throw new Error(
             `${upperFirst(
-              a(getHumanTypeOf(this))
+              this.describeType()
             )} cannot have a setter without a getter (${this.describe()})`
           );
         }
@@ -114,9 +113,7 @@ export class Attribute extends Property {
 
     if (this._getter !== undefined) {
       throw new Error(
-        `Cannot set the value of ${a(
-          getHumanTypeOf(this)
-        )} that has a getter but no setter (${this.describe()})`
+        `Cannot set the value of ${this.describeType()} that has a getter but no setter (${this.describe()})`
       );
     }
 
@@ -130,9 +127,7 @@ export class Attribute extends Property {
   unsetValue() {
     if (this._getter !== undefined) {
       throw new Error(
-        `Cannot unset the value of ${a(
-          getHumanTypeOf(this)
-        )} that has a getter (${this.describe()})`
+        `Cannot unset the value of ${this.describeType()} that has a getter (${this.describe()})`
       );
     }
 

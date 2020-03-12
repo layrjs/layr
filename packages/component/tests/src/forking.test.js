@@ -15,6 +15,10 @@ describe('Forking', () => {
     expect(ForkedMovie.getComponentName()).toBe('Movie');
     expect(ForkedMovie.limit).toBe(100);
 
+    expect(ForkedMovie.isForkOf(Movie)).toBe(true);
+    expect(ForkedMovie.isForkOf(ForkedMovie)).toBe(false);
+    expect(Movie.isForkOf(ForkedMovie)).toBe(false);
+
     ForkedMovie.limit = 500;
 
     expect(ForkedMovie.limit).toBe(500);
@@ -28,6 +32,10 @@ describe('Forking', () => {
     expect(forkedMovie.title).toBe('Inception');
     expect(forkedMovie.tags).toEqual(['drama']);
     expect(forkedMovie.specs).toEqual({duration: 120});
+
+    expect(forkedMovie.isForkOf(movie)).toBe(true);
+    expect(forkedMovie.isForkOf(forkedMovie)).toBe(false);
+    expect(movie.isForkOf(forkedMovie)).toBe(false);
 
     forkedMovie.title = 'Inception 2';
     forkedMovie.tags.push('action');

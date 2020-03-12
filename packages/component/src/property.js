@@ -1,5 +1,6 @@
 import {possiblyAsync} from 'possibly-async';
 import mapValues from 'lodash/mapValues';
+import a from 'indefinite';
 import ow from 'ow';
 
 import {getTypeOf, getHumanTypeOf} from './utilities';
@@ -143,6 +144,10 @@ export class Property {
 
   static isProperty(object) {
     return isProperty(object);
+  }
+
+  describeType() {
+    return a(getHumanTypeOf(this));
   }
 
   describe() {

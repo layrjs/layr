@@ -1,6 +1,7 @@
-import {isClass} from 'core-helpers';
+import {hasOwnProperty, isPrototypeOf, isClass} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import lowerFirst from 'lodash/lowerFirst';
+import a from 'indefinite';
 import ow from 'ow';
 
 import {WithProperties} from './with-properties';
@@ -9,10 +10,12 @@ import {deserialize} from './deserialization';
 import {AttributeSelector} from './attribute-selector';
 import {
   isComponentClass,
-  isComponent,
+  isComponentInstance,
+  isComponentClassOrInstance,
   validateIsComponentClassOrInstance,
   validateComponentName,
-  getComponentInstanceNameFromComponentClassName
+  getComponentInstanceNameFromComponentClassName,
+  getTypeOf
 } from './utilities';
 
 export const ComponentMixin = (Base = Object) => {
@@ -109,6 +112,54 @@ export const ComponentMixin = (Base = Object) => {
       Object.defineProperty(this, '__isNew', {value: false, configurable: true});
     }
 
+    // === Layer registration ===
+
+    static getLayer(options = {}) {
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      const {throwIfMissing = true} = options;
+
+      const layer = hasOwnProperty(this, '__layer') ? this.__layer : undefined;
+
+      if (layer) {
+        return layer;
+      }
+
+      if (throwIfMissing) {
+        throw new Error(
+          `Cannot get the layer of ${this.describeComponentType()} that is not registered (${this.describeComponent()})`
+        );
+      }
+    }
+
+    static get layer() {
+      return this.getLayer();
+    }
+
+    getLayer(options) {
+      return this.constructor.getLayer(options);
+    }
+
+    get layer() {
+      return this.getLayer();
+    }
+
+    static setLayer(layer) {
+      if (typeof layer?.constructor?.isLayer !== 'function') {
+        throw new Error(`Expected a layer, but received a value of type '${getTypeOf(layer)}'`);
+      }
+
+      Object.defineProperty(this, '__layer', {value: layer});
+    }
+
+    static hasLayer() {
+      return this.getLayer({throwIfMissing: false}) !== undefined;
+    }
+
+    hasLayer() {
+      return this.constructor.hasLayer();
+    }
+
     // === Forking ===
 
     static fork() {
@@ -137,11 +188,23 @@ export const ComponentMixin = (Base = Object) => {
     // === Utilities ===
 
     static isComponent(object) {
-      return isComponent(object);
+      return isComponentInstance(object);
     }
   }
 
   const classAndInstanceMethods = {
+    // === Forking ===
+
+    isForkOf(component) {
+      if (!isComponentClassOrInstance(component)) {
+        throw new Error(
+          `Expected a component, but received a value of type '${getTypeOf(component)}'`
+        );
+      }
+
+      return isPrototypeOf(component, this);
+    },
+
     // === Related components ===
 
     // TODO: Handle forking
@@ -155,10 +218,24 @@ export const ComponentMixin = (Base = Object) => {
       validateComponentName(name);
 
       const relatedComponents = this.__getRelatedComponents();
-      const relatedComponent = relatedComponents[name];
+
+      let relatedComponent = relatedComponents[name];
 
       if (relatedComponent !== undefined) {
         return relatedComponent;
+      }
+
+      const layer = this.getLayer({throwIfMissing: false});
+
+      if (layer !== undefined) {
+        relatedComponent = layer.getComponent(name, {
+          throwIfMissing: false,
+          includePrototypes: true
+        });
+
+        if (relatedComponent !== undefined) {
+          return relatedComponent;
+        }
       }
 
       if (throwIfMissing) {
@@ -196,7 +273,7 @@ export const ComponentMixin = (Base = Object) => {
 
       const serializedComponent = {__component: this.getComponentName()};
 
-      if (isComponent(this) && this.isNew()) {
+      if (isComponentInstance(this) && this.isNew()) {
         serializedComponent.__new = true;
       }
 
@@ -353,8 +430,44 @@ export const ComponentMixin = (Base = Object) => {
 
     // === Utilities ===
 
-    describeComponent() {
-      return `${lowerFirst(this.getComponentType())} name: '${this.getComponentName()}'`;
+    describeComponentType() {
+      return a(lowerFirst(this.getComponentType()));
+    },
+
+    describeComponent(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          includeLayer: ow.optional.boolean,
+          layerSuffix: ow.optional.string,
+          componentSuffix: ow.optional.string
+        })
+      );
+
+      let {includeLayer = true, layerSuffix, componentSuffix = ''} = options;
+
+      if (componentSuffix !== '') {
+        componentSuffix = `${componentSuffix} `;
+      }
+
+      let layerDescription = '';
+
+      if (includeLayer) {
+        const layer = this.getLayer({throwIfMissing: false});
+
+        if (layer !== undefined) {
+          layerDescription = layer.describe({layerSuffix});
+
+          if (layerDescription !== '') {
+            layerDescription = `${layerDescription}, `;
+          }
+        }
+      }
+
+      return `${layerDescription}${componentSuffix}${lowerFirst(
+        this.getComponentType()
+      )} name: '${this.getComponentName()}'`;
     }
   };
 

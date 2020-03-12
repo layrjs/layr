@@ -2,6 +2,7 @@
   "@import": "1place/jest#^0.1.0",
   "dependencies": {
     "@liaison/component-client": "^0.1.0",
-    "@liaison/component-server": "^0.1.0"
+    "@liaison/component-server": "^0.1.0",
+    "@liaison/layer": "^0.2.0"
   }
 }

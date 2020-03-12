@@ -12,6 +12,9 @@
   "entity": {
     "@include": "./packages/entity"
   },
+  "layer": {
+    "@include": "./packages/layer"
+  },
   "model": {
     "@include": "./packages/model"
   },

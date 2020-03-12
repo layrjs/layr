@@ -1,3 +1,5 @@
+import {Layer} from '@liaison/layer';
+
 import {Component, isComponent, attribute, method} from '../../..';
 
 describe('Component', () => {
@@ -131,6 +133,44 @@ describe('Component', () => {
     movie.markAsNew();
 
     expect(movie.isNew()).toBe(true);
+  });
+
+  test('Layer registration', async () => {
+    const layer = new Layer();
+
+    class Movie extends Component {}
+
+    class Actor extends Component {}
+
+    expect(Movie.getLayer({throwIfMissing: false})).toBeUndefined();
+    expect(() => Movie.getLayer()).toThrow(
+      "Cannot get the layer of a component that is not registered (component name: 'Movie')"
+    );
+    expect(Movie.prototype.getLayer({throwIfMissing: false})).toBeUndefined();
+    expect(() => Movie.prototype.getLayer()).toThrow(
+      "Cannot get the layer of a component that is not registered (component name: 'Movie')"
+    );
+
+    expect(Movie.hasLayer()).toBe(false);
+    expect(Movie.prototype.hasLayer()).toBe(false);
+
+    layer.registerComponent(Movie);
+
+    expect(Movie.getLayer()).toBe(layer);
+    expect(Movie.layer).toBe(layer);
+    expect(Movie.prototype.getLayer()).toBe(layer);
+    expect(Movie.prototype.layer).toBe(layer);
+
+    expect(Movie.hasLayer()).toBe(true);
+    expect(Movie.prototype.hasLayer()).toBe(true);
+
+    expect(Movie.getRelatedComponent('Actor', {throwIfMissing: false})).toBeUndefined();
+    expect(Movie.getRelatedComponent('actor', {throwIfMissing: false})).toBeUndefined();
+
+    layer.registerComponent(Actor);
+
+    expect(Movie.getRelatedComponent('Actor')).toBe(Actor);
+    expect(Movie.getRelatedComponent('actor')).toBe(Actor.prototype);
   });
 
   test('Introspection', async () => {

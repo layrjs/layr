@@ -1,6 +1,7 @@
 import {getTypeOf as coreGetTypeOf} from 'core-helpers';
 import upperFirst from 'lodash/upperFirst';
 import lowerFirst from 'lodash/lowerFirst';
+import compact from 'lodash/compact';
 import ow from 'ow';
 
 export function isComponentClass(object) {
@@ -148,4 +149,16 @@ export function getTypeOf(value, options) {
 
 export function getHumanTypeOf(value) {
   return getTypeOf(value, {humanize: true});
+}
+
+export function composeDescription(description) {
+  ow(description, 'description', ow.array);
+
+  let composedDescription = compact(description).join(', ');
+
+  if (composedDescription !== '') {
+    composedDescription = ` (${composedDescription})`;
+  }
+
+  return composedDescription;
 }
