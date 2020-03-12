@@ -1,0 +1,7 @@
+{
+  "@import": "1place/jest#^0.1.0",
+  "dependencies": {
+    "cross-fetch": "^3.0.4",
+    "@liaison/component": "^0.1.0"
+  }
+}

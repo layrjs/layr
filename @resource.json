@@ -6,6 +6,12 @@
   "componentClient": {
     "@include": "./packages/component-client"
   },
+  "componentHTTPServer": {
+    "@include": "./packages/component-http-server"
+  },
+  "componentKoaMiddleware": {
+    "@include": "./packages/component-koa-middleware"
+  },
   "componentServer": {
     "@include": "./packages/component-server"
   },
