@@ -36,23 +36,30 @@ describe('ComponentHTTPServer', () => {
         }
       ]
     });
+
+    await expect(postJSON({query: {'introspect=>': {'()': []}}, version: 1})).rejects.toThrow(
+      "The component client version (1) doesn't match the component server version (undefined)"
+    );
   });
 });
 
 async function postJSON(json) {
   const url = `http://localhost:${SERVER_PORT}`;
 
-  const fetchResponse = await fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(json)
   });
 
-  if (fetchResponse.status !== 200) {
-    throw new Error('An error occurred while posting JSON');
+  const result = await response.json();
+
+  if (response.status !== 200) {
+    const {message = 'An error occurred while sending query to remote components', ...attributes} =
+      result ?? {};
+
+    throw Object.assign(new Error(message), attributes);
   }
 
-  const response = await fetchResponse.json();
-
-  return response;
+  return result;
 }

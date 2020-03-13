@@ -89,7 +89,7 @@ export class ComponentServer {
         new Error(
           `The component client version (${clientVersion}) doesn't match the component server version (${serverVersion})`
         ),
-        {code: 'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'}
+        {code: 'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION', expose: true}
       );
     }
   }

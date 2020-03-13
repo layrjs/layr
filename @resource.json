@@ -6,6 +6,9 @@
   "componentClient": {
     "@include": "./packages/component-client"
   },
+  "componentHTTPClient": {
+    "@include": "./packages/component-http-client"
+  },
   "componentHTTPServer": {
     "@include": "./packages/component-http-server"
   },

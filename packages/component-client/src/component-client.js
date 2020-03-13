@@ -36,29 +36,30 @@ export class ComponentClient {
     this._baseComponents = createComponentMap(baseComponents);
   }
 
-  // TODO: Make getComponent*() methods possibly async
-
   getComponent(name, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
 
     const {throwIfMissing = true} = options;
 
-    const components = this.getComponents();
-    const component = components[name];
+    return possiblyAsync(this.getComponents(), {
+      then: components => {
+        const component = components[name];
 
-    if (component !== undefined) {
-      return component;
-    }
+        if (component !== undefined) {
+          return component;
+        }
 
-    if (throwIfMissing) {
-      throw new Error(`The component '${name}' is missing in the component client`);
-    }
+        if (throwIfMissing) {
+          throw new Error(`The component '${name}' is missing in the component client`);
+        }
+      }
+    });
   }
 
   getComponents() {
     if (this._components === undefined) {
-      this._createComponents();
+      return this._createComponents();
     }
 
     return this._components;
@@ -68,21 +69,25 @@ export class ComponentClient {
     this._components = Object.create(null);
     this.__relatedComponentNames = new Map();
 
-    const {components: introspectedComponents} = this._introspectRemoteComponents();
-
-    for (const introspectedComponent of introspectedComponents) {
-      this._createComponent(introspectedComponent);
-    }
-
-    for (const [component, relatedComponentNames] of this.__relatedComponentNames.entries()) {
-      for (const relatedComponentName of relatedComponentNames) {
-        const relatedComponent = this._components[relatedComponentName];
-
-        if (relatedComponent !== undefined) {
-          component.registerRelatedComponent(relatedComponent);
+    return possiblyAsync(this._introspectRemoteComponents(), {
+      then: introspectedComponents => {
+        for (const introspectedComponent of introspectedComponents) {
+          this._createComponent(introspectedComponent);
         }
+
+        for (const [component, relatedComponentNames] of this.__relatedComponentNames.entries()) {
+          for (const relatedComponentName of relatedComponentNames) {
+            const relatedComponent = this._components[relatedComponentName];
+
+            if (relatedComponent !== undefined) {
+              component.registerRelatedComponent(relatedComponent);
+            }
+          }
+        }
+
+        return this._components;
       }
-    }
+    });
   }
 
   _createComponent({name, type, properties, relatedComponents}) {
@@ -160,13 +165,9 @@ export class ComponentClient {
   }
 
   _introspectRemoteComponents() {
-    debug(`Introspecting the remote components`);
-
-    const introspection = this.sendQuery({'introspect=>': {'()': []}});
-
-    debug(`Remote components introspected`);
-
-    return introspection;
+    return possiblyAsync(this.sendQuery({'introspect=>': {'()': []}}), {
+      then: ({components: introspectedComponents}) => introspectedComponents
+    });
   }
 
   sendQuery(query) {
