@@ -3,7 +3,7 @@ import {ComponentServer} from '@liaison/component-server';
 
 import {Component, expose} from '../../..';
 
-describe('Client-server', () => {
+describe('Client/server', () => {
   test('Using class properties', async () => {
     const provider = function() {
       class Counter extends Component {
