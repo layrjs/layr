@@ -9,7 +9,7 @@ describe('Layer', () => {
     expect(layer.getName()).toBeUndefined();
 
     expect(() => layer.getComponent('Movie')).toThrow(
-      "The component 'Movie' is not registered in the layer"
+      "The component class 'Movie' is not registered in the layer"
     );
 
     layer = new Layer([], {name: 'frontend'});
@@ -17,7 +17,7 @@ describe('Layer', () => {
     expect(layer.getName()).toBe('frontend');
 
     expect(() => layer.getComponent('Movie')).toThrow(
-      "The component 'Movie' is not registered in the layer (layer name: 'frontend')"
+      "The component class 'Movie' is not registered in the layer (layer name: 'frontend')"
     );
 
     class Movie extends Component {}
@@ -37,20 +37,21 @@ describe('Layer', () => {
     const layer = new Layer([Movie]);
 
     expect(layer.getComponent('Movie')).toBe(Movie);
-    expect(layer.getComponent('movie', {throwIfMissing: false})).toBeUndefined();
+    expect(() => layer.getComponent('movie')).toThrow(
+      "The specified component name ('movie') is invalid"
+    );
     expect(layer.getComponent('movie', {includePrototypes: true})).toBe(Movie.prototype);
 
     expect(layer.Movie).toBe(Movie);
-    expect(layer.movie).toBeUndefined();
 
     expect(() => layer.getComponent('Actor')).toThrow(
-      "The component 'Actor' is not registered in the layer"
+      "The component class 'Actor' is not registered in the layer"
     );
 
     layer.setName('frontend');
 
     expect(() => layer.getComponent('Actor')).toThrow(
-      "The component 'Actor' is not registered in the layer (layer name: 'frontend')"
+      "The component class 'Actor' is not registered in the layer (layer name: 'frontend')"
     );
   });
 

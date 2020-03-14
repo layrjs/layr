@@ -1,6 +1,8 @@
 import {
   isComponentClass,
   isComponentInstance,
+  validateComponentName,
+  getComponentClassNameFromComponentInstanceName,
   getTypeOf,
   composeDescription
 } from '@liaison/component';
@@ -59,16 +61,19 @@ export class Layer {
 
     const {throwIfMissing = true, includePrototypes = false} = options;
 
-    let component = this._components[name];
+    const isInstanceName =
+      validateComponentName(name, {
+        allowInstances: includePrototypes
+      }) === 'componentInstanceName';
 
-    if (!includePrototypes && isComponentInstance(component)) {
-      component = undefined;
-    }
+    const className = isInstanceName ? getComponentClassNameFromComponentInstanceName(name) : name;
 
-    if (component === undefined) {
+    let Component = this._components[className];
+
+    if (Component === undefined) {
       if (throwIfMissing) {
         throw new Error(
-          `The component '${name}' is not registered in the layer${composeDescription([
+          `The component class '${className}' is not registered in the layer${composeDescription([
             this.describe()
           ])}`
         );
@@ -77,13 +82,14 @@ export class Layer {
       return undefined;
     }
 
-    if (!hasOwnProperty(this._components, name)) {
+    if (!hasOwnProperty(this._components, className)) {
       // Since the layer has been forked, the component must be forked as well
-      component = this._forkComponent(component);
-      this._components[name] = component;
+      Component = Component.fork();
+      Component.setLayer(this);
+      this._components[className] = Component;
     }
 
-    return component;
+    return isInstanceName ? Component.prototype : Component;
   }
 
   registerComponent(Component) {
@@ -116,6 +122,7 @@ export class Layer {
     }
 
     const componentName = Component.getComponentName();
+
     const existingComponent = this._components[componentName];
 
     if (existingComponent !== undefined) {
@@ -126,32 +133,23 @@ export class Layer {
       );
     }
 
-    const register = component => {
-      const componentName = component.getComponentName();
-
-      if (isComponentClass(component)) {
-        if (componentName in this) {
-          throw new Error(
-            `Cannot register ${component.describeComponentType()} that has the same name as an existing property${composeDescription(
-              [this.describe(), component.describeComponent()]
-            )}`
-          );
-        }
-
-        Object.defineProperty(this, componentName, {
-          get() {
-            return this.getComponent(componentName);
-          }
-        });
-      }
-
-      this._components[componentName] = component;
-    };
-
-    register(Component);
-    register(Component.prototype);
+    if (componentName in this) {
+      throw new Error(
+        `Cannot register ${Component.describeComponentType()} that has the same name as an existing property${composeDescription(
+          [this.describe(), Component.describeComponent()]
+        )}`
+      );
+    }
 
     Component.setLayer(this);
+
+    this._components[componentName] = Component;
+
+    Object.defineProperty(this, componentName, {
+      get() {
+        return this.getComponent(componentName);
+      }
+    });
   }
 
   getComponents(options = {}) {
@@ -169,17 +167,17 @@ export class Layer {
       *[Symbol.iterator]() {
         // eslint-disable-next-line guard-for-in
         for (const name in layer._components) {
-          const component = layer.getComponent(name, {throwIfMissing: false, includePrototypes});
+          const Component = layer.getComponent(name);
 
-          if (component === undefined) {
+          if (filter && !filter(Component)) {
             continue;
           }
 
-          if (filter && !filter(component)) {
-            continue;
-          }
+          yield Component;
 
-          yield component;
+          if (includePrototypes) {
+            yield Component.prototype;
+          }
         }
       }
     };
@@ -213,21 +211,6 @@ export class Layer {
 
   get ghost() {
     return this.getGhost();
-  }
-
-  _forkComponent(component) {
-    let forkedComponent;
-
-    if (isComponentClass(component)) {
-      forkedComponent = component.fork();
-      forkedComponent.setLayer(this);
-    } else {
-      const componentClassName = component.constructor.getComponentName();
-      const Component = this.getComponent(componentClassName);
-      forkedComponent = Component.prototype;
-    }
-
-    return forkedComponent;
   }
 
   // === Utilities ===
