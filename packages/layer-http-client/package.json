@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/layer-client",
-  "version": "0.1.0",
-  "description": "A client to consume your locally served Liaison layers",
+  "name": "@liaison/layer-http-client",
+  "version": "0.2.0",
+  "description": "An HTTP client for your Liaison layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-client",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-http-client",
   "files": [
     "dist"
   ],
@@ -12,11 +12,10 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
-    "@liaison/component": "^0.1.0",
-    "@liaison/component-client": "^0.1.0",
-    "@liaison/layer": "^0.2.0",
-    "ow": "^0.15.0",
-    "possibly-async": "^0.2.0"
+    "cross-fetch": "^3.0.4",
+    "debug": "^4.1.1",
+    "@liaison/layer-client": "^0.1.0",
+    "ow": "^0.15.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

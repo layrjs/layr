@@ -3,12 +3,6 @@ import {ComponentClient} from '@liaison/component-client';
 import {isComponentClass} from '@liaison/component';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
-import debugModule from 'debug';
-
-const debug = debugModule('liaison:layer-client');
-
-// To display the debug log, set this environment:
-// DEBUG=liaison:component-client DEBUG_DEPTH=10
 
 export class LayerClient {
   constructor(layerServer, options = {}) {
@@ -45,14 +39,18 @@ export class LayerClient {
   }
 
   _createLayer() {
-    const name = this._componentClient.getName();
+    return possiblyAsync(this._componentClient.getName(), {
+      then: name => {
+        return possiblyAsync(this._componentClient.getComponents(), {
+          then: components => {
+            components = Object.values(components).filter(component => isComponentClass(component));
 
-    let components = this._componentClient.getComponents();
+            this._layer = new Layer(components, {name});
 
-    components = Object.values(components).filter(component => isComponentClass(component));
-
-    this._layer = new Layer(components, {name});
-
-    return this._layer;
+            return this._layer;
+          }
+        });
+      }
+    });
   }
 }

@@ -27,6 +27,15 @@
   "layerClient": {
     "@include": "./packages/layer-client"
   },
+  "layerHTTPClient": {
+    "@include": "./packages/layer-http-client"
+  },
+  "layerHTTPServer": {
+    "@include": "./packages/layer-http-server"
+  },
+  "layerKoaMiddleware": {
+    "@include": "./packages/layer-koa-middleware"
+  },
   "layerServer": {
     "@include": "./packages/layer-server"
   },

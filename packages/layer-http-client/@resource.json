@@ -1,0 +1,18 @@
+{
+  "@import": "1place/npm-package#^0.2.0",
+  "name": "@liaison/layer-http-client",
+  "version": "0.2.0",
+  "description": "An HTTP client for your Liaison layers",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-http-client",
+  "dependencies": {
+    "cross-fetch": "^3.0.4",
+    "debug": "^4.1.1",
+    "@liaison/layer-client": "^0.1.0",
+    "ow": "^0.15.0"
+  },
+  "tests": {
+    "@include": "./tests"
+  }
+}
