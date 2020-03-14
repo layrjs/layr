@@ -24,6 +24,12 @@
   "layer": {
     "@include": "./packages/layer"
   },
+  "layerClient": {
+    "@include": "./packages/layer-client"
+  },
+  "layerServer": {
+    "@include": "./packages/layer-server"
+  },
   "model": {
     "@include": "./packages/model"
   },

@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/component-server",
+  "name": "@liaison/layer-server",
   "version": "0.1.0",
-  "description": "A server to locally serve your Liaison components",
+  "description": "A server to locally serve your Liaison layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component-server",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-server",
   "files": [
     "dist"
   ],
@@ -14,8 +14,8 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "debug": "^4.1.1",
-    "@deepr/runtime": "^0.3.0",
-    "@liaison/component": "^0.1.0",
+    "@liaison/component-server": "^0.1.0",
+    "@liaison/layer": "^0.2.0",
     "lodash": "^4.17.15",
     "ow": "^0.15.0",
     "possibly-async": "^0.2.0"

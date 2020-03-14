@@ -1,6 +1,6 @@
 # @liaison/component-client
 
-A client to consume your locally served components.
+A client to consume your locally served Liaison components.
 
 ## Installation
 

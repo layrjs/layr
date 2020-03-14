@@ -2,7 +2,7 @@
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/component-client",
   "version": "0.1.0",
-  "description": "A client to consume your locally served components",
+  "description": "A client to consume your locally served Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component-client",

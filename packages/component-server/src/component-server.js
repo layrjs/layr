@@ -12,11 +12,16 @@ import ow from 'ow';
 export class ComponentServer {
   constructor(componentProvider, options = {}) {
     ow(componentProvider, 'componentProvider', ow.function);
-    ow(options, 'options', ow.object.exactShape({version: ow.optional.number.integer}));
+    ow(
+      options,
+      'options',
+      ow.object.exactShape({name: ow.optional.string.nonEmpty, version: ow.optional.number.integer})
+    );
 
-    const {version} = options;
+    const {name, version} = options;
 
     this._componentProvider = componentProvider;
+    this._name = name;
     this._version = version;
   }
 
@@ -97,14 +102,14 @@ export class ComponentServer {
   getComponents() {
     const components = this._componentProvider();
 
-    if (!Array.isArray(components)) {
-      throw new Error("The 'componentProvider' function didn't return an array");
+    if (typeof components?.[Symbol.iterator] !== 'function') {
+      throw new Error("The 'componentProvider' function didn't return an iterable object");
     }
 
     for (const component of components) {
       if (!isComponentClassOrInstance(component)) {
         throw new Error(
-          "The 'componentProvider' function returned an array containing an item that is not a component"
+          "The 'componentProvider' function returned an iterable containing an item that is not a component"
         );
       }
     }
@@ -113,9 +118,17 @@ export class ComponentServer {
   }
 
   getRoot(components) {
+    const componentServer = this;
+
     const root = Object.create(null);
 
     root.introspect = function() {
+      const introspectedComponentServer = {};
+
+      if (componentServer._name !== undefined) {
+        introspectedComponentServer.name = componentServer._name;
+      }
+
       const introspectedComponents = [];
 
       for (const component of components) {
@@ -126,7 +139,9 @@ export class ComponentServer {
         }
       }
 
-      return {components: introspectedComponents};
+      introspectedComponentServer.components = introspectedComponents;
+
+      return introspectedComponentServer;
     };
 
     return root;

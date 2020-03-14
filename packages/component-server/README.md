@@ -1,6 +1,6 @@
 # @liaison/component-server
 
-A server to locally serve your components.
+A server to locally serve your Liaison components.
 
 ## Installation
 

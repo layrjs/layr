@@ -36,6 +36,12 @@ export class ComponentClient {
     this._baseComponents = createComponentMap(baseComponents);
   }
 
+  getName() {
+    return possiblyAsync(this._introspectComponentServer(), {
+      then: ({name}) => name
+    });
+  }
+
   getComponent(name, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
@@ -69,8 +75,8 @@ export class ComponentClient {
     this._components = Object.create(null);
     this.__relatedComponentNames = new Map();
 
-    return possiblyAsync(this._introspectRemoteComponents(), {
-      then: introspectedComponents => {
+    return possiblyAsync(this._introspectComponentServer(), {
+      then: ({components: introspectedComponents}) => {
         for (const introspectedComponent of introspectedComponents) {
           this._createComponent(introspectedComponent);
         }
@@ -164,10 +170,17 @@ export class ComponentClient {
     };
   }
 
-  _introspectRemoteComponents() {
-    return possiblyAsync(this.sendQuery({'introspect=>': {'()': []}}), {
-      then: ({components: introspectedComponents}) => introspectedComponents
-    });
+  _introspectComponentServer() {
+    if (this._introspectedComponentServer === undefined) {
+      return possiblyAsync(this.sendQuery({'introspect=>': {'()': []}}), {
+        then: introspectedComponentServer => {
+          this._introspectedComponentServer = introspectedComponentServer;
+          return introspectedComponentServer;
+        }
+      });
+    }
+
+    return this._introspectedComponentServer;
   }
 
   sendQuery(query) {
