@@ -7,13 +7,8 @@
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-server",
   "dependencies": {
-    "core-helpers": "^0.1.0",
-    "debug": "^4.1.1",
     "@liaison/component-server": "^0.1.0",
-    "@liaison/layer": "^0.2.0",
-    "lodash": "^4.17.15",
-    "ow": "^0.15.0",
-    "possibly-async": "^0.2.0"
+    "ow": "^0.15.0"
   },
   "tests": {
     "@include": "./tests"

@@ -1,5 +1,4 @@
 import {ComponentServer} from '@liaison/component-server';
-import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
 export class LayerServer {

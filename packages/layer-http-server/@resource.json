@@ -1,0 +1,21 @@
+{
+  "@import": "1place/npm-package#^0.2.0",
+  "name": "@liaison/layer-http-server",
+  "version": "0.2.0",
+  "description": "A basic HTTP server for your Liaison layers",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-http-server",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "koa": "^2.7.0",
+    "@koa/cors": "^3.0.0",
+    "koa-json-error": "^3.1.2",
+    "koa-logger": "^3.2.1",
+    "@liaison/layer-koa-middleware": "^0.1.0",
+    "ow": "^0.15.0"
+  },
+  "tests": {
+    "@include": "./tests"
+  }
+}
