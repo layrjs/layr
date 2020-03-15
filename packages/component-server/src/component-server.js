@@ -1,5 +1,8 @@
 import {
+  isComponentClass,
   isComponentClassOrInstance,
+  validateComponentName,
+  getComponentClassNameFromComponentInstanceName,
   serialize,
   deserialize,
   createComponentMap,
@@ -39,7 +42,17 @@ export class ComponentServer {
 
     const componentMap = createComponentMap(components);
 
-    const componentGetter = name => getComponentFromComponentMap(componentMap, name);
+    const componentGetter = name => {
+      const isInstanceName = validateComponentName(name) === 'componentInstanceName';
+
+      const className = isInstanceName
+        ? getComponentClassNameFromComponentInstanceName(name)
+        : name;
+
+      const Component = getComponentFromComponentMap(componentMap, className);
+
+      return isInstanceName ? Component.prototype : Component;
+    };
 
     const getFilter = function(attribute) {
       return attribute.operationIsAllowed('get');
@@ -106,10 +119,10 @@ export class ComponentServer {
       throw new Error("The 'componentProvider' function didn't return an iterable object");
     }
 
-    for (const component of components) {
-      if (!isComponentClassOrInstance(component)) {
+    for (const Component of components) {
+      if (!isComponentClass(Component)) {
         throw new Error(
-          "The 'componentProvider' function returned an iterable containing an item that is not a component"
+          "The 'componentProvider' function returned an iterable containing an item that is not a component class"
         );
       }
     }
@@ -131,8 +144,8 @@ export class ComponentServer {
 
       const introspectedComponents = [];
 
-      for (const component of components) {
-        const introspectedComponent = component.introspect();
+      for (const Component of components) {
+        const introspectedComponent = Component.introspect();
 
         if (introspectedComponent !== undefined) {
           introspectedComponents.push(introspectedComponent);

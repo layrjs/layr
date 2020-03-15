@@ -28,7 +28,7 @@ describe('ComponentServer', () => {
 
       Cinema.registerRelatedComponent(Movie);
 
-      return [Movie, Movie.prototype, Cinema.prototype];
+      return [Movie, Cinema];
     };
 
     const server = new ComponentServer(provider);
@@ -40,31 +40,31 @@ describe('ComponentServer', () => {
         {
           name: 'Movie',
           type: 'Component',
-          properties: [{name: 'find', type: 'method', exposure: {call: true}}]
+          properties: [{name: 'find', type: 'method', exposure: {call: true}}],
+          prototype: {
+            properties: [
+              {
+                name: 'title',
+                type: 'attribute',
+                default: {__function: "function () {\n          return '';\n        }"},
+                exposure: {get: true, set: true}
+              }
+            ]
+          }
         },
         {
-          name: 'movie',
-          type: 'component',
-          properties: [
-            {
-              name: 'title',
-              type: 'attribute',
-              default: {__function: "function () {\n          return '';\n        }"},
-              exposure: {get: true, set: true}
-            }
-          ]
-        },
-        {
-          name: 'cinema',
-          type: 'component',
-          properties: [
-            {
-              name: 'movies',
-              type: 'attribute',
-              exposure: {get: true}
-            }
-          ],
-          relatedComponents: ['movie']
+          name: 'Cinema',
+          type: 'Component',
+          relatedComponents: ['Movie'],
+          prototype: {
+            properties: [
+              {
+                name: 'movies',
+                type: 'attribute',
+                exposure: {get: true}
+              }
+            ]
+          }
         }
       ]
     });
@@ -82,7 +82,7 @@ describe('ComponentServer', () => {
         title;
       }
 
-      return [Movie.prototype];
+      return [Movie];
     };
 
     const server = new ComponentServer(provider);
@@ -92,23 +92,25 @@ describe('ComponentServer', () => {
     expect(introspection).toStrictEqual({
       components: [
         {
-          name: 'movie',
-          type: 'model',
-          properties: [
-            {
-              name: 'title',
-              type: 'modelAttribute',
-              valueType: 'string',
-              validators: [
-                {
-                  name: 'notEmpty',
-                  function: {__function: 'value => value.length > 0'},
-                  message: 'The validator `notEmpty()` failed'
-                }
-              ],
-              exposure: {get: true, set: true}
-            }
-          ]
+          name: 'Movie',
+          type: 'Model',
+          prototype: {
+            properties: [
+              {
+                name: 'title',
+                type: 'modelAttribute',
+                valueType: 'string',
+                validators: [
+                  {
+                    name: 'notEmpty',
+                    function: {__function: 'value => value.length > 0'},
+                    message: 'The validator `notEmpty()` failed'
+                  }
+                ],
+                exposure: {get: true, set: true}
+              }
+            ]
+          }
         }
       ]
     });
@@ -126,7 +128,7 @@ describe('ComponentServer', () => {
         email;
       }
 
-      return [User.prototype];
+      return [User];
     };
 
     const server = new ComponentServer(provider);
@@ -136,25 +138,27 @@ describe('ComponentServer', () => {
     expect(introspection).toStrictEqual({
       components: [
         {
-          name: 'user',
-          type: 'entity',
-          properties: [
-            {
-              name: 'id',
-              type: 'primaryIdentifierAttribute',
-              exposure: {get: true, set: true},
-              default: {
-                __function: 'function () {\n    return this.constructor.generateId();\n  }'
+          name: 'User',
+          type: 'Entity',
+          prototype: {
+            properties: [
+              {
+                name: 'id',
+                type: 'primaryIdentifierAttribute',
+                exposure: {get: true, set: true},
+                default: {
+                  __function: 'function () {\n    return this.constructor.generateId();\n  }'
+                },
+                valueType: 'string'
               },
-              valueType: 'string'
-            },
-            {
-              name: 'email',
-              type: 'secondaryIdentifierAttribute',
-              exposure: {get: true, set: true},
-              valueType: 'string'
-            }
-          ]
+              {
+                name: 'email',
+                type: 'secondaryIdentifierAttribute',
+                exposure: {get: true, set: true},
+                valueType: 'string'
+              }
+            ]
+          }
         }
       ]
     });
@@ -170,7 +174,7 @@ describe('ComponentServer', () => {
         @attribute() rating;
       }
 
-      return [Movie, Movie.prototype];
+      return [Movie];
     };
 
     const server = new ComponentServer(provider);
@@ -284,7 +288,7 @@ describe('ComponentServer', () => {
         }
       }
 
-      return [Movie, Movie.prototype];
+      return [Movie];
     };
 
     const server = new ComponentServer(provider);
