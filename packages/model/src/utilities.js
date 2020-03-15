@@ -5,8 +5,16 @@ export function isModelClass(object) {
   return typeof object?.isModel === 'function';
 }
 
-export function isModel(object) {
+export function isModelInstance(object) {
   return isModelClass(object?.constructor) === true;
+}
+
+export function isModel(object) {
+  return isModelInstance(object);
+}
+
+export function isModelClassOrInstance(object) {
+  return isModelClass(object) || isModelInstance(object);
 }
 
 export function joinModelAttributePath(path) {

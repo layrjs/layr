@@ -1,7 +1,7 @@
 import {
   Entity,
   isEntityClass,
-  isEntity,
+  isEntityInstance,
   isIdentifierAttribute,
   primaryIdentifier,
   isPrimaryIdentifierAttribute,
@@ -44,15 +44,15 @@ describe('Entity', () => {
     expect(isEntityClass(movie)).toBe(false);
   });
 
-  test('isEntity()', async () => {
+  test('isEntityInstance()', async () => {
     class Movie extends Entity {}
 
-    expect(isEntity(Movie)).toBe(false);
-    expect(isEntity(Movie.prototype)).toBe(true);
+    expect(isEntityInstance(Movie)).toBe(false);
+    expect(isEntityInstance(Movie.prototype)).toBe(true);
 
     const movie = new Movie();
 
-    expect(isEntity(movie)).toBe(true);
+    expect(isEntityInstance(movie)).toBe(true);
   });
 
   test('getIdentifierAttribute()', async () => {

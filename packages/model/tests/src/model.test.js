@@ -1,7 +1,7 @@
 import {
   Model,
   isModelClass,
-  isModel,
+  isModelInstance,
   attribute,
   isModelAttribute,
   method,
@@ -48,20 +48,20 @@ describe('Model', () => {
     expect(isModelClass(movie)).toBe(false);
   });
 
-  test('isModel()', async () => {
-    expect(isModel(undefined)).toBe(false);
-    expect(isModel(null)).toBe(false);
-    expect(isModel(true)).toBe(false);
-    expect(isModel(1)).toBe(false);
-    expect(isModel({})).toBe(false);
+  test('isModelInstance()', async () => {
+    expect(isModelInstance(undefined)).toBe(false);
+    expect(isModelInstance(null)).toBe(false);
+    expect(isModelInstance(true)).toBe(false);
+    expect(isModelInstance(1)).toBe(false);
+    expect(isModelInstance({})).toBe(false);
 
     class Movie extends Model {}
 
-    expect(isModel(Movie.prototype)).toBe(true);
+    expect(isModelInstance(Movie.prototype)).toBe(true);
 
     const movie = new Movie();
 
-    expect(isModel(movie)).toBe(true);
+    expect(isModelInstance(movie)).toBe(true);
   });
 
   test('getModelAttribute()', async () => {

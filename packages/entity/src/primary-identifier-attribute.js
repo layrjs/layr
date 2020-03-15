@@ -1,7 +1,7 @@
 import ow from 'ow';
 
 import {IdentifierAttribute} from './identifier-attribute';
-import {isEntity} from './utilities';
+import {isEntityInstance} from './utilities';
 
 export class PrimaryIdentifierAttribute extends IdentifierAttribute {
   constructor(name, parent, options = {}) {
@@ -9,7 +9,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
     ow(parent, 'parent', ow.object);
     ow(options, 'options', ow.optional.object);
 
-    if (!isEntity(parent)) {
+    if (!isEntityInstance(parent)) {
       throw new Error(
         `Cannot create a primary identifier attribute with a parent that does not inherit from Entity (property name: '${name}')`
       );

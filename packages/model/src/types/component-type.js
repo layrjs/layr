@@ -3,7 +3,7 @@ import {isPrototypeOf, getClassOf} from 'core-helpers';
 import ow from 'ow';
 
 import {Type} from './type';
-import {isModelClass, isModel} from '../utilities';
+import {isModelClassOrInstance} from '../utilities';
 
 export class ComponentType extends Type {
   constructor(options = {}) {
@@ -57,7 +57,7 @@ export class ComponentType extends Type {
   runValidators(value) {
     const failedValidators = super.runValidators(value);
 
-    if (isModelClass(value) || isModel(value)) {
+    if (isModelClassOrInstance(value)) {
       const modelFailedValidators = value.runValidators();
       failedValidators.push(...modelFailedValidators);
     }

@@ -2,7 +2,7 @@ import {_decorateAttribute} from '@liaison/model';
 import {isClass} from 'core-helpers';
 import ow from 'ow';
 
-import {isEntity} from './utilities';
+import {isEntityInstance} from './utilities';
 import {PrimaryIdentifierAttribute} from './primary-identifier-attribute';
 import {SecondaryIdentifierAttribute} from './secondary-identifier-attribute';
 
@@ -33,7 +33,7 @@ function identifier(IdentifierAttributeClass, decoratorName, type, options = {})
       );
     }
 
-    if (!isEntity(target)) {
+    if (!isEntityInstance(target)) {
       throw new Error(
         `@${decoratorName}() target doesn't inherit from Entity (property name: '${name}')`
       );

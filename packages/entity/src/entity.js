@@ -13,7 +13,7 @@ import {
   isSecondaryIdentifierAttribute
 } from './secondary-identifier-attribute';
 import {EntityManager} from './entity-manager';
-import {isEntity, isEntityClass} from './utilities';
+import {isEntityClass, isEntityInstance} from './utilities';
 
 export const EntityMixin = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -257,7 +257,7 @@ export const EntityMixin = (Base = Object) => {
     }
 
     static isEntity(object) {
-      return isEntity(object);
+      return isEntityInstance(object);
     }
   }
 

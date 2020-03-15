@@ -2,7 +2,7 @@ import {_decorateAttribute} from '@liaison/component';
 import ow from 'ow';
 
 import {ModelAttribute} from './model-attribute';
-import {isModelClass, isModel} from './utilities';
+import {isModelClassOrInstance} from './utilities';
 
 import {attribute as componentAttribute} from '@liaison/component';
 
@@ -22,7 +22,7 @@ export function attribute(type, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!(isModelClass(target) || isModel(target))) {
+    if (!isModelClassOrInstance(target)) {
       throw new Error(`@attribute() target doesn't inherit from Model (property name: '${name}')`);
     }
 

@@ -3,7 +3,7 @@ import {Observable} from '@liaison/observable';
 import ow from 'ow';
 
 import {ModelAttribute, isModelAttribute} from './model-attribute';
-import {isModelClass, isModel, joinModelAttributePath} from './utilities';
+import {isModelClass, isModelInstance, joinModelAttributePath} from './utilities';
 
 export const ModelMixin = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -28,7 +28,7 @@ export const ModelMixin = (Base = Object) => {
     }
 
     static isModel(object) {
-      return isModel(object);
+      return isModelInstance(object);
     }
   }
 

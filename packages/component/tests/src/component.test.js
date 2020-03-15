@@ -1,6 +1,6 @@
 import {Layer} from '@liaison/layer';
 
-import {Component, isComponent, attribute, method} from '../../..';
+import {Component, isComponentInstance, attribute, method} from '../../..';
 
 describe('Component', () => {
   test('Creation', async () => {
@@ -16,7 +16,7 @@ describe('Component', () => {
 
     let movie = new Movie();
 
-    expect(isComponent(movie)).toBe(true);
+    expect(isComponentInstance(movie)).toBe(true);
     expect(movie).toBeInstanceOf(Movie);
 
     expect(Object.keys(movie)).toEqual(['instanceAttribute']);
