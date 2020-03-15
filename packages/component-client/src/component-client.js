@@ -44,20 +44,35 @@ export class ComponentClient {
 
   getComponent(name, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
-    ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+    ow(
+      options,
+      'options',
+      ow.object.exactShape({
+        throwIfMissing: ow.optional.boolean,
+        includePrototypes: ow.optional.boolean
+      })
+    );
 
-    const {throwIfMissing = true} = options;
+    const {throwIfMissing = true, includePrototypes = false} = options;
 
     return possiblyAsync(this.getComponents(), {
-      then: components => {
-        const component = components[name];
+      then: () => {
+        const isInstanceName =
+          validateComponentName(name, {allowInstances: includePrototypes}) ===
+          'componentInstanceName';
 
-        if (component !== undefined) {
-          return component;
+        const className = isInstanceName
+          ? getComponentClassNameFromComponentInstanceName(name)
+          : name;
+
+        const Component = this._componentMap[className];
+
+        if (Component !== undefined) {
+          return isInstanceName ? Component.prototype : Component;
         }
 
         if (throwIfMissing) {
-          throw new Error(`The component '${name}' is missing in the component client`);
+          throw new Error(`The component class '${className}' is missing in the component client`);
         }
       }
     });
@@ -72,21 +87,24 @@ export class ComponentClient {
   }
 
   _createComponents() {
-    this._components = Object.create(null);
+    this._components = [];
     this.__relatedComponentNames = new Map();
 
     return possiblyAsync(this._introspectComponentServer(), {
       then: ({components: introspectedComponents}) => {
         for (const introspectedComponent of introspectedComponents) {
-          this._createComponent(introspectedComponent);
+          const Component = this._createComponent(introspectedComponent);
+          this._components.push(Component);
         }
 
-        for (const [component, relatedComponentNames] of this.__relatedComponentNames.entries()) {
-          for (const relatedComponentName of relatedComponentNames) {
-            const relatedComponent = this._components[relatedComponentName];
+        this._componentMap = createComponentMap(this._components);
 
-            if (relatedComponent !== undefined) {
-              component.registerRelatedComponent(relatedComponent);
+        for (const [Component, relatedComponentNames] of this.__relatedComponentNames.entries()) {
+          for (const relatedComponentName of relatedComponentNames) {
+            const RelatedComponent = this._componentMap[relatedComponentName];
+
+            if (RelatedComponent !== undefined) {
+              Component.registerRelatedComponent(RelatedComponent);
             }
           }
         }
@@ -96,60 +114,25 @@ export class ComponentClient {
     });
   }
 
-  _createComponent({name, type, properties, relatedComponents}) {
-    let component = this._components[name];
-
-    if (component === undefined) {
-      const validateComponentNameResult = validateComponentName(name);
-
-      if (validateComponentNameResult === 'componentClassName') {
-        component = this._createComponentClass({name, type});
-      } else {
-        component = this._createComponentPrototype({name, type});
-      }
-
-      component.unintrospect(
-        {name, properties},
-        {methodCreator: this._createComponentMethod.bind(this)}
-      );
-
-      this._components[name] = component;
-    } else if (component.getComponentType() !== type) {
-      throw new Error(
-        `Cannot change the type of an existing component (component name: '${name}', current type: '${component.getComponentType()}', specified type: '${type}')`
-      );
-    }
-
-    if (relatedComponents !== undefined) {
-      this.__relatedComponentNames.set(component, relatedComponents);
-    }
-
-    return component;
-  }
-
-  _createComponentClass({name, type}) {
-    validateComponentName(name, {allowInstances: false});
-    validateComponentName(type, {allowInstances: false});
-
+  _createComponent({name, type, properties, relatedComponents, prototype}) {
     const BaseComponent = this._baseComponents[type];
 
     if (BaseComponent === undefined) {
       throw new Error(`Unknown base component ('${type}') received from a component server`);
     }
 
-    return class Component extends BaseComponent {};
-  }
+    class Component extends BaseComponent {}
 
-  _createComponentPrototype({name, type}) {
-    validateComponentName(name, {allowClasses: false});
-    validateComponentName(type, {allowClasses: false});
+    Component.unintrospect(
+      {name, properties, prototype},
+      {methodCreator: this._createComponentMethod.bind(this)}
+    );
 
-    const Component = this._createComponent({
-      name: getComponentClassNameFromComponentInstanceName(name),
-      type: getComponentClassNameFromComponentInstanceName(type)
-    });
+    if (relatedComponents !== undefined) {
+      this.__relatedComponentNames.set(Component, relatedComponents);
+    }
 
-    return Component.prototype;
+    return Component;
   }
 
   _createComponentMethod(name) {
@@ -191,13 +174,15 @@ export class ComponentClient {
     const version = this._version;
 
     const componentGetter = function(name) {
-      return componentClient.getComponent(name);
+      return componentClient.getComponent(name, {includePrototypes: true});
     };
 
     const attributeFilter = function(attribute) {
       // Exclude properties that cannot be set in the remote components
 
-      const remoteComponent = componentClient.getComponent(this.getComponentName());
+      const remoteComponent = componentClient.getComponent(this.getComponentName(), {
+        includePrototypes: true
+      });
       const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {
         throwIfMissing: false
       });

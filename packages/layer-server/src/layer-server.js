@@ -23,7 +23,7 @@ export class LayerServer {
     const componentProvider = function() {
       const layer = layerProvider();
 
-      return layer.getComponents({includePrototypes: true});
+      return layer.getComponents();
     };
 
     return new ComponentServer(componentProvider, {name, version});

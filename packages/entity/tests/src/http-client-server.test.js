@@ -20,7 +20,7 @@ describe('HTTP client/server', () => {
         }
       }
 
-      return [Counter, Counter.prototype];
+      return [Counter];
     };
 
     server = new ComponentHTTPServer(provider, {port: SERVER_PORT});
@@ -37,7 +37,7 @@ describe('HTTP client/server', () => {
       baseComponents: [Entity]
     });
 
-    const {Counter} = await client.getComponents();
+    const [Counter] = await client.getComponents();
 
     const counter = new Counter();
 

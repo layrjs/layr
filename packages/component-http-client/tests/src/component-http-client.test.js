@@ -78,7 +78,7 @@ describe('ComponentHTTPClient', () => {
       baseComponents: [Component]
     });
 
-    const {Movie} = await client.getComponents();
+    const [Movie] = await client.getComponents();
 
     expect(isComponentClass(Movie)).toBe(true);
     expect(Movie.getComponentName()).toBe('Movie');

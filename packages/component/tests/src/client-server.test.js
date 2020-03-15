@@ -21,7 +21,7 @@ describe('Client/server', () => {
 
     const client = new ComponentClient(server, {baseComponents: [Component]});
 
-    const {Counter} = client.getComponents();
+    const [Counter] = client.getComponents();
 
     expect(Counter.value).toBe(0);
 
@@ -46,14 +46,14 @@ describe('Client/server', () => {
         }
       }
 
-      return [Counter, Counter.prototype];
+      return [Counter];
     };
 
     const server = new ComponentServer(provider);
 
     const client = new ComponentClient(server, {baseComponents: [Component]});
 
-    const {Counter} = client.getComponents();
+    const [Counter] = client.getComponents();
 
     let counter = new Counter();
 

@@ -16,14 +16,14 @@ describe('Client-server', () => {
         }
       }
 
-      return [Counter, Counter.prototype];
+      return [Counter];
     };
 
     const server = new ComponentServer(provider);
 
     const client = new ComponentClient(server, {baseComponents: [Entity]});
 
-    const {Counter} = client.getComponents();
+    const [Counter] = client.getComponents();
 
     const counter = new Counter();
 

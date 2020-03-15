@@ -35,7 +35,7 @@ describe('HTTP client/server', () => {
       baseComponents: [Component]
     });
 
-    const {Counter} = await client.getComponents();
+    const [Counter] = await client.getComponents();
 
     expect(Counter.value).toBe(0);
 

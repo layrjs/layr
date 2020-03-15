@@ -29,24 +29,24 @@ describe('LayerServer', () => {
         {
           name: 'Movie',
           type: 'Component',
-          properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
+          properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}],
+          prototype: {
+            properties: [
+              {
+                name: 'title',
+                type: 'attribute',
+                default: {__function: "function () {\n          return '';\n        }"},
+                exposure: {get: true, set: true}
+              }
+            ]
+          }
         },
         {
-          name: 'movie',
-          type: 'component',
-          properties: [
-            {
-              name: 'title',
-              type: 'attribute',
-              default: {__function: "function () {\n          return '';\n        }"},
-              exposure: {get: true, set: true}
-            }
-          ]
-        },
-        {
-          name: 'cinema',
-          type: 'component',
-          properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
+          name: 'Cinema',
+          type: 'Component',
+          prototype: {
+            properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
+          }
         }
       ]
     });
