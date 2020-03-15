@@ -290,6 +290,84 @@ export const ComponentMixin = (Base = Object) => {
       return forkedComponent;
     }
 
+    // === Serialization ===
+
+    static serialize(options = {}) {
+      ow(options, 'options', ow.object);
+
+      const serializedComponent = {__component: this.getComponentName()};
+
+      return possiblyAsync(this.__serializeAttributes(serializedComponent, options), {
+        then: () => serializedComponent
+      });
+    }
+
+    serialize(options = {}) {
+      ow(options, 'options', ow.object);
+
+      const serializedComponent = {__component: this.getComponentName()};
+
+      if (this.isNew()) {
+        serializedComponent.__new = true;
+      }
+
+      return possiblyAsync(this.__serializeAttributes(serializedComponent, options), {
+        then: () => serializedComponent
+      });
+    }
+
+    // === Deserialization ===
+
+    static deserialize(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
+      ow(options, 'options', ow.object);
+
+      const expectedComponentName = this.getComponentName();
+
+      const {__component: componentName = expectedComponentName, ...attributes} = object;
+
+      const isInstanceName = validateComponentName(componentName) === 'componentInstanceName';
+
+      if (isInstanceName) {
+        return this.prototype.deserialize(object, options);
+      }
+
+      if (componentName !== expectedComponentName) {
+        throw new Error(
+          `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
+        );
+      }
+
+      const deserializedComponent = this;
+
+      return possiblyAsync(deserializedComponent.__deserializeAttributes(attributes, options), {
+        then: () => deserializedComponent
+      });
+    }
+
+    deserialize(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
+      ow(options, 'options', ow.object);
+
+      const expectedComponentName = this.getComponentName();
+
+      const {__component: componentName = expectedComponentName, __new, ...attributes} = object;
+
+      validateComponentName(componentName, {allowClasses: false});
+
+      if (componentName !== expectedComponentName) {
+        throw new Error(
+          `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
+        );
+      }
+
+      const deserializedComponent = this.constructor.__instantiate(attributes, {isNew: __new});
+
+      return possiblyAsync(deserializedComponent.__deserializeAttributes(attributes, options), {
+        then: () => deserializedComponent
+      });
+    }
+
     // === Introspection ===
 
     static introspect() {
@@ -389,20 +467,6 @@ export const ComponentMixin = (Base = Object) => {
 
     // === Serialization ===
 
-    serialize(options = {}) {
-      ow(options, 'options', ow.object);
-
-      const serializedComponent = {__component: this.getComponentName()};
-
-      if (isComponentInstance(this) && this.isNew()) {
-        serializedComponent.__new = true;
-      }
-
-      return possiblyAsync(this.__serializeAttributes(serializedComponent, options), {
-        then: () => serializedComponent
-      });
-    },
-
     __serializeAttributes(serializedComponent, options) {
       ow(serializedComponent, 'serializedComponent', ow.object);
       ow(options, 'options', ow.object.partialShape({attributeFilter: ow.optional.function}));
@@ -430,31 +494,6 @@ export const ComponentMixin = (Base = Object) => {
     },
 
     // === Deserialization ===
-
-    deserialize(object = {}, options = {}) {
-      ow(object, 'object', ow.object);
-      ow(options, 'options', ow.object);
-
-      const expectedComponentName = this.getComponentName();
-
-      const {__component: componentName = expectedComponentName, __new, ...attributes} = object;
-
-      validateComponentName(componentName);
-
-      if (componentName !== expectedComponentName) {
-        throw new Error(
-          `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
-        );
-      }
-
-      const deserializedComponent = isComponentClass(this)
-        ? this
-        : this.constructor.__instantiate(attributes, {isNew: __new});
-
-      return possiblyAsync(deserializedComponent.__deserializeAttributes(attributes, options), {
-        then: () => deserializedComponent
-      });
-    },
 
     __deserializeAttributes(attributes, options) {
       ow(attributes, 'attributes', ow.object);

@@ -46,7 +46,7 @@ describe('Deserialization', () => {
       @attribute() duration = 0;
     }
 
-    const movie = Movie.prototype.deserialize({__component: 'movie', title: 'Inception'});
+    const movie = Movie.deserialize({__component: 'movie', title: 'Inception'});
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
@@ -54,7 +54,7 @@ describe('Deserialization', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
-    const movie2 = Movie.prototype.deserialize({__new: true, title: 'Inception'});
+    const movie2 = Movie.deserialize({__component: 'movie', __new: true, title: 'Inception'});
 
     expect(movie2).toBeInstanceOf(Movie);
     expect(movie2).not.toBe(Movie.prototype);
