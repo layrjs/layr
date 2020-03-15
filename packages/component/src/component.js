@@ -1,4 +1,4 @@
-import {hasOwnProperty, isPrototypeOf, isClass} from 'core-helpers';
+import {hasOwnProperty, isPrototypeOf, isClass, getClassOf} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import lowerFirst from 'lodash/lowerFirst';
 import a from 'indefinite';
@@ -12,8 +12,9 @@ import {
   isComponentClass,
   isComponentInstance,
   isComponentClassOrInstance,
-  validateIsComponentClassOrInstance,
+  validateIsComponentClass,
   validateComponentName,
+  getComponentClassNameFromComponentInstanceName,
   getComponentInstanceNameFromComponentClassName,
   getTypeOf
 } from './utilities';
@@ -112,6 +113,110 @@ export const ComponentMixin = (Base = Object) => {
       Object.defineProperty(this, '__isNew', {value: false, configurable: true});
     }
 
+    // === Related components ===
+
+    static getRelatedComponent(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          throwIfMissing: ow.optional.boolean,
+          includePrototypes: ow.optional.boolean
+        })
+      );
+
+      const {throwIfMissing = true, includePrototypes = false} = options;
+
+      const isInstanceName =
+        validateComponentName(name, {
+          allowInstances: includePrototypes
+        }) === 'componentInstanceName';
+
+      const className = isInstanceName
+        ? getComponentClassNameFromComponentInstanceName(name)
+        : name;
+
+      const relatedComponents = this.__getRelatedComponents();
+
+      const RelatedComponent = relatedComponents[className];
+
+      if (RelatedComponent !== undefined) {
+        return isInstanceName ? RelatedComponent.prototype : RelatedComponent;
+      }
+
+      const layer = this.getLayer({throwIfMissing: false});
+
+      if (layer !== undefined) {
+        const component = layer.getComponent(name, {throwIfMissing: false, includePrototypes});
+
+        if (component !== undefined) {
+          return component;
+        }
+      }
+
+      if (throwIfMissing) {
+        throw new Error(
+          `Cannot get the related component class '${className}' (${this.describeComponent()})`
+        );
+      }
+    }
+
+    static registerRelatedComponent(Component) {
+      validateIsComponentClass(Component);
+
+      const relatedComponents = this.__getRelatedComponents();
+      const componentName = Component.getComponentName();
+      relatedComponents[componentName] = Component;
+    }
+
+    static getRelatedComponents(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({filter: ow.optional.function, includePrototypes: ow.optional.boolean})
+      );
+
+      const {filter, includePrototypes = false} = options;
+
+      const Component = this;
+
+      return {
+        *[Symbol.iterator]() {
+          const relatedComponents = Component.__getRelatedComponents();
+
+          // eslint-disable-next-line guard-for-in
+          for (const name in relatedComponents) {
+            const RelatedComponent = relatedComponents[name];
+
+            if (filter !== undefined && !filter(RelatedComponent)) {
+              continue;
+            }
+
+            yield RelatedComponent;
+
+            if (includePrototypes) {
+              yield RelatedComponent.prototype;
+            }
+          }
+        }
+      };
+    }
+
+    static __getRelatedComponents() {
+      if (this.__relatedComponents === undefined) {
+        Object.defineProperty(this, '__relatedComponents', {
+          value: Object.create(null)
+        });
+      } else if (!hasOwnProperty(this, '__relatedComponents')) {
+        Object.defineProperty(this, '__relatedComponents', {
+          value: Object.create(this.__relatedComponents)
+        });
+      }
+
+      return this.__relatedComponents;
+    }
+
     // === Layer registration ===
 
     static getLayer(options = {}) {
@@ -205,67 +310,6 @@ export const ComponentMixin = (Base = Object) => {
       return isPrototypeOf(component, this);
     },
 
-    // === Related components ===
-
-    // TODO: Handle forking
-
-    getRelatedComponent(name, options = {}) {
-      ow(name, 'name', ow.string.nonEmpty);
-      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
-
-      const {throwIfMissing = true} = options;
-
-      validateComponentName(name);
-
-      const relatedComponents = this.__getRelatedComponents();
-
-      let relatedComponent = relatedComponents[name];
-
-      if (relatedComponent !== undefined) {
-        return relatedComponent;
-      }
-
-      const layer = this.getLayer({throwIfMissing: false});
-
-      if (layer !== undefined) {
-        relatedComponent = layer.getComponent(name, {
-          throwIfMissing: false,
-          includePrototypes: true
-        });
-
-        if (relatedComponent !== undefined) {
-          return relatedComponent;
-        }
-      }
-
-      if (throwIfMissing) {
-        throw new Error(`Cannot get the related component '${name}' (${this.describeComponent()})`);
-      }
-    },
-
-    registerRelatedComponent(component) {
-      validateIsComponentClassOrInstance(component);
-
-      const relatedComponents = this.__getRelatedComponents();
-      const componentName = component.getComponentName();
-      relatedComponents[componentName] = component;
-    },
-
-    getRelatedComponents() {
-      return Object.values(this.__getRelatedComponents());
-    },
-
-    __getRelatedComponents() {
-      if (this.__relatedComponents === undefined) {
-        Object.defineProperty(this, '__relatedComponents', {
-          value: Object.create(null),
-          configurable: true
-        });
-      }
-
-      return this.__relatedComponents;
-    },
-
     // === Serialization ===
 
     serialize(options = {}) {
@@ -341,7 +385,8 @@ export const ComponentMixin = (Base = Object) => {
 
       const {attributeFilter} = options;
 
-      const componentGetter = name => this.getRelatedComponent(name);
+      const componentGetter = name =>
+        getClassOf(this).getRelatedComponent(name, {includePrototypes: true});
 
       return possiblyAsync.forEach(
         Object.entries(attributes),
@@ -399,9 +444,9 @@ export const ComponentMixin = (Base = Object) => {
     __introspectRelatedComponents() {
       const introspectedRelatedComponents = [];
 
-      for (const relatedComponent of this.getRelatedComponents()) {
-        if (relatedComponent.introspectProperties().length > 0) {
-          introspectedRelatedComponents.push(relatedComponent.getComponentName());
+      for (const RelatedComponent of this.getRelatedComponents()) {
+        if (RelatedComponent.introspectProperties().length > 0) {
+          introspectedRelatedComponents.push(RelatedComponent.getComponentName());
         }
       }
 

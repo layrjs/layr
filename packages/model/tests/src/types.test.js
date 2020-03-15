@@ -249,9 +249,7 @@ describe('Types', () => {
     class Registry extends Model {}
 
     Registry.registerRelatedComponent(Movie);
-    Registry.registerRelatedComponent(Movie.prototype);
     Registry.registerRelatedComponent(Actor);
-    Registry.registerRelatedComponent(Actor.prototype);
 
     const modelAttribute = new ModelAttribute('modelAttribute', Registry);
 

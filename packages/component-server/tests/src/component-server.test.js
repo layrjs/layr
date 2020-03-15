@@ -26,7 +26,7 @@ describe('ComponentServer', () => {
         @expose({get: true}) @attribute() movies;
       }
 
-      Cinema.prototype.registerRelatedComponent(Movie.prototype);
+      Cinema.registerRelatedComponent(Movie);
 
       return [Movie, Movie.prototype, Cinema.prototype];
     };

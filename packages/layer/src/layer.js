@@ -169,7 +169,7 @@ export class Layer {
         for (const name in layer._components) {
           const Component = layer.getComponent(name);
 
-          if (filter && !filter(Component)) {
+          if (filter !== undefined && !filter(Component)) {
             continue;
           }
 

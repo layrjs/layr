@@ -92,9 +92,9 @@ describe('Deserialization', () => {
 
     expect(() =>
       Cinema.prototype.deserialize({movies: [{__component: 'movie', title: 'The Matrix'}]})
-    ).toThrow("Cannot get the related component 'movie'");
+    ).toThrow("Cannot get the related component class 'Movie' (component name: 'Cinema')");
 
-    Cinema.prototype.registerRelatedComponent(Movie.prototype);
+    Cinema.registerRelatedComponent(Movie);
 
     const cinema = Cinema.prototype.deserialize({
       movies: [{__component: 'movie', title: 'The Matrix'}]

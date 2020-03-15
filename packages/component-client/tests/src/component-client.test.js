@@ -207,7 +207,7 @@ describe('ComponentClient', () => {
     expect(isComponentInstance(cinema)).toBe(true);
     expect(cinema.getComponentName()).toBe('cinema');
     expect(cinema).toBe(Cinema.prototype);
-    expect(cinema.getRelatedComponents()).toEqual([movie]);
+    expect(Array.from(Cinema.getRelatedComponents())).toEqual([Movie]);
   });
 
   test('Getting models', async () => {

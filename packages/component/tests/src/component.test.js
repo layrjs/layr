@@ -96,27 +96,35 @@ describe('Component', () => {
     Movie.registerRelatedComponent(Actor);
 
     expect(Movie.getRelatedComponent('Director')).toBe(Director);
+
     expect(Movie.getRelatedComponent('Actor')).toBe(Actor);
+
     expect(Movie.getRelatedComponent('Producer', {throwIfMissing: false})).toBeUndefined();
     expect(() => Movie.getRelatedComponent('Producer')).toThrow(
-      "Cannot get the related component 'Producer'"
+      "Cannot get the related component class 'Producer'"
     );
 
-    expect(
-      Movie.prototype.getRelatedComponent('director', {throwIfMissing: false})
-    ).toBeUndefined();
-
-    Movie.prototype.registerRelatedComponent(Director.prototype);
-    Movie.prototype.registerRelatedComponent(Actor.prototype);
-
-    expect(Movie.prototype.getRelatedComponent('director')).toBe(Director.prototype);
-    expect(Movie.prototype.getRelatedComponent('actor')).toBe(Actor.prototype);
-    expect(
-      Movie.prototype.getRelatedComponent('producer', {throwIfMissing: false})
-    ).toBeUndefined();
-    expect(() => Movie.prototype.getRelatedComponent('producer')).toThrow(
-      "Cannot get the related component 'producer'"
+    expect(() => Movie.getRelatedComponent('director')).toThrow(
+      "The specified component name ('director') is invalid"
     );
+    expect(Movie.getRelatedComponent('director', {includePrototypes: true})).toBe(
+      Director.prototype
+    );
+
+    expect(() => Movie.getRelatedComponent('actor')).toThrow(
+      "The specified component name ('actor') is invalid"
+    );
+    expect(Movie.getRelatedComponent('actor', {includePrototypes: true})).toBe(Actor.prototype);
+
+    expect(() => Movie.getRelatedComponent('producer')).toThrow(
+      "The specified component name ('producer') is invalid"
+    );
+    expect(() => Movie.getRelatedComponent('producer', {includePrototypes: true})).toThrow(
+      "Cannot get the related component class 'Producer'"
+    );
+    expect(
+      Movie.getRelatedComponent('producer', {throwIfMissing: false, includePrototypes: true})
+    ).toBeUndefined();
   });
 
   test('isNew mark', async () => {
@@ -165,12 +173,14 @@ describe('Component', () => {
     expect(Movie.prototype.hasLayer()).toBe(true);
 
     expect(Movie.getRelatedComponent('Actor', {throwIfMissing: false})).toBeUndefined();
-    expect(Movie.getRelatedComponent('actor', {throwIfMissing: false})).toBeUndefined();
+    expect(
+      Movie.getRelatedComponent('actor', {throwIfMissing: false, includePrototypes: true})
+    ).toBeUndefined();
 
     layer.registerComponent(Actor);
 
     expect(Movie.getRelatedComponent('Actor')).toBe(Actor);
-    expect(Movie.getRelatedComponent('actor')).toBe(Actor.prototype);
+    expect(Movie.getRelatedComponent('actor', {includePrototypes: true})).toBe(Actor.prototype);
   });
 
   test('Introspection', async () => {
@@ -188,7 +198,7 @@ describe('Component', () => {
       @attribute() movies;
     }
 
-    Cinema.prototype.registerRelatedComponent(Movie.prototype);
+    Cinema.registerRelatedComponent(Movie);
 
     const defaultTitle = Movie.prototype.getAttribute('title').getDefaultValueFunction();
 
