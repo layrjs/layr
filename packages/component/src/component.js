@@ -1,4 +1,4 @@
-import {hasOwnProperty, isPrototypeOf, isClass, getClassOf} from 'core-helpers';
+import {hasOwnProperty, isPrototypeOf, getClassOf} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import lowerFirst from 'lodash/lowerFirst';
 import a from 'indefinite';
@@ -290,6 +290,83 @@ export const ComponentMixin = (Base = Object) => {
       return forkedComponent;
     }
 
+    // === Introspection ===
+
+    static introspect() {
+      const introspectedProperties = this.introspectProperties();
+      const introspectedPrototypeProperties = this.prototype.introspectProperties();
+
+      if (introspectedProperties.length === 0 && introspectedPrototypeProperties.length === 0) {
+        return undefined;
+      }
+
+      const introspectedComponent = {
+        name: this.getComponentName(),
+        type: this.getComponentType()
+      };
+
+      if (introspectedProperties.length > 0) {
+        introspectedComponent.properties = introspectedProperties;
+      }
+
+      const introspectedRelatedComponents = this.__introspectRelatedComponents();
+
+      if (introspectedRelatedComponents.length > 0) {
+        introspectedComponent.relatedComponents = introspectedRelatedComponents;
+      }
+
+      if (introspectedPrototypeProperties.length > 0) {
+        introspectedComponent.prototype = {properties: introspectedPrototypeProperties};
+      }
+
+      return introspectedComponent;
+    }
+
+    static __introspectRelatedComponents() {
+      const introspectedRelatedComponents = [];
+
+      for (const RelatedComponent of this.getRelatedComponents()) {
+        if (
+          RelatedComponent.introspectProperties().length > 0 ||
+          RelatedComponent.prototype.introspectProperties().length > 0
+        ) {
+          introspectedRelatedComponents.push(RelatedComponent.getComponentName());
+        }
+      }
+
+      return introspectedRelatedComponents;
+    }
+
+    static unintrospect(introspectedComponent, options = {}) {
+      ow(
+        introspectedComponent,
+        'introspectedComponent',
+        ow.object.partialShape({
+          name: ow.string.nonEmpty,
+          properties: ow.optional.array,
+          prototype: ow.optional.object.partialShape({properties: ow.optional.array})
+        })
+      );
+      ow(options, 'options', ow.object.exactShape({methodCreator: ow.optional.function}));
+
+      const {
+        name,
+        properties: introspectedProperties,
+        prototype: {properties: introspectedPrototypeProperties} = {}
+      } = introspectedComponent;
+      const {methodCreator} = options;
+
+      this.setComponentName(name);
+
+      if (introspectedProperties !== undefined) {
+        this.unintrospectProperties(introspectedProperties, {methodCreator});
+      }
+
+      if (introspectedPrototypeProperties !== undefined) {
+        this.prototype.unintrospectProperties(introspectedPrototypeProperties, {methodCreator});
+      }
+    }
+
     // === Utilities ===
 
     static isComponent(object) {
@@ -415,62 +492,6 @@ export const ComponentMixin = (Base = Object) => {
           );
         }
       );
-    },
-
-    // === Introspection ===
-
-    introspect() {
-      const introspectedProperties = this.introspectProperties();
-
-      if (introspectedProperties.length === 0) {
-        return undefined;
-      }
-
-      const introspectedComponent = {
-        name: this.getComponentName(),
-        type: this.getComponentType(),
-        properties: introspectedProperties
-      };
-
-      const introspectedRelatedComponents = this.__introspectRelatedComponents();
-
-      if (introspectedRelatedComponents.length > 0) {
-        introspectedComponent.relatedComponents = introspectedRelatedComponents;
-      }
-
-      return introspectedComponent;
-    },
-
-    __introspectRelatedComponents() {
-      const introspectedRelatedComponents = [];
-
-      for (const RelatedComponent of this.getRelatedComponents()) {
-        if (RelatedComponent.introspectProperties().length > 0) {
-          introspectedRelatedComponents.push(RelatedComponent.getComponentName());
-        }
-      }
-
-      return introspectedRelatedComponents;
-    },
-
-    unintrospect(introspectedComponent, options = {}) {
-      ow(
-        introspectedComponent,
-        'introspectedComponent',
-        ow.object.partialShape({name: ow.string.nonEmpty, properties: ow.optional.array})
-      );
-      ow(options, 'options', ow.object.exactShape({methodCreator: ow.optional.function}));
-
-      const {name, properties: introspectedProperties} = introspectedComponent;
-      const {methodCreator} = options;
-
-      if (isClass(this)) {
-        this.setComponentName(name);
-      }
-
-      if (introspectedProperties !== undefined) {
-        this.unintrospectProperties(introspectedProperties, {methodCreator});
-      }
     },
 
     // === Utilities ===

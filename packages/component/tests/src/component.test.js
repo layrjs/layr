@@ -206,12 +206,33 @@ describe('Component', () => {
 
     expect(Movie.introspect()).toBeUndefined();
 
+    expect(Cinema.introspect()).toBeUndefined();
+
+    Cinema.prototype.getAttribute('movies').setExposure({get: true});
+
+    expect(Cinema.introspect()).toStrictEqual({
+      name: 'Cinema',
+      type: 'Component',
+      prototype: {
+        properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
+      }
+    });
+
     Movie.getAttribute('limit').setExposure({get: true});
 
     expect(Movie.introspect()).toStrictEqual({
       name: 'Movie',
       type: 'Component',
       properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
+    });
+
+    expect(Cinema.introspect()).toStrictEqual({
+      name: 'Cinema',
+      type: 'Component',
+      relatedComponents: ['Movie'],
+      prototype: {
+        properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
+      }
     });
 
     Movie.getAttribute('limit').setExposure({get: true});
@@ -228,44 +249,41 @@ describe('Component', () => {
       ]
     });
 
-    expect(Movie.prototype.introspect()).toBeUndefined();
-
-    expect(Cinema.prototype.introspect()).toBeUndefined();
-
-    Cinema.prototype.getAttribute('movies').setExposure({get: true});
-
-    expect(Cinema.prototype.introspect()).toStrictEqual({
-      name: 'cinema',
-      type: 'component',
-      properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
-    });
-
     Movie.prototype.getAttribute('title').setExposure({get: true});
 
-    expect(Movie.prototype.introspect()).toStrictEqual({
-      name: 'movie',
-      type: 'component',
-      properties: [{name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}]
-    });
-
-    expect(Cinema.prototype.introspect()).toStrictEqual({
-      name: 'cinema',
-      type: 'component',
-      properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}],
-      relatedComponents: ['movie']
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      type: 'Component',
+      properties: [
+        {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
+        {name: 'offset', type: 'attribute', value: undefined, exposure: {get: true}},
+        {name: 'find', type: 'method', exposure: {call: true}}
+      ],
+      prototype: {
+        properties: [
+          {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}
+        ]
+      }
     });
 
     Movie.prototype.getAttribute('country').setExposure({get: true});
     Movie.prototype.getMethod('load').setExposure({call: true});
 
-    expect(Movie.prototype.introspect()).toStrictEqual({
-      name: 'movie',
-      type: 'component',
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      type: 'Component',
       properties: [
-        {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}},
-        {name: 'country', type: 'attribute', exposure: {get: true}},
-        {name: 'load', type: 'method', exposure: {call: true}}
-      ]
+        {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
+        {name: 'offset', type: 'attribute', value: undefined, exposure: {get: true}},
+        {name: 'find', type: 'method', exposure: {call: true}}
+      ],
+      prototype: {
+        properties: [
+          {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}},
+          {name: 'country', type: 'attribute', exposure: {get: true}},
+          {name: 'load', type: 'method', exposure: {call: true}}
+        ]
+      }
     });
   });
 
@@ -289,18 +307,23 @@ describe('Component', () => {
       return '';
     };
 
-    const unintrospectedComponent = UnintrospectedComponent.prototype;
-
-    unintrospectedComponent.unintrospect({
-      name: 'movie',
-      properties: [{name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}]
+    UnintrospectedComponent.unintrospect({
+      name: 'Movie',
+      properties: [
+        {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
+        {name: 'find', type: 'method', exposure: {call: true}}
+      ],
+      prototype: {
+        properties: [
+          {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}
+        ]
+      }
     });
 
-    expect(unintrospectedComponent.getComponentName()).toBe('movie');
-    expect(unintrospectedComponent.getAttribute('title').getDefaultValueFunction()).toBe(
+    expect(UnintrospectedComponent.prototype.getAttribute('title').getDefaultValueFunction()).toBe(
       defaultTitle
     );
-    expect(unintrospectedComponent.getAttribute('title').getExposure()).toStrictEqual({
+    expect(UnintrospectedComponent.prototype.getAttribute('title').getExposure()).toStrictEqual({
       get: true
     });
 
