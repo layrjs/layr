@@ -1,4 +1,4 @@
-import {ComponentMixin} from '@liaison/component';
+import {ComponentMixin, AttributeSelector} from '@liaison/component';
 import {Observable} from '@liaison/observable';
 import ow from 'ow';
 
@@ -104,8 +104,8 @@ export const ModelMixin = (Base = Object) => {
 
     // === Validation ===
 
-    validate() {
-      const failedValidators = this.runValidators();
+    validate(attributeSelector = true) {
+      const failedValidators = this.runValidators(attributeSelector);
 
       if (failedValidators.length === 0) {
         return;
@@ -125,18 +125,31 @@ export const ModelMixin = (Base = Object) => {
       throw error;
     },
 
-    isValid() {
-      const failedValidators = this.runValidators();
+    isValid(attributeSelector = true) {
+      const failedValidators = this.runValidators(attributeSelector);
 
       return failedValidators.length === 0;
     },
 
-    runValidators() {
+    runValidators(attributeSelector = true) {
+      attributeSelector = AttributeSelector.normalize(attributeSelector);
+
       const failedValidators = [];
+
+      if (attributeSelector === false) {
+        return failedValidators; // Optimization
+      }
 
       for (const modelAttribute of this.getModelAttributes({setAttributesOnly: true})) {
         const name = modelAttribute.getName();
-        const modelAttributeFailedValidators = modelAttribute.runValidators();
+
+        const subattributeSelector = AttributeSelector.get(attributeSelector, name);
+
+        if (subattributeSelector === false) {
+          continue;
+        }
+
+        const modelAttributeFailedValidators = modelAttribute.runValidators(subattributeSelector);
 
         for (const {validator, path} of modelAttributeFailedValidators) {
           failedValidators.push({validator, path: joinModelAttributePath([name, path])});

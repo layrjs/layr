@@ -1,4 +1,4 @@
-import {Attribute, getHumanTypeOf} from '@liaison/component';
+import {Attribute, AttributeSelector, getHumanTypeOf} from '@liaison/component';
 import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
 import ow from 'ow';
 
@@ -99,8 +99,10 @@ export class ModelAttribute extends Observable(Attribute) {
 
   // === Validation ===
 
-  validate() {
-    const failedValidators = this.runValidators();
+  validate(attributeSelector = true) {
+    attributeSelector = AttributeSelector.normalize(attributeSelector);
+
+    const failedValidators = this.runValidators(attributeSelector);
 
     if (failedValidators.length === 0) {
       return;
@@ -122,20 +124,22 @@ export class ModelAttribute extends Observable(Attribute) {
     throw error;
   }
 
-  isValid() {
-    const failedValidators = this.runValidators();
+  isValid(attributeSelector = true) {
+    attributeSelector = AttributeSelector.normalize(attributeSelector);
+
+    const failedValidators = this.runValidators(attributeSelector);
 
     return failedValidators.length === 0;
   }
 
-  runValidators() {
+  runValidators(attributeSelector = true) {
     if (!this.isSet()) {
       throw new Error(
         `Cannot run the validators of an unset ${getHumanTypeOf(this)} (${this.describe()})`
       );
     }
 
-    const failedValidators = this.getType().runValidators(this.getValue());
+    const failedValidators = this.getType().runValidators(this.getValue(), attributeSelector);
 
     return failedValidators;
   }

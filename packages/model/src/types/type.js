@@ -62,7 +62,7 @@ export class Type {
     return normalizedAttributeSelector !== false;
   }
 
-  runValidators(value) {
+  runValidators(value, _attributeSelector) {
     const failedValidators = runValidators(this.getValidators(), value, {
       isOptional: this.isOptional()
     });

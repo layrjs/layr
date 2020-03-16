@@ -56,14 +56,14 @@ export class ArrayType extends Type {
     return this.getItemType()._expandAttributeSelector(normalizedAttributeSelector, options);
   }
 
-  runValidators(values) {
-    const failedValidators = super.runValidators(values);
+  runValidators(values, attributeSelector) {
+    const failedValidators = super.runValidators(values, attributeSelector);
 
     if (values !== undefined) {
       const itemType = this.getItemType();
 
       values.forEach((value, index) => {
-        const failedItemValidators = itemType.runValidators(value);
+        const failedItemValidators = itemType.runValidators(value, attributeSelector);
 
         for (const {validator, path} of failedItemValidators) {
           failedValidators.push({validator, path: joinModelAttributePath([`[${index}]`, path])});

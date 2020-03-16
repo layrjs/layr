@@ -246,6 +246,7 @@ describe('Model', () => {
 
     class Person extends Model {
       @attribute('string', {validators: [notEmpty]}) name = '';
+      @attribute('string?') country;
     }
 
     Movie.registerRelatedComponent(Person);
@@ -257,6 +258,8 @@ describe('Model', () => {
     );
     expect(movie.isValid()).toBe(false);
     expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'title'}]);
+    expect(movie.runValidators({title: true})).toEqual([{validator: notEmpty, path: 'title'}]);
+    expect(movie.runValidators({tags: true})).toEqual([]);
 
     movie.title = 'Inception';
 
@@ -283,6 +286,8 @@ describe('Model', () => {
     );
     expect(movie.isValid()).toBe(false);
     expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'tags[2]'}]);
+    expect(movie.runValidators({tags: true})).toEqual([{validator: notEmpty, path: 'tags[2]'}]);
+    expect(movie.runValidators({title: true})).toEqual([]);
 
     movie.tags.push('sci-fi');
 
@@ -304,6 +309,10 @@ describe('Model', () => {
     );
     expect(movie.isValid()).toBe(false);
     expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'director.name'}]);
+    expect(movie.runValidators({director: {name: true}})).toEqual([
+      {validator: notEmpty, path: 'director.name'}
+    ]);
+    expect(movie.runValidators({director: {country: true}})).toEqual([]);
 
     movie.director.name = 'Christopher Nolan';
 

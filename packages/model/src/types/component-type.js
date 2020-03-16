@@ -54,11 +54,11 @@ export class ComponentType extends Type {
     return component.expandAttributeSelector(normalizedAttributeSelector, options);
   }
 
-  runValidators(value) {
-    const failedValidators = super.runValidators(value);
+  runValidators(value, attributeSelector = true) {
+    const failedValidators = super.runValidators(value, attributeSelector);
 
     if (isModelClassOrInstance(value)) {
-      const modelFailedValidators = value.runValidators();
+      const modelFailedValidators = value.runValidators(attributeSelector);
       failedValidators.push(...modelFailedValidators);
     }
 
