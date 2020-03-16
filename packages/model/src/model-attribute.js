@@ -33,8 +33,12 @@ export class ModelAttribute extends Observable(Attribute) {
 
   // === Value ===
 
+  checkValue(value) {
+    return this.getType().checkValue(value, {modelAttribute: this});
+  }
+
   setValue(value) {
-    this.getType().checkValue(value, {modelAttribute: this});
+    this.checkValue(value);
 
     if (this._getter !== undefined) {
       return super.setValue(value);
@@ -88,7 +92,7 @@ export class ModelAttribute extends Observable(Attribute) {
     return {previousValue};
   }
 
-  // Attribute selectors
+  // === Attribute selectors ===
 
   _expandAttributeSelector(normalizedAttributeSelector, options) {
     return this.getType()._expandAttributeSelector(normalizedAttributeSelector, {
