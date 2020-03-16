@@ -1,6 +1,7 @@
-import {ModelMixin} from '@liaison/model';
+import {ModelMixin, getTypeOf} from '@liaison/model';
 import cuid from 'cuid';
 import {hasOwnProperty} from 'core-helpers';
+import isPlainObject from 'lodash/isPlainObject';
 import ow from 'ow';
 
 import {isIdentifierAttribute} from './identifier-attribute';
@@ -236,6 +237,53 @@ export const EntityMixin = (Base = Object) => {
       };
 
       return this.getProperties({filter, setAttributesOnly, autoFork});
+    }
+
+    // === Identifier descriptor ===
+
+    static normalizeIdentifierDescriptor(identifierDescriptor) {
+      if (typeof identifierDescriptor === 'string' || typeof identifierDescriptor === 'number') {
+        return this.__normalizePrimaryIdentifierDescriptor(identifierDescriptor);
+      }
+
+      if (!isPlainObject(identifierDescriptor)) {
+        throw new Error(
+          `A property descriptor should be a string, a number, or an object, but received a value of type '${getTypeOf(
+            identifierDescriptor
+          )}' (${this.prototype.describeComponent()})`
+        );
+      }
+
+      const attributes = Object.entries(identifierDescriptor);
+
+      if (attributes.length !== 1) {
+        throw new Error(
+          `A property descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of ${
+            attributes.length
+          } attributes (${this.prototype.describeComponent()}, received object: ${JSON.stringify(
+            identifierDescriptor
+          )})`
+        );
+      }
+
+      const [name, value] = attributes[0];
+
+      const identifierAttribute = this.prototype.getIdentifierAttribute(name);
+
+      identifierAttribute.checkValue(value);
+
+      return {[name]: value};
+    }
+
+    static __normalizePrimaryIdentifierDescriptor(primaryIdentifierDescriptor) {
+      const primaryIdentifierAttribute = this.prototype.getPrimaryIdentifierAttribute();
+
+      const name = primaryIdentifierAttribute.getName();
+      const value = primaryIdentifierDescriptor;
+
+      primaryIdentifierAttribute.checkValue(value);
+
+      return {[name]: value};
     }
 
     // === Entity manager ===

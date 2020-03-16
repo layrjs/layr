@@ -241,6 +241,58 @@ describe('Entity', () => {
     ]);
   });
 
+  test('normalizeIdentifierDescriptor()', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+      @secondaryIdentifier() email;
+      @secondaryIdentifier('number') reference;
+      @attribute('string') name;
+    }
+
+    expect(User.normalizeIdentifierDescriptor('abc123')).toStrictEqual({id: 'abc123'});
+    expect(User.normalizeIdentifierDescriptor({id: 'abc123'})).toStrictEqual({id: 'abc123'});
+    expect(User.normalizeIdentifierDescriptor({email: 'hi@hello.com'})).toStrictEqual({
+      email: 'hi@hello.com'
+    });
+    expect(User.normalizeIdentifierDescriptor({reference: 123456})).toStrictEqual({
+      reference: 123456
+    });
+
+    expect(() => User.normalizeIdentifierDescriptor(undefined)).toThrow(
+      "A property descriptor should be a string, a number, or an object, but received a value of type 'undefined' (entity name: 'user')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor(true)).toThrow(
+      "A property descriptor should be a string, a number, or an object, but received a value of type 'boolean' (entity name: 'user')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor([])).toThrow(
+      "A property descriptor should be a string, a number, or an object, but received a value of type 'array' (entity name: 'user')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor({})).toThrow(
+      "A property descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of 0 attributes (entity name: 'user', received object: {})"
+    );
+    expect(() => User.normalizeIdentifierDescriptor({id: 'abc123', email: 'hi@hello.com'})).toThrow(
+      'A property descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of 2 attributes (entity name: \'user\', received object: {"id":"abc123","email":"hi@hello.com"})'
+    );
+    expect(() => User.normalizeIdentifierDescriptor(123456)).toThrow(
+      "Cannot assign a value of an unexpected type (entity name: 'user', attribute name: 'id', expected type: 'string', received type: 'number')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor({email: 123456})).toThrow(
+      "Cannot assign a value of an unexpected type (entity name: 'user', attribute name: 'email', expected type: 'string', received type: 'number')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor({reference: 'abc123'})).toThrow(
+      "Cannot assign a value of an unexpected type (entity name: 'user', attribute name: 'reference', expected type: 'number', received type: 'string')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor({email: undefined})).toThrow(
+      "Cannot assign a value of an unexpected type (entity name: 'user', attribute name: 'email', expected type: 'string', received type: 'undefined')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor({name: 'john'})).toThrow(
+      "A property with the specified name was found, but it is not an identifier attribute (entity name: 'user', attribute name: 'name')"
+    );
+    expect(() => User.normalizeIdentifierDescriptor({country: 'USA'})).toThrow(
+      "The property 'country' is missing (entity name: 'user')"
+    );
+  });
+
   test('generateId()', async () => {
     class Movie extends Entity {}
 
