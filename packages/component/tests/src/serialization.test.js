@@ -16,6 +16,10 @@ describe('Serialization', () => {
       limit: 100,
       offset: {__undefined: true}
     });
+    expect(Movie.serialize({attributeSelector: {limit: true}})).toEqual({
+      __component: 'Movie',
+      limit: 100
+    });
 
     class Cinema extends Component {
       @attribute() static MovieClass = Movie;
@@ -24,6 +28,10 @@ describe('Serialization', () => {
     expect(Cinema.serialize()).toEqual({
       __component: 'Cinema',
       MovieClass: {__component: 'Movie', limit: 100, offset: {__undefined: true}}
+    });
+    expect(Cinema.serialize({attributeSelector: {MovieClass: {limit: true}}})).toEqual({
+      __component: 'Cinema',
+      MovieClass: {__component: 'Movie', limit: 100}
     });
   });
 
@@ -41,6 +49,11 @@ describe('Serialization', () => {
       title: '',
       director: {__undefined: true}
     });
+    expect(movie.serialize({attributeSelector: {title: true}})).toEqual({
+      __component: 'movie',
+      __new: true,
+      title: ''
+    });
 
     movie = Object.create(Movie.prototype);
 
@@ -57,6 +70,7 @@ describe('Serialization', () => {
 
     class Director extends Component {
       @attribute() name;
+      @attribute() country;
     }
 
     movie.director = new Director();
@@ -65,7 +79,22 @@ describe('Serialization', () => {
     expect(movie.serialize()).toEqual({
       __component: 'movie',
       title: 'Inception',
+      director: {
+        __component: 'director',
+        __new: true,
+        name: 'Christopher Nolan',
+        country: {__undefined: true}
+      }
+    });
+    expect(movie.serialize({attributeSelector: {title: true, director: {name: true}}})).toEqual({
+      __component: 'movie',
+      title: 'Inception',
       director: {__component: 'director', __new: true, name: 'Christopher Nolan'}
+    });
+    expect(movie.serialize({attributeSelector: {title: true, director: {}}})).toEqual({
+      __component: 'movie',
+      title: 'Inception',
+      director: {__component: 'director', __new: true}
     });
 
     expect(

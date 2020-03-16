@@ -469,23 +469,47 @@ export const ComponentMixin = (Base = Object) => {
 
     __serializeAttributes(serializedComponent, options) {
       ow(serializedComponent, 'serializedComponent', ow.object);
-      ow(options, 'options', ow.object.partialShape({attributeFilter: ow.optional.function}));
+      ow(
+        options,
+        'options',
+        ow.object.partialShape({
+          attributeSelector: ow.optional.any,
+          attributeFilter: ow.optional.function
+        })
+      );
 
-      const {attributeFilter} = options;
+      let {attributeSelector = true, attributeFilter} = options;
+
+      attributeSelector = AttributeSelector.normalize(attributeSelector);
+
+      if (attributeSelector === false) {
+        return; // Optimization
+      }
 
       return possiblyAsync.forEach(this.getAttributes({setAttributesOnly: true}), attribute => {
+        const attributeName = attribute.getName();
+
+        const subattributeSelector = AttributeSelector.get(attributeSelector, attributeName);
+
+        if (subattributeSelector === false) {
+          return;
+        }
+
         return possiblyAsync(
           attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
           {
             then: isNotFilteredOut => {
               if (isNotFilteredOut) {
-                const attributeName = attribute.getName();
                 const attributeValue = attribute.getValue();
-                return possiblyAsync(serialize(attributeValue, options), {
-                  then: serializedAttributeValue => {
-                    serializedComponent[attributeName] = serializedAttributeValue;
+
+                return possiblyAsync(
+                  serialize(attributeValue, {...options, attributeSelector: subattributeSelector}),
+                  {
+                    then: serializedAttributeValue => {
+                      serializedComponent[attributeName] = serializedAttributeValue;
+                    }
                   }
-                });
+                );
               }
             }
           }
