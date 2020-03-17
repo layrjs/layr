@@ -249,20 +249,16 @@ export const ComponentMixin = (Base = Object) => {
       return this.getLayer();
     }
 
-    static setLayer(layer) {
-      if (typeof layer?.constructor?.isLayer !== 'function') {
-        throw new Error(`Expected a layer, but received a value of type '${getTypeOf(layer)}'`);
-      }
-
-      Object.defineProperty(this, '__layer', {value: layer});
-    }
-
     static hasLayer() {
       return this.getLayer({throwIfMissing: false}) !== undefined;
     }
 
     hasLayer() {
       return this.constructor.hasLayer();
+    }
+
+    static __setLayer(layer) {
+      Object.defineProperty(this, '__layer', {value: layer});
     }
 
     // === Forking ===

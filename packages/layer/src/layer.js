@@ -85,7 +85,7 @@ export class Layer {
     if (!hasOwnProperty(this._components, className)) {
       // Since the layer has been forked, the component must be forked as well
       Component = Component.fork();
-      Component.setLayer(this);
+      Component.__setLayer(this);
       this._components[className] = Component;
     }
 
@@ -141,7 +141,7 @@ export class Layer {
       );
     }
 
-    Component.setLayer(this);
+    Component.__setLayer(this);
 
     this._components[componentName] = Component;
 
