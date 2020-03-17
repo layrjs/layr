@@ -241,6 +241,30 @@ export const EntityMixin = (Base = Object) => {
 
     // === Identifier descriptor ===
 
+    getIdentifierDescriptor() {
+      const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
+
+      if (primaryIdentifierAttribute.isSet()) {
+        const name = primaryIdentifierAttribute.getName();
+        const value = primaryIdentifierAttribute.getValue();
+
+        return {[name]: value};
+      }
+
+      for (const secondaryIdentifierAttribute of this.getSecondaryIdentifierAttributes({
+        setAttributesOnly: true
+      })) {
+        const name = secondaryIdentifierAttribute.getName();
+        const value = secondaryIdentifierAttribute.getValue();
+
+        return {[name]: value};
+      }
+
+      throw new Error(
+        `Cannot get an identifier descriptor from ${this.describeComponentType()} that has no set identifier (${this.describeComponent()})`
+      );
+    }
+
     static normalizeIdentifierDescriptor(identifierDescriptor) {
       if (typeof identifierDescriptor === 'string' || typeof identifierDescriptor === 'number') {
         return this.__normalizePrimaryIdentifierDescriptor(identifierDescriptor);

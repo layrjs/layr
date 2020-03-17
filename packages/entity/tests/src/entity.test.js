@@ -241,6 +241,59 @@ describe('Entity', () => {
     ]);
   });
 
+  test('getIdentifierDescriptor()', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+      @secondaryIdentifier() email;
+      @secondaryIdentifier('number') reference;
+      @attribute('string') name;
+    }
+
+    expect(
+      User.fork()
+        .prototype.deserialize({id: 'abc123'})
+        .getIdentifierDescriptor()
+    ).toStrictEqual({
+      id: 'abc123'
+    });
+    expect(
+      User.fork()
+        .prototype.deserialize({id: 'abc123', email: 'hi@hello.com'})
+        .getIdentifierDescriptor()
+    ).toStrictEqual({
+      id: 'abc123'
+    });
+    expect(
+      User.fork()
+        .prototype.deserialize({email: 'hi@hello.com'})
+        .getIdentifierDescriptor()
+    ).toStrictEqual({
+      email: 'hi@hello.com'
+    });
+    expect(
+      User.fork()
+        .prototype.deserialize({email: 'hi@hello.com', reference: 123456})
+        .getIdentifierDescriptor()
+    ).toStrictEqual({
+      email: 'hi@hello.com'
+    });
+    expect(
+      User.fork()
+        .prototype.deserialize({reference: 123456})
+        .getIdentifierDescriptor()
+    ).toStrictEqual({
+      reference: 123456
+    });
+
+    expect(() =>
+      User.fork()
+        .prototype.deserialize({name: 'john'})
+        .getIdentifierDescriptor()
+    ).toThrow(
+      "Cannot get an identifier descriptor from an entity that has no set identifier (entity name: 'user')"
+    );
+  });
+
   test('normalizeIdentifierDescriptor()', async () => {
     class User extends Entity {
       @primaryIdentifier() id;
