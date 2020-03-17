@@ -3,7 +3,7 @@ export function isEntityClass(object) {
 }
 
 export function isEntityInstance(object) {
-  return isEntityClass(object?.constructor) === true;
+  return isEntityClass(object?.constructor);
 }
 
 export function isEntity(object) {

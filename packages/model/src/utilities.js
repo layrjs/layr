@@ -6,7 +6,7 @@ export function isModelClass(object) {
 }
 
 export function isModelInstance(object) {
-  return isModelClass(object?.constructor) === true;
+  return isModelClass(object?.constructor);
 }
 
 export function isModel(object) {

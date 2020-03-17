@@ -9,7 +9,7 @@ export function isComponentClass(object) {
 }
 
 export function isComponentInstance(object) {
-  return isComponentClass(object?.constructor) === true;
+  return isComponentClass(object?.constructor);
 }
 
 export function isComponent(object) {
