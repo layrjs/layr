@@ -1,4 +1,4 @@
-import {ModelMixin, getTypeOf} from '@liaison/model';
+import {ModelMixin, AttributeSelector, getTypeOf} from '@liaison/model';
 import cuid from 'cuid';
 import {hasOwnProperty} from 'core-helpers';
 import isPlainObject from 'lodash/isPlainObject';
@@ -318,6 +318,23 @@ export const EntityMixin = (Base = Object) => {
       const valueString = typeof value === 'string' ? `'${value}'` : value.toString();
 
       return `${name}: ${valueString}`;
+    }
+
+    // === Attribute selectors ===
+
+    expandAttributeSelector(attributeSelector, options = {}) {
+      let expandedAttributeSelector = super.expandAttributeSelector(attributeSelector, options);
+
+      const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
+
+      // Always include the primary identifier attribute
+      expandedAttributeSelector = AttributeSelector.set(
+        expandedAttributeSelector,
+        primaryIdentifierAttribute.getName(),
+        true
+      );
+
+      return expandedAttributeSelector;
     }
 
     // === Entity manager ===

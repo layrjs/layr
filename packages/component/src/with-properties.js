@@ -347,11 +347,7 @@ export const WithProperties = (Base = Object) => {
 
       attributeSelector = AttributeSelector.normalize(attributeSelector);
 
-      let {
-        filter,
-        depth = Number.MAX_SAFE_INTEGER, // TODO
-        _attributeStack = new Set()
-      } = options;
+      let {filter, depth = Number.MAX_SAFE_INTEGER, _attributeStack = new Set()} = options;
 
       if (depth < 0) {
         return attributeSelector;

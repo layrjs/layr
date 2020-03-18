@@ -394,6 +394,9 @@ describe('WithProperties', () => {
         title: true,
         duration: true
       });
+      expect(Movie.prototype.expandAttributeSelector({title: true})).toStrictEqual({
+        title: true
+      });
     });
   });
 

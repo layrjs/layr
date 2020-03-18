@@ -225,12 +225,34 @@ describe('Model', () => {
       actors: {name: true}
     });
 
+    expect(Movie.prototype.expandAttributeSelector(false)).toStrictEqual({});
+
+    expect(Movie.prototype.expandAttributeSelector({})).toStrictEqual({});
+
+    expect(Movie.prototype.expandAttributeSelector({title: true, director: true})).toStrictEqual({
+      title: true,
+      director: {name: true}
+    });
+
+    expect(Movie.prototype.expandAttributeSelector({title: true, director: false})).toStrictEqual({
+      title: true
+    });
+
+    expect(Movie.prototype.expandAttributeSelector({title: true, director: {}})).toStrictEqual({
+      title: true,
+      director: {}
+    });
+
     expect(Movie.prototype.expandAttributeSelector(true, {depth: 0})).toStrictEqual({
       title: true,
       duration: true,
       director: true,
       actors: true
     });
+
+    expect(
+      Movie.prototype.expandAttributeSelector({title: true, actors: true}, {depth: 0})
+    ).toStrictEqual({title: true, actors: true});
   });
 
   test('Validation', async () => {

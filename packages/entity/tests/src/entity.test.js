@@ -361,6 +361,50 @@ describe('Entity', () => {
     expect(User.describeIdentifierDescriptor({reference: 123456})).toBe('reference: 123456');
   });
 
+  test('expandAttributeSelector()', async () => {
+    class Movie extends Entity {
+      @primaryIdentifier() id;
+      @attribute('string') title = '';
+      @attribute('person?') director;
+    }
+
+    class Person extends Entity {
+      @primaryIdentifier() id;
+      @attribute('string') name = '';
+    }
+
+    Movie.registerRelatedComponent(Person);
+
+    expect(Movie.prototype.expandAttributeSelector(true)).toStrictEqual({
+      id: true,
+      title: true,
+      director: {id: true, name: true}
+    });
+
+    expect(Movie.prototype.expandAttributeSelector(false)).toStrictEqual({id: true});
+
+    expect(Movie.prototype.expandAttributeSelector({})).toStrictEqual({id: true});
+
+    expect(Movie.prototype.expandAttributeSelector({title: true})).toStrictEqual({
+      id: true,
+      title: true
+    });
+
+    expect(Movie.prototype.expandAttributeSelector({director: true})).toStrictEqual({
+      id: true,
+      director: {id: true, name: true}
+    });
+
+    expect(Movie.prototype.expandAttributeSelector({director: false})).toStrictEqual({
+      id: true
+    });
+
+    expect(Movie.prototype.expandAttributeSelector({director: {}})).toStrictEqual({
+      id: true,
+      director: {id: true}
+    });
+  });
+
   test('generateId()', async () => {
     class Movie extends Entity {}
 
