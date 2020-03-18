@@ -173,5 +173,60 @@ export const AttributeSelector = {
         attributeSelector
       )}'`
     );
+  },
+
+  pick(value, attributeSelector, options = {}) {
+    ow(options, 'options', ow.object.exactShape({includeAttributeNames: ow.optional.array}));
+
+    attributeSelector = this.normalize(attributeSelector);
+
+    const {includeAttributeNames = []} = options;
+
+    return this._pick(value, attributeSelector, {includeAttributeNames});
+  },
+
+  _pick(value, attributeSelector, {includeAttributeNames}) {
+    if (attributeSelector === true) {
+      return value;
+    }
+
+    if (isPlainObject(value)) {
+      return this._pickFromObject(value, attributeSelector, {includeAttributeNames});
+    }
+
+    if (Array.isArray(value)) {
+      return this._pickFromArray(value, attributeSelector, {includeAttributeNames});
+    }
+
+    throw new Error(
+      `Cannot pick attributes from a value that is not a plain object or an array (value type: '${getHumanTypeOf(
+        value
+      )}')`
+    );
+  },
+
+  _pickFromObject(object, attributeSelector, {includeAttributeNames}) {
+    const result = {};
+
+    for (const [name, value] of Object.entries(object)) {
+      if (includeAttributeNames.includes(name)) {
+        result[name] = value;
+        continue;
+      }
+
+      const subattributeSelector = this.get(attributeSelector, name);
+
+      if (subattributeSelector === false) {
+        continue;
+      }
+
+      result[name] = this._pick(value, subattributeSelector, {includeAttributeNames});
+    }
+
+    return result;
+  },
+
+  _pickFromArray(array, attributeSelector, {includeAttributeNames}) {
+    return array.map(value => this._pick(value, attributeSelector, {includeAttributeNames}));
   }
 };

@@ -228,4 +228,99 @@ describe('AttributeSelector', () => {
       "Expected a valid attribute selector, but received a value of type 'movie'"
     );
   });
+
+  test('pick()', () => {
+    const createdOn = new Date();
+
+    const person = {
+      id: 'abc123',
+      email: 'hi@hello.com',
+      emailIsConfirmed: true,
+      reference: 123,
+      tags: ['admin', 'creator'],
+      friends: [
+        {__component: 'person', id: 'def456', reference: 456},
+        {__component: 'person', id: 'ghi789', reference: 789}
+      ],
+      matrix: [
+        [
+          {name: 'a', value: 111},
+          {name: 'b', value: 222}
+        ],
+        [
+          {name: 'c', value: 333},
+          {name: 'b', value: 444}
+        ]
+      ],
+      createdOn
+    };
+
+    expect(AttributeSelector.pick(person, true)).toStrictEqual(person);
+    expect(AttributeSelector.pick(person, false)).toStrictEqual({});
+
+    expect(
+      AttributeSelector.pick(person, {
+        id: true,
+        emailIsConfirmed: true,
+        reference: true,
+        createdOn: true
+      })
+    ).toStrictEqual({
+      id: 'abc123',
+      emailIsConfirmed: true,
+      reference: 123,
+      createdOn
+    });
+
+    expect(AttributeSelector.pick(person, {tags: true})).toStrictEqual({
+      tags: ['admin', 'creator']
+    });
+
+    expect(AttributeSelector.pick(person, {friends: true})).toStrictEqual({
+      friends: [
+        {__component: 'person', id: 'def456', reference: 456},
+        {__component: 'person', id: 'ghi789', reference: 789}
+      ]
+    });
+
+    expect(AttributeSelector.pick(person, {friends: {id: true}})).toStrictEqual({
+      friends: [{id: 'def456'}, {id: 'ghi789'}]
+    });
+
+    expect(
+      AttributeSelector.pick(
+        person,
+        {friends: {reference: true}},
+        {includeAttributeNames: ['__component']}
+      )
+    ).toStrictEqual({
+      friends: [
+        {__component: 'person', reference: 456},
+        {__component: 'person', reference: 789}
+      ]
+    });
+
+    expect(AttributeSelector.pick(person, {matrix: {value: true}})).toStrictEqual({
+      matrix: [
+        [{value: 111}, {value: 222}],
+        [{value: 333}, {value: 444}]
+      ]
+    });
+
+    expect(() => AttributeSelector.pick(undefined, {id: true})).toThrow(
+      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'undefined')"
+    );
+    expect(() => AttributeSelector.pick(null, {id: true})).toThrow(
+      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'null')"
+    );
+    expect(() => AttributeSelector.pick('abc123', {id: true})).toThrow(
+      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'string')"
+    );
+    expect(() => AttributeSelector.pick(createdOn, {id: true})).toThrow(
+      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'date')"
+    );
+    expect(() => AttributeSelector.pick(person, {reference: {value: true}})).toThrow(
+      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'number')"
+    );
+  });
 });
