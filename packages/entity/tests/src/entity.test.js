@@ -346,6 +346,21 @@ describe('Entity', () => {
     );
   });
 
+  test('describeIdentifierDescriptor()', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+      @secondaryIdentifier() email;
+      @secondaryIdentifier('number') reference;
+    }
+
+    expect(User.describeIdentifierDescriptor('abc123')).toBe("id: 'abc123'");
+    expect(User.describeIdentifierDescriptor({id: 'abc123'})).toBe("id: 'abc123'");
+    expect(User.describeIdentifierDescriptor({email: 'hi@hello.com'})).toBe(
+      "email: 'hi@hello.com'"
+    );
+    expect(User.describeIdentifierDescriptor({reference: 123456})).toBe('reference: 123456');
+  });
+
   test('generateId()', async () => {
     class Movie extends Entity {}
 

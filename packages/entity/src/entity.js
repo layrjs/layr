@@ -310,6 +310,16 @@ export const EntityMixin = (Base = Object) => {
       return {[name]: value};
     }
 
+    static describeIdentifierDescriptor(identifierDescriptor) {
+      identifierDescriptor = this.normalizeIdentifierDescriptor(identifierDescriptor);
+
+      const [[name, value]] = Object.entries(identifierDescriptor);
+
+      const valueString = typeof value === 'string' ? `'${value}'` : value.toString();
+
+      return `${name}: ${valueString}`;
+    }
+
     // === Entity manager ===
 
     static __getEntityManager() {
