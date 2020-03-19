@@ -54,7 +54,7 @@ describe('Serialization', () => {
       __new: true,
       title: ''
     });
-    expect(movie.serialize({excludeIsNewMark: true})).toEqual({
+    expect(movie.serialize({includeIsNewMark: false})).toEqual({
       __component: 'movie',
       title: '',
       director: {__undefined: true}
@@ -101,7 +101,7 @@ describe('Serialization', () => {
       title: 'Inception',
       director: {__component: 'director', __new: true}
     });
-    expect(movie.serialize({excludeIsNewMark: true})).toEqual({
+    expect(movie.serialize({includeIsNewMark: false})).toEqual({
       __component: 'movie',
       title: 'Inception',
       director: {__component: 'director', name: 'Christopher Nolan', country: {__undefined: true}}

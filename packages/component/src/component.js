@@ -299,13 +299,13 @@ export const ComponentMixin = (Base = Object) => {
     }
 
     serialize(options = {}) {
-      ow(options, 'options', ow.object.partialShape({excludeIsNewMark: ow.optional.boolean}));
+      ow(options, 'options', ow.object.partialShape({includeIsNewMark: ow.optional.boolean}));
 
-      const {excludeIsNewMark = false} = options;
+      const {includeIsNewMark = true} = options;
 
       const serializedComponent = {__component: this.getComponentName()};
 
-      if (!excludeIsNewMark && this.isNew()) {
+      if (includeIsNewMark && this.isNew()) {
         serializedComponent.__new = true;
       }
 
