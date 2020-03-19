@@ -166,4 +166,6 @@ export const ModelMixin = (Base = Object) => {
   return ModelMixin;
 };
 
-export class Model extends ModelMixin() {}
+export class Model extends ModelMixin() {
+  static __ComponentMixin = ModelMixin;
+}

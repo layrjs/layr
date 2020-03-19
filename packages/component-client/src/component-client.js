@@ -1,11 +1,12 @@
 import {
+  validateIsComponentClass,
   validateComponentName,
   getComponentClassNameFromComponentInstanceName,
   createComponentMap,
   serialize,
   deserialize
 } from '@liaison/component';
-import {getClassOf} from 'core-helpers';
+import {hasOwnProperty, getClassOf} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import debugModule from 'debug';
@@ -34,7 +35,25 @@ export class ComponentClient {
 
     this._componentServer = componentServer;
     this._version = version;
-    this._baseComponents = createComponentMap(baseComponents);
+    this._setBaseComponents(baseComponents);
+  }
+
+  _setBaseComponents(baseComponents) {
+    this._baseComponents = Object.create(null);
+
+    for (const BaseComponent of baseComponents) {
+      validateIsComponentClass(BaseComponent);
+
+      const name = BaseComponent.getComponentName();
+
+      if (!hasOwnProperty(BaseComponent, '__ComponentMixin')) {
+        throw new Error(
+          `The base component ('${name}') is not a Liaison base component such as Component, Model, Entity, or Storable`
+        );
+      }
+
+      this._baseComponents[name] = BaseComponent;
+    }
   }
 
   getName() {
@@ -119,24 +138,43 @@ export class ComponentClient {
     const BaseComponent = this._baseComponents[type];
 
     if (BaseComponent === undefined) {
-      throw new Error(`Unknown base component ('${type}') received from a component server`);
+      throw new Error(`The base component '${type}' is unknown`);
     }
 
-    class Component extends BaseComponent {}
+    class RemoteComponent {}
 
-    Component.unintrospect(
-      {name, properties, prototype},
-      {methodCreator: this._createComponentMethod.bind(this)}
-    );
+    this._createRemoteComponentMethods(RemoteComponent, properties);
+    this._createRemoteComponentMethods(RemoteComponent.prototype, prototype?.properties);
+
+    class LocalComponent extends BaseComponent.__ComponentMixin(RemoteComponent) {}
+
+    LocalComponent.unintrospect({name, properties, prototype});
 
     if (relatedComponents !== undefined) {
-      this.__relatedComponentNames.set(Component, relatedComponents);
+      this.__relatedComponentNames.set(LocalComponent, relatedComponents);
     }
 
-    return Component;
+    return LocalComponent;
   }
 
-  _createComponentMethod(name) {
+  _createRemoteComponentMethods(component, properties) {
+    if (properties === undefined) {
+      return;
+    }
+
+    for (const {name, exposure} of properties) {
+      if (exposure.call === true) {
+        Object.defineProperty(component, name, {
+          value: this._createRemoteComponentMethod(name),
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+      }
+    }
+  }
+
+  _createRemoteComponentMethod(name) {
     const componentClient = this;
 
     return function(...args) {

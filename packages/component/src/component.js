@@ -482,7 +482,7 @@ export const ComponentMixin = (Base = Object) => {
       return introspectedRelatedComponents;
     }
 
-    static unintrospect(introspectedComponent, options = {}) {
+    static unintrospect(introspectedComponent) {
       ow(
         introspectedComponent,
         'introspectedComponent',
@@ -492,23 +492,21 @@ export const ComponentMixin = (Base = Object) => {
           prototype: ow.optional.object.partialShape({properties: ow.optional.array})
         })
       );
-      ow(options, 'options', ow.object.exactShape({methodCreator: ow.optional.function}));
 
       const {
         name,
         properties: introspectedProperties,
         prototype: {properties: introspectedPrototypeProperties} = {}
       } = introspectedComponent;
-      const {methodCreator} = options;
 
       this.setComponentName(name);
 
       if (introspectedProperties !== undefined) {
-        this.unintrospectProperties(introspectedProperties, {methodCreator});
+        this.unintrospectProperties(introspectedProperties);
       }
 
       if (introspectedPrototypeProperties !== undefined) {
-        this.prototype.unintrospectProperties(introspectedPrototypeProperties, {methodCreator});
+        this.prototype.unintrospectProperties(introspectedPrototypeProperties);
       }
     }
 
@@ -673,4 +671,6 @@ export const ComponentMixin = (Base = Object) => {
   return ComponentMixin;
 };
 
-export class Component extends ComponentMixin() {}
+export class Component extends ComponentMixin() {
+  static __ComponentMixin = ComponentMixin;
+}

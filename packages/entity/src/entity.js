@@ -365,4 +365,6 @@ export const EntityMixin = (Base = Object) => {
   return EntityMixin;
 };
 
-export class Entity extends EntityMixin() {}
+export class Entity extends EntityMixin() {
+  static __ComponentMixin = EntityMixin;
+}

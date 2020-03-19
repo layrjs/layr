@@ -3,7 +3,7 @@ import ow from 'ow';
 
 import {Property} from './property';
 import {Attribute, isAttributeClass, isAttribute} from './attribute';
-import {Method, isMethodClass, isMethod} from './method';
+import {Method, isMethod} from './method';
 import {AttributeSelector} from './attribute-selector';
 import {getTypeOf} from './utilities';
 
@@ -103,16 +103,9 @@ export const WithProperties = (Base = Object) => {
       ow(name, 'name', ow.string.nonEmpty);
       ow(PropertyClass, 'PropertyClass', ow.function);
       ow(propertyOptions, 'propertyOptions', ow.object);
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({
-          methodCreator: ow.optional.function,
-          returnDescriptor: ow.optional.boolean
-        })
-      );
+      ow(options, 'options', ow.object.exactShape({returnDescriptor: ow.optional.boolean}));
 
-      const {methodCreator, returnDescriptor = false} = options;
+      const {returnDescriptor = false} = options;
 
       let property = this.getProperty(name, {throwIfMissing: false});
 
@@ -144,15 +137,6 @@ export const WithProperties = (Base = Object) => {
         }
 
         Object.defineProperty(this, name, descriptor);
-      }
-
-      if (isMethodClass(PropertyClass) && methodCreator !== undefined) {
-        Object.defineProperty(this, name, {
-          value: methodCreator(name),
-          writable: true,
-          enumerable: false,
-          configurable: true
-        });
       }
 
       return property;
@@ -477,17 +461,14 @@ export const WithProperties = (Base = Object) => {
       return introspectedProperties;
     },
 
-    unintrospectProperties(introspectedProperties, options = {}) {
+    unintrospectProperties(introspectedProperties) {
       ow(introspectedProperties, 'introspectedProperties', ow.array);
-      ow(options, 'options', ow.object.exactShape({methodCreator: ow.optional.function}));
-
-      const {methodCreator} = options;
 
       for (const introspectedProperty of introspectedProperties) {
         const {type, ...introspectedPropertyWithoutType} = introspectedProperty;
         const PropertyClass = getClassOf(this).getPropertyClass(type);
         const {name, options} = PropertyClass.unintrospect(introspectedPropertyWithoutType);
-        this.setProperty(name, PropertyClass, options, {methodCreator});
+        this.setProperty(name, PropertyClass, options);
       }
     },
 
