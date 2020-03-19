@@ -345,7 +345,9 @@ export const ComponentMixin = (Base = Object) => {
 
     deserialize(object = {}, options = {}) {
       ow(object, 'object', ow.object);
-      ow(options, 'options', ow.object);
+      ow(options, 'options', ow.object.partialShape({excludeIsNewMark: ow.optional.boolean}));
+
+      const {excludeIsNewMark = false} = options;
 
       const expectedComponentName = this.getComponentName();
 
@@ -359,7 +361,13 @@ export const ComponentMixin = (Base = Object) => {
         );
       }
 
-      const deserializedComponent = this.constructor.__instantiate(attributes, {isNew: __new});
+      let isNew;
+
+      if (!excludeIsNewMark) {
+        isNew = __new ?? false;
+      }
+
+      const deserializedComponent = this.constructor.__instantiate(attributes, {isNew});
 
       return possiblyAsync(deserializedComponent.__deserializeAttributes(attributes, options), {
         then: () => deserializedComponent

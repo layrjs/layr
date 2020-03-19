@@ -440,7 +440,7 @@ describe('Entity', () => {
 
     expect(user2).toBe(user1);
 
-    const user3 = User.prototype.deserialize({id: 'xyz789'});
+    const user3 = User.prototype.deserialize({id: 'def456'});
 
     expect(user3).not.toBe(user1);
 
@@ -463,5 +463,23 @@ describe('Entity', () => {
     }).toThrow(
       "An entity with the same identifier already exists (entity name: 'user', attribute name: 'email')"
     );
+
+    const user7 = new User({id: 'xyz789', email: 'salut@bonjour.com'});
+
+    expect(user7.isNew()).toBe(true);
+
+    const user8 = User.prototype.deserialize({id: 'xyz789'});
+
+    expect(user8).toBe(user7);
+    expect(user8.isNew()).toBe(false);
+
+    const user9 = new User({id: 'jjj000', email: 'hey@konichiwa.com'});
+
+    expect(user9.isNew()).toBe(true);
+
+    const user10 = User.prototype.deserialize({id: 'jjj000'}, {excludeIsNewMark: true});
+
+    expect(user10).toBe(user9);
+    expect(user10.isNew()).toBe(true);
   });
 });

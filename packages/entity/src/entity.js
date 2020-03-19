@@ -48,20 +48,22 @@ export const EntityMixin = (Base = Object) => {
       ow(object, 'object', ow.object);
       ow(options, 'options', ow.object.exactShape({isNew: ow.optional.boolean}));
 
-      const {isNew = false} = options;
+      const {isNew} = options;
 
       const entityManager = this.__getEntityManager();
       const entity = entityManager.getEntity(object);
 
       if (entity !== undefined) {
-        if (isNew && !entity.isNew()) {
-          throw new Error(
-            `Cannot mark as new an existing non-new entity (${entity.describeComponent()})`
-          );
-        }
+        if (isNew !== undefined) {
+          if (isNew && !entity.isNew()) {
+            throw new Error(
+              `Cannot mark as new an existing non-new entity (${entity.describeComponent()})`
+            );
+          }
 
-        if (!isNew && entity.isNew()) {
-          entity.markAsNotNew();
+          if (!isNew && entity.isNew()) {
+            entity.markAsNotNew();
+          }
         }
 
         return entity;
