@@ -5,6 +5,7 @@ import {
   serialize,
   deserialize
 } from '@liaison/component';
+import {getClassOf} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 import debugModule from 'debug';
@@ -147,7 +148,14 @@ export class ComponentClient {
         '=>self': true
       };
 
-      return possiblyAsync(componentClient.sendQuery(query), {
+      const Component = getClassOf(this);
+
+      const componentGetter = name => {
+        // return componentClient.getComponent(name, {includePrototypes: true});
+        return Component.getComponent(name, {includePrototypes: true});
+      };
+
+      return possiblyAsync(componentClient.sendQuery(query, {componentGetter}), {
         then: result => result.result
       });
     };
@@ -166,20 +174,21 @@ export class ComponentClient {
     return this._introspectedComponentServer;
   }
 
-  sendQuery(query) {
+  sendQuery(query, options = {}) {
     ow(query, 'query', ow.object);
+    ow(options, 'options', ow.object.exactShape({componentGetter: ow.optional.function}));
+
+    const {componentGetter} = options;
 
     const componentClient = this;
     const componentServer = this._componentServer;
     const version = this._version;
 
-    const componentGetter = function(name) {
-      return componentClient.getComponent(name, {includePrototypes: true});
-    };
-
     const attributeFilter = function(attribute) {
       // Exclude properties that cannot be set in the remote components
 
+      // TODO: Implement this.getRemoteComponent() so we can simplify the following code a bit
+      // It will require to implement Component.isRemoteComponent() and Component.markAsRemoteComponent()
       const remoteComponent = componentClient.getComponent(this.getComponentName(), {
         includePrototypes: true
       });

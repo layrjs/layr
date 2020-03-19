@@ -23,7 +23,7 @@ export class ComponentType extends Type {
   }
 
   _getComponent({modelAttribute}) {
-    return getClassOf(modelAttribute.getParent()).getRelatedComponent(this.getComponentName(), {
+    return getClassOf(modelAttribute.getParent()).getComponent(this.getComponentName(), {
       includePrototypes: true
     });
   }

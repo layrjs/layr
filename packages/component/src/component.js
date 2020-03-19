@@ -113,6 +113,67 @@ export const ComponentMixin = (Base = Object) => {
       Object.defineProperty(this, '__isNew', {value: false, configurable: true});
     }
 
+    // === Component getter ===
+
+    static getComponent(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          throwIfMissing: ow.optional.boolean,
+          includePrototypes: ow.optional.boolean
+        })
+      );
+
+      const {throwIfMissing = true, includePrototypes = false} = options;
+
+      const isInstanceName =
+        validateComponentName(name, {
+          allowInstances: includePrototypes
+        }) === 'componentInstanceName';
+
+      const className = isInstanceName
+        ? getComponentClassNameFromComponentInstanceName(name)
+        : name;
+
+      const Component = this.__getComponentClass(className, {throwIfMissing});
+
+      if (Component !== undefined) {
+        return isInstanceName ? Component.prototype : Component;
+      }
+    }
+
+    static __getComponentClass(name, {throwIfMissing}) {
+      if (this.getComponentName() === name) {
+        return this;
+      }
+
+      const RelatedComponent = this.getRelatedComponent(name, {throwIfMissing: false});
+
+      if (RelatedComponent !== undefined) {
+        return RelatedComponent;
+      }
+
+      const layer = this.getLayer({throwIfMissing: false});
+
+      if (layer !== undefined) {
+        const RegisteredComponent = layer.getComponent(name, {throwIfMissing: false});
+
+        if (RegisteredComponent !== undefined) {
+          return RegisteredComponent;
+        }
+      }
+
+      if (throwIfMissing) {
+        throw new Error(
+          `Cannot get the component class '${name}' from the current ${lowerFirst(
+            this.getComponentType()
+          )} (${this.describeComponent()})`
+        );
+      }
+    }
+
     // === Related components ===
 
     static getRelatedComponent(name, options = {}) {
@@ -532,7 +593,7 @@ export const ComponentMixin = (Base = Object) => {
       const {attributeFilter} = options;
 
       const componentGetter = name =>
-        getClassOf(this).getRelatedComponent(name, {includePrototypes: true});
+        getClassOf(this).getComponent(name, {includePrototypes: true});
 
       return possiblyAsync.forEach(
         Object.entries(attributes),
