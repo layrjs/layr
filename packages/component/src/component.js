@@ -510,6 +510,18 @@ export const ComponentMixin = (Base = Object) => {
       }
     }
 
+    static getRemoteComponent() {
+      return this.__RemoteComponent;
+    }
+
+    static __setRemoteComponent(RemoteComponent) {
+      this.__RemoteComponent = RemoteComponent;
+    }
+
+    getRemoteComponent() {
+      return this.constructor.getRemoteComponent()?.prototype;
+    }
+
     // === Utilities ===
 
     static isComponent(object) {

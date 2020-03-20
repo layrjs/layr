@@ -141,23 +141,25 @@ export class ComponentClient {
       throw new Error(`The base component '${type}' is unknown`);
     }
 
-    class RemoteComponent {}
+    class RemoteComponentProxy {}
 
-    this._createRemoteComponentMethods(RemoteComponent, properties);
-    this._createRemoteComponentMethods(RemoteComponent.prototype, prototype?.properties);
+    this._createRemoteComponentProxyMethods(RemoteComponentProxy, properties);
+    this._createRemoteComponentProxyMethods(RemoteComponentProxy.prototype, prototype?.properties);
 
-    class LocalComponent extends BaseComponent.__ComponentMixin(RemoteComponent) {}
+    class RemoteComponent extends BaseComponent.__ComponentMixin(RemoteComponentProxy) {}
 
-    LocalComponent.unintrospect({name, properties, prototype});
+    RemoteComponent.__setRemoteComponent(RemoteComponent);
+
+    RemoteComponent.unintrospect({name, properties, prototype});
 
     if (relatedComponents !== undefined) {
-      this.__relatedComponentNames.set(LocalComponent, relatedComponents);
+      this.__relatedComponentNames.set(RemoteComponent, relatedComponents);
     }
 
-    return LocalComponent;
+    return RemoteComponent;
   }
 
-  _createRemoteComponentMethods(component, properties) {
+  _createRemoteComponentProxyMethods(component, properties) {
     if (properties === undefined) {
       return;
     }
@@ -165,7 +167,7 @@ export class ComponentClient {
     for (const {name, exposure} of properties) {
       if (exposure.call === true) {
         Object.defineProperty(component, name, {
-          value: this._createRemoteComponentMethod(name),
+          value: this._createRemoteComponentProxyMethod(name),
           writable: true,
           enumerable: false,
           configurable: true
@@ -174,7 +176,7 @@ export class ComponentClient {
     }
   }
 
-  _createRemoteComponentMethod(name) {
+  _createRemoteComponentProxyMethod(name) {
     const componentClient = this;
 
     return function(...args) {
@@ -189,7 +191,6 @@ export class ComponentClient {
       const Component = getClassOf(this);
 
       const componentGetter = name => {
-        // return componentClient.getComponent(name, {includePrototypes: true});
         return Component.getComponent(name, {includePrototypes: true});
       };
 
@@ -218,18 +219,13 @@ export class ComponentClient {
 
     const {componentGetter} = options;
 
-    const componentClient = this;
     const componentServer = this._componentServer;
     const version = this._version;
 
     const attributeFilter = function(attribute) {
       // Exclude properties that cannot be set in the remote components
 
-      // TODO: Implement this.getRemoteComponent() so we can simplify the following code a bit
-      // It will require to implement Component.isRemoteComponent() and Component.markAsRemoteComponent()
-      const remoteComponent = componentClient.getComponent(this.getComponentName(), {
-        includePrototypes: true
-      });
+      const remoteComponent = this.getRemoteComponent();
       const remoteAttribute = remoteComponent.getAttribute(attribute.getName(), {
         throwIfMissing: false
       });
