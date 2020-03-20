@@ -116,13 +116,11 @@ export class AbstractStore {
     );
 
     const {storableName, identifierDescriptor} = params;
-
     let {attributeSelector = true, throwIfMissing = true} = options;
 
     attributeSelector = AttributeSelector.normalize(attributeSelector);
 
     const storable = this.getStorable(storableName, {includePrototypes: true});
-
     const collectionName = this._getCollectionNameFromStorable(storable);
 
     let serializedStorable = await this._loadFromCollection({
@@ -170,8 +168,7 @@ export class AbstractStore {
       })
     );
 
-    let {storableName, identifierDescriptor, serializedStorable, isNew = false} = params;
-
+    const {storableName, identifierDescriptor, serializedStorable, isNew = false} = params;
     const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
 
     if (throwIfMissing === true && throwIfExists === true) {
@@ -181,17 +178,16 @@ export class AbstractStore {
     }
 
     const storable = this.getStorable(storableName, {includePrototypes: true});
-
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    serializedStorable = await this._saveToCollection({
+    const wasSaved = await this._saveToCollection({
       collectionName,
       identifierDescriptor,
       serializedStorable,
       isNew
     });
 
-    if (serializedStorable === undefined) {
+    if (!wasSaved) {
       if (throwIfMissing) {
         throw new Error(
           `Cannot save a non-new document that is missing from the store (collection: '${collectionName}', ${getClassOf(
@@ -207,11 +203,41 @@ export class AbstractStore {
           ).describeIdentifierDescriptor(identifierDescriptor)})`
         );
       }
-
-      return undefined;
     }
 
-    return serializedStorable;
+    return wasSaved;
+  }
+
+  async delete(params, options = {}) {
+    ow(
+      params,
+      'params',
+      ow.object.exactShape({
+        storableName: ow.string.nonEmpty,
+        identifierDescriptor: ow.object.nonEmpty
+      })
+    );
+    ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+    const {storableName, identifierDescriptor} = params;
+    const {throwIfMissing = true} = options;
+
+    const storable = this.getStorable(storableName, {includePrototypes: true});
+    const collectionName = this._getCollectionNameFromStorable(storable);
+
+    const wasDeleted = await this._deleteFromCollection({collectionName, identifierDescriptor});
+
+    if (!wasDeleted) {
+      if (throwIfMissing) {
+        throw new Error(
+          `Cannot delete a document that is missing from the store (collection: '${collectionName}', ${getClassOf(
+            storable
+          ).describeIdentifierDescriptor(identifierDescriptor)})`
+        );
+      }
+    }
+
+    return wasDeleted;
   }
 
   // === Utilities ===

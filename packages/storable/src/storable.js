@@ -221,14 +221,14 @@ const StorableMixin = (Base = Object) => {
       const identifierDescriptor = this.getIdentifierDescriptor();
       const isNew = this.isNew();
 
-      let serializedStorable = this.serialize({attributeSelector, includeIsNewMark: false});
+      const serializedStorable = this.serialize({attributeSelector, includeIsNewMark: false});
 
-      serializedStorable = await store.save(
+      const wasSaved = await store.save(
         {storableName, identifierDescriptor, serializedStorable, isNew},
         {throwIfMissing, throwIfExists}
       );
 
-      if (serializedStorable === undefined) {
+      if (!wasSaved) {
         return undefined;
       }
 
@@ -239,8 +239,47 @@ const StorableMixin = (Base = Object) => {
       return this;
     }
 
-    @method() async delete() {
-      // ...
+    @method() async delete(options = {}) {
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      if (this.isNew()) {
+        throw new Error(
+          `Cannot delete ${this.describeComponentType()} that is new (${this.describeComponent()})`
+        );
+      }
+
+      const {throwIfMissing = true} = options;
+
+      let deletedStorable;
+
+      if (this.constructor.hasStore()) {
+        deletedStorable = await this.__deleteFromStore({throwIfMissing});
+      } else if (super.delete !== undefined) {
+        deletedStorable = await super.delete({throwIfMissing});
+      } else {
+        throw new Error(
+          `To be able to execute the delete() method, ${this.describeComponentType()} should be registered in a store or have an exposed delete() remote method (${this.describeComponent()})`
+        );
+      }
+
+      // TODO: deletedStorable.detach();
+
+      return deletedStorable;
+    }
+
+    async __deleteFromStore({throwIfMissing}) {
+      const store = this.constructor.getStore();
+
+      const storableName = this.getComponentName();
+      const identifierDescriptor = this.getIdentifierDescriptor();
+
+      const wasDeleted = await store.delete({storableName, identifierDescriptor}, {throwIfMissing});
+
+      if (!wasDeleted) {
+        return undefined;
+      }
+
+      return this;
     }
 
     @method() static async find(query) {

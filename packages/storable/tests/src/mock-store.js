@@ -1,5 +1,6 @@
 import {AbstractStore} from '@liaison/abstract-store';
 import mergeWith from 'lodash/mergeWith';
+import pull from 'lodash/pull';
 
 export class MockStore extends AbstractStore {
   constructor(storables, {initialCollections = {}} = {}) {
@@ -8,33 +9,50 @@ export class MockStore extends AbstractStore {
     this._collections = initialCollections;
   }
 
-  async _loadFromCollection({collectionName, identifierDescriptor}) {
-    const documents = this._collections[collectionName];
+  __getCollection(name) {
+    let collection = this._collections[name];
 
+    if (collection === undefined) {
+      collection = [];
+      this._collections[name] = collection;
+    }
+
+    return collection;
+  }
+
+  async _loadFromCollection({collectionName, identifierDescriptor}) {
+    const collection = this.__getCollection(collectionName);
+
+    const document = await this.__loadFromCollection({collection, identifierDescriptor});
+
+    return document;
+  }
+
+  async __loadFromCollection({collection, identifierDescriptor}) {
     const [[identifierName, identifierValue]] = Object.entries(identifierDescriptor);
 
-    const document = documents.find(document => document[identifierName] === identifierValue);
+    const document = collection.find(document => document[identifierName] === identifierValue);
 
     return document;
   }
 
   async _saveToCollection({collectionName, identifierDescriptor, serializedStorable, isNew}) {
-    const document = await this._loadFromCollection({collectionName, identifierDescriptor});
+    const collection = this.__getCollection(collectionName);
+
+    const document = await this.__loadFromCollection({collection, identifierDescriptor});
 
     if (isNew) {
       if (document !== undefined) {
-        return undefined;
+        return false;
       }
 
-      const documents = this._collections[collectionName];
+      collection.push(serializedStorable);
 
-      documents.push(serializedStorable);
-
-      return serializedStorable;
+      return true;
     }
 
     if (document === undefined) {
-      return undefined;
+      return false;
     }
 
     mergeWith(document, serializedStorable, function(_previousValue, newValue) {
@@ -44,6 +62,20 @@ export class MockStore extends AbstractStore {
       }
     });
 
-    return serializedStorable;
+    return true;
+  }
+
+  async _deleteFromCollection({collectionName, identifierDescriptor}) {
+    const collection = this.__getCollection(collectionName);
+
+    const document = await this.__loadFromCollection({collection, identifierDescriptor});
+
+    if (document === undefined) {
+      return false;
+    }
+
+    pull(collection, document);
+
+    return true;
   }
 }

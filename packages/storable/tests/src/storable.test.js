@@ -323,6 +323,32 @@ describe('Storable', () => {
           "The 'throwIfMissing' and 'throwIfExists' options cannot be both set to true"
         );
       });
+
+      test('delete()', async () => {
+        const User = userClassProvider();
+
+        let user = User.fork().prototype.deserialize({id: 'user1'});
+
+        if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
+          return await expect(user.delete()).rejects.toThrow(
+            "To be able to execute the delete() method, a storable should be registered in a store or have an exposed delete() remote method (storable name: 'user')"
+          );
+        }
+
+        expect(await user.delete()).toBe(user);
+
+        await expect(user.delete()).rejects.toThrow(
+          "Cannot delete a document that is missing from the store (collection: 'User', id: 'user1'"
+        );
+
+        expect(await user.delete({throwIfMissing: false})).toBeUndefined();
+
+        user = new (User.fork())({id: 'user1', email: '1@user.com', reference: 1});
+
+        await expect(user.delete()).rejects.toThrow(
+          "Cannot delete a storable that is new (storable name: 'user')"
+        );
+      });
     });
   }
 
@@ -348,6 +374,7 @@ describe('Storable', () => {
 
           @expose({call: true}) @inherit() load;
           @expose({call: true}) @inherit() save;
+          @expose({call: true}) @inherit() delete;
         }
 
         // eslint-disable-next-line no-unused-vars
