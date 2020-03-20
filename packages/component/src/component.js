@@ -178,47 +178,23 @@ export const ComponentMixin = (Base = Object) => {
 
     static getRelatedComponent(name, options = {}) {
       ow(name, 'name', ow.string.nonEmpty);
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({
-          throwIfMissing: ow.optional.boolean,
-          includePrototypes: ow.optional.boolean
-        })
-      );
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
 
-      const {throwIfMissing = true, includePrototypes = false} = options;
+      const {throwIfMissing = true} = options;
 
-      const isInstanceName =
-        validateComponentName(name, {
-          allowInstances: includePrototypes
-        }) === 'componentInstanceName';
-
-      const className = isInstanceName
-        ? getComponentClassNameFromComponentInstanceName(name)
-        : name;
+      validateComponentName(name, {allowInstances: false});
 
       const relatedComponents = this.__getRelatedComponents();
 
-      const RelatedComponent = relatedComponents[className];
+      const RelatedComponent = relatedComponents[name];
 
       if (RelatedComponent !== undefined) {
-        return isInstanceName ? RelatedComponent.prototype : RelatedComponent;
-      }
-
-      const layer = this.getLayer({throwIfMissing: false});
-
-      if (layer !== undefined) {
-        const component = layer.getComponent(name, {throwIfMissing: false, includePrototypes});
-
-        if (component !== undefined) {
-          return component;
-        }
+        return RelatedComponent;
       }
 
       if (throwIfMissing) {
         throw new Error(
-          `Cannot get the related component class '${className}' (${this.describeComponent()})`
+          `Cannot get the related component class '${name}' (${this.describeComponent()})`
         );
       }
     }
@@ -232,13 +208,9 @@ export const ComponentMixin = (Base = Object) => {
     }
 
     static getRelatedComponents(options = {}) {
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({filter: ow.optional.function, includePrototypes: ow.optional.boolean})
-      );
+      ow(options, 'options', ow.object.exactShape({filter: ow.optional.function}));
 
-      const {filter, includePrototypes = false} = options;
+      const {filter} = options;
 
       const Component = this;
 
@@ -255,10 +227,6 @@ export const ComponentMixin = (Base = Object) => {
             }
 
             yield RelatedComponent;
-
-            if (includePrototypes) {
-              yield RelatedComponent.prototype;
-            }
           }
         }
       };

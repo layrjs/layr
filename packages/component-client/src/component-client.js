@@ -1,7 +1,6 @@
 import {
   validateIsComponentClass,
   validateComponentName,
-  getComponentClassNameFromComponentInstanceName,
   createComponentMap,
   serialize,
   deserialize
@@ -64,35 +63,22 @@ export class ComponentClient {
 
   getComponent(name, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
-    ow(
-      options,
-      'options',
-      ow.object.exactShape({
-        throwIfMissing: ow.optional.boolean,
-        includePrototypes: ow.optional.boolean
-      })
-    );
+    ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
 
-    const {throwIfMissing = true, includePrototypes = false} = options;
+    const {throwIfMissing = true} = options;
 
     return possiblyAsync(this.getComponents(), {
       then: () => {
-        const isInstanceName =
-          validateComponentName(name, {allowInstances: includePrototypes}) ===
-          'componentInstanceName';
+        validateComponentName(name, {allowInstances: false});
 
-        const className = isInstanceName
-          ? getComponentClassNameFromComponentInstanceName(name)
-          : name;
-
-        const Component = this._componentMap[className];
+        const Component = this._componentMap[name];
 
         if (Component !== undefined) {
-          return isInstanceName ? Component.prototype : Component;
+          return Component;
         }
 
         if (throwIfMissing) {
-          throw new Error(`The component class '${className}' is missing in the component client`);
+          throw new Error(`The component class '${name}' is missing in the component client`);
         }
       }
     });

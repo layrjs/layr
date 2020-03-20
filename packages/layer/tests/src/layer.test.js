@@ -37,10 +37,6 @@ describe('Layer', () => {
     const layer = new Layer([Movie]);
 
     expect(layer.getComponent('Movie')).toBe(Movie);
-    expect(() => layer.getComponent('movie')).toThrow(
-      "The specified component name ('movie') is invalid"
-    );
-    expect(layer.getComponent('movie', {includePrototypes: true})).toBe(Movie.prototype);
 
     expect(layer.Movie).toBe(Movie);
 
@@ -163,20 +159,10 @@ describe('Layer', () => {
     layer.registerComponent(Movie);
 
     expect(Array.from(layer.getComponents())).toEqual([Movie]);
-    expect(Array.from(layer.getComponents({includePrototypes: true}))).toEqual([
-      Movie,
-      Movie.prototype
-    ]);
 
     layer.registerComponent(Actor);
 
     expect(Array.from(layer.getComponents())).toEqual([Movie, Actor]);
-    expect(Array.from(layer.getComponents({includePrototypes: true}))).toEqual([
-      Movie,
-      Movie.prototype,
-      Actor,
-      Actor.prototype
-    ]);
 
     expect(
       Array.from(
@@ -205,13 +191,11 @@ describe('Layer', () => {
     expect(forkedForkedLayer.isForkOf(layer)).toBe(true);
 
     const ForkedMovie = forkedLayer.getComponent('Movie');
-    const forkedMovie = forkedLayer.getComponent('movie', {includePrototypes: true});
 
     expect(ForkedMovie.isForkOf(Movie)).toBe(true);
-    expect(forkedMovie.isForkOf(Movie.prototype)).toBe(true);
+    expect(ForkedMovie.prototype.isForkOf(Movie.prototype)).toBe(true);
 
     // Getting a component a second time should return the same forked component
     expect(forkedLayer.getComponent('Movie')).toBe(ForkedMovie);
-    expect(forkedLayer.getComponent('movie', {includePrototypes: true})).toBe(forkedMovie);
   });
 });

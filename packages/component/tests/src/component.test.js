@@ -1,6 +1,6 @@
 import {Layer} from '@liaison/layer';
 
-import {Component, isComponentInstance, attribute, method} from '../../..';
+import {Component, isComponentClass, isComponentInstance, attribute, method} from '../../..';
 
 describe('Component', () => {
   test('Creation', async () => {
@@ -10,6 +10,8 @@ describe('Component', () => {
 
       instanceAttribute = true;
     }
+
+    expect(isComponentClass(Movie)).toBe(true);
 
     // Make sure there are no enumerable properties in the class
     expect(Object.keys(Movie)).toHaveLength(0);
@@ -51,6 +53,10 @@ describe('Component', () => {
     expect(movie.instanceAttribute).toBe(true);
     expect(movie.getAttribute('title').isSet()).toBe(false);
     expect(movie.country).toBe('USA');
+
+    // The component should be accessible through `getComponent()`
+    expect(Movie.getComponent('Movie')).toBe(Movie);
+    expect(Movie.getComponent('movie', {includePrototypes: true})).toBe(Movie.prototype);
   });
 
   test('Naming', async () => {
@@ -100,31 +106,14 @@ describe('Component', () => {
     expect(Movie.getRelatedComponent('Actor')).toBe(Actor);
 
     expect(Movie.getRelatedComponent('Producer', {throwIfMissing: false})).toBeUndefined();
+
     expect(() => Movie.getRelatedComponent('Producer')).toThrow(
       "Cannot get the related component class 'Producer'"
     );
 
-    expect(() => Movie.getRelatedComponent('director')).toThrow(
-      "The specified component name ('director') is invalid"
-    );
-    expect(Movie.getRelatedComponent('director', {includePrototypes: true})).toBe(
-      Director.prototype
-    );
-
-    expect(() => Movie.getRelatedComponent('actor')).toThrow(
-      "The specified component name ('actor') is invalid"
-    );
-    expect(Movie.getRelatedComponent('actor', {includePrototypes: true})).toBe(Actor.prototype);
-
-    expect(() => Movie.getRelatedComponent('producer')).toThrow(
-      "The specified component name ('producer') is invalid"
-    );
-    expect(() => Movie.getRelatedComponent('producer', {includePrototypes: true})).toThrow(
-      "Cannot get the related component class 'Producer'"
-    );
-    expect(
-      Movie.getRelatedComponent('producer', {throwIfMissing: false, includePrototypes: true})
-    ).toBeUndefined();
+    // Related components should also be accessible through `getComponent()`
+    expect(Movie.getComponent('Director')).toBe(Director);
+    expect(Movie.getComponent('director', {includePrototypes: true})).toBe(Director.prototype);
   });
 
   test('isNew mark', async () => {
@@ -172,15 +161,12 @@ describe('Component', () => {
     expect(Movie.hasLayer()).toBe(true);
     expect(Movie.prototype.hasLayer()).toBe(true);
 
-    expect(Movie.getRelatedComponent('Actor', {throwIfMissing: false})).toBeUndefined();
-    expect(
-      Movie.getRelatedComponent('actor', {throwIfMissing: false, includePrototypes: true})
-    ).toBeUndefined();
+    expect(Movie.getComponent('Actor', {throwIfMissing: false})).toBeUndefined();
 
     layer.registerComponent(Actor);
 
-    expect(Movie.getRelatedComponent('Actor')).toBe(Actor);
-    expect(Movie.getRelatedComponent('actor', {includePrototypes: true})).toBe(Actor.prototype);
+    expect(Movie.getComponent('Actor')).toBe(Actor);
+    expect(Movie.getComponent('actor', {includePrototypes: true})).toBe(Actor.prototype);
   });
 
   test('Introspection', async () => {

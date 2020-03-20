@@ -2,7 +2,6 @@ import {
   isComponentClass,
   isComponentInstance,
   validateComponentName,
-  getComponentClassNameFromComponentInstanceName,
   getTypeOf,
   composeDescription
 } from '@liaison/component';
@@ -50,30 +49,18 @@ export class Layer {
 
   getComponent(name, options = {}) {
     ow(name, ow.string.nonEmpty);
-    ow(
-      options,
-      'options',
-      ow.object.exactShape({
-        throwIfMissing: ow.optional.boolean,
-        includePrototypes: ow.optional.boolean
-      })
-    );
+    ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
 
-    const {throwIfMissing = true, includePrototypes = false} = options;
+    const {throwIfMissing = true} = options;
 
-    const isInstanceName =
-      validateComponentName(name, {
-        allowInstances: includePrototypes
-      }) === 'componentInstanceName';
+    validateComponentName(name, {allowInstances: false});
 
-    const className = isInstanceName ? getComponentClassNameFromComponentInstanceName(name) : name;
-
-    let Component = this._components[className];
+    let Component = this._components[name];
 
     if (Component === undefined) {
       if (throwIfMissing) {
         throw new Error(
-          `The component class '${className}' is not registered in the layer${composeDescription([
+          `The component class '${name}' is not registered in the layer${composeDescription([
             this.describe()
           ])}`
         );
@@ -82,14 +69,14 @@ export class Layer {
       return undefined;
     }
 
-    if (!hasOwnProperty(this._components, className)) {
+    if (!hasOwnProperty(this._components, name)) {
       // Since the layer has been forked, the component must be forked as well
       Component = Component.fork();
       Component.__setLayer(this);
-      this._components[className] = Component;
+      this._components[name] = Component;
     }
 
-    return isInstanceName ? Component.prototype : Component;
+    return Component;
   }
 
   registerComponent(Component) {
@@ -153,13 +140,9 @@ export class Layer {
   }
 
   getComponents(options = {}) {
-    ow(
-      options,
-      'options',
-      ow.object.exactShape({filter: ow.optional.function, includePrototypes: ow.optional.boolean})
-    );
+    ow(options, 'options', ow.object.exactShape({filter: ow.optional.function}));
 
-    const {filter, includePrototypes = false} = options;
+    const {filter} = options;
 
     const layer = this;
 
@@ -174,10 +157,6 @@ export class Layer {
           }
 
           yield Component;
-
-          if (includePrototypes) {
-            yield Component.prototype;
-          }
         }
       }
     };
