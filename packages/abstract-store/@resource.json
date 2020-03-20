@@ -1,0 +1,18 @@
+{
+  "@import": "1place/npm-package#^0.2.0",
+  "name": "@liaison/abstract-store",
+  "version": "0.1.0",
+  "description": "A base class for implementing Liaison stores",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/abstract-store",
+  "dependencies": {
+    "core-helpers": "^0.1.0",
+    "@liaison/component": "^0.1.0",
+    "lodash": "^4.17.11",
+    "ow": "^0.13.2"
+  },
+  "tests": {
+    "@include": "./tests"
+  }
+}
