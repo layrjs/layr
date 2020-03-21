@@ -10,6 +10,8 @@ import ow from 'ow';
 
 import {isStore} from './utilities';
 
+const DEFAULT_FIND_LIMIT = 100000;
+
 export class AbstractStore {
   constructor(storables) {
     ow(storables, 'storables', ow.optional.array);
@@ -123,29 +125,23 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    let serializedStorable = await this._loadFromCollection({
+    const serializedStorable = await this._loadFromCollection({
       collectionName,
       identifierDescriptor,
       attributeSelector
     });
 
-    if (serializedStorable === undefined) {
-      if (throwIfMissing) {
-        throw new Error(
-          `Cannot load a document that is missing from the store (collection: '${collectionName}', ${getClassOf(
-            storable
-          ).describeIdentifierDescriptor(identifierDescriptor)})`
-        );
-      }
-
-      return undefined;
+    if (serializedStorable !== undefined) {
+      return serializedStorable;
     }
 
-    serializedStorable = AttributeSelector.pick(serializedStorable, attributeSelector, {
-      includeAttributeNames: ['__component']
-    });
-
-    return serializedStorable;
+    if (throwIfMissing) {
+      throw new Error(
+        `Cannot load a document that is missing from the store (collection: '${collectionName}', ${getClassOf(
+          storable
+        ).describeIdentifierDescriptor(identifierDescriptor)})`
+      );
+    }
   }
 
   async save(params, options = {}) {
@@ -238,6 +234,40 @@ export class AbstractStore {
     }
 
     return wasDeleted;
+  }
+
+  async find(params, options = {}) {
+    ow(
+      params,
+      'params',
+      ow.object.exactShape({
+        storableName: ow.string.nonEmpty,
+        query: ow.optional.object,
+        sort: ow.optional.object,
+        skip: ow.optional.number,
+        limit: ow.optional.number
+      })
+    );
+    ow(options, 'options', ow.object.exactShape({attributeSelector: ow}));
+
+    const {storableName, query = {}, sort = {}, skip = 0, limit = DEFAULT_FIND_LIMIT} = params;
+    let {attributeSelector = true} = options;
+
+    attributeSelector = AttributeSelector.normalize(attributeSelector);
+
+    const storable = this.getStorable(storableName, {includePrototypes: true});
+    const collectionName = this._getCollectionNameFromStorable(storable);
+
+    const serializedStorables = await this._findInCollection({
+      collectionName,
+      query,
+      sort,
+      skip,
+      limit,
+      attributeSelector
+    });
+
+    return serializedStorables;
   }
 
   // === Utilities ===

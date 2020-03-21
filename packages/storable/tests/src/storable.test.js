@@ -9,7 +9,8 @@ import {
   secondaryIdentifier,
   attribute,
   expose,
-  inherit
+  inherit,
+  serialize
 } from '../../..';
 import {MockStore} from './mock-store';
 
@@ -18,13 +19,50 @@ describe('Storable', () => {
     @primaryIdentifier() id;
     @secondaryIdentifier() email;
     @secondaryIdentifier('number') reference;
-    @attribute('string?') fullName;
+    @attribute('string') fullName = '';
+    @attribute('number') accessLevel = 0;
+    @attribute('boolean') emailIsVerified = false;
   }
 
   function getInitialCollections() {
     return {
       User: [
-        {__component: 'user', id: 'user1', email: '1@user.com', reference: 1, fullName: 'User 1'}
+        {
+          __component: 'user',
+          id: 'user1',
+          email: '1@user.com',
+          reference: 1,
+          fullName: 'User 1',
+          accessLevel: 0,
+          emailIsVerified: false
+        },
+        {
+          __component: 'user',
+          id: 'user11',
+          email: '11@user.com',
+          reference: 11,
+          fullName: 'User 11',
+          accessLevel: 3,
+          emailIsVerified: true
+        },
+        {
+          __component: 'user',
+          id: 'user12',
+          email: '12@user.com',
+          reference: 12,
+          fullName: 'User 12',
+          accessLevel: 1,
+          emailIsVerified: true
+        },
+        {
+          __component: 'user',
+          id: 'user13',
+          email: '13@user.com',
+          reference: 13,
+          fullName: 'User 13',
+          accessLevel: 3,
+          emailIsVerified: false
+        }
       ]
     };
   }
@@ -83,7 +121,9 @@ describe('Storable', () => {
           id: 'user1',
           email: '1@user.com',
           reference: 1,
-          fullName: 'User 1'
+          fullName: 'User 1',
+          accessLevel: 0,
+          emailIsVerified: false
         });
 
         user = await User.fork().get({id: 'user1'});
@@ -93,7 +133,9 @@ describe('Storable', () => {
           id: 'user1',
           email: '1@user.com',
           reference: 1,
-          fullName: 'User 1'
+          fullName: 'User 1',
+          accessLevel: 0,
+          emailIsVerified: false
         });
 
         user = await User.fork().get({id: 'user1'}, {fullName: true});
@@ -121,7 +163,9 @@ describe('Storable', () => {
           id: 'user1',
           email: '1@user.com',
           reference: 1,
-          fullName: 'User 1'
+          fullName: 'User 1',
+          accessLevel: 0,
+          emailIsVerified: false
         });
 
         user = await User.fork().get({email: '1@user.com'}, {fullName: true});
@@ -216,7 +260,9 @@ describe('Storable', () => {
           id: 'user1',
           email: '1@user.com',
           reference: 1,
-          fullName: 'User 1'
+          fullName: 'User 1',
+          accessLevel: 0,
+          emailIsVerified: false
         });
 
         user = User.fork().prototype.deserialize({id: 'user2'});
@@ -281,7 +327,9 @@ describe('Storable', () => {
           id: 'user2',
           email: '2@user.com',
           reference: 2,
-          fullName: 'User 2'
+          fullName: 'User 2',
+          accessLevel: 0,
+          emailIsVerified: false
         });
 
         user.fullName = 'User 2 (modified)';
@@ -295,7 +343,9 @@ describe('Storable', () => {
           id: 'user2',
           email: '2@user.com',
           reference: 2,
-          fullName: 'User 2 (modified)'
+          fullName: 'User 2 (modified)',
+          accessLevel: 0,
+          emailIsVerified: false
         });
 
         user = User.fork().prototype.deserialize({id: 'user3', fullName: 'User 3'});
@@ -349,6 +399,160 @@ describe('Storable', () => {
           "Cannot delete a storable that is new (storable name: 'user')"
         );
       });
+
+      test('find()', async () => {
+        const User = userClassProvider();
+
+        if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
+          return await expect(User.fork().find()).rejects.toThrow(
+            "To be able to execute the find() method, a storable should be registered in a store or have an exposed find() remote method (storable name: 'User')"
+          );
+        }
+
+        let users = await User.fork().find();
+
+        expect(serialize(users)).toStrictEqual([
+          {
+            __component: 'user',
+            id: 'user1',
+            email: '1@user.com',
+            reference: 1,
+            fullName: 'User 1',
+            accessLevel: 0,
+            emailIsVerified: false
+          },
+          {
+            __component: 'user',
+            id: 'user11',
+            email: '11@user.com',
+            reference: 11,
+            fullName: 'User 11',
+            accessLevel: 3,
+            emailIsVerified: true
+          },
+          {
+            __component: 'user',
+            id: 'user12',
+            email: '12@user.com',
+            reference: 12,
+            fullName: 'User 12',
+            accessLevel: 1,
+            emailIsVerified: true
+          },
+          {
+            __component: 'user',
+            id: 'user13',
+            email: '13@user.com',
+            reference: 13,
+            fullName: 'User 13',
+            accessLevel: 3,
+            emailIsVerified: false
+          }
+        ]);
+
+        users = await User.fork().find({fullName: 'User 12'});
+
+        expect(serialize(users)).toStrictEqual([
+          {
+            __component: 'user',
+            id: 'user12',
+            email: '12@user.com',
+            reference: 12,
+            fullName: 'User 12',
+            accessLevel: 1,
+            emailIsVerified: true
+          }
+        ]);
+
+        users = await User.fork().find({accessLevel: 3});
+
+        expect(serialize(users)).toStrictEqual([
+          {
+            __component: 'user',
+            id: 'user11',
+            email: '11@user.com',
+            reference: 11,
+            fullName: 'User 11',
+            accessLevel: 3,
+            emailIsVerified: true
+          },
+          {
+            __component: 'user',
+            id: 'user13',
+            email: '13@user.com',
+            reference: 13,
+            fullName: 'User 13',
+            accessLevel: 3,
+            emailIsVerified: false
+          }
+        ]);
+
+        users = await User.fork().find({emailIsVerified: false}, {email: true});
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user1', email: '1@user.com'},
+          {__component: 'user', id: 'user13', email: '13@user.com'}
+        ]);
+
+        users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 1}});
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user1', accessLevel: 0},
+          {__component: 'user', id: 'user12', accessLevel: 1},
+          {__component: 'user', id: 'user11', accessLevel: 3},
+          {__component: 'user', id: 'user13', accessLevel: 3}
+        ]);
+
+        users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: -1}});
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user11', accessLevel: 3},
+          {__component: 'user', id: 'user13', accessLevel: 3},
+          {__component: 'user', id: 'user12', accessLevel: 1},
+          {__component: 'user', id: 'user1', accessLevel: 0}
+        ]);
+
+        users = await User.fork().find(
+          {},
+          {reference: true, accessLevel: true},
+          {sort: {accessLevel: 1, reference: -1}}
+        );
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user1', reference: 1, accessLevel: 0},
+          {__component: 'user', id: 'user12', reference: 12, accessLevel: 1},
+          {__component: 'user', id: 'user13', reference: 13, accessLevel: 3},
+          {__component: 'user', id: 'user11', reference: 11, accessLevel: 3}
+        ]);
+
+        users = await User.fork().find({}, {}, {skip: 2});
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user12'},
+          {__component: 'user', id: 'user13'}
+        ]);
+
+        users = await User.fork().find({}, {}, {limit: 2});
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user1'},
+          {__component: 'user', id: 'user11'}
+        ]);
+
+        users = await User.fork().find({}, {}, {skip: 1, limit: 2});
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user11'},
+          {__component: 'user', id: 'user12'}
+        ]);
+
+        users = await User.fork().find({}, {}, {sort: {id: -1}, skip: 1, limit: 2});
+
+        expect(serialize(users)).toStrictEqual([
+          {__component: 'user', id: 'user12'},
+          {__component: 'user', id: 'user11'}
+        ]);
+      });
     });
   }
 
@@ -371,10 +575,13 @@ describe('Storable', () => {
           @expose({get: true, set: true}) @inherit() email;
           @expose({get: true, set: true}) @inherit() reference;
           @expose({get: true, set: true}) @inherit() fullName;
+          @expose({get: true, set: true}) @inherit() accessLevel;
+          @expose({get: true, set: true}) @inherit() emailIsVerified;
 
           @expose({call: true}) @inherit() load;
           @expose({call: true}) @inherit() save;
           @expose({call: true}) @inherit() delete;
+          @expose({call: true}) @inherit() static find;
         }
 
         // eslint-disable-next-line no-unused-vars

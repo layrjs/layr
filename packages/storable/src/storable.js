@@ -43,7 +43,7 @@ const StorableMixin = (Base = Object) => {
       // ...
     }
 
-    @method() static async reload() {
+    static async reload() {
       // ...
     }
 
@@ -57,7 +57,7 @@ const StorableMixin = (Base = Object) => {
 
     // === Storable instances ===
 
-    @method() static async get(identifierDescriptor, attributeSelector = true, options = {}) {
+    static async get(identifierDescriptor, attributeSelector = true, options = {}) {
       ow(
         options,
         'options',
@@ -78,7 +78,7 @@ const StorableMixin = (Base = Object) => {
       return await storable.load(attributeSelector, {reload, throwIfMissing, _callerMethodName});
     }
 
-    @method() static async has(identifierDescriptor, options = {}) {
+    static async has(identifierDescriptor, options = {}) {
       ow(options, 'options', ow.object.exactShape({reload: ow.optional.boolean}));
 
       const {reload = false} = options;
@@ -160,7 +160,7 @@ const StorableMixin = (Base = Object) => {
       return loadedStorable;
     }
 
-    @method() async reload(attributeSelector = true, options = {}) {
+    async reload(attributeSelector = true, options = {}) {
       ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
 
       const {throwIfMissing = true} = options;
@@ -282,8 +282,65 @@ const StorableMixin = (Base = Object) => {
       return this;
     }
 
-    @method() static async find(query) {
-      console.log(query);
+    @method() static async find(query = {}, attributeSelector = true, options = {}) {
+      ow(query, 'query', ow.object);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          sort: ow.optional.object,
+          skip: ow.optional.number,
+          limit: ow.optional.number,
+          reload: ow.optional.boolean
+        })
+      );
+
+      const {sort, skip, limit, reload = false} = options;
+
+      let foundStorables;
+
+      if (this.hasStore()) {
+        foundStorables = await this.__findInStore(query, {sort, skip, limit});
+      } else if (super.find !== undefined) {
+        foundStorables = await super.find(query, {}, {sort, skip, limit});
+      } else {
+        throw new Error(
+          `To be able to execute the find() method, ${this.describeComponentType()} should be registered in a store or have an exposed find() remote method (${this.describeComponent()})`
+        );
+      }
+
+      const loadedStorables = [];
+
+      // TODO: Batch loading
+      for (const foundStorable of foundStorables) {
+        const loadedStorable = await foundStorable.load(attributeSelector, {
+          reload,
+          _callerMethodName: 'find'
+        });
+        loadedStorables.push(loadedStorable);
+      }
+
+      return foundStorables;
+    }
+
+    static async __findInStore(query, {sort, skip, limit}) {
+      const store = this.getStore();
+
+      const storableName = this.prototype.getComponentName();
+
+      const primaryIdentifierAttribute = this.prototype.getPrimaryIdentifierAttribute();
+      const attributeSelector = {[primaryIdentifierAttribute.getName()]: true};
+
+      const serializedStorables = await store.find(
+        {storableName, query, sort, skip, limit},
+        {attributeSelector}
+      );
+
+      const foundStorables = serializedStorables.map(serializedStorable =>
+        this.prototype.deserialize(serializedStorable)
+      );
+
+      return foundStorables;
     }
 
     @method() static async count(query) {
