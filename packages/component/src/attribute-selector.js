@@ -219,6 +219,52 @@ export const AttributeSelector = {
     return array.map(value => this._pick(value, attributeSelector, {includeAttributeNames}));
   },
 
+  traverse(value, attributeSelector, iteratee) {
+    ow(iteratee, 'iteratee', ow.function);
+
+    attributeSelector = this.normalize(attributeSelector);
+
+    this._traverse(value, attributeSelector, iteratee);
+  },
+
+  _traverse(value, attributeSelector, iteratee, {name, object} = {}) {
+    if (attributeSelector === false) {
+      return;
+    }
+
+    if (attributeSelector === true) {
+      iteratee(value, name, object);
+
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      const array = value;
+
+      for (const value of array) {
+        this._traverse(value, attributeSelector, iteratee);
+      }
+
+      return;
+    }
+
+    if (!isPlainObject(value)) {
+      throw new Error(
+        `Cannot traverse attributes from a value that is not a plain object or an array (value type: '${getHumanTypeOf(
+          value
+        )}')`
+      );
+    }
+
+    object = value;
+
+    for (const [name, subattributeSelector] of AttributeSelector.entries(attributeSelector)) {
+      const value = object[name];
+
+      this._traverse(value, subattributeSelector, iteratee, {name, object});
+    }
+  },
+
   normalize(attributeSelector) {
     if (attributeSelector === undefined) {
       return false;

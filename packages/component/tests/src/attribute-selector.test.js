@@ -323,4 +323,101 @@ describe('AttributeSelector', () => {
       "Cannot pick attributes from a value that is not a plain object or an array (value type: 'number')"
     );
   });
+
+  test('traverse()', () => {
+    const createdOn = new Date();
+
+    const person = {
+      id: 'abc123',
+      email: 'hi@hello.com',
+      emailIsConfirmed: true,
+      reference: 123,
+      tags: ['admin', 'creator'],
+      friends: [
+        {__component: 'person', id: 'def456', reference: 456},
+        {__component: 'person', id: 'ghi789', reference: 789}
+      ],
+      matrix: [
+        [
+          {name: 'a', value: 111},
+          {name: 'b', value: 222}
+        ],
+        [
+          {name: 'c', value: 333},
+          {name: 'b', value: 444}
+        ]
+      ],
+      createdOn
+    };
+
+    const runTraverse = function(value, attributeSelector) {
+      const results = [];
+
+      AttributeSelector.traverse(value, attributeSelector, function(value, name, object) {
+        results.push({value, name, object});
+      });
+
+      return results;
+    };
+
+    expect(runTraverse(person, true)).toEqual([{value: person}]);
+    expect(runTraverse(person, false)).toEqual([]);
+
+    expect(
+      runTraverse(person, {
+        id: true,
+        emailIsConfirmed: true,
+        reference: true,
+        createdOn: true
+      })
+    ).toEqual([
+      {value: 'abc123', name: 'id', object: person},
+      {value: true, name: 'emailIsConfirmed', object: person},
+      {value: 123, name: 'reference', object: person},
+      {value: createdOn, name: 'createdOn', object: person}
+    ]);
+
+    expect(runTraverse(person, {tags: true})).toEqual([
+      {value: ['admin', 'creator'], name: 'tags', object: person}
+    ]);
+
+    expect(runTraverse(person, {friends: true})).toEqual([
+      {
+        value: [
+          {__component: 'person', id: 'def456', reference: 456},
+          {__component: 'person', id: 'ghi789', reference: 789}
+        ],
+        name: 'friends',
+        object: person
+      }
+    ]);
+
+    expect(runTraverse(person, {friends: {id: true}})).toEqual([
+      {value: 'def456', name: 'id', object: person.friends[0]},
+      {value: 'ghi789', name: 'id', object: person.friends[1]}
+    ]);
+
+    expect(runTraverse(person, {matrix: {value: true}})).toEqual([
+      {value: 111, name: 'value', object: person.matrix[0][0]},
+      {value: 222, name: 'value', object: person.matrix[0][1]},
+      {value: 333, name: 'value', object: person.matrix[1][0]},
+      {value: 444, name: 'value', object: person.matrix[1][1]}
+    ]);
+
+    expect(() => runTraverse(undefined, {id: true})).toThrow(
+      "Cannot traverse attributes from a value that is not a plain object or an array (value type: 'undefined')"
+    );
+    expect(() => runTraverse(null, {id: true})).toThrow(
+      "Cannot traverse attributes from a value that is not a plain object or an array (value type: 'null')"
+    );
+    expect(() => runTraverse('abc123', {id: true})).toThrow(
+      "Cannot traverse attributes from a value that is not a plain object or an array (value type: 'string')"
+    );
+    expect(() => runTraverse(createdOn, {id: true})).toThrow(
+      "Cannot traverse attributes from a value that is not a plain object or an array (value type: 'date')"
+    );
+    expect(() => runTraverse(person, {reference: {value: true}})).toThrow(
+      "Cannot traverse attributes from a value that is not a plain object or an array (value type: 'number')"
+    );
+  });
 });
