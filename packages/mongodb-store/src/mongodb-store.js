@@ -3,6 +3,7 @@ import {AttributeSelector} from '@liaison/component';
 import {MongoClient} from 'mongodb';
 import isEmpty from 'lodash/isEmpty';
 import mapKeys from 'lodash/mapKeys';
+import {deleteUndefinedProperties} from 'core-helpers';
 import ow from 'ow';
 import debugModule from 'debug';
 
@@ -29,7 +30,36 @@ export class MongoDBStore extends AbstractStore {
     await this._disconnectClient();
   }
 
-  async _loadFromCollection({collectionName, identifierDescriptor, attributeSelector}) {
+  // === Documents ===
+
+  async _createDocument({collectionName, document}) {
+    const collection = await this._getCollection(collectionName);
+
+    deleteUndefinedProperties(document);
+
+    try {
+      const {insertedCount} = await debugCall(
+        async () => {
+          const {insertedCount} = await collection.insertOne(document);
+
+          return {insertedCount};
+        },
+        'db.%s.insertOne(%o)',
+        collectionName,
+        document
+      );
+
+      return insertedCount === 1;
+    } catch (error) {
+      if (error.name === 'MongoError' && error.code === 11000) {
+        return false; // The document already exists
+      }
+
+      throw error;
+    }
+  }
+
+  async _readDocument({collectionName, identifierDescriptor, attributeSelector}) {
     const collection = await this._getCollection(collectionName);
 
     const query = identifierDescriptor;
@@ -48,37 +78,16 @@ export class MongoDBStore extends AbstractStore {
       return undefined;
     }
 
+    setUndefinedAttributes(document, attributeSelector);
+
     return document;
   }
 
-  async _saveToCollection({collectionName, identifierDescriptor, document, isNew}) {
+  async _updateDocument({collectionName, identifierDescriptor, document}) {
     const collection = await this._getCollection(collectionName);
 
-    if (isNew) {
-      try {
-        const {insertedCount} = await debugCall(
-          async () => {
-            const {insertedCount} = await collection.insertOne(document);
-
-            return {insertedCount};
-          },
-          'db.%s.insertOne(%o)',
-          collectionName,
-          document
-        );
-
-        return insertedCount === 1;
-      } catch (error) {
-        if (error.name === 'MongoError' && error.code === 11000) {
-          return false; // The document already exists
-        }
-
-        throw error;
-      }
-    }
-
     const filter = identifierDescriptor;
-    const update = {$set: document};
+    const update = createDocumentUpdate(document);
 
     const {matchedCount} = await debugCall(
       async () => {
@@ -95,7 +104,7 @@ export class MongoDBStore extends AbstractStore {
     return matchedCount === 1;
   }
 
-  async _deleteFromCollection({collectionName, identifierDescriptor}) {
+  async _deleteDocument({collectionName, identifierDescriptor}) {
     const collection = await this._getCollection(collectionName);
 
     const filter = identifierDescriptor;
@@ -114,7 +123,7 @@ export class MongoDBStore extends AbstractStore {
     return deletedCount === 1;
   }
 
-  async _findInCollection({collectionName, query, sort, skip, limit, attributeSelector}) {
+  async _findDocuments({collectionName, query, sort, skip, limit, attributeSelector}) {
     const collection = await this._getCollection(collectionName);
 
     const projection = buildProjection(attributeSelector);
@@ -145,6 +154,10 @@ export class MongoDBStore extends AbstractStore {
       query,
       options
     );
+
+    for (const document of documents) {
+      setUndefinedAttributes(document, attributeSelector);
+    }
 
     return documents;
   }
@@ -265,6 +278,36 @@ function buildProjection(attributeSelector) {
   build(attributeSelector, '');
 
   return projection;
+}
+
+function setUndefinedAttributes(document, attributeSelector) {
+  AttributeSelector.traverse(document, attributeSelector, (value, name, object) => {
+    if (name !== undefined && value === undefined) {
+      object[name] = undefined;
+    }
+  });
+}
+
+function createDocumentUpdate(document) {
+  const update = {};
+
+  for (const [name, value] of Object.entries(document)) {
+    if (value !== undefined) {
+      if (update.$set === undefined) {
+        update.$set = {};
+      }
+
+      update.$set[name] = value;
+    } else {
+      if (update.$unset === undefined) {
+        update.$unset = {};
+      }
+
+      update.$unset[name] = 1;
+    }
+  }
+
+  return update;
 }
 
 async function debugCall(func, message, ...params) {

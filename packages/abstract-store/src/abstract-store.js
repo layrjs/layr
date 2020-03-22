@@ -127,7 +127,7 @@ export class AbstractStore {
     const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
     const documentAttributeSelector = this._toDocument(storable, attributeSelector);
 
-    const document = await this._loadFromCollection({
+    const document = await this._readDocument({
       collectionName,
       identifierDescriptor: documentIdentifierDescriptor,
       attributeSelector: documentAttributeSelector
@@ -183,12 +183,21 @@ export class AbstractStore {
     const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
     const document = this._toDocument(storable, serializedStorable);
 
-    const wasSaved = await this._saveToCollection({
-      collectionName,
-      identifierDescriptor: documentIdentifierDescriptor,
-      document,
-      isNew
-    });
+    let wasSaved;
+
+    if (isNew) {
+      wasSaved = await this._createDocument({
+        collectionName,
+        identifierDescriptor: documentIdentifierDescriptor,
+        document
+      });
+    } else {
+      wasSaved = await this._updateDocument({
+        collectionName,
+        identifierDescriptor: documentIdentifierDescriptor,
+        document
+      });
+    }
 
     if (!wasSaved) {
       if (throwIfMissing) {
@@ -230,7 +239,7 @@ export class AbstractStore {
 
     const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
 
-    const wasDeleted = await this._deleteFromCollection({
+    const wasDeleted = await this._deleteDocument({
       collectionName,
       identifierDescriptor: documentIdentifierDescriptor
     });
@@ -274,7 +283,7 @@ export class AbstractStore {
     const documentSort = this._toDocument(storable, sort);
     const documentAttributeSelector = this._toDocument(storable, attributeSelector);
 
-    const documents = await this._findInCollection({
+    const documents = await this._findDocuments({
       collectionName,
       query: documentQuery,
       sort: documentSort,
