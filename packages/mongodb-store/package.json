@@ -1,10 +1,10 @@
 {
-  "name": "@liaison/abstract-store",
-  "version": "0.1.0",
-  "description": "A base class for implementing Liaison stores",
+  "name": "@liaison/mongodb-store",
+  "version": "0.2.0",
+  "description": "A Liaison store for MongoDB",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/abstract-store",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/mongodb-store",
   "files": [
     "dist"
   ],
@@ -12,11 +12,13 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
+    "debug": "^4.1.1",
     "core-helpers": "^0.1.0",
+    "@liaison/abstract-store": "^0.1.0",
     "@liaison/component": "^0.1.0",
     "lodash": "^4.17.11",
-    "ow": "^0.13.2",
-    "simple-serialization": "^0.2.0"
+    "mongodb": "^3.5.5",
+    "ow": "^0.13.2"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

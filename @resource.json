@@ -1,5 +1,8 @@
 {
   "@import": "1place/js-repository#^0.1.0",
+  "abstractStore": {
+    "@include": "./packages/abstract-store"
+  },
   "component": {
     "@include": "./packages/component"
   },
@@ -42,8 +45,14 @@
   "model": {
     "@include": "./packages/model"
   },
+  "mongoDBStore": {
+    "@include": "./packages/mongodb-store"
+  },
   "observable": {
     "@include": "./packages/observable"
+  },
+  "storable": {
+    "@include": "./packages/storable"
   },
   "counterExample": {
     "@include": "./examples/counter"

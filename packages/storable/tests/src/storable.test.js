@@ -1,5 +1,11 @@
+import {MongoDBStore} from '@liaison/mongodb-store';
+import {MongoClient} from 'mongodb';
+import {MongoMemoryServer} from 'mongodb-memory-server';
 import {ComponentClient} from '@liaison/component-client';
 import {ComponentServer} from '@liaison/component-server';
+import mapKeys from 'lodash/mapKeys';
+
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000; // 1 minute
 
 import {
   Storable,
@@ -23,6 +29,121 @@ describe('Storable', () => {
     @attribute('number') accessLevel = 0;
     @attribute('boolean') emailIsVerified = false;
   }
+
+  test('isStorableClass()', async () => {
+    class User extends BaseUser {}
+
+    expect(isStorableClass(User)).toBe(true);
+    expect(isStorableClass(User.prototype)).toBe(false);
+
+    const user = new User({id: 'user1', email: '1@user.com', reference: 1});
+
+    expect(isStorableClass(user)).toBe(false);
+  });
+
+  test('isStorableInstance()', async () => {
+    class User extends BaseUser {}
+
+    expect(isStorableInstance(User)).toBe(false);
+    expect(isStorableInstance(User.prototype)).toBe(true);
+
+    const user = new User({id: 'user1', email: '1@user.com', reference: 1});
+
+    expect(isStorableInstance(user)).toBe(true);
+  });
+
+  test('getStore() and hasStore()', async () => {
+    class User extends BaseUser {}
+
+    expect(User.hasStore()).toBe(false);
+    expect(() => User.getStore()).toThrow(
+      "Cannot get the store of a storable that is not registered in any store (storable name: 'User')"
+    );
+
+    const store = new MockStore([User]);
+
+    expect(User.hasStore()).toBe(true);
+    expect(User.getStore()).toBe(store);
+  });
+
+  describe('With a local mock store', () => {
+    testOperations(function() {
+      class User extends BaseUser {}
+
+      // eslint-disable-next-line no-unused-vars
+      const store = new MockStore([User], {initialCollections: getInitialCollections()});
+
+      return User;
+    });
+  });
+
+  describe('With a local MongoDB store', () => {
+    let User;
+    let server;
+    let store;
+
+    beforeEach(async () => {
+      User = class User extends BaseUser {};
+
+      server = new MongoMemoryServer();
+
+      const connectionString = await server.getConnectionString();
+
+      await seedMongoDB(connectionString);
+
+      store = new MongoDBStore(connectionString, [User]);
+
+      await store.connect();
+    });
+
+    afterEach(async () => {
+      await store.disconnect();
+
+      await server.stop();
+    });
+
+    testOperations(function() {
+      return User;
+    });
+  });
+
+  describe('With a remote mock store', () => {
+    testOperations(() => {
+      const server = (() => {
+        class User extends BaseUser {
+          @expose({get: true, set: true}) @inherit() id;
+          @expose({get: true, set: true}) @inherit() email;
+          @expose({get: true, set: true}) @inherit() reference;
+          @expose({get: true, set: true}) @inherit() fullName;
+          @expose({get: true, set: true}) @inherit() accessLevel;
+          @expose({get: true, set: true}) @inherit() emailIsVerified;
+
+          @expose({call: true}) @inherit() load;
+          @expose({call: true}) @inherit() save;
+          @expose({call: true}) @inherit() delete;
+          @expose({call: true}) @inherit() static find;
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const store = new MockStore([User], {initialCollections: getInitialCollections()});
+
+        return new ComponentServer(() => [User.fork()]);
+      })();
+
+      const client = new ComponentClient(server, {baseComponents: [Storable]});
+      const [User] = client.getComponents();
+
+      return User;
+    });
+  });
+
+  describe('Without a store', () => {
+    testOperations(function() {
+      class User extends BaseUser {}
+
+      return User;
+    });
+  });
 
   function getInitialCollections() {
     return {
@@ -67,41 +188,25 @@ describe('Storable', () => {
     };
   }
 
-  test('isStorableClass()', async () => {
-    class User extends BaseUser {}
+  async function seedMongoDB(connectionString) {
+    const client = await MongoClient.connect(connectionString, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
 
-    expect(isStorableClass(User)).toBe(true);
-    expect(isStorableClass(User.prototype)).toBe(false);
+    const initialCollections = getInitialCollections();
 
-    const user = new User({id: 'user1', email: '1@user.com', reference: 1});
+    for (const [collectionName, serializedStorables] of Object.entries(initialCollections)) {
+      const collection = client.db().collection(collectionName);
 
-    expect(isStorableClass(user)).toBe(false);
-  });
+      for (const serializedStorable of serializedStorables) {
+        const document = mapKeys(serializedStorable, (_, name) => (name === 'id' ? '_id' : name));
+        await collection.insertOne(document);
+      }
+    }
 
-  test('isStorableInstance()', async () => {
-    class User extends BaseUser {}
-
-    expect(isStorableInstance(User)).toBe(false);
-    expect(isStorableInstance(User.prototype)).toBe(true);
-
-    const user = new User({id: 'user1', email: '1@user.com', reference: 1});
-
-    expect(isStorableInstance(user)).toBe(true);
-  });
-
-  test('getStore() and hasStore()', async () => {
-    class User extends BaseUser {}
-
-    expect(User.hasStore()).toBe(false);
-    expect(() => User.getStore()).toThrow(
-      "Cannot get the store of a storable that is not registered in any store (storable name: 'User')"
-    );
-
-    const store = new MockStore([User]);
-
-    expect(User.hasStore()).toBe(true);
-    expect(User.getStore()).toBe(store);
-  });
+    await client.close();
+  }
 
   function testOperations(userClassProvider) {
     describe('Storable instances', () => {
@@ -555,53 +660,4 @@ describe('Storable', () => {
       });
     });
   }
-
-  describe('With a local mock store', () => {
-    testOperations(function() {
-      class User extends BaseUser {}
-
-      // eslint-disable-next-line no-unused-vars
-      const store = new MockStore([User], {initialCollections: getInitialCollections()});
-
-      return User;
-    });
-  });
-
-  describe('With a remote mock store', () => {
-    testOperations(() => {
-      const server = (() => {
-        class User extends BaseUser {
-          @expose({get: true, set: true}) @inherit() id;
-          @expose({get: true, set: true}) @inherit() email;
-          @expose({get: true, set: true}) @inherit() reference;
-          @expose({get: true, set: true}) @inherit() fullName;
-          @expose({get: true, set: true}) @inherit() accessLevel;
-          @expose({get: true, set: true}) @inherit() emailIsVerified;
-
-          @expose({call: true}) @inherit() load;
-          @expose({call: true}) @inherit() save;
-          @expose({call: true}) @inherit() delete;
-          @expose({call: true}) @inherit() static find;
-        }
-
-        // eslint-disable-next-line no-unused-vars
-        const store = new MockStore([User], {initialCollections: getInitialCollections()});
-
-        return new ComponentServer(() => [User.fork()]);
-      })();
-
-      const client = new ComponentClient(server, {baseComponents: [Storable]});
-      const [User] = client.getComponents();
-
-      return User;
-    });
-  });
-
-  describe('Without a store', () => {
-    testOperations(function() {
-      class User extends BaseUser {}
-
-      return User;
-    });
-  });
 });

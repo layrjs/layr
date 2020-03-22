@@ -5,12 +5,11 @@ import {
   getTypeOf
 } from '@liaison/component';
 import {getClassOf} from 'core-helpers';
+import {serialize, deserialize} from 'simple-serialization';
 import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
 import {isStore} from './utilities';
-
-const DEFAULT_FIND_LIMIT = 100000;
 
 export class AbstractStore {
   constructor(storables) {
@@ -125,13 +124,18 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const serializedStorable = await this._loadFromCollection({
+    const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
+    const documentAttributeSelector = this._toDocument(storable, attributeSelector);
+
+    const document = await this._loadFromCollection({
       collectionName,
-      identifierDescriptor,
-      attributeSelector
+      identifierDescriptor: documentIdentifierDescriptor,
+      attributeSelector: documentAttributeSelector
     });
 
-    if (serializedStorable !== undefined) {
+    if (document !== undefined) {
+      const serializedStorable = this._fromDocument(storable, document);
+
       return serializedStorable;
     }
 
@@ -176,10 +180,13 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
+    const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
+    const document = this._toDocument(storable, serializedStorable);
+
     const wasSaved = await this._saveToCollection({
       collectionName,
-      identifierDescriptor,
-      serializedStorable,
+      identifierDescriptor: documentIdentifierDescriptor,
+      document,
       isNew
     });
 
@@ -221,7 +228,12 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const wasDeleted = await this._deleteFromCollection({collectionName, identifierDescriptor});
+    const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
+
+    const wasDeleted = await this._deleteFromCollection({
+      collectionName,
+      identifierDescriptor: documentIdentifierDescriptor
+    });
 
     if (!wasDeleted) {
       if (throwIfMissing) {
@@ -250,7 +262,7 @@ export class AbstractStore {
     );
     ow(options, 'options', ow.object.exactShape({attributeSelector: ow}));
 
-    const {storableName, query = {}, sort = {}, skip = 0, limit = DEFAULT_FIND_LIMIT} = params;
+    const {storableName, query = {}, sort = {}, skip, limit} = params;
     let {attributeSelector = true} = options;
 
     attributeSelector = AttributeSelector.normalize(attributeSelector);
@@ -258,16 +270,32 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const serializedStorables = await this._findInCollection({
+    const documentQuery = this._toDocument(storable, query);
+    const documentSort = this._toDocument(storable, sort);
+    const documentAttributeSelector = this._toDocument(storable, attributeSelector);
+
+    const documents = await this._findInCollection({
       collectionName,
-      query,
-      sort,
+      query: documentQuery,
+      sort: documentSort,
       skip,
       limit,
-      attributeSelector
+      attributeSelector: documentAttributeSelector
     });
 
+    const serializedStorables = documents.map(document => this._fromDocument(storable, document));
+
     return serializedStorables;
+  }
+
+  // === Serialization ===
+
+  _toDocument(storable, serializedStorable) {
+    return deserialize(serializedStorable);
+  }
+
+  _fromDocument(storable, document) {
+    return serialize(document);
   }
 
   // === Utilities ===

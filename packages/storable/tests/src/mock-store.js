@@ -45,26 +45,26 @@ export class MockStore extends AbstractStore {
     return document;
   }
 
-  async _saveToCollection({collectionName, identifierDescriptor, serializedStorable, isNew}) {
+  async _saveToCollection({collectionName, identifierDescriptor, document, isNew}) {
     const collection = this.__getCollection(collectionName);
 
-    const document = await this.__loadFromCollection({collection, identifierDescriptor});
+    const existingDocument = await this.__loadFromCollection({collection, identifierDescriptor});
 
     if (isNew) {
-      if (document !== undefined) {
+      if (existingDocument !== undefined) {
         return false;
       }
 
-      collection.push(serializedStorable);
+      collection.push(document);
 
       return true;
     }
 
-    if (document === undefined) {
+    if (existingDocument === undefined) {
       return false;
     }
 
-    mergeWith(document, serializedStorable, function(_previousValue, newValue) {
+    mergeWith(existingDocument, document, function(_previousValue, newValue) {
       // Don't merge arrays
       if (Array.isArray(newValue)) {
         return newValue;
@@ -150,13 +150,17 @@ function sortDocuments(documents, sort) {
 }
 
 function skipDocuments(documents, skip) {
-  if (skip === 0) {
-    return documents; // Optimization
+  if (skip === undefined) {
+    return documents;
   }
 
   return documents.slice(skip);
 }
 
 function limitDocuments(documents, limit) {
+  if (limit === undefined) {
+    return documents;
+  }
+
   return documents.slice(0, limit);
 }
