@@ -4,6 +4,7 @@ import {MongoMemoryServer} from 'mongodb-memory-server';
 import {ComponentClient} from '@liaison/component-client';
 import {ComponentServer} from '@liaison/component-server';
 import mapKeys from 'lodash/mapKeys';
+import {deleteUndefinedProperties} from 'core-helpers';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000; // 1 minute
 
@@ -21,6 +22,9 @@ import {
 import {MockStore} from './mock-store';
 
 describe('Storable', () => {
+  const CREATED_ON = new Date('2020-03-22T01:27:42.612Z');
+  const UPDATED_ON = new Date('2020-03-22T01:29:33.673Z');
+
   class BaseUser extends Storable {
     @primaryIdentifier() id;
     @secondaryIdentifier() email;
@@ -28,6 +32,8 @@ describe('Storable', () => {
     @attribute('string') fullName = '';
     @attribute('number') accessLevel = 0;
     @attribute('boolean') emailIsVerified = false;
+    @attribute('date') createdOn = new Date('2020-03-22T01:27:42.612Z');
+    @attribute('date?') updatedOn;
   }
 
   test('isStorableClass()', async () => {
@@ -117,6 +123,8 @@ describe('Storable', () => {
           @expose({get: true, set: true}) @inherit() fullName;
           @expose({get: true, set: true}) @inherit() accessLevel;
           @expose({get: true, set: true}) @inherit() emailIsVerified;
+          @expose({get: true, set: true}) @inherit() createdOn;
+          @expose({get: true, set: true}) @inherit() updatedOn;
 
           @expose({call: true}) @inherit() load;
           @expose({call: true}) @inherit() save;
@@ -155,7 +163,9 @@ describe('Storable', () => {
           reference: 1,
           fullName: 'User 1',
           accessLevel: 0,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: CREATED_ON,
+          updatedOn: undefined
         },
         {
           __component: 'user',
@@ -164,7 +174,9 @@ describe('Storable', () => {
           reference: 11,
           fullName: 'User 11',
           accessLevel: 3,
-          emailIsVerified: true
+          emailIsVerified: true,
+          createdOn: CREATED_ON,
+          updatedOn: undefined
         },
         {
           __component: 'user',
@@ -173,7 +185,9 @@ describe('Storable', () => {
           reference: 12,
           fullName: 'User 12',
           accessLevel: 1,
-          emailIsVerified: true
+          emailIsVerified: true,
+          createdOn: CREATED_ON,
+          updatedOn: undefined
         },
         {
           __component: 'user',
@@ -182,7 +196,9 @@ describe('Storable', () => {
           reference: 13,
           fullName: 'User 13',
           accessLevel: 3,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: CREATED_ON,
+          updatedOn: undefined
         }
       ]
     };
@@ -201,6 +217,7 @@ describe('Storable', () => {
 
       for (const serializedStorable of serializedStorables) {
         const document = mapKeys(serializedStorable, (_, name) => (name === 'id' ? '_id' : name));
+        deleteUndefinedProperties(document);
         await collection.insertOne(document);
       }
     }
@@ -228,7 +245,9 @@ describe('Storable', () => {
           reference: 1,
           fullName: 'User 1',
           accessLevel: 0,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: {__date: CREATED_ON.toISOString()},
+          updatedOn: {__undefined: true}
         });
 
         user = await User.fork().get({id: 'user1'});
@@ -240,7 +259,9 @@ describe('Storable', () => {
           reference: 1,
           fullName: 'User 1',
           accessLevel: 0,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: {__date: CREATED_ON.toISOString()},
+          updatedOn: {__undefined: true}
         });
 
         user = await User.fork().get({id: 'user1'}, {fullName: true});
@@ -270,7 +291,9 @@ describe('Storable', () => {
           reference: 1,
           fullName: 'User 1',
           accessLevel: 0,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: {__date: CREATED_ON.toISOString()},
+          updatedOn: {__undefined: true}
         });
 
         user = await User.fork().get({email: '1@user.com'}, {fullName: true});
@@ -367,7 +390,9 @@ describe('Storable', () => {
           reference: 1,
           fullName: 'User 1',
           accessLevel: 0,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: {__date: CREATED_ON.toISOString()},
+          updatedOn: {__undefined: true}
         });
 
         user = User.fork().prototype.deserialize({id: 'user2'});
@@ -434,10 +459,13 @@ describe('Storable', () => {
           reference: 2,
           fullName: 'User 2',
           accessLevel: 0,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: {__date: CREATED_ON.toISOString()},
+          updatedOn: {__undefined: true}
         });
 
         user.fullName = 'User 2 (modified)';
+        user.updatedOn = UPDATED_ON;
 
         expect(await user.save()).toBe(user);
 
@@ -450,7 +478,27 @@ describe('Storable', () => {
           reference: 2,
           fullName: 'User 2 (modified)',
           accessLevel: 0,
-          emailIsVerified: false
+          emailIsVerified: false,
+          createdOn: {__date: CREATED_ON.toISOString()},
+          updatedOn: {__date: UPDATED_ON.toISOString()}
+        });
+
+        user.updatedOn = undefined;
+
+        expect(await user.save()).toBe(user);
+
+        user = await User.fork().get('user2');
+
+        expect(user.serialize()).toStrictEqual({
+          __component: 'user',
+          id: 'user2',
+          email: '2@user.com',
+          reference: 2,
+          fullName: 'User 2 (modified)',
+          accessLevel: 0,
+          emailIsVerified: false,
+          createdOn: {__date: CREATED_ON.toISOString()},
+          updatedOn: {__undefined: true}
         });
 
         user = User.fork().prototype.deserialize({id: 'user3', fullName: 'User 3'});
@@ -524,7 +572,9 @@ describe('Storable', () => {
             reference: 1,
             fullName: 'User 1',
             accessLevel: 0,
-            emailIsVerified: false
+            emailIsVerified: false,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
           },
           {
             __component: 'user',
@@ -533,7 +583,9 @@ describe('Storable', () => {
             reference: 11,
             fullName: 'User 11',
             accessLevel: 3,
-            emailIsVerified: true
+            emailIsVerified: true,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
           },
           {
             __component: 'user',
@@ -542,7 +594,9 @@ describe('Storable', () => {
             reference: 12,
             fullName: 'User 12',
             accessLevel: 1,
-            emailIsVerified: true
+            emailIsVerified: true,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
           },
           {
             __component: 'user',
@@ -551,7 +605,9 @@ describe('Storable', () => {
             reference: 13,
             fullName: 'User 13',
             accessLevel: 3,
-            emailIsVerified: false
+            emailIsVerified: false,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
           }
         ]);
 
@@ -565,7 +621,9 @@ describe('Storable', () => {
             reference: 12,
             fullName: 'User 12',
             accessLevel: 1,
-            emailIsVerified: true
+            emailIsVerified: true,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
           }
         ]);
 
@@ -579,7 +637,9 @@ describe('Storable', () => {
             reference: 11,
             fullName: 'User 11',
             accessLevel: 3,
-            emailIsVerified: true
+            emailIsVerified: true,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
           },
           {
             __component: 'user',
@@ -588,7 +648,9 @@ describe('Storable', () => {
             reference: 13,
             fullName: 'User 13',
             accessLevel: 3,
-            emailIsVerified: false
+            emailIsVerified: false,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
           }
         ]);
 

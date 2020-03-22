@@ -1,6 +1,7 @@
 {
   "@import": "1place/jest#^0.1.0",
   "dependencies": {
+    "core-helpers": "^0.1.0",
     "@liaison/abstract-store": "^0.1.0",
     "@liaison/component-client": "^0.1.0",
     "@liaison/component-server": "^0.1.0",
