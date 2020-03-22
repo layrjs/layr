@@ -155,24 +155,13 @@ export const AttributeSelector = {
     return attributeSelector;
   },
 
-  normalize(attributeSelector) {
-    if (attributeSelector === undefined) {
-      return false;
-    }
+  entries(attributeSelector) {
+    ow(attributeSelector, 'attributeSelector', ow.object);
 
-    if (typeof attributeSelector === 'boolean') {
-      return attributeSelector;
-    }
-
-    if (isPlainObject(attributeSelector)) {
-      return attributeSelector;
-    }
-
-    throw new Error(
-      `Expected a valid attribute selector, but received a value of type '${getHumanTypeOf(
-        attributeSelector
-      )}'`
-    );
+    return Object.entries(attributeSelector).map(([name, subattributeSelector]) => [
+      name,
+      this.normalize(subattributeSelector)
+    ]);
   },
 
   pick(value, attributeSelector, options = {}) {
@@ -228,5 +217,25 @@ export const AttributeSelector = {
 
   _pickFromArray(array, attributeSelector, {includeAttributeNames}) {
     return array.map(value => this._pick(value, attributeSelector, {includeAttributeNames}));
+  },
+
+  normalize(attributeSelector) {
+    if (attributeSelector === undefined) {
+      return false;
+    }
+
+    if (typeof attributeSelector === 'boolean') {
+      return attributeSelector;
+    }
+
+    if (isPlainObject(attributeSelector)) {
+      return attributeSelector;
+    }
+
+    throw new Error(
+      `Expected a valid attribute selector, but received a value of type '${getHumanTypeOf(
+        attributeSelector
+      )}'`
+    );
   }
 };
