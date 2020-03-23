@@ -130,6 +130,7 @@ describe('Storable', () => {
           @expose({call: true}) @inherit() save;
           @expose({call: true}) @inherit() delete;
           @expose({call: true}) @inherit() static find;
+          @expose({call: true}) @inherit() static count;
         }
 
         // eslint-disable-next-line no-unused-vars
@@ -661,6 +662,10 @@ describe('Storable', () => {
           {__component: 'user', id: 'user13', email: '13@user.com'}
         ]);
 
+        users = await User.fork().find({accessLevel: 3, emailIsVerified: true}, {});
+
+        expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user11'}]);
+
         users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 1}});
 
         expect(serialize(users)).toStrictEqual([
@@ -719,6 +724,26 @@ describe('Storable', () => {
           {__component: 'user', id: 'user12'},
           {__component: 'user', id: 'user11'}
         ]);
+      });
+
+      test('count()', async () => {
+        const User = userClassProvider();
+
+        if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
+          return await expect(User.fork().count()).rejects.toThrow(
+            "To be able to execute the count() method, a storable should be registered in a store or have an exposed count() remote method (storable name: 'User')"
+          );
+        }
+
+        expect(await User.fork().count()).toBe(4);
+
+        expect(await User.fork().count({fullName: 'User 12'})).toBe(1);
+
+        expect(await User.fork().count({accessLevel: 3})).toBe(2);
+
+        expect(await User.fork().count({emailIsVerified: false})).toBe(2);
+
+        expect(await User.fork().count({accessLevel: 3, emailIsVerified: true})).toBe(1);
       });
     });
   }

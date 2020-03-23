@@ -162,6 +162,23 @@ export class MongoDBStore extends AbstractStore {
     return documents;
   }
 
+  async _countDocuments({collectionName, query}) {
+    const collection = await this._getCollection(collectionName);
+
+    const documentsCount = await debugCall(
+      async () => {
+        const documentsCount = await collection.countDocuments(query);
+
+        return documentsCount;
+      },
+      'db.%s.countDocuments(%o)',
+      collectionName,
+      query
+    );
+
+    return documentsCount;
+  }
+
   // === Serialization ===
 
   _toDocument(storable, serializedStorable) {

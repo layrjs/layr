@@ -343,8 +343,32 @@ const StorableMixin = (Base = Object) => {
       return foundStorables;
     }
 
-    @method() static async count(query) {
-      console.log(query);
+    @method() static async count(query = {}) {
+      ow(query, 'query', ow.object);
+
+      let storablesCount;
+
+      if (this.hasStore()) {
+        storablesCount = await this.__countInStore(query);
+      } else if (super.count !== undefined) {
+        storablesCount = await super.count(query);
+      } else {
+        throw new Error(
+          `To be able to execute the count() method, ${this.describeComponentType()} should be registered in a store or have an exposed count() remote method (${this.describeComponent()})`
+        );
+      }
+
+      return storablesCount;
+    }
+
+    static async __countInStore(query) {
+      const store = this.getStore();
+
+      const storableName = this.prototype.getComponentName();
+
+      const storablesCount = await store.count({storableName, query});
+
+      return storablesCount;
     }
 
     // === Utilities ===

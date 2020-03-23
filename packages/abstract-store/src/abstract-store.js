@@ -297,6 +297,28 @@ export class AbstractStore {
     return serializedStorables;
   }
 
+  async count(params) {
+    ow(
+      params,
+      'params',
+      ow.object.exactShape({
+        storableName: ow.string.nonEmpty,
+        query: ow.optional.object
+      })
+    );
+
+    const {storableName, query = {}} = params;
+
+    const storable = this.getStorable(storableName, {includePrototypes: true});
+    const collectionName = this._getCollectionNameFromStorable(storable);
+
+    const documentQuery = this._toDocument(storable, query);
+
+    const documentsCount = await this._countDocuments({collectionName, query: documentQuery});
+
+    return documentsCount;
+  }
+
   // === Serialization ===
 
   _toDocument(storable, serializedStorable) {

@@ -113,6 +113,14 @@ export class MockStore extends AbstractStore {
 
     return documents;
   }
+
+  async _countDocuments({collectionName, query}) {
+    const collection = this.__getCollection(collectionName);
+
+    const documents = await this.__findDocuments({collection, query});
+
+    return documents.length;
+  }
 }
 
 function filterDocuments(documents, query) {
@@ -136,6 +144,10 @@ function documentIsMatchingQuery(document, query) {
 }
 
 function sortDocuments(documents, sort) {
+  if (sort === undefined) {
+    return documents;
+  }
+
   const properties = Object.entries(sort).map(([name, direction]) => {
     let property = name;
 
