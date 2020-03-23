@@ -14,7 +14,8 @@
   "dependencies": {
     "co-body": "^6.0.0",
     "@liaison/layer-server": "^0.1.0",
-    "ow": "^0.15.0"
+    "ow": "^0.15.0",
+    "sleep-promise": "^8.0.1"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

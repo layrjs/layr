@@ -22,16 +22,20 @@ export class LayerHTTPServer {
       ow.object.exactShape({
         version: ow.optional.number.integer,
         port: ow.optional.number.integer,
-        limit: ow.optional.any(ow.integer, ow.string.nonEmpty)
+        limit: ow.optional.any(ow.integer, ow.string.nonEmpty),
+        delay: ow.optional.number,
+        errorRate: ow.optional.number
       })
     );
 
-    const {version, port = DEFAULT_PORT, limit = DEFAULT_LIMIT} = options;
+    const {version, port = DEFAULT_PORT, limit = DEFAULT_LIMIT, delay, errorRate} = options;
 
     this._layerProvider = layerProvider;
     this._version = version;
     this._port = port;
     this._limit = limit;
+    this._delay = delay;
+    this._errorRate = errorRate;
   }
 
   start() {
@@ -51,7 +55,14 @@ export class LayerHTTPServer {
 
     koa.use(cors({maxAge: 900})); // 15 minutes
 
-    koa.use(serveLayer(this._layerProvider, {version: this._version, limit: this._limit}));
+    koa.use(
+      serveLayer(this._layerProvider, {
+        version: this._version,
+        limit: this._limit,
+        delay: this._delay,
+        errorRate: this._errorRate
+      })
+    );
 
     return new Promise(resolve => {
       this._server = koa.listen(this._port, () => {
