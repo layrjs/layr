@@ -1,4 +1,5 @@
 import {Component, attribute, expose} from '@liaison/component';
+import {ComponentServer} from '@liaison/component-server';
 import fetch from 'cross-fetch';
 
 import {ComponentHTTPServer} from '../../..';
@@ -17,7 +18,7 @@ describe('ComponentHTTPServer', () => {
       return [Movie];
     };
 
-    server = new ComponentHTTPServer(provider, {port: SERVER_PORT});
+    server = new ComponentHTTPServer(new ComponentServer(provider), {port: SERVER_PORT});
 
     await server.start();
   });

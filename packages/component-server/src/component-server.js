@@ -12,6 +12,8 @@ import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
+import {isComponentServer} from './utilities';
+
 export class ComponentServer {
   constructor(componentProvider, options = {}) {
     ow(componentProvider, 'componentProvider', ow.function);
@@ -158,5 +160,9 @@ export class ComponentServer {
     };
 
     return root;
+  }
+
+  static isComponentServer(object) {
+    return isComponentServer(object);
   }
 }

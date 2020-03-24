@@ -1,4 +1,5 @@
 import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentServer} from '@liaison/component-server';
 import {ComponentHTTPServer} from '@liaison/component-http-server';
 
 import {Entity, primaryIdentifier, attribute, expose} from '../../..';
@@ -23,7 +24,7 @@ describe('HTTP client/server', () => {
       return [Counter];
     };
 
-    server = new ComponentHTTPServer(provider, {port: SERVER_PORT});
+    server = new ComponentHTTPServer(new ComponentServer(provider), {port: SERVER_PORT});
 
     await server.start();
   });

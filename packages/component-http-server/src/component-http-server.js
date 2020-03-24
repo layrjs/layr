@@ -3,6 +3,7 @@ import logger from 'koa-logger';
 import jsonError from 'koa-json-error';
 import cors from '@koa/cors';
 import {serveComponents} from '@liaison/component-koa-middleware';
+import {getTypeOf} from 'core-helpers';
 import debugModule from 'debug';
 import ow from 'ow';
 
@@ -14,13 +15,17 @@ const DEFAULT_PORT = 3333;
 const DEFAULT_LIMIT = '8mb';
 
 export class ComponentHTTPServer {
-  constructor(componentProvider, options = {}) {
-    ow(componentProvider, 'componentProvider', ow.function);
+  constructor(componentServer, options = {}) {
+    if (typeof componentServer?.constructor?.isComponentServer !== 'function') {
+      throw new Error(
+        `Expected a component server, but received a value of type '${getTypeOf(componentServer)}'`
+      );
+    }
+
     ow(
       options,
       'options',
       ow.object.exactShape({
-        version: ow.optional.number.integer,
         port: ow.optional.number.integer,
         limit: ow.optional.any(ow.integer, ow.string.nonEmpty),
         delay: ow.optional.number,
@@ -28,10 +33,9 @@ export class ComponentHTTPServer {
       })
     );
 
-    const {version, port = DEFAULT_PORT, limit = DEFAULT_LIMIT, delay, errorRate} = options;
+    const {port = DEFAULT_PORT, limit = DEFAULT_LIMIT, delay, errorRate} = options;
 
-    this._componentProvider = componentProvider;
-    this._version = version;
+    this._componentServer = componentServer;
     this._port = port;
     this._limit = limit;
     this._delay = delay;
@@ -56,8 +60,7 @@ export class ComponentHTTPServer {
     koa.use(cors({maxAge: 900})); // 15 minutes
 
     koa.use(
-      serveComponents(this._componentProvider, {
-        version: this._version,
+      serveComponents(this._componentServer, {
         limit: this._limit,
         delay: this._delay,
         errorRate: this._errorRate

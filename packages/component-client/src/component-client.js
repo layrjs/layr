@@ -3,32 +3,33 @@ import {
   validateComponentName,
   createComponentMap,
   serialize,
-  deserialize
+  deserialize,
+  getTypeOf
 } from '@liaison/component';
 import {hasOwnProperty, getClassOf} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
-import ow from 'ow';
 import debugModule from 'debug';
+import ow from 'ow';
 
 const debug = debugModule('liaison:component-client');
-
 // To display the debug log, set this environment:
 // DEBUG=liaison:component-client DEBUG_DEPTH=10
 
+import {isComponentClient} from './utilities';
+
 export class ComponentClient {
   constructor(componentServer, options = {}) {
-    ow(componentServer, 'componentServer', ow.object);
+    if (typeof componentServer?.receiveQuery !== 'function') {
+      throw new Error(
+        `Expected a component server, but received a value of type '${getTypeOf(componentServer)}'`
+      );
+    }
+
     ow(
       options,
       'options',
       ow.object.exactShape({version: ow.optional.number.integer, baseComponents: ow.optional.array})
     );
-
-    if (typeof componentServer.receiveQuery !== 'function') {
-      throw new Error(
-        'The ComponentClient constructor expects a ComponentServer instance to be passed as the first parameter'
-      );
-    }
 
     const {version, baseComponents = []} = options;
 
@@ -232,5 +233,9 @@ export class ComponentClient {
         return deserialize(result, {componentGetter, deserializeFunctions: true, source: 'parent'});
       }
     });
+  }
+
+  static isComponentClient(object) {
+    return isComponentClient(object);
   }
 }

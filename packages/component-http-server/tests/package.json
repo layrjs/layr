@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "cross-fetch": "^3.0.4",
-    "@liaison/component": "^0.1.0"
+    "@liaison/component": "^0.1.0",
+    "@liaison/component-server": "^0.1.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

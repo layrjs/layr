@@ -12,8 +12,8 @@
   "module": "dist/node/esm",
   "browser": "dist/browser/esm",
   "dependencies": {
+    "core-helpers": "^0.1.0",
     "co-body": "^6.0.0",
-    "@liaison/component-server": "^0.1.0",
     "ow": "^0.15.0",
     "sleep-promise": "^8.0.1"
   },
