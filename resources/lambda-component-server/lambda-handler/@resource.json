@@ -1,0 +1,24 @@
+{
+  "@import": ["1place/js-resource#^0.2.1"],
+  "dependencies": {},
+  "transpiler": {
+    "format": "esm",
+    "run": {
+      "@listen": "@fileModified"
+    },
+    "runBundler": {
+      "@type": "method",
+      "@run": "@parent bundler run",
+      "@listen": "transpilationOccurred"
+    }
+  },
+  "bundler": {
+    "@import": "js/bundler#^0.2.5",
+    "entry": "./dist/esm/index.js",
+    "output": "./dist/bundle.js",
+    "target": "node",
+    "format": "cjs",
+    "reinstallDependencies": true,
+    "minify": true
+  }
+}
