@@ -72,7 +72,7 @@ export const ComponentMixin = (Base = Object) => {
 
       const {throwIfMissing = true} = options;
 
-      const name = this.__name ?? this.name;
+      const name = this.name;
 
       if (typeof name === 'string' && name !== '') {
         return name;
@@ -96,7 +96,7 @@ export const ComponentMixin = (Base = Object) => {
 
       validateComponentName(name, {allowInstances: false});
 
-      Object.defineProperty(this, '__name', {value: name, configurable: true});
+      Object.defineProperty(this, 'name', {value: name});
     }
 
     // === isNew mark ===
@@ -293,7 +293,13 @@ export const ComponentMixin = (Base = Object) => {
     // === Forking ===
 
     static fork() {
-      return class extends this {};
+      const name = this.getComponentName();
+
+      // Use a little trick to make sure the generated subclass
+      // has the 'name' attribute set properly
+      const {[name]: ForkedComponent} = {[name]: class extends this {}};
+
+      return ForkedComponent;
     }
 
     // eslint-disable-next-line no-unused-vars
