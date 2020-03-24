@@ -1,20 +1,22 @@
 import {Layer} from '@liaison/layer';
 import {ComponentClient} from '@liaison/component-client';
 import {possiblyAsync} from 'possibly-async';
+import {getTypeOf} from 'core-helpers';
 import ow from 'ow';
+
+import {isLayerClient} from './utilities';
 
 export class LayerClient {
   constructor(layerServer, options = {}) {
-    ow(layerServer, 'layerServer', ow.object);
     ow(
       options,
       'options',
       ow.object.exactShape({version: ow.optional.number.integer, baseComponents: ow.optional.array})
     );
 
-    if (typeof layerServer.receiveQuery !== 'function') {
+    if (typeof layerServer?.receiveQuery !== 'function') {
       throw new Error(
-        'The LayerClient constructor expects a LayerServer instance to be passed as the first parameter'
+        `Expected a layer server, but received a value of type '${getTypeOf(layerServer)}'`
       );
     }
 
@@ -49,5 +51,9 @@ export class LayerClient {
         });
       }
     });
+  }
+
+  static isLayerClient(object) {
+    return isLayerClient(object);
   }
 }

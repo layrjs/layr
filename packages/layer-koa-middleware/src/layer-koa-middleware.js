@@ -1,26 +1,28 @@
-import {LayerServer} from '@liaison/layer-server';
 import body from 'co-body';
 import sleep from 'sleep-promise';
+import {getTypeOf} from 'core-helpers';
 import ow from 'ow';
 
 const DEFAULT_LIMIT = '8mb';
 
-export function serveLayer(layerProvider, options = {}) {
-  ow(layerProvider, 'layerProvider', ow.function);
+export function serveLayer(layerServer, options = {}) {
+  if (typeof layerServer?.constructor?.isLayerServer !== 'function') {
+    throw new Error(
+      `Expected a layer server, but received a value of type '${getTypeOf(layerServer)}'`
+    );
+  }
+
   ow(
     options,
     'options',
     ow.object.exactShape({
-      version: ow.optional.number.integer,
       limit: ow.optional.any(ow.integer, ow.string.nonEmpty),
       delay: ow.optional.number,
       errorRate: ow.optional.number
     })
   );
 
-  const {version, limit = DEFAULT_LIMIT, delay = 0, errorRate = 0} = options;
-
-  const layerServer = new LayerServer(layerProvider, {version});
+  const {limit = DEFAULT_LIMIT, delay = 0, errorRate = 0} = options;
 
   return async function(ctx) {
     if (ctx.method !== 'POST') {

@@ -1,6 +1,8 @@
 import {ComponentServer} from '@liaison/component-server';
 import ow from 'ow';
 
+import {isLayerServer} from './utilities';
+
 export class LayerServer {
   constructor(layerProvider, options = {}) {
     ow(layerProvider, 'layerProvider', ow.function);
@@ -36,5 +38,9 @@ export class LayerServer {
     const {version} = options;
 
     return this._componentServer.receiveQuery(query, {version});
+  }
+
+  static isLayerServer(object) {
+    return isLayerServer(object);
   }
 }

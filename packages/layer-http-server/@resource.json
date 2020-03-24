@@ -7,6 +7,7 @@
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-http-server",
   "dependencies": {
+    "core-helpers": "^0.1.0",
     "debug": "^4.1.1",
     "koa": "^2.7.0",
     "@koa/cors": "^3.0.0",

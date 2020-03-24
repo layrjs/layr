@@ -1,5 +1,6 @@
-import {Layer} from '@liaison/layer';
 import {Component, attribute, expose} from '@liaison/component';
+import {Layer} from '@liaison/layer';
+import {LayerServer} from '@liaison/layer-server';
 import fetch from 'cross-fetch';
 
 import {LayerHTTPServer} from '../../..';
@@ -18,7 +19,7 @@ describe('LayerHTTPServer', () => {
       return new Layer([Movie], {name: 'backend'});
     };
 
-    server = new LayerHTTPServer(provider, {port: SERVER_PORT});
+    server = new LayerHTTPServer(new LayerServer(provider), {port: SERVER_PORT});
 
     await server.start();
   });
