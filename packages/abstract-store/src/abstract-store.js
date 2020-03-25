@@ -12,8 +12,9 @@ import ow from 'ow';
 import {isStore} from './utilities';
 
 export class AbstractStore {
-  constructor(storables) {
+  constructor(storables, options = {}) {
     ow(storables, 'storables', ow.optional.array);
+    ow(options, 'options', ow.object.exactShape({}));
 
     this._storables = Object.create(null);
 
@@ -22,6 +23,10 @@ export class AbstractStore {
         this.registerStorable(Storable);
       }
     }
+  }
+
+  static create(storables, options) {
+    return new this(storables, options);
   }
 
   // === Storable registration ===
