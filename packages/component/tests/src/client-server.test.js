@@ -5,7 +5,7 @@ import {Component, expose} from '../../..';
 
 describe('Client/server', () => {
   test('Using class properties', async () => {
-    const provider = function() {
+    const server = (() => {
       class Counter extends Component {
         @expose({get: true, set: true}) static value = 0;
 
@@ -14,10 +14,8 @@ describe('Client/server', () => {
         }
       }
 
-      return [Counter];
-    };
-
-    const server = new ComponentServer(provider);
+      return new ComponentServer([Counter]);
+    })();
 
     const client = new ComponentClient(server, {baseComponents: [Component]});
 
@@ -35,7 +33,7 @@ describe('Client/server', () => {
   });
 
   test('Using instance properties', async () => {
-    const provider = function() {
+    const server = (() => {
       class Counter extends Component {
         @expose({get: true, set: true}) value = 0;
 
@@ -46,10 +44,8 @@ describe('Client/server', () => {
         }
       }
 
-      return [Counter];
-    };
-
-    const server = new ComponentServer(provider);
+      return new ComponentServer([Counter]);
+    })();
 
     const client = new ComponentClient(server, {baseComponents: [Component]});
 

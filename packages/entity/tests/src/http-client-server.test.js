@@ -10,21 +10,17 @@ describe('HTTP client/server', () => {
   let server;
 
   beforeAll(async () => {
-    const provider = function() {
-      class Counter extends Entity {
-        @expose({get: true, set: true}) @primaryIdentifier() id;
+    class Counter extends Entity {
+      @expose({get: true, set: true}) @primaryIdentifier() id;
 
-        @expose({get: true, set: true}) @attribute('number') value = 0;
+      @expose({get: true, set: true}) @attribute('number') value = 0;
 
-        @expose({call: true}) increment() {
-          this.value++;
-        }
+      @expose({call: true}) increment() {
+        this.value++;
       }
+    }
 
-      return [Counter];
-    };
-
-    server = new ComponentHTTPServer(new ComponentServer(provider), {port: SERVER_PORT});
+    server = new ComponentHTTPServer(new ComponentServer([Counter]), {port: SERVER_PORT});
 
     await server.start();
   });

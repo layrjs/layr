@@ -11,15 +11,13 @@ describe('LayerHTTPServer', () => {
   let server;
 
   beforeAll(async () => {
-    const provider = function() {
-      class Movie extends Component {
-        @expose({get: true}) @attribute() static limit = 100;
-      }
+    class Movie extends Component {
+      @expose({get: true}) @attribute() static limit = 100;
+    }
 
-      return new Layer([Movie], {name: 'backend'});
-    };
+    const layer = new Layer([Movie], {name: 'backend'});
 
-    server = new LayerHTTPServer(new LayerServer(provider), {port: SERVER_PORT});
+    server = new LayerHTTPServer(new LayerServer(layer), {port: SERVER_PORT});
 
     await server.start();
   });

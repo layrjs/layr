@@ -23,8 +23,6 @@ class UnexposedComponent extends Component {
   }
 }
 
-const componentServer = new ComponentServer(() => [Clock.fork(), UnexposedComponent.fork()], {
-  version: 1
-});
+const componentServer = new ComponentServer([Clock, UnexposedComponent], {version: 1});
 
 export default componentServer;

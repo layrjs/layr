@@ -6,32 +6,62 @@ import {
   Entity,
   primaryIdentifier,
   secondaryIdentifier,
-  validators
+  validators,
+  createComponentMap,
+  getComponentFromComponentMap
 } from '@liaison/entity';
 
 import {ComponentServer} from '../../..';
 
 describe('ComponentServer', () => {
   test('Introspecting components', async () => {
-    const provider = function() {
-      class Movie extends Component {
-        @expose({call: true}) static find() {}
-        @attribute() static limit;
+    class Movie extends Component {
+      @expose({call: true}) static find() {}
+      @attribute() static limit;
 
-        @expose({get: true, set: true}) title = '';
-        @attribute() rating;
+      @expose({get: true, set: true}) title = '';
+      @attribute() rating;
+    }
+
+    class Cinema extends Component {
+      @expose({get: true}) @attribute() movies;
+    }
+
+    Cinema.registerRelatedComponent(Movie);
+
+    const componentMap = createComponentMap([Movie, Cinema]);
+
+    const componentProvider = {
+      getComponent(name, {autoFork = true, cache}) {
+        const Component = getComponentFromComponentMap(componentMap, name);
+
+        if (autoFork) {
+          let forkedComponents = cache.forkedComponents;
+
+          if (forkedComponents === undefined) {
+            forkedComponents = Object.create(null);
+            cache.forkedComponents = forkedComponents;
+          }
+
+          let ForkedComponent = forkedComponents[name];
+
+          if (ForkedComponent === undefined) {
+            ForkedComponent = Component.fork();
+            forkedComponents[name] = ForkedComponent;
+          }
+
+          return ForkedComponent;
+        }
+
+        return Component;
+      },
+
+      getComponentNames() {
+        return Object.keys(componentMap);
       }
-
-      class Cinema extends Component {
-        @expose({get: true}) @attribute() movies;
-      }
-
-      Cinema.registerRelatedComponent(Movie);
-
-      return [Movie, Cinema];
     };
 
-    const server = new ComponentServer(provider);
+    const server = new ComponentServer(componentProvider);
 
     const introspection = server.receiveQuery({'introspect=>': {'()': []}});
 
@@ -46,7 +76,7 @@ describe('ComponentServer', () => {
               {
                 name: 'title',
                 type: 'attribute',
-                default: {__function: "function () {\n          return '';\n        }"},
+                default: {__function: "function () {\n        return '';\n      }"},
                 exposure: {get: true, set: true}
               }
             ]
@@ -75,17 +105,13 @@ describe('ComponentServer', () => {
   });
 
   test('Introspecting models', async () => {
-    const provider = function() {
-      class Movie extends Model {
-        @expose({get: true, set: true})
-        @attribute('string', {validators: [validators.notEmpty()]})
-        title;
-      }
+    class Movie extends Model {
+      @expose({get: true, set: true})
+      @attribute('string', {validators: [validators.notEmpty()]})
+      title;
+    }
 
-      return [Movie];
-    };
-
-    const server = new ComponentServer(provider);
+    const server = new ComponentServer([Movie]);
 
     const introspection = server.receiveQuery({'introspect=>': {'()': []}});
 
@@ -117,21 +143,17 @@ describe('ComponentServer', () => {
   });
 
   test('Introspecting entities', async () => {
-    const provider = function() {
-      class User extends Entity {
-        @expose({get: true, set: true})
-        @primaryIdentifier()
-        id;
+    class User extends Entity {
+      @expose({get: true, set: true})
+      @primaryIdentifier()
+      id;
 
-        @expose({get: true, set: true})
-        @secondaryIdentifier()
-        email;
-      }
+      @expose({get: true, set: true})
+      @secondaryIdentifier()
+      email;
+    }
 
-      return [User];
-    };
-
-    const server = new ComponentServer(provider);
+    const server = new ComponentServer([User]);
 
     const introspection = server.receiveQuery({'introspect=>': {'()': []}});
 
@@ -165,19 +187,15 @@ describe('ComponentServer', () => {
   });
 
   test('Accessing attributes', async () => {
-    const provider = function() {
-      class Movie extends Component {
-        @attribute() static limit = 100;
-        @expose({get: true, set: true}) static offset = 0;
+    class Movie extends Component {
+      @attribute() static limit = 100;
+      @expose({get: true, set: true}) static offset = 0;
 
-        @expose({get: true, set: true}) title = '';
-        @attribute() rating;
-      }
+      @expose({get: true, set: true}) title = '';
+      @attribute() rating;
+    }
 
-      return [Movie];
-    };
-
-    const server = new ComponentServer(provider);
+    const server = new ComponentServer([Movie]);
 
     expect(
       server.receiveQuery({
@@ -257,41 +275,37 @@ describe('ComponentServer', () => {
   });
 
   test('Invoking methods', async () => {
-    const provider = function() {
-      class Movie extends Component {
-        @expose({call: true}) static exposedClassMethod() {
-          return 'exposedClassMethod()';
-        }
-
-        @expose({call: true}) static async exposedAsyncClassMethod() {
-          return 'exposedAsyncClassMethod()';
-        }
-
-        static unexposedClassMethod() {
-          return 'unexposedClassMethod()';
-        }
-
-        @expose({call: true}) exposedInstanceMethod() {
-          return 'exposedInstanceMethod()';
-        }
-
-        @expose({call: true}) async exposedAsyncInstanceMethod() {
-          return 'exposedAsyncInstanceMethod()';
-        }
-
-        unexposedInstanceMethod() {
-          return 'unexposedInstanceMethod()';
-        }
-
-        @expose({call: true}) exposedInstanceMethodWithParameters(param1, param2) {
-          return `exposedInstanceMethodWithParameters(${param1}, ${param2})`;
-        }
+    class Movie extends Component {
+      @expose({call: true}) static exposedClassMethod() {
+        return 'exposedClassMethod()';
       }
 
-      return [Movie];
-    };
+      @expose({call: true}) static async exposedAsyncClassMethod() {
+        return 'exposedAsyncClassMethod()';
+      }
 
-    const server = new ComponentServer(provider);
+      static unexposedClassMethod() {
+        return 'unexposedClassMethod()';
+      }
+
+      @expose({call: true}) exposedInstanceMethod() {
+        return 'exposedInstanceMethod()';
+      }
+
+      @expose({call: true}) async exposedAsyncInstanceMethod() {
+        return 'exposedAsyncInstanceMethod()';
+      }
+
+      unexposedInstanceMethod() {
+        return 'unexposedInstanceMethod()';
+      }
+
+      @expose({call: true}) exposedInstanceMethodWithParameters(param1, param2) {
+        return `exposedInstanceMethodWithParameters(${param1}, ${param2})`;
+      }
+    }
+
+    const server = new ComponentServer([Movie]);
 
     expect(
       server.receiveQuery({

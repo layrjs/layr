@@ -121,7 +121,7 @@ export function createComponentMap(components = []) {
   const componentMap = Object.create(null);
 
   for (const component of components) {
-    validateIsComponentClassOrInstance(component);
+    validateIsComponentClass(component);
 
     componentMap[component.getComponentName()] = component;
   }

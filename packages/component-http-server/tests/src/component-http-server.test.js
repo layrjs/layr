@@ -10,15 +10,11 @@ describe('ComponentHTTPServer', () => {
   let server;
 
   beforeAll(async () => {
-    const provider = function() {
-      class Movie extends Component {
-        @expose({get: true}) @attribute() static limit = 100;
-      }
+    class Movie extends Component {
+      @expose({get: true}) @attribute() static limit = 100;
+    }
 
-      return [Movie];
-    };
-
-    server = new ComponentHTTPServer(new ComponentServer(provider), {port: SERVER_PORT});
+    server = new ComponentHTTPServer(new ComponentServer([Movie]), {port: SERVER_PORT});
 
     await server.start();
   });

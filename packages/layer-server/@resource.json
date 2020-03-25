@@ -7,6 +7,7 @@
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/layer-server",
   "dependencies": {
+    "core-helpers": "^0.1.0",
     "@liaison/component-server": "^0.1.0",
     "ow": "^0.15.0"
   },

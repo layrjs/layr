@@ -1,12 +1,12 @@
 import {
-  isComponentClass,
   isComponentClassOrInstance,
   validateComponentName,
   getComponentClassNameFromComponentInstanceName,
   serialize,
   deserialize,
   createComponentMap,
-  getComponentFromComponentMap
+  getComponentFromComponentMap,
+  getTypeof
 } from '@liaison/component';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
@@ -16,7 +16,6 @@ import {isComponentServer} from './utilities';
 
 export class ComponentServer {
   constructor(componentProvider, options = {}) {
-    ow(componentProvider, 'componentProvider', ow.function);
     ow(
       options,
       'options',
@@ -25,9 +24,86 @@ export class ComponentServer {
 
     const {name, version} = options;
 
+    componentProvider = this._normalizeComponentProvider(componentProvider);
+
     this._componentProvider = componentProvider;
     this._name = name;
     this._version = version;
+  }
+
+  _normalizeComponentProvider(componentProvider) {
+    if (Array.isArray(componentProvider)) {
+      const components = componentProvider;
+
+      componentProvider = this._createComponentProvider(components);
+
+      return componentProvider;
+    }
+
+    if (typeof componentProvider === 'object' && componentProvider !== null) {
+      this._validateComponentProvider(componentProvider);
+
+      return componentProvider;
+    }
+
+    throw new Error(
+      `Expected an array of components or a component provider object, but received a value of type '${getTypeof(
+        componentProvider
+      )}'`
+    );
+  }
+
+  _createComponentProvider(components) {
+    const componentMap = createComponentMap(components);
+
+    const getComponent = function(name, {autoFork = true, cache} = {}) {
+      const Component = getComponentFromComponentMap(componentMap, name);
+
+      if (autoFork) {
+        let forkedComponents = cache.forkedComponents;
+
+        if (forkedComponents === undefined) {
+          forkedComponents = Object.create(null);
+          cache.forkedComponents = forkedComponents;
+        }
+
+        let ForkedComponent = forkedComponents[name];
+
+        if (ForkedComponent === undefined) {
+          ForkedComponent = Component.fork();
+          forkedComponents[name] = ForkedComponent;
+        }
+
+        return ForkedComponent;
+      }
+
+      return Component;
+    };
+
+    let componentNames;
+
+    const getComponentNames = function() {
+      if (componentNames === undefined) {
+        componentNames = Object.keys(componentMap);
+      }
+
+      return componentNames;
+    };
+
+    return {getComponent, getComponentNames};
+  }
+
+  _validateComponentProvider(componentProvider) {
+    if (
+      !(
+        typeof componentProvider.getComponent === 'function' &&
+        typeof componentProvider.getComponentNames === 'function'
+      )
+    ) {
+      throw new Error(
+        `A component provider should be an object composed of two methods: getComponent() and getComponentNames()`
+      );
+    }
   }
 
   receiveQuery(query, options = {}) {
@@ -38,11 +114,9 @@ export class ComponentServer {
 
     this.validateVersion(clientVersion);
 
-    const components = this.getComponents();
+    const root = this.getRoot();
 
-    const root = this.getRoot(components);
-
-    const componentMap = createComponentMap(components);
+    const cache = {};
 
     const componentGetter = name => {
       const isInstanceName = validateComponentName(name) === 'componentInstanceName';
@@ -51,7 +125,7 @@ export class ComponentServer {
         ? getComponentClassNameFromComponentInstanceName(name)
         : name;
 
-      const Component = getComponentFromComponentMap(componentMap, className);
+      const Component = this._componentProvider.getComponent(className, {autoFork: true, cache});
 
       return isInstanceName ? Component.prototype : Component;
     };
@@ -114,52 +188,40 @@ export class ComponentServer {
     }
   }
 
-  getComponents() {
-    const components = this._componentProvider();
+  getRoot() {
+    if (this._root === undefined) {
+      this._root = Object.create(null);
 
-    if (typeof components?.[Symbol.iterator] !== 'function') {
-      throw new Error("The 'componentProvider' function didn't return an iterable object");
-    }
+      let introspectedComponentServer;
 
-    for (const Component of components) {
-      if (!isComponentClass(Component)) {
-        throw new Error(
-          "The 'componentProvider' function returned an iterable containing an item that is not a component class"
-        );
-      }
-    }
+      this._root.introspect = () => {
+        if (introspectedComponentServer === undefined) {
+          introspectedComponentServer = {};
 
-    return components;
-  }
+          if (this._name !== undefined) {
+            introspectedComponentServer.name = this._name;
+          }
 
-  getRoot(components) {
-    const componentServer = this;
+          const introspectedComponents = [];
 
-    const root = Object.create(null);
+          for (const name of this._componentProvider.getComponentNames()) {
+            const Component = this._componentProvider.getComponent(name, {autoFork: false});
 
-    root.introspect = function() {
-      const introspectedComponentServer = {};
+            const introspectedComponent = Component.introspect();
 
-      if (componentServer._name !== undefined) {
-        introspectedComponentServer.name = componentServer._name;
-      }
+            if (introspectedComponent !== undefined) {
+              introspectedComponents.push(introspectedComponent);
+            }
+          }
 
-      const introspectedComponents = [];
-
-      for (const Component of components) {
-        const introspectedComponent = Component.introspect();
-
-        if (introspectedComponent !== undefined) {
-          introspectedComponents.push(introspectedComponent);
+          introspectedComponentServer.components = introspectedComponents;
         }
-      }
 
-      introspectedComponentServer.components = introspectedComponents;
+        return introspectedComponentServer;
+      };
+    }
 
-      return introspectedComponentServer;
-    };
-
-    return root;
+    return this._root;
   }
 
   static isComponentServer(object) {

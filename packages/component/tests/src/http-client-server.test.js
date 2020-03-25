@@ -10,19 +10,15 @@ describe('HTTP client/server', () => {
   let server;
 
   beforeAll(async () => {
-    const provider = function() {
-      class Counter extends Component {
-        @expose({get: true, set: true}) static value = 0;
+    class Counter extends Component {
+      @expose({get: true, set: true}) static value = 0;
 
-        @expose({call: true}) static increment() {
-          this.value++;
-        }
+      @expose({call: true}) static increment() {
+        this.value++;
       }
+    }
 
-      return [Counter];
-    };
-
-    server = new ComponentHTTPServer(new ComponentServer(provider), {port: SERVER_PORT});
+    server = new ComponentHTTPServer(new ComponentServer([Counter]), {port: SERVER_PORT});
 
     await server.start();
   });

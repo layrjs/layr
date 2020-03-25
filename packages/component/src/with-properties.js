@@ -450,7 +450,7 @@ export const WithProperties = (Base = Object) => {
     introspectProperties() {
       const introspectedProperties = [];
 
-      for (const property of this.getProperties()) {
+      for (const property of this.getProperties({autoFork: false})) {
         const introspectedProperty = property.introspect();
 
         if (introspectedProperty !== undefined) {

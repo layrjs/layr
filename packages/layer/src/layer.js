@@ -148,8 +148,7 @@ export class Layer {
 
     return {
       *[Symbol.iterator]() {
-        // eslint-disable-next-line guard-for-in
-        for (const name in layer._components) {
+        for (const name of layer.getComponentNames()) {
           const Component = layer.getComponent(name);
 
           if (filter !== undefined && !filter(Component)) {
@@ -157,6 +156,19 @@ export class Layer {
           }
 
           yield Component;
+        }
+      }
+    };
+  }
+
+  getComponentNames() {
+    const layer = this;
+
+    return {
+      *[Symbol.iterator]() {
+        // eslint-disable-next-line guard-for-in
+        for (const name in layer._components) {
+          yield name;
         }
       }
     };

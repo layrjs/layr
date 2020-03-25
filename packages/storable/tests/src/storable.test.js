@@ -136,7 +136,7 @@ describe('Storable', () => {
         // eslint-disable-next-line no-unused-vars
         const store = new MockStore([User], {initialCollections: getInitialCollections()});
 
-        return new ComponentServer(() => [User.fork()]);
+        return new ComponentServer([User]);
       })();
 
       const client = new ComponentClient(server, {baseComponents: [Storable]});
