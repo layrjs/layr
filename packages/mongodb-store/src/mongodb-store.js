@@ -14,10 +14,12 @@ const debug = debugModule('liaison:mongodb-store');
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 
 export class MongoDBStore extends AbstractStore {
-  constructor(connectionString, storables) {
-    ow(connectionString, ow.string.url);
+  constructor(storables, options = {}) {
+    ow(options, 'options', ow.object.partialShape({connectionString: ow.string.url}));
 
-    super(storables);
+    const {connectionString, ...otherOptions} = options;
+
+    super(storables, otherOptions);
 
     this._connectionString = connectionString;
   }

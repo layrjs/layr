@@ -5,8 +5,10 @@ import isEmpty from 'lodash/isEmpty';
 import sortOn from 'sort-on';
 
 export class MockStore extends AbstractStore {
-  constructor(storables, {initialCollections = {}} = {}) {
-    super(storables);
+  constructor(storables, options = {}) {
+    const {initialCollections = {}, ...otherOptions} = options;
+
+    super(storables, otherOptions);
 
     this._collections = initialCollections;
   }

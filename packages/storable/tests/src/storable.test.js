@@ -97,15 +97,15 @@ describe('Storable', () => {
 
       await seedMongoDB(connectionString);
 
-      store = new MongoDBStore(connectionString, [User]);
+      store = new MongoDBStore([User], {connectionString});
 
       await store.connect();
     });
 
     afterEach(async () => {
-      await store.disconnect();
+      await store?.disconnect();
 
-      await server.stop();
+      await server?.stop();
     });
 
     testOperations(function() {
