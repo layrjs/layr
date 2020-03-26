@@ -7,24 +7,24 @@ export function deserialize(value, options = {}) {
     options,
     'options',
     ow.object.partialShape({
-      objectHandler: ow.optional.function,
-      functionHandler: ow.optional.function,
+      objectDeserializer: ow.optional.function,
+      functionDeserializer: ow.optional.function,
       componentGetter: ow.optional.function,
       deserializeFunctions: ow.optional.boolean
     })
   );
 
   const {
-    objectHandler: originalObjectHandler,
-    functionHandler: originalFunctionHandler,
+    objectDeserializer: originalObjectDeserializer,
+    functionDeserializer: originalFunctionDeserializer,
     componentGetter,
     deserializeFunctions = false,
     ...otherOptions
   } = options;
 
-  const objectHandler = function(object) {
-    if (originalObjectHandler !== undefined) {
-      const deserializedObject = originalObjectHandler(object);
+  const objectDeserializer = function(object) {
+    if (originalObjectDeserializer !== undefined) {
+      const deserializedObject = originalObjectDeserializer(object);
 
       if (deserializedObject !== undefined) {
         return deserializedObject;
@@ -46,12 +46,12 @@ export function deserialize(value, options = {}) {
     return component.deserialize(object, options);
   };
 
-  let functionHandler;
+  let functionDeserializer;
 
   if (deserializeFunctions) {
-    functionHandler = function(object) {
-      if (originalFunctionHandler !== undefined) {
-        const deserializedFunction = originalFunctionHandler(object);
+    functionDeserializer = function(object) {
+      if (originalFunctionDeserializer !== undefined) {
+        const deserializedFunction = originalFunctionDeserializer(object);
 
         if (deserializedFunction !== undefined) {
           return deserializedFunction;
@@ -69,7 +69,11 @@ export function deserialize(value, options = {}) {
       return possiblyAsync.mapValues(
         serializedAttributes,
         attributeValue =>
-          simpleDeserialize(attributeValue, {...otherOptions, objectHandler, functionHandler}),
+          simpleDeserialize(attributeValue, {
+            ...otherOptions,
+            objectDeserializer,
+            functionDeserializer
+          }),
         {
           then: deserializedAttributes => {
             const {__context: context} = deserializedAttributes;
@@ -82,7 +86,7 @@ export function deserialize(value, options = {}) {
     };
   }
 
-  return simpleDeserialize(value, {...otherOptions, objectHandler, functionHandler});
+  return simpleDeserialize(value, {...otherOptions, objectDeserializer, functionDeserializer});
 }
 
 export function deserializeFunction(functionCode, context) {

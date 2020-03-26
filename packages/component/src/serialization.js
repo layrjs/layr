@@ -10,22 +10,22 @@ export function serialize(value, options = {}) {
     options,
     'options',
     ow.object.partialShape({
-      objectHandler: ow.optional.function,
-      functionHandler: ow.optional.function,
+      objectSerializer: ow.optional.function,
+      functionSerializer: ow.optional.function,
       serializeFunctions: ow.optional.boolean
     })
   );
 
   const {
-    objectHandler: originalObjectHandler,
-    functionHandler: originalFunctionHandler,
+    objectSerializer: originalObjectSerializer,
+    functionSerializer: originalFunctionSerializer,
     serializeFunctions = false,
     ...otherOptions
   } = options;
 
-  const objectHandler = function(object) {
-    if (originalObjectHandler !== undefined) {
-      const serializedObject = originalObjectHandler(object);
+  const objectSerializer = function(object) {
+    if (originalObjectSerializer !== undefined) {
+      const serializedObject = originalObjectSerializer(object);
 
       if (serializedObject !== undefined) {
         return serializedObject;
@@ -37,12 +37,12 @@ export function serialize(value, options = {}) {
     }
   };
 
-  let functionHandler;
+  let functionSerializer;
 
   if (serializeFunctions) {
-    functionHandler = function(func) {
-      if (originalFunctionHandler !== undefined) {
-        const serializedFunction = originalFunctionHandler(func);
+    functionSerializer = function(func) {
+      if (originalFunctionSerializer !== undefined) {
+        const serializedFunction = originalFunctionSerializer(func);
 
         if (serializedFunction !== undefined) {
           return serializedFunction;
@@ -60,7 +60,7 @@ export function serialize(value, options = {}) {
       return possiblyAsync.mapValues(
         func,
         attributeValue =>
-          simpleSerialize(attributeValue, {...otherOptions, objectHandler, functionHandler}),
+          simpleSerialize(attributeValue, {...otherOptions, objectSerializer, functionSerializer}),
         {
           then: serializedAttributes => {
             Object.assign(serializedFunction, serializedAttributes);
@@ -71,7 +71,7 @@ export function serialize(value, options = {}) {
     };
   }
 
-  return simpleSerialize(value, {...otherOptions, objectHandler, functionHandler});
+  return simpleSerialize(value, {...otherOptions, objectSerializer, functionSerializer});
 }
 
 export function serializeFunction(func) {
