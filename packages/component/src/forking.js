@@ -4,13 +4,13 @@ import ow from 'ow';
 import {isComponentClassOrInstance} from './utilities';
 
 export function fork(value, options = {}) {
-  ow(options, 'options', ow.object.partialShape({objectHandler: ow.optional.function}));
+  ow(options, 'options', ow.object.partialShape({objectForker: ow.optional.function}));
 
-  const {objectHandler: originalObjectHandler, ...otherOptions} = options;
+  const {objectForker: originalObjectForker, ...otherOptions} = options;
 
-  const objectHandler = function(object) {
-    if (originalObjectHandler !== undefined) {
-      const forkedObject = originalObjectHandler(object);
+  const objectForker = function(object) {
+    if (originalObjectForker !== undefined) {
+      const forkedObject = originalObjectForker(object);
 
       if (forkedObject !== undefined) {
         return forkedObject;
@@ -22,5 +22,5 @@ export function fork(value, options = {}) {
     }
   };
 
-  return simpleFork(value, {...otherOptions, objectHandler});
+  return simpleFork(value, {...otherOptions, objectForker});
 }

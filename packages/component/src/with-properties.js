@@ -35,13 +35,7 @@ export const WithProperties = (Base = Object) => {
 
     constructor(object = {}, options = {}) {
       ow(object, 'object', ow.object);
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({
-          attributeSelector: ow.optional.any
-        })
-      );
+      ow(options, 'options', ow.object.exactShape({attributeSelector: ow}));
 
       let {attributeSelector = true} = options;
 
@@ -317,6 +311,22 @@ export const WithProperties = (Base = Object) => {
     },
 
     // === Attribute selectors ===
+
+    getAttributeSelector(options = {}) {
+      ow(options, 'options', ow.object.exactShape({setAttributesOnly: ow.optional.boolean}));
+
+      const {setAttributesOnly = false} = options;
+
+      let attributeSelector = {};
+
+      for (const attribute of this.getAttributes({setAttributesOnly})) {
+        const name = attribute.getName();
+
+        attributeSelector = AttributeSelector.set(attributeSelector, name, true);
+      }
+
+      return attributeSelector;
+    },
 
     expandAttributeSelector(attributeSelector, options = {}) {
       ow(

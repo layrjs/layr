@@ -381,6 +381,40 @@ describe('WithProperties', () => {
       ]);
     });
 
+    test('getAttributeSelector()', async () => {
+      class Movie extends Component {
+        @attribute() title = '';
+        @attribute() duration = 0;
+      }
+
+      expect(Movie.prototype.getAttributeSelector()).toStrictEqual({
+        title: true,
+        duration: true
+      });
+
+      expect(Movie.prototype.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({});
+
+      const movie = Movie.prototype.deserialize();
+
+      expect(movie.getAttributeSelector()).toStrictEqual({
+        title: true,
+        duration: true
+      });
+
+      expect(movie.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({});
+
+      movie.title = 'Inception';
+
+      expect(movie.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({title: true});
+
+      movie.duration = 120;
+
+      expect(movie.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({
+        title: true,
+        duration: true
+      });
+    });
+
     test('expandAttributeSelector()', async () => {
       class Movie extends Component {
         @attribute() title = '';

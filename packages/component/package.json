@@ -19,6 +19,7 @@
     "lodash": "^4.17.15",
     "ow": "^0.15.0",
     "possibly-async": "^0.2.0",
+    "simple-cloning": "^0.1.0",
     "simple-forking": "^0.1.0",
     "simple-serialization": "^0.2.0"
   },

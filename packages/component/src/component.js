@@ -5,6 +5,7 @@ import a from 'indefinite';
 import ow from 'ow';
 
 import {WithProperties} from './with-properties';
+import {clone} from './cloning';
 import {serialize} from './serialization';
 import {deserialize} from './deserialization';
 import {AttributeSelector} from './attribute-selector';
@@ -290,6 +291,37 @@ export const ComponentMixin = (Base = Object) => {
       Object.defineProperty(this, '__layer', {value: layer});
     }
 
+    // === Cloning ===
+
+    static clone() {
+      return this;
+    }
+
+    clone(options = {}) {
+      ow(options, 'options', ow.object);
+
+      const attributeValues = {};
+
+      for (const attribute of this.getAttributes({setAttributesOnly: true})) {
+        const name = attribute.getName();
+        const value = attribute.getValue();
+
+        attributeValues[name] = value;
+      }
+
+      const clonedComponent = this.constructor.__instantiate(attributeValues, {
+        isNew: this.isNew()
+      });
+
+      if (clonedComponent === this) {
+        return this; // Optimization
+      }
+
+      clonedComponent.__cloneAttributes(attributeValues, options);
+
+      return clonedComponent;
+    }
+
     // === Forking ===
 
     static fork() {
@@ -504,6 +536,18 @@ export const ComponentMixin = (Base = Object) => {
   }
 
   const classAndInstanceMethods = {
+    // === Cloning ===
+
+    __cloneAttributes(attributeValues, options) {
+      for (const [name, value] of Object.entries(attributeValues)) {
+        const attribute = this.getAttribute(name);
+
+        const clonedValue = clone(value, options);
+
+        attribute.setValue(clonedValue);
+      }
+    },
+
     // === Forking ===
 
     isForkOf(component) {
@@ -524,7 +568,7 @@ export const ComponentMixin = (Base = Object) => {
         options,
         'options',
         ow.object.partialShape({
-          attributeSelector: ow.optional.any,
+          attributeSelector: ow,
           attributeFilter: ow.optional.function
         })
       );
