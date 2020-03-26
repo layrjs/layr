@@ -6,6 +6,7 @@ import ow from 'ow';
 
 import {WithProperties} from './with-properties';
 import {clone} from './cloning';
+import {merge} from './merging';
 import {serialize} from './serialization';
 import {deserialize} from './deserialization';
 import {AttributeSelector} from './attribute-selector';
@@ -14,6 +15,7 @@ import {
   isComponentInstance,
   isComponentClassOrInstance,
   validateIsComponentClass,
+  validateIsComponentInstance,
   validateComponentName,
   getComponentClassNameFromComponentInstanceName,
   getComponentInstanceNameFromComponentClassName,
@@ -353,6 +355,36 @@ export const ComponentMixin = (Base = Object) => {
       return forkedComponent;
     }
 
+    // === Merging ===
+
+    static merge(ForkedComponent, options = {}) {
+      ow(options, 'options', ow.object);
+
+      validateIsComponentClass(ForkedComponent);
+
+      if (!isPrototypeOf(this, ForkedComponent)) {
+        throw new Error('Cannot merge a component that is not a fork of the target component');
+      }
+
+      this.__mergeAttributes(ForkedComponent, options);
+
+      return this;
+    }
+
+    merge(forkedComponent, options = {}) {
+      ow(options, 'options', ow.object);
+
+      validateIsComponentInstance(forkedComponent);
+
+      if (!isPrototypeOf(this, forkedComponent)) {
+        throw new Error('Cannot merge a component that is not a fork of the target component');
+      }
+
+      this.__mergeAttributes(forkedComponent, options);
+
+      return this;
+    }
+
     // === Serialization ===
 
     static serialize(options = {}) {
@@ -558,6 +590,31 @@ export const ComponentMixin = (Base = Object) => {
       }
 
       return isPrototypeOf(component, this);
+    },
+
+    // === Merging ===
+
+    __mergeAttributes(forkedComponent, options) {
+      for (const forkedAttribute of forkedComponent.getAttributes()) {
+        const name = forkedAttribute.getName();
+
+        const attribute = this.getAttribute(name);
+
+        if (!forkedAttribute.isSet()) {
+          if (attribute.isSet()) {
+            attribute.unsetValue();
+          }
+
+          continue;
+        }
+
+        const forkedValue = forkedAttribute.getValue();
+        const value = attribute.getValue({throwIfUnset: false});
+
+        const mergedValue = merge(value, forkedValue, options);
+
+        attribute.setValue(mergedValue);
+      }
     },
 
     // === Serialization ===
