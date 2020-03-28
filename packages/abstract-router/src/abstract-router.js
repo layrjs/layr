@@ -7,10 +7,11 @@ import {isRouter} from './utilities';
 
 export class AbstractRouter extends Observable() {
   constructor(routables, options = {}) {
-    ow(routables, 'routables', ow.optional.array);
     ow(options, 'options', ow.object.exactShape({plugins: ow.optional.array}));
 
     super();
+
+    routables = normalizeRoutables(routables);
 
     const {plugins} = options;
 
@@ -211,4 +212,34 @@ export class AbstractRouter extends Observable() {
   static isRouter(object) {
     return isRouter(object);
   }
+}
+
+function normalizeRoutables(routables) {
+  ow(routables, 'routables', ow.optional.object);
+
+  if (routables === undefined) {
+    return undefined;
+  }
+
+  if (Array.isArray(routables)) {
+    return routables;
+  }
+
+  if (typeof routables?.constructor?.isLayer === 'function') {
+    const layer = routables;
+
+    routables = [];
+
+    for (const Routable of layer.getComponents({filter: isRoutableClass})) {
+      routables.push(Routable);
+    }
+
+    return routables;
+  }
+
+  throw new Error(
+    `Expected a layer or an array of routable components, but received a value of type '${getTypeOf(
+      routables
+    )}'`
+  );
 }

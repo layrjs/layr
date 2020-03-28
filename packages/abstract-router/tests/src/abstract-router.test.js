@@ -1,5 +1,6 @@
 import {Component} from '@liaison/component';
 import {Routable, route} from '@liaison/routable';
+import {Layer} from '@liaison/layer';
 
 import {AbstractRouter, isRouter} from '../../..';
 
@@ -7,10 +8,21 @@ describe('AbstractRouter', () => {
   test('new AbstractRouter()', async () => {
     class Movie extends Routable(Component) {}
 
-    const router = new AbstractRouter([Movie]);
+    let router = new AbstractRouter([Movie]);
 
     expect(isRouter(router)).toBe(true);
-    expect(router.getRoutable('Movie')).toBe(Movie);
+
+    expect(router.getRoutables()).toEqual([Movie]);
+
+    class Home extends Routable(Component) {}
+
+    class Common extends Component {}
+
+    const layer = new Layer([Home, Common]);
+
+    router = new AbstractRouter(layer);
+
+    expect(router.getRoutables()).toEqual([Home]);
   });
 
   describe('Routable registration', () => {
