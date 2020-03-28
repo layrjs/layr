@@ -1,16 +1,16 @@
-import {normalizeURL} from '../../..';
+import {normalizeURL, stringifyURL} from '../../..';
 
 describe('Utilities', () => {
-  test('normalizeURL()', async () => {
+  test('normalizeURL() and stringifyURL()', async () => {
     const url = 'https://username:password@domain.com:80/path?query=1#fragment';
     const normalizedURL = normalizeURL(url);
 
     expect(normalizedURL).toBeInstanceOf(URL);
-    expect(normalizedURL.toString()).toBe(url);
+    expect(stringifyURL(normalizedURL)).toBe(url);
     expect(normalizeURL(normalizedURL)).toBe(normalizedURL);
 
-    expect(normalizeURL('/movies').toString()).toBe('liaison:/movies');
-    expect(normalizeURL('movies').toString()).toBe('liaison:/movies');
+    expect(stringifyURL(normalizeURL('/movies'))).toBe('/movies');
+    expect(stringifyURL(normalizeURL('movies'))).toBe('/movies');
 
     expect(() => normalizeURL(123)).toThrow(
       "Expected a string or an URL instance, but received a value of type 'number'"
