@@ -1,0 +1,43 @@
+{
+  "name": "@liaison/memory-router",
+  "version": "0.1.0",
+  "description": "A simple router for Liaison that works without a browser",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/memory-router",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/node/cjs",
+  "module": "dist/node/esm",
+  "browser": "dist/browser/esm",
+  "dependencies": {
+    "@liaison/abstract-router": "^0.1.0",
+    "@liaison/routable": "^0.1.0",
+    "ow": "^0.15.0"
+  },
+  "@managed": {
+    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
+    "properties": [
+      "name",
+      "version",
+      "private",
+      "description",
+      "keywords",
+      "homepage",
+      "author",
+      "contributors",
+      "license",
+      "repository",
+      "files",
+      "main",
+      "module",
+      "browser",
+      "bin",
+      "dependencies",
+      "peerDependencies",
+      "optionalDependencies",
+      "devDependencies"
+    ]
+  }
+}

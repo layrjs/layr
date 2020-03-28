@@ -1,0 +1,3 @@
+{
+  "extends": ["@1place/eslint-config-1place/react"]
+}

@@ -1,4 +1,4 @@
-import {isRoutableClass, normalizeURL} from '@liaison/routable';
+import {isRoutableClass, normalizeURL, stringifyURL} from '@liaison/routable';
 import {Observable} from '@liaison/observable';
 import {getTypeOf} from 'core-helpers';
 import ow from 'ow';
@@ -137,11 +137,11 @@ export class AbstractRouter extends Observable() {
   // === History ===
 
   getCurrentURL() {
-    return this._getCurrentURL();
+    return stringifyURL(this._getCurrentURL());
   }
 
   getCurrentParams() {
-    const url = this.getCurrentURL();
+    const url = this._getCurrentURL();
 
     return this.getParamsForURL(url);
   }
@@ -151,7 +151,7 @@ export class AbstractRouter extends Observable() {
 
     const {fallback} = options;
 
-    const url = this.getCurrentURL();
+    const url = this._getCurrentURL();
 
     return this.callRouteForURL(url, {fallback});
   }
@@ -170,12 +170,6 @@ export class AbstractRouter extends Observable() {
     this._redirect(normalizedURL);
   }
 
-  reload(url) {
-    const normalizedURL = normalizeURL(url);
-
-    this._reload(normalizedURL);
-  }
-
   go(delta) {
     ow(delta, 'delta', ow.number.integer);
 
@@ -191,7 +185,7 @@ export class AbstractRouter extends Observable() {
   }
 
   getHistoryLength() {
-    this._getHistoryLength();
+    return this._getHistoryLength();
   }
 
   // === Customization ===
