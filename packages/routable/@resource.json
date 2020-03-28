@@ -1,0 +1,17 @@
+{
+  "@import": "1place/npm-package#^0.2.0",
+  "name": "@liaison/routable",
+  "version": "0.1.0",
+  "description": "Makes the methods of your Liaison components callable by URL",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/routable",
+  "dependencies": {
+    "core-helpers": "^0.1.0",
+    "path-parser": "^6.1.0",
+    "ow": "^0.15.0"
+  },
+  "tests": {
+    "@include": "./tests"
+  }
+}
