@@ -1,4 +1,5 @@
 import {AbstractRouter} from '@liaison/abstract-router';
+import {normalizeURL, stringifyURL} from '@liaison/routable';
 
 export class BrowserRouter extends AbstractRouter {
   constructor(routables, options) {
@@ -14,15 +15,15 @@ export class BrowserRouter extends AbstractRouter {
   }
 
   _getCurrentURL() {
-    return new URL(window.location);
+    return normalizeURL(window.location.href);
   }
 
   _navigate(url) {
-    window.history.pushState(null, null, url);
+    window.history.pushState(null, null, stringifyURL(url));
   }
 
   _redirect(url) {
-    window.history.replaceState(null, null, url);
+    window.history.replaceState(null, null, stringifyURL(url));
   }
 
   _go(delta) {
