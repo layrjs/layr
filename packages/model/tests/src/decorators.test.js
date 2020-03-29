@@ -1,4 +1,6 @@
-import {Model, attribute, isModelAttribute, isAttribute} from '../../..';
+import {isAttribute} from '@liaison/component';
+
+import {Model, attribute, isModelAttribute} from '../../..';
 
 describe('Decorators', () => {
   test('@attribute()', async () => {

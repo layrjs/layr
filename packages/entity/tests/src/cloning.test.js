@@ -1,4 +1,6 @@
-import {Component, Entity, primaryIdentifier, attribute} from '../../..';
+import {Component} from '@liaison/component';
+
+import {Entity, primaryIdentifier, attribute} from '../../..';
 
 describe('Cloning', () => {
   test('Simple entity', async () => {

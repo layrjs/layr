@@ -1,4 +1,7 @@
 {
+  "dependencies": {
+    "@liaison/component": "^0.1.0"
+  },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
     "properties": [

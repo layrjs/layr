@@ -1,4 +1,19 @@
-export * from '@liaison/model';
+export {
+  AttributeSelector,
+  property,
+  attribute,
+  method,
+  inherit,
+  expose,
+  clone,
+  fork,
+  merge,
+  serialize,
+  deserialize,
+  getTypeOf,
+  getHumanTypeOf,
+  composeDescription
+} from '@liaison/model';
 
 export * from './decorators';
 export * from './entity-manager';

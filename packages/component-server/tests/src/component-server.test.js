@@ -1,15 +1,11 @@
 import {
   Component,
   expose,
-  Model,
-  attribute,
-  Entity,
-  primaryIdentifier,
-  secondaryIdentifier,
-  validators,
   createComponentMap,
   getComponentFromComponentMap
-} from '@liaison/entity';
+} from '@liaison/component';
+import {Model, attribute, validators} from '@liaison/model';
+import {Entity, primaryIdentifier, secondaryIdentifier} from '@liaison/entity';
 
 import {ComponentServer} from '../../..';
 

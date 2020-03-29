@@ -1,13 +1,11 @@
+import {Model, validators, StringType, NumberType} from '@liaison/model';
+
 import {
-  Model,
   Entity,
   primaryIdentifier,
   isPrimaryIdentifierAttribute,
   secondaryIdentifier,
-  isSecondaryIdentifierAttribute,
-  validators,
-  StringType,
-  NumberType
+  isSecondaryIdentifierAttribute
 } from '../../..';
 
 describe('Decorators', () => {

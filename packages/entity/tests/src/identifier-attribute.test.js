@@ -1,4 +1,6 @@
-import {Entity, IdentifierAttribute, isIdentifierAttribute, StringType, NumberType} from '../../..';
+import {StringType, NumberType} from '@liaison/model';
+
+import {Entity, IdentifierAttribute, isIdentifierAttribute} from '../../..';
 
 describe('IdentifierAttribute', () => {
   test('Creation', async () => {

@@ -1,10 +1,10 @@
+import {StringType, NumberType} from '@liaison/model';
+
 import {
   Entity,
   PrimaryIdentifierAttribute,
   isPrimaryIdentifierAttribute,
-  primaryIdentifierAttributeStringDefaultValue,
-  StringType,
-  NumberType
+  primaryIdentifierAttributeStringDefaultValue
 } from '../../..';
 
 describe('PrimaryIdentifierAttribute', () => {

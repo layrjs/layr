@@ -1,9 +1,6 @@
-import {
-  Entity,
-  SecondaryIdentifierAttribute,
-  isSecondaryIdentifierAttribute,
-  StringType
-} from '../../..';
+import {StringType} from '@liaison/model';
+
+import {Entity, SecondaryIdentifierAttribute, isSecondaryIdentifierAttribute} from '../../..';
 
 describe('SecondaryIdentifierAttribute', () => {
   test('Creation', async () => {

@@ -1,9 +1,6 @@
+import {Component, isComponentClass} from '@liaison/component';
+import {Model, isModelClass, isModelAttribute} from '@liaison/model';
 import {
-  Component,
-  isComponentClass,
-  Model,
-  isModelClass,
-  isModelAttribute,
   Entity,
   isEntityClass,
   isPrimaryIdentifierAttribute,
