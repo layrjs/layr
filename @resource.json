@@ -1,7 +1,13 @@
 {
   "@import": "1place/js-repository#^0.1.0",
+  "abstractRouter": {
+    "@include": "./packages/abstract-router"
+  },
   "abstractStore": {
     "@include": "./packages/abstract-store"
+  },
+  "browserRouter": {
+    "@include": "./packages/browser-router"
   },
   "component": {
     "@include": "./packages/component"
@@ -42,6 +48,9 @@
   "layerServer": {
     "@include": "./packages/layer-server"
   },
+  "memoryRouter": {
+    "@include": "./packages/memory-router"
+  },
   "model": {
     "@include": "./packages/model"
   },
@@ -50,6 +59,9 @@
   },
   "observable": {
     "@include": "./packages/observable"
+  },
+  "routable": {
+    "@include": "./packages/routable"
   },
   "storable": {
     "@include": "./packages/storable"

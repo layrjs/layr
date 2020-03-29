@@ -163,26 +163,32 @@ export class AbstractRouter extends Observable() {
     const normalizedURL = normalizeURL(url);
 
     this._navigate(normalizedURL);
+
+    this.callObservers();
   }
 
   redirect(url) {
     const normalizedURL = normalizeURL(url);
 
     this._redirect(normalizedURL);
+
+    this.callObservers();
   }
 
   go(delta) {
     ow(delta, 'delta', ow.number.integer);
 
     this._go(delta);
+
+    this.callObservers();
   }
 
   goBack() {
-    this._go(-1);
+    this.go(-1);
   }
 
   goForward() {
-    this._go(1);
+    this.go(1);
   }
 
   getHistoryLength() {

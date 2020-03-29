@@ -7,7 +7,7 @@ export class MemoryRouter extends AbstractRouter {
     ow(
       options,
       'options',
-      ow.object.exactShape({
+      ow.object.partialShape({
         initialURLs: ow.optional.array,
         initialIndex: ow.optional.number.integer
       })
@@ -33,8 +33,6 @@ export class MemoryRouter extends AbstractRouter {
     this._urls.splice(this._index + 1);
     this._urls.push(url);
     this._index++;
-
-    this.callObservers();
   }
 
   _redirect(url) {
@@ -44,8 +42,6 @@ export class MemoryRouter extends AbstractRouter {
 
     this._urls.splice(this._index);
     this._urls.push(url);
-
-    this.callObservers();
   }
 
   _go(delta) {
@@ -58,8 +54,6 @@ export class MemoryRouter extends AbstractRouter {
     }
 
     this._index = index;
-
-    this.callObservers();
   }
 
   _getHistoryLength() {
