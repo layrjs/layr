@@ -5,6 +5,8 @@ export {
   method,
   inherit,
   expose,
+  validators,
+  Validator,
   clone,
   fork,
   merge,
