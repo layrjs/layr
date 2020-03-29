@@ -10,7 +10,12 @@ import {
 } from '@liaison/component';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
+import debugModule from 'debug';
 import ow from 'ow';
+
+const debug = debugModule('liaison:component-server');
+// To display the debug log, set this environment:
+// DEBUG=liaison:component-server DEBUG_DEPTH=10
 
 import {isComponentServer} from './utilities';
 
@@ -156,6 +161,9 @@ export class ComponentServer {
 
     return possiblyAsync.call([
       () => {
+        debug(`Receiving query from component client (query: %o)`, query);
+      },
+      () => {
         return deserialize(query, {
           componentGetter,
           attributeFilter: setFilter,
@@ -171,6 +179,10 @@ export class ComponentServer {
           serializeFunctions: true,
           target: 'child'
         });
+      },
+      serializedResult => {
+        debug(`Query received from component client (result: %o)`, serializedResult);
+        return serializedResult;
       }
     ]);
   }
