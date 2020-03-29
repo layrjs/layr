@@ -60,6 +60,9 @@
   "observable": {
     "@include": "./packages/observable"
   },
+  "reactIntegration": {
+    "@include": "./packages/react-integration"
+  },
   "routable": {
     "@include": "./packages/routable"
   },

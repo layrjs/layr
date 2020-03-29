@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "The base class of all your components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
