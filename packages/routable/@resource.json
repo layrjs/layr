@@ -8,6 +8,7 @@
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/routable",
   "dependencies": {
     "core-helpers": "^0.1.0",
+    "debug": "^4.1.1",
     "path-parser": "^6.1.0",
     "ow": "^0.15.0"
   },

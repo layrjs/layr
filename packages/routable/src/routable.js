@@ -1,8 +1,13 @@
 import {hasOwnProperty, getTypeOf} from 'core-helpers';
+import debugModule from 'debug';
 import ow from 'ow';
 
 import {Route} from './route';
 import {isRoutableClass, isRoutable, normalizeURL} from './utilities';
+
+const debug = debugModule('liaison:routable');
+// To display the debug log, set this environment:
+// DEBUG=liaison:routable DEBUG_DEPTH=10
 
 export const Routable = (Base = Object) => {
   if (isRoutableClass(Base)) {
@@ -98,7 +103,11 @@ export const Routable = (Base = Object) => {
     }
 
     static __callRoute(route, params) {
-      return this[route.getName()](params);
+      const name = route.getName();
+
+      debug('Calling %s.%s(%o)', this.getComponentName(), name, params);
+
+      return this[name](params);
     }
 
     static findRouteForURL(url) {
