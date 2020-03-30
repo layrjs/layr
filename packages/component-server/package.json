@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-server",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "A server to locally serve your Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "@deepr/runtime": "^0.3.0",
     "@liaison/component": "^0.1.0",
     "lodash": "^4.17.15",
-    "ow": "^0.17.0",
+    "ow": "^0.15.1",
     "possibly-async": "^0.2.0"
   },
   "@managed": {

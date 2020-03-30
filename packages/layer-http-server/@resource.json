@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/layer-http-server",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "A basic HTTP server for your Liaison layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -14,7 +14,7 @@
     "koa-json-error": "^3.1.2",
     "koa-logger": "^3.2.1",
     "@liaison/layer-koa-middleware": "^0.1.0",
-    "ow": "^0.17.0"
+    "ow": "^0.15.1"
   },
   "tests": {
     "@include": "./tests"

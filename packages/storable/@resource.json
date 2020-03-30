@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/storable",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Base class extending Liaison's Entity class to provide persistence capabilities",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -10,7 +10,7 @@
     "core-helpers": "^0.1.0",
     "@liaison/entity": "^0.2.0",
     "lodash": "^4.17.15",
-    "ow": "^0.17.0"
+    "ow": "^0.15.1"
   },
   "tests": {
     "@include": "./tests"

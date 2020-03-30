@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/memory-router",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A simple router for Liaison that works without a browser",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -9,7 +9,7 @@
   "dependencies": {
     "@liaison/abstract-router": "^0.1.0",
     "@liaison/routable": "^0.1.0",
-    "ow": "^0.17.0"
+    "ow": "^0.15.1"
   },
   "tests": {
     "@include": "./tests"

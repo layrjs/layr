@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/component",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "The base class of all your components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "indefinite": "^2.3.1",
     "is-promise": "^2.1.0",
     "lodash": "^4.17.15",
-    "ow": "^0.17.0",
+    "ow": "^0.15.1",
     "possibly-async": "^0.2.0",
     "simple-cloning": "^0.1.0",
     "simple-forking": "^0.1.0",

@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/layer-server",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A server to locally serve your Liaison layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -9,7 +9,7 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "@liaison/component-server": "^0.1.0",
-    "ow": "^0.17.0"
+    "ow": "^0.15.1"
   },
   "tests": {
     "@include": "./tests"

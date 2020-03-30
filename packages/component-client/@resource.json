@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/component-client",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A client to consume your locally served Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "debug": "^4.1.1",
     "@liaison/component": "^0.1.0",
     "lodash": "^4.17.15",
-    "ow": "^0.17.0",
+    "ow": "^0.15.1",
     "possibly-async": "^0.2.0"
   },
   "tests": {

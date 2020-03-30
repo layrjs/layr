@@ -1,6 +1,6 @@
 {
   "name": "@liaison/layer-server",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A server to locally serve your Liaison layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -14,7 +14,7 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "@liaison/component-server": "^0.1.0",
-    "ow": "^0.17.0"
+    "ow": "^0.15.1"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

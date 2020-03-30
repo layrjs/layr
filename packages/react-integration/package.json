@@ -1,6 +1,6 @@
 {
   "name": "@liaison/react-integration",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "React integration for Liaison",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -14,7 +14,7 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "@liaison/browser-router": "^0.1.0",
-    "ow": "^0.17.0"
+    "ow": "^0.15.1"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

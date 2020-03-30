@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/component-http-client",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "An HTTP client for your Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -10,7 +10,7 @@
     "cross-fetch": "^3.0.4",
     "debug": "^4.1.1",
     "@liaison/component-client": "^0.1.0",
-    "ow": "^0.17.0"
+    "ow": "^0.15.1"
   },
   "tests": {
     "@include": "./tests"
