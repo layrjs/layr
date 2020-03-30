@@ -15,7 +15,7 @@
     "cross-fetch": "^3.0.4",
     "debug": "^4.1.1",
     "@liaison/component-client": "^0.1.0",
-    "ow": "^0.15.0"
+    "ow": "^0.17.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

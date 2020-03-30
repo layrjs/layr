@@ -15,7 +15,7 @@
     "core-helpers": "^0.1.0",
     "@liaison/component-client": "^0.1.0",
     "@liaison/layer": "^0.2.0",
-    "ow": "^0.15.0",
+    "ow": "^0.17.0",
     "possibly-async": "^0.2.0"
   },
   "@managed": {

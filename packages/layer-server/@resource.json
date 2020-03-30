@@ -9,7 +9,7 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "@liaison/component-server": "^0.1.0",
-    "ow": "^0.15.0"
+    "ow": "^0.17.0"
   },
   "tests": {
     "@include": "./tests"

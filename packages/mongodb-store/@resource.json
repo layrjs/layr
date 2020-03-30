@@ -11,8 +11,8 @@
     "core-helpers": "^0.1.0",
     "@liaison/abstract-store": "^0.1.0",
     "@liaison/component": "^0.1.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "mongodb": "^3.5.5",
-    "ow": "^0.13.2"
+    "ow": "^0.17.0"
   }
 }

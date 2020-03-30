@@ -9,7 +9,7 @@
   "dependencies": {
     "@liaison/abstract-router": "^0.1.0",
     "@liaison/routable": "^0.1.0",
-    "ow": "^0.15.0"
+    "ow": "^0.17.0"
   },
   "tests": {
     "@include": "./tests"

@@ -14,7 +14,7 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "co-body": "^6.0.0",
-    "ow": "^0.15.0",
+    "ow": "^0.17.0",
     "sleep-promise": "^8.0.1"
   },
   "@managed": {

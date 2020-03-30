@@ -9,6 +9,6 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "@liaison/browser-router": "^0.1.0",
-    "ow": "^0.15.0"
+    "ow": "^0.17.0"
   }
 }

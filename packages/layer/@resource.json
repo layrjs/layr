@@ -9,8 +9,8 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "@liaison/component": "^0.1.0",
-    "lodash": "^4.17.11",
-    "ow": "^0.13.2"
+    "lodash": "^4.17.15",
+    "ow": "^0.17.0"
   },
   "tests": {
     "@include": "./tests"

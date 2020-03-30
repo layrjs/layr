@@ -19,7 +19,7 @@
     "koa-json-error": "^3.1.2",
     "koa-logger": "^3.2.1",
     "@liaison/layer-koa-middleware": "^0.1.0",
-    "ow": "^0.15.0"
+    "ow": "^0.17.0"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

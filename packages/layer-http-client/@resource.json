@@ -10,7 +10,7 @@
     "cross-fetch": "^3.0.4",
     "debug": "^4.1.1",
     "@liaison/layer-client": "^0.1.0",
-    "ow": "^0.15.0"
+    "ow": "^0.17.0"
   },
   "tests": {
     "@include": "./tests"
