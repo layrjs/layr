@@ -117,6 +117,8 @@ const StorableMixin = (Base = Object) => {
         // TODO
       }
 
+      await this.beforeLoad(attributeSelector);
+
       let loadedStorable;
 
       if (this.constructor.hasStore()) {
@@ -130,6 +132,12 @@ const StorableMixin = (Base = Object) => {
           )}, ${this.describeComponentType()} should be registered in a store or have an exposed load() remote method (${this.describeComponent()})`
         );
       }
+
+      if (loadedStorable === undefined) {
+        return undefined;
+      }
+
+      await loadedStorable.afterLoad(attributeSelector);
 
       return loadedStorable;
     }
@@ -194,6 +202,8 @@ const StorableMixin = (Base = Object) => {
         );
       }
 
+      await this.beforeSave(attributeSelector);
+
       let savedStorable;
 
       if (this.constructor.hasStore()) {
@@ -208,6 +218,12 @@ const StorableMixin = (Base = Object) => {
           `To be able to execute the save() method, ${this.describeComponentType()} should be registered in a store or have an exposed save() remote method (${this.describeComponent()})`
         );
       }
+
+      if (savedStorable === undefined) {
+        return undefined;
+      }
+
+      await this.afterSave(attributeSelector);
 
       return savedStorable;
     }
@@ -250,6 +266,8 @@ const StorableMixin = (Base = Object) => {
 
       const {throwIfMissing = true} = options;
 
+      await this.beforeDelete();
+
       let deletedStorable;
 
       if (this.constructor.hasStore()) {
@@ -261,6 +279,12 @@ const StorableMixin = (Base = Object) => {
           `To be able to execute the delete() method, ${this.describeComponentType()} should be registered in a store or have an exposed delete() remote method (${this.describeComponent()})`
         );
       }
+
+      if (deletedStorable === undefined) {
+        return undefined;
+      }
+
+      await this.afterDelete();
 
       // TODO: deletedStorable.detach();
 
@@ -370,6 +394,20 @@ const StorableMixin = (Base = Object) => {
 
       return storablesCount;
     }
+
+    // === Hooks ===
+
+    async beforeLoad(_attributeSelector) {}
+
+    async afterLoad(_attributeSelector) {}
+
+    async beforeSave(_attributeSelector) {}
+
+    async afterSave(_attributeSelector) {}
+
+    async beforeDelete() {}
+
+    async afterDelete() {}
 
     // === Utilities ===
 
