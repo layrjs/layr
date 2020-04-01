@@ -59,6 +59,24 @@ export const WithProperties = (Base = Object) => {
         attribute.setValue(value);
       }
     }
+
+    // === Property exposure ===
+
+    static normalizePropertyOperationSetting(setting, options = {}) {
+      ow(options, 'options', ow.object.exactShape({throwIfInvalid: ow.optional.boolean}));
+
+      const {throwIfInvalid = true} = options;
+
+      if (setting === true) {
+        return true;
+      }
+
+      if (throwIfInvalid) {
+        throw new Error(
+          `The specified property operation setting (${JSON.stringify(setting)}) is invalid`
+        );
+      }
+    }
   }
 
   const classAndInstanceMethods = {
@@ -234,22 +252,6 @@ export const WithProperties = (Base = Object) => {
     resolvePropertyOperationSetting(setting) {
       if (setting === true) {
         return true;
-      }
-    },
-
-    normalizePropertyOperationSetting(setting, options = {}) {
-      ow(options, 'options', ow.object.exactShape({throwIfInvalid: ow.optional.boolean}));
-
-      const {throwIfInvalid = true} = options;
-
-      if (setting === true) {
-        return true;
-      }
-
-      if (throwIfInvalid) {
-        throw new Error(
-          `The specified property operation setting (${JSON.stringify(setting)}) is invalid`
-        );
       }
     },
 

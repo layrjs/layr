@@ -96,7 +96,7 @@ describe('Property', () => {
 
   test('Introspection', async () => {
     class Movie extends Component {
-      normalizePropertyOperationSetting(setting, {throwIfInvalid = true} = {}) {
+      static normalizePropertyOperationSetting(setting, {throwIfInvalid = true} = {}) {
         const normalizedSetting = super.normalizePropertyOperationSetting(setting, {
           throwIfInvalid: false
         });

@@ -69,6 +69,9 @@
   "storable": {
     "@include": "./packages/storable"
   },
+  "withRoles": {
+    "@include": "./packages/with-roles"
+  },
   "counterExample": {
     "@include": "./examples/counter"
   },

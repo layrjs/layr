@@ -1,0 +1,43 @@
+{
+  "name": "@liaison/with-roles",
+  "version": "0.2.0",
+  "description": "Simple role system for Liaison",
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/with-roles",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/node/cjs",
+  "module": "dist/node/esm",
+  "browser": "dist/browser/esm",
+  "dependencies": {
+    "core-helpers": "^0.1.0",
+    "ow": "^0.15.1",
+    "possibly-async": "^0.2.2"
+  },
+  "@managed": {
+    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
+    "properties": [
+      "name",
+      "version",
+      "private",
+      "description",
+      "keywords",
+      "homepage",
+      "author",
+      "contributors",
+      "license",
+      "repository",
+      "files",
+      "main",
+      "module",
+      "browser",
+      "bin",
+      "dependencies",
+      "peerDependencies",
+      "optionalDependencies",
+      "devDependencies"
+    ]
+  }
+}

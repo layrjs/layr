@@ -1,4 +1,5 @@
 import {possiblyAsync} from 'possibly-async';
+import {getClassOf} from 'core-helpers';
 import mapValues from 'lodash/mapValues';
 import a from 'indefinite';
 import ow from 'ow';
@@ -60,7 +61,7 @@ export class Property {
         continue;
       }
 
-      const normalizedSetting = this._parent.normalizePropertyOperationSetting(setting);
+      const normalizedSetting = getClassOf(this._parent).normalizePropertyOperationSetting(setting);
 
       if (normalizedSetting === undefined) {
         continue;
