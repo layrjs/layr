@@ -342,6 +342,7 @@ describe('WithProperties', () => {
       let attributes = movie.getAttributes();
 
       expect(typeof attributes[Symbol.iterator]).toBe('function');
+
       expect(Array.from(attributes).map(property => property.getName())).toEqual([
         'title',
         'duration'
@@ -356,14 +357,27 @@ describe('WithProperties', () => {
         @attribute() director;
       }
 
-      const film = new Film();
+      const film = Film.prototype.deserialize({title: 'Inception', director: 'Christopher Nolan'});
 
       attributes = film.getAttributes();
 
-      expect(typeof attributes[Symbol.iterator]).toBe('function');
       expect(Array.from(attributes).map(property => property.getName())).toEqual([
         'title',
         'duration',
+        'director'
+      ]);
+
+      attributes = film.getAttributes({attributeSelector: {title: true, director: true}});
+
+      expect(Array.from(attributes).map(property => property.getName())).toEqual([
+        'title',
+        'director'
+      ]);
+
+      attributes = film.getAttributes({setAttributesOnly: true});
+
+      expect(Array.from(attributes).map(property => property.getName())).toEqual([
+        'title',
         'director'
       ]);
 
@@ -374,7 +388,6 @@ describe('WithProperties', () => {
         }
       });
 
-      expect(typeof attributes[Symbol.iterator]).toBe('function');
       expect(Array.from(attributes).map(property => property.getName())).toEqual([
         'title',
         'director'

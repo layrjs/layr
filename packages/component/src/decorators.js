@@ -41,24 +41,29 @@ export function attribute(options = {}) {
       );
     }
 
-    if (
-      !(
-        (typeof descriptor.initializer === 'function' || descriptor.initializer === null) &&
-        descriptor.enumerable === true
-      )
-    ) {
-      throw new Error(
-        `@attribute() cannot be used without an attribute declaration (property name: '${name}')`
-      );
-    }
-
     return _decorateAttribute({target, name, descriptor, AttributeClass: Attribute, options});
   };
 }
 
-// Despite the following function looks private, it is exported and used by the
-// @attribute() decorator in @liaison/model
-export function _decorateAttribute({target, name, descriptor, AttributeClass, options}) {
+export function _decorateAttribute({
+  target,
+  name,
+  descriptor,
+  AttributeClass,
+  decoratorName = 'attribute',
+  options
+}) {
+  if (
+    !(
+      (typeof descriptor.initializer === 'function' || descriptor.initializer === null) &&
+      descriptor.enumerable === true
+    )
+  ) {
+    throw new Error(
+      `@${decoratorName}() cannot be used without an attribute declaration (property name: '${name}')`
+    );
+  }
+
   // Normalize initializer that can be null in certain cases
   const initializer =
     typeof descriptor.initializer === 'function' ? descriptor.initializer : undefined;
@@ -100,16 +105,27 @@ export function method(options = {}) {
       );
     }
 
-    if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
-      throw new Error(
-        `@method() cannot be used without a method declaration (property name: '${name}')`
-      );
-    }
-
-    target.setProperty(name, Method, options);
-
-    return {...descriptor, __decoratedBy: '@method()'};
+    return _decorateMethod({target, name, descriptor, MethodClass: Method, options});
   };
+}
+
+export function _decorateMethod({
+  target,
+  name,
+  descriptor,
+  MethodClass,
+  decoratorName = 'method',
+  options
+}) {
+  if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
+    throw new Error(
+      `@${decoratorName}() cannot be used without a method declaration (property name: '${name}')`
+    );
+  }
+
+  target.setProperty(name, MethodClass, options);
+
+  return {...descriptor, __decoratedBy: '@method()'};
 }
 
 export function inherit() {

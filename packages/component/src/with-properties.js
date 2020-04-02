@@ -37,22 +37,12 @@ export const WithProperties = (Base = Object) => {
       ow(object, 'object', ow.object);
       ow(options, 'options', ow.object.exactShape({attributeSelector: ow}));
 
-      let {attributeSelector = true} = options;
-
-      attributeSelector = AttributeSelector.normalize(attributeSelector);
+      const {attributeSelector = true} = options;
 
       super();
 
-      if (attributeSelector === false) {
-        return this; // Optimization
-      }
-
-      for (const attribute of this.getAttributes()) {
+      for (const attribute of this.getAttributes({attributeSelector})) {
         const name = attribute.getName();
-
-        if (AttributeSelector.get(attributeSelector, name) === false) {
-          continue;
-        }
 
         const value = hasOwnProperty(object, name) ? object[name] : attribute.getDefaultValue();
 
@@ -187,6 +177,7 @@ export const WithProperties = (Base = Object) => {
         ow.object.exactShape({
           filter: ow.optional.function,
           attributesOnly: ow.optional.boolean,
+          attributeSelector: ow,
           setAttributesOnly: ow.optional.boolean,
           methodsOnly: ow.optional.boolean,
           autoFork: ow.optional.boolean
@@ -196,6 +187,7 @@ export const WithProperties = (Base = Object) => {
       const {
         filter: originalFilter,
         attributesOnly = false,
+        attributeSelector = true,
         setAttributesOnly = false,
         methodsOnly = false,
         autoFork = true
@@ -203,18 +195,21 @@ export const WithProperties = (Base = Object) => {
 
       const component = this;
 
-      const filter = createFilter(originalFilter, {attributesOnly, setAttributesOnly, methodsOnly});
+      const filter = createFilter(originalFilter, {
+        attributesOnly,
+        attributeSelector,
+        setAttributesOnly,
+        methodsOnly
+      });
 
       return {
         *[Symbol.iterator]() {
           for (const name of component.getPropertyNames()) {
             const property = component.getProperty(name, {autoFork});
 
-            if (filter !== undefined && !filter.call(this, property)) {
-              continue;
+            if (filter.call(this, property)) {
+              yield property;
             }
-
-            yield property;
           }
         }
       };
@@ -302,14 +297,26 @@ export const WithProperties = (Base = Object) => {
         'options',
         ow.object.exactShape({
           filter: ow.optional.function,
+          attributeSelector: ow,
           setAttributesOnly: ow.optional.boolean,
           autoFork: ow.optional.boolean
         })
       );
 
-      const {filter, setAttributesOnly = false, autoFork = true} = options;
+      const {
+        filter,
+        attributeSelector = true,
+        setAttributesOnly = false,
+        autoFork = true
+      } = options;
 
-      return this.getProperties({filter, attributesOnly: true, setAttributesOnly, autoFork});
+      return this.getProperties({
+        filter,
+        attributesOnly: true,
+        attributeSelector,
+        setAttributesOnly,
+        autoFork
+      });
     },
 
     // === Attribute selectors ===
@@ -508,23 +515,41 @@ function createFilter(originalFilter, options = {}) {
     'options',
     ow.object.exactShape({
       attributesOnly: ow.optional.boolean,
+      attributeSelector: ow,
       setAttributesOnly: ow.optional.boolean,
       methodsOnly: ow.optional.boolean
     })
   );
 
-  const {attributesOnly = false, setAttributesOnly = false, methodsOnly = false} = options;
+  const {
+    attributesOnly = false,
+    attributeSelector = true,
+    setAttributesOnly = false,
+    methodsOnly = false
+  } = options;
+
+  const normalizedAttributeSelector = AttributeSelector.normalize(attributeSelector);
 
   const filter = function(property) {
-    if ((attributesOnly || setAttributesOnly) && !isAttribute(property)) {
+    if (isAttribute(property)) {
+      const attribute = property;
+
+      if (setAttributesOnly && !attribute.isSet()) {
+        return false;
+      }
+
+      const name = attribute.getName();
+
+      if (AttributeSelector.get(normalizedAttributeSelector, name) === false) {
+        return false;
+      }
+    } else if (attributesOnly) {
       return false;
     }
 
-    if (setAttributesOnly && !property.isSet()) {
-      return false;
-    }
-
-    if (methodsOnly && !isMethod(property)) {
+    if (isMethod(property)) {
+      // NOOP
+    } else if (methodsOnly) {
       return false;
     }
 
