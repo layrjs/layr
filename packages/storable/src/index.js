@@ -1,10 +1,6 @@
 export {
   AttributeSelector,
   property,
-  primaryIdentifier,
-  secondaryIdentifier,
-  attribute,
-  method,
   inherit,
   expose,
   validators,
@@ -19,5 +15,11 @@ export {
   composeDescription
 } from '@liaison/entity';
 
+export * from './decorators';
+export * from './storable-attribute';
+export * from './storable-method';
+export * from './storable-primary-identifier-attribute';
+export * from './storable-property';
+export * from './storable-secondary-identifier-attribute';
 export * from './storable';
 export * from './utilities';

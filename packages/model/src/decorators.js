@@ -1,10 +1,8 @@
-import {_decorateAttribute} from '@liaison/component';
+import {attribute as componentAttribute, _decorateAttribute} from '@liaison/component';
 import ow from 'ow';
 
 import {ModelAttribute} from './model-attribute';
 import {isModelClassOrInstance} from './utilities';
-
-import {attribute as componentAttribute} from '@liaison/component';
 
 export function attribute(type, options = {}) {
   if (typeof type !== 'string') {
@@ -24,17 +22,6 @@ export function attribute(type, options = {}) {
 
     if (!isModelClassOrInstance(target)) {
       throw new Error(`@attribute() target doesn't inherit from Model (property name: '${name}')`);
-    }
-
-    if (
-      !(
-        (typeof descriptor.initializer === 'function' || descriptor.initializer === null) &&
-        descriptor.enumerable === true
-      )
-    ) {
-      throw new Error(
-        `@attribute() cannot be used without an attribute declaration (property name: '${name}')`
-      );
     }
 
     return _decorateAttribute({target, name, descriptor, AttributeClass: ModelAttribute, options});

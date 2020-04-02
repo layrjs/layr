@@ -684,6 +684,43 @@ describe('Storable', () => {
   });
 
   describe('Hooks', () => {
+    test('getStorableAttributesWithHook()', async () => {
+      const User = getUserClass();
+
+      const getAttributesWithHook = (
+        storable,
+        name,
+        {attributeSelector = true, setAttributesOnly = false} = {}
+      ) =>
+        Array.from(
+          storable.getStorableAttributesWithHook(name, {attributeSelector, setAttributesOnly})
+        ).map(attribute => attribute.getName());
+
+      expect(getAttributesWithHook(User.prototype, 'beforeLoad')).toEqual(['email', 'fullName']);
+
+      const user = User.fork().prototype.deserialize({id: 'user1'});
+
+      expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([]);
+
+      await user.load();
+
+      expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([
+        'email',
+        'fullName'
+      ]);
+
+      expect(
+        getAttributesWithHook(user, 'beforeLoad', {
+          attributeSelector: {fullName: true},
+          setAttributesOnly: true
+        })
+      ).toEqual(['fullName']);
+
+      expect(
+        getAttributesWithHook(user, 'beforeLoad', {attributeSelector: {}, setAttributesOnly: true})
+      ).toEqual([]);
+    });
+
     test('beforeLoad() and afterLoad()', async () => {
       const User = getUserClass();
 
@@ -691,11 +728,19 @@ describe('Storable', () => {
 
       expect(user.beforeLoadHasBeenCalled).toBeUndefined();
       expect(user.afterLoadHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('email').beforeLoadHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('email').afterLoadHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('fullName').beforeLoadHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('fullName').afterLoadHasBeenCalled).toBeUndefined();
 
       await user.load();
 
       expect(user.beforeLoadHasBeenCalled).toBe(true);
       expect(user.afterLoadHasBeenCalled).toBe(true);
+      expect(user.getAttribute('email').beforeLoadHasBeenCalled).toBe(true);
+      expect(user.getAttribute('email').afterLoadHasBeenCalled).toBe(true);
+      expect(user.getAttribute('fullName').beforeLoadHasBeenCalled).toBe(true);
+      expect(user.getAttribute('fullName').afterLoadHasBeenCalled).toBe(true);
     });
 
     test('beforeSave() and afterSave()', async () => {
@@ -707,11 +752,19 @@ describe('Storable', () => {
 
       expect(user.beforeSaveHasBeenCalled).toBeUndefined();
       expect(user.afterSaveHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('email').beforeSaveHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('email').afterSaveHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('fullName').beforeSaveHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('fullName').afterSaveHasBeenCalled).toBeUndefined();
 
       await user.save();
 
       expect(user.beforeSaveHasBeenCalled).toBe(true);
       expect(user.afterSaveHasBeenCalled).toBe(true);
+      expect(user.getAttribute('email').beforeSaveHasBeenCalled).toBe(true);
+      expect(user.getAttribute('email').afterSaveHasBeenCalled).toBe(true);
+      expect(user.getAttribute('fullName').beforeSaveHasBeenCalled).toBe(true);
+      expect(user.getAttribute('fullName').afterSaveHasBeenCalled).toBe(true);
     });
 
     test('beforeDelete() and afterDelete()', async () => {
@@ -721,42 +774,100 @@ describe('Storable', () => {
 
       expect(user.beforeDeleteHasBeenCalled).toBeUndefined();
       expect(user.afterDeleteHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('email').beforeDeleteHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('email').afterDeleteHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('fullName').beforeDeleteHasBeenCalled).toBeUndefined();
+      expect(user.getAttribute('fullName').afterDeleteHasBeenCalled).toBeUndefined();
 
       await user.delete();
 
       expect(user.beforeDeleteHasBeenCalled).toBe(true);
       expect(user.afterDeleteHasBeenCalled).toBe(true);
+      expect(user.getAttribute('email').beforeDeleteHasBeenCalled).toBe(true);
+      expect(user.getAttribute('email').afterDeleteHasBeenCalled).toBe(true);
+      expect(user.getAttribute('fullName').beforeDeleteHasBeenCalled).toBe(true);
+      expect(user.getAttribute('fullName').afterDeleteHasBeenCalled).toBe(true);
     });
 
     function getUserClass() {
       class User extends BaseUser {
-        async beforeLoad() {
-          await super.beforeLoad();
+        @secondaryIdentifier('string', {
+          beforeLoad() {
+            this.getAttribute('email').beforeLoadHasBeenCalled = true;
+          },
+          afterLoad() {
+            this.getAttribute('email').afterLoadHasBeenCalled = true;
+          },
+          beforeSave() {
+            this.getAttribute('email').beforeSaveHasBeenCalled = true;
+          },
+          afterSave() {
+            this.getAttribute('email').afterSaveHasBeenCalled = true;
+          },
+          beforeDelete() {
+            this.getAttribute('email').beforeDeleteHasBeenCalled = true;
+          },
+          afterDelete() {
+            this.getAttribute('email').afterDeleteHasBeenCalled = true;
+          }
+        })
+        email;
+
+        @attribute('string', {
+          beforeLoad() {
+            this.getAttribute('fullName').beforeLoadHasBeenCalled = true;
+          },
+          afterLoad() {
+            this.getAttribute('fullName').afterLoadHasBeenCalled = true;
+          },
+          beforeSave() {
+            this.getAttribute('fullName').beforeSaveHasBeenCalled = true;
+          },
+          afterSave() {
+            this.getAttribute('fullName').afterSaveHasBeenCalled = true;
+          },
+          beforeDelete() {
+            this.getAttribute('fullName').beforeDeleteHasBeenCalled = true;
+          },
+          afterDelete() {
+            this.getAttribute('fullName').afterDeleteHasBeenCalled = true;
+          }
+        })
+        fullName = '';
+
+        async beforeLoad(attributeSelector) {
+          await super.beforeLoad(attributeSelector);
+
           this.beforeLoadHasBeenCalled = true;
         }
 
-        async afterLoad() {
-          await super.afterLoad();
+        async afterLoad(attributeSelector) {
+          await super.afterLoad(attributeSelector);
+
           this.afterLoadHasBeenCalled = true;
         }
 
-        async beforeSave() {
-          await super.beforeSave();
+        async beforeSave(attributeSelector) {
+          await super.beforeSave(attributeSelector);
+
           this.beforeSaveHasBeenCalled = true;
         }
 
-        async afterSave() {
-          await super.afterSave();
+        async afterSave(attributeSelector) {
+          await super.afterSave(attributeSelector);
+
           this.afterSaveHasBeenCalled = true;
         }
 
         async beforeDelete() {
           await super.beforeDelete();
+
           this.beforeDeleteHasBeenCalled = true;
         }
 
         async afterDelete() {
           await super.afterDelete();
+
           this.afterDeleteHasBeenCalled = true;
         }
       }

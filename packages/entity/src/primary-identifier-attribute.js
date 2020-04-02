@@ -7,7 +7,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
   constructor(name, parent, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(parent, 'parent', ow.object);
-    ow(options, 'options', ow.optional.object);
+    ow(options, 'options', ow.object);
 
     if (!isEntityInstance(parent)) {
       throw new Error(

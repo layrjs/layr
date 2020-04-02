@@ -1,6 +1,10 @@
 import {EntityMixin, method, AttributeSelector} from '@liaison/entity';
 import ow from 'ow';
 
+import {StorableAttribute, isStorableAttribute} from './storable-attribute';
+import {StorableMethod} from './storable-method';
+import {StorablePrimaryIdentifierAttribute} from './storable-primary-identifier-attribute';
+import {StorableSecondaryIdentifierAttribute} from './storable-secondary-identifier-attribute';
 import {isStorableClass, isStorableInstance} from './utilities';
 
 const StorableMixin = (Base = Object) => {
@@ -13,6 +17,28 @@ const StorableMixin = (Base = Object) => {
   class StorableMixin extends EntityMixin(Base) {
     static getComponentType() {
       return 'Storable';
+    }
+
+    static getPropertyClass(type) {
+      ow(type, 'type', ow.string.nonEmpty);
+
+      if (type === 'storableAttribute') {
+        return StorableAttribute;
+      }
+
+      if (type === 'storableMethod') {
+        return StorableMethod;
+      }
+
+      if (type === 'storablePrimaryIdentifierAttribute') {
+        return StorablePrimaryIdentifierAttribute;
+      }
+
+      if (type === 'storableSecondaryIdentifierAttribute') {
+        return StorableSecondaryIdentifierAttribute;
+      }
+
+      return super.getPropertyClass(type);
     }
 
     // === Store registration ===
@@ -397,17 +423,66 @@ const StorableMixin = (Base = Object) => {
 
     // === Hooks ===
 
-    async beforeLoad(_attributeSelector) {}
+    async beforeLoad(attributeSelector) {
+      await this.__callStorableAttributeHooks('beforeLoad', {attributeSelector});
+    }
 
-    async afterLoad(_attributeSelector) {}
+    async afterLoad(attributeSelector) {
+      await this.__callStorableAttributeHooks('afterLoad', {
+        attributeSelector,
+        setAttributesOnly: true
+      });
+    }
 
-    async beforeSave(_attributeSelector) {}
+    async beforeSave(attributeSelector) {
+      await this.__callStorableAttributeHooks('beforeSave', {
+        attributeSelector,
+        setAttributesOnly: true
+      });
+    }
 
-    async afterSave(_attributeSelector) {}
+    async afterSave(attributeSelector) {
+      await this.__callStorableAttributeHooks('afterSave', {
+        attributeSelector,
+        setAttributesOnly: true
+      });
+    }
 
-    async beforeDelete() {}
+    async beforeDelete() {
+      await this.__callStorableAttributeHooks('beforeDelete', {setAttributesOnly: true});
+    }
 
-    async afterDelete() {}
+    async afterDelete() {
+      await this.__callStorableAttributeHooks('afterDelete', {setAttributesOnly: true});
+    }
+
+    getStorableAttributesWithHook(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({attributeSelector: ow, setAttributesOnly: ow.optional.boolean})
+      );
+
+      const {attributeSelector = true, setAttributesOnly = false} = options;
+
+      return this.getAttributes({
+        filter: attribute => {
+          return isStorableAttribute(attribute) && attribute.hasHook(name);
+        },
+        attributeSelector,
+        setAttributesOnly
+      });
+    }
+
+    async __callStorableAttributeHooks(name, {attributeSelector, setAttributesOnly}) {
+      for (const attribute of this.getStorableAttributesWithHook(name, {
+        attributeSelector,
+        setAttributesOnly
+      })) {
+        await attribute.callHook(name);
+      }
+    }
 
     // === Utilities ===
 

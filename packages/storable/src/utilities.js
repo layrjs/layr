@@ -9,3 +9,7 @@ export function isStorableInstance(object) {
 export function isStorable(object) {
   return isStorableInstance(object);
 }
+
+export function isStorableClassOrInstance(object) {
+  return isStorableClass(object) || isStorableInstance(object);
+}

@@ -1,7 +1,6 @@
 export {
   AttributeSelector,
   property,
-  _decorateAttribute,
   method,
   inherit,
   expose,
