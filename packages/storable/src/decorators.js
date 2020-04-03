@@ -77,3 +77,29 @@ export function secondaryIdentifier(type, options) {
     options
   );
 }
+
+export function loader(loaderFunction) {
+  ow(loaderFunction, 'loaderFunction', ow.function);
+
+  return function(target, name, descriptor) {
+    ow(target, 'target', ow.object);
+    ow(name, 'name', ow.string.nonEmpty);
+    ow(descriptor, 'descriptor', ow.object);
+
+    if (!isStorableClassOrInstance(target)) {
+      throw new Error(`@loader() target doesn't inherit from Storable (property name: '${name}')`);
+    }
+
+    const {__decoratedBy: decoratedBy} = descriptor;
+
+    if (decoratedBy === '@attribute()' || decoratedBy === '@inherit()') {
+      const attribute = target.getAttribute(name);
+      attribute.setLoader(loaderFunction);
+      return descriptor;
+    }
+
+    throw new Error(
+      `@loader() must be used in conjunction with @attribute() or @inherit() (property name: '${name}')`
+    );
+  };
+}

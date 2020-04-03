@@ -63,7 +63,84 @@ const StorableMixin = (Base = Object) => {
       Object.defineProperty(this, '__store', {value: store});
     }
 
-    // === Storable classes ===
+    // === Storable attributes ===
+
+    getStorableAttributesWithLoader(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({attributeSelector: ow, setAttributesOnly: ow.optional.boolean})
+      );
+
+      const {attributeSelector = true, setAttributesOnly = false} = options;
+
+      return this.getAttributes({
+        filter: attribute => {
+          return isStorableAttribute(attribute) && attribute.hasLoader();
+        },
+        attributeSelector,
+        setAttributesOnly
+      });
+    }
+
+    getStorableAttributesWithFinder(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({attributeSelector: ow, setAttributesOnly: ow.optional.boolean})
+      );
+
+      const {attributeSelector = true, setAttributesOnly = false} = options;
+
+      return this.getAttributes({
+        filter: attribute => {
+          return isStorableAttribute(attribute) && attribute.hasFinder();
+        },
+        attributeSelector,
+        setAttributesOnly
+      });
+    }
+
+    getStorableComputedAttributes(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({attributeSelector: ow, setAttributesOnly: ow.optional.boolean})
+      );
+
+      const {attributeSelector = true, setAttributesOnly = false} = options;
+
+      return this.getAttributes({
+        filter: attribute => {
+          return isStorableAttribute(attribute) && attribute.isComputed();
+        },
+        attributeSelector,
+        setAttributesOnly
+      });
+    }
+
+    getStorableAttributesWithHook(name, options = {}) {
+      ow(name, 'name', ow.string.nonEmpty);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({attributeSelector: ow, setAttributesOnly: ow.optional.boolean})
+      );
+
+      const {attributeSelector = true, setAttributesOnly = false} = options;
+
+      return this.getAttributes({
+        filter: attribute => {
+          return isStorableAttribute(attribute) && attribute.hasHook(name);
+        },
+        attributeSelector,
+        setAttributesOnly
+      });
+    }
+
+    // === Storage operations ===
+
+    // --- Classes ---
 
     @method() static async load() {
       // ...
@@ -81,7 +158,7 @@ const StorableMixin = (Base = Object) => {
       // ...
     }
 
-    // === Storable instances ===
+    // --- Instances ---
 
     static async get(identifierDescriptor, attributeSelector = true, options = {}) {
       ow(
@@ -143,14 +220,20 @@ const StorableMixin = (Base = Object) => {
         // TODO
       }
 
-      await this.beforeLoad(attributeSelector);
+      const computedAttributes = this.getStorableComputedAttributes({attributeSelector});
+      const nonComputedAttributeSelector = AttributeSelector.remove(
+        attributeSelector,
+        AttributeSelector.fromAttributes(computedAttributes)
+      );
+
+      await this.beforeLoad(nonComputedAttributeSelector);
 
       let loadedStorable;
 
       if (this.constructor.hasStore()) {
-        loadedStorable = await this.__loadFromStore(attributeSelector, {throwIfMissing});
+        loadedStorable = await this.__loadFromStore(nonComputedAttributeSelector, {throwIfMissing});
       } else if (super.load !== undefined) {
-        loadedStorable = await super.load(attributeSelector, {reload, throwIfMissing});
+        loadedStorable = await super.load(nonComputedAttributeSelector, {reload, throwIfMissing});
       } else {
         throw new Error(
           `To be able to execute the load() method${describeCaller(
@@ -163,7 +246,13 @@ const StorableMixin = (Base = Object) => {
         return undefined;
       }
 
-      await loadedStorable.afterLoad(attributeSelector);
+      for (const attribute of loadedStorable.getStorableAttributesWithLoader({attributeSelector})) {
+        const value = await attribute.callLoader();
+
+        attribute.setValue(value);
+      }
+
+      await loadedStorable.afterLoad(nonComputedAttributeSelector);
 
       return loadedStorable;
     }
@@ -218,7 +307,7 @@ const StorableMixin = (Base = Object) => {
 
       const isNew = this.isNew();
 
-      attributeSelector = AttributeSelector.normalize(attributeSelector);
+      attributeSelector = this.expandAttributeSelector(attributeSelector);
 
       const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
 
@@ -228,17 +317,26 @@ const StorableMixin = (Base = Object) => {
         );
       }
 
-      await this.beforeSave(attributeSelector);
+      const computedAttributes = this.getStorableComputedAttributes({attributeSelector});
+      const nonComputedAttributeSelector = AttributeSelector.remove(
+        attributeSelector,
+        AttributeSelector.fromAttributes(computedAttributes)
+      );
+
+      await this.beforeSave(nonComputedAttributeSelector);
 
       let savedStorable;
 
       if (this.constructor.hasStore()) {
-        savedStorable = await this.__saveToStore(attributeSelector, {
+        savedStorable = await this.__saveToStore(nonComputedAttributeSelector, {
           throwIfMissing,
           throwIfExists
         });
       } else if (super.save !== undefined) {
-        savedStorable = await super.save(attributeSelector, {throwIfMissing, throwIfExists});
+        savedStorable = await super.save(nonComputedAttributeSelector, {
+          throwIfMissing,
+          throwIfExists
+        });
       } else {
         throw new Error(
           `To be able to execute the save() method, ${this.describeComponentType()} should be registered in a store or have an exposed save() remote method (${this.describeComponent()})`
@@ -249,7 +347,7 @@ const StorableMixin = (Base = Object) => {
         return undefined;
       }
 
-      await this.afterSave(attributeSelector);
+      await this.afterSave(nonComputedAttributeSelector);
 
       return savedStorable;
     }
@@ -292,7 +390,14 @@ const StorableMixin = (Base = Object) => {
 
       const {throwIfMissing = true} = options;
 
-      await this.beforeDelete();
+      const attributeSelector = this.expandAttributeSelector(true);
+      const computedAttributes = this.getStorableComputedAttributes({attributeSelector});
+      const nonComputedAttributeSelector = AttributeSelector.remove(
+        attributeSelector,
+        AttributeSelector.fromAttributes(computedAttributes)
+      );
+
+      await this.beforeDelete(nonComputedAttributeSelector);
 
       let deletedStorable;
 
@@ -310,7 +415,7 @@ const StorableMixin = (Base = Object) => {
         return undefined;
       }
 
-      await this.afterDelete();
+      await this.afterDelete(nonComputedAttributeSelector);
 
       // TODO: deletedStorable.detach();
 
@@ -448,30 +553,17 @@ const StorableMixin = (Base = Object) => {
       });
     }
 
-    async beforeDelete() {
-      await this.__callStorableAttributeHooks('beforeDelete', {setAttributesOnly: true});
-    }
-
-    async afterDelete() {
-      await this.__callStorableAttributeHooks('afterDelete', {setAttributesOnly: true});
-    }
-
-    getStorableAttributesWithHook(name, options = {}) {
-      ow(name, 'name', ow.string.nonEmpty);
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({attributeSelector: ow, setAttributesOnly: ow.optional.boolean})
-      );
-
-      const {attributeSelector = true, setAttributesOnly = false} = options;
-
-      return this.getAttributes({
-        filter: attribute => {
-          return isStorableAttribute(attribute) && attribute.hasHook(name);
-        },
+    async beforeDelete(attributeSelector) {
+      await this.__callStorableAttributeHooks('beforeDelete', {
         attributeSelector,
-        setAttributesOnly
+        setAttributesOnly: true
+      });
+    }
+
+    async afterDelete(attributeSelector) {
+      await this.__callStorableAttributeHooks('afterDelete', {
+        attributeSelector,
+        setAttributesOnly: true
       });
     }
 

@@ -15,6 +15,7 @@ import {
   primaryIdentifier,
   secondaryIdentifier,
   attribute,
+  loader,
   expose,
   inherit,
   serialize
@@ -680,6 +681,74 @@ describe('Storable', () => {
           expect(await User.fork().count({accessLevel: 3, emailIsVerified: true})).toBe(1);
         });
       });
+    }
+  });
+
+  describe('Loaders and finders', () => {
+    test('getStorableAttributesWithLoader()', async () => {
+      const User = getUserClass();
+
+      const attributes = Array.from(User.prototype.getStorableAttributesWithLoader());
+
+      expect(attributes).toHaveLength(1);
+      expect(attributes[0].getName()).toBe('firstName');
+    });
+
+    test('getStorableComputedAttributes()', async () => {
+      const User = getUserClass();
+
+      const attributes = Array.from(User.prototype.getStorableComputedAttributes());
+
+      expect(attributes).toHaveLength(1);
+      expect(attributes[0].getName()).toBe('firstName');
+    });
+
+    test('load()', async () => {
+      const User = getUserClass();
+
+      let user = User.fork().prototype.deserialize({id: 'user1'});
+      await user.load({});
+
+      expect(user.getAttribute('firstName').isSet()).toBe(false);
+
+      user = User.fork().prototype.deserialize({id: 'user1'});
+      await user.load({firstName: true});
+
+      expect(user.firstName).toBe('User');
+
+      user = User.fork().prototype.deserialize({id: 'user1'});
+      await user.load();
+
+      expect(user.serialize()).toStrictEqual({
+        __component: 'user',
+        id: 'user1',
+        email: '1@user.com',
+        reference: 1,
+        fullName: 'User 1',
+        accessLevel: 0,
+        emailIsVerified: false,
+        createdOn: {__date: CREATED_ON.toISOString()},
+        updatedOn: {__undefined: true},
+        firstName: 'User'
+      });
+    });
+
+    function getUserClass() {
+      class User extends BaseUser {
+        @loader(async function() {
+          await this.load({fullName: true});
+
+          const firstName = this.fullName.split(' ')[0];
+
+          return firstName;
+        })
+        @attribute('string')
+        firstName;
+      }
+
+      MockStore.create([User], {initialCollections: getInitialCollections()});
+
+      return User;
     }
   });
 

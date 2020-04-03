@@ -12,6 +12,7 @@ export const StorableAttributeMixin = Base =>
         options,
         'options',
         ow.object.partialShape({
+          loader: ow.optional.function,
           beforeLoad: ow.optional.function,
           afterLoad: ow.optional.function,
           beforeSave: ow.optional.function,
@@ -22,6 +23,7 @@ export const StorableAttributeMixin = Base =>
       );
 
       const {
+        loader,
         beforeLoad,
         afterLoad,
         beforeSave,
@@ -31,6 +33,7 @@ export const StorableAttributeMixin = Base =>
         ...otherOptions
       } = options;
 
+      this._loader = loader;
       this._beforeLoad = beforeLoad;
       this._afterLoad = afterLoad;
       this._beforeSave = beforeSave;
@@ -39,6 +42,32 @@ export const StorableAttributeMixin = Base =>
       this._afterDelete = afterDelete;
 
       super.setOptions(otherOptions);
+    }
+
+    // === Loader ===
+
+    getLoader() {
+      return this._loader;
+    }
+
+    hasLoader() {
+      return this.getLoader() !== undefined;
+    }
+
+    setLoader(loaderFunction) {
+      ow(loaderFunction, 'loaderFunction', ow.function);
+
+      this._loader = loaderFunction;
+    }
+
+    async callLoader(...args) {
+      const loader = this.getLoader();
+
+      if (loader === undefined) {
+        throw new Error(`Cannot call a loader that is missing (${this.describe()})`);
+      }
+
+      return await loader.call(this.getParent(), ...args);
     }
 
     // === Hooks ===
@@ -66,6 +95,10 @@ export const StorableAttributeMixin = Base =>
     }
 
     // === Utilities ===
+
+    isComputed() {
+      return super.isComputed() || this.hasLoader();
+    }
 
     static isStorableAttribute(object) {
       return isStorableAttribute(object);
