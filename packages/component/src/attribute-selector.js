@@ -18,6 +18,18 @@ export const AttributeSelector = {
     return attributeSelector;
   },
 
+  fromAttributes(attributes) {
+    ow(attributes, 'attributes', ow.iterable);
+
+    const attributeSelector = {};
+
+    for (const attribute of attributes) {
+      attributeSelector[attribute.getName()] = true;
+    }
+
+    return attributeSelector;
+  },
+
   get(attributeSelector, name) {
     ow(name, 'name', ow.string.nonEmpty);
 

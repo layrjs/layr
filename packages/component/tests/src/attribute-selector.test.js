@@ -10,6 +10,19 @@ describe('AttributeSelector', () => {
     });
   });
 
+  test('fromAttributes()', () => {
+    const createAttributes = names => names.map(name => ({getName: () => name}));
+
+    expect(AttributeSelector.fromAttributes(createAttributes([]))).toStrictEqual({});
+    expect(AttributeSelector.fromAttributes(createAttributes(['title']))).toStrictEqual({
+      title: true
+    });
+    expect(AttributeSelector.fromAttributes(createAttributes(['title', 'country']))).toStrictEqual({
+      title: true,
+      country: true
+    });
+  });
+
   test('get()', () => {
     expect(AttributeSelector.get(false, 'title')).toBe(false);
     expect(AttributeSelector.get(true, 'title')).toBe(true);
