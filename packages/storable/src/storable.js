@@ -1,6 +1,8 @@
 import {EntityMixin, method, AttributeSelector} from '@liaison/entity';
+import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
 
+import {isStorableProperty} from './storable-property';
 import {StorableAttribute, isStorableAttribute} from './storable-attribute';
 import {StorableMethod} from './storable-method';
 import {StorablePrimaryIdentifierAttribute} from './storable-primary-identifier-attribute';
@@ -75,29 +77,15 @@ const StorableMixin = (Base = Object) => {
       const {attributeSelector = true, setAttributesOnly = false} = options;
 
       return this.getAttributes({
-        filter: attribute => {
-          return isStorableAttribute(attribute) && attribute.hasLoader();
-        },
+        filter: attribute => isStorableAttribute(attribute) && attribute.hasLoader(),
         attributeSelector,
         setAttributesOnly
       });
     }
 
-    getStorableAttributesWithFinder(options = {}) {
-      ow(
-        options,
-        'options',
-        ow.object.exactShape({attributeSelector: ow, setAttributesOnly: ow.optional.boolean})
-      );
-
-      const {attributeSelector = true, setAttributesOnly = false} = options;
-
-      return this.getAttributes({
-        filter: attribute => {
-          return isStorableAttribute(attribute) && attribute.hasFinder();
-        },
-        attributeSelector,
-        setAttributesOnly
+    getStorablePropertiesWithFinder() {
+      return this.getProperties({
+        filter: property => isStorableProperty(property) && property.hasFinder()
       });
     }
 
@@ -111,9 +99,7 @@ const StorableMixin = (Base = Object) => {
       const {attributeSelector = true, setAttributesOnly = false} = options;
 
       return this.getAttributes({
-        filter: attribute => {
-          return isStorableAttribute(attribute) && attribute.isComputed();
-        },
+        filter: attribute => isStorableAttribute(attribute) && attribute.isComputed(),
         attributeSelector,
         setAttributesOnly
       });
@@ -130,9 +116,7 @@ const StorableMixin = (Base = Object) => {
       const {attributeSelector = true, setAttributesOnly = false} = options;
 
       return this.getAttributes({
-        filter: attribute => {
-          return isStorableAttribute(attribute) && attribute.hasHook(name);
-        },
+        filter: attribute => isStorableAttribute(attribute) && attribute.hasHook(name),
         attributeSelector,
         setAttributesOnly
       });
@@ -452,6 +436,8 @@ const StorableMixin = (Base = Object) => {
 
       const {sort, skip, limit, reload = false} = options;
 
+      query = await this.__callStorablePropertyFindersForQuery(query);
+
       let foundStorables;
 
       if (this.hasStore()) {
@@ -501,6 +487,8 @@ const StorableMixin = (Base = Object) => {
     @method() static async count(query = {}) {
       ow(query, 'query', ow.object);
 
+      query = await this.__callStorablePropertyFindersForQuery(query);
+
       let storablesCount;
 
       if (this.hasStore()) {
@@ -524,6 +512,24 @@ const StorableMixin = (Base = Object) => {
       const storablesCount = await store.count({storableName, query});
 
       return storablesCount;
+    }
+
+    static async __callStorablePropertyFindersForQuery(query) {
+      for (const property of this.prototype.getStorablePropertiesWithFinder()) {
+        const name = property.getName();
+
+        if (!hasOwnProperty(query, name)) {
+          continue; // The property finder is not used in the query
+        }
+
+        const {[name]: value, ...remainingQuery} = query;
+
+        const finderQuery = await property.callFinder(value);
+
+        query = {...remainingQuery, ...finderQuery};
+      }
+
+      return query;
     }
 
     // === Hooks ===

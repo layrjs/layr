@@ -16,6 +16,7 @@ import {
   secondaryIdentifier,
   attribute,
   loader,
+  finder,
   expose,
   inherit,
   serialize
@@ -684,7 +685,7 @@ describe('Storable', () => {
     }
   });
 
-  describe('Loaders and finders', () => {
+  describe('Loaders', () => {
     test('getStorableAttributesWithLoader()', async () => {
       const User = getUserClass();
 
@@ -744,6 +745,76 @@ describe('Storable', () => {
         })
         @attribute('string')
         firstName;
+      }
+
+      MockStore.create([User], {initialCollections: getInitialCollections()});
+
+      return User;
+    }
+  });
+
+  describe('Finders', () => {
+    test('getStorablePropertiesWithFinder()', async () => {
+      const User = getUserClass();
+
+      const properties = Array.from(User.prototype.getStorablePropertiesWithFinder());
+
+      expect(properties).toHaveLength(2);
+      expect(properties[0].getName()).toBe('hasNoAccess');
+      expect(properties[1].getName()).toBe('hasAccessLevel');
+    });
+
+    test('getStorableComputedAttributes()', async () => {
+      const User = getUserClass();
+
+      const attributes = Array.from(User.prototype.getStorableComputedAttributes());
+
+      expect(attributes).toHaveLength(1);
+      expect(attributes[0].getName()).toBe('hasNoAccess');
+    });
+
+    test('find()', async () => {
+      const User = getUserClass();
+
+      let users = await User.fork().find({hasNoAccess: true}, {});
+
+      expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+      users = await User.fork().find({hasNoAccess: true}, {hasNoAccess: true});
+
+      expect(serialize(users)).toStrictEqual([
+        {__component: 'user', id: 'user1', accessLevel: 0, hasNoAccess: true}
+      ]);
+
+      users = await User.fork().find({hasAccessLevel: 3}, {});
+
+      expect(serialize(users)).toStrictEqual([
+        {__component: 'user', id: 'user11'},
+        {__component: 'user', id: 'user13'}
+      ]);
+    });
+
+    function getUserClass() {
+      class User extends BaseUser {
+        @loader(async function() {
+          await this.load({accessLevel: true});
+
+          return this.accessLevel === 0;
+        })
+        @finder(async function() {
+          return {accessLevel: 0};
+        })
+        @attribute('boolean?')
+        hasNoAccess;
+
+        @finder(async function(accessLevel) {
+          return {accessLevel};
+        })
+        async hasAccessLevel(accessLevel) {
+          await this.load({accessLevel: true});
+
+          return this.accessLevel === accessLevel;
+        }
       }
 
       MockStore.create([User], {initialCollections: getInitialCollections()});

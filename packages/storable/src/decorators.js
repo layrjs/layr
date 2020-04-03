@@ -4,13 +4,14 @@ import {
   _decorateMethod
 } from '@liaison/component';
 import {_identifierDecorator} from '@liaison/entity';
+import {isClass} from 'core-helpers';
 import ow from 'ow';
 
 import {StorableAttribute} from './storable-attribute';
 import {StorableMethod} from './storable-method';
 import {StorablePrimaryIdentifierAttribute} from './storable-primary-identifier-attribute';
 import {StorableSecondaryIdentifierAttribute} from './storable-secondary-identifier-attribute';
-import {isStorableClassOrInstance} from './utilities';
+import {isStorableInstance, isStorableClassOrInstance} from './utilities';
 
 export function attribute(type, options = {}) {
   if (typeof type !== 'string') {
@@ -101,5 +102,52 @@ export function loader(loaderFunction) {
     throw new Error(
       `@loader() must be used in conjunction with @attribute() or @inherit() (property name: '${name}')`
     );
+  };
+}
+
+export function finder(finderFunction) {
+  ow(finderFunction, 'finderFunction', ow.function);
+
+  return function(target, name, descriptor) {
+    ow(target, 'target', ow.object);
+    ow(name, 'name', ow.string.nonEmpty);
+    ow(descriptor, 'descriptor', ow.object);
+
+    if (isClass(target)) {
+      throw new Error(
+        `@finder() cannot be used on static attributes or methods (property name: '${name}')`
+      );
+    }
+
+    if (!isStorableInstance(target)) {
+      throw new Error(`@finder() target doesn't inherit from Storable (property name: '${name}')`);
+    }
+
+    const {__decoratedBy: decoratedBy} = descriptor;
+
+    if (
+      decoratedBy === '@attribute()' ||
+      decoratedBy === '@method()' ||
+      decoratedBy === '@inherit()'
+    ) {
+      const property = target.getProperty(name);
+      property.setFinder(finderFunction);
+      return descriptor;
+    }
+
+    if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
+      throw new Error(
+        `@finder() must be used in conjunction with @attribute(), @method(), @inherit(), or with a method declaration (property name: '${name}')`
+      );
+    }
+
+    return _decorateMethod({
+      target,
+      name,
+      descriptor,
+      MethodClass: StorableMethod,
+      decoratorName: 'finder',
+      options: {finder: finderFunction}
+    });
   };
 }
