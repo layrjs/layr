@@ -499,6 +499,8 @@ describe('Storable', () => {
             );
           }
 
+          // === Simple queries ===
+
           let users = await User.fork().find();
 
           expect(serialize(users)).toStrictEqual([
@@ -660,6 +662,22 @@ describe('Storable', () => {
             {__component: 'user', id: 'user12'},
             {__component: 'user', id: 'user11'}
           ]);
+
+          // === Advanced queries ===
+
+          const ForkedUser = User.fork();
+
+          const user = ForkedUser.prototype.deserialize({id: 'user1'});
+
+          users = await ForkedUser.find(user, {email: true});
+
+          expect(users).toHaveLength(1);
+          expect(users[0]).toBe(user);
+          expect(serialize(user)).toStrictEqual({
+            __component: 'user',
+            id: 'user1',
+            email: '1@user.com'
+          });
         });
 
         test('count()', async () => {
@@ -671,6 +689,8 @@ describe('Storable', () => {
             );
           }
 
+          // === Simple queries ===
+
           expect(await User.fork().count()).toBe(4);
 
           expect(await User.fork().count({fullName: 'User 12'})).toBe(1);
@@ -680,6 +700,12 @@ describe('Storable', () => {
           expect(await User.fork().count({emailIsVerified: false})).toBe(2);
 
           expect(await User.fork().count({accessLevel: 3, emailIsVerified: true})).toBe(1);
+
+          // === Advanced queries ===
+
+          const user = User.fork().prototype.deserialize({fullName: 'User 1'});
+
+          expect(await User.fork().count(user)).toBe(1);
         });
       });
     }

@@ -1,3 +1,4 @@
+import {serialize} from '@liaison/component';
 import {EntityMixin, method, AttributeSelector} from '@liaison/entity';
 import {hasOwnProperty} from 'core-helpers';
 import ow from 'ow';
@@ -465,15 +466,19 @@ const StorableMixin = (Base = Object) => {
     }
 
     static async __findInStore(query, {sort, skip, limit}) {
+      query = this.__normalizeQuery(query);
+
       const store = this.getStore();
 
       const storableName = this.prototype.getComponentName();
+
+      const serializedQuery = this.__serializeQuery(query);
 
       const primaryIdentifierAttribute = this.prototype.getPrimaryIdentifierAttribute();
       const attributeSelector = {[primaryIdentifierAttribute.getName()]: true};
 
       const serializedStorables = await store.find(
-        {storableName, query, sort, skip, limit},
+        {storableName, query: serializedQuery, sort, skip, limit},
         {attributeSelector}
       );
 
@@ -505,11 +510,15 @@ const StorableMixin = (Base = Object) => {
     }
 
     static async __countInStore(query) {
+      query = this.__normalizeQuery(query);
+
       const store = this.getStore();
 
       const storableName = this.prototype.getComponentName();
 
-      const storablesCount = await store.count({storableName, query});
+      const serializedQuery = this.__serializeQuery(query);
+
+      const storablesCount = await store.count({storableName, query: serializedQuery});
 
       return storablesCount;
     }
@@ -530,6 +539,14 @@ const StorableMixin = (Base = Object) => {
       }
 
       return query;
+    }
+
+    static __normalizeQuery(query) {
+      return query;
+    }
+
+    static __serializeQuery(query) {
+      return serialize(query, {includeComponentName: false, includeIsNewMark: false});
     }
 
     // === Hooks ===
