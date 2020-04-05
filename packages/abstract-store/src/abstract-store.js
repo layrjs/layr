@@ -6,6 +6,7 @@ import {
 } from '@liaison/component';
 import {getClassOf} from 'core-helpers';
 import {serialize, deserialize} from 'simple-serialization';
+import isPlainObject from 'lodash/isPlainObject';
 import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
@@ -284,13 +285,13 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentQuery = this._toDocument(storable, query);
+    const documentExpressions = this._toDocumentExpressions(storable, query);
     const documentSort = this._toDocument(storable, sort);
     const documentAttributeSelector = this._toDocument(storable, attributeSelector);
 
     const documents = await this._findDocuments({
       collectionName,
-      query: documentQuery,
+      expressions: documentExpressions,
       sort: documentSort,
       skip,
       limit,
@@ -317,9 +318,12 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentQuery = this._toDocument(storable, query);
+    const documentExpressions = this._toDocumentExpressions(storable, query);
 
-    const documentsCount = await this._countDocuments({collectionName, query: documentQuery});
+    const documentsCount = await this._countDocuments({
+      collectionName,
+      expressions: documentExpressions
+    });
 
     return documentsCount;
   }
@@ -328,6 +332,71 @@ export class AbstractStore {
 
   _toDocument(storable, serializedStorable) {
     return deserialize(serializedStorable);
+  }
+
+  // {a: 1, b: {c: 2}} => [['a', '$equals', 1], ['b.c', '$equals', 2]]
+  _toDocumentExpressions(storable, query) {
+    const documentQuery = this._toDocument(storable, query);
+
+    const documentExpressions = [];
+
+    const build = (query, path) => {
+      for (const [name, value] of Object.entries(query)) {
+        if (isOperator(name)) {
+          throw new Error(
+            `A query cannot contain an operator at its root (query: ${JSON.stringify(query)})`
+          );
+        }
+
+        const subpath = path !== '' ? `${path}.${name}` : name;
+
+        if (!isPlainObject(value)) {
+          documentExpressions.push([subpath, '$equals', value]);
+          continue;
+        }
+
+        const object = value;
+
+        let objectContainsAttributes = false;
+        let objectContainsOperators = false;
+
+        for (const name of Object.keys(object)) {
+          if (isOperator(name)) {
+            objectContainsOperators = true;
+          } else {
+            objectContainsAttributes = true;
+          }
+        }
+
+        if (objectContainsAttributes) {
+          if (objectContainsOperators) {
+            throw new Error(
+              `A subquery cannot contain both an attribute and an operator (subquery: ${JSON.stringify(
+                object
+              )})`
+            );
+          }
+
+          const subquery = object;
+
+          build(subquery, subpath);
+
+          continue;
+        }
+
+        if (objectContainsOperators) {
+          const operators = object;
+
+          for (const [operator, value] of Object.entries(operators)) {
+            documentExpressions.push([subpath, operator, value]);
+          }
+        }
+      }
+    };
+
+    build(documentQuery, '');
+
+    return documentExpressions;
   }
 
   _fromDocument(storable, document) {
@@ -339,4 +408,8 @@ export class AbstractStore {
   static isStore(object) {
     return isStore(object);
   }
+}
+
+function isOperator(name) {
+  return name.startsWith('$');
 }

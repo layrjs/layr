@@ -33,6 +33,7 @@ describe('Storable', () => {
     @secondaryIdentifier('number') reference;
     @attribute('string') fullName = '';
     @attribute('number') accessLevel = 0;
+    @attribute('[string]') tags = [];
     @attribute('boolean') emailIsVerified = false;
     @attribute('date') createdOn = new Date('2020-03-22T01:27:42.612Z');
     @attribute('date?') updatedOn;
@@ -127,6 +128,7 @@ describe('Storable', () => {
             @expose({get: true, set: true}) @inherit() reference;
             @expose({get: true, set: true}) @inherit() fullName;
             @expose({get: true, set: true}) @inherit() accessLevel;
+            @expose({get: true, set: true}) @inherit() tags;
             @expose({get: true, set: true}) @inherit() emailIsVerified;
             @expose({get: true, set: true}) @inherit() createdOn;
             @expose({get: true, set: true}) @inherit() updatedOn;
@@ -178,6 +180,7 @@ describe('Storable', () => {
             reference: 1,
             fullName: 'User 1',
             accessLevel: 0,
+            tags: ['spammer', 'blocked'],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -192,6 +195,7 @@ describe('Storable', () => {
             reference: 1,
             fullName: 'User 1',
             accessLevel: 0,
+            tags: ['spammer', 'blocked'],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -226,6 +230,7 @@ describe('Storable', () => {
             reference: 1,
             fullName: 'User 1',
             accessLevel: 0,
+            tags: ['spammer', 'blocked'],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -325,6 +330,7 @@ describe('Storable', () => {
             reference: 1,
             fullName: 'User 1',
             accessLevel: 0,
+            tags: ['spammer', 'blocked'],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -374,7 +380,8 @@ describe('Storable', () => {
             id: 'user2',
             email: '2@user.com',
             reference: 2,
-            fullName: 'User 2'
+            fullName: 'User 2',
+            tags: ['newcomer']
           });
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
@@ -394,12 +401,15 @@ describe('Storable', () => {
             reference: 2,
             fullName: 'User 2',
             accessLevel: 0,
+            tags: ['newcomer'],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
           });
 
           user.fullName = 'User 2 (modified)';
+          user.accessLevel = 1;
+          user.tags = [];
           user.updatedOn = UPDATED_ON;
 
           expect(await user.save()).toBe(user);
@@ -412,7 +422,8 @@ describe('Storable', () => {
             email: '2@user.com',
             reference: 2,
             fullName: 'User 2 (modified)',
-            accessLevel: 0,
+            accessLevel: 1,
+            tags: [],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__date: UPDATED_ON.toISOString()}
@@ -430,7 +441,8 @@ describe('Storable', () => {
             email: '2@user.com',
             reference: 2,
             fullName: 'User 2 (modified)',
-            accessLevel: 0,
+            accessLevel: 1,
+            tags: [],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -511,6 +523,7 @@ describe('Storable', () => {
               reference: 1,
               fullName: 'User 1',
               accessLevel: 0,
+              tags: ['spammer', 'blocked'],
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -522,6 +535,7 @@ describe('Storable', () => {
               reference: 11,
               fullName: 'User 11',
               accessLevel: 3,
+              tags: ['owner', 'admin'],
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -533,6 +547,7 @@ describe('Storable', () => {
               reference: 12,
               fullName: 'User 12',
               accessLevel: 1,
+              tags: [],
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -544,6 +559,7 @@ describe('Storable', () => {
               reference: 13,
               fullName: 'User 13',
               accessLevel: 3,
+              tags: ['admin'],
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -560,6 +576,7 @@ describe('Storable', () => {
               reference: 12,
               fullName: 'User 12',
               accessLevel: 1,
+              tags: [],
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -576,6 +593,7 @@ describe('Storable', () => {
               reference: 11,
               fullName: 'User 11',
               accessLevel: 3,
+              tags: ['owner', 'admin'],
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -587,6 +605,7 @@ describe('Storable', () => {
               reference: 13,
               fullName: 'User 13',
               accessLevel: 3,
+              tags: ['admin'],
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -665,6 +684,21 @@ describe('Storable', () => {
 
           // === Advanced queries ===
 
+          users = await User.fork().find({tags: {$some: 'angel'}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({tags: {$some: 'blocked'}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          users = await User.fork().find({tags: {$some: 'admin'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user11'},
+            {__component: 'user', id: 'user13'}
+          ]);
+
           const ForkedUser = User.fork();
 
           const user = ForkedUser.prototype.deserialize({id: 'user1'});
@@ -702,6 +736,12 @@ describe('Storable', () => {
           expect(await User.fork().count({accessLevel: 3, emailIsVerified: true})).toBe(1);
 
           // === Advanced queries ===
+
+          expect(await User.fork().count({tags: {$some: 'angel'}})).toBe(0);
+
+          expect(await User.fork().count({tags: {$some: 'blocked'}})).toBe(1);
+
+          expect(await User.fork().count({tags: {$some: 'admin'}})).toBe(2);
 
           const user = User.fork().prototype.deserialize({fullName: 'User 1'});
 
@@ -753,6 +793,7 @@ describe('Storable', () => {
         reference: 1,
         fullName: 'User 1',
         accessLevel: 0,
+        tags: ['spammer', 'blocked'],
         emailIsVerified: false,
         createdOn: {__date: CREATED_ON.toISOString()},
         updatedOn: {__undefined: true},
@@ -1054,6 +1095,7 @@ describe('Storable', () => {
           reference: 1,
           fullName: 'User 1',
           accessLevel: 0,
+          tags: ['spammer', 'blocked'],
           emailIsVerified: false,
           createdOn: CREATED_ON,
           updatedOn: undefined
@@ -1065,6 +1107,7 @@ describe('Storable', () => {
           reference: 11,
           fullName: 'User 11',
           accessLevel: 3,
+          tags: ['owner', 'admin'],
           emailIsVerified: true,
           createdOn: CREATED_ON,
           updatedOn: undefined
@@ -1076,6 +1119,7 @@ describe('Storable', () => {
           reference: 12,
           fullName: 'User 12',
           accessLevel: 1,
+          tags: [],
           emailIsVerified: true,
           createdOn: CREATED_ON,
           updatedOn: undefined
@@ -1087,6 +1131,7 @@ describe('Storable', () => {
           reference: 13,
           fullName: 'User 13',
           accessLevel: 3,
+          tags: ['admin'],
           emailIsVerified: false,
           createdOn: CREATED_ON,
           updatedOn: undefined

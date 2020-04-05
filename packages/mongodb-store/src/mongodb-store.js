@@ -125,8 +125,10 @@ export class MongoDBStore extends AbstractStore {
     return deletedCount === 1;
   }
 
-  async _findDocuments({collectionName, query, sort, skip, limit, attributeSelector}) {
+  async _findDocuments({collectionName, expressions, sort, skip, limit, attributeSelector}) {
     const collection = await this._getCollection(collectionName);
+
+    const query = buildQuery(expressions);
 
     const projection = buildProjection(attributeSelector);
     const options = {projection};
@@ -164,8 +166,10 @@ export class MongoDBStore extends AbstractStore {
     return documents;
   }
 
-  async _countDocuments({collectionName, query}) {
+  async _countDocuments({collectionName, expressions}) {
     const collection = await this._getCollection(collectionName);
+
+    const query = buildQuery(expressions);
 
     const documentsCount = await debugCall(
       async () => {
@@ -297,6 +301,30 @@ function buildProjection(attributeSelector) {
   build(attributeSelector, '');
 
   return projection;
+}
+
+function buildQuery(expressions) {
+  const query = {};
+
+  for (const [path, operator, value] of expressions) {
+    if (operator === '$equals') {
+      query[path] = value;
+
+      continue;
+    }
+
+    if (operator === '$some') {
+      query[path] = {$elemMatch: {$eq: value}};
+
+      continue;
+    }
+
+    throw new Error(
+      `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
+    );
+  }
+
+  return query;
 }
 
 function setUndefinedAttributes(document, attributeSelector) {

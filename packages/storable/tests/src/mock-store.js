@@ -1,7 +1,7 @@
 import {AbstractStore} from '@liaison/abstract-store';
 import {AttributeSelector} from '../../..';
 import pull from 'lodash/pull';
-import isEmpty from 'lodash/isEmpty';
+import get from 'lodash/get';
 import sortOn from 'sort-on';
 
 export class MockStore extends AbstractStore {
@@ -90,10 +90,10 @@ export class MockStore extends AbstractStore {
     return true;
   }
 
-  async _findDocuments({collectionName, query, sort, skip, limit, attributeSelector}) {
+  async _findDocuments({collectionName, expressions, sort, skip, limit, attributeSelector}) {
     const collection = this.__getCollection(collectionName);
 
-    let documents = await this.__findDocuments({collection, query, sort, skip, limit});
+    let documents = await this.__findDocuments({collection, expressions, sort, skip, limit});
 
     documents = documents.map(document =>
       AttributeSelector.pick(document, attributeSelector, {
@@ -104,8 +104,8 @@ export class MockStore extends AbstractStore {
     return documents;
   }
 
-  async __findDocuments({collection, query, sort, skip, limit}) {
-    let documents = filterDocuments(collection, query);
+  async __findDocuments({collection, expressions, sort, skip, limit}) {
+    let documents = filterDocuments(collection, expressions);
 
     documents = sortDocuments(documents, sort);
 
@@ -116,30 +116,52 @@ export class MockStore extends AbstractStore {
     return documents;
   }
 
-  async _countDocuments({collectionName, query}) {
+  async _countDocuments({collectionName, expressions}) {
     const collection = this.__getCollection(collectionName);
 
-    const documents = await this.__findDocuments({collection, query});
+    const documents = await this.__findDocuments({collection, expressions});
 
     return documents.length;
   }
 }
 
-function filterDocuments(documents, query) {
-  if (isEmpty(query)) {
+function filterDocuments(documents, expressions) {
+  if (expressions.length === 0) {
     return documents; // Optimization
   }
 
-  return documents.filter(document => documentIsMatchingQuery(document, query));
+  return documents.filter(document => documentIsMatchingExpressions(document, expressions));
 }
 
-function documentIsMatchingQuery(document, query) {
-  for (const [name, valueInQuery] of Object.entries(query)) {
-    const valueInDocument = document[name];
+function documentIsMatchingExpressions(document, expressions) {
+  for (const [path, operator, expressionValue] of expressions) {
+    const documentValue = get(document, path);
 
-    if (valueInDocument !== valueInQuery) {
-      return false;
+    if (operator === '$equals') {
+      if (documentValue !== expressionValue) {
+        return false;
+      }
+
+      continue;
     }
+
+    if (operator === '$some') {
+      if (!Array.isArray(documentValue)) {
+        return false;
+      }
+
+      const documentValues = documentValue;
+
+      if (!documentValues.includes(expressionValue)) {
+        return false;
+      }
+
+      continue;
+    }
+
+    throw new Error(
+      `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
+    );
   }
 
   return true;
