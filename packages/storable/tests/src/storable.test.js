@@ -34,6 +34,7 @@ describe('Storable', () => {
     @attribute('string') fullName = '';
     @attribute('number') accessLevel = 0;
     @attribute('[string]') tags = [];
+    @attribute('object?') location;
     @attribute('boolean') emailIsVerified = false;
     @attribute('date') createdOn = new Date('2020-03-22T01:27:42.612Z');
     @attribute('date?') updatedOn;
@@ -129,6 +130,7 @@ describe('Storable', () => {
             @expose({get: true, set: true}) @inherit() fullName;
             @expose({get: true, set: true}) @inherit() accessLevel;
             @expose({get: true, set: true}) @inherit() tags;
+            @expose({get: true, set: true}) @inherit() location;
             @expose({get: true, set: true}) @inherit() emailIsVerified;
             @expose({get: true, set: true}) @inherit() createdOn;
             @expose({get: true, set: true}) @inherit() updatedOn;
@@ -181,6 +183,7 @@ describe('Storable', () => {
             fullName: 'User 1',
             accessLevel: 0,
             tags: ['spammer', 'blocked'],
+            location: {country: 'USA', city: 'Paris'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -196,6 +199,7 @@ describe('Storable', () => {
             fullName: 'User 1',
             accessLevel: 0,
             tags: ['spammer', 'blocked'],
+            location: {country: 'USA', city: 'Paris'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -231,6 +235,7 @@ describe('Storable', () => {
             fullName: 'User 1',
             accessLevel: 0,
             tags: ['spammer', 'blocked'],
+            location: {country: 'USA', city: 'Paris'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -331,6 +336,7 @@ describe('Storable', () => {
             fullName: 'User 1',
             accessLevel: 0,
             tags: ['spammer', 'blocked'],
+            location: {country: 'USA', city: 'Paris'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -381,7 +387,8 @@ describe('Storable', () => {
             email: '2@user.com',
             reference: 2,
             fullName: 'User 2',
-            tags: ['newcomer']
+            tags: ['newcomer'],
+            location: {country: 'USA', city: 'New York'}
           });
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
@@ -402,6 +409,7 @@ describe('Storable', () => {
             fullName: 'User 2',
             accessLevel: 0,
             tags: ['newcomer'],
+            location: {country: 'USA', city: 'New York'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -410,6 +418,7 @@ describe('Storable', () => {
           user.fullName = 'User 2 (modified)';
           user.accessLevel = 1;
           user.tags = [];
+          user.location.state = 'New York';
           user.updatedOn = UPDATED_ON;
 
           expect(await user.save()).toBe(user);
@@ -424,12 +433,14 @@ describe('Storable', () => {
             fullName: 'User 2 (modified)',
             accessLevel: 1,
             tags: [],
+            location: {country: 'USA', state: 'New York', city: 'New York'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__date: UPDATED_ON.toISOString()}
           });
 
           user.updatedOn = undefined;
+          user.location = {country: 'USA'};
 
           expect(await user.save()).toBe(user);
 
@@ -443,6 +454,7 @@ describe('Storable', () => {
             fullName: 'User 2 (modified)',
             accessLevel: 1,
             tags: [],
+            location: {country: 'USA'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -524,6 +536,7 @@ describe('Storable', () => {
               fullName: 'User 1',
               accessLevel: 0,
               tags: ['spammer', 'blocked'],
+              location: {country: 'USA', city: 'Paris'},
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -536,6 +549,7 @@ describe('Storable', () => {
               fullName: 'User 11',
               accessLevel: 3,
               tags: ['owner', 'admin'],
+              location: {country: 'USA'},
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -548,6 +562,7 @@ describe('Storable', () => {
               fullName: 'User 12',
               accessLevel: 1,
               tags: [],
+              location: {country: 'France', city: 'Paris'},
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -560,6 +575,7 @@ describe('Storable', () => {
               fullName: 'User 13',
               accessLevel: 3,
               tags: ['admin'],
+              location: {__undefined: true},
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -577,6 +593,7 @@ describe('Storable', () => {
               fullName: 'User 12',
               accessLevel: 1,
               tags: [],
+              location: {country: 'France', city: 'Paris'},
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -594,6 +611,7 @@ describe('Storable', () => {
               fullName: 'User 11',
               accessLevel: 3,
               tags: ['owner', 'admin'],
+              location: {country: 'USA'},
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -606,6 +624,7 @@ describe('Storable', () => {
               fullName: 'User 13',
               accessLevel: 3,
               tags: ['admin'],
+              location: {__undefined: true},
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -688,6 +707,33 @@ describe('Storable', () => {
 
           // === Advanced queries ===
 
+          // --- With an object attribute ---
+
+          users = await User.fork().find({location: {country: 'Japan'}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({location: {country: 'France'}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user12'}]);
+
+          users = await User.fork().find({location: {country: 'USA'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user11'}
+          ]);
+
+          users = await User.fork().find({location: {country: 'USA', city: 'Paris'}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          users = await User.fork().find({location: undefined}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user13'}]);
+
+          // --- With an array attribute ---
+
           users = await User.fork().find({tags: {$some: 'angel'}}, {});
 
           expect(serialize(users)).toStrictEqual([]);
@@ -710,6 +756,8 @@ describe('Storable', () => {
             {__component: 'user', id: 'user11'},
             {__component: 'user', id: 'user13'}
           ]);
+
+          // --- With a component specified as query ---
 
           const ForkedUser = User.fork();
 
@@ -749,11 +797,27 @@ describe('Storable', () => {
 
           // === Advanced queries ===
 
+          // --- With an object attribute ---
+
+          expect(await User.fork().count({location: {country: 'Japan'}})).toBe(0);
+
+          expect(await User.fork().count({location: {country: 'France'}})).toBe(1);
+
+          expect(await User.fork().count({location: {country: 'USA'}})).toBe(2);
+
+          expect(await User.fork().count({location: {country: 'USA', city: 'Paris'}})).toBe(1);
+
+          expect(await User.fork().count({location: undefined})).toBe(1);
+
+          // --- With an array attribute ---
+
           expect(await User.fork().count({tags: {$some: 'angel'}})).toBe(0);
 
           expect(await User.fork().count({tags: {$some: 'blocked'}})).toBe(1);
 
           expect(await User.fork().count({tags: {$some: 'admin'}})).toBe(2);
+
+          // --- With a component specified as query ---
 
           // The '$some' should be implicit on array attributes
           expect(await User.fork().count({tags: 'admin'})).toBe(2);
@@ -811,6 +875,7 @@ describe('Storable', () => {
         fullName: 'User 1',
         accessLevel: 0,
         tags: ['spammer', 'blocked'],
+        location: {country: 'USA', city: 'Paris'},
         emailIsVerified: false,
         createdOn: {__date: CREATED_ON.toISOString()},
         updatedOn: {__undefined: true},
@@ -1113,6 +1178,7 @@ describe('Storable', () => {
           fullName: 'User 1',
           accessLevel: 0,
           tags: ['spammer', 'blocked'],
+          location: {country: 'USA', city: 'Paris'},
           emailIsVerified: false,
           createdOn: CREATED_ON,
           updatedOn: undefined
@@ -1125,6 +1191,7 @@ describe('Storable', () => {
           fullName: 'User 11',
           accessLevel: 3,
           tags: ['owner', 'admin'],
+          location: {country: 'USA'},
           emailIsVerified: true,
           createdOn: CREATED_ON,
           updatedOn: undefined
@@ -1137,6 +1204,7 @@ describe('Storable', () => {
           fullName: 'User 12',
           accessLevel: 1,
           tags: [],
+          location: {country: 'France', city: 'Paris'},
           emailIsVerified: true,
           createdOn: CREATED_ON,
           updatedOn: undefined
@@ -1149,6 +1217,7 @@ describe('Storable', () => {
           fullName: 'User 13',
           accessLevel: 3,
           tags: ['admin'],
+          location: undefined,
           emailIsVerified: false,
           createdOn: CREATED_ON,
           updatedOn: undefined
