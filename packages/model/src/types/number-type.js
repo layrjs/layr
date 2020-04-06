@@ -8,4 +8,12 @@ export class NumberType extends Type {
   _checkValue(value, options) {
     return super._checkValue(value, options) ?? typeof value === 'number';
   }
+
+  static isNumberType(object) {
+    return isNumberType(object);
+  }
+}
+
+export function isNumberType(object) {
+  return typeof object?.constructor?.isNumberType === 'function';
 }

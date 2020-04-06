@@ -1,4 +1,4 @@
-import {StringType, NumberType} from '@liaison/model';
+import {isStringType, isNumberType} from '@liaison/model';
 
 import {Entity, IdentifierAttribute, isIdentifierAttribute} from '../../..';
 
@@ -11,14 +11,14 @@ describe('IdentifierAttribute', () => {
     expect(isIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(StringType);
+    expect(isStringType(idAttribute.getType())).toBe(true);
 
     idAttribute = new IdentifierAttribute('id', Movie.prototype, {type: 'number'});
 
     expect(isIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(idAttribute.getType())).toBe(true);
 
     expect(() => new IdentifierAttribute('id', Movie.prototype, {type: 'boolean'})).toThrow(
       "The type of an identifier attribute must be 'string' or 'number' (entity name: 'movie', attribute name: 'id', specified type: 'boolean')"

@@ -1,4 +1,4 @@
-import {Model, ModelAttribute, isModelAttribute, NumberType, validators} from '../../..';
+import {Model, ModelAttribute, isModelAttribute, isNumberType, validators} from '../../..';
 
 describe('ModelAttribute', () => {
   test('Creation', async () => {
@@ -9,7 +9,7 @@ describe('ModelAttribute', () => {
     expect(isModelAttribute(modelAttribute)).toBe(true);
     expect(modelAttribute.getName()).toBe('limit');
     expect(modelAttribute.getParent()).toBe(Movie);
-    expect(modelAttribute.getType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(modelAttribute.getType())).toBe(true);
   });
 
   test('Value', async () => {

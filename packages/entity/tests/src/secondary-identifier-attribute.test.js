@@ -1,4 +1,4 @@
-import {StringType} from '@liaison/model';
+import {isStringType} from '@liaison/model';
 
 import {Entity, SecondaryIdentifierAttribute, isSecondaryIdentifierAttribute} from '../../..';
 
@@ -11,7 +11,7 @@ describe('SecondaryIdentifierAttribute', () => {
     expect(isSecondaryIdentifierAttribute(emailAttribute)).toBe(true);
     expect(emailAttribute.getName()).toBe('email');
     expect(emailAttribute.getParent()).toBe(Movie.prototype);
-    expect(emailAttribute.getType()).toBeInstanceOf(StringType);
+    expect(isStringType(emailAttribute.getType())).toBe(true);
   });
 
   test('Value', async () => {

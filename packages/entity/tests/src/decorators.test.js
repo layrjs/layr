@@ -1,4 +1,4 @@
-import {Model, validators, StringType, NumberType} from '@liaison/model';
+import {Model, validators, isStringType, isNumberType} from '@liaison/model';
 
 import {
   Entity,
@@ -21,7 +21,7 @@ describe('Decorators', () => {
     expect(isPrimaryIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie1.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(StringType);
+    expect(isStringType(idAttribute.getType())).toBe(true);
     expect(idAttribute.getType().getValidators()).toEqual([]);
     expect(typeof idAttribute.getDefaultValueFunction()).toBe('function');
 
@@ -34,7 +34,7 @@ describe('Decorators', () => {
     expect(isPrimaryIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie2.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(StringType);
+    expect(isStringType(idAttribute.getType())).toBe(true);
     expect(idAttribute.getType().getValidators()).toEqual([notEmpty]);
     expect(typeof idAttribute.getDefaultValueFunction()).toBe('function');
 
@@ -47,7 +47,7 @@ describe('Decorators', () => {
     expect(isPrimaryIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie3.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(idAttribute.getType())).toBe(true);
     expect(idAttribute.getType().getValidators()).toEqual([]);
     expect(idAttribute.getDefaultValueFunction()).toBeUndefined();
 
@@ -60,7 +60,7 @@ describe('Decorators', () => {
     expect(isPrimaryIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie4.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(idAttribute.getType())).toBe(true);
     expect(idAttribute.getType().getValidators()).toEqual([]);
     expect(typeof idAttribute.getDefaultValueFunction()).toBe('function');
 
@@ -73,7 +73,7 @@ describe('Decorators', () => {
     expect(isPrimaryIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie5.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(idAttribute.getType())).toBe(true);
     expect(idAttribute.getType().getValidators()).toEqual([notEmpty]);
     expect(idAttribute.getDefaultValueFunction()).toBeUndefined();
 
@@ -120,7 +120,7 @@ describe('Decorators', () => {
     expect(isSecondaryIdentifierAttribute(emailAttribute)).toBe(true);
     expect(emailAttribute.getName()).toBe('email');
     expect(emailAttribute.getParent()).toBe(User.prototype);
-    expect(emailAttribute.getType()).toBeInstanceOf(StringType);
+    expect(isStringType(emailAttribute.getType())).toBe(true);
     expect(emailAttribute.getType().getValidators()).toEqual([]);
     expect(emailAttribute.getDefaultValueFunction()).toBeUndefined();
 
@@ -129,7 +129,7 @@ describe('Decorators', () => {
     expect(isSecondaryIdentifierAttribute(usernameAttribute)).toBe(true);
     expect(usernameAttribute.getName()).toBe('username');
     expect(usernameAttribute.getParent()).toBe(User.prototype);
-    expect(usernameAttribute.getType()).toBeInstanceOf(StringType);
+    expect(isStringType(usernameAttribute.getType())).toBe(true);
     expect(usernameAttribute.getType().getValidators()).toEqual([]);
     expect(usernameAttribute.getDefaultValueFunction()).toBeUndefined();
   });

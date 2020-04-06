@@ -1,13 +1,21 @@
 import {
   Model,
   BooleanType,
+  isBooleanType,
   NumberType,
+  isNumberType,
   StringType,
+  isStringType,
   ObjectType,
+  isObjectType,
   DateType,
+  isDateType,
   RegExpType,
+  isRegExpType,
   ArrayType,
+  isArrayType,
   ComponentType,
+  isComponentType,
   createType,
   validators,
   requiredValidator
@@ -40,6 +48,8 @@ describe('Types', () => {
   test('BooleanType', async () => {
     let type = new BooleanType({modelAttribute});
 
+    expect(isBooleanType(type)).toBe(true);
+
     expect(type.toString()).toBe('boolean');
 
     expect(() => type.checkValue(true, {modelAttribute})).not.toThrow();
@@ -66,6 +76,8 @@ describe('Types', () => {
   test('NumberType', async () => {
     let type = new NumberType({modelAttribute});
 
+    expect(isNumberType(type)).toBe(true);
+
     expect(type.toString()).toBe('number');
 
     expect(() => type.checkValue(1, {modelAttribute})).not.toThrow();
@@ -90,6 +102,8 @@ describe('Types', () => {
   test('StringType', async () => {
     let type = new StringType({modelAttribute});
 
+    expect(isStringType(type)).toBe(true);
+
     expect(type.toString()).toBe('string');
 
     expect(() => type.checkValue('a', {modelAttribute})).not.toThrow();
@@ -113,6 +127,8 @@ describe('Types', () => {
 
   test('ObjectType', async () => {
     let type = new ObjectType({modelAttribute});
+
+    expect(isObjectType(type)).toBe(true);
 
     class Movie extends Model {}
 
@@ -150,6 +166,8 @@ describe('Types', () => {
   test('DateType', async () => {
     let type = new DateType({modelAttribute});
 
+    expect(isDateType(type)).toBe(true);
+
     expect(type.toString()).toBe('date');
 
     expect(() => type.checkValue(new Date(), {modelAttribute})).not.toThrow();
@@ -173,6 +191,8 @@ describe('Types', () => {
 
   test('RegExpType', async () => {
     let type = new RegExpType({modelAttribute});
+
+    expect(isRegExpType(type)).toBe(true);
 
     expect(type.toString()).toBe('regExp');
 
@@ -198,6 +218,8 @@ describe('Types', () => {
   test('ArrayType', async () => {
     let itemType = new NumberType({modelAttribute});
     let type = new ArrayType({itemType, modelAttribute});
+
+    expect(isArrayType(type)).toBe(true);
 
     expect(type.toString()).toBe('[number]');
 
@@ -260,6 +282,8 @@ describe('Types', () => {
 
     let type = new ComponentType({componentName: 'Movie', modelAttribute});
 
+    expect(isComponentType(type)).toBe(true);
+
     expect(type.toString()).toBe('Movie');
 
     expect(() => type.checkValue(Movie, {modelAttribute})).not.toThrow();
@@ -295,6 +319,8 @@ describe('Types', () => {
     // Component instance types
 
     type = new ComponentType({componentName: 'movie', modelAttribute});
+
+    expect(isComponentType(type)).toBe(true);
 
     expect(type.toString()).toBe('movie');
 
@@ -332,26 +358,26 @@ describe('Types', () => {
   test('createType()', async () => {
     let type = createType('string', {modelAttribute});
 
-    expect(type).toBeInstanceOf(StringType);
+    expect(isStringType(type)).toBe(true);
     expect(type.isOptional()).toBe(false);
 
     type = createType('string?', {modelAttribute});
 
-    expect(type).toBeInstanceOf(StringType);
+    expect(isStringType(type)).toBe(true);
     expect(type.isOptional()).toBe(true);
 
     type = createType('[number]', {modelAttribute});
 
-    expect(type).toBeInstanceOf(ArrayType);
+    expect(isArrayType(type)).toBe(true);
     expect(type.isOptional()).toBe(false);
-    expect(type.getItemType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(type.getItemType())).toBe(true);
     expect(type.getItemType().isOptional()).toBe(false);
 
     type = createType('[number?]?', {modelAttribute});
 
-    expect(type).toBeInstanceOf(ArrayType);
+    expect(isArrayType(type)).toBe(true);
     expect(type.isOptional()).toBe(true);
-    expect(type.getItemType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(type.getItemType())).toBe(true);
     expect(type.getItemType().isOptional()).toBe(true);
 
     type = createType('string', {modelAttribute});

@@ -86,4 +86,12 @@ export class ArrayType extends Type {
 
     return introspectedArrayType;
   }
+
+  static isArrayType(object) {
+    return isArrayType(object);
+  }
+}
+
+export function isArrayType(object) {
+  return typeof object?.constructor?.isArrayType === 'function';
 }

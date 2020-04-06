@@ -1,4 +1,4 @@
-import {StringType, NumberType} from '@liaison/model';
+import {isStringType, isNumberType} from '@liaison/model';
 
 import {
   Entity,
@@ -16,7 +16,7 @@ describe('PrimaryIdentifierAttribute', () => {
     expect(isPrimaryIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(StringType);
+    expect(isStringType(idAttribute.getType())).toBe(true);
     expect(typeof idAttribute.getDefaultValueFunction()).toBe('function');
 
     idAttribute = new PrimaryIdentifierAttribute('id', Movie.prototype, {type: 'number'});
@@ -24,7 +24,7 @@ describe('PrimaryIdentifierAttribute', () => {
     expect(isPrimaryIdentifierAttribute(idAttribute)).toBe(true);
     expect(idAttribute.getName()).toBe('id');
     expect(idAttribute.getParent()).toBe(Movie.prototype);
-    expect(idAttribute.getType()).toBeInstanceOf(NumberType);
+    expect(isNumberType(idAttribute.getType())).toBe(true);
     expect(idAttribute.getDefaultValueFunction()).toBeUndefined();
   });
 

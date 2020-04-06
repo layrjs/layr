@@ -64,4 +64,12 @@ export class ComponentType extends Type {
 
     return failedValidators;
   }
+
+  static isComponentType(object) {
+    return isComponentType(object);
+  }
+}
+
+export function isComponentType(object) {
+  return typeof object?.constructor?.isComponentType === 'function';
 }
