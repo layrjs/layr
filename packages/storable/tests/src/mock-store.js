@@ -135,7 +135,7 @@ function filterDocuments(documents, expressions) {
 
 function documentIsMatchingExpressions(document, expressions) {
   for (const [path, operator, expressionValue] of expressions) {
-    const documentValue = get(document, path);
+    const documentValue = path !== '' ? get(document, path) : document;
 
     if (operator === '$equals') {
       if (documentValue !== expressionValue) {
@@ -150,9 +150,14 @@ function documentIsMatchingExpressions(document, expressions) {
         return false;
       }
 
-      const documentValues = documentValue;
+      const subdocuments = documentValue;
+      const subexpressions = expressionValue;
 
-      if (!documentValues.includes(expressionValue)) {
+      if (
+        !subdocuments.some(subdocument =>
+          documentIsMatchingExpressions(subdocument, subexpressions)
+        )
+      ) {
         return false;
       }
 

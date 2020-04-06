@@ -338,9 +338,7 @@ export class AbstractStore {
   _toDocumentExpressions(storable, query) {
     const documentQuery = this._toDocument(storable, query);
 
-    const documentExpressions = [];
-
-    const build = function(query, path) {
+    const build = function(query, expressions, path) {
       for (const [name, value] of Object.entries(query)) {
         if (isOperator(name)) {
           throw new Error(
@@ -350,52 +348,61 @@ export class AbstractStore {
 
         const subpath = path !== '' ? `${path}.${name}` : name;
 
-        if (!isPlainObject(value)) {
-          documentExpressions.push([subpath, '$equals', value]);
-          continue;
+        handleValue(value, expressions, subpath);
+      }
+    };
+
+    const handleValue = function(value, expressions, subpath) {
+      if (!isPlainObject(value)) {
+        expressions.push([subpath, '$equals', value]);
+        return;
+      }
+
+      const object = value;
+
+      let objectContainsAttributes = false;
+      let objectContainsOperators = false;
+
+      for (const name of Object.keys(object)) {
+        if (isOperator(name)) {
+          objectContainsOperators = true;
+        } else {
+          objectContainsAttributes = true;
         }
+      }
 
-        const object = value;
-
-        let objectContainsAttributes = false;
-        let objectContainsOperators = false;
-
-        for (const name of Object.keys(object)) {
-          if (isOperator(name)) {
-            objectContainsOperators = true;
-          } else {
-            objectContainsAttributes = true;
-          }
-        }
-
-        if (objectContainsAttributes) {
-          if (objectContainsOperators) {
-            throw new Error(
-              `A subquery cannot contain both an attribute and an operator (subquery: ${JSON.stringify(
-                object
-              )})`
-            );
-          }
-
-          const subquery = object;
-
-          build(subquery, subpath);
-
-          continue;
-        }
-
+      if (objectContainsAttributes) {
         if (objectContainsOperators) {
-          const operators = object;
+          throw new Error(
+            `A subquery cannot contain both an attribute and an operator (subquery: ${JSON.stringify(
+              object
+            )})`
+          );
+        }
 
-          for (const [operator, value] of Object.entries(operators)) {
-            documentExpressions.push([subpath, operator, value]);
+        const subquery = object;
+        build(subquery, expressions, subpath);
+        return;
+      }
+
+      if (objectContainsOperators) {
+        const operators = object;
+
+        for (const [operator, value] of Object.entries(operators)) {
+          if (operator === '$some') {
+            const subexpressions = [];
+            handleValue(value, subexpressions, '');
+            expressions.push([subpath, '$some', subexpressions]);
+            continue;
           }
+
+          expressions.push([subpath, operator, value]);
         }
       }
     };
 
-    build(documentQuery, '');
-
+    const documentExpressions = [];
+    build(documentQuery, documentExpressions, '');
     return documentExpressions;
   }
 

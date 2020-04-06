@@ -307,24 +307,32 @@ function buildQuery(expressions) {
   const query = {};
 
   for (const [path, operator, value] of expressions) {
-    if (operator === '$equals') {
-      query[path] = value;
+    const [actualOperator, actualValue] = handleOperator(path, operator, value);
 
-      continue;
+    if (path !== '') {
+      query[path] = {[actualOperator]: actualValue};
+    } else {
+      query[actualOperator] = actualValue;
     }
-
-    if (operator === '$some') {
-      query[path] = {$elemMatch: {$eq: value}};
-
-      continue;
-    }
-
-    throw new Error(
-      `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
-    );
   }
 
   return query;
+}
+
+function handleOperator(path, operator, value) {
+  if (operator === '$equals') {
+    return ['$eq', value];
+  }
+
+  if (operator === '$some') {
+    const subexpressions = value;
+    const subquery = buildQuery(subexpressions);
+    return ['$elemMatch', subquery];
+  }
+
+  throw new Error(
+    `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
+  );
 }
 
 function setUndefinedAttributes(document, attributeSelector) {
