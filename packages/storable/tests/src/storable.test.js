@@ -682,6 +682,10 @@ describe('Storable', () => {
             {__component: 'user', id: 'user11'}
           ]);
 
+          await expect(User.fork().find({unknownAttribute: 1})).rejects.toThrow(
+            "The property 'unknownAttribute' is missing (storable name: 'user')"
+          );
+
           // === Advanced queries ===
 
           users = await User.fork().find({tags: {$some: 'angel'}}, {});
@@ -693,6 +697,14 @@ describe('Storable', () => {
           expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
 
           users = await User.fork().find({tags: {$some: 'admin'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user11'},
+            {__component: 'user', id: 'user13'}
+          ]);
+
+          // The '$some' should be implicit on array attributes
+          users = await User.fork().find({tags: 'admin'}, {});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'user', id: 'user11'},
@@ -743,9 +755,14 @@ describe('Storable', () => {
 
           expect(await User.fork().count({tags: {$some: 'admin'}})).toBe(2);
 
-          const user = User.fork().prototype.deserialize({fullName: 'User 1'});
+          // The '$some' should be implicit on array attributes
+          expect(await User.fork().count({tags: 'admin'})).toBe(2);
 
-          expect(await User.fork().count(user)).toBe(1);
+          const ForkedUser = User.fork();
+
+          const user = ForkedUser.prototype.deserialize({fullName: 'User 1'});
+
+          expect(await ForkedUser.count(user)).toBe(1);
         });
       });
     }

@@ -340,7 +340,7 @@ export class AbstractStore {
 
     const documentExpressions = [];
 
-    const build = (query, path) => {
+    const build = function(query, path) {
       for (const [name, value] of Object.entries(query)) {
         if (isOperator(name)) {
           throw new Error(
