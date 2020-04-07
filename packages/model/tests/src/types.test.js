@@ -39,6 +39,10 @@ describe('Types', () => {
     describe() {
       return `attribute name: '${this.getName()}'`;
     }
+
+    static isModelAttribute(object) {
+      return object?.constructor?.isModelAttribute === 'function';
+    }
   }
 
   ModelAttribute.humanName = 'Attribute';

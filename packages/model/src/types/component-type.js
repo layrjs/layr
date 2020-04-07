@@ -1,9 +1,10 @@
-import {validateComponentName} from '@liaison/component';
+import {validateComponentName, getTypeOf} from '@liaison/component';
 import {isPrototypeOf, getClassOf} from 'core-helpers';
 import ow from 'ow';
 
 import {Type} from './type';
 import {isModelClassOrInstance} from '../utilities';
+import {isModelAttribute} from '../model-attribute';
 
 export class ComponentType extends Type {
   constructor(options = {}) {
@@ -22,8 +23,14 @@ export class ComponentType extends Type {
     return this._componentName;
   }
 
-  _getComponent({modelAttribute}) {
-    return getClassOf(modelAttribute.getParent()).getComponent(this.getComponentName(), {
+  getComponentForAttribute(attribute) {
+    if (!isModelAttribute(attribute)) {
+      throw new Error(
+        `Expected a model attribute, but received a value of type '${getTypeOf(attribute)}'`
+      );
+    }
+
+    return getClassOf(attribute.getParent()).getComponent(this.getComponentName(), {
       includePrototypes: true
     });
   }
@@ -39,7 +46,7 @@ export class ComponentType extends Type {
       return result;
     }
 
-    const component = this._getComponent({modelAttribute});
+    const component = this.getComponentForAttribute(modelAttribute);
 
     return value === component || isPrototypeOf(component, value);
   }
@@ -49,7 +56,7 @@ export class ComponentType extends Type {
       return false;
     }
 
-    const component = this._getComponent({modelAttribute});
+    const component = this.getComponentForAttribute(modelAttribute);
 
     return component.expandAttributeSelector(normalizedAttributeSelector, options);
   }
