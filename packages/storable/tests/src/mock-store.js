@@ -137,39 +137,55 @@ function documentIsMatchingExpressions(document, expressions) {
   for (const [path, operator, expressionValue] of expressions) {
     const documentValue = path !== '' ? get(document, path) : document;
 
-    if (operator === '$equals') {
-      if (documentValue !== expressionValue) {
-        return false;
-      }
-
-      continue;
+    if (evaluateExpression(documentValue, operator, expressionValue, {path}) === false) {
+      return false;
     }
-
-    if (operator === '$some') {
-      if (!Array.isArray(documentValue)) {
-        return false;
-      }
-
-      const subdocuments = documentValue;
-      const subexpressions = expressionValue;
-
-      if (
-        !subdocuments.some(subdocument =>
-          documentIsMatchingExpressions(subdocument, subexpressions)
-        )
-      ) {
-        return false;
-      }
-
-      continue;
-    }
-
-    throw new Error(
-      `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
-    );
   }
 
   return true;
+}
+
+function evaluateExpression(documentValue, operator, expressionValue, {path}) {
+  if (operator === '$equal') {
+    return documentValue?.valueOf() === expressionValue?.valueOf();
+  }
+
+  if (operator === '$notEqual') {
+    return documentValue?.valueOf() !== expressionValue?.valueOf();
+  }
+
+  if (operator === '$greaterThan') {
+    return documentValue > expressionValue;
+  }
+
+  if (operator === '$greaterThanOrEqual') {
+    return documentValue >= expressionValue;
+  }
+
+  if (operator === '$lessThan') {
+    return documentValue < expressionValue;
+  }
+
+  if (operator === '$lessThanOrEqual') {
+    return documentValue <= expressionValue;
+  }
+
+  if (operator === '$some') {
+    if (!Array.isArray(documentValue)) {
+      return false;
+    }
+
+    const subdocuments = documentValue;
+    const subexpressions = expressionValue;
+
+    return subdocuments.some(subdocument =>
+      documentIsMatchingExpressions(subdocument, subexpressions)
+    );
+  }
+
+  throw new Error(
+    `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
+  );
 }
 
 function sortDocuments(documents, sort) {

@@ -334,7 +334,7 @@ export class AbstractStore {
     return deserialize(serializedStorable);
   }
 
-  // {a: 1, b: {c: 2}} => [['a', '$equals', 1], ['b.c', '$equals', 2]]
+  // {a: 1, b: {c: 2}} => [['a', '$equal', 1], ['b.c', '$equal', 2]]
   _toDocumentExpressions(storable, query) {
     const documentQuery = this._toDocument(storable, query);
 
@@ -354,7 +354,8 @@ export class AbstractStore {
 
     const handleValue = function(value, expressions, subpath) {
       if (!isPlainObject(value)) {
-        expressions.push([subpath, '$equals', value]);
+        // Make '$equal' the default operator for non object values
+        expressions.push([subpath, '$equal', value]);
         return;
       }
 

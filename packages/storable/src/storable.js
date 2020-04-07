@@ -601,7 +601,7 @@ const StorableMixin = (Base = Object) => {
           let normalizedItemType = normalizeType(itemType, value, {modelAttribute});
 
           if (!(isPlainObject(value) && '$some' in value)) {
-            // Implicitly add the '$some' operator for array type
+            // Make '$some' implicit for array type
             normalizedItemType = {$some: normalizedItemType};
           }
 

@@ -307,21 +307,50 @@ function buildQuery(expressions) {
   const query = {};
 
   for (const [path, operator, value] of expressions) {
-    const [actualOperator, actualValue] = handleOperator(path, operator, value);
+    let subquery;
 
     if (path !== '') {
-      query[path] = {[actualOperator]: actualValue};
+      subquery = query[path];
+
+      if (subquery === undefined) {
+        subquery = {};
+        query[path] = subquery;
+      }
     } else {
-      query[actualOperator] = actualValue;
+      subquery = query;
     }
+
+    const [actualOperator, actualValue] = handleOperator(operator, value, {path});
+
+    subquery[actualOperator] = actualValue;
   }
 
   return query;
 }
 
-function handleOperator(path, operator, value) {
-  if (operator === '$equals') {
+function handleOperator(operator, value, {path}) {
+  if (operator === '$equal') {
     return ['$eq', value];
+  }
+
+  if (operator === '$notEqual') {
+    return ['$ne', value];
+  }
+
+  if (operator === '$greaterThan') {
+    return ['$gt', value];
+  }
+
+  if (operator === '$greaterThanOrEqual') {
+    return ['$gte', value];
+  }
+
+  if (operator === '$lessThan') {
+    return ['$lt', value];
+  }
+
+  if (operator === '$lessThanOrEqual') {
+    return ['$lte', value];
   }
 
   if (operator === '$some') {

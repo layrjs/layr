@@ -518,6 +518,8 @@ describe('Storable', () => {
 
           // === Simple queries ===
 
+          // --- Without a query ---
+
           let users = await User.fork().find();
 
           expect(serialize(users)).toStrictEqual([
@@ -585,6 +587,8 @@ describe('Storable', () => {
             }
           ]);
 
+          // --- With a simple query ---
+
           users = await User.fork().find({fullName: 'User 12'});
 
           expect(serialize(users)).toStrictEqual([
@@ -607,6 +611,8 @@ describe('Storable', () => {
             }
           ]);
 
+          // --- With an attribute selector ---
+
           users = await User.fork().find({accessLevel: 3}, {email: true});
 
           expect(serialize(users)).toStrictEqual([
@@ -621,9 +627,13 @@ describe('Storable', () => {
             {__component: 'user', id: 'user13', email: '13@user.com'}
           ]);
 
+          // --- With a query involving two attributes ---
+
           users = await User.fork().find({accessLevel: 3, emailIsVerified: true}, {});
 
           expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user11'}]);
+
+          // --- With 'sort' ---
 
           users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 1}});
 
@@ -656,12 +666,16 @@ describe('Storable', () => {
             {__component: 'user', id: 'user11', reference: 11, accessLevel: 3}
           ]);
 
+          // --- With 'skip' ---
+
           users = await User.fork().find({}, {}, {skip: 2});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'user', id: 'user12'},
             {__component: 'user', id: 'user13'}
           ]);
+
+          // --- With 'limit' ---
 
           users = await User.fork().find({}, {}, {limit: 2});
 
@@ -670,12 +684,16 @@ describe('Storable', () => {
             {__component: 'user', id: 'user11'}
           ]);
 
+          // --- With 'skip' and 'limit' ---
+
           users = await User.fork().find({}, {}, {skip: 1, limit: 2});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'user', id: 'user11'},
             {__component: 'user', id: 'user12'}
           ]);
+
+          // --- With 'sort', 'skip', and 'limit' ---
 
           users = await User.fork().find({}, {}, {sort: {id: -1}, skip: 1, limit: 2});
 
@@ -689,6 +707,63 @@ describe('Storable', () => {
           );
 
           // === Advanced queries ===
+
+          // --- With a basic comparison operator ---
+
+          users = await User.fork().find({accessLevel: {$notEqual: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user12'}
+          ]);
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 2}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user11'},
+            {__component: 'user', id: 'user13'}
+          ]);
+
+          users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user11'},
+            {__component: 'user', id: 'user13'}
+          ]);
+
+          users = await User.fork().find({accessLevel: {$lessThan: 1}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          users = await User.fork().find({accessLevel: {$lessThanOrEqual: 1}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user12'}
+          ]);
+
+          // --- With two basic comparison operators ---
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 1, $lessThan: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 0, $lessThan: 2}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user12'}
+          ]);
+
+          // --- With an impossible expression ---
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 1, $equal: 1}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
 
           // --- With an object attribute ---
 
@@ -805,18 +880,6 @@ describe('Storable', () => {
 
           // === Advanced queries ===
 
-          // --- With an object attribute ---
-
-          expect(await User.fork().count({location: {country: 'Japan'}})).toBe(0);
-
-          expect(await User.fork().count({location: {country: 'France'}})).toBe(1);
-
-          expect(await User.fork().count({location: {country: 'USA'}})).toBe(2);
-
-          expect(await User.fork().count({location: {country: 'USA', city: 'Paris'}})).toBe(1);
-
-          expect(await User.fork().count({location: undefined})).toBe(1);
-
           // --- With an array attribute ---
 
           expect(await User.fork().count({tags: {$some: 'angel'}})).toBe(0);
@@ -825,21 +888,8 @@ describe('Storable', () => {
 
           expect(await User.fork().count({tags: {$some: 'admin'}})).toBe(2);
 
-          // --- With an array of object attribute ---
-
-          expect(await User.fork().count({pastLocations: {country: 'Canada'}})).toBe(0);
-
-          expect(await User.fork().count({pastLocations: {country: 'Japan'}})).toBe(1);
-
-          expect(await User.fork().count({pastLocations: {country: 'France'}})).toBe(2);
-
-          expect(await User.fork().count({pastLocations: {country: 'USA', city: 'Nice'}})).toBe(1);
-
-          expect(await User.fork().count({pastLocations: {city: undefined}})).toBe(1);
-
           // --- With a component specified as query ---
 
-          // The '$some' should be implicit on array attributes
           expect(await User.fork().count({tags: 'admin'})).toBe(2);
 
           const ForkedUser = User.fork();
