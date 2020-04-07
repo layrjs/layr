@@ -389,6 +389,10 @@ function handleOperator(operator, value, {path}) {
     return ['$not', {$elemMatch: {$not: subquery}}];
   }
 
+  if (operator === '$length') {
+    return ['$size', value];
+  }
+
   throw new Error(
     `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
   );

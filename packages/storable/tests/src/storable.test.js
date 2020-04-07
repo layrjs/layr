@@ -895,6 +895,23 @@ describe('Storable', () => {
             {__component: 'user', id: 'user13'}
           ]);
 
+          // - '$length' -
+
+          users = await User.fork().find({tags: {$length: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({tags: {$length: 0}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user12'}]);
+
+          users = await User.fork().find({tags: {$length: 2}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user11'}
+          ]);
+
           // --- With an array of object attribute ---
 
           users = await User.fork().find({pastLocations: {country: 'Canada'}}, {});

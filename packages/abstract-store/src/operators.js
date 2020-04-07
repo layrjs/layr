@@ -11,7 +11,7 @@ const basicOperators = new Set([
 
 const stringOperators = new Set(['$includes', '$startsWith', '$endsWith', '$matches']);
 
-const arrayOperators = new Set(['$some', '$every']);
+const arrayOperators = new Set(['$some', '$every', '$length']);
 
 const aliases = new Map(
   Object.entries({
@@ -22,7 +22,8 @@ const aliases = new Map(
     $include: '$includes',
     $startWith: '$startsWith',
     $endWith: '$endsWith',
-    $match: '$matches'
+    $match: '$matches',
+    $size: '$length'
   })
 );
 
@@ -92,6 +93,18 @@ function normalizeStringOperatorForValue(operator, value, {query}) {
   return operator;
 }
 
-function normalizeArrayOperatorForValue(operator, _value, {_query}) {
+function normalizeArrayOperatorForValue(operator, value, {query}) {
+  if (operator === '$length') {
+    if (typeof value !== 'number') {
+      throw new Error(
+        `Expected a number as value of the operator '${operator}', but received a value of type '${getTypeOf(
+          value
+        )}' (query: '${JSON.stringify(query)}')`
+      );
+    }
+
+    return operator;
+  }
+
   return operator;
 }

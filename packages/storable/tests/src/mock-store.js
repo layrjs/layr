@@ -145,6 +145,7 @@ function documentIsMatchingExpressions(document, expressions) {
   return true;
 }
 
+// eslint-disable-next-line complexity
 function evaluateExpression(documentValue, operator, expressionValue, {path}) {
   // --- Basic operators ---
 
@@ -232,6 +233,14 @@ function evaluateExpression(documentValue, operator, expressionValue, {path}) {
     return subdocuments.every(subdocument =>
       documentIsMatchingExpressions(subdocument, subexpressions)
     );
+  }
+
+  if (operator === '$length') {
+    if (!Array.isArray(documentValue)) {
+      return false;
+    }
+
+    return documentValue.length === expressionValue;
   }
 
   throw new Error(

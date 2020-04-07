@@ -616,7 +616,9 @@ const StorableMixin = (Base = Object) => {
           if (
             !(
               isPlainObject(normalizedQuery) &&
-              ('$some' in normalizedQuery || '$every' in normalizedQuery)
+              ('$some' in normalizedQuery ||
+                '$every' in normalizedQuery ||
+                '$length' in normalizedQuery)
             )
           ) {
             // Make '$some' implicit
