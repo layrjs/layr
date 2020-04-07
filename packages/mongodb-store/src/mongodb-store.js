@@ -3,6 +3,7 @@ import {AttributeSelector} from '@liaison/component';
 import {MongoClient} from 'mongodb';
 import isEmpty from 'lodash/isEmpty';
 import mapKeys from 'lodash/mapKeys';
+import escapeRegExp from 'lodash/escapeRegExp';
 import {deleteUndefinedProperties} from 'core-helpers';
 import ow from 'ow';
 import debugModule from 'debug';
@@ -329,6 +330,8 @@ function buildQuery(expressions) {
 }
 
 function handleOperator(operator, value, {path}) {
+  // --- Basic operators ---
+
   if (operator === '$equal') {
     return ['$eq', value];
   }
@@ -352,6 +355,26 @@ function handleOperator(operator, value, {path}) {
   if (operator === '$lessThanOrEqual') {
     return ['$lte', value];
   }
+
+  // --- String operators ---
+
+  if (operator === '$includes') {
+    return ['$regex', escapeRegExp(value)];
+  }
+
+  if (operator === '$startsWith') {
+    return ['$regex', `^${escapeRegExp(value)}`];
+  }
+
+  if (operator === '$endsWith') {
+    return ['$regex', `${escapeRegExp(value)}$`];
+  }
+
+  if (operator === '$matches') {
+    return ['$regex', value];
+  }
+
+  // --- Array operators ---
 
   if (operator === '$some') {
     const subexpressions = value;

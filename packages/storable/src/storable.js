@@ -3,6 +3,7 @@ import {isModelAttribute, isComponentType, isArrayType} from '@liaison/model';
 import {EntityMixin, method, AttributeSelector} from '@liaison/entity';
 import {hasOwnProperty, isPrototypeOf} from 'core-helpers';
 import isPlainObject from 'lodash/isPlainObject';
+import mapKeys from 'lodash/mapKeys';
 import ow from 'ow';
 
 import {isStorableProperty} from './storable-property';
@@ -544,7 +545,7 @@ const StorableMixin = (Base = Object) => {
     }
 
     static __normalizeQuery(query) {
-      const normalizeComponent = function(component, query) {
+      const normalizeQueryForComponent = function(query, component) {
         if (isComponentClassOrInstance(query)) {
           if (component === query || isPrototypeOf(component, query)) {
             return query;
@@ -566,52 +567,61 @@ const StorableMixin = (Base = Object) => {
 
         const normalizedQuery = {};
 
-        for (const [name, value] of Object.entries(query)) {
+        for (const [name, subquery] of Object.entries(query)) {
           const attribute = component.getAttribute(name);
 
-          normalizedQuery[name] = normalizeAttribute(attribute, value);
+          normalizedQuery[name] = normalizeQueryForAttribute(subquery, attribute);
         }
 
         return normalizedQuery;
       };
 
-      const normalizeAttribute = function(attribute, value) {
+      const normalizeQueryForAttribute = function(query, attribute) {
         if (!isModelAttribute(attribute)) {
           // Since we cannot determine the type of a non-model attribute,
-          // there is nothing we can do with the value
-          return value;
+          // there is nothing we can do with the query
+          return query;
         }
 
         const modelAttribute = attribute;
         const type = modelAttribute.getType();
 
-        return normalizeType(type, value, {modelAttribute});
+        return normalizeQueryForAttributeAndType(query, modelAttribute, type);
       };
 
-      const normalizeType = function(type, value, {modelAttribute}) {
+      const normalizeQueryForAttributeAndType = function(query, attribute, type) {
         if (isComponentType(type)) {
-          const subcomponent = type._getComponent({modelAttribute});
+          const component = type.getComponentForAttribute(attribute);
 
-          return normalizeComponent(subcomponent, value);
+          const normalizedQuery = normalizeQueryForComponent(query, component);
+
+          return normalizedQuery;
         }
 
         if (isArrayType(type)) {
           const itemType = type.getItemType();
 
-          let normalizedItemType = normalizeType(itemType, value, {modelAttribute});
+          let normalizedQuery = normalizeQueryForAttributeAndType(query, attribute, itemType);
 
-          if (!(isPlainObject(value) && '$some' in value)) {
-            // Make '$some' implicit for array type
-            normalizedItemType = {$some: normalizedItemType};
+          if (isPlainObject(normalizedQuery) && '$includes' in normalizedQuery) {
+            // Make '$includes' an alias of '$some'
+            normalizedQuery = mapKeys(normalizedQuery, (_value, key) =>
+              key === '$includes' ? '$some' : key
+            );
           }
 
-          return normalizedItemType;
+          if (!(isPlainObject(normalizedQuery) && '$some' in normalizedQuery)) {
+            // Make '$some' implicit
+            normalizedQuery = {$some: normalizedQuery};
+          }
+
+          return normalizedQuery;
         }
 
-        return value;
+        return query;
       };
 
-      return normalizeComponent(this.prototype, query);
+      return normalizeQueryForComponent(query, this.prototype);
     }
 
     static __serializeQuery(query) {

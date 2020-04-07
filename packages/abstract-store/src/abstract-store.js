@@ -10,6 +10,7 @@ import isPlainObject from 'lodash/isPlainObject';
 import upperFirst from 'lodash/upperFirst';
 import ow from 'ow';
 
+import {looksLikeOperator, normalizeOperatorForValue} from './operators';
 import {isStore} from './utilities';
 
 export class AbstractStore {
@@ -340,7 +341,7 @@ export class AbstractStore {
 
     const build = function(query, expressions, path) {
       for (const [name, value] of Object.entries(query)) {
-        if (isOperator(name)) {
+        if (looksLikeOperator(name)) {
           throw new Error(
             `A query cannot contain an operator at its root (query: ${JSON.stringify(query)})`
           );
@@ -348,11 +349,11 @@ export class AbstractStore {
 
         const subpath = path !== '' ? `${path}.${name}` : name;
 
-        handleValue(value, expressions, subpath);
+        handleValue(value, expressions, subpath, {query});
       }
     };
 
-    const handleValue = function(value, expressions, subpath) {
+    const handleValue = function(value, expressions, subpath, {query}) {
       if (!isPlainObject(value)) {
         // Make '$equal' the default operator for non object values
         expressions.push([subpath, '$equal', value]);
@@ -365,7 +366,7 @@ export class AbstractStore {
       let objectContainsOperators = false;
 
       for (const name of Object.keys(object)) {
-        if (isOperator(name)) {
+        if (looksLikeOperator(name)) {
           objectContainsOperators = true;
         } else {
           objectContainsAttributes = true;
@@ -390,14 +391,16 @@ export class AbstractStore {
         const operators = object;
 
         for (const [operator, value] of Object.entries(operators)) {
-          if (operator === '$some') {
+          const normalizedOperator = normalizeOperatorForValue(operator, value, {query});
+
+          if (normalizedOperator === '$some') {
             const subexpressions = [];
-            handleValue(value, subexpressions, '');
+            handleValue(value, subexpressions, '', {query});
             expressions.push([subpath, '$some', subexpressions]);
             continue;
           }
 
-          expressions.push([subpath, operator, value]);
+          expressions.push([subpath, normalizedOperator, value]);
         }
       }
     };
@@ -416,8 +419,4 @@ export class AbstractStore {
   static isStore(object) {
     return isStore(object);
   }
-}
-
-function isOperator(name) {
-  return name.startsWith('$');
 }

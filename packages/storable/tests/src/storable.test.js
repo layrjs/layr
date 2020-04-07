@@ -1,10 +1,7 @@
 import {MongoDBStore} from '@liaison/mongodb-store';
-import {MongoClient} from 'mongodb';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 import {ComponentClient} from '@liaison/component-client';
 import {ComponentServer} from '@liaison/component-server';
-import mapKeys from 'lodash/mapKeys';
-import {deleteUndefinedProperties} from 'core-helpers';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000; // 1 minute
 
@@ -22,11 +19,9 @@ import {
   serialize
 } from '../../..';
 import {MockStore} from './mock-store';
+import {getInitialCollections, seedMongoDB, CREATED_ON, UPDATED_ON} from './fixtures';
 
 describe('Storable', () => {
-  const CREATED_ON = new Date('2020-03-22T01:27:42.612Z');
-  const UPDATED_ON = new Date('2020-03-22T01:29:33.673Z');
-
   class BaseUser extends Storable {
     @primaryIdentifier() id;
     @secondaryIdentifier() email;
@@ -708,9 +703,22 @@ describe('Storable', () => {
 
           // === Advanced queries ===
 
-          // --- With a basic comparison operator ---
+          // --- With a basic operator ---
 
-          users = await User.fork().find({accessLevel: {$notEqual: 3}}, {});
+          users = await User.fork().find({accessLevel: {$equal: 0}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          // '$equals' should be an alias of '$equal'
+          users = await User.fork().find({accessLevel: {$equals: 0}}, {});
+
+          await expect(User.fork().find({accessLevel: {$equals: /0/}}, {})).rejects.toThrow(
+            "Expected a scalar value of the operator '$equal', but received a value of type 'regExp' (query: '{\"accessLevel\":{\"$equals\":{}}}')"
+          );
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          users = await User.fork().find({accessLevel: {$notEquals: 3}}, {});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'user', id: 'user1'},
@@ -746,7 +754,7 @@ describe('Storable', () => {
             {__component: 'user', id: 'user12'}
           ]);
 
-          // --- With two basic comparison operators ---
+          // --- With two basic operators ---
 
           users = await User.fork().find({accessLevel: {$greaterThan: 1, $lessThan: 3}}, {});
 
@@ -764,6 +772,54 @@ describe('Storable', () => {
           users = await User.fork().find({accessLevel: {$greaterThan: 1, $equal: 1}}, {});
 
           expect(serialize(users)).toStrictEqual([]);
+
+          // --- With a string operator ---
+
+          users = await User.fork().find({email: {$includes: '.org'}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({email: {$includes: '2'}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user12'}]);
+
+          await expect(User.fork().find({email: {$includes: 2}}, {})).rejects.toThrow(
+            "Expected a string as value of the operator '$includes', but received a value of type 'number' (query: '{\"email\":{\"$includes\":2}}')"
+          );
+
+          users = await User.fork().find({email: {$startsWith: '2'}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({email: {$startsWith: '1@'}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          users = await User.fork().find({location: {city: {$endsWith: 'town'}}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({location: {city: {$endsWith: 'ris'}}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user12'}
+          ]);
+
+          users = await User.fork().find({location: {country: {$matches: /usa/}}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({location: {country: {$matches: /usa/i}}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user11'}
+          ]);
+
+          await expect(User.fork().find({location: {country: {$matches: 'usa'}}})).rejects.toThrow(
+            'Expected a regular expression as value of the operator \'$matches\', but received a value of type \'string\' (query: \'{"country":{"$matches":"usa"}}\')'
+          );
 
           // --- With an object attribute ---
 
@@ -807,13 +863,26 @@ describe('Storable', () => {
             {__component: 'user', id: 'user13'}
           ]);
 
-          // The '$some' should be implicit on array attributes
+          // '$some' should be implicit
           users = await User.fork().find({tags: 'admin'}, {});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'user', id: 'user11'},
             {__component: 'user', id: 'user13'}
           ]);
+
+          // '$includes' should be replaced by '$some' when '$some' is missing
+          users = await User.fork().find({tags: {$includes: 'admin'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user11'},
+            {__component: 'user', id: 'user13'}
+          ]);
+
+          // When '$some' is present, '$includes' remains a string operator
+          users = await User.fork().find({tags: {$some: {$includes: 'lock'}}}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
 
           // --- With an array of object attribute ---
 
@@ -1228,94 +1297,4 @@ describe('Storable', () => {
       return User;
     }
   });
-
-  function getInitialCollections() {
-    return {
-      User: [
-        {
-          __component: 'user',
-          id: 'user1',
-          email: '1@user.com',
-          reference: 1,
-          fullName: 'User 1',
-          accessLevel: 0,
-          tags: ['spammer', 'blocked'],
-          location: {country: 'USA', city: 'Paris'},
-          pastLocations: [
-            {country: 'USA', city: 'Nice'},
-            {country: 'USA', city: 'New York'}
-          ],
-          emailIsVerified: false,
-          createdOn: CREATED_ON,
-          updatedOn: undefined
-        },
-        {
-          __component: 'user',
-          id: 'user11',
-          email: '11@user.com',
-          reference: 11,
-          fullName: 'User 11',
-          accessLevel: 3,
-          tags: ['owner', 'admin'],
-          location: {country: 'USA'},
-          pastLocations: [{country: 'France'}],
-          emailIsVerified: true,
-          createdOn: CREATED_ON,
-          updatedOn: undefined
-        },
-        {
-          __component: 'user',
-          id: 'user12',
-          email: '12@user.com',
-          reference: 12,
-          fullName: 'User 12',
-          accessLevel: 1,
-          tags: [],
-          location: {country: 'France', city: 'Paris'},
-          pastLocations: [
-            {country: 'France', city: 'Nice'},
-            {country: 'Japan', city: 'Tokyo'}
-          ],
-          emailIsVerified: true,
-          createdOn: CREATED_ON,
-          updatedOn: undefined
-        },
-        {
-          __component: 'user',
-          id: 'user13',
-          email: '13@user.com',
-          reference: 13,
-          fullName: 'User 13',
-          accessLevel: 3,
-          tags: ['admin'],
-          location: undefined,
-          pastLocations: [],
-          emailIsVerified: false,
-          createdOn: CREATED_ON,
-          updatedOn: undefined
-        }
-      ]
-    };
-  }
-
-  async function seedMongoDB(connectionString) {
-    const client = await MongoClient.connect(connectionString, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-
-    const initialCollections = getInitialCollections();
-
-    for (const [collectionName, serializedStorables] of Object.entries(initialCollections)) {
-      const collection = client.db().collection(collectionName);
-
-      for (const serializedStorable of serializedStorables) {
-        const document = mapKeys(serializedStorable, (_, name) => (name === 'id' ? '_id' : name));
-        deleteUndefinedProperties(document);
-        await collection.insertOne(document);
-      }
-    }
-
-    await client.close();
-  }
 });

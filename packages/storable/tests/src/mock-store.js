@@ -146,6 +146,8 @@ function documentIsMatchingExpressions(document, expressions) {
 }
 
 function evaluateExpression(documentValue, operator, expressionValue, {path}) {
+  // --- Basic operators ---
+
   if (operator === '$equal') {
     return documentValue?.valueOf() === expressionValue?.valueOf();
   }
@@ -169,6 +171,42 @@ function evaluateExpression(documentValue, operator, expressionValue, {path}) {
   if (operator === '$lessThanOrEqual') {
     return documentValue <= expressionValue;
   }
+
+  // --- String operators ---
+
+  if (operator === '$includes') {
+    if (typeof documentValue !== 'string') {
+      return false;
+    }
+
+    return documentValue.includes(expressionValue);
+  }
+
+  if (operator === '$startsWith') {
+    if (typeof documentValue !== 'string') {
+      return false;
+    }
+
+    return documentValue.startsWith(expressionValue);
+  }
+
+  if (operator === '$endsWith') {
+    if (typeof documentValue !== 'string') {
+      return false;
+    }
+
+    return documentValue.endsWith(expressionValue);
+  }
+
+  if (operator === '$matches') {
+    if (typeof documentValue !== 'string') {
+      return false;
+    }
+
+    return expressionValue.test(documentValue);
+  }
+
+  // --- Array operators ---
 
   if (operator === '$some') {
     if (!Array.isArray(documentValue)) {
