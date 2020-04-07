@@ -382,6 +382,13 @@ function handleOperator(operator, value, {path}) {
     return ['$elemMatch', subquery];
   }
 
+  if (operator === '$every') {
+    // TODO: Make it works for complex queries (regexps, array of objects, etc.)
+    const subexpressions = value;
+    const subquery = buildQuery(subexpressions);
+    return ['$not', {$elemMatch: {$not: subquery}}];
+  }
+
   throw new Error(
     `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
   );

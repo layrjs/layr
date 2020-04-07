@@ -393,10 +393,10 @@ export class AbstractStore {
         for (const [operator, value] of Object.entries(operators)) {
           const normalizedOperator = normalizeOperatorForValue(operator, value, {query});
 
-          if (normalizedOperator === '$some') {
+          if (normalizedOperator === '$some' || normalizedOperator === '$every') {
             const subexpressions = [];
             handleValue(value, subexpressions, '', {query});
-            expressions.push([subpath, '$some', subexpressions]);
+            expressions.push([subpath, normalizedOperator, subexpressions]);
             continue;
           }
 

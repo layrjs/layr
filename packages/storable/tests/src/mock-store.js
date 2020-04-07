@@ -221,6 +221,19 @@ function evaluateExpression(documentValue, operator, expressionValue, {path}) {
     );
   }
 
+  if (operator === '$every') {
+    if (!Array.isArray(documentValue)) {
+      return false;
+    }
+
+    const subdocuments = documentValue;
+    const subexpressions = expressionValue;
+
+    return subdocuments.every(subdocument =>
+      documentIsMatchingExpressions(subdocument, subexpressions)
+    );
+  }
+
   throw new Error(
     `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
   );

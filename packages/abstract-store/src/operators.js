@@ -11,7 +11,7 @@ const basicOperators = new Set([
 
 const stringOperators = new Set(['$includes', '$startsWith', '$endsWith', '$matches']);
 
-const arrayOperators = new Set(['$some']);
+const arrayOperators = new Set(['$some', '$every']);
 
 const aliases = new Map(
   Object.entries({

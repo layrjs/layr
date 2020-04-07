@@ -603,14 +603,22 @@ const StorableMixin = (Base = Object) => {
 
           let normalizedQuery = normalizeQueryForAttributeAndType(query, attribute, itemType);
 
-          if (isPlainObject(normalizedQuery) && '$includes' in normalizedQuery) {
+          if (
+            isPlainObject(normalizedQuery) &&
+            ('$includes' in normalizedQuery || '$include' in normalizedQuery)
+          ) {
             // Make '$includes' an alias of '$some'
             normalizedQuery = mapKeys(normalizedQuery, (_value, key) =>
-              key === '$includes' ? '$some' : key
+              key === '$includes' || key === '$include' ? '$some' : key
             );
           }
 
-          if (!(isPlainObject(normalizedQuery) && '$some' in normalizedQuery)) {
+          if (
+            !(
+              isPlainObject(normalizedQuery) &&
+              ('$some' in normalizedQuery || '$every' in normalizedQuery)
+            )
+          ) {
             // Make '$some' implicit
             normalizedQuery = {$some: normalizedQuery};
           }

@@ -848,6 +848,8 @@ describe('Storable', () => {
 
           // --- With an array attribute ---
 
+          // - '$some' -
+
           users = await User.fork().find({tags: {$some: 'angel'}}, {});
 
           expect(serialize(users)).toStrictEqual([]);
@@ -883,6 +885,15 @@ describe('Storable', () => {
           users = await User.fork().find({tags: {$some: {$includes: 'lock'}}}, {});
 
           expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          // - '$every' -
+
+          users = await User.fork().find({tags: {$every: 'admin'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user12'},
+            {__component: 'user', id: 'user13'}
+          ]);
 
           // --- With an array of object attribute ---
 
