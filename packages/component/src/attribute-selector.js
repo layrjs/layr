@@ -191,6 +191,10 @@ export const AttributeSelector = {
       return value;
     }
 
+    if (value === undefined) {
+      return undefined;
+    }
+
     if (isPlainObject(value)) {
       return this._pickFromObject(value, attributeSelector, {includeAttributeNames});
     }

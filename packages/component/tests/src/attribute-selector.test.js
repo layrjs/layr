@@ -251,6 +251,7 @@ describe('AttributeSelector', () => {
       emailIsConfirmed: true,
       reference: 123,
       tags: ['admin', 'creator'],
+      location: undefined,
       friends: [
         {__component: 'person', id: 'def456', reference: 456},
         {__component: 'person', id: 'ghi789', reference: 789}
@@ -320,9 +321,16 @@ describe('AttributeSelector', () => {
       ]
     });
 
-    expect(() => AttributeSelector.pick(undefined, {id: true})).toThrow(
-      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'undefined')"
-    );
+    expect(AttributeSelector.pick(undefined, {location: true})).toBeUndefined();
+
+    expect(AttributeSelector.pick(person, {location: true})).toStrictEqual({
+      location: undefined
+    });
+
+    expect(AttributeSelector.pick(person, {location: {value: true}})).toStrictEqual({
+      location: undefined
+    });
+
     expect(() => AttributeSelector.pick(null, {id: true})).toThrow(
       "Cannot pick attributes from a value that is not a plain object or an array (value type: 'null')"
     );
