@@ -248,7 +248,7 @@ export const AttributeSelector = {
       return;
     }
 
-    if (attributeSelector === true) {
+    if (attributeSelector === true || value === undefined) {
       iteratee(value, name, object);
 
       return;

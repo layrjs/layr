@@ -327,7 +327,7 @@ describe('AttributeSelector', () => {
       location: undefined
     });
 
-    expect(AttributeSelector.pick(person, {location: {value: true}})).toStrictEqual({
+    expect(AttributeSelector.pick(person, {location: {country: true}})).toStrictEqual({
       location: undefined
     });
 
@@ -354,6 +354,7 @@ describe('AttributeSelector', () => {
       emailIsConfirmed: true,
       reference: 123,
       tags: ['admin', 'creator'],
+      location: undefined,
       friends: [
         {__component: 'person', id: 'def456', reference: 456},
         {__component: 'person', id: 'ghi789', reference: 789}
@@ -381,8 +382,10 @@ describe('AttributeSelector', () => {
       return results;
     };
 
-    expect(runTraverse(person, true)).toEqual([{value: person}]);
-    expect(runTraverse(person, false)).toEqual([]);
+    expect(runTraverse(person, true)).toStrictEqual([
+      {value: person, name: undefined, object: undefined}
+    ]);
+    expect(runTraverse(person, false)).toStrictEqual([]);
 
     expect(
       runTraverse(person, {
@@ -391,18 +394,18 @@ describe('AttributeSelector', () => {
         reference: true,
         createdOn: true
       })
-    ).toEqual([
+    ).toStrictEqual([
       {value: 'abc123', name: 'id', object: person},
       {value: true, name: 'emailIsConfirmed', object: person},
       {value: 123, name: 'reference', object: person},
       {value: createdOn, name: 'createdOn', object: person}
     ]);
 
-    expect(runTraverse(person, {tags: true})).toEqual([
+    expect(runTraverse(person, {tags: true})).toStrictEqual([
       {value: ['admin', 'creator'], name: 'tags', object: person}
     ]);
 
-    expect(runTraverse(person, {friends: true})).toEqual([
+    expect(runTraverse(person, {friends: true})).toStrictEqual([
       {
         value: [
           {__component: 'person', id: 'def456', reference: 456},
@@ -413,21 +416,30 @@ describe('AttributeSelector', () => {
       }
     ]);
 
-    expect(runTraverse(person, {friends: {id: true}})).toEqual([
+    expect(runTraverse(person, {friends: {id: true}})).toStrictEqual([
       {value: 'def456', name: 'id', object: person.friends[0]},
       {value: 'ghi789', name: 'id', object: person.friends[1]}
     ]);
 
-    expect(runTraverse(person, {matrix: {value: true}})).toEqual([
+    expect(runTraverse(person, {matrix: {value: true}})).toStrictEqual([
       {value: 111, name: 'value', object: person.matrix[0][0]},
       {value: 222, name: 'value', object: person.matrix[0][1]},
       {value: 333, name: 'value', object: person.matrix[1][0]},
       {value: 444, name: 'value', object: person.matrix[1][1]}
     ]);
 
-    expect(() => runTraverse(undefined, {id: true})).toThrow(
-      "Cannot traverse attributes from a value that is not a plain object or an array (value type: 'undefined')"
-    );
+    expect(runTraverse(undefined, {location: true})).toStrictEqual([
+      {value: undefined, name: undefined, object: undefined}
+    ]);
+
+    expect(runTraverse(person, {location: true})).toStrictEqual([
+      {value: undefined, name: 'location', object: person}
+    ]);
+
+    expect(runTraverse(person, {location: {country: true}})).toStrictEqual([
+      {value: undefined, name: 'location', object: person}
+    ]);
+
     expect(() => runTraverse(null, {id: true})).toThrow(
       "Cannot traverse attributes from a value that is not a plain object or an array (value type: 'null')"
     );
