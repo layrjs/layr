@@ -173,6 +173,10 @@ function evaluateExpression(documentValue, operator, expressionValue, {path}) {
     return documentValue <= expressionValue;
   }
 
+  if (operator === '$any') {
+    return expressionValue.includes(documentValue);
+  }
+
   // --- String operators ---
 
   if (operator === '$includes') {

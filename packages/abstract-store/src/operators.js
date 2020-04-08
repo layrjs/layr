@@ -6,7 +6,8 @@ const basicOperators = new Set([
   '$greaterThan',
   '$greaterThanOrEqual',
   '$lessThan',
-  '$lessThanOrEqual'
+  '$lessThanOrEqual',
+  '$any'
 ]);
 
 const stringOperators = new Set(['$includes', '$startsWith', '$endsWith', '$matches']);
@@ -19,6 +20,7 @@ const aliases = new Map(
     $notEquals: '$notEqual',
     $greaterThanOrEquals: '$greaterThanOrEqual',
     $lessThanOrEquals: '$lessThanOrEqual',
+    $in: '$any',
     $include: '$includes',
     $startWith: '$startsWith',
     $endWith: '$endsWith',
@@ -58,6 +60,18 @@ export function normalizeOperatorForValue(operator, value, {query}) {
 }
 
 function normalizeBasicOperatorForValue(operator, value, {query}) {
+  if (operator === '$any') {
+    if (!Array.isArray(value)) {
+      throw new Error(
+        `Expected an array as value of the operator '${operator}', but received a value of type '${getTypeOf(
+          value
+        )}' (query: '${JSON.stringify(query)}')`
+      );
+    }
+
+    return operator;
+  }
+
   if (typeof value === 'object' && !(value === null || value instanceof Date)) {
     throw new Error(
       `Expected a scalar value of the operator '${operator}', but received a value of type '${getTypeOf(

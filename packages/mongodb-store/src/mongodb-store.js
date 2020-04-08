@@ -356,6 +356,10 @@ function handleOperator(operator, value, {path}) {
     return ['$lte', value];
   }
 
+  if (operator === '$any') {
+    return ['$in', value];
+  }
+
   // --- String operators ---
 
   if (operator === '$includes') {

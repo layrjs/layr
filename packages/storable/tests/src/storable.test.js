@@ -754,6 +754,21 @@ describe('Storable', () => {
             {__component: 'user', id: 'user12'}
           ]);
 
+          users = await User.fork().find({accessLevel: {$any: []}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$any: [2, 4, 5]}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$any: [0, 1]}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user12'}
+          ]);
+
           // --- With two basic operators ---
 
           users = await User.fork().find({accessLevel: {$greaterThan: 1, $lessThan: 3}}, {});
