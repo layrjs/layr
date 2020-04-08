@@ -14,6 +14,8 @@ const stringOperators = new Set(['$includes', '$startsWith', '$endsWith', '$matc
 
 const arrayOperators = new Set(['$some', '$every', '$length']);
 
+const logicalOperators = new Set(['$not', '$and', '$or', '$nor']);
+
 const aliases = new Map(
   Object.entries({
     $equals: '$equal',
@@ -50,6 +52,10 @@ export function normalizeOperatorForValue(operator, value, {query}) {
 
   if (arrayOperators.has(operator)) {
     return normalizeArrayOperatorForValue(operator, value, {query});
+  }
+
+  if (logicalOperators.has(operator)) {
+    return normalizeLogicalOperatorForValue(operator, value, {query});
   }
 
   throw new Error(
@@ -112,6 +118,22 @@ function normalizeArrayOperatorForValue(operator, value, {query}) {
     if (typeof value !== 'number') {
       throw new Error(
         `Expected a number as value of the operator '${operator}', but received a value of type '${getTypeOf(
+          value
+        )}' (query: '${JSON.stringify(query)}')`
+      );
+    }
+
+    return operator;
+  }
+
+  return operator;
+}
+
+function normalizeLogicalOperatorForValue(operator, value, {query}) {
+  if (operator === '$and' || operator === '$or' || operator === '$nor') {
+    if (!Array.isArray(value)) {
+      throw new Error(
+        `Expected an array as value of the operator '${operator}', but received a value of type '${getTypeOf(
           value
         )}' (query: '${JSON.stringify(query)}')`
       );

@@ -705,6 +705,8 @@ describe('Storable', () => {
 
           // --- With a basic operator ---
 
+          // - '$equal' -
+
           users = await User.fork().find({accessLevel: {$equal: 0}}, {});
 
           expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
@@ -718,12 +720,16 @@ describe('Storable', () => {
 
           expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
 
-          users = await User.fork().find({accessLevel: {$notEquals: 3}}, {});
+          // - '$notEqual' -
+
+          users = await User.fork().find({accessLevel: {$notEqual: 3}}, {});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'user', id: 'user1'},
             {__component: 'user', id: 'user12'}
           ]);
+
+          // - '$greaterThan' -
 
           users = await User.fork().find({accessLevel: {$greaterThan: 3}}, {});
 
@@ -736,6 +742,8 @@ describe('Storable', () => {
             {__component: 'user', id: 'user13'}
           ]);
 
+          // - '$greaterThanOrEqual' -
+
           users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 3}}, {});
 
           expect(serialize(users)).toStrictEqual([
@@ -743,9 +751,13 @@ describe('Storable', () => {
             {__component: 'user', id: 'user13'}
           ]);
 
+          // - '$lessThan' -
+
           users = await User.fork().find({accessLevel: {$lessThan: 1}}, {});
 
           expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          // - '$lessThanOrEqual' -
 
           users = await User.fork().find({accessLevel: {$lessThanOrEqual: 1}}, {});
 
@@ -753,6 +765,8 @@ describe('Storable', () => {
             {__component: 'user', id: 'user1'},
             {__component: 'user', id: 'user12'}
           ]);
+
+          // - '$any' -
 
           users = await User.fork().find({accessLevel: {$any: []}}, {});
 
@@ -790,6 +804,8 @@ describe('Storable', () => {
 
           // --- With a string operator ---
 
+          // - '$includes' -
+
           users = await User.fork().find({email: {$includes: '.org'}}, {});
 
           expect(serialize(users)).toStrictEqual([]);
@@ -802,6 +818,8 @@ describe('Storable', () => {
             "Expected a string as value of the operator '$includes', but received a value of type 'number' (query: '{\"email\":{\"$includes\":2}}')"
           );
 
+          // - '$startsWith' -
+
           users = await User.fork().find({email: {$startsWith: '2'}}, {});
 
           expect(serialize(users)).toStrictEqual([]);
@@ -809,6 +827,8 @@ describe('Storable', () => {
           users = await User.fork().find({email: {$startsWith: '1@'}}, {});
 
           expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user1'}]);
+
+          // - '$endsWith' -
 
           users = await User.fork().find({location: {city: {$endsWith: 'town'}}}, {});
 
@@ -820,6 +840,8 @@ describe('Storable', () => {
             {__component: 'user', id: 'user1'},
             {__component: 'user', id: 'user12'}
           ]);
+
+          // - '$matches' -
 
           users = await User.fork().find({location: {country: {$matches: /usa/}}}, {});
 
@@ -835,6 +857,63 @@ describe('Storable', () => {
           await expect(User.fork().find({location: {country: {$matches: 'usa'}}})).rejects.toThrow(
             'Expected a regular expression as value of the operator \'$matches\', but received a value of type \'string\' (query: \'{"country":{"$matches":"usa"}}\')'
           );
+
+          // --- With a logical operator ---
+
+          // - '$not' -
+
+          users = await User.fork().find({createdOn: {$not: CREATED_ON}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$not: {$lessThan: 3}}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user11'},
+            {__component: 'user', id: 'user13'}
+          ]);
+
+          // - '$and' -
+
+          users = await User.fork().find({$and: [{tags: 'owner'}, {emailIsVerified: false}]}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({$and: [{tags: 'admin'}, {emailIsVerified: true}]}, {});
+
+          expect(serialize(users)).toStrictEqual([{__component: 'user', id: 'user11'}]);
+
+          // - '$or' -
+
+          users = await User.fork().find(
+            {$or: [{accessLevel: {$lessThan: 0}}, {accessLevel: {$greaterThan: 3}}]},
+            {}
+          );
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({$or: [{accessLevel: 0}, {accessLevel: 1}]}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user1'},
+            {__component: 'user', id: 'user12'}
+          ]);
+
+          // - '$nor' -
+
+          users = await User.fork().find(
+            {$nor: [{emailIsVerified: false}, {emailIsVerified: true}]},
+            {}
+          );
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({$nor: [{accessLevel: 0}, {accessLevel: 1}]}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'user', id: 'user11'},
+            {__component: 'user', id: 'user13'}
+          ]);
 
           // --- With an object attribute ---
 

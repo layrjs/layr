@@ -397,6 +397,32 @@ function handleOperator(operator, value, {path}) {
     return ['$size', value];
   }
 
+  // --- Logical operators ---
+
+  if (operator === '$not') {
+    const subexpressions = value;
+    const subquery = buildQuery(subexpressions);
+    return ['$not', subquery];
+  }
+
+  if (operator === '$and') {
+    const andSubexpressions = value;
+    const andSubqueries = andSubexpressions.map(subexpressions => buildQuery(subexpressions));
+    return ['$and', andSubqueries];
+  }
+
+  if (operator === '$or') {
+    const orSubexpressions = value;
+    const orSubqueries = orSubexpressions.map(subexpressions => buildQuery(subexpressions));
+    return ['$or', orSubqueries];
+  }
+
+  if (operator === '$nor') {
+    const norSubexpressions = value;
+    const norSubqueries = norSubexpressions.map(subexpressions => buildQuery(subexpressions));
+    return ['$nor', norSubqueries];
+  }
+
   throw new Error(
     `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
   );

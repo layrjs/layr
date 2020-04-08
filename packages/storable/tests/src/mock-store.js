@@ -247,6 +247,38 @@ function evaluateExpression(documentValue, operator, expressionValue, {path}) {
     return documentValue.length === expressionValue;
   }
 
+  // --- Logical operators ---
+
+  if (operator === '$not') {
+    const subexpressions = expressionValue;
+
+    return !documentIsMatchingExpressions(documentValue, subexpressions);
+  }
+
+  if (operator === '$and') {
+    const andSubexpressions = expressionValue;
+
+    return andSubexpressions.every(subexpressions =>
+      documentIsMatchingExpressions(documentValue, subexpressions)
+    );
+  }
+
+  if (operator === '$or') {
+    const orSubexpressions = expressionValue;
+
+    return orSubexpressions.some(subexpressions =>
+      documentIsMatchingExpressions(documentValue, subexpressions)
+    );
+  }
+
+  if (operator === '$nor') {
+    const norSubexpressions = expressionValue;
+
+    return !norSubexpressions.some(subexpressions =>
+      documentIsMatchingExpressions(documentValue, subexpressions)
+    );
+  }
+
   throw new Error(
     `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
   );

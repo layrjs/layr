@@ -342,8 +342,17 @@ export class AbstractStore {
     const build = function(query, expressions, path) {
       for (const [name, value] of Object.entries(query)) {
         if (looksLikeOperator(name)) {
+          const operator = name;
+
+          if (operator === '$and' || operator === '$or' || operator === '$nor') {
+            handleOperator(operator, value, expressions, path, {query});
+            continue;
+          }
+
           throw new Error(
-            `A query cannot contain an operator at its root (query: ${JSON.stringify(query)})`
+            `A query cannot contain the operator '${operator}' at its root (query: ${JSON.stringify(
+              query
+            )})`
           );
         }
 
@@ -391,18 +400,42 @@ export class AbstractStore {
         const operators = object;
 
         for (const [operator, value] of Object.entries(operators)) {
-          const normalizedOperator = normalizeOperatorForValue(operator, value, {query});
-
-          if (normalizedOperator === '$some' || normalizedOperator === '$every') {
-            const subexpressions = [];
-            handleValue(value, subexpressions, '', {query});
-            expressions.push([subpath, normalizedOperator, subexpressions]);
-            continue;
-          }
-
-          expressions.push([subpath, normalizedOperator, value]);
+          handleOperator(operator, value, expressions, subpath, {query});
         }
       }
+    };
+
+    // eslint-disable-next-line max-params
+    const handleOperator = function(operator, value, expressions, path, {query}) {
+      const normalizedOperator = normalizeOperatorForValue(operator, value, {query});
+
+      if (
+        normalizedOperator === '$some' ||
+        normalizedOperator === '$every' ||
+        normalizedOperator === '$not'
+      ) {
+        const subexpressions = [];
+        handleValue(value, subexpressions, '', {query});
+        expressions.push([path, normalizedOperator, subexpressions]);
+        return;
+      }
+
+      if (
+        normalizedOperator === '$and' ||
+        normalizedOperator === '$or' ||
+        normalizedOperator === '$nor'
+      ) {
+        const values = value;
+        const operatorExpressions = values.map(value => {
+          const subexpressions = [];
+          handleValue(value, subexpressions, '', {query});
+          return subexpressions;
+        });
+        expressions.push([path, normalizedOperator, operatorExpressions]);
+        return;
+      }
+
+      expressions.push([path, normalizedOperator, value]);
     };
 
     const documentExpressions = [];

@@ -568,6 +568,27 @@ const StorableMixin = (Base = Object) => {
         const normalizedQuery = {};
 
         for (const [name, subquery] of Object.entries(query)) {
+          if (name === '$not') {
+            normalizedQuery[name] = normalizeQueryForComponent(subquery, component);
+            continue;
+          }
+
+          if (name === '$and' || name === '$or' || name === '$nor') {
+            if (!Array.isArray(subquery)) {
+              throw new Error(
+                `Expected an array as value of the operator '${name}', but received a value of type '${getTypeOf(
+                  subquery
+                )}'`
+              );
+            }
+
+            const subqueries = subquery;
+            normalizedQuery[name] = subqueries.map(subquery =>
+              normalizeQueryForComponent(subquery, component)
+            );
+            continue;
+          }
+
           const attribute = component.getAttribute(name);
 
           normalizedQuery[name] = normalizeQueryForAttribute(subquery, attribute);
@@ -618,7 +639,8 @@ const StorableMixin = (Base = Object) => {
               isPlainObject(normalizedQuery) &&
               ('$some' in normalizedQuery ||
                 '$every' in normalizedQuery ||
-                '$length' in normalizedQuery)
+                '$length' in normalizedQuery ||
+                '$size' in normalizedQuery)
             )
           ) {
             // Make '$some' implicit
