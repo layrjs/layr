@@ -1,3 +1,4 @@
+import {hasOwnProperty} from 'core-helpers';
 import omit from 'lodash/omit';
 import cloneDeep from 'lodash/cloneDeep';
 import isPlainObject from 'lodash/isPlainObject';
@@ -181,6 +182,12 @@ export const AttributeSelector = {
 
     attributeSelector = this.normalize(attributeSelector);
 
+    if (attributeSelector === false) {
+      throw new Error(
+        `Cannot pick attributes from a value when the specified attribute selector is 'false'`
+      );
+    }
+
     const {includeAttributeNames = []} = options;
 
     return this._pick(value, attributeSelector, {includeAttributeNames});
@@ -213,17 +220,18 @@ export const AttributeSelector = {
   _pickFromObject(object, attributeSelector, {includeAttributeNames}) {
     const result = {};
 
-    for (const [name, value] of Object.entries(object)) {
-      if (includeAttributeNames.includes(name)) {
-        result[name] = value;
-        continue;
+    for (const name of includeAttributeNames) {
+      if (hasOwnProperty(object, name)) {
+        result[name] = object[name];
       }
+    }
 
-      const subattributeSelector = this.get(attributeSelector, name);
-
+    for (const [name, subattributeSelector] of AttributeSelector.entries(attributeSelector)) {
       if (subattributeSelector === false) {
         continue;
       }
+
+      const value = object[name];
 
       result[name] = this._pick(value, subattributeSelector, {includeAttributeNames});
     }

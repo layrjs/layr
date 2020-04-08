@@ -270,7 +270,7 @@ describe('AttributeSelector', () => {
     };
 
     expect(AttributeSelector.pick(person, true)).toStrictEqual(person);
-    expect(AttributeSelector.pick(person, false)).toStrictEqual({});
+    expect(AttributeSelector.pick(person, {})).toStrictEqual({});
 
     expect(
       AttributeSelector.pick(person, {
@@ -342,6 +342,9 @@ describe('AttributeSelector', () => {
     );
     expect(() => AttributeSelector.pick(person, {reference: {value: true}})).toThrow(
       "Cannot pick attributes from a value that is not a plain object or an array (value type: 'number')"
+    );
+    expect(() => AttributeSelector.pick(person, false)).toThrow(
+      "Cannot pick attributes from a value when the specified attribute selector is 'false'"
     );
   });
 
