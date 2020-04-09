@@ -242,6 +242,31 @@ describe('AttributeSelector', () => {
     );
   });
 
+  test('iterate()', () => {
+    expect(Array.from(AttributeSelector.iterate({}))).toStrictEqual([]);
+
+    expect(Array.from(AttributeSelector.iterate({title: undefined}))).toStrictEqual([]);
+
+    expect(Array.from(AttributeSelector.iterate({title: false}))).toStrictEqual([]);
+
+    expect(Array.from(AttributeSelector.iterate({title: true}))).toStrictEqual([['title', true]]);
+
+    expect(Array.from(AttributeSelector.iterate({specs: {duration: true}}))).toStrictEqual([
+      ['specs', {duration: true}]
+    ]);
+
+    expect(
+      Array.from(AttributeSelector.iterate({title: true, country: false, director: true}))
+    ).toStrictEqual([
+      ['title', true],
+      ['director', true]
+    ]);
+
+    expect(() => Array.from(AttributeSelector.iterate(undefined))).toThrow();
+    expect(() => Array.from(AttributeSelector.iterate(false))).toThrow();
+    expect(() => Array.from(AttributeSelector.iterate(true))).toThrow();
+  });
+
   test('pick()', () => {
     const createdOn = new Date();
 

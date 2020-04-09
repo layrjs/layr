@@ -168,13 +168,22 @@ export const AttributeSelector = {
     return attributeSelector;
   },
 
-  entries(attributeSelector) {
+  iterate(attributeSelector) {
     ow(attributeSelector, 'attributeSelector', ow.object);
 
-    return Object.entries(attributeSelector).map(([name, subattributeSelector]) => [
-      name,
-      this.normalize(subattributeSelector)
-    ]);
+    const AttributeSelector = this;
+
+    return {
+      *[Symbol.iterator]() {
+        for (const [name, subattributeSelector] of Object.entries(attributeSelector)) {
+          const normalizedSubattributeSelector = AttributeSelector.normalize(subattributeSelector);
+
+          if (normalizedSubattributeSelector !== false) {
+            yield [name, normalizedSubattributeSelector];
+          }
+        }
+      }
+    };
   },
 
   pick(value, attributeSelector, options = {}) {
@@ -226,11 +235,7 @@ export const AttributeSelector = {
       }
     }
 
-    for (const [name, subattributeSelector] of AttributeSelector.entries(attributeSelector)) {
-      if (subattributeSelector === false) {
-        continue;
-      }
-
+    for (const [name, subattributeSelector] of this.iterate(attributeSelector)) {
       const value = object[name];
 
       result[name] = this._pick(value, subattributeSelector, {includeAttributeNames});
@@ -248,14 +253,14 @@ export const AttributeSelector = {
 
     attributeSelector = this.normalize(attributeSelector);
 
-    this._traverse(value, attributeSelector, iteratee);
-  },
-
-  _traverse(value, attributeSelector, iteratee, {name, object} = {}) {
     if (attributeSelector === false) {
       return;
     }
 
+    this._traverse(value, attributeSelector, iteratee);
+  },
+
+  _traverse(value, attributeSelector, iteratee, {name, object} = {}) {
     if (attributeSelector === true || value === undefined) {
       iteratee(value, name, object);
 
@@ -282,7 +287,7 @@ export const AttributeSelector = {
 
     object = value;
 
-    for (const [name, subattributeSelector] of AttributeSelector.entries(attributeSelector)) {
+    for (const [name, subattributeSelector] of this.iterate(attributeSelector)) {
       const value = object[name];
 
       this._traverse(value, subattributeSelector, iteratee, {name, object});
