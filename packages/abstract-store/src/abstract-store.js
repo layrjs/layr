@@ -4,7 +4,7 @@ import {
   AttributeSelector,
   getTypeOf
 } from '@liaison/component';
-import {getClassOf} from 'core-helpers';
+import {getClassOf, deleteUndefinedProperties} from 'core-helpers';
 import {serialize, deserialize} from 'simple-serialization';
 import isPlainObject from 'lodash/isPlainObject';
 import upperFirst from 'lodash/upperFirst';
@@ -131,17 +131,22 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
-    const documentAttributeSelector = this._toDocument(storable, attributeSelector);
+    const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
+    const documentAttributeSelector = this.toDocument(storable, attributeSelector);
+    const projection = buildProjection(documentAttributeSelector);
 
-    const document = await this._readDocument({
+    let document = await this.readDocument({
       collectionName,
       identifierDescriptor: documentIdentifierDescriptor,
-      attributeSelector: documentAttributeSelector
+      projection
     });
 
     if (document !== undefined) {
-      const serializedStorable = this._fromDocument(storable, document);
+      document = AttributeSelector.pick(document, documentAttributeSelector, {
+        includeAttributeNames: ['__component']
+      });
+
+      const serializedStorable = this.fromDocument(storable, document);
 
       return serializedStorable;
     }
@@ -187,22 +192,26 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
-    const document = this._toDocument(storable, serializedStorable);
+    const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
+    const document = this.toDocument(storable, serializedStorable);
 
     let wasSaved;
 
     if (isNew) {
-      wasSaved = await this._createDocument({
+      deleteUndefinedProperties(document);
+
+      wasSaved = await this.createDocument({
         collectionName,
         identifierDescriptor: documentIdentifierDescriptor,
         document
       });
     } else {
-      wasSaved = await this._updateDocument({
+      const documentPatch = buildDocumentPatch(document);
+
+      wasSaved = await this.updateDocument({
         collectionName,
         identifierDescriptor: documentIdentifierDescriptor,
-        document
+        documentPatch
       });
     }
 
@@ -244,9 +253,9 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentIdentifierDescriptor = this._toDocument(storable, identifierDescriptor);
+    const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
 
-    const wasDeleted = await this._deleteDocument({
+    const wasDeleted = await this.deleteDocument({
       collectionName,
       identifierDescriptor: documentIdentifierDescriptor
     });
@@ -286,20 +295,27 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentExpressions = this._toDocumentExpressions(storable, query);
-    const documentSort = this._toDocument(storable, sort);
-    const documentAttributeSelector = this._toDocument(storable, attributeSelector);
+    const documentExpressions = this.toDocumentExpressions(storable, query);
+    const documentSort = this.toDocument(storable, sort);
+    const documentAttributeSelector = this.toDocument(storable, attributeSelector);
+    const projection = buildProjection(documentAttributeSelector);
 
-    const documents = await this._findDocuments({
+    let documents = await this.findDocuments({
       collectionName,
       expressions: documentExpressions,
+      projection,
       sort: documentSort,
       skip,
-      limit,
-      attributeSelector: documentAttributeSelector
+      limit
     });
 
-    const serializedStorables = documents.map(document => this._fromDocument(storable, document));
+    documents = documents.map(document =>
+      AttributeSelector.pick(document, documentAttributeSelector, {
+        includeAttributeNames: ['__component']
+      })
+    );
+
+    const serializedStorables = documents.map(document => this.fromDocument(storable, document));
 
     return serializedStorables;
   }
@@ -319,9 +335,9 @@ export class AbstractStore {
     const storable = this.getStorable(storableName, {includePrototypes: true});
     const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentExpressions = this._toDocumentExpressions(storable, query);
+    const documentExpressions = this.toDocumentExpressions(storable, query);
 
-    const documentsCount = await this._countDocuments({
+    const documentsCount = await this.countDocuments({
       collectionName,
       expressions: documentExpressions
     });
@@ -331,13 +347,13 @@ export class AbstractStore {
 
   // === Serialization ===
 
-  _toDocument(storable, serializedStorable) {
+  toDocument(storable, serializedStorable) {
     return deserialize(serializedStorable);
   }
 
   // {a: 1, b: {c: 2}} => [['a', '$equal', 1], ['b.c', '$equal', 2]]
-  _toDocumentExpressions(storable, query) {
-    const documentQuery = this._toDocument(storable, query);
+  toDocumentExpressions(storable, query) {
+    const documentQuery = this.toDocument(storable, query);
 
     const build = function(query, expressions, path) {
       for (const [name, value] of Object.entries(query)) {
@@ -443,7 +459,7 @@ export class AbstractStore {
     return documentExpressions;
   }
 
-  _fromDocument(storable, document) {
+  fromDocument(storable, document) {
     return serialize(document);
   }
 
@@ -452,4 +468,74 @@ export class AbstractStore {
   static isStore(object) {
     return isStore(object);
   }
+}
+
+// {a: true, b: {c: true}} => {__component: 1, a: 1, "b.__component": 1, "b.c": 1}
+function buildProjection(attributeSelector) {
+  if (attributeSelector === true) {
+    return undefined;
+  }
+
+  if (attributeSelector === false) {
+    return {__component: true}; // Always include the '__component' attribute
+  }
+
+  const projection = {};
+
+  const build = function(attributeSelector, path) {
+    attributeSelector = {__component: true, ...attributeSelector};
+
+    for (const [name, subattributeSelector] of AttributeSelector.iterate(attributeSelector)) {
+      const subpath = (path !== '' ? path + '.' : '') + name;
+
+      if (subattributeSelector === true) {
+        projection[subpath] = 1;
+      } else {
+        build(subattributeSelector, subpath);
+      }
+    }
+  };
+
+  build(attributeSelector, '');
+
+  return projection;
+}
+
+function buildDocumentPatch(document) {
+  const documentPatch = {};
+
+  const build = function(document, path) {
+    if (document === undefined) {
+      if (documentPatch.$unset === undefined) {
+        documentPatch.$unset = {};
+      }
+
+      documentPatch.$unset[path] = 1;
+
+      return;
+    }
+
+    if (isPlainObject(document) && '__component' in document) {
+      for (const [name, value] of Object.entries(document)) {
+        const subpath = (path !== '' ? path + '.' : '') + name;
+        build(value, subpath);
+      }
+
+      return;
+    }
+
+    if (isPlainObject(document) || Array.isArray(document)) {
+      deleteUndefinedProperties(document);
+    }
+
+    if (documentPatch.$set === undefined) {
+      documentPatch.$set = {};
+    }
+
+    documentPatch.$set[path] = document;
+  };
+
+  build(document, '');
+
+  return documentPatch;
 }

@@ -1,10 +1,8 @@
 import {AbstractStore} from '@liaison/abstract-store';
-import {AttributeSelector} from '@liaison/component';
 import {MongoClient} from 'mongodb';
 import isEmpty from 'lodash/isEmpty';
 import mapKeys from 'lodash/mapKeys';
 import escapeRegExp from 'lodash/escapeRegExp';
-import {deleteUndefinedProperties} from 'core-helpers';
 import ow from 'ow';
 import debugModule from 'debug';
 
@@ -35,10 +33,8 @@ export class MongoDBStore extends AbstractStore {
 
   // === Documents ===
 
-  async _createDocument({collectionName, document}) {
+  async createDocument({collectionName, document}) {
     const collection = await this._getCollection(collectionName);
-
-    deleteUndefinedProperties(document);
 
     try {
       const {insertedCount} = await debugCall(
@@ -62,11 +58,10 @@ export class MongoDBStore extends AbstractStore {
     }
   }
 
-  async _readDocument({collectionName, identifierDescriptor, attributeSelector}) {
+  async readDocument({collectionName, identifierDescriptor, projection}) {
     const collection = await this._getCollection(collectionName);
 
     const query = identifierDescriptor;
-    const projection = buildProjection(attributeSelector);
     const options = {projection};
 
     const document = await debugCall(
@@ -81,33 +76,30 @@ export class MongoDBStore extends AbstractStore {
       return undefined;
     }
 
-    setUndefinedAttributes(document, attributeSelector);
-
     return document;
   }
 
-  async _updateDocument({collectionName, identifierDescriptor, document}) {
+  async updateDocument({collectionName, identifierDescriptor, documentPatch}) {
     const collection = await this._getCollection(collectionName);
 
     const filter = identifierDescriptor;
-    const update = createDocumentUpdate(document);
 
     const {matchedCount} = await debugCall(
       async () => {
-        const {matchedCount, modifiedCount} = await collection.updateOne(filter, update);
+        const {matchedCount, modifiedCount} = await collection.updateOne(filter, documentPatch);
 
         return {matchedCount, modifiedCount};
       },
       'db.%s.updateOne(%o, %o)',
       collectionName,
       filter,
-      update
+      documentPatch
     );
 
     return matchedCount === 1;
   }
 
-  async _deleteDocument({collectionName, identifierDescriptor}) {
+  async deleteDocument({collectionName, identifierDescriptor}) {
     const collection = await this._getCollection(collectionName);
 
     const filter = identifierDescriptor;
@@ -126,12 +118,11 @@ export class MongoDBStore extends AbstractStore {
     return deletedCount === 1;
   }
 
-  async _findDocuments({collectionName, expressions, sort, skip, limit, attributeSelector}) {
+  async findDocuments({collectionName, expressions, projection, sort, skip, limit}) {
     const collection = await this._getCollection(collectionName);
 
     const query = buildQuery(expressions);
 
-    const projection = buildProjection(attributeSelector);
     const options = {projection};
 
     const documents = await debugCall(
@@ -160,14 +151,10 @@ export class MongoDBStore extends AbstractStore {
       options
     );
 
-    for (const document of documents) {
-      setUndefinedAttributes(document, attributeSelector);
-    }
-
     return documents;
   }
 
-  async _countDocuments({collectionName, expressions}) {
+  async countDocuments({collectionName, expressions}) {
     const collection = await this._getCollection(collectionName);
 
     const query = buildQuery(expressions);
@@ -188,8 +175,8 @@ export class MongoDBStore extends AbstractStore {
 
   // === Serialization ===
 
-  _toDocument(storable, serializedStorable) {
-    let document = super._toDocument(storable, serializedStorable);
+  toDocument(storable, serializedStorable) {
+    let document = super.toDocument(storable, serializedStorable);
 
     if (typeof document === 'object') {
       const primaryIdentifierAttributeName = storable.getPrimaryIdentifierAttribute().getName();
@@ -202,8 +189,8 @@ export class MongoDBStore extends AbstractStore {
     return document;
   }
 
-  _fromDocument(storable, document) {
-    let serializedStorable = super._fromDocument(storable, document);
+  fromDocument(storable, document) {
+    let serializedStorable = super.fromDocument(storable, document);
 
     if (typeof serializedStorable === 'object') {
       const primaryIdentifierAttributeName = storable.getPrimaryIdentifierAttribute().getName();
@@ -268,40 +255,6 @@ export class MongoDBStore extends AbstractStore {
 
     return database.collection(name);
   }
-}
-
-// {a: true, b: {c: true}} => {__component: 1, a: 1, "b.__component": 1, "b.c": 1}
-function buildProjection(attributeSelector) {
-  if (attributeSelector === true) {
-    return undefined;
-  }
-
-  if (attributeSelector === false) {
-    return {};
-  }
-
-  const projection = {};
-
-  function build(attributeSelector, path) {
-    // Always include the '__component' attribute
-    attributeSelector = {__component: true, ...attributeSelector};
-
-    for (const [name, subattributeSelector] of AttributeSelector.entries(attributeSelector)) {
-      const subpath = (path !== '' ? path + '.' : '') + name;
-
-      if (subattributeSelector === true) {
-        projection[subpath] = 1;
-      } else if (subattributeSelector === false) {
-        // NOOP
-      } else {
-        build(subattributeSelector, subpath);
-      }
-    }
-  }
-
-  build(attributeSelector, '');
-
-  return projection;
 }
 
 function buildQuery(expressions) {
@@ -426,36 +379,6 @@ function handleOperator(operator, value, {path}) {
   throw new Error(
     `A query contains an operator that is not supported (operator: '${operator}', path: '${path}')`
   );
-}
-
-function setUndefinedAttributes(document, attributeSelector) {
-  AttributeSelector.traverse(document, attributeSelector, (value, name, object) => {
-    if (name !== undefined && value === undefined) {
-      object[name] = undefined;
-    }
-  });
-}
-
-function createDocumentUpdate(document) {
-  const update = {};
-
-  for (const [name, value] of Object.entries(document)) {
-    if (value !== undefined) {
-      if (update.$set === undefined) {
-        update.$set = {};
-      }
-
-      update.$set[name] = value;
-    } else {
-      if (update.$unset === undefined) {
-        update.$unset = {};
-      }
-
-      update.$unset[name] = 1;
-    }
-  }
-
-  return update;
 }
 
 async function debugCall(func, message, ...params) {

@@ -1,8 +1,11 @@
 import {
+  isComponentClassOrInstance,
   attribute as componentAttribute,
+  Method,
   _decorateAttribute,
   _decorateMethod
 } from '@liaison/component';
+import {isModelClassOrInstance, ModelAttribute} from '@liaison/model';
 import {_identifierDecorator} from '@liaison/entity';
 import {isClass} from 'core-helpers';
 import ow from 'ow';
@@ -29,19 +32,21 @@ export function attribute(type, options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!isStorableClassOrInstance(target)) {
+    let AttributeClass;
+
+    if (isStorableClassOrInstance(target)) {
+      AttributeClass = StorableAttribute;
+    } else if (isModelClassOrInstance(target)) {
+      AttributeClass = ModelAttribute;
+    }
+
+    if (AttributeClass === undefined) {
       throw new Error(
-        `@attribute() target doesn't inherit from Storable (property name: '${name}')`
+        `@attribute() target doesn't inherit from Model or Storable (property name: '${name}')`
       );
     }
 
-    return _decorateAttribute({
-      target,
-      name,
-      descriptor,
-      AttributeClass: StorableAttribute,
-      options
-    });
+    return _decorateAttribute({target, name, descriptor, AttributeClass, options});
   };
 }
 
@@ -53,11 +58,21 @@ export function method(options = {}) {
     ow(name, 'name', ow.string.nonEmpty);
     ow(descriptor, 'descriptor', ow.object);
 
-    if (!isStorableClassOrInstance(target)) {
-      throw new Error(`@method() target doesn't inherit from Storable (property name: '${name}')`);
+    let MethodClass;
+
+    if (isStorableClassOrInstance(target)) {
+      MethodClass = StorableMethod;
+    } else if (isComponentClassOrInstance(target)) {
+      MethodClass = Method;
     }
 
-    return _decorateMethod({target, name, descriptor, MethodClass: StorableMethod, options});
+    if (MethodClass === undefined) {
+      throw new Error(
+        `@method() target doesn't inherit from Component or Storable (property name: '${name}')`
+      );
+    }
+
+    return _decorateMethod({target, name, descriptor, MethodClass, options});
   };
 }
 

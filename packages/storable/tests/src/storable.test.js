@@ -1,3 +1,4 @@
+import {Model} from '@liaison/model';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 import {ComponentClient} from '@liaison/component-client';
@@ -31,17 +32,29 @@ describe('Storable', () => {
     @attribute('[string]') tags = [];
     @attribute('object?') location;
     @attribute('[object]') pastLocations = [];
+    @attribute('picture?') picture;
+    @attribute('[picture]') pastPictures = [];
     @attribute('boolean') emailIsVerified = false;
     @attribute('date') createdOn = new Date('2020-03-22T01:27:42.612Z');
     @attribute('date?') updatedOn;
+  }
+
+  class BasePicture extends Model {
+    @attribute('string?') type;
+    @attribute('string') url;
   }
 
   describe('General methods', () => {
     test('isStorableClass()', async () => {
       class User extends BaseUser {}
 
+      class Picture extends BasePicture {}
+
+      User.registerRelatedComponent(Picture);
+
       expect(isStorableClass(User)).toBe(true);
       expect(isStorableClass(User.prototype)).toBe(false);
+      expect(isStorableClass(Picture)).toBe(false);
 
       const user = new User({id: 'user1', email: '1@user.com', reference: 1});
 
@@ -51,12 +64,23 @@ describe('Storable', () => {
     test('isStorableInstance()', async () => {
       class User extends BaseUser {}
 
-      expect(isStorableInstance(User)).toBe(false);
-      expect(isStorableInstance(User.prototype)).toBe(true);
+      class Picture extends BasePicture {}
 
-      const user = new User({id: 'user1', email: '1@user.com', reference: 1});
+      User.registerRelatedComponent(Picture);
+
+      expect(isStorableInstance(User.prototype)).toBe(true);
+      expect(isStorableInstance(User)).toBe(false);
+      expect(isStorableInstance(Picture.prototype)).toBe(false);
+
+      const user = new User({
+        id: 'user1',
+        email: '1@user.com',
+        reference: 1,
+        picture: new Picture({type: 'JPEG', url: 'https://pictures.com/1-1.jpg'})
+      });
 
       expect(isStorableInstance(user)).toBe(true);
+      expect(isStorableInstance(user.picture)).toBe(false);
     });
 
     test('getStore() and hasStore()', async () => {
@@ -79,6 +103,10 @@ describe('Storable', () => {
       testOperations(function() {
         class User extends BaseUser {}
 
+        class Picture extends BasePicture {}
+
+        User.registerRelatedComponent(Picture);
+
         MockStore.create([User], {initialCollections: getInitialCollections()});
 
         return User;
@@ -92,6 +120,10 @@ describe('Storable', () => {
 
       beforeEach(async () => {
         User = class User extends BaseUser {};
+
+        class Picture extends BasePicture {}
+
+        User.registerRelatedComponent(Picture);
 
         server = new MongoMemoryServer();
 
@@ -128,6 +160,8 @@ describe('Storable', () => {
             @expose({get: true, set: true}) @inherit() tags;
             @expose({get: true, set: true}) @inherit() location;
             @expose({get: true, set: true}) @inherit() pastLocations;
+            @expose({get: true, set: true}) @inherit() picture;
+            @expose({get: true, set: true}) @inherit() pastPictures;
             @expose({get: true, set: true}) @inherit() emailIsVerified;
             @expose({get: true, set: true}) @inherit() createdOn;
             @expose({get: true, set: true}) @inherit() updatedOn;
@@ -139,12 +173,19 @@ describe('Storable', () => {
             @expose({call: true}) @inherit() static count;
           }
 
+          class Picture extends BasePicture {
+            @expose({get: true, set: true}) @inherit() type;
+            @expose({get: true, set: true}) @inherit() url;
+          }
+
+          User.registerRelatedComponent(Picture);
+
           MockStore.create([User], {initialCollections: getInitialCollections()});
 
-          return new ComponentServer([User]);
+          return new ComponentServer([User, Picture]);
         })();
 
-        const client = new ComponentClient(server, {baseComponents: [Storable]});
+        const client = new ComponentClient(server, {baseComponents: [Model, Storable]});
         const [User] = client.getComponents();
 
         return User;
@@ -154,6 +195,10 @@ describe('Storable', () => {
     describe('Without a store', () => {
       testOperations(function() {
         class User extends BaseUser {}
+
+        class Picture extends BasePicture {}
+
+        User.registerRelatedComponent(Picture);
 
         return User;
       });
@@ -184,6 +229,11 @@ describe('Storable', () => {
             pastLocations: [
               {country: 'USA', city: 'Nice'},
               {country: 'USA', city: 'New York'}
+            ],
+            picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
+            pastPictures: [
+              {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
+              {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
             ],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
@@ -320,6 +370,11 @@ describe('Storable', () => {
               {country: 'USA', city: 'Nice'},
               {country: 'USA', city: 'New York'}
             ],
+            picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
+            pastPictures: [
+              {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
+              {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
+            ],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -364,6 +419,7 @@ describe('Storable', () => {
 
         test('save()', async () => {
           const User = userClassProvider();
+          const Picture = User.getRelatedComponent('Picture');
 
           let user = new (User.fork())({
             id: 'user2',
@@ -371,7 +427,8 @@ describe('Storable', () => {
             reference: 2,
             fullName: 'User 2',
             tags: ['newcomer'],
-            location: {country: 'USA', city: 'New York'}
+            location: {country: 'USA', city: 'New York'},
+            picture: new Picture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
           });
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
@@ -394,6 +451,8 @@ describe('Storable', () => {
             tags: ['newcomer'],
             location: {country: 'USA', city: 'New York'},
             pastLocations: [],
+            picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'},
+            pastPictures: [],
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -404,48 +463,89 @@ describe('Storable', () => {
           user.tags = [];
           user.location.state = 'New York';
           user.pastLocations.push({country: 'USA', city: 'San Francisco'});
+          user.picture.url = 'https://pictures.com/2-2.jpg';
+          user.pastPictures.push(new Picture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}));
           user.updatedOn = UPDATED_ON;
 
           expect(await user.save()).toBe(user);
 
-          user = await User.fork().get('user2');
+          user = await User.fork().get('user2', {
+            fullName: true,
+            accessLevel: true,
+            tags: true,
+            location: true,
+            pastLocations: true,
+            picture: true,
+            pastPictures: true,
+            updatedOn: true
+          });
 
           expect(user.serialize()).toStrictEqual({
             __component: 'user',
             id: 'user2',
-            email: '2@user.com',
-            reference: 2,
             fullName: 'User 2 (modified)',
             accessLevel: 1,
             tags: [],
             location: {country: 'USA', state: 'New York', city: 'New York'},
             pastLocations: [{country: 'USA', city: 'San Francisco'}],
-            emailIsVerified: false,
-            createdOn: {__date: CREATED_ON.toISOString()},
+            picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/2-2.jpg'},
+            pastPictures: [
+              {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}
+            ],
             updatedOn: {__date: UPDATED_ON.toISOString()}
           });
 
-          user.updatedOn = undefined;
           user.location = {country: 'USA'};
+          delete user.location.state;
+          delete user.location.city;
           delete user.pastLocations[0].city;
+          user.picture.type = undefined;
+          user.pastPictures[0].type = undefined;
+          user.updatedOn = undefined;
 
           expect(await user.save()).toBe(user);
 
-          user = await User.fork().get('user2');
+          user = await User.fork().get('user2', {
+            location: true,
+            pastLocations: true,
+            picture: true,
+            pastPictures: true,
+            updatedOn: true
+          });
 
           expect(user.serialize()).toStrictEqual({
             __component: 'user',
             id: 'user2',
-            email: '2@user.com',
-            reference: 2,
-            fullName: 'User 2 (modified)',
-            accessLevel: 1,
-            tags: [],
             location: {country: 'USA'},
             pastLocations: [{country: 'USA'}],
-            emailIsVerified: false,
-            createdOn: {__date: CREATED_ON.toISOString()},
+            picture: {
+              __component: 'picture',
+              type: {__undefined: true},
+              url: 'https://pictures.com/2-2.jpg'
+            },
+            pastPictures: [
+              {
+                __component: 'picture',
+                type: {__undefined: true},
+                url: 'https://pictures.com/2-1.jpg'
+              }
+            ],
             updatedOn: {__undefined: true}
+          });
+
+          // Undefined values in object attributes should not be saved
+          user.location.country = undefined;
+          user.pastLocations[0].country = undefined;
+
+          expect(await user.save()).toBe(user);
+
+          user = await User.fork().get('user2', {location: true, pastLocations: true});
+
+          expect(user.serialize()).toStrictEqual({
+            __component: 'user',
+            id: 'user2',
+            location: {},
+            pastLocations: [{}]
           });
 
           user = User.fork().prototype.deserialize({id: 'user3', fullName: 'User 3'});
@@ -531,6 +631,11 @@ describe('Storable', () => {
                 {country: 'USA', city: 'Nice'},
                 {country: 'USA', city: 'New York'}
               ],
+              picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
+              pastPictures: [
+                {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
+                {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
+              ],
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -545,6 +650,10 @@ describe('Storable', () => {
               tags: ['owner', 'admin'],
               location: {country: 'USA'},
               pastLocations: [{country: 'France'}],
+              picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/11-1.jpg'},
+              pastPictures: [
+                {__component: 'picture', type: 'PNG', url: 'https://pictures.com/11-1.png'}
+              ],
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -562,6 +671,11 @@ describe('Storable', () => {
                 {country: 'France', city: 'Nice'},
                 {country: 'Japan', city: 'Tokyo'}
               ],
+              picture: {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-3.png'},
+              pastPictures: [
+                {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
+                {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
+              ],
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -576,6 +690,8 @@ describe('Storable', () => {
               tags: ['admin'],
               location: {__undefined: true},
               pastLocations: [],
+              picture: {__undefined: true},
+              pastPictures: [],
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -599,6 +715,11 @@ describe('Storable', () => {
               pastLocations: [
                 {country: 'France', city: 'Nice'},
                 {country: 'Japan', city: 'Tokyo'}
+              ],
+              picture: {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-3.png'},
+              pastPictures: [
+                {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
+                {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
               ],
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
@@ -1149,6 +1270,10 @@ describe('Storable', () => {
         firstName;
       }
 
+      class Picture extends BasePicture {}
+
+      User.registerRelatedComponent(Picture);
+
       MockStore.create([User], {initialCollections: getInitialCollections()});
 
       return User;
@@ -1218,6 +1343,10 @@ describe('Storable', () => {
           return this.accessLevel === accessLevel;
         }
       }
+
+      class Picture extends BasePicture {}
+
+      User.registerRelatedComponent(Picture);
 
       MockStore.create([User], {initialCollections: getInitialCollections()});
 
@@ -1413,6 +1542,10 @@ describe('Storable', () => {
           this.afterDeleteHasBeenCalled = true;
         }
       }
+
+      class Picture extends BasePicture {}
+
+      User.registerRelatedComponent(Picture);
 
       MockStore.create([User], {initialCollections: getInitialCollections()});
 

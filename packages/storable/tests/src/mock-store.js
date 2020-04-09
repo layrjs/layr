@@ -1,7 +1,8 @@
 import {AbstractStore} from '@liaison/abstract-store';
-import {AttributeSelector} from '../../..';
 import pull from 'lodash/pull';
 import get from 'lodash/get';
+import set from 'lodash/set';
+import unset from 'lodash/unset';
 import sortOn from 'sort-on';
 
 export class MockStore extends AbstractStore {
@@ -13,7 +14,7 @@ export class MockStore extends AbstractStore {
     this._collections = initialCollections;
   }
 
-  __getCollection(name) {
+  _getCollection(name) {
     let collection = this._collections[name];
 
     if (collection === undefined) {
@@ -26,10 +27,10 @@ export class MockStore extends AbstractStore {
 
   // === Documents ===
 
-  async _createDocument({collectionName, identifierDescriptor, document}) {
-    const collection = this.__getCollection(collectionName);
+  async createDocument({collectionName, identifierDescriptor, document}) {
+    const collection = this._getCollection(collectionName);
 
-    const existingDocument = await this.__readDocument({collection, identifierDescriptor});
+    const existingDocument = await this._readDocument({collection, identifierDescriptor});
 
     if (existingDocument !== undefined) {
       return false;
@@ -40,21 +41,15 @@ export class MockStore extends AbstractStore {
     return true;
   }
 
-  async _readDocument({collectionName, identifierDescriptor, attributeSelector}) {
-    const collection = this.__getCollection(collectionName);
+  async readDocument({collectionName, identifierDescriptor, projection: _}) {
+    const collection = this._getCollection(collectionName);
 
-    let document = await this.__readDocument({collection, identifierDescriptor});
-
-    if (document !== undefined) {
-      document = AttributeSelector.pick(document, attributeSelector, {
-        includeAttributeNames: ['__component']
-      });
-    }
+    const document = await this._readDocument({collection, identifierDescriptor});
 
     return document;
   }
 
-  async __readDocument({collection, identifierDescriptor}) {
+  async _readDocument({collection, identifierDescriptor}) {
     const [[identifierName, identifierValue]] = Object.entries(identifierDescriptor);
 
     const document = collection.find(document => document[identifierName] === identifierValue);
@@ -62,24 +57,38 @@ export class MockStore extends AbstractStore {
     return document;
   }
 
-  async _updateDocument({collectionName, identifierDescriptor, document}) {
-    const collection = this.__getCollection(collectionName);
+  async updateDocument({collectionName, identifierDescriptor, documentPatch}) {
+    const collection = this._getCollection(collectionName);
 
-    const existingDocument = await this.__readDocument({collection, identifierDescriptor});
+    const existingDocument = await this._readDocument({collection, identifierDescriptor});
 
     if (existingDocument === undefined) {
       return false;
     }
 
-    Object.assign(existingDocument, document);
+    const {$set, $unset} = documentPatch;
+
+    if ($set !== undefined) {
+      for (const [path, value] of Object.entries($set)) {
+        set(existingDocument, path, value);
+      }
+    }
+
+    if ($unset !== undefined) {
+      for (const [path, value] of Object.entries($unset)) {
+        if (value) {
+          unset(existingDocument, path);
+        }
+      }
+    }
 
     return true;
   }
 
-  async _deleteDocument({collectionName, identifierDescriptor}) {
-    const collection = this.__getCollection(collectionName);
+  async deleteDocument({collectionName, identifierDescriptor}) {
+    const collection = this._getCollection(collectionName);
 
-    const document = await this.__readDocument({collection, identifierDescriptor});
+    const document = await this._readDocument({collection, identifierDescriptor});
 
     if (document === undefined) {
       return false;
@@ -90,21 +99,15 @@ export class MockStore extends AbstractStore {
     return true;
   }
 
-  async _findDocuments({collectionName, expressions, sort, skip, limit, attributeSelector}) {
-    const collection = this.__getCollection(collectionName);
+  async findDocuments({collectionName, expressions, projection: _, sort, skip, limit}) {
+    const collection = this._getCollection(collectionName);
 
-    let documents = await this.__findDocuments({collection, expressions, sort, skip, limit});
-
-    documents = documents.map(document =>
-      AttributeSelector.pick(document, attributeSelector, {
-        includeAttributeNames: ['__component']
-      })
-    );
+    const documents = await this._findDocuments({collection, expressions, sort, skip, limit});
 
     return documents;
   }
 
-  async __findDocuments({collection, expressions, sort, skip, limit}) {
+  async _findDocuments({collection, expressions, sort, skip, limit}) {
     let documents = filterDocuments(collection, expressions);
 
     documents = sortDocuments(documents, sort);
@@ -116,10 +119,10 @@ export class MockStore extends AbstractStore {
     return documents;
   }
 
-  async _countDocuments({collectionName, expressions}) {
-    const collection = this.__getCollection(collectionName);
+  async countDocuments({collectionName, expressions}) {
+    const collection = this._getCollection(collectionName);
 
-    const documents = await this.__findDocuments({collection, expressions});
+    const documents = await this._findDocuments({collection, expressions});
 
     return documents.length;
   }

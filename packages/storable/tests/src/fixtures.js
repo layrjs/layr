@@ -1,6 +1,5 @@
 import {MongoClient} from 'mongodb';
 import mapKeys from 'lodash/mapKeys';
-import {deleteUndefinedProperties} from 'core-helpers';
 
 export const CREATED_ON = new Date('2020-03-22T01:27:42.612Z');
 export const UPDATED_ON = new Date('2020-03-22T01:29:33.673Z');
@@ -21,9 +20,13 @@ export function getInitialCollections() {
           {country: 'USA', city: 'Nice'},
           {country: 'USA', city: 'New York'}
         ],
+        picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
+        pastPictures: [
+          {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
+          {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
+        ],
         emailIsVerified: false,
-        createdOn: CREATED_ON,
-        updatedOn: undefined
+        createdOn: CREATED_ON
       },
       {
         __component: 'user',
@@ -35,9 +38,10 @@ export function getInitialCollections() {
         tags: ['owner', 'admin'],
         location: {country: 'USA'},
         pastLocations: [{country: 'France'}],
+        picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/11-1.jpg'},
+        pastPictures: [{__component: 'picture', type: 'PNG', url: 'https://pictures.com/11-1.png'}],
         emailIsVerified: true,
-        createdOn: CREATED_ON,
-        updatedOn: undefined
+        createdOn: CREATED_ON
       },
       {
         __component: 'user',
@@ -52,9 +56,13 @@ export function getInitialCollections() {
           {country: 'France', city: 'Nice'},
           {country: 'Japan', city: 'Tokyo'}
         ],
+        picture: {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-3.png'},
+        pastPictures: [
+          {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
+          {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
+        ],
         emailIsVerified: true,
-        createdOn: CREATED_ON,
-        updatedOn: undefined
+        createdOn: CREATED_ON
       },
       {
         __component: 'user',
@@ -64,11 +72,10 @@ export function getInitialCollections() {
         fullName: 'User 13',
         accessLevel: 3,
         tags: ['admin'],
-        location: undefined,
         pastLocations: [],
+        pastPictures: [],
         emailIsVerified: false,
-        createdOn: CREATED_ON,
-        updatedOn: undefined
+        createdOn: CREATED_ON
       }
     ]
   };
@@ -87,7 +94,6 @@ export async function seedMongoDB(connectionString) {
 
     for (const serializedStorable of serializedStorables) {
       const document = mapKeys(serializedStorable, (_, name) => (name === 'id' ? '_id' : name));
-      deleteUndefinedProperties(document);
       await collection.insertOne(document);
     }
   }
