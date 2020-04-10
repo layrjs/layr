@@ -27,6 +27,10 @@ export class EntityManager {
 
     const Entity = this.getParent();
 
+    if (Entity.isDetached()) {
+      return undefined;
+    }
+
     for (const identifierAttribute of Entity.prototype.getIdentifierAttributes()) {
       const name = identifierAttribute.getName();
       const value = identifiers[name];
@@ -54,12 +58,29 @@ export class EntityManager {
   }
 
   addEntity(entity) {
+    ow(entity, 'entity', ow.object);
+
+    if (entity.isDetached()) {
+      throw new Error(
+        `Cannot add a detached entity to the entity manager (${entity.describeComponent()})`
+      );
+    }
+
     for (const identifierAttribute of entity.getIdentifierAttributes({
       setAttributesOnly: true
     })) {
       const name = identifierAttribute.getName();
       const value = identifierAttribute.getValue();
       const index = this._getIndex(name);
+
+      if (hasOwnProperty(index, value)) {
+        throw new Error(
+          `An entity with the same identifier already exists (${index[
+            value
+          ].describeComponent()}, attribute name: '${name}')`
+        );
+      }
+
       index[value] = entity;
     }
   }
@@ -68,6 +89,10 @@ export class EntityManager {
     ow(entity, 'entity', ow.object);
     ow(attributeName, 'attributeName', ow.string.nonEmpty);
 
+    if (entity.isDetached()) {
+      return;
+    }
+
     if (newValue === previousValue) {
       return;
     }
@@ -75,17 +100,36 @@ export class EntityManager {
     const index = this._getIndex(attributeName);
 
     if (previousValue !== undefined) {
-      index[previousValue] = undefined;
+      delete index[previousValue];
     }
 
     if (newValue !== undefined) {
-      if (index[newValue] !== undefined) {
+      if (newValue in index) {
         throw new Error(
           `An entity with the same identifier already exists (${entity.describeComponent()}, attribute name: '${attributeName}')`
         );
       }
 
       index[newValue] = entity;
+    }
+  }
+
+  removeEntity(entity) {
+    ow(entity, 'entity', ow.object);
+
+    if (entity.isDetached()) {
+      throw new Error(
+        `Cannot remove a detached entity from the entity manager (${entity.describeComponent()})`
+      );
+    }
+
+    for (const identifierAttribute of entity.getIdentifierAttributes({
+      setAttributesOnly: true
+    })) {
+      const name = identifierAttribute.getName();
+      const value = identifierAttribute.getValue();
+      const index = this._getIndex(name);
+      delete index[value];
     }
   }
 

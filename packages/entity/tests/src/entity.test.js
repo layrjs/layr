@@ -482,4 +482,30 @@ describe('Entity', () => {
     expect(user10).toBe(user9);
     expect(user10.isNew()).toBe(true);
   });
+
+  test('Detachment', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+    }
+
+    const user = User.prototype.deserialize({id: 'abc123'});
+    const sameUser = User.prototype.deserialize({id: 'abc123'});
+
+    expect(sameUser).toBe(user);
+
+    user.detach();
+
+    const otherUser = User.prototype.deserialize({id: 'abc123'});
+    const sameOtherUser = User.prototype.deserialize({id: 'abc123'});
+
+    expect(otherUser).not.toBe(user);
+    expect(sameOtherUser).toBe(otherUser);
+
+    User.detach();
+
+    const user2 = User.prototype.deserialize({id: 'xyz456'});
+    const otherUser2 = User.prototype.deserialize({id: 'xyz456'});
+
+    expect(otherUser2).not.toBe(user2);
+  });
 });

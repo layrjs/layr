@@ -72,6 +72,18 @@ export const EntityMixin = (Base = Object) => {
       return super.__instantiate(object, options);
     }
 
+    // === Entity manager ===
+
+    static __getEntityManager() {
+      if (this.__entityManager === undefined) {
+        Object.defineProperty(this, '__entityManager', {value: new EntityManager(this)});
+      } else if (!hasOwnProperty(this, '__entityManager')) {
+        Object.defineProperty(this, '__entityManager', {value: this.__entityManager.fork(this)});
+      }
+
+      return this.__entityManager;
+    }
+
     // === Identifier attributes ===
 
     getIdentifierAttribute(name, options = {}) {
@@ -339,16 +351,14 @@ export const EntityMixin = (Base = Object) => {
       return expandedAttributeSelector;
     }
 
-    // === Entity manager ===
+    // === Detachment ===
 
-    static __getEntityManager() {
-      if (this.__entityManager === undefined) {
-        Object.defineProperty(this, '__entityManager', {value: new EntityManager(this)});
-      } else if (!hasOwnProperty(this, '__entityManager')) {
-        Object.defineProperty(this, '__entityManager', {value: this.__entityManager.fork(this)});
-      }
+    detach() {
+      const entityManager = this.constructor.__getEntityManager();
 
-      return this.__entityManager;
+      entityManager.removeEntity(this);
+
+      return super.detach();
     }
 
     // === Utilities ===
