@@ -198,4 +198,22 @@ describe('Layer', () => {
     // Getting a component a second time should return the same forked component
     expect(forkedLayer.getComponent('Movie')).toBe(ForkedMovie);
   });
+
+  test('detach() and isDetached()', async () => {
+    class Movie extends Component {}
+
+    const layer = new Layer([Movie]);
+
+    const movie = new layer.Movie();
+
+    expect(layer.isDetached()).toBe(false);
+    expect(Movie.isDetached()).toBe(false);
+    expect(movie.isDetached()).toBe(false);
+
+    layer.detach();
+
+    expect(layer.isDetached()).toBe(true);
+    expect(Movie.isDetached()).toBe(true);
+    expect(movie.isDetached()).toBe(true);
+  });
 });

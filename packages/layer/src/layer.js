@@ -204,6 +204,17 @@ export class Layer {
     return this.getGhost();
   }
 
+  // === Detachment ===
+
+  detach() {
+    this._isDetached = true;
+    return this;
+  }
+
+  isDetached() {
+    return this._isDetached === true;
+  }
+
   // === Utilities ===
 
   static isLayer(object) {
