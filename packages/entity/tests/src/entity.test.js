@@ -483,6 +483,23 @@ describe('Entity', () => {
     expect(user10.isNew()).toBe(true);
   });
 
+  test('Forking', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+      @secondaryIdentifier() email;
+    }
+
+    const user = User.prototype.deserialize({id: 'abc123', email: 'hi@hello.com'});
+
+    const ForkedUser = User.fork();
+
+    const forkedUser = ForkedUser.prototype.deserialize({id: 'abc123'});
+
+    expect(forkedUser.isForkOf(user)).toBe(true);
+    expect(forkedUser.constructor).toBe(ForkedUser);
+    expect(forkedUser).toBeInstanceOf(ForkedUser);
+  });
+
   test('Detachment', async () => {
     class User extends Entity {
       @primaryIdentifier() id;

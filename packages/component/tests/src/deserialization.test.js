@@ -86,6 +86,8 @@ describe('Deserialization', () => {
     expect(movie5.title).toBe('Inception');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
+    // --- With an array of nested component ---
+
     class Cinema extends Component {
       @attribute() movies;
     }

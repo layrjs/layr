@@ -336,23 +336,34 @@ export const ComponentMixin = (Base = Object) => {
       return ForkedComponent;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    fork(Component) {
-      // TODO: Altering the constructor sounds wrong
-      // ow(Component, 'Component', ow.optional.function);
-
+    fork() {
       const forkedComponent = Object.create(this);
 
-      // if (Component !== undefined) {
-      //   Object.defineProperty(forkedComponent, 'constructor', {
-      //     value: Component,
-      //     writable: true,
-      //     enumerable: false,
-      //     configurable: true
-      //   });
-      // }
+      return forkedComponent;
+    }
+
+    forkInto(Component) {
+      validateIsComponentClass(Component);
+
+      const forkedComponent = this.fork();
+
+      if (this.constructor !== Component) {
+        // Make 'forkedComponent' believe that it is an instance of 'Component'
+        Object.defineProperty(forkedComponent, 'constructor', {
+          value: Component,
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+      }
 
       return forkedComponent;
+    }
+
+    static [Symbol.hasInstance](instance) {
+      // Since forkInto() changes the constructor of the forked instances,
+      // we must change the behaviour of 'instanceof' so it can work as expected
+      return instance.constructor === this || isPrototypeOf(this, instance.constructor);
     }
 
     // === Merging ===
