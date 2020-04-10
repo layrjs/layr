@@ -385,6 +385,44 @@ export const ComponentMixin = (Base = Object) => {
       return this;
     }
 
+    // === Detachment ===
+
+    static detach() {
+      this.__isDetached = true;
+      return this;
+    }
+
+    static isDetached() {
+      if (this.__isDetached === true) {
+        return true;
+      }
+
+      const layer = this.getLayer({throwIfMissing: false});
+
+      if (layer !== undefined && layer.isDetached()) {
+        return true;
+      }
+
+      return false;
+    }
+
+    detach() {
+      this.__isDetached = true;
+      return this;
+    }
+
+    isDetached() {
+      if (this.__isDetached === true) {
+        return true;
+      }
+
+      if (this.constructor.isDetached() === true) {
+        return true;
+      }
+
+      return false;
+    }
+
     // === Serialization ===
 
     static serialize(options = {}) {

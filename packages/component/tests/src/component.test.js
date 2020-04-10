@@ -169,6 +169,29 @@ describe('Component', () => {
     expect(Movie.getComponent('actor', {includePrototypes: true})).toBe(Actor.prototype);
   });
 
+  test('Detachment', async () => {
+    class Movie extends Component {}
+
+    const movie = new Movie();
+    const otherMovie = new Movie();
+
+    expect(Movie.isDetached()).toBe(false);
+    expect(otherMovie.isDetached()).toBe(false);
+    expect(movie.isDetached()).toBe(false);
+
+    movie.detach();
+
+    expect(Movie.isDetached()).toBe(false);
+    expect(movie.isDetached()).toBe(true);
+    expect(otherMovie.isDetached()).toBe(false);
+
+    Movie.detach();
+
+    expect(Movie.isDetached()).toBe(true);
+    expect(movie.isDetached()).toBe(true);
+    expect(otherMovie.isDetached()).toBe(true);
+  });
+
   test('Introspection', async () => {
     class Movie extends Component {
       @attribute() static limit = 100;
