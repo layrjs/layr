@@ -18,9 +18,10 @@ describe('Entity', () => {
       @secondaryIdentifier() username;
     }
 
+    expect(isEntityClass(User)).toBe(true);
+
     const user = new User({email: 'hi@hello.com', username: 'hi'});
 
-    expect(isEntityClass(User)).toBe(true);
     expect(user.getPrimaryIdentifierAttribute().isSet()).toBe(true);
     expect(user.id.length >= 25).toBe(true);
     expect(user.getSecondaryIdentifierAttribute('email').isSet()).toBe(true);
@@ -31,6 +32,69 @@ describe('Entity', () => {
     expect(() => new User()).toThrow(
       "Cannot assign a value of an unexpected type (entity name: 'user', attribute name: 'email', expected type: 'string', received type: 'undefined')"
     );
+  });
+
+  test('Instantiation', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+      @secondaryIdentifier() email;
+    }
+
+    const user1 = User.instantiate({id: 'abc123'});
+
+    expect(() => new User({id: 'abc123'})).toThrow(
+      "An entity with the same identifier already exists (entity name: 'user', attribute name: 'id')"
+    );
+
+    expect(() => User.instantiate({id: 'abc123'}, {isNew: true})).toThrow(
+      "Cannot mark as new an existing non-new entity (entity name: 'user')"
+    );
+
+    const user2 = User.instantiate({id: 'abc123'});
+
+    expect(user2).toBe(user1);
+
+    const user3 = User.instantiate({id: 'def456'});
+
+    expect(user3).not.toBe(user1);
+
+    const user4 = User.instantiate({email: 'hi@hello.com'});
+
+    expect(user4).not.toBe(user1);
+
+    const user5 = User.instantiate({email: 'hi@hello.com'});
+
+    expect(user5).toBe(user4);
+
+    user4.email = 'salut@bonjour.com';
+
+    const user6 = User.instantiate({email: 'hi@hello.com'});
+
+    expect(user6).not.toBe(user4);
+
+    expect(() => {
+      user4.email = 'hi@hello.com';
+    }).toThrow(
+      "An entity with the same identifier already exists (entity name: 'user', attribute name: 'email')"
+    );
+
+    const user7 = new User({id: 'xyz789', email: 'salut@bonjour.com'});
+
+    expect(user7.isNew()).toBe(true);
+
+    const user8 = User.instantiate({id: 'xyz789'}, {isNew: false});
+
+    expect(user8).toBe(user7);
+    expect(user8.isNew()).toBe(false);
+
+    const user9 = new User({id: 'jjj000', email: 'hey@konichiwa.com'});
+
+    expect(user9.isNew()).toBe(true);
+
+    const user10 = User.instantiate({id: 'jjj000'});
+
+    expect(user10).toBe(user9);
+    expect(user10.isNew()).toBe(true);
   });
 
   test('isEntityClass()', async () => {
@@ -312,19 +376,19 @@ describe('Entity', () => {
     });
 
     expect(() => User.normalizeIdentifierDescriptor(undefined)).toThrow(
-      "A property descriptor should be a string, a number, or an object, but received a value of type 'undefined' (entity name: 'user')"
+      "An identifier descriptor should be a string, a number, or an object, but received a value of type 'undefined' (entity name: 'user')"
     );
     expect(() => User.normalizeIdentifierDescriptor(true)).toThrow(
-      "A property descriptor should be a string, a number, or an object, but received a value of type 'boolean' (entity name: 'user')"
+      "An identifier descriptor should be a string, a number, or an object, but received a value of type 'boolean' (entity name: 'user')"
     );
     expect(() => User.normalizeIdentifierDescriptor([])).toThrow(
-      "A property descriptor should be a string, a number, or an object, but received a value of type 'array' (entity name: 'user')"
+      "An identifier descriptor should be a string, a number, or an object, but received a value of type 'array' (entity name: 'user')"
     );
     expect(() => User.normalizeIdentifierDescriptor({})).toThrow(
-      "A property descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of 0 attributes (entity name: 'user', received object: {})"
+      "An identifier descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of 0 attributes (entity name: 'user', received object: {})"
     );
     expect(() => User.normalizeIdentifierDescriptor({id: 'abc123', email: 'hi@hello.com'})).toThrow(
-      'A property descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of 2 attributes (entity name: \'user\', received object: {"id":"abc123","email":"hi@hello.com"})'
+      'An identifier descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of 2 attributes (entity name: \'user\', received object: {"id":"abc123","email":"hi@hello.com"})'
     );
     expect(() => User.normalizeIdentifierDescriptor(123456)).toThrow(
       "Cannot assign a value of an unexpected type (entity name: 'user', attribute name: 'id', expected type: 'string', received type: 'number')"
@@ -420,70 +484,7 @@ describe('Entity', () => {
     expect(id2).not.toBe(id1);
   });
 
-  test('Entity management', async () => {
-    class User extends Entity {
-      @primaryIdentifier() id;
-      @secondaryIdentifier() email;
-    }
-
-    const user1 = User.prototype.deserialize({id: 'abc123'});
-
-    expect(() => new User({id: 'abc123'})).toThrow(
-      "An entity with the same identifier already exists (entity name: 'user', attribute name: 'id')"
-    );
-
-    expect(() => User.prototype.deserialize({__new: true, id: 'abc123'})).toThrow(
-      "Cannot mark as new an existing non-new entity (entity name: 'user')"
-    );
-
-    const user2 = User.prototype.deserialize({id: 'abc123'});
-
-    expect(user2).toBe(user1);
-
-    const user3 = User.prototype.deserialize({id: 'def456'});
-
-    expect(user3).not.toBe(user1);
-
-    const user4 = User.prototype.deserialize({email: 'hi@hello.com'});
-
-    expect(user4).not.toBe(user1);
-
-    const user5 = User.prototype.deserialize({email: 'hi@hello.com'});
-
-    expect(user5).toBe(user4);
-
-    user4.email = 'salut@bonjour.com';
-
-    const user6 = User.prototype.deserialize({email: 'hi@hello.com'});
-
-    expect(user6).not.toBe(user4);
-
-    expect(() => {
-      user4.email = 'hi@hello.com';
-    }).toThrow(
-      "An entity with the same identifier already exists (entity name: 'user', attribute name: 'email')"
-    );
-
-    const user7 = new User({id: 'xyz789', email: 'salut@bonjour.com'});
-
-    expect(user7.isNew()).toBe(true);
-
-    const user8 = User.prototype.deserialize({id: 'xyz789'});
-
-    expect(user8).toBe(user7);
-    expect(user8.isNew()).toBe(false);
-
-    const user9 = new User({id: 'jjj000', email: 'hey@konichiwa.com'});
-
-    expect(user9.isNew()).toBe(true);
-
-    const user10 = User.prototype.deserialize({id: 'jjj000'}, {excludeIsNewMark: true});
-
-    expect(user10).toBe(user9);
-    expect(user10.isNew()).toBe(true);
-  });
-
-  test('Forking', async () => {
+  test('fork()', async () => {
     class User extends Entity {
       @primaryIdentifier() id;
       @secondaryIdentifier() email;
@@ -500,7 +501,7 @@ describe('Entity', () => {
     expect(forkedUser).toBeInstanceOf(ForkedUser);
   });
 
-  test('Detachment', async () => {
+  test('detach()', async () => {
     class User extends Entity {
       @primaryIdentifier() id;
     }

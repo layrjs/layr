@@ -164,7 +164,7 @@ const StorableMixin = (Base = Object) => {
 
       const {reload = false, throwIfMissing = true, _callerMethodName = 'get'} = options;
 
-      const storable = this.prototype.deserialize(identifierDescriptor, {excludeIsNewMark: true});
+      const storable = this.instantiate(identifierDescriptor);
 
       return await storable.load(attributeSelector, {reload, throwIfMissing, _callerMethodName});
     }

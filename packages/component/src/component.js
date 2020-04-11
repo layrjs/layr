@@ -48,24 +48,29 @@ export const ComponentMixin = (Base = Object) => {
       this.markAsNew();
     }
 
-    static __instantiate(attributes = {}, options = {}) {
-      ow(attributes, 'attributes', ow.object);
-      ow(options, 'options', ow.object.exactShape({isNew: ow.optional.boolean}));
+    static instantiate(identifiers = {}, options = {}) {
+      ow(identifiers, 'identifiers', ow.object);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          isNew: ow.optional.boolean,
+          attributeSelector: ow,
+          attributeFilter: ow.optional.function
+        })
+      );
 
-      const {isNew = false} = options;
+      const {isNew = false, attributeSelector = {}, attributeFilter} = options;
 
-      if (isNew === true) {
-        let attributeSelector = this.prototype.expandAttributeSelector(true, {depth: 0});
-        const deserializedAttributeSelector = AttributeSelector.fromNames(Object.keys(attributes));
-        attributeSelector = AttributeSelector.remove(
-          attributeSelector,
-          deserializedAttributeSelector
-        );
+      const component = isNew
+        ? new this({}, {attributeSelector: {}})
+        : Object.create(this.prototype);
 
-        return new this({}, {attributeSelector});
-      }
-
-      return Object.create(this.prototype);
+      return component.__finishInstantiation(identifiers, {
+        isNew,
+        attributeSelector,
+        attributeFilter
+      });
     }
 
     // === Naming ===
@@ -302,16 +307,18 @@ export const ComponentMixin = (Base = Object) => {
     clone(options = {}) {
       ow(options, 'options', ow.object);
 
-      const attributeValues = {};
+      const attributes = {};
 
       for (const attribute of this.getAttributes({setAttributesOnly: true})) {
         const name = attribute.getName();
         const value = attribute.getValue();
 
-        attributeValues[name] = value;
+        attributes[name] = value;
       }
 
-      const clonedComponent = this.constructor.__instantiate(attributeValues, {
+      const {identifierAttributes, otherAttributes} = this.__partitionAttributes(attributes);
+
+      const clonedComponent = this.constructor.instantiate(identifierAttributes, {
         isNew: this.isNew()
       });
 
@@ -319,7 +326,7 @@ export const ComponentMixin = (Base = Object) => {
         return this; // Optimization
       }
 
-      clonedComponent.__cloneAttributes(attributeValues, options);
+      clonedComponent.__cloneAttributes(otherAttributes, options);
 
       return clonedComponent;
     }
@@ -510,9 +517,16 @@ export const ComponentMixin = (Base = Object) => {
 
     deserialize(object = {}, options = {}) {
       ow(object, 'object', ow.object);
-      ow(options, 'options', ow.object.partialShape({excludeIsNewMark: ow.optional.boolean}));
+      ow(
+        options,
+        'options',
+        ow.object.partialShape({
+          attributeFilter: ow.optional.function,
+          excludeIsNewMark: ow.optional.boolean
+        })
+      );
 
-      const {excludeIsNewMark = false} = options;
+      const {attributeFilter, excludeIsNewMark = false} = options;
 
       const expectedComponentName = this.getComponentName();
 
@@ -532,11 +546,37 @@ export const ComponentMixin = (Base = Object) => {
         isNew = __new ?? false;
       }
 
-      const deserializedComponent = this.constructor.__instantiate(attributes, {isNew});
+      const {identifierAttributes, otherAttributes} = this.__partitionAttributes(attributes);
 
-      return possiblyAsync(deserializedComponent.__deserializeAttributes(attributes, options), {
-        then: () => deserializedComponent
-      });
+      let attributeSelector;
+
+      if (isNew) {
+        // When deserializing a new component, we must instantiate a component with the attributes
+        // that are not part of the deserialization so they can be set to their default values
+        attributeSelector = this.expandAttributeSelector(true, {depth: 0});
+        const otherAttributeSelector = AttributeSelector.fromNames(Object.keys(otherAttributes));
+        attributeSelector = AttributeSelector.remove(attributeSelector, otherAttributeSelector);
+      } else {
+        attributeSelector = {};
+      }
+
+      return possiblyAsync(
+        this.constructor.instantiate(identifierAttributes, {
+          isNew,
+          attributeSelector,
+          attributeFilter
+        }),
+        {
+          then: deserializedComponent => {
+            return possiblyAsync(
+              deserializedComponent.__deserializeAttributes(otherAttributes, options),
+              {
+                then: () => deserializedComponent
+              }
+            );
+          }
+        }
+      );
     }
 
     // === Introspection ===
@@ -749,9 +789,7 @@ export const ComponentMixin = (Base = Object) => {
       return possiblyAsync.forEach(
         Object.entries(attributes),
         ([attributeName, attributeValue]) => {
-          const attribute = this.getAttribute(attributeName, {
-            throwIfMissing: false
-          });
+          const attribute = this.getAttribute(attributeName, {throwIfMissing: false});
 
           if (attribute === undefined) {
             return;

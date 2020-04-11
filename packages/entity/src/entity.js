@@ -44,16 +44,24 @@ export const EntityMixin = (Base = Object) => {
 
     // === Creation ===
 
-    static __instantiate(object = {}, options = {}) {
-      ow(object, 'object', ow.object);
-      ow(options, 'options', ow.object.exactShape({isNew: ow.optional.boolean}));
-
-      const {isNew} = options;
+    static instantiate(identifiers = {}, options = {}) {
+      ow(identifiers, 'object', ow.object);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({
+          isNew: ow.optional.boolean,
+          attributeSelector: ow,
+          attributeFilter: ow.optional.function
+        })
+      );
 
       const entityManager = this.__getEntityManager();
-      const entity = entityManager.getEntity(object);
+      const entity = entityManager.getEntity(identifiers);
 
       if (entity !== undefined) {
+        const {isNew, attributeSelector = {}, attributeFilter} = options;
+
         if (isNew !== undefined) {
           if (isNew && !entity.isNew()) {
             throw new Error(
@@ -66,10 +74,14 @@ export const EntityMixin = (Base = Object) => {
           }
         }
 
-        return entity;
+        return entity.__finishInstantiation(identifiers, {
+          isNew: Boolean(isNew),
+          attributeSelector,
+          attributeFilter
+        });
       }
 
-      return super.__instantiate(object, options);
+      return super.instantiate(identifiers, options);
     }
 
     // === Entity manager ===
@@ -286,7 +298,7 @@ export const EntityMixin = (Base = Object) => {
 
       if (!isPlainObject(identifierDescriptor)) {
         throw new Error(
-          `A property descriptor should be a string, a number, or an object, but received a value of type '${getTypeOf(
+          `An identifier descriptor should be a string, a number, or an object, but received a value of type '${getTypeOf(
             identifierDescriptor
           )}' (${this.prototype.describeComponent()})`
         );
@@ -296,7 +308,7 @@ export const EntityMixin = (Base = Object) => {
 
       if (attributes.length !== 1) {
         throw new Error(
-          `A property descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of ${
+          `An identifier descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of ${
             attributes.length
           } attributes (${this.prototype.describeComponent()}, received object: ${JSON.stringify(
             identifierDescriptor

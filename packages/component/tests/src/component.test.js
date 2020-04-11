@@ -20,43 +20,91 @@ describe('Component', () => {
 
     expect(isComponentInstance(movie)).toBe(true);
     expect(movie).toBeInstanceOf(Movie);
-
     expect(Object.keys(movie)).toEqual(['instanceAttribute']);
     expect(movie.instanceAttribute).toBe(true);
+
     expect(movie.title).toBe('');
     expect(movie.country).toBe('');
 
     movie = new Movie({title: 'Inception'});
 
-    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
-    expect(movie.instanceAttribute).toBe(true);
     expect(movie.title).toBe('Inception');
     expect(movie.country).toBe('');
 
-    movie = new Movie({}, {attributeSelector: false});
+    movie = new Movie({}, {attributeSelector: {}});
 
-    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
-    expect(movie.instanceAttribute).toBe(true);
     expect(movie.getAttribute('title').isSet()).toBe(false);
     expect(movie.getAttribute('country').isSet()).toBe(false);
 
     movie = new Movie({}, {attributeSelector: {title: true}});
 
-    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
-    expect(movie.instanceAttribute).toBe(true);
     expect(movie.title).toBe('');
     expect(movie.getAttribute('country').isSet()).toBe(false);
 
     movie = new Movie({title: 'Inception', country: 'USA'}, {attributeSelector: {country: true}});
 
-    expect(Object.keys(movie)).toEqual(['instanceAttribute']);
-    expect(movie.instanceAttribute).toBe(true);
-    expect(movie.getAttribute('title').isSet()).toBe(false);
+    expect(movie.title).toBe('Inception'); // Attributes in the specified object are always included
     expect(movie.country).toBe('USA');
 
     // The component should be accessible through `getComponent()`
     expect(Movie.getComponent('Movie')).toBe(Movie);
     expect(Movie.getComponent('movie', {includePrototypes: true})).toBe(Movie.prototype);
+  });
+
+  test('Instantiation', async () => {
+    class Movie extends Component {
+      @attribute() title = '';
+      @attribute() country = '';
+    }
+
+    let movie = Movie.instantiate();
+
+    expect(isComponentInstance(movie)).toBe(true);
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie.isNew()).toBe(false);
+
+    expect(movie.getAttribute('title').isSet()).toBe(false);
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    movie = Movie.instantiate({title: 'Inception'});
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    movie = Movie.instantiate({title: 'Inception'}, {attributeSelector: {country: true}});
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.country).toBeUndefined();
+
+    movie = Movie.instantiate({}, {isNew: true});
+
+    expect(isComponentInstance(movie)).toBe(true);
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie.isNew()).toBe(true);
+
+    expect(movie.getAttribute('title').isSet()).toBe(false);
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    movie = Movie.instantiate({}, {isNew: true, attributeSelector: {title: true}});
+
+    expect(movie.title).toBe('');
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    movie = Movie.instantiate(
+      {title: 'Inception'},
+      {isNew: true, attributeSelector: {country: true}}
+    );
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.country).toBe('');
+
+    movie = await Movie.instantiate(
+      {title: 'Inception', country: 'USA'},
+      {attributeFilter: async attribute => attribute.getName() !== 'country'}
+    );
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('country').isSet()).toBe(false);
   });
 
   test('Naming', async () => {

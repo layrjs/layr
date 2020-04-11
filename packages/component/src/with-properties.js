@@ -1,4 +1,5 @@
 import {hasOwnProperty, getClassOf} from 'core-helpers';
+import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
 import {Property} from './property';
@@ -41,13 +42,71 @@ export const WithProperties = (Base = Object) => {
 
       super();
 
-      for (const attribute of this.getAttributes({attributeSelector})) {
-        const name = attribute.getName();
+      return this.__finishInstantiation(object, {isNew: true, attributeSelector});
+    }
 
-        const value = hasOwnProperty(object, name) ? object[name] : attribute.getDefaultValue();
+    __finishInstantiation(object, {isNew, attributeSelector, attributeFilter}) {
+      // Always include attributes present in the specified object
+      const objectAttributeSelector = AttributeSelector.fromNames(Object.keys(object));
+      attributeSelector = AttributeSelector.add(attributeSelector, objectAttributeSelector);
 
-        attribute.setValue(value);
+      return possiblyAsync.forEach(
+        this.getAttributes({attributeSelector}),
+        attribute => {
+          if (attribute.isSet()) {
+            // This can happen when an entity was returned from the entity manager
+            return;
+          }
+
+          return possiblyAsync(
+            attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
+            {
+              then: isNotFilteredOut => {
+                if (isNotFilteredOut) {
+                  const name = attribute.getName();
+                  const value = hasOwnProperty(object, name)
+                    ? object[name]
+                    : isNew
+                    ? attribute.getDefaultValue()
+                    : undefined;
+                  attribute.setValue(value);
+                }
+              }
+            }
+          );
+        },
+        {then: () => this}
+      );
+    }
+
+    // === Identifier attributes ===
+
+    getIdentifierAttributes(_options) {
+      // Identifier attributes are implemented in the Entity subclass
+      // For other subclasses, return an empty iterable
+
+      return {
+        *[Symbol.iterator]() {}
+      };
+    }
+
+    __partitionAttributes(object) {
+      const identifierAttributes = {};
+      const otherAttributes = {};
+
+      const identifierAttributeSelector = AttributeSelector.fromAttributes(
+        this.getIdentifierAttributes()
+      );
+
+      for (const [name, value] of Object.entries(object)) {
+        if (AttributeSelector.get(identifierAttributeSelector, name) === true) {
+          identifierAttributes[name] = value;
+        } else {
+          otherAttributes[name] = value;
+        }
       }
+
+      return {identifierAttributes, otherAttributes};
     }
 
     // === Property exposure ===
