@@ -509,6 +509,54 @@ export const ComponentMixin = (Base = Object) => {
       });
     }
 
+    static deserializeInstance(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
+      ow(options, 'options', ow.object);
+
+      const {__component: componentName, __new: isNew = false, ...attributes} = object;
+      const {attributeFilter} = options;
+
+      if (componentName !== undefined) {
+        const expectedComponentName = this.prototype.getComponentName();
+
+        if (componentName !== expectedComponentName) {
+          throw new Error(
+            `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
+          );
+        }
+      }
+
+      const {identifierAttributes, otherAttributes} = this.prototype.__partitionAttributes(
+        attributes
+      );
+
+      let attributeSelector;
+
+      if (isNew) {
+        // When deserializing a component, we must select the attributes that are not part
+        // of the deserialization so they can be set to their default values
+        attributeSelector = this.prototype.expandAttributeSelector(true, {depth: 0});
+        const otherAttributeSelector = AttributeSelector.fromNames(Object.keys(otherAttributes));
+        attributeSelector = AttributeSelector.remove(attributeSelector, otherAttributeSelector);
+      } else {
+        attributeSelector = {};
+      }
+
+      return possiblyAsync(
+        this.instantiate(identifierAttributes, {
+          isNew,
+          attributeSelector,
+          attributeFilter
+        }),
+        {
+          then: instantiatedComponent =>
+            possiblyAsync(instantiatedComponent.__deserializeAttributes(attributes, options), {
+              then: () => instantiatedComponent
+            })
+        }
+      );
+    }
+
     deserialize(object = {}, options = {}) {
       ow(object, 'object', ow.object);
       ow(options, 'options', ow.object);

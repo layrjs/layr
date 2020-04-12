@@ -2,7 +2,6 @@ import {deserialize as simpleDeserialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
-import {AttributeSelector} from './attribute-selector';
 import {isComponentClass} from './utilities';
 
 export function deserialize(value, options = {}) {
@@ -36,7 +35,7 @@ export function deserialize(value, options = {}) {
       }
     }
 
-    const {__component: componentName, __new: isNew = false, ...attributes} = object;
+    const {__component: componentName, ...attributes} = object;
 
     if (componentName === undefined) {
       return undefined;
@@ -52,31 +51,7 @@ export function deserialize(value, options = {}) {
       return component.deserialize(attributes, options);
     }
 
-    const {identifierAttributes, otherAttributes} = component.__partitionAttributes(attributes);
-
-    let attributeSelector;
-
-    if (isNew) {
-      // When deserializing a component, we must select the attributes that are not part
-      // of the deserialization so they can be set to their default values
-      attributeSelector = component.expandAttributeSelector(true, {depth: 0});
-      const otherAttributeSelector = AttributeSelector.fromNames(Object.keys(otherAttributes));
-      attributeSelector = AttributeSelector.remove(attributeSelector, otherAttributeSelector);
-    } else {
-      attributeSelector = {};
-    }
-
-    return possiblyAsync(
-      component.constructor.instantiate(identifierAttributes, {
-        isNew,
-        attributeSelector,
-        attributeFilter
-      }),
-      {
-        then: instantiatedComponent =>
-          instantiatedComponent.deserialize({__new: isNew, ...attributes}, options)
-      }
-    );
+    return component.constructor.deserializeInstance(attributes, options);
   };
 
   let functionDeserializer;

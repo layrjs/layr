@@ -485,12 +485,9 @@ const StorableMixin = (Base = Object) => {
         {attributeSelector}
       );
 
-      const foundStorables = serializedStorables.map(serializedStorable => {
-        const {identifierAttributes, otherAttributes} = this.prototype.__partitionAttributes(
-          serializedStorable
-        );
-        return this.instantiate(identifierAttributes).deserialize(otherAttributes);
-      });
+      const foundStorables = serializedStorables.map(serializedStorable =>
+        this.deserializeInstance(serializedStorable)
+      );
 
       return foundStorables;
     }

@@ -56,7 +56,7 @@ describe('Deserialization', () => {
       "Cannot deserialize a component without a 'componentGetter'"
     );
 
-    // --- Using the Component.deserialize() method ---
+    // --- Using Component.deserialize() method ---
 
     DeserializedMovie = Movie.deserialize({limit: {__undefined: true}, offset: 100});
 
@@ -128,7 +128,29 @@ describe('Deserialization', () => {
       'Component not found'
     );
 
-    // --- Using the component.deserialize() method ---
+    // --- Using Component.deserializeInstance() method ---
+
+    movie = Movie.deserializeInstance({__component: 'movie', title: 'Inception'});
+
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie).not.toBe(Movie.prototype);
+    expect(movie.isNew()).toBe(false);
+    expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('duration').isSet()).toBe(false);
+
+    movie = Movie.deserializeInstance({__new: true, title: 'Inception'});
+
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie).not.toBe(Movie.prototype);
+    expect(movie.isNew()).toBe(true);
+    expect(movie.title).toBe('Inception');
+    expect(movie.duration).toBe(0);
+
+    expect(() => Movie.deserializeInstance({__component: 'film'})).toThrow(
+      "An unexpected component name was encountered while deserializing an object (encountered name: 'film', expected name: 'movie')"
+    );
+
+    // --- Using component.deserialize() method ---
 
     movie = Movie.instantiate({}, {isNew: true});
 
