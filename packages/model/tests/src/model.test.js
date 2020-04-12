@@ -31,6 +31,51 @@ describe('Model', () => {
     );
   });
 
+  test('Instantiation', async () => {
+    class Movie extends Model {
+      @attribute('string') title;
+      @attribute('string') country = '';
+    }
+
+    let movie = Movie.instantiate();
+
+    expect(isModelInstance(movie)).toBe(true);
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie.isNew()).toBe(false);
+
+    expect(movie.getAttribute('title').isSet()).toBe(false);
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    movie = Movie.instantiate({title: 'Inception'});
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('country').isSet()).toBe(false);
+
+    expect(() =>
+      Movie.instantiate({title: 'Inception'}, {attributeSelector: {country: true}})
+    ).toThrow(
+      "Cannot assign a value of an unexpected type (model name: 'movie', attribute name: 'country', expected type: 'string', received type: 'undefined')"
+    );
+
+    movie = Movie.instantiate(
+      {title: 'Inception'},
+      {isNew: true, attributeSelector: {country: true}}
+    );
+
+    expect(isModelInstance(movie)).toBe(true);
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie.isNew()).toBe(true);
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.country).toBe('');
+
+    expect(() =>
+      Movie.instantiate({country: 'USA'}, {isNew: true, attributeSelector: {title: true}})
+    ).toThrow(
+      "Cannot assign a value of an unexpected type (model name: 'movie', attribute name: 'title', expected type: 'string', received type: 'undefined')"
+    );
+  });
+
   test('isModelClass()', async () => {
     expect(isModelClass(undefined)).toBe(false);
     expect(isModelClass(null)).toBe(false);
