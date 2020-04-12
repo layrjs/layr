@@ -23,7 +23,7 @@ describe('Cloning', () => {
     expect(clonedMovie.specs).not.toBe(movie.specs);
     expect(clonedMovie.specs).toEqual(movie.specs);
 
-    movie = Movie.prototype.deserialize({__new: true, title: 'Inception'});
+    movie = Movie.instantiate({title: 'Inception'}, {isNew: true, attributeSelector: true});
 
     clonedMovie = movie.clone();
 
@@ -34,7 +34,7 @@ describe('Cloning', () => {
     expect(clonedMovie.tags).toBeUndefined();
     expect(clonedMovie.specs).toBeUndefined();
 
-    movie = Movie.prototype.deserialize({title: 'Inception'});
+    movie = Movie.instantiate({title: 'Inception'});
 
     clonedMovie = movie.clone();
 

@@ -357,7 +357,7 @@ describe('WithProperties', () => {
         @attribute() director;
       }
 
-      const film = Film.prototype.deserialize({title: 'Inception', director: 'Christopher Nolan'});
+      const film = Film.instantiate({title: 'Inception', director: 'Christopher Nolan'});
 
       attributes = film.getAttributes();
 
@@ -407,7 +407,7 @@ describe('WithProperties', () => {
 
       expect(Movie.prototype.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({});
 
-      const movie = Movie.prototype.deserialize();
+      const movie = Movie.instantiate();
 
       expect(movie.getAttributeSelector()).toStrictEqual({
         title: true,

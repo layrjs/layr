@@ -2,6 +2,9 @@ import {deserialize as simpleDeserialize} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
+import {AttributeSelector} from './attribute-selector';
+import {isComponentClass} from './utilities';
+
 export function deserialize(value, options = {}) {
   ow(
     options,
@@ -10,6 +13,7 @@ export function deserialize(value, options = {}) {
       objectDeserializer: ow.optional.function,
       functionDeserializer: ow.optional.function,
       componentGetter: ow.optional.function,
+      attributeFilter: ow.optional.function,
       deserializeFunctions: ow.optional.boolean
     })
   );
@@ -18,6 +22,7 @@ export function deserialize(value, options = {}) {
     objectDeserializer: originalObjectDeserializer,
     functionDeserializer: originalFunctionDeserializer,
     componentGetter,
+    attributeFilter,
     deserializeFunctions = false,
     ...otherOptions
   } = options;
@@ -31,7 +36,7 @@ export function deserialize(value, options = {}) {
       }
     }
 
-    const {__component: componentName} = object;
+    const {__component: componentName, __new: isNew = false, ...attributes} = object;
 
     if (componentName === undefined) {
       return undefined;
@@ -43,7 +48,35 @@ export function deserialize(value, options = {}) {
 
     const component = componentGetter(componentName);
 
-    return component.deserialize(object, options);
+    if (isComponentClass(component)) {
+      return component.deserialize(attributes, options);
+    }
+
+    const {identifierAttributes, otherAttributes} = component.__partitionAttributes(attributes);
+
+    let attributeSelector;
+
+    if (isNew) {
+      // When deserializing a component, we must select the attributes that are not part
+      // of the deserialization so they can be set to their default values
+      attributeSelector = component.expandAttributeSelector(true, {depth: 0});
+      const otherAttributeSelector = AttributeSelector.fromNames(Object.keys(otherAttributes));
+      attributeSelector = AttributeSelector.remove(attributeSelector, otherAttributeSelector);
+    } else {
+      attributeSelector = {};
+    }
+
+    return possiblyAsync(
+      component.constructor.instantiate(identifierAttributes, {
+        isNew,
+        attributeSelector,
+        attributeFilter
+      }),
+      {
+        then: instantiatedComponent =>
+          instantiatedComponent.deserialize({__new: isNew, ...attributes}, options)
+      }
+    );
   };
 
   let functionDeserializer;

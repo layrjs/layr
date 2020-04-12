@@ -492,91 +492,52 @@ export const ComponentMixin = (Base = Object) => {
       ow(object, 'object', ow.object);
       ow(options, 'options', ow.object);
 
-      const expectedComponentName = this.getComponentName();
+      const {__component: componentName, ...attributes} = object;
 
-      const {__component: componentName = expectedComponentName, ...attributes} = object;
+      if (componentName !== undefined) {
+        const expectedComponentName = this.getComponentName();
 
-      const isInstanceName = validateComponentName(componentName) === 'componentInstanceName';
-
-      if (isInstanceName) {
-        return this.prototype.deserialize(object, options);
+        if (componentName !== expectedComponentName) {
+          throw new Error(
+            `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
+          );
+        }
       }
 
-      if (componentName !== expectedComponentName) {
-        throw new Error(
-          `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
-        );
-      }
-
-      const deserializedComponent = this;
-
-      return possiblyAsync(deserializedComponent.__deserializeAttributes(attributes, options), {
-        then: () => deserializedComponent
+      return possiblyAsync(this.__deserializeAttributes(attributes, options), {
+        then: () => this
       });
     }
 
     deserialize(object = {}, options = {}) {
       ow(object, 'object', ow.object);
-      ow(
-        options,
-        'options',
-        ow.object.partialShape({
-          attributeFilter: ow.optional.function,
-          excludeIsNewMark: ow.optional.boolean
-        })
-      );
+      ow(options, 'options', ow.object);
 
-      const {attributeFilter, excludeIsNewMark = false} = options;
+      const {__component: componentName, __new: isNew = false, ...attributes} = object;
 
-      const expectedComponentName = this.getComponentName();
+      if (componentName !== undefined) {
+        const expectedComponentName = this.getComponentName();
 
-      const {__component: componentName = expectedComponentName, __new, ...attributes} = object;
+        if (componentName !== expectedComponentName) {
+          throw new Error(
+            `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
+          );
+        }
+      }
 
-      validateComponentName(componentName, {allowClasses: false});
-
-      if (componentName !== expectedComponentName) {
+      if (isNew && !this.isNew()) {
         throw new Error(
-          `An unexpected component name was encountered while deserializing an object (encountered name: '${componentName}', expected name: '${expectedComponentName}')`
+          `Cannot mark as new an existing non-new ${this.getComponentType()} (${this.describeComponent()})`
         );
       }
 
-      let isNew;
-
-      if (!excludeIsNewMark) {
-        isNew = __new ?? false;
+      if (!isNew && this.isNew()) {
+        this.markAsNotNew();
       }
 
-      const {identifierAttributes, otherAttributes} = this.__partitionAttributes(attributes);
-
-      let attributeSelector;
-
-      if (isNew) {
-        // When deserializing a new component, we must instantiate a component with the attributes
-        // that are not part of the deserialization so they can be set to their default values
-        attributeSelector = this.expandAttributeSelector(true, {depth: 0});
-        const otherAttributeSelector = AttributeSelector.fromNames(Object.keys(otherAttributes));
-        attributeSelector = AttributeSelector.remove(attributeSelector, otherAttributeSelector);
-      } else {
-        attributeSelector = {};
-      }
-
-      return possiblyAsync(
-        this.constructor.instantiate(identifierAttributes, {
-          isNew,
-          attributeSelector,
-          attributeFilter
-        }),
-        {
-          then: deserializedComponent => {
-            return possiblyAsync(
-              deserializedComponent.__deserializeAttributes(otherAttributes, options),
-              {
-                then: () => deserializedComponent
-              }
-            );
-          }
-        }
-      );
+      return possiblyAsync(this.__deserializeAttributes(attributes, options), {
+        then: () => this
+      });
     }
 
     // === Introspection ===

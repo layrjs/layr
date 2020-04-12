@@ -60,7 +60,7 @@ describe('Serialization', () => {
       director: {__undefined: true}
     });
 
-    movie = Movie.prototype.deserialize();
+    movie = Movie.instantiate();
 
     expect(movie.serialize()).toEqual({
       __component: 'movie'

@@ -338,7 +338,7 @@ describe('Storable', () => {
         test('load()', async () => {
           const User = userClassProvider();
 
-          let user = User.fork().prototype.deserialize({id: 'user1'});
+          let user = User.fork().instantiate({id: 'user1'});
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(user.load()).rejects.toThrow(
@@ -380,14 +380,14 @@ describe('Storable', () => {
             updatedOn: {__undefined: true}
           });
 
-          user = User.fork().prototype.deserialize({id: 'user2'});
+          user = User.fork().instantiate({id: 'user2'});
 
           await expect(user.load({})).rejects.toThrow(
             "Cannot load a document that is missing from the store (collection: 'User', id: 'user2'"
           );
           expect(await user.load({}, {throwIfMissing: false})).toBeUndefined();
 
-          user = User.fork().prototype.deserialize({email: '1@user.com'});
+          user = User.fork().instantiate({email: '1@user.com'});
 
           expect(await user.load({})).toBe(user);
           expect(user.serialize()).toStrictEqual({
@@ -404,7 +404,7 @@ describe('Storable', () => {
             fullName: 'User 1'
           });
 
-          user = User.fork().prototype.deserialize({fullName: 'User 1'});
+          user = User.fork().instantiate({fullName: 'User 1'});
 
           await expect(user.load({})).rejects.toThrow(
             "Cannot get an identifier descriptor from a storable that has no set identifier (storable name: 'user')"
@@ -548,7 +548,7 @@ describe('Storable', () => {
             pastLocations: [{}]
           });
 
-          user = User.fork().prototype.deserialize({id: 'user3', fullName: 'User 3'});
+          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
 
           expect(await user.save(true, {throwIfMissing: false})).toBe(undefined);
           await expect(user.save()).rejects.toThrow(
@@ -567,7 +567,7 @@ describe('Storable', () => {
             "Cannot save a new document that already exists in the store (collection: 'User', id: 'user1')"
           );
 
-          user = User.fork().prototype.deserialize({id: 'user3', fullName: 'User 3'});
+          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
 
           await expect(
             user.save(true, {throwIfMissing: true, throwIfExists: true})
@@ -579,7 +579,7 @@ describe('Storable', () => {
         test('delete()', async () => {
           const User = userClassProvider();
 
-          let user = User.fork().prototype.deserialize({id: 'user1'});
+          let user = User.fork().instantiate({id: 'user1'});
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(user.delete()).rejects.toThrow(
@@ -1156,7 +1156,7 @@ describe('Storable', () => {
 
           const ForkedUser = User.fork();
 
-          const user = ForkedUser.prototype.deserialize({id: 'user1'});
+          const user = ForkedUser.instantiate({id: 'user1'});
 
           users = await ForkedUser.find(user, {email: true});
 
@@ -1206,7 +1206,7 @@ describe('Storable', () => {
 
           const ForkedUser = User.fork();
 
-          const user = ForkedUser.prototype.deserialize({fullName: 'User 1'});
+          const user = ForkedUser.instantiate({fullName: 'User 1'});
 
           expect(await ForkedUser.count(user)).toBe(1);
         });
@@ -1236,17 +1236,17 @@ describe('Storable', () => {
     test('load()', async () => {
       const User = getUserClass();
 
-      let user = User.fork().prototype.deserialize({id: 'user1'});
+      let user = User.fork().instantiate({id: 'user1'});
       await user.load({});
 
       expect(user.getAttribute('firstName').isSet()).toBe(false);
 
-      user = User.fork().prototype.deserialize({id: 'user1'});
+      user = User.fork().instantiate({id: 'user1'});
       await user.load({firstName: true});
 
       expect(user.firstName).toBe('User');
 
-      user = User.fork().prototype.deserialize({id: 'user1'});
+      user = User.fork().instantiate({id: 'user1'});
       await user.load({fullName: true, firstName: true});
 
       expect(user.serialize()).toStrictEqual({
@@ -1369,7 +1369,7 @@ describe('Storable', () => {
 
       expect(getAttributesWithHook(User.prototype, 'beforeLoad')).toEqual(['email', 'fullName']);
 
-      const user = User.fork().prototype.deserialize({id: 'user1'});
+      const user = User.fork().instantiate({id: 'user1'});
 
       expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([]);
 
@@ -1395,7 +1395,7 @@ describe('Storable', () => {
     test('beforeLoad() and afterLoad()', async () => {
       const User = getUserClass();
 
-      const user = User.fork().prototype.deserialize({id: 'user1'});
+      const user = User.fork().instantiate({id: 'user1'});
 
       expect(user.beforeLoadHasBeenCalled).toBeUndefined();
       expect(user.afterLoadHasBeenCalled).toBeUndefined();

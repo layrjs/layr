@@ -315,35 +315,35 @@ describe('Entity', () => {
 
     expect(
       User.fork()
-        .prototype.deserialize({id: 'abc123'})
+        .instantiate({id: 'abc123'})
         .getIdentifierDescriptor()
     ).toStrictEqual({
       id: 'abc123'
     });
     expect(
       User.fork()
-        .prototype.deserialize({id: 'abc123', email: 'hi@hello.com'})
+        .instantiate({id: 'abc123', email: 'hi@hello.com'})
         .getIdentifierDescriptor()
     ).toStrictEqual({
       id: 'abc123'
     });
     expect(
       User.fork()
-        .prototype.deserialize({email: 'hi@hello.com'})
+        .instantiate({email: 'hi@hello.com'})
         .getIdentifierDescriptor()
     ).toStrictEqual({
       email: 'hi@hello.com'
     });
     expect(
       User.fork()
-        .prototype.deserialize({email: 'hi@hello.com', reference: 123456})
+        .instantiate({email: 'hi@hello.com', reference: 123456})
         .getIdentifierDescriptor()
     ).toStrictEqual({
       email: 'hi@hello.com'
     });
     expect(
       User.fork()
-        .prototype.deserialize({reference: 123456})
+        .instantiate({reference: 123456})
         .getIdentifierDescriptor()
     ).toStrictEqual({
       reference: 123456
@@ -351,7 +351,7 @@ describe('Entity', () => {
 
     expect(() =>
       User.fork()
-        .prototype.deserialize({name: 'john'})
+        .instantiate({name: 'john'})
         .getIdentifierDescriptor()
     ).toThrow(
       "Cannot get an identifier descriptor from an entity that has no set identifier (entity name: 'user')"
@@ -490,15 +490,21 @@ describe('Entity', () => {
       @secondaryIdentifier() email;
     }
 
-    const user = User.prototype.deserialize({id: 'abc123', email: 'hi@hello.com'});
+    const user = User.instantiate({id: 'abc123', email: 'hi@hello.com'});
+
+    expect(user.id).toBe('abc123');
+    expect(user.email).toBe('hi@hello.com');
 
     const ForkedUser = User.fork();
 
-    const forkedUser = ForkedUser.prototype.deserialize({id: 'abc123'});
+    const forkedUser = ForkedUser.instantiate({id: 'abc123'});
 
     expect(forkedUser.isForkOf(user)).toBe(true);
     expect(forkedUser.constructor).toBe(ForkedUser);
     expect(forkedUser).toBeInstanceOf(ForkedUser);
+    expect(forkedUser).not.toBe(user);
+    expect(forkedUser.id).toBe('abc123');
+    expect(forkedUser.email).toBe('hi@hello.com');
   });
 
   test('detach()', async () => {
@@ -506,23 +512,23 @@ describe('Entity', () => {
       @primaryIdentifier() id;
     }
 
-    const user = User.prototype.deserialize({id: 'abc123'});
-    const sameUser = User.prototype.deserialize({id: 'abc123'});
+    const user = User.instantiate({id: 'abc123'});
+    const sameUser = User.instantiate({id: 'abc123'});
 
     expect(sameUser).toBe(user);
 
     user.detach();
 
-    const otherUser = User.prototype.deserialize({id: 'abc123'});
-    const sameOtherUser = User.prototype.deserialize({id: 'abc123'});
+    const otherUser = User.instantiate({id: 'abc123'});
+    const sameOtherUser = User.instantiate({id: 'abc123'});
 
     expect(otherUser).not.toBe(user);
     expect(sameOtherUser).toBe(otherUser);
 
     User.detach();
 
-    const user2 = User.prototype.deserialize({id: 'xyz456'});
-    const otherUser2 = User.prototype.deserialize({id: 'xyz456'});
+    const user2 = User.instantiate({id: 'xyz456'});
+    const otherUser2 = User.instantiate({id: 'xyz456'});
 
     expect(otherUser2).not.toBe(user2);
   });
