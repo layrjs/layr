@@ -16,6 +16,7 @@ import {
   isComponentClassOrInstance,
   validateIsComponentClass,
   validateIsComponentInstance,
+  validateIsComponentClassOrInstance,
   validateComponentName,
   getComponentClassNameFromComponentInstanceName,
   getComponentInstanceNameFromComponentClassName,
@@ -194,17 +195,25 @@ export const ComponentMixin = (Base = Object) => {
 
       const relatedComponents = this.__getRelatedComponents();
 
-      const RelatedComponent = relatedComponents[name];
+      let RelatedComponent = relatedComponents[name];
 
-      if (RelatedComponent !== undefined) {
-        return RelatedComponent;
+      if (RelatedComponent === undefined) {
+        if (throwIfMissing) {
+          throw new Error(
+            `Cannot get the related component class '${name}' (${this.describeComponent()})`
+          );
+        }
+
+        return undefined;
       }
 
-      if (throwIfMissing) {
-        throw new Error(
-          `Cannot get the related component class '${name}' (${this.describeComponent()})`
-        );
+      if (!hasOwnProperty(relatedComponents, name)) {
+        // Since the component has been forked, the related component must be forked as well
+        RelatedComponent = RelatedComponent.fork();
+        relatedComponents[name] = RelatedComponent;
       }
+
+      return RelatedComponent;
     }
 
     static registerRelatedComponent(Component) {
@@ -343,8 +352,31 @@ export const ComponentMixin = (Base = Object) => {
       return ForkedComponent;
     }
 
-    fork() {
+    fork(options = {}) {
+      ow(options, 'options', ow.object.exactShape({parentComponent: ow}));
+
+      const {parentComponent} = options;
+
       const forkedComponent = Object.create(this);
+
+      if (parentComponent !== undefined) {
+        validateIsComponentClassOrInstance(parentComponent);
+
+        const Component = getClassOf(parentComponent).getComponent(
+          this.constructor.getComponentName()
+        );
+
+        if (this.constructor !== Component) {
+          // Make 'forkedComponent' believe that it is an instance of 'Component'
+          // It can happen when a nested entity is forked
+          Object.defineProperty(forkedComponent, 'constructor', {
+            value: Component,
+            writable: true,
+            enumerable: false,
+            configurable: true
+          });
+        }
+      }
 
       return forkedComponent;
     }

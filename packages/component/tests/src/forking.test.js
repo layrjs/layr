@@ -70,11 +70,13 @@ describe('Forking', () => {
       @attribute() name;
     }
 
+    Movie.registerRelatedComponent(Director);
+
     const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
 
     const forkedMovie = movie.fork();
 
-    expect(forkedMovie.director.getComponentName()).toBe('director');
+    expect(forkedMovie.director.constructor).toBe(Director);
     expect(forkedMovie.director).not.toBe(movie.director);
     expect(forkedMovie.director.name).toBe('Christopher Nolan');
 

@@ -495,16 +495,60 @@ describe('Entity', () => {
     expect(user.id).toBe('abc123');
     expect(user.email).toBe('hi@hello.com');
 
-    const ForkedUser = User.fork();
+    let ForkedUser = User.fork();
 
     const forkedUser = ForkedUser.instantiate({id: 'abc123'});
 
-    expect(forkedUser.isForkOf(user)).toBe(true);
     expect(forkedUser.constructor).toBe(ForkedUser);
     expect(forkedUser).toBeInstanceOf(ForkedUser);
+
+    expect(forkedUser.isForkOf(user)).toBe(true);
     expect(forkedUser).not.toBe(user);
     expect(forkedUser.id).toBe('abc123');
     expect(forkedUser.email).toBe('hi@hello.com');
+
+    // --- With a nested entity ---
+
+    class Article extends Entity {
+      @primaryIdentifier() id;
+      @attribute('string') title;
+      @attribute('user') author;
+    }
+
+    Article.registerRelatedComponent(User);
+
+    const article = Article.instantiate({id: 'xyz456', title: 'Hello', author: user});
+
+    expect(article.id).toBe('xyz456');
+    expect(article.title).toBe('Hello');
+
+    const author = article.author;
+
+    expect(author).toBe(user);
+
+    const ForkedArticle = Article.fork();
+
+    const forkedArticle = ForkedArticle.instantiate({id: 'xyz456'});
+
+    expect(forkedArticle.constructor).toBe(ForkedArticle);
+    expect(forkedArticle).toBeInstanceOf(ForkedArticle);
+
+    expect(forkedArticle.isForkOf(article)).toBe(true);
+    expect(forkedArticle).not.toBe(article);
+    expect(forkedArticle.id).toBe('xyz456');
+    expect(forkedArticle.title).toBe('Hello');
+
+    const forkedAuthor = forkedArticle.author;
+
+    ForkedUser = ForkedArticle.getRelatedComponent('User');
+
+    expect(forkedAuthor.constructor).toBe(ForkedUser);
+    expect(forkedAuthor).toBeInstanceOf(ForkedUser);
+
+    expect(forkedAuthor.isForkOf(author)).toBe(true);
+    expect(forkedAuthor).not.toBe(author);
+    expect(forkedAuthor.id).toBe('abc123');
+    expect(forkedAuthor.email).toBe('hi@hello.com');
   });
 
   test('detach()', async () => {

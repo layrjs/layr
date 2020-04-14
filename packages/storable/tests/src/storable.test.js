@@ -419,16 +419,18 @@ describe('Storable', () => {
 
         test('save()', async () => {
           const User = userClassProvider();
-          const Picture = User.getRelatedComponent('Picture');
 
-          let user = new (User.fork())({
+          let ForkedUser = User.fork();
+          let ForkedPicture = ForkedUser.getRelatedComponent('Picture');
+
+          let user = new ForkedUser({
             id: 'user2',
             email: '2@user.com',
             reference: 2,
             fullName: 'User 2',
             tags: ['newcomer'],
             location: {country: 'USA', city: 'New York'},
-            picture: new Picture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
+            picture: new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
           });
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
@@ -439,7 +441,10 @@ describe('Storable', () => {
 
           expect(await user.save()).toBe(user);
 
-          user = await User.fork().get('user2');
+          ForkedUser = User.fork();
+          ForkedPicture = ForkedUser.getRelatedComponent('Picture');
+
+          user = await ForkedUser.get('user2');
 
           expect(user.serialize()).toStrictEqual({
             __component: 'user',
@@ -464,7 +469,9 @@ describe('Storable', () => {
           user.location.state = 'New York';
           user.pastLocations.push({country: 'USA', city: 'San Francisco'});
           user.picture.url = 'https://pictures.com/2-2.jpg';
-          user.pastPictures.push(new Picture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}));
+          user.pastPictures.push(
+            new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
+          );
           user.updatedOn = UPDATED_ON;
 
           expect(await user.save()).toBe(user);

@@ -58,6 +58,8 @@ describe('Merging', () => {
       @attribute() name;
     }
 
+    Movie.registerRelatedComponent(Director);
+
     const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
 
     const director = movie.director;
@@ -72,7 +74,7 @@ describe('Merging', () => {
 
     expect(movie.director.name).toBe('Christopher Nolan 2');
 
-    // Although merged, the director should have kept his identity
+    // Although merged, the director should have kept its identity
     expect(movie.director).toBe(director);
   });
 });

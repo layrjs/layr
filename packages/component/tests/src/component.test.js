@@ -162,6 +162,15 @@ describe('Component', () => {
     // Related components should also be accessible through `getComponent()`
     expect(Movie.getComponent('Director')).toBe(Director);
     expect(Movie.getComponent('director', {includePrototypes: true})).toBe(Director.prototype);
+
+    const ForkedMovie = Movie.fork();
+    const ForkedDirector = ForkedMovie.getRelatedComponent('Director');
+
+    expect(ForkedDirector).not.toBe(Director);
+
+    const SameForkedDirector = ForkedMovie.getRelatedComponent('Director');
+
+    expect(SameForkedDirector).toBe(ForkedDirector);
   });
 
   test('isNew mark', async () => {

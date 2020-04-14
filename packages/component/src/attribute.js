@@ -99,7 +99,7 @@ export class Attribute extends Property {
     }
 
     if (autoFork && !hasOwnProperty(this, '_value')) {
-      this._value = fork(this._value);
+      this._value = fork(this._value, {parentComponent: this.getParent()});
     }
 
     return this._value;
