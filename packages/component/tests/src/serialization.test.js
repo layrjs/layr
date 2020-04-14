@@ -54,7 +54,7 @@ describe('Serialization', () => {
       __new: true,
       title: ''
     });
-    expect(movie.serialize({includeIsNewMark: false})).toEqual({
+    expect(movie.serialize({includeIsNewMarks: false})).toEqual({
       __component: 'movie',
       title: '',
       director: {__undefined: true}
@@ -65,7 +65,7 @@ describe('Serialization', () => {
     expect(movie.serialize()).toEqual({
       __component: 'movie'
     });
-    expect(movie.serialize({includeComponentName: false})).toEqual({});
+    expect(movie.serialize({includeComponentNames: false})).toEqual({});
 
     movie.title = 'Inception';
 
@@ -73,7 +73,7 @@ describe('Serialization', () => {
       __component: 'movie',
       title: 'Inception'
     });
-    expect(movie.serialize({includeComponentName: false})).toEqual({title: 'Inception'});
+    expect(movie.serialize({includeComponentNames: false})).toEqual({title: 'Inception'});
 
     class Director extends Component {
       @attribute() name;
@@ -103,12 +103,12 @@ describe('Serialization', () => {
       title: 'Inception',
       director: {__component: 'director', __new: true}
     });
-    expect(movie.serialize({includeIsNewMark: false})).toEqual({
+    expect(movie.serialize({includeIsNewMarks: false})).toEqual({
       __component: 'movie',
       title: 'Inception',
       director: {__component: 'director', name: 'Christopher Nolan', country: {__undefined: true}}
     });
-    expect(movie.serialize({includeComponentName: false, includeIsNewMark: false})).toEqual({
+    expect(movie.serialize({includeComponentNames: false, includeIsNewMarks: false})).toEqual({
       title: 'Inception',
       director: {name: 'Christopher Nolan', country: {__undefined: true}}
     });

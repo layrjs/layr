@@ -458,13 +458,13 @@ export const ComponentMixin = (Base = Object) => {
     // === Serialization ===
 
     static serialize(options = {}) {
-      ow(options, 'options', ow.object.partialShape({includeComponentName: ow.optional.boolean}));
+      ow(options, 'options', ow.object.partialShape({includeComponentNames: ow.optional.boolean}));
 
-      const {includeComponentName = true} = options;
+      const {includeComponentNames = true} = options;
 
       const serializedComponent = {};
 
-      if (includeComponentName) {
+      if (includeComponentNames) {
         serializedComponent.__component = this.getComponentName();
       }
 
@@ -478,20 +478,20 @@ export const ComponentMixin = (Base = Object) => {
         options,
         'options',
         ow.object.partialShape({
-          includeComponentName: ow.optional.boolean,
-          includeIsNewMark: ow.optional.boolean
+          includeComponentNames: ow.optional.boolean,
+          includeIsNewMarks: ow.optional.boolean
         })
       );
 
-      const {includeComponentName = true, includeIsNewMark = true} = options;
+      const {includeComponentNames = true, includeIsNewMarks = true} = options;
 
       const serializedComponent = {};
 
-      if (includeComponentName) {
+      if (includeComponentNames) {
         serializedComponent.__component = this.getComponentName();
       }
 
-      if (includeIsNewMark && this.isNew()) {
+      if (includeIsNewMarks && this.isNew()) {
         serializedComponent.__new = true;
       }
 

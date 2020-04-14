@@ -349,7 +349,7 @@ const StorableMixin = (Base = Object) => {
       const identifierDescriptor = this.getIdentifierDescriptor();
       const isNew = this.isNew();
 
-      const serializedStorable = this.serialize({attributeSelector, includeIsNewMark: false});
+      const serializedStorable = this.serialize({attributeSelector, includeIsNewMarks: false});
 
       const wasSaved = await store.save(
         {storableName, identifierDescriptor, serializedStorable, isNew},
@@ -657,7 +657,7 @@ const StorableMixin = (Base = Object) => {
     }
 
     static __serializeQuery(query) {
-      return serialize(query, {includeComponentName: false, includeIsNewMark: false});
+      return serialize(query, {includeComponentNames: false, includeIsNewMarks: false});
     }
 
     // === Hooks ===
