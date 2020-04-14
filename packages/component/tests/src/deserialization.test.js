@@ -186,9 +186,71 @@ describe('Deserialization', () => {
       "Cannot mark as new an existing non-new component (component name: 'movie')"
     );
 
-    // --- With an array of nested component ---
+    // --- With a nested component ---
+
+    class Trailer extends Component {
+      @attribute() url;
+      @attribute() movie;
+    }
+
+    componentGetter = function(name) {
+      if (name === 'trailer') {
+        return Trailer.prototype;
+      }
+
+      throw new Error('Component not found');
+    };
+
+    expect(() =>
+      deserialize(
+        {
+          __component: 'trailer',
+          url: 'https://trailer.com/abc123',
+          movie: {__component: 'movie', title: 'The Matrix'}
+        },
+        {componentGetter}
+      )
+    ).toThrow(
+      "Cannot get the component class 'Movie' from the current component (component name: 'Trailer')"
+    );
+
+    Trailer.registerRelatedComponent(Movie);
+
+    const trailer = deserialize(
+      {
+        __component: 'trailer',
+        url: 'https://trailer.com/abc123',
+        movie: {__component: 'movie', title: 'The Matrix'}
+      },
+      {componentGetter}
+    );
+
+    expect(trailer).toBeInstanceOf(Trailer);
+    expect(trailer.url).toBe('https://trailer.com/abc123');
+
+    movie = trailer.movie;
+
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie.title).toBe('The Matrix');
+    expect(movie.getAttribute('duration').isSet()).toBe(false);
+
+    trailer.deserialize({
+      url: 'https://trailer.com/xyz456',
+      movie: {__component: 'movie', duration: 120}
+    });
+
+    expect(trailer.url).toBe('https://trailer.com/xyz456');
+
+    // Nested component identities should be preserved
+    expect(trailer.movie).toBe(movie);
+
+    expect(movie.title).toBe('The Matrix');
+    expect(movie.duration).toBe(120);
+
+    // --- With an array of nested components ---
 
     class Cinema extends Component {
+      @attribute() name;
       @attribute() movies;
     }
 
@@ -200,27 +262,44 @@ describe('Deserialization', () => {
       throw new Error('Component not found');
     };
 
-    expect(() =>
-      deserialize(
-        {__component: 'cinema', movies: [{__component: 'movie', title: 'The Matrix'}]},
-        {componentGetter}
-      )
-    ).toThrow(
-      "Cannot get the component class 'Movie' from the current component (component name: 'Cinema')"
-    );
-
     Cinema.registerRelatedComponent(Movie);
 
     const cinema = deserialize(
-      {__component: 'cinema', movies: [{__component: 'movie', title: 'The Matrix'}]},
+      {
+        __component: 'cinema',
+        name: 'Paradiso',
+        movies: [{__component: 'movie', title: 'The Matrix'}]
+      },
       {componentGetter}
     );
 
     expect(cinema).toBeInstanceOf(Cinema);
+    expect(cinema.name).toBe('Paradiso');
     expect(cinema.movies).toHaveLength(1);
-    expect(cinema.movies[0]).toBeInstanceOf(Movie);
-    expect(cinema.movies[0].title).toBe('The Matrix');
-    expect(cinema.movies[0].getAttribute('duration').isSet()).toBe(false);
+
+    movie = cinema.movies[0];
+
+    expect(movie).toBeInstanceOf(Movie);
+    expect(movie.title).toBe('The Matrix');
+    expect(movie.getAttribute('duration').isSet()).toBe(false);
+
+    cinema.deserialize({
+      __component: 'cinema',
+      name: 'New Paradiso',
+      movies: [{__component: 'movie', title: 'The Matrix 2', duration: 120}]
+    });
+
+    expect(cinema.name).toBe('New Paradiso');
+    expect(cinema.movies).toHaveLength(1);
+
+    const otherMovie = cinema.movies[0];
+
+    // For nested components in arrays, the identity is not (currently) be preserved
+    expect(otherMovie).not.toBe(movie);
+
+    expect(otherMovie).toBeInstanceOf(Movie);
+    expect(otherMovie.title).toBe('The Matrix 2');
+    expect(otherMovie.duration).toBe(120);
   });
 
   test('Functions', async () => {

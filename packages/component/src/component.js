@@ -735,16 +735,6 @@ export const ComponentMixin = (Base = Object) => {
     // === Serialization ===
 
     __serializeAttributes(serializedComponent, options) {
-      ow(serializedComponent, 'serializedComponent', ow.object);
-      ow(
-        options,
-        'options',
-        ow.object.partialShape({
-          attributeSelector: ow,
-          attributeFilter: ow.optional.function
-        })
-      );
-
       let {attributeSelector = true, attributeFilter} = options;
 
       attributeSelector = AttributeSelector.normalize(attributeSelector);
@@ -786,18 +776,15 @@ export const ComponentMixin = (Base = Object) => {
 
     // === Deserialization ===
 
-    __deserializeAttributes(attributes, options) {
-      ow(attributes, 'attributes', ow.object);
-      ow(options, 'options', ow.object.partialShape({attributeFilter: ow.optional.function}));
-
+    __deserializeAttributes(serializedAttributes, options) {
       const {attributeFilter} = options;
 
       const componentGetter = name =>
         getClassOf(this).getComponent(name, {includePrototypes: true});
 
       return possiblyAsync.forEach(
-        Object.entries(attributes),
-        ([attributeName, attributeValue]) => {
+        Object.entries(serializedAttributes),
+        ([attributeName, serializedAttributeValue]) => {
           const attribute = this.getAttribute(attributeName, {throwIfMissing: false});
 
           if (attribute === undefined) {
@@ -809,17 +796,45 @@ export const ComponentMixin = (Base = Object) => {
             {
               then: isNotFilteredOut => {
                 if (isNotFilteredOut) {
-                  return possiblyAsync(deserialize(attributeValue, {...options, componentGetter}), {
-                    then: deserializedAttributeValue => {
-                      attribute.setValue(deserializedAttributeValue);
-                    }
-                  });
+                  return this.__deserializeAttribute(
+                    attribute,
+                    serializedAttributeValue,
+                    componentGetter,
+                    options
+                  );
                 }
               }
             }
           );
         }
       );
+    },
+
+    __deserializeAttribute(attribute, serializedAttributeValue, componentGetter, options) {
+      // OPTIMIZE: Move this logic into the Attribute class so we can avoid deserializing two times
+      // in case of in place deserialization of nested models
+
+      return possiblyAsync(deserialize(serializedAttributeValue, {...options, componentGetter}), {
+        then: newAttributeValue => {
+          if (attribute.isSet()) {
+            const previousAttributeValue = attribute.getValue();
+
+            if (newAttributeValue === previousAttributeValue) {
+              return; // Optimization
+            }
+
+            if (
+              isComponentClassOrInstance(newAttributeValue) &&
+              isComponentClassOrInstance(previousAttributeValue) &&
+              newAttributeValue.getComponentName() === previousAttributeValue.getComponentName()
+            ) {
+              return previousAttributeValue.deserialize(serializedAttributeValue, options);
+            }
+          }
+
+          attribute.setValue(newAttributeValue);
+        }
+      });
     },
 
     // === Utilities ===
