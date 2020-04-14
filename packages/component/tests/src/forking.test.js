@@ -29,7 +29,7 @@ describe('Forking', () => {
     expect(movie).toBeInstanceOf(Component);
     expect(movie).toBeInstanceOf(Movie);
 
-    const forkedMovie = movie.fork();
+    let forkedMovie = movie.fork();
 
     expect(forkedMovie).toBeInstanceOf(Component);
     expect(forkedMovie).toBeInstanceOf(Movie);
@@ -54,11 +54,11 @@ describe('Forking', () => {
     expect(movie.tags).toEqual(['drama']);
     expect(movie.specs).toEqual({duration: 120});
 
-    const forkedIntoMovie = movie.forkInto(ForkedMovie);
+    forkedMovie = movie.fork({parentComponent: ForkedMovie});
 
-    expect(forkedIntoMovie).toBeInstanceOf(Component);
-    expect(forkedIntoMovie).toBeInstanceOf(Movie);
-    expect(forkedIntoMovie).toBeInstanceOf(ForkedMovie);
+    expect(forkedMovie).toBeInstanceOf(Component);
+    expect(forkedMovie).toBeInstanceOf(Movie);
+    expect(forkedMovie).toBeInstanceOf(ForkedMovie);
   });
 
   test('Nested component', async () => {

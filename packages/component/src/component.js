@@ -381,26 +381,8 @@ export const ComponentMixin = (Base = Object) => {
       return forkedComponent;
     }
 
-    forkInto(Component) {
-      validateIsComponentClass(Component);
-
-      const forkedComponent = this.fork();
-
-      if (this.constructor !== Component) {
-        // Make 'forkedComponent' believe that it is an instance of 'Component'
-        Object.defineProperty(forkedComponent, 'constructor', {
-          value: Component,
-          writable: true,
-          enumerable: false,
-          configurable: true
-        });
-      }
-
-      return forkedComponent;
-    }
-
     static [Symbol.hasInstance](instance) {
-      // Since forkInto() changes the constructor of the forked instances,
+      // Since fork() can change the constructor of the forked instances,
       // we must change the behaviour of 'instanceof' so it can work as expected
       return instance.constructor === this || isPrototypeOf(this, instance.constructor);
     }

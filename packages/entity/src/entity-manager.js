@@ -49,7 +49,7 @@ export class EntityManager {
 
       if (!hasOwnProperty(index, value)) {
         // The entity's class has been forked
-        entity = entity.forkInto(Entity);
+        entity = entity.fork({parentComponent: Entity});
         this.addEntity(entity);
       }
 
