@@ -24,11 +24,35 @@ describe('Serialization', () => {
 
     expect(Movie.serialize({returnComponentReferences: true})).toEqual({__component: 'Movie'});
 
+    // --- With nested components ---
+
     class Cinema extends Component {
+      @attribute() static limit = 100;
+
       @attribute() static MovieClass = Movie;
     }
 
-    expect(Cinema.serialize()).toEqual({__component: 'Cinema', MovieClass: {__component: 'Movie'}});
+    expect(Cinema.serialize()).toEqual({
+      __component: 'Cinema',
+      limit: 100,
+      MovieClass: {__component: 'Movie'}
+    });
+
+    let referencedComponents = new Set();
+
+    expect(Cinema.serialize({referencedComponents})).toEqual({
+      __component: 'Cinema',
+      limit: 100,
+      MovieClass: {__component: 'Movie'}
+    });
+    expect(Array.from(referencedComponents)).toEqual([Movie]);
+
+    referencedComponents = new Set();
+
+    expect(Cinema.serialize({returnComponentReferences: true, referencedComponents})).toEqual({
+      __component: 'Cinema'
+    });
+    expect(Array.from(referencedComponents)).toEqual([Cinema]);
   });
 
   test('Component instances', async () => {
@@ -74,6 +98,8 @@ describe('Serialization', () => {
     });
 
     expect(movie.serialize({includeComponentNames: false})).toEqual({title: 'Inception'});
+
+    // --- With nested components ---
 
     class Director extends Component {
       @attribute() name;

@@ -69,17 +69,37 @@ describe('Serialization', () => {
 
     Cinema.registerRelatedComponent(Movie);
 
+    movie = Movie.instantiate({id: 'abc123', title: 'Inception'});
+
     const cinema = Cinema.instantiate({
       id: 'xyz456',
       name: 'Paradiso',
-      movies: [Movie.instantiate({id: 'abc123', title: 'Inception'})]
+      movies: [movie]
     });
 
     expect(cinema.serialize()).toEqual({
       __component: 'cinema',
       id: 'xyz456',
       name: 'Paradiso',
-      movies: [{__component: 'movie', id: 'abc123'}] // Should contain only movie references
+      movies: [{__component: 'movie', id: 'abc123'}]
     });
+
+    let referencedComponents = new Set();
+
+    expect(cinema.serialize({referencedComponents})).toEqual({
+      __component: 'cinema',
+      id: 'xyz456',
+      name: 'Paradiso',
+      movies: [{__component: 'movie', id: 'abc123'}]
+    });
+    expect(Array.from(referencedComponents)).toEqual([movie]);
+
+    referencedComponents = new Set();
+
+    expect(cinema.serialize({returnComponentReferences: true, referencedComponents})).toEqual({
+      __component: 'cinema',
+      id: 'xyz456'
+    });
+    expect(Array.from(referencedComponents)).toEqual([cinema]);
   });
 });

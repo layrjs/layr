@@ -381,11 +381,16 @@ export const EntityMixin = (Base = Object) => {
         'options',
         ow.object.partialShape({
           returnComponentReferences: ow.optional.boolean,
+          referencedComponents: ow.optional.set,
           includeComponentNames: ow.optional.boolean
         })
       );
 
-      const {returnComponentReferences = false, includeComponentNames = true} = options;
+      const {
+        returnComponentReferences = false,
+        referencedComponents,
+        includeComponentNames = true
+      } = options;
 
       if (returnComponentReferences && !includeComponentNames) {
         throw new Error(
@@ -394,6 +399,10 @@ export const EntityMixin = (Base = Object) => {
       }
 
       if (returnComponentReferences) {
+        if (referencedComponents !== undefined) {
+          referencedComponents.add(this);
+        }
+
         const serializedComponent = {__component: this.getComponentName()};
 
         const identifierDescriptor = this.getIdentifierDescriptor();
