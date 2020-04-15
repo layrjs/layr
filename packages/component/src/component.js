@@ -458,14 +458,31 @@ export const ComponentMixin = (Base = Object) => {
     // === Serialization ===
 
     static serialize(options = {}) {
-      ow(options, 'options', ow.object.partialShape({includeComponentNames: ow.optional.boolean}));
+      ow(
+        options,
+        'options',
+        ow.object.partialShape({
+          returnComponentReferences: ow.optional.boolean,
+          includeComponentNames: ow.optional.boolean
+        })
+      );
 
-      const {includeComponentNames = true} = options;
+      const {returnComponentReferences = false, includeComponentNames = true} = options;
+
+      if (returnComponentReferences && !includeComponentNames) {
+        throw new Error(
+          `The 'returnComponentReferences' option cannot be 'true' when the 'includeComponentNames' option is 'false' (${this.describeComponent()})`
+        );
+      }
 
       const serializedComponent = {};
 
       if (includeComponentNames) {
         serializedComponent.__component = this.getComponentName();
+      }
+
+      if (returnComponentReferences) {
+        return serializedComponent;
       }
 
       return possiblyAsync(this.__serializeAttributes(serializedComponent, options), {
@@ -774,7 +791,11 @@ export const ComponentMixin = (Base = Object) => {
                 const attributeValue = attribute.getValue();
 
                 return possiblyAsync(
-                  serialize(attributeValue, {...options, attributeSelector: subattributeSelector}),
+                  serialize(attributeValue, {
+                    ...options,
+                    attributeSelector: subattributeSelector,
+                    returnComponentReferences: true
+                  }),
                   {
                     then: serializedAttributeValue => {
                       serializedComponent[attributeName] = serializedAttributeValue;

@@ -16,23 +16,19 @@ describe('Serialization', () => {
       limit: 100,
       offset: {__undefined: true}
     });
+
     expect(Movie.serialize({attributeSelector: {limit: true}})).toEqual({
       __component: 'Movie',
       limit: 100
     });
 
+    expect(Movie.serialize({returnComponentReferences: true})).toEqual({__component: 'Movie'});
+
     class Cinema extends Component {
       @attribute() static MovieClass = Movie;
     }
 
-    expect(Cinema.serialize()).toEqual({
-      __component: 'Cinema',
-      MovieClass: {__component: 'Movie', limit: 100, offset: {__undefined: true}}
-    });
-    expect(Cinema.serialize({attributeSelector: {MovieClass: {limit: true}}})).toEqual({
-      __component: 'Cinema',
-      MovieClass: {__component: 'Movie', limit: 100}
-    });
+    expect(Cinema.serialize()).toEqual({__component: 'Cinema', MovieClass: {__component: 'Movie'}});
   });
 
   test('Component instances', async () => {
@@ -49,11 +45,13 @@ describe('Serialization', () => {
       title: '',
       director: {__undefined: true}
     });
+
     expect(movie.serialize({attributeSelector: {title: true}})).toEqual({
       __component: 'movie',
       __new: true,
       title: ''
     });
+
     expect(movie.serialize({includeIsNewMarks: false})).toEqual({
       __component: 'movie',
       title: '',
@@ -65,6 +63,7 @@ describe('Serialization', () => {
     expect(movie.serialize()).toEqual({
       __component: 'movie'
     });
+
     expect(movie.serialize({includeComponentNames: false})).toEqual({});
 
     movie.title = 'Inception';
@@ -73,6 +72,7 @@ describe('Serialization', () => {
       __component: 'movie',
       title: 'Inception'
     });
+
     expect(movie.serialize({includeComponentNames: false})).toEqual({title: 'Inception'});
 
     class Director extends Component {
@@ -80,8 +80,7 @@ describe('Serialization', () => {
       @attribute() country;
     }
 
-    movie.director = new Director();
-    movie.director.name = 'Christopher Nolan';
+    movie.director = new Director({name: 'Christopher Nolan'});
 
     expect(movie.serialize()).toEqual({
       __component: 'movie',
@@ -93,21 +92,25 @@ describe('Serialization', () => {
         country: {__undefined: true}
       }
     });
+
     expect(movie.serialize({attributeSelector: {title: true, director: {name: true}}})).toEqual({
       __component: 'movie',
       title: 'Inception',
       director: {__component: 'director', __new: true, name: 'Christopher Nolan'}
     });
+
     expect(movie.serialize({attributeSelector: {title: true, director: {}}})).toEqual({
       __component: 'movie',
       title: 'Inception',
       director: {__component: 'director', __new: true}
     });
+
     expect(movie.serialize({includeIsNewMarks: false})).toEqual({
       __component: 'movie',
       title: 'Inception',
       director: {__component: 'director', name: 'Christopher Nolan', country: {__undefined: true}}
     });
+
     expect(movie.serialize({includeComponentNames: false, includeIsNewMarks: false})).toEqual({
       title: 'Inception',
       director: {name: 'Christopher Nolan', country: {__undefined: true}}

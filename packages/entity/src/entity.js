@@ -373,6 +373,39 @@ export const EntityMixin = (Base = Object) => {
       return super.detach();
     }
 
+    // === Serialization ===
+
+    serialize(options = {}) {
+      ow(
+        options,
+        'options',
+        ow.object.partialShape({
+          returnComponentReferences: ow.optional.boolean,
+          includeComponentNames: ow.optional.boolean
+        })
+      );
+
+      const {returnComponentReferences = false, includeComponentNames = true} = options;
+
+      if (returnComponentReferences && !includeComponentNames) {
+        throw new Error(
+          `The 'returnComponentReferences' option cannot be 'true' when the 'includeComponentNames' option is 'false' (${this.describeComponent()})`
+        );
+      }
+
+      if (returnComponentReferences) {
+        const serializedComponent = {__component: this.getComponentName()};
+
+        const identifierDescriptor = this.getIdentifierDescriptor();
+
+        Object.assign(serializedComponent, identifierDescriptor);
+
+        return serializedComponent;
+      }
+
+      return super.serialize(options);
+    }
+
     // === Utilities ===
 
     static generateId() {
