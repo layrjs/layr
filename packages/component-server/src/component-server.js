@@ -111,11 +111,22 @@ export class ComponentServer {
     }
   }
 
-  receiveQuery(query, options = {}) {
-    ow(query, 'query', ow.object);
-    ow(options, 'options', ow.object.exactShape({version: ow.optional.number.integer}));
+  receiveQuery(request) {
+    ow(
+      request,
+      'request',
+      ow.object.exactShape({
+        query: ow.object,
+        components: ow.optional.array,
+        version: ow.optional.number.integer
+      })
+    );
 
-    const {version: clientVersion} = options;
+    const {
+      query: serializedQuery,
+      components: serializedComponents,
+      version: clientVersion
+    } = request;
 
     this.validateVersion(clientVersion);
 
@@ -159,32 +170,128 @@ export class ComponentServer {
       return false;
     };
 
+    let referencedComponents;
+
     return possiblyAsync.call([
       () => {
-        debug(`Receiving query from component client (query: %o)`, query);
+        debug(
+          `Receiving query from component client (query: %o, components: %o)`,
+          serializedQuery,
+          serializedComponents
+        );
       },
       () => {
-        return deserialize(query, {
-          componentGetter,
-          attributeFilter: setFilter,
-          source: 'child'
-        });
+        return this._deserializeRequest(
+          {serializedQuery, serializedComponents},
+          {componentGetter, attributeFilter: setFilter}
+        );
       },
-      deserializedQuery => {
+      ({deserializedQuery, deserializedComponents}) => {
+        referencedComponents = deserializedComponents;
+
         return invokeQuery(root, deserializedQuery, {authorizer});
       },
       result => {
-        return serialize(result, {
-          attributeFilter: getFilter,
-          serializeFunctions: true,
-          target: 'child'
-        });
+        return this._serializeResponse(
+          {result, referencedComponents},
+          {attributeFilter: getFilter}
+        );
       },
-      serializedResult => {
-        debug(`Query received from component client (result: %o)`, serializedResult);
-        return serializedResult;
+      ({serializedResult, serializedComponents}) => {
+        debug(
+          `Query received from component client (result: %o, components: %o)`,
+          serializedResult,
+          serializedComponents
+        );
+
+        return {
+          result: serializedResult,
+          ...(serializedComponents && {components: serializedComponents})
+        };
       }
     ]);
+  }
+
+  _deserializeRequest({serializedQuery, serializedComponents}, {componentGetter, attributeFilter}) {
+    return possiblyAsync.map(
+      [serializedComponents, serializedQuery],
+      serializedQueryOrComponents =>
+        deserialize(serializedQueryOrComponents, {
+          componentGetter,
+          attributeFilter,
+          source: 'child'
+        }),
+      {
+        then: ([deserializedComponents, deserializedQuery]) => ({
+          deserializedQuery,
+          deserializedComponents
+        })
+      }
+    );
+  }
+
+  _serializeResponse({result, referencedComponents}, {attributeFilter}) {
+    referencedComponents = new Set(referencedComponents);
+
+    const serializedResult = serialize(result, {
+      returnComponentReferences: true,
+      referencedComponents,
+      attributeFilter,
+      serializeFunctions: true,
+      target: 'child'
+    });
+
+    let serializedComponents;
+    const handledReferencedComponents = new Set();
+
+    const serializeReferencedComponents = function(referencedComponents) {
+      if (referencedComponents.size === 0) {
+        return;
+      }
+
+      const additionalReferencedComponents = new Set();
+
+      return possiblyAsync.forEach(
+        referencedComponents.values(),
+        referencedComponent => {
+          if (handledReferencedComponents.has(referencedComponent)) {
+            return;
+          }
+
+          return possiblyAsync(
+            referencedComponent.serialize({
+              referencedComponents: additionalReferencedComponents,
+              ignoreEmptyComponents: true,
+              attributeFilter,
+              serializeFunctions: true,
+              target: 'child'
+            }),
+            {
+              then: serializedComponent => {
+                if (serializedComponent !== undefined) {
+                  if (serializedComponents === undefined) {
+                    serializedComponents = [];
+                  }
+
+                  serializedComponents.push(serializedComponent);
+                }
+
+                handledReferencedComponents.add(referencedComponent);
+              }
+            }
+          );
+        },
+        {
+          then: () => {
+            return serializeReferencedComponents(additionalReferencedComponents);
+          }
+        }
+      );
+    };
+
+    return possiblyAsync(serializeReferencedComponents(referencedComponents), {
+      then: () => ({serializedResult, serializedComponents})
+    });
   }
 
   validateVersion(clientVersion) {

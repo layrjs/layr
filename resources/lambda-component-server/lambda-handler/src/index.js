@@ -11,7 +11,7 @@ let componentServer;
 export async function handler(event, context) {
   context.callbackWaitsForEmptyEventLoop = false;
 
-  const {query, version} = event;
+  const request = event;
 
-  return await componentServer.receiveQuery(query, {version});
+  return await componentServer.receiveQuery(request);
 }

@@ -169,10 +169,7 @@ export class ComponentClient {
     return function(...args) {
       const query = {
         '<=': this,
-        [`${name}=>result`]: {
-          '()': args
-        },
-        '=>self': true
+        [`${name}=>`]: {'()': args}
       };
 
       const Component = getClassOf(this);
@@ -181,15 +178,15 @@ export class ComponentClient {
         return Component.getComponent(name, {includePrototypes: true});
       };
 
-      return possiblyAsync(componentClient.sendQuery(query, {componentGetter}), {
-        then: result => result.result
-      });
+      return componentClient.sendQuery({query}, {componentGetter});
     };
   }
 
   _introspectComponentServer() {
     if (this._introspectedComponentServer === undefined) {
-      return possiblyAsync(this.sendQuery({'introspect=>': {'()': []}}), {
+      const query = {'introspect=>': {'()': []}};
+
+      return possiblyAsync(this.sendQuery({query}), {
         then: introspectedComponentServer => {
           this._introspectedComponentServer = introspectedComponentServer;
           return introspectedComponentServer;
@@ -200,8 +197,8 @@ export class ComponentClient {
     return this._introspectedComponentServer;
   }
 
-  sendQuery(query, options = {}) {
-    ow(query, 'query', ow.object);
+  sendQuery(request, options = {}) {
+    ow(request, 'request', ow.object.exactShape({query: ow.object, components: ow.optional.array}));
     ow(options, 'options', ow.object.exactShape({componentGetter: ow.optional.function}));
 
     const {componentGetter} = options;
@@ -224,14 +221,103 @@ export class ComponentClient {
       return false;
     };
 
-    query = serialize(query, {attributeFilter, target: 'parent'});
+    const {serializedQuery, serializedComponents} = this._serializeRequest(request, {
+      attributeFilter
+    });
 
-    debug(`Sending query to remote components (query: %o)`, query);
-    return possiblyAsync(componentServer.receiveQuery(query, {version}), {
-      then: result => {
-        debug(`Query sent to remote components (result: %o)`, result);
-        return deserialize(result, {componentGetter, deserializeFunctions: true, source: 'parent'});
+    debug(
+      `Sending query to remote components (query: %o, components: %o)`,
+      serializedQuery,
+      serializedComponents
+    );
+
+    return possiblyAsync(
+      componentServer.receiveQuery({
+        query: serializedQuery,
+        ...(serializedComponents && {components: serializedComponents}),
+        version
+      }),
+      {
+        then: ({result, components}) => {
+          debug(`Query sent to remote components (result: %o, components: %o)`, result, components);
+
+          return this._deserializeResponse(
+            {result, components},
+            {
+              componentGetter,
+              deserializeFunctions: true,
+              source: 'parent'
+            }
+          );
+        }
       }
+    );
+  }
+
+  _serializeRequest({query, components}, {attributeFilter}) {
+    const referencedComponents = new Set(components);
+
+    const serializedQuery = serialize(query, {
+      returnComponentReferences: true,
+      referencedComponents,
+      attributeFilter,
+      target: 'parent'
+    });
+
+    let serializedComponents;
+    const handledReferencedComponents = new Set();
+
+    const serializeReferencedComponents = function(referencedComponents) {
+      if (referencedComponents.size === 0) {
+        return;
+      }
+
+      const additionalReferencedComponents = new Set();
+
+      for (const referencedComponent of referencedComponents.values()) {
+        if (handledReferencedComponents.has(referencedComponent)) {
+          continue;
+        }
+
+        const serializedComponent = referencedComponent.serialize({
+          referencedComponents: additionalReferencedComponents,
+          ignoreEmptyComponents: true,
+          attributeFilter,
+          target: 'parent'
+        });
+
+        if (serializedComponent !== undefined) {
+          if (serializedComponents === undefined) {
+            serializedComponents = [];
+          }
+
+          serializedComponents.push(serializedComponent);
+        }
+
+        handledReferencedComponents.add(referencedComponent);
+      }
+
+      serializeReferencedComponents(additionalReferencedComponents);
+    };
+
+    serializeReferencedComponents(referencedComponents);
+
+    return {serializedQuery, serializedComponents};
+  }
+
+  _deserializeResponse(response, {componentGetter}) {
+    const {result: serializedResult, components: serializedComponents} = response;
+
+    deserialize(serializedComponents, {
+      componentGetter,
+      deserializeFunctions: true,
+      source: 'parent'
+    });
+
+    return deserialize(serializedResult, {
+      componentGetter,
+      deserializeFunctions: true,
+      source: 'parent'
     });
   }
 

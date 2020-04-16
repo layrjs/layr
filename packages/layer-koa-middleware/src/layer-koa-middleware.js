@@ -41,8 +41,8 @@ export function serveLayer(layerServer, options = {}) {
       }
     }
 
-    const {query, version} = await body.json(ctx.req, {limit, strict: true});
+    const {query, components, version} = await body.json(ctx.req, {limit, strict: true});
 
-    ctx.body = await layerServer.receiveQuery(query, {version});
+    ctx.body = await layerServer.receiveQuery({query, components, version});
   };
 }

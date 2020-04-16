@@ -265,9 +265,17 @@ export const EntityMixin = (Base = Object) => {
       return this.getProperties({filter, setAttributesOnly, autoFork});
     }
 
+    __getMinimumAttributeCount() {
+      return 1;
+    }
+
     // === Identifier descriptor ===
 
-    getIdentifierDescriptor() {
+    getIdentifierDescriptor(options = {}) {
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      const {throwIfMissing = true} = options;
+
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
 
       if (primaryIdentifierAttribute.isSet()) {
@@ -286,9 +294,11 @@ export const EntityMixin = (Base = Object) => {
         return {[name]: value};
       }
 
-      throw new Error(
-        `Cannot get an identifier descriptor from ${this.describeComponentType()} that has no set identifier (${this.describeComponent()})`
-      );
+      if (throwIfMissing) {
+        throw new Error(
+          `Cannot get an identifier descriptor from ${this.describeComponentType()} that has no set identifier (${this.describeComponent()})`
+        );
+      }
     }
 
     static normalizeIdentifierDescriptor(identifierDescriptor) {
@@ -382,14 +392,16 @@ export const EntityMixin = (Base = Object) => {
         ow.object.partialShape({
           returnComponentReferences: ow.optional.boolean,
           referencedComponents: ow.optional.set,
-          includeComponentNames: ow.optional.boolean
+          includeComponentNames: ow.optional.boolean,
+          includeIsNewMarks: ow.optional.boolean
         })
       );
 
       const {
         returnComponentReferences = false,
         referencedComponents,
-        includeComponentNames = true
+        includeComponentNames = true,
+        includeIsNewMarks = true
       } = options;
 
       if (returnComponentReferences && !includeComponentNames) {
@@ -399,17 +411,28 @@ export const EntityMixin = (Base = Object) => {
       }
 
       if (returnComponentReferences) {
-        if (referencedComponents !== undefined) {
-          referencedComponents.add(this);
+        const identifierDescriptor = this.getIdentifierDescriptor({throwIfMissing: false});
+
+        if (identifierDescriptor !== undefined) {
+          if (referencedComponents !== undefined) {
+            for (const registeredOrRelatedComponent of this.constructor.getRegisteredOrRelatedComponents()) {
+              referencedComponents.add(registeredOrRelatedComponent);
+            }
+
+            referencedComponents.add(this.constructor);
+            referencedComponents.add(this);
+          }
+
+          const serializedComponent = {__component: this.getComponentName()};
+
+          if (includeIsNewMarks && this.isNew()) {
+            serializedComponent.__new = true;
+          }
+
+          Object.assign(serializedComponent, identifierDescriptor);
+
+          return serializedComponent;
         }
-
-        const serializedComponent = {__component: this.getComponentName()};
-
-        const identifierDescriptor = this.getIdentifierDescriptor();
-
-        Object.assign(serializedComponent, identifierDescriptor);
-
-        return serializedComponent;
       }
 
       return super.serialize(options);

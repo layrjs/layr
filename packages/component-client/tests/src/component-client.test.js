@@ -12,7 +12,7 @@ import {ComponentClient} from '../../..';
 
 describe('ComponentClient', () => {
   const server = {
-    receiveQuery(query, {version: clientVersion} = {}) {
+    receiveQuery({query, components, version: clientVersion} = {}) {
       const serverVersion = 1;
 
       if (clientVersion !== serverVersion) {
@@ -25,144 +25,164 @@ describe('ComponentClient', () => {
       }
 
       // client.getComponents()
-      if (isEqual(query, {'introspect=>': {'()': []}})) {
+      if (
+        isEqual({query, components}, {query: {'introspect=>': {'()': []}}, components: undefined})
+      ) {
         return {
-          components: [
-            {
-              name: 'Movie',
-              type: 'Component',
-              properties: [
-                {
-                  name: 'token',
-                  type: 'attribute',
-                  value: {__undefined: true},
-                  exposure: {get: true, set: true}
-                },
-                {name: 'find', type: 'method', exposure: {call: true}}
-              ],
-              prototype: {
+          result: {
+            components: [
+              {
+                name: 'Movie',
+                type: 'Component',
                 properties: [
-                  {name: 'title', type: 'attribute', exposure: {get: true, set: true}},
                   {
-                    name: 'isPlaying',
+                    name: 'token',
                     type: 'attribute',
-                    default: {__function: 'function() { return false; }'},
-                    exposure: {get: true}
-                  },
-                  {name: 'play', type: 'method', exposure: {call: true}}
-                ]
-              }
-            },
-            {
-              name: 'Cinema',
-              type: 'Component',
-              relatedComponents: ['Movie'],
-              prototype: {
-                properties: [
-                  {
-                    name: 'movies',
-                    type: 'attribute',
-                    exposure: {get: true}
-                  }
-                ]
-              }
-            },
-            {
-              name: 'Film',
-              type: 'Model',
-              prototype: {
-                properties: [
-                  {
-                    name: 'title',
-                    type: 'modelAttribute',
-                    valueType: 'string',
-                    validators: [
-                      {
-                        name: 'notEmpty',
-                        function: {__function: 'value => value.length > 0'},
-                        message: 'The validator `notEmpty()` failed'
-                      }
-                    ],
-                    exposure: {get: true, set: true}
-                  }
-                ]
-              }
-            },
-            {
-              name: 'User',
-              type: 'Entity',
-              prototype: {
-                properties: [
-                  {
-                    name: 'id',
-                    type: 'primaryIdentifierAttribute',
-                    valueType: 'string',
-                    default: {__function: 'function() { return this.constructor.generateId(); }'},
+                    value: {__undefined: true},
                     exposure: {get: true, set: true}
                   },
-                  {
-                    name: 'email',
-                    type: 'secondaryIdentifierAttribute',
-                    valueType: 'string',
-                    exposure: {get: true, set: true}
-                  }
-                ]
+                  {name: 'find', type: 'method', exposure: {call: true}}
+                ],
+                prototype: {
+                  properties: [
+                    {name: 'title', type: 'attribute', exposure: {get: true, set: true}},
+                    {
+                      name: 'isPlaying',
+                      type: 'attribute',
+                      default: {__function: 'function() { return false; }'},
+                      exposure: {get: true}
+                    },
+                    {name: 'play', type: 'method', exposure: {call: true}}
+                  ]
+                }
+              },
+              {
+                name: 'Cinema',
+                type: 'Component',
+                relatedComponents: ['Movie'],
+                prototype: {
+                  properties: [
+                    {
+                      name: 'movies',
+                      type: 'attribute',
+                      exposure: {get: true}
+                    }
+                  ]
+                }
+              },
+              {
+                name: 'Film',
+                type: 'Model',
+                prototype: {
+                  properties: [
+                    {
+                      name: 'title',
+                      type: 'modelAttribute',
+                      valueType: 'string',
+                      validators: [
+                        {
+                          name: 'notEmpty',
+                          function: {__function: 'value => value.length > 0'},
+                          message: 'The validator `notEmpty()` failed'
+                        }
+                      ],
+                      exposure: {get: true, set: true}
+                    }
+                  ]
+                }
+              },
+              {
+                name: 'User',
+                type: 'Entity',
+                prototype: {
+                  properties: [
+                    {
+                      name: 'id',
+                      type: 'primaryIdentifierAttribute',
+                      valueType: 'string',
+                      default: {__function: 'function() { return this.constructor.generateId(); }'},
+                      exposure: {get: true, set: true}
+                    },
+                    {
+                      name: 'email',
+                      type: 'secondaryIdentifierAttribute',
+                      valueType: 'string',
+                      exposure: {get: true, set: true}
+                    }
+                  ]
+                }
               }
-            }
-          ]
+            ]
+          }
         };
       }
 
       // Movie.find()
       if (
-        isEqual(query, {
-          '<=': {__component: 'Movie', token: 'abc123'},
-          'find=>result': {'()': []},
-          '=>self': true
-        })
+        isEqual(
+          {query, components},
+          {
+            query: {
+              '<=': {__component: 'Movie'},
+              'find=>': {'()': []}
+            },
+            components: [{__component: 'Movie', token: 'abc123'}]
+          }
+        )
       ) {
         return {
           result: [
             {__component: 'movie', title: 'Inception'},
             {__component: 'movie', title: 'The Matrix'}
-          ],
-          self: {__component: 'Movie', token: 'abc123'}
+          ]
         };
       }
 
       // Movie.find({limit: 1})
       if (
-        isEqual(query, {
-          '<=': {__component: 'Movie', token: 'abc123'},
-          'find=>result': {'()': [{limit: 1}]},
-          '=>self': true
-        })
+        isEqual(
+          {query, components},
+          {
+            query: {
+              '<=': {__component: 'Movie'},
+              'find=>': {'()': [{limit: 1}]}
+            },
+            components: [{__component: 'Movie', token: 'abc123'}]
+          }
+        )
       ) {
         return {
-          result: [{__component: 'movie', title: 'Inception'}],
-          self: {__component: 'Movie', token: 'abc123'}
+          result: [{__component: 'movie', title: 'Inception'}]
         };
       }
 
       // movie.play()
       if (
-        isEqual(query, {
-          '<=': {__component: 'movie', title: 'Inception'},
-          'play=>result': {'()': []},
-          '=>self': true
-        })
+        isEqual(
+          {query, components},
+          {
+            query: {
+              '<=': {__component: 'movie', title: 'Inception'},
+              'play=>': {'()': []}
+            },
+            components: [{__component: 'Movie', token: 'abc123'}]
+          }
+        )
       ) {
         return {
-          result: {__component: 'movie', isPlaying: true},
-          self: {__component: 'movie', isPlaying: true}
+          result: {__component: 'movie', isPlaying: true}
         };
       }
 
-      throw new Error(`Received an unknown query: ${JSON.stringify(query)}`);
+      throw new Error(
+        `Received an unknown request (query: ${JSON.stringify(query)}, components: ${JSON.stringify(
+          components
+        )})`
+      );
     }
   };
 
-  test('Getting components', async () => {
+  test.only('Getting components', async () => {
     let client = new ComponentClient(server);
 
     expect(() => client.getComponents()).toThrow(
@@ -204,7 +224,7 @@ describe('ComponentClient', () => {
     expect(Array.from(Cinema.getRelatedComponents())).toEqual([Movie]);
   });
 
-  test('Getting models', async () => {
+  test.only('Getting models', async () => {
     const client = new ComponentClient(server, {
       version: 1,
       baseComponents: [Component, Model, Entity]
@@ -243,7 +263,7 @@ describe('ComponentClient', () => {
     ).toBe(false);
   });
 
-  test('Getting entities', async () => {
+  test.only('Getting entities', async () => {
     const client = new ComponentClient(server, {
       version: 1,
       baseComponents: [Component, Model, Entity]
@@ -269,7 +289,7 @@ describe('ComponentClient', () => {
     expect(attribute.getExposure()).toEqual({get: true, set: true});
   });
 
-  test('Invoking methods', async () => {
+  test.only('Invoking methods', async () => {
     const client = new ComponentClient(server, {
       version: 1,
       baseComponents: [Component, Model, Entity]
@@ -277,7 +297,7 @@ describe('ComponentClient', () => {
 
     const [Movie] = client.getComponents();
 
-    expect(() => Movie.find()).toThrow(/Received an unknown query/); // The token is missing
+    expect(() => Movie.find()).toThrow(/Received an unknown request/); // The token is missing
 
     Movie.token = 'abc123';
 

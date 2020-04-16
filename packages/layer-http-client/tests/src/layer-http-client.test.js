@@ -36,14 +36,16 @@ describe('LayerHTTPClient', () => {
 
       if (isEqual(query, {'introspect=>': {'()': []}})) {
         ctx.body = {
-          name: 'backend',
-          components: [
-            {
-              name: 'Movie',
-              type: 'Component',
-              properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
-            }
-          ]
+          result: {
+            name: 'backend',
+            components: [
+              {
+                name: 'Movie',
+                type: 'Component',
+                properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
+              }
+            ]
+          }
         };
       } else {
         throw new Error(`Received an unknown query: ${JSON.stringify(query)}`);

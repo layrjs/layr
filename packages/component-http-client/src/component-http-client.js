@@ -27,36 +27,43 @@ export class ComponentHTTPClient extends ComponentClient {
 
 function createComponentServer(url) {
   return {
-    async receiveQuery(query, options = {}) {
-      ow(query, 'query', ow.object);
-      ow(options, 'options', ow.object.exactShape({version: ow.optional.number.integer}));
+    async receiveQuery(request) {
+      ow(
+        request,
+        'request',
+        ow.object.exactShape({
+          query: ow.object,
+          components: ow.optional.array,
+          version: ow.optional.number.integer
+        })
+      );
 
-      const {version} = options;
+      const {query, components, version} = request;
 
-      debug(`Sending query to remote components (url: %o, query: %o)`, url, query);
+      debug(`Sending query to remote components (url: %o, request: %o)`, url, {query, components});
 
-      const json = {query, version};
+      const json = {query, components, version};
 
-      const response = await fetch(url, {
+      const fetchResponse = await fetch(url, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(json)
       });
 
-      const result = await response.json();
+      const response = await fetchResponse.json();
 
-      debug(`Query sent to remote components (url: %o, result: %o)`, url, result);
+      debug(`Query sent to remote components (url: %o, response: %o)`, url, response);
 
-      if (response.status !== 200) {
+      if (fetchResponse.status !== 200) {
         const {
           message = 'An error occurred while sending query to remote components',
           ...attributes
-        } = result ?? {};
+        } = response ?? {};
 
         throw Object.assign(new Error(message), attributes);
       }
 
-      return result;
+      return response;
     }
   };
 }

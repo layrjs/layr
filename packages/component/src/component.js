@@ -158,12 +158,6 @@ export const ComponentMixin = (Base = Object) => {
         return this;
       }
 
-      const RelatedComponent = this.getRelatedComponent(name, {throwIfMissing: false});
-
-      if (RelatedComponent !== undefined) {
-        return RelatedComponent;
-      }
-
       const layer = this.getLayer({throwIfMissing: false});
 
       if (layer !== undefined) {
@@ -171,6 +165,12 @@ export const ComponentMixin = (Base = Object) => {
 
         if (RegisteredComponent !== undefined) {
           return RegisteredComponent;
+        }
+      } else {
+        const RelatedComponent = this.getRelatedComponent(name, {throwIfMissing: false});
+
+        if (RelatedComponent !== undefined) {
+          return RelatedComponent;
         }
       }
 
@@ -181,6 +181,16 @@ export const ComponentMixin = (Base = Object) => {
           )} (${this.describeComponent()})`
         );
       }
+    }
+
+    static getRegisteredOrRelatedComponents() {
+      const layer = this.getLayer({throwIfMissing: false});
+
+      if (layer !== undefined) {
+        return layer.getComponents();
+      }
+
+      return this.getRelatedComponents();
     }
 
     // === Related components ===
@@ -233,11 +243,9 @@ export const ComponentMixin = (Base = Object) => {
 
       return {
         *[Symbol.iterator]() {
-          const relatedComponents = Component.__getRelatedComponents();
-
           // eslint-disable-next-line guard-for-in
-          for (const name in relatedComponents) {
-            const RelatedComponent = relatedComponents[name];
+          for (const name in Component.__getRelatedComponents()) {
+            const RelatedComponent = Component.getRelatedComponent(name);
 
             if (filter !== undefined && !filter(RelatedComponent)) {
               continue;
@@ -464,6 +472,7 @@ export const ComponentMixin = (Base = Object) => {
         ow.object.partialShape({
           returnComponentReferences: ow.optional.boolean,
           referencedComponents: ow.optional.set,
+          ignoreEmptyComponents: ow.optional.boolean,
           includeComponentNames: ow.optional.boolean
         })
       );
@@ -471,6 +480,7 @@ export const ComponentMixin = (Base = Object) => {
       const {
         returnComponentReferences = false,
         referencedComponents,
+        ignoreEmptyComponents = false,
         includeComponentNames = true
       } = options;
 
@@ -488,6 +498,10 @@ export const ComponentMixin = (Base = Object) => {
 
       if (returnComponentReferences) {
         if (referencedComponents !== undefined) {
+          for (const registeredOrRelatedComponent of this.getRegisteredOrRelatedComponents()) {
+            referencedComponents.add(registeredOrRelatedComponent);
+          }
+
           referencedComponents.add(this);
         }
 
@@ -495,7 +509,8 @@ export const ComponentMixin = (Base = Object) => {
       }
 
       return possiblyAsync(this.__serializeAttributes(serializedComponent, options), {
-        then: () => serializedComponent
+        then: attributeCount =>
+          ignoreEmptyComponents && attributeCount === 0 ? undefined : serializedComponent
       });
     }
 
@@ -504,12 +519,21 @@ export const ComponentMixin = (Base = Object) => {
         options,
         'options',
         ow.object.partialShape({
+          returnComponentReferences: ow.optional.boolean,
+          referencedComponents: ow.optional.set,
+          ignoreEmptyComponents: ow.optional.boolean,
           includeComponentNames: ow.optional.boolean,
           includeIsNewMarks: ow.optional.boolean
         })
       );
 
-      const {includeComponentNames = true, includeIsNewMarks = true} = options;
+      const {
+        returnComponentReferences = false,
+        referencedComponents,
+        ignoreEmptyComponents = false,
+        includeComponentNames = true,
+        includeIsNewMarks = true
+      } = options;
 
       const serializedComponent = {};
 
@@ -521,8 +545,19 @@ export const ComponentMixin = (Base = Object) => {
         serializedComponent.__new = true;
       }
 
+      if (returnComponentReferences && referencedComponents !== undefined) {
+        for (const registeredOrRelatedComponent of this.constructor.getRegisteredOrRelatedComponents()) {
+          referencedComponents.add(registeredOrRelatedComponent);
+        }
+
+        referencedComponents.add(this.constructor);
+      }
+
       return possiblyAsync(this.__serializeAttributes(serializedComponent, options), {
-        then: () => serializedComponent
+        then: attributeCount =>
+          ignoreEmptyComponents && attributeCount <= this.__getMinimumAttributeCount()
+            ? undefined
+            : serializedComponent
       });
     }
 
@@ -783,39 +818,46 @@ export const ComponentMixin = (Base = Object) => {
         return; // Optimization
       }
 
-      return possiblyAsync.forEach(this.getAttributes({setAttributesOnly: true}), attribute => {
-        const attributeName = attribute.getName();
+      let attributeCount = 0;
 
-        const subattributeSelector = AttributeSelector.get(attributeSelector, attributeName);
+      return possiblyAsync.forEach(
+        this.getAttributes({setAttributesOnly: true}),
+        attribute => {
+          const attributeName = attribute.getName();
 
-        if (subattributeSelector === false) {
-          return;
-        }
+          const subattributeSelector = AttributeSelector.get(attributeSelector, attributeName);
 
-        return possiblyAsync(
-          attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
-          {
-            then: isNotFilteredOut => {
-              if (isNotFilteredOut) {
-                const attributeValue = attribute.getValue();
+          if (subattributeSelector === false) {
+            return;
+          }
 
-                return possiblyAsync(
-                  serialize(attributeValue, {
-                    ...options,
-                    attributeSelector: subattributeSelector,
-                    returnComponentReferences: true
-                  }),
-                  {
-                    then: serializedAttributeValue => {
-                      serializedComponent[attributeName] = serializedAttributeValue;
+          return possiblyAsync(
+            attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
+            {
+              then: isNotFilteredOut => {
+                if (isNotFilteredOut) {
+                  const attributeValue = attribute.getValue();
+
+                  return possiblyAsync(
+                    serialize(attributeValue, {
+                      ...options,
+                      attributeSelector: subattributeSelector,
+                      returnComponentReferences: true
+                    }),
+                    {
+                      then: serializedAttributeValue => {
+                        serializedComponent[attributeName] = serializedAttributeValue;
+                        attributeCount++;
+                      }
                     }
-                  }
-                );
+                  );
+                }
               }
             }
-          }
-        );
-      });
+          );
+        },
+        {then: () => attributeCount}
+      );
     },
 
     // === Deserialization ===

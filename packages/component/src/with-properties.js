@@ -109,6 +109,10 @@ export const WithProperties = (Base = Object) => {
       return {identifierAttributes, otherAttributes};
     }
 
+    __getMinimumAttributeCount() {
+      return 0;
+    }
+
     // === Property exposure ===
 
     static normalizePropertyOperationSetting(setting, options = {}) {

@@ -15,9 +15,10 @@ describe('Serialization', () => {
       title: 'Inception'
     });
 
-    expect(() => movie.serialize({returnComponentReferences: true})).toThrow(
-      "Cannot get an identifier descriptor from an entity that has no set identifier (entity name: 'movie')"
-    );
+    expect(movie.serialize({returnComponentReferences: true})).toEqual({
+      __component: 'movie',
+      title: 'Inception'
+    });
 
     movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'});
 
@@ -92,7 +93,7 @@ describe('Serialization', () => {
       name: 'Paradiso',
       movies: [{__component: 'movie', id: 'abc123'}]
     });
-    expect(Array.from(referencedComponents)).toEqual([movie]);
+    expect(Array.from(referencedComponents)).toEqual([Movie, movie]);
 
     referencedComponents = new Set();
 
@@ -100,6 +101,6 @@ describe('Serialization', () => {
       __component: 'cinema',
       id: 'xyz456'
     });
-    expect(Array.from(referencedComponents)).toEqual([cinema]);
+    expect(Array.from(referencedComponents)).toEqual([Movie, Cinema, cinema]);
   });
 });

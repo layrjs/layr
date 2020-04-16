@@ -6,7 +6,7 @@ import {LayerClient} from '../../..';
 
 describe('LayerClient', () => {
   const server = {
-    receiveQuery(query, {version: clientVersion} = {}) {
+    receiveQuery({query, version: clientVersion} = {}) {
       const serverVersion = 1;
 
       if (clientVersion !== serverVersion) {
@@ -21,21 +21,23 @@ describe('LayerClient', () => {
       // client.getLayer()
       if (isEqual(query, {'introspect=>': {'()': []}})) {
         return {
-          name: 'backend',
-          components: [
-            {
-              name: 'Movie',
-              type: 'Component',
-              properties: [
-                {
-                  name: 'limit',
-                  type: 'attribute',
-                  value: 100,
-                  exposure: {get: true}
-                }
-              ]
-            }
-          ]
+          result: {
+            name: 'backend',
+            components: [
+              {
+                name: 'Movie',
+                type: 'Component',
+                properties: [
+                  {
+                    name: 'limit',
+                    type: 'attribute',
+                    value: 100,
+                    exposure: {get: true}
+                  }
+                ]
+              }
+            ]
+          }
         };
       }
 

@@ -19,37 +19,39 @@ describe('LayerServer', () => {
 
     const server = new LayerServer(layer);
 
-    const introspection = server.receiveQuery({'introspect=>': {'()': []}});
+    const response = server.receiveQuery({query: {'introspect=>': {'()': []}}});
 
-    expect(introspection).toStrictEqual({
-      name: 'backend',
-      components: [
-        {
-          name: 'Movie',
-          type: 'Component',
-          properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}],
-          prototype: {
-            properties: [
-              {
-                name: 'title',
-                type: 'attribute',
-                default: {__function: "function () {\n        return '';\n      }"},
-                exposure: {get: true, set: true}
-              }
-            ]
+    expect(response).toStrictEqual({
+      result: {
+        name: 'backend',
+        components: [
+          {
+            name: 'Movie',
+            type: 'Component',
+            properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}],
+            prototype: {
+              properties: [
+                {
+                  name: 'title',
+                  type: 'attribute',
+                  default: {__function: "function () {\n        return '';\n      }"},
+                  exposure: {get: true, set: true}
+                }
+              ]
+            }
+          },
+          {
+            name: 'Cinema',
+            type: 'Component',
+            prototype: {
+              properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
+            }
           }
-        },
-        {
-          name: 'Cinema',
-          type: 'Component',
-          prototype: {
-            properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
-          }
-        }
-      ]
+        ]
+      }
     });
 
-    expect(() => server.receiveQuery({'introspect=>': {'()': []}}, {version: 1})).toThrow(
+    expect(() => server.receiveQuery({query: {'introspect=>': {'()': []}}, version: 1})).toThrow(
       "The component client version (1) doesn't match the component server version (undefined)"
     );
   });

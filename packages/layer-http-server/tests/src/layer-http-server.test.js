@@ -28,14 +28,16 @@ describe('LayerHTTPServer', () => {
 
   test('Introspecting components', async () => {
     expect(await postJSON({query: {'introspect=>': {'()': []}}})).toStrictEqual({
-      name: 'backend',
-      components: [
-        {
-          name: 'Movie',
-          type: 'Component',
-          properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
-        }
-      ]
+      result: {
+        name: 'backend',
+        components: [
+          {
+            name: 'Movie',
+            type: 'Component',
+            properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
+          }
+        ]
+      }
     });
 
     await expect(postJSON({query: {'introspect=>': {'()': []}}, version: 1})).rejects.toThrow(

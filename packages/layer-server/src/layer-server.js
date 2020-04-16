@@ -53,13 +53,10 @@ export class LayerServer {
     return {getComponent, getComponentNames};
   }
 
-  receiveQuery(query, options = {}) {
-    ow(query, 'query', ow.object);
-    ow(options, 'options', ow.object.exactShape({version: ow.optional.number.integer}));
+  receiveQuery(request) {
+    ow(request, 'request', ow.object);
 
-    const {version} = options;
-
-    return this._componentServer.receiveQuery(query, {version});
+    return this._componentServer.receiveQuery(request);
   }
 
   static isLayerServer(object) {

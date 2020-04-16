@@ -1207,9 +1207,9 @@ describe('Storable', () => {
 
           expect(await User.fork().count({tags: {$some: 'admin'}})).toBe(2);
 
-          // --- With a component specified as query ---
-
           expect(await User.fork().count({tags: 'admin'})).toBe(2);
+
+          // --- With a component specified as query ---
 
           const ForkedUser = User.fork();
 

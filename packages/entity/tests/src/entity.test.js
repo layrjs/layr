@@ -356,6 +356,11 @@ describe('Entity', () => {
     ).toThrow(
       "Cannot get an identifier descriptor from an entity that has no set identifier (entity name: 'user')"
     );
+    expect(
+      User.fork()
+        .instantiate({name: 'john'})
+        .getIdentifierDescriptor({throwIfMissing: false})
+    ).toBeUndefined();
   });
 
   test('normalizeIdentifierDescriptor()', async () => {
