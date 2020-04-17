@@ -170,6 +170,10 @@ export class ComponentServer {
       return false;
     };
 
+    const errorHandler = function(error) {
+      return error;
+    };
+
     let referencedComponents;
 
     return possiblyAsync.call([
@@ -189,7 +193,7 @@ export class ComponentServer {
       ({deserializedQuery, deserializedComponents}) => {
         referencedComponents = deserializedComponents;
 
-        return invokeQuery(root, deserializedQuery, {authorizer});
+        return invokeQuery(root, deserializedQuery, {authorizer, errorHandler});
       },
       result => {
         return this._serializeResponse(

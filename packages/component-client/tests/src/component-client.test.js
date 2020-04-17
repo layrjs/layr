@@ -117,7 +117,7 @@ describe('ComponentClient', () => {
         };
       }
 
-      // Movie.find()
+      // Movie.find() with token
       if (
         isEqual(
           {query, components},
@@ -135,6 +135,24 @@ describe('ComponentClient', () => {
             {__component: 'movie', title: 'Inception'},
             {__component: 'movie', title: 'The Matrix'}
           ]
+        };
+      }
+
+      // Movie.find() without token
+      if (
+        isEqual(
+          {query, components},
+          {
+            query: {
+              '<=': {__component: 'Movie'},
+              'find=>': {'()': []}
+            },
+            components: [{__component: 'Movie', token: {__undefined: true}}]
+          }
+        )
+      ) {
+        return {
+          result: {__error: 'Access denied'}
         };
       }
 
@@ -182,7 +200,7 @@ describe('ComponentClient', () => {
     }
   };
 
-  test.only('Getting components', async () => {
+  test('Getting components', async () => {
     let client = new ComponentClient(server);
 
     expect(() => client.getComponents()).toThrow(
@@ -224,7 +242,7 @@ describe('ComponentClient', () => {
     expect(Array.from(Cinema.getRelatedComponents())).toEqual([Movie]);
   });
 
-  test.only('Getting models', async () => {
+  test('Getting models', async () => {
     const client = new ComponentClient(server, {
       version: 1,
       baseComponents: [Component, Model, Entity]
@@ -263,7 +281,7 @@ describe('ComponentClient', () => {
     ).toBe(false);
   });
 
-  test.only('Getting entities', async () => {
+  test('Getting entities', async () => {
     const client = new ComponentClient(server, {
       version: 1,
       baseComponents: [Component, Model, Entity]
@@ -289,7 +307,7 @@ describe('ComponentClient', () => {
     expect(attribute.getExposure()).toEqual({get: true, set: true});
   });
 
-  test.only('Invoking methods', async () => {
+  test('Invoking methods', async () => {
     const client = new ComponentClient(server, {
       version: 1,
       baseComponents: [Component, Model, Entity]
@@ -297,7 +315,7 @@ describe('ComponentClient', () => {
 
     const [Movie] = client.getComponents();
 
-    expect(() => Movie.find()).toThrow(/Received an unknown request/); // The token is missing
+    expect(() => Movie.find()).toThrow('Access denied'); // The token is missing
 
     Movie.token = 'abc123';
 

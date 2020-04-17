@@ -217,14 +217,20 @@ describe('ComponentServer', () => {
       })
     ).toStrictEqual({result: {offset: 0}});
 
-    expect(() =>
+    expect(
       server.receiveQuery({
         query: {
           '<=': {__component: 'Movie'},
+          'offset': true,
           'limit': true
         }
       })
-    ).toThrow("Cannot get the value of an attribute that is not allowed (name: 'limit')");
+    ).toStrictEqual({
+      result: {
+        offset: 0,
+        limit: {__error: "Cannot get the value of an attribute that is not allowed (name: 'limit')"}
+      }
+    });
 
     expect(
       server.receiveQuery({
@@ -278,16 +284,21 @@ describe('ComponentServer', () => {
       components: [{__component: 'Movie', offset: 0}]
     });
 
-    expect(() =>
+    expect(
       server.receiveQuery({
         query: {
           '<=': {__component: 'movie'},
           'title': true
         }
       })
-    ).toThrow(
-      "Cannot get the value of an unset attribute (component name: 'movie', attribute name: 'title')"
-    );
+    ).toStrictEqual({
+      result: {
+        title: {
+          __error:
+            "Cannot get the value of an unset attribute (component name: 'movie', attribute name: 'title')"
+        }
+      }
+    });
 
     expect(
       server.receiveQuery({
@@ -300,16 +311,21 @@ describe('ComponentServer', () => {
       components: [{__component: 'Movie', offset: 0}]
     });
 
-    expect(() =>
+    expect(
       server.receiveQuery({
         query: {
           '<=': {__component: 'movie', rating: 10},
           'rating': true
         }
       })
-    ).toThrow(
-      "Cannot get the value of an unset attribute (component name: 'movie', attribute name: 'rating')"
-    );
+    ).toStrictEqual({
+      result: {
+        rating: {
+          __error:
+            "Cannot get the value of an unset attribute (component name: 'movie', attribute name: 'rating')"
+        }
+      }
+    });
   });
 
   test('Invoking methods', async () => {
@@ -367,7 +383,7 @@ describe('ComponentServer', () => {
       })
     ).toStrictEqual({result: 'exposedAsyncClassMethod()'});
 
-    expect(() =>
+    expect(
       server.receiveQuery({
         query: {
           '<=': {__component: 'Movie'},
@@ -376,7 +392,11 @@ describe('ComponentServer', () => {
           }
         }
       })
-    ).toThrow("Cannot execute a method that is not allowed (name: 'unexposedClassMethod')");
+    ).toStrictEqual({
+      result: {
+        __error: "Cannot execute a method that is not allowed (name: 'unexposedClassMethod')"
+      }
+    });
 
     expect(
       server.receiveQuery({
@@ -400,7 +420,7 @@ describe('ComponentServer', () => {
       })
     ).toStrictEqual({result: 'exposedAsyncInstanceMethod()'});
 
-    expect(() =>
+    expect(
       server.receiveQuery({
         query: {
           '<=': {__component: 'movie'},
@@ -409,7 +429,11 @@ describe('ComponentServer', () => {
           }
         }
       })
-    ).toThrow("Cannot execute a method that is not allowed (name: 'unexposedInstanceMethod')");
+    ).toStrictEqual({
+      result: {
+        __error: "Cannot execute a method that is not allowed (name: 'unexposedInstanceMethod')"
+      }
+    });
 
     expect(
       server.receiveQuery({

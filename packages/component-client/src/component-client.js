@@ -221,6 +221,10 @@ export class ComponentClient {
       return false;
     };
 
+    const errorHandler = function(error) {
+      throw error;
+    };
+
     const {serializedQuery, serializedComponents} = this._serializeRequest(request, {
       attributeFilter
     });
@@ -241,14 +245,7 @@ export class ComponentClient {
         then: ({result, components}) => {
           debug(`Query sent to remote components (result: %o, components: %o)`, result, components);
 
-          return this._deserializeResponse(
-            {result, components},
-            {
-              componentGetter,
-              deserializeFunctions: true,
-              source: 'parent'
-            }
-          );
+          return this._deserializeResponse({result, components}, {componentGetter, errorHandler});
         }
       }
     );
@@ -305,18 +302,20 @@ export class ComponentClient {
     return {serializedQuery, serializedComponents};
   }
 
-  _deserializeResponse(response, {componentGetter}) {
+  _deserializeResponse(response, {componentGetter, errorHandler}) {
     const {result: serializedResult, components: serializedComponents} = response;
 
     deserialize(serializedComponents, {
       componentGetter,
       deserializeFunctions: true,
+      errorHandler,
       source: 'parent'
     });
 
     return deserialize(serializedResult, {
       componentGetter,
       deserializeFunctions: true,
+      errorHandler,
       source: 'parent'
     });
   }
