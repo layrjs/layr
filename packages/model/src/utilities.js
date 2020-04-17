@@ -17,6 +17,14 @@ export function isModelClassOrInstance(object) {
   return isModelClass(object) || isModelInstance(object);
 }
 
+export function isModelAttributeClass(object) {
+  return typeof object?.isModelAttribute === 'function';
+}
+
+export function isModelAttribute(object) {
+  return isModelAttributeClass(object?.constructor) === true;
+}
+
 export function joinModelAttributePath(path) {
   ow(path, 'path', ow.array);
 

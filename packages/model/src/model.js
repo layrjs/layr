@@ -2,8 +2,8 @@ import {ComponentMixin, AttributeSelector} from '@liaison/component';
 import {Observable} from '@liaison/observable';
 import ow from 'ow';
 
-import {ModelAttribute, isModelAttribute} from './model-attribute';
-import {isModelClass, isModelInstance, joinModelAttributePath} from './utilities';
+import {ModelAttribute} from './model-attribute';
+import {isModelClass, isModelInstance, isModelAttribute, joinModelAttributePath} from './utilities';
 
 export const ModelMixin = (Base = Object) => {
   ow(Base, 'Base', ow.function);

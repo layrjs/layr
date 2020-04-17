@@ -3,6 +3,7 @@ import {Observable, createObservable, isObservable, canBeObserved} from '@liaiso
 import ow from 'ow';
 
 import {createType, unintrospectType} from './types/factory';
+import {isModelAttribute} from './utilities';
 
 export class ModelAttribute extends Observable(Attribute) {
   // === Options ===
@@ -201,11 +202,3 @@ export class ModelAttribute extends Observable(Attribute) {
 }
 
 ModelAttribute.humanName = 'Attribute';
-
-export function isModelAttributeClass(object) {
-  return typeof object?.isModelAttribute === 'function';
-}
-
-export function isModelAttribute(object) {
-  return isModelAttributeClass(object?.constructor) === true;
-}
