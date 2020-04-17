@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-http-client",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "An HTTP client for your Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

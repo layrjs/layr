@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-server",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A server to locally serve your Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

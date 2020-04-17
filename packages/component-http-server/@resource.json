@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/component-http-server",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A basic HTTP server for your Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

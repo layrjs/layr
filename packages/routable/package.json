@@ -1,6 +1,6 @@
 {
   "name": "@liaison/routable",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Makes the methods of your Liaison components callable by URL",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/model",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Base class extending the Component class to provide typed attributes, observability, and validation",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

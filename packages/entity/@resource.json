@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/entity",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Base class extending Liaison's Model class to provide identifier attributes and an entity manager",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

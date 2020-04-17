@@ -1,6 +1,6 @@
 {
   "name": "@liaison/with-roles",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Simple role system for Liaison",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

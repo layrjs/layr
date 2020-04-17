@@ -1,6 +1,6 @@
 {
   "name": "@liaison/memory-router",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A simple router for Liaison that works without a browser",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

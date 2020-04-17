@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/react-integration",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "React integration for Liaison",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

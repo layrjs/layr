@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/layer-server",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A server to locally serve your Liaison layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/layer-http-server",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A basic HTTP server for your Liaison layers",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
