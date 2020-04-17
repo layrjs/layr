@@ -199,6 +199,20 @@ describe('Layer', () => {
     expect(forkedLayer.getComponent('Movie')).toBe(ForkedMovie);
   });
 
+  test('getGhost()', async () => {
+    class Movie extends Component {}
+
+    const layer = new Layer([Movie]);
+
+    const ghostLayer = layer.getGhost();
+
+    expect(ghostLayer.isForkOf(layer)).toBe(true);
+
+    const otherGhostLayer = layer.getGhost();
+
+    expect(otherGhostLayer).toBe(ghostLayer);
+  });
+
   test('detach() and isDetached()', async () => {
     class Movie extends Component {}
 

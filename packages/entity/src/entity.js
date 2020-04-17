@@ -265,6 +265,38 @@ export const EntityMixin = (Base = Object) => {
       return this.getProperties({filter, setAttributesOnly, autoFork});
     }
 
+    getIdentifiers(options = {}) {
+      ow(options, 'options', ow.object.exactShape({throwIfMissing: ow.optional.boolean}));
+
+      const {throwIfMissing = true} = options;
+
+      let identifiers;
+
+      for (const identifierAttribute of this.getIdentifierAttributes({
+        setAttributesOnly: true,
+        autoFork: false
+      })) {
+        const name = identifierAttribute.getName();
+        const value = identifierAttribute.getValue();
+
+        if (identifiers === undefined) {
+          identifiers = {};
+        }
+
+        identifiers[name] = value;
+      }
+
+      if (identifiers !== undefined) {
+        return identifiers;
+      }
+
+      if (throwIfMissing) {
+        throw new Error(
+          `Cannot get the identifiers of ${this.describeComponentType()} that has no set identifier (${this.describeComponent()})`
+        );
+      }
+    }
+
     __getMinimumAttributeCount() {
       return 1;
     }
@@ -371,6 +403,33 @@ export const EntityMixin = (Base = Object) => {
       );
 
       return expandedAttributeSelector;
+    }
+
+    // === Forking ===
+
+    getGhost() {
+      const identifiers = this.getIdentifiers({throwIfMissing: false});
+
+      if (identifiers === undefined) {
+        throw new Error(
+          `Cannot get the ghost of ${this.describeComponentType()} that has no set identifier (${this.describeComponent()})`
+        );
+      }
+
+      const GhostEntity = this.constructor.getGhost();
+      const ghostEntityManager = GhostEntity.__getEntityManager();
+
+      let ghostEntity = ghostEntityManager.getEntity(identifiers);
+
+      if (ghostEntity !== undefined) {
+        return ghostEntity;
+      }
+
+      ghostEntity = this.fork({parentComponent: GhostEntity});
+
+      ghostEntityManager.addEntity(ghostEntity);
+
+      return ghostEntity;
     }
 
     // === Detachment ===

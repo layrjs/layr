@@ -5,6 +5,7 @@
     "@liaison/component-server": "^0.1.0",
     "@liaison/component-http-client": "^0.1.0",
     "@liaison/component-http-server": "^0.1.0",
+    "@liaison/layer": "^0.2.0",
     "@liaison/model": "^0.2.0"
   },
   "@managed": {

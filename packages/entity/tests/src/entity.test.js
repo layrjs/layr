@@ -1,3 +1,5 @@
+import {Layer} from '@liaison/layer';
+
 import {
   Entity,
   isEntityClass,
@@ -305,6 +307,66 @@ describe('Entity', () => {
     ]);
   });
 
+  test('getIdentifiers()', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+      @secondaryIdentifier() email;
+      @secondaryIdentifier('number') reference;
+      @attribute('string') name;
+    }
+
+    expect(
+      User.fork()
+        .instantiate({id: 'abc123'})
+        .getIdentifiers()
+    ).toStrictEqual({
+      id: 'abc123'
+    });
+    expect(
+      User.fork()
+        .instantiate({id: 'abc123', email: 'hi@hello.com'})
+        .getIdentifiers()
+    ).toStrictEqual({
+      id: 'abc123',
+      email: 'hi@hello.com'
+    });
+    expect(
+      User.fork()
+        .instantiate({email: 'hi@hello.com'})
+        .getIdentifiers()
+    ).toStrictEqual({
+      email: 'hi@hello.com'
+    });
+    expect(
+      User.fork()
+        .instantiate({email: 'hi@hello.com', reference: 123456})
+        .getIdentifiers()
+    ).toStrictEqual({
+      email: 'hi@hello.com',
+      reference: 123456
+    });
+    expect(
+      User.fork()
+        .instantiate({reference: 123456})
+        .getIdentifiers()
+    ).toStrictEqual({
+      reference: 123456
+    });
+
+    expect(() =>
+      User.fork()
+        .instantiate({name: 'john'})
+        .getIdentifiers()
+    ).toThrow(
+      "Cannot get the identifiers of an entity that has no set identifier (entity name: 'user')"
+    );
+    expect(
+      User.fork()
+        .instantiate({name: 'john'})
+        .getIdentifiers({throwIfMissing: false})
+    ).toBeUndefined();
+  });
+
   test('getIdentifierDescriptor()', async () => {
     class User extends Entity {
       @primaryIdentifier() id;
@@ -554,6 +616,29 @@ describe('Entity', () => {
     expect(forkedAuthor).not.toBe(author);
     expect(forkedAuthor.id).toBe('abc123');
     expect(forkedAuthor.email).toBe('hi@hello.com');
+  });
+
+  test('getGhost()', async () => {
+    class User extends Entity {
+      @primaryIdentifier() id;
+    }
+
+    const user = new User();
+
+    expect(() => user.getGhost()).toThrow(
+      "Cannot get the ghost of an entity class that is not registered into a layer (entity name: 'User')"
+    );
+
+    const layer = new Layer([User]);
+
+    const ghostUser = user.getGhost();
+
+    expect(ghostUser.isForkOf(user)).toBe(true);
+    expect(ghostUser.constructor).toBe(layer.getGhost().User);
+
+    const otherGhostUser = user.getGhost();
+
+    expect(otherGhostUser).toBe(ghostUser);
   });
 
   test('detach()', async () => {

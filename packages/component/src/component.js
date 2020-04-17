@@ -395,6 +395,32 @@ export const ComponentMixin = (Base = Object) => {
       return instance.constructor === this || isPrototypeOf(this, instance.constructor);
     }
 
+    static getGhost() {
+      const layer = this.getLayer({throwIfMissing: false});
+
+      if (layer === undefined) {
+        throw new Error(
+          `Cannot get the ghost of ${this.describeComponentType()} class that is not registered into a layer (${this.describeComponent()})`
+        );
+      }
+
+      return this.layer.getGhost().getComponent(this.getComponentName());
+    }
+
+    static get ghost() {
+      return this.getGhost();
+    }
+
+    getGhost() {
+      throw new Error(
+        `Cannot get the ghost of a component that is not managed by an entity manager (${this.describeComponent()})`
+      );
+    }
+
+    get ghost() {
+      return this.getGhost();
+    }
+
     // === Merging ===
 
     static merge(ForkedComponent, options = {}) {
