@@ -1,5 +1,4 @@
 import {hasOwnProperty, getClassOf} from 'core-helpers';
-import {possiblyAsync} from 'possibly-async';
 import ow from 'ow';
 
 import {Property} from './property';
@@ -32,51 +31,6 @@ export const WithProperties = (Base = Object) => {
       }
 
       throw new Error(`The specified property type ('${type}') is unknown`);
-    }
-
-    constructor(object = {}, options = {}) {
-      ow(object, 'object', ow.object);
-      ow(options, 'options', ow.object.exactShape({attributeSelector: ow}));
-
-      const {attributeSelector = true} = options;
-
-      super();
-
-      return this.__finishInstantiation(object, {isNew: true, attributeSelector});
-    }
-
-    __finishInstantiation(object, {isNew, attributeSelector, attributeFilter}) {
-      // Always include attributes present in the specified object
-      const objectAttributeSelector = AttributeSelector.fromNames(Object.keys(object));
-      attributeSelector = AttributeSelector.add(attributeSelector, objectAttributeSelector);
-
-      return possiblyAsync.forEach(
-        this.getAttributes({attributeSelector}),
-        attribute => {
-          if (attribute.isSet()) {
-            // This can happen when an entity was returned from the entity manager
-            return;
-          }
-
-          return possiblyAsync(
-            attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
-            {
-              then: isNotFilteredOut => {
-                if (isNotFilteredOut) {
-                  const name = attribute.getName();
-                  const value = hasOwnProperty(object, name)
-                    ? object[name]
-                    : isNew
-                    ? attribute.getDefaultValue()
-                    : undefined;
-                  attribute.setValue(value);
-                }
-              }
-            }
-          );
-        },
-        {then: () => this}
-      );
     }
 
     // === Identifier attributes ===

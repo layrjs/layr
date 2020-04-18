@@ -41,38 +41,101 @@ export const ComponentMixin = (Base = Object) => {
 
     // === Creation ===
 
-    constructor(object = {}, options) {
+    constructor(object = {}, options = {}) {
       ow(object, 'object', ow.object);
+      ow(
+        options,
+        'options',
+        ow.object.exactShape({attributeSelector: ow, initialize: ow.optional.boolean})
+      );
 
-      super(object, options);
+      const {attributeSelector = true, initialize = true} = options;
 
-      this.markAsNew();
+      super();
+
+      return this.__finishInstantiation(object, {isNew: true, attributeSelector, initialize});
     }
 
-    static instantiate(identifiers = {}, options = {}) {
-      ow(identifiers, 'identifiers', ow.object);
+    static instantiate(object = {}, options = {}) {
+      ow(object, 'object', ow.object);
       ow(
         options,
         'options',
         ow.object.exactShape({
           isNew: ow.optional.boolean,
           attributeSelector: ow,
-          attributeFilter: ow.optional.function
+          attributeFilter: ow.optional.function,
+          initialize: ow.optional.boolean
         })
       );
 
-      const {isNew = false, attributeSelector = {}, attributeFilter} = options;
+      const {isNew = false, attributeSelector = {}, attributeFilter, initialize = true} = options;
 
       const component = isNew
-        ? new this({}, {attributeSelector: {}})
+        ? new this({}, {attributeSelector: {}, initialize: false})
         : Object.create(this.prototype);
 
-      return component.__finishInstantiation(identifiers, {
+      return component.__finishInstantiation(object, {
         isNew,
         attributeSelector,
-        attributeFilter
+        attributeFilter,
+        initialize
       });
     }
+
+    __finishInstantiation(object, {isNew, attributeSelector, attributeFilter, initialize}) {
+      if (isNew) {
+        this.markAsNew();
+      }
+
+      // Always include attributes present in the specified object
+      const objectAttributeSelector = AttributeSelector.fromNames(Object.keys(object));
+      attributeSelector = AttributeSelector.add(attributeSelector, objectAttributeSelector);
+
+      return possiblyAsync.forEach(
+        this.getAttributes({attributeSelector}),
+        attribute => {
+          if (attribute.isSet()) {
+            // This can happen when an entity was returned from the entity manager
+            return;
+          }
+
+          return possiblyAsync(
+            attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
+            {
+              then: isNotFilteredOut => {
+                if (isNotFilteredOut) {
+                  const name = attribute.getName();
+                  const value = hasOwnProperty(object, name)
+                    ? object[name]
+                    : isNew
+                    ? attribute.getDefaultValue()
+                    : undefined;
+                  attribute.setValue(value);
+                }
+              }
+            }
+          );
+        },
+        {
+          then: () => {
+            if (initialize) {
+              return possiblyAsync(this.initialize(), {then: () => this});
+            }
+
+            return this;
+          }
+        }
+      );
+    }
+
+    // === Initialization ===
+
+    // Override these methods to initialize components after instantiation or deserialization
+
+    static initialize() {}
+
+    initialize() {}
 
     // === Naming ===
 
@@ -336,16 +399,17 @@ export const ComponentMixin = (Base = Object) => {
       const {identifierAttributes, otherAttributes} = this.__partitionAttributes(attributes);
 
       const clonedComponent = this.constructor.instantiate(identifierAttributes, {
-        isNew: this.isNew()
+        isNew: this.isNew(),
+        initialize: false
       });
 
       if (clonedComponent === this) {
-        return this; // Optimization
+        return this;
       }
 
       clonedComponent.__cloneAttributes(otherAttributes, options);
 
-      return clonedComponent;
+      return possiblyAsync(clonedComponent.initialize(), {then: () => clonedComponent});
     }
 
     // === Forking ===
@@ -605,9 +669,7 @@ export const ComponentMixin = (Base = Object) => {
         }
       }
 
-      return possiblyAsync(this.__deserializeAttributes(attributes, options), {
-        then: () => this
-      });
+      return this.__finishDeserialization(attributes, options);
     }
 
     static deserializeInstance(object = {}, options = {}) {
@@ -647,13 +709,12 @@ export const ComponentMixin = (Base = Object) => {
         this.instantiate(identifierAttributes, {
           isNew,
           attributeSelector,
-          attributeFilter
+          attributeFilter,
+          initialize: false
         }),
         {
           then: instantiatedComponent =>
-            possiblyAsync(instantiatedComponent.__deserializeAttributes(attributes, options), {
-              then: () => instantiatedComponent
-            })
+            instantiatedComponent.__finishDeserialization(attributes, options)
         }
       );
     }
@@ -684,9 +745,7 @@ export const ComponentMixin = (Base = Object) => {
         this.markAsNotNew();
       }
 
-      return possiblyAsync(this.__deserializeAttributes(attributes, options), {
-        then: () => this
-      });
+      return this.__finishDeserialization(attributes, options);
     }
 
     // === Introspection ===
@@ -888,7 +947,7 @@ export const ComponentMixin = (Base = Object) => {
 
     // === Deserialization ===
 
-    __deserializeAttributes(serializedAttributes, options) {
+    __finishDeserialization(serializedAttributes, options) {
       const {attributeFilter} = options;
 
       const componentGetter = name =>
@@ -918,7 +977,8 @@ export const ComponentMixin = (Base = Object) => {
               }
             }
           );
-        }
+        },
+        {then: () => possiblyAsync(this.initialize(), {then: () => this})}
       );
     },
 

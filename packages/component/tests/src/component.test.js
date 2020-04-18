@@ -1,4 +1,5 @@
 import {Layer} from '@liaison/layer';
+import sleep from 'sleep-promise';
 
 import {Component, isComponentClass, isComponentInstance, attribute, method} from '../../..';
 
@@ -105,6 +106,74 @@ describe('Component', () => {
 
     expect(movie.title).toBe('Inception');
     expect(movie.getAttribute('country').isSet()).toBe(false);
+  });
+
+  test('Initialization', async () => {
+    class Movie extends Component {
+      static initialize() {
+        this.isInitialized = true;
+      }
+
+      initialize() {
+        this.isInitialized = true;
+      }
+    }
+
+    Movie.deserialize();
+
+    expect(Movie.isInitialized).toBe(true);
+
+    let movie = new Movie();
+
+    expect(movie.isInitialized).toBe(true);
+
+    movie = Movie.instantiate();
+
+    expect(movie.isInitialized).toBe(true);
+
+    movie = Movie.deserializeInstance();
+
+    expect(movie.isInitialized).toBe(true);
+
+    movie.isInitialized = false;
+    movie.deserialize();
+
+    expect(movie.isInitialized).toBe(true);
+
+    // --- With asynchronous initializers ---
+
+    class AsyncMovie extends Component {
+      static async initialize() {
+        await sleep(10);
+        this.isInitialized = true;
+      }
+
+      async initialize() {
+        await sleep(10);
+        this.isInitialized = true;
+      }
+    }
+
+    await AsyncMovie.deserialize();
+
+    expect(AsyncMovie.isInitialized).toBe(true);
+
+    let asyncMovie = await new AsyncMovie();
+
+    expect(asyncMovie.isInitialized).toBe(true);
+
+    asyncMovie = await AsyncMovie.instantiate();
+
+    expect(asyncMovie.isInitialized).toBe(true);
+
+    asyncMovie = await AsyncMovie.deserializeInstance();
+
+    expect(asyncMovie.isInitialized).toBe(true);
+
+    asyncMovie.isInitialized = false;
+    await asyncMovie.deserialize();
+
+    expect(asyncMovie.isInitialized).toBe(true);
   });
 
   test('Naming', async () => {

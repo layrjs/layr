@@ -4,7 +4,8 @@
     "@liaison/component-server": "^0.1.0",
     "@liaison/component-http-client": "^0.1.0",
     "@liaison/component-http-server": "^0.1.0",
-    "@liaison/layer": "^0.2.0"
+    "@liaison/layer": "^0.2.0",
+    "sleep-promise": "^8.0.1"
   },
   "@managed": {
     "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",

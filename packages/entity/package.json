@@ -1,6 +1,6 @@
 {
   "name": "@liaison/entity",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Base class extending Liaison's Model class to provide identifier attributes and an entity manager",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

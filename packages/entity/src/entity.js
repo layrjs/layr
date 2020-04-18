@@ -52,7 +52,8 @@ export const EntityMixin = (Base = Object) => {
         ow.object.exactShape({
           isNew: ow.optional.boolean,
           attributeSelector: ow,
-          attributeFilter: ow.optional.function
+          attributeFilter: ow.optional.function,
+          initialize: ow.optional.boolean
         })
       );
 
@@ -60,7 +61,7 @@ export const EntityMixin = (Base = Object) => {
       const entity = entityManager.getEntity(identifiers);
 
       if (entity !== undefined) {
-        const {isNew, attributeSelector = {}, attributeFilter} = options;
+        const {isNew, attributeSelector = {}, attributeFilter, initialize = true} = options;
 
         if (isNew !== undefined) {
           if (isNew && !entity.isNew()) {
@@ -77,7 +78,8 @@ export const EntityMixin = (Base = Object) => {
         return entity.__finishInstantiation(identifiers, {
           isNew: Boolean(isNew),
           attributeSelector,
-          attributeFilter
+          attributeFilter,
+          initialize
         });
       }
 
