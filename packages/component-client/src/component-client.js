@@ -19,7 +19,7 @@ import {isComponentClient} from './utilities';
 
 export class ComponentClient {
   constructor(componentServer, options = {}) {
-    if (typeof componentServer?.receiveQuery !== 'function') {
+    if (typeof componentServer?.receive !== 'function') {
       throw new Error(
         `Expected a component server, but received a value of type '${getTypeOf(componentServer)}'`
       );
@@ -178,7 +178,7 @@ export class ComponentClient {
         return Component.getComponent(name, {includePrototypes: true});
       };
 
-      return componentClient.sendQuery({query}, {componentGetter});
+      return componentClient.send({query}, {componentGetter});
     };
   }
 
@@ -186,7 +186,7 @@ export class ComponentClient {
     if (this._introspectedComponentServer === undefined) {
       const query = {'introspect=>': {'()': []}};
 
-      return possiblyAsync(this.sendQuery({query}), {
+      return possiblyAsync(this.send({query}), {
         then: introspectedComponentServer => {
           this._introspectedComponentServer = introspectedComponentServer;
           return introspectedComponentServer;
@@ -197,7 +197,7 @@ export class ComponentClient {
     return this._introspectedComponentServer;
   }
 
-  sendQuery(request, options = {}) {
+  send(request, options = {}) {
     ow(request, 'request', ow.object.exactShape({query: ow.object, components: ow.optional.array}));
     ow(options, 'options', ow.object.exactShape({componentGetter: ow.optional.function}));
 
@@ -236,7 +236,7 @@ export class ComponentClient {
     );
 
     return possiblyAsync(
-      componentServer.receiveQuery({
+      componentServer.receive({
         query: serializedQuery,
         ...(serializedComponents && {components: serializedComponents}),
         version

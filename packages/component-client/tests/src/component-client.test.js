@@ -12,7 +12,7 @@ import {ComponentClient} from '../../..';
 
 describe('ComponentClient', () => {
   const server = {
-    receiveQuery({query, components, version: clientVersion} = {}) {
+    receive({query, components, version: clientVersion} = {}) {
       const serverVersion = 1;
 
       if (clientVersion !== serverVersion) {
