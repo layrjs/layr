@@ -1,1 +1,1 @@
-"use strict";let e;Object.defineProperty(exports,"__esModule",{value:!0}),e=require("./component-server"),e.default&&(e=e.default),exports.handler=async function handler(t,r){r.callbackWaitsForEmptyEventLoop=!1;const a=t;return await e.receiveQuery(a)};
+"use strict";let e;Object.defineProperty(exports,"__esModule",{value:!0}),e=require("./component-server"),e.default&&(e=e.default),exports.handler=async function handler(t,r){r.callbackWaitsForEmptyEventLoop=!1;const a=t;return await e.receive(a)};

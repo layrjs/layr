@@ -78,10 +78,10 @@
   "counterViaHTTPExample": {
     "@include": "./examples/counter-via-http"
   },
-  "hostedLayer": {
-    "@include": "./resources/hosted-layer"
+  "componentServerResource": {
+    "@include": "./resources/component-server"
   },
-  "lambdaHostedLayer": {
-    "@include": "./resources/lambda-hosted-layer"
+  "lambdaComponentServerResource": {
+    "@include": "./resources/lambda-component-server"
   }
 }

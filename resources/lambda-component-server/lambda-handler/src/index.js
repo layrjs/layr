@@ -13,5 +13,5 @@ export async function handler(event, context) {
 
   const request = event;
 
-  return await componentServer.receiveQuery(request);
+  return await componentServer.receive(request);
 }

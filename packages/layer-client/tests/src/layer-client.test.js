@@ -6,7 +6,7 @@ import {LayerClient} from '../../..';
 
 describe('LayerClient', () => {
   const server = {
-    receiveQuery({query, version: clientVersion} = {}) {
+    receive({query, version: clientVersion} = {}) {
       const serverVersion = 1;
 
       if (clientVersion !== serverVersion) {

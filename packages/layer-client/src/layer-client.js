@@ -14,7 +14,7 @@ export class LayerClient {
       ow.object.exactShape({version: ow.optional.number.integer, baseComponents: ow.optional.array})
     );
 
-    if (typeof layerServer?.receiveQuery !== 'function') {
+    if (typeof layerServer?.receive !== 'function') {
       throw new Error(
         `Expected a layer server, but received a value of type '${getTypeOf(layerServer)}'`
       );

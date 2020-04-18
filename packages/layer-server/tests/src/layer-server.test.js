@@ -19,7 +19,7 @@ describe('LayerServer', () => {
 
     const server = new LayerServer(layer);
 
-    const response = server.receiveQuery({query: {'introspect=>': {'()': []}}});
+    const response = server.receive({query: {'introspect=>': {'()': []}}});
 
     expect(response).toStrictEqual({
       result: {
@@ -51,7 +51,7 @@ describe('LayerServer', () => {
       }
     });
 
-    expect(() => server.receiveQuery({query: {'introspect=>': {'()': []}}, version: 1})).toThrow(
+    expect(() => server.receive({query: {'introspect=>': {'()': []}}, version: 1})).toThrow(
       "The component client version (1) doesn't match the component server version (undefined)"
     );
   });

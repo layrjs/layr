@@ -27,7 +27,7 @@ export class LayerHTTPClient extends LayerClient {
 
 function createLayerServer(url) {
   return {
-    async receiveQuery(request) {
+    async receive(request) {
       ow(
         request,
         'request',

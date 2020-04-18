@@ -111,7 +111,7 @@ export class ComponentServer {
     }
   }
 
-  receiveQuery(request) {
+  receive(request) {
     ow(
       request,
       'request',

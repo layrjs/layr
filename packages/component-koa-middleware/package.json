@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-koa-middleware",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Koa middleware for your Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",

@@ -4,7 +4,7 @@
     "1place/js-resource#^0.2.1"
   ],
   "id": "liaison/lambda-component-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "isPublic": true,
   "authors": [
     "Manuel Vila <hi@mvila.me>"

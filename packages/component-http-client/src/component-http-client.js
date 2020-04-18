@@ -27,7 +27,7 @@ export class ComponentHTTPClient extends ComponentClient {
 
 function createComponentServer(url) {
   return {
-    async receiveQuery(request) {
+    async receive(request) {
       ow(
         request,
         'request',

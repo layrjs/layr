@@ -43,6 +43,6 @@ export function serveComponents(componentServer, options = {}) {
 
     const {query, components, version} = await body.json(ctx.req, {limit, strict: true});
 
-    ctx.body = await componentServer.receiveQuery({query, components, version});
+    ctx.body = await componentServer.receive({query, components, version});
   };
 }

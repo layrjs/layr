@@ -59,7 +59,7 @@ describe('ComponentServer', () => {
 
     const server = new ComponentServer(componentProvider);
 
-    const response = server.receiveQuery({query: {'introspect=>': {'()': []}}});
+    const response = server.receive({query: {'introspect=>': {'()': []}}});
 
     expect(response).toStrictEqual({
       result: {
@@ -97,7 +97,7 @@ describe('ComponentServer', () => {
       }
     });
 
-    expect(() => server.receiveQuery({query: {'introspect=>': {'()': []}}, version: 1})).toThrow(
+    expect(() => server.receive({query: {'introspect=>': {'()': []}}, version: 1})).toThrow(
       "The component client version (1) doesn't match the component server version (undefined)"
     );
   });
@@ -111,7 +111,7 @@ describe('ComponentServer', () => {
 
     const server = new ComponentServer([Movie]);
 
-    const response = server.receiveQuery({query: {'introspect=>': {'()': []}}});
+    const response = server.receive({query: {'introspect=>': {'()': []}}});
 
     expect(response).toStrictEqual({
       result: {
@@ -155,7 +155,7 @@ describe('ComponentServer', () => {
 
     const server = new ComponentServer([User]);
 
-    const response = server.receiveQuery({query: {'introspect=>': {'()': []}}});
+    const response = server.receive({query: {'introspect=>': {'()': []}}});
 
     expect(response).toStrictEqual({
       result: {
@@ -200,7 +200,7 @@ describe('ComponentServer', () => {
     const server = new ComponentServer([Movie]);
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {'<=': {__component: 'Movie'}}
       })
     ).toStrictEqual({
@@ -209,7 +209,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'Movie'},
           'offset': true
@@ -218,7 +218,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({result: {offset: 0}});
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'Movie'},
           'offset': true,
@@ -233,7 +233,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie', __new: true}
         }
@@ -244,7 +244,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie', __new: true},
           'title': true
@@ -254,7 +254,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({result: {title: ''}, components: [{__component: 'Movie', offset: 0}]});
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie', __new: true, title: 'Inception'}
         }
@@ -265,7 +265,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie', __new: true, title: 'Inception'},
           'title': true
@@ -274,7 +274,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({result: {title: 'Inception'}});
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie'}
         }
@@ -285,7 +285,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie'},
           'title': true
@@ -301,7 +301,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie', rating: 10}
         }
@@ -312,7 +312,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie', rating: 10},
           'rating': true
@@ -362,7 +362,7 @@ describe('ComponentServer', () => {
     const server = new ComponentServer([Movie]);
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'Movie'},
           'exposedClassMethod=>': {
@@ -373,7 +373,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({result: 'exposedClassMethod()'});
 
     expect(
-      await server.receiveQuery({
+      await server.receive({
         query: {
           '<=': {__component: 'Movie'},
           'exposedAsyncClassMethod=>': {
@@ -384,7 +384,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({result: 'exposedAsyncClassMethod()'});
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'Movie'},
           'unexposedClassMethod=>': {
@@ -399,7 +399,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie'},
           'exposedInstanceMethod=>': {
@@ -410,7 +410,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({result: 'exposedInstanceMethod()'});
 
     expect(
-      await server.receiveQuery({
+      await server.receive({
         query: {
           '<=': {__component: 'movie'},
           'exposedAsyncInstanceMethod=>': {
@@ -421,7 +421,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({result: 'exposedAsyncInstanceMethod()'});
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie'},
           'unexposedInstanceMethod=>': {
@@ -436,7 +436,7 @@ describe('ComponentServer', () => {
     });
 
     expect(
-      server.receiveQuery({
+      server.receive({
         query: {
           '<=': {__component: 'movie'},
           'exposedInstanceMethodWithParameters=>': {

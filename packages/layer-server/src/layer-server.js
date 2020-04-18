@@ -53,10 +53,10 @@ export class LayerServer {
     return {getComponent, getComponentNames};
   }
 
-  receiveQuery(request) {
+  receive(request) {
     ow(request, 'request', ow.object);
 
-    return this._componentServer.receiveQuery(request);
+    return this._componentServer.receive(request);
   }
 
   static isLayerServer(object) {
