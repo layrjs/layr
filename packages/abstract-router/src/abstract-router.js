@@ -1,4 +1,9 @@
-import {isRoutableClass, normalizeURL, stringifyURL} from '@liaison/routable';
+import {
+  isRoutableClass,
+  validateIsRoutableClass,
+  normalizeURL,
+  stringifyURL
+} from '@liaison/routable';
 import {Observable} from '@liaison/observable';
 import {getTypeOf} from 'core-helpers';
 import ow from 'ow';
@@ -18,9 +23,7 @@ export class AbstractRouter extends Observable() {
     this._routables = Object.create(null);
 
     if (routables !== undefined) {
-      for (const Routable of routables) {
-        this.registerRoutable(Routable);
-      }
+      this.registerRoutables(routables);
     }
 
     this._customRouteDecorators = [];
@@ -54,15 +57,17 @@ export class AbstractRouter extends Observable() {
   }
 
   registerRoutable(Routable) {
-    if (!isRoutableClass(Routable)) {
-      throw new Error(
-        `Expected a routable class, but received a value of type '${getTypeOf(Routable)}'`
-      );
-    }
+    validateIsRoutableClass(Routable);
 
-    if (Routable.hasRouter()) {
+    const existingRouter = Routable.getRouter({throwIfMissing: false});
+
+    if (existingRouter !== undefined) {
+      if (existingRouter === this) {
+        return;
+      }
+
       throw new Error(
-        `Cannot register a routable that is already registered (${Routable.describeComponent()})`
+        `Cannot register a routable that is registered in another router (${Routable.describeComponent()})`
       );
     }
 
@@ -83,6 +88,19 @@ export class AbstractRouter extends Observable() {
 
   getRoutables() {
     return Object.values(this._routables);
+  }
+
+  registerRoutables(routables) {
+    ow(routables, 'routables', ow.array);
+
+    // Validate the routables first so avoid getting partially registered routables
+    for (const Routable of routables) {
+      validateIsRoutableClass(Routable);
+    }
+
+    for (const Routable of routables) {
+      this.registerRoutable(Routable);
+    }
   }
 
   // === Routes ===

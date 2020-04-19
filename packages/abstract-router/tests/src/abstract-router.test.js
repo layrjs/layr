@@ -50,14 +50,14 @@ describe('AbstractRouter', () => {
 
       expect(router.getRoutable('Movie')).toBe(Movie);
 
+      router.registerRoutable(Movie);
+
+      expect(router.getRoutable('Movie')).toBe(Movie);
+
       class NotARoutable {}
 
       expect(() => router.registerRoutable(NotARoutable)).toThrow(
         "Expected a routable class, but received a value of type 'NotARoutable'"
-      );
-
-      expect(() => router.registerRoutable(Movie)).toThrow(
-        "Cannot register a routable that is already registered (component name: 'Movie')"
       );
 
       class SuperMovie extends Routable(Component) {}
@@ -66,6 +66,12 @@ describe('AbstractRouter', () => {
 
       expect(() => router.registerRoutable(SuperMovie)).toThrow(
         "A routable with the same name is already registered (component name: 'Movie')"
+      );
+
+      const otherRouter = new AbstractRouter();
+
+      expect(() => otherRouter.registerRoutable(Movie)).toThrow(
+        "Cannot register a routable that is registered in another router (component name: 'Movie')"
       );
     });
 
