@@ -88,5 +88,19 @@ export function unintrospectType({
     unintrospectedItems = unintrospectType(introspectedItems);
   }
 
-  return {type: valueType, validators: unintrospectedValidators, items: unintrospectedItems};
+  const unintrospectedType = {};
+
+  if (valueType !== undefined) {
+    unintrospectedType.type = valueType;
+  }
+
+  if (unintrospectedValidators !== undefined) {
+    unintrospectedType.validators = unintrospectedValidators;
+  }
+
+  if (unintrospectedItems !== undefined) {
+    unintrospectedType.items = unintrospectedItems;
+  }
+
+  return unintrospectedType;
 }

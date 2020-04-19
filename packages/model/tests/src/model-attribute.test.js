@@ -271,21 +271,24 @@ describe('ModelAttribute', () => {
   });
 
   test('Unintrospection', async () => {
-    expect(
-      ModelAttribute.unintrospect({
-        name: 'limit',
-        valueType: 'number',
-        value: 100,
-        exposure: {get: true}
-      })
-    ).toEqual({
+    class Movie extends Model {}
+
+    let {name, options} = ModelAttribute.unintrospect({
+      name: 'limit',
+      valueType: 'number',
+      value: 100,
+      exposure: {get: true}
+    });
+
+    expect({name, options}).toEqual({
       name: 'limit',
       options: {type: 'number', value: 100, exposure: {get: true}}
     });
+    expect(() => new ModelAttribute(name, Movie, options)).not.toThrow();
 
     const notEmptyFunction = validators.notEmpty().getFunction();
 
-    let {name, options} = ModelAttribute.unintrospect({
+    ({name, options} = ModelAttribute.unintrospect({
       name: 'title',
       valueType: 'string?',
       validators: [
@@ -296,7 +299,7 @@ describe('ModelAttribute', () => {
         }
       ],
       exposure: {get: true}
-    });
+    }));
 
     expect(name).toBe('title');
     expect(options.type).toBe('string?');
@@ -305,6 +308,7 @@ describe('ModelAttribute', () => {
     expect(options.validators[0].getFunction()).toBe(notEmptyFunction);
     expect(options.validators[0].getMessage()).toBe('The validator `notEmpty()` failed');
     expect(options.exposure).toEqual({get: true});
+    expect(() => new ModelAttribute(name, Movie.prototype, options)).not.toThrow();
 
     ({name, options} = ModelAttribute.unintrospect({
       name: 'tags',
@@ -329,6 +333,7 @@ describe('ModelAttribute', () => {
     expect(options.items.validators[0].getFunction()).toBe(notEmptyFunction);
     expect(options.items.validators[0].getMessage()).toBe('The validator `notEmpty()` failed');
     expect(options.exposure).toEqual({get: true});
+    expect(() => new ModelAttribute(name, Movie.prototype, options)).not.toThrow();
 
     ({name, options} = ModelAttribute.unintrospect({
       name: 'tags',
@@ -358,5 +363,6 @@ describe('ModelAttribute', () => {
       'The validator `notEmpty()` failed'
     );
     expect(options.exposure).toEqual({get: true});
+    expect(() => new ModelAttribute(name, Movie.prototype, options)).not.toThrow();
   });
 });
