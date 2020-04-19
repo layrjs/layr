@@ -10,6 +10,14 @@ export function isRoutable(object) {
   return isRoutableClass(object?.constructor) === true;
 }
 
+export function validateIsRoutableClass(Routable) {
+  if (!isRoutableClass(Routable)) {
+    throw new Error(
+      `Expected a routable class, but received a value of type '${getTypeOf(Routable)}'`
+    );
+  }
+}
+
 export function isRouteClass(object) {
   return typeof object?.isRoute === 'function';
 }

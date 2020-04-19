@@ -43,6 +43,18 @@ export const Routable = (Base = Object) => {
       }
     }
 
+    static get router() {
+      return this.getRouter();
+    }
+
+    getRouter(options) {
+      return this.constructor.getRouter(options);
+    }
+
+    get router() {
+      return this.getRouter();
+    }
+
     static hasRouter() {
       return this.__router !== undefined;
     }
