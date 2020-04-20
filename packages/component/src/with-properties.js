@@ -361,13 +361,20 @@ export const WithProperties = (Base = Object) => {
         ow.object.exactShape({
           filter: ow.optional.function,
           depth: ow.optional.number,
+          includeReferencedEntities: ow.optional.boolean,
+          _isDeep: ow.optional.boolean,
           _attributeStack: ow.optional.set
         })
       );
 
       attributeSelector = AttributeSelector.normalize(attributeSelector);
 
-      let {filter, depth = Number.MAX_SAFE_INTEGER, _attributeStack = new Set()} = options;
+      let {
+        filter,
+        depth = Number.MAX_SAFE_INTEGER,
+        includeReferencedEntities = false,
+        _attributeStack = new Set()
+      } = options;
 
       if (depth < 0) {
         return attributeSelector;
@@ -401,6 +408,8 @@ export const WithProperties = (Base = Object) => {
           {
             filter,
             depth,
+            includeReferencedEntities,
+            _isDeep: true,
             _attributeStack
           }
         );

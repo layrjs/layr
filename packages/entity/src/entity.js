@@ -393,7 +393,21 @@ export const EntityMixin = (Base = Object) => {
     // === Attribute selectors ===
 
     expandAttributeSelector(attributeSelector, options = {}) {
-      let expandedAttributeSelector = super.expandAttributeSelector(attributeSelector, options);
+      ow(
+        options,
+        'options',
+        ow.object.partialShape({
+          includeReferencedEntities: ow.optional.boolean,
+          _isDeep: ow.optional.boolean
+        })
+      );
+
+      const {includeReferencedEntities = false, _isDeep = false} = options;
+
+      let expandedAttributeSelector =
+        _isDeep && !includeReferencedEntities
+          ? {}
+          : super.expandAttributeSelector(attributeSelector, options);
 
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
 

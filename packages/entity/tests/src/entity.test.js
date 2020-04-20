@@ -509,6 +509,14 @@ describe('Entity', () => {
     expect(Movie.prototype.expandAttributeSelector(true)).toStrictEqual({
       id: true,
       title: true,
+      director: {id: true}
+    });
+
+    expect(
+      Movie.prototype.expandAttributeSelector(true, {includeReferencedEntities: true})
+    ).toStrictEqual({
+      id: true,
+      title: true,
       director: {id: true, name: true}
     });
 
@@ -523,6 +531,13 @@ describe('Entity', () => {
 
     expect(Movie.prototype.expandAttributeSelector({director: true})).toStrictEqual({
       id: true,
+      director: {id: true}
+    });
+
+    expect(
+      Movie.prototype.expandAttributeSelector({director: true}, {includeReferencedEntities: true})
+    ).toStrictEqual({
+      id: true,
       director: {id: true, name: true}
     });
 
@@ -531,6 +546,13 @@ describe('Entity', () => {
     });
 
     expect(Movie.prototype.expandAttributeSelector({director: {}})).toStrictEqual({
+      id: true,
+      director: {id: true}
+    });
+
+    expect(
+      Movie.prototype.expandAttributeSelector({director: {}}, {includeReferencedEntities: true})
+    ).toStrictEqual({
       id: true,
       director: {id: true}
     });

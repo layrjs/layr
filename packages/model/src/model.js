@@ -132,13 +132,9 @@ export const ModelMixin = (Base = Object) => {
     },
 
     runValidators(attributeSelector = true) {
-      attributeSelector = AttributeSelector.normalize(attributeSelector);
+      attributeSelector = this.expandAttributeSelector(attributeSelector);
 
       const failedValidators = [];
-
-      if (attributeSelector === false) {
-        return failedValidators; // Optimization
-      }
 
       for (const modelAttribute of this.getModelAttributes({setAttributesOnly: true})) {
         const name = modelAttribute.getName();
