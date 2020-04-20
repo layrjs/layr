@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import isPlainObject from 'lodash/isPlainObject';
 import ow from 'ow';
 
-import {getHumanTypeOf} from './utilities';
+import {isComponentClassOrInstance, getHumanTypeOf} from './utilities';
 
 export const AttributeSelector = {
   fromNames(names) {
@@ -262,7 +262,7 @@ export const AttributeSelector = {
 
   _traverse(value, attributeSelector, iteratee, {name, object} = {}) {
     if (attributeSelector === true || value === undefined) {
-      iteratee(value, name, object);
+      iteratee(value, name, object, attributeSelector);
 
       return;
     }
@@ -277,20 +277,24 @@ export const AttributeSelector = {
       return;
     }
 
-    if (!isPlainObject(value)) {
+    const isComponent = isComponentClassOrInstance(value);
+
+    if (!(isComponent || isPlainObject(value))) {
       throw new Error(
-        `Cannot traverse attributes from a value that is not a plain object or an array (value type: '${getHumanTypeOf(
+        `Cannot traverse attributes from a value that is not a component, a plain object, or an array (value type: '${getHumanTypeOf(
           value
         )}')`
       );
     }
 
-    object = value;
+    const componentOrObject = value;
 
     for (const [name, subattributeSelector] of this.iterate(attributeSelector)) {
-      const value = object[name];
+      const value = isComponent
+        ? componentOrObject.getAttribute(name).getValue({throwIfUnset: false})
+        : componentOrObject[name];
 
-      this._traverse(value, subattributeSelector, iteratee, {name, object});
+      this._traverse(value, subattributeSelector, iteratee, {name, object: componentOrObject});
     }
   },
 
