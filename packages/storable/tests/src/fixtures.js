@@ -25,6 +25,7 @@ export function getInitialCollections() {
           {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
           {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
         ],
+        organization: {__component: 'organization', id: 'org1'},
         emailIsVerified: false,
         createdOn: CREATED_ON
       },
@@ -40,6 +41,7 @@ export function getInitialCollections() {
         pastLocations: [{country: 'France'}],
         picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/11-1.jpg'},
         pastPictures: [{__component: 'picture', type: 'PNG', url: 'https://pictures.com/11-1.png'}],
+        organization: {__component: 'organization', id: 'org2'},
         emailIsVerified: true,
         createdOn: CREATED_ON
       },
@@ -61,6 +63,7 @@ export function getInitialCollections() {
           {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
           {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
         ],
+        organization: {__component: 'organization', id: 'org2'},
         emailIsVerified: true,
         createdOn: CREATED_ON
       },
@@ -76,6 +79,18 @@ export function getInitialCollections() {
         pastPictures: [],
         emailIsVerified: false,
         createdOn: CREATED_ON
+      }
+    ],
+    Organization: [
+      {
+        __component: 'organization',
+        id: 'org1',
+        name: 'Organization 1'
+      },
+      {
+        __component: 'organization',
+        id: 'org2',
+        name: 'Organization 2'
       }
     ]
   };

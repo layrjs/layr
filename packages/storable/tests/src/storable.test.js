@@ -34,6 +34,7 @@ describe('Storable', () => {
     @attribute('[object]') pastLocations = [];
     @attribute('picture?') picture;
     @attribute('[picture]') pastPictures = [];
+    @attribute('organization?') organization;
     @attribute('boolean') emailIsVerified = false;
     @attribute('date') createdOn = new Date('2020-03-22T01:27:42.612Z');
     @attribute('date?') updatedOn;
@@ -44,17 +45,26 @@ describe('Storable', () => {
     @attribute('string') url;
   }
 
+  class BaseOrganization extends Storable {
+    @primaryIdentifier() id;
+    @attribute('string') name;
+  }
+
   describe('General methods', () => {
     test('isStorableClass()', async () => {
       class User extends BaseUser {}
 
       class Picture extends BasePicture {}
 
+      class Organization extends BaseOrganization {}
+
       User.registerRelatedComponent(Picture);
+      User.registerRelatedComponent(Organization);
 
       expect(isStorableClass(User)).toBe(true);
       expect(isStorableClass(User.prototype)).toBe(false);
       expect(isStorableClass(Picture)).toBe(false);
+      expect(isStorableClass(Organization)).toBe(true);
 
       const user = new User({id: 'user1', email: '1@user.com', reference: 1});
 
@@ -66,35 +76,45 @@ describe('Storable', () => {
 
       class Picture extends BasePicture {}
 
+      class Organization extends BaseOrganization {}
+
       User.registerRelatedComponent(Picture);
+      User.registerRelatedComponent(Organization);
 
       expect(isStorableInstance(User.prototype)).toBe(true);
       expect(isStorableInstance(User)).toBe(false);
       expect(isStorableInstance(Picture.prototype)).toBe(false);
+      expect(isStorableInstance(Organization.prototype)).toBe(true);
 
       const user = new User({
         id: 'user1',
         email: '1@user.com',
         reference: 1,
-        picture: new Picture({type: 'JPEG', url: 'https://pictures.com/1-1.jpg'})
+        picture: new Picture({type: 'JPEG', url: 'https://pictures.com/1-1.jpg'}),
+        organization: new Organization({id: 'org1', name: 'Organization 1'})
       });
 
       expect(isStorableInstance(user)).toBe(true);
       expect(isStorableInstance(user.picture)).toBe(false);
+      expect(isStorableInstance(user.organization)).toBe(true);
     });
 
     test('getStore() and hasStore()', async () => {
       class User extends BaseUser {}
 
+      class Organization extends BaseOrganization {}
+
       expect(User.hasStore()).toBe(false);
       expect(() => User.getStore()).toThrow(
         "Cannot get the store of a storable that is not registered in any store (storable name: 'User')"
       );
+      expect(Organization.hasStore()).toBe(false);
 
-      const store = new MockStore([User]);
+      const store = new MockStore([User, Organization]);
 
       expect(User.hasStore()).toBe(true);
       expect(User.getStore()).toBe(store);
+      expect(Organization.hasStore()).toBe(true);
     });
   });
 
@@ -105,9 +125,12 @@ describe('Storable', () => {
 
         class Picture extends BasePicture {}
 
-        User.registerRelatedComponent(Picture);
+        class Organization extends BaseOrganization {}
 
-        MockStore.create([User], {initialCollections: getInitialCollections()});
+        User.registerRelatedComponent(Picture);
+        User.registerRelatedComponent(Organization);
+
+        MockStore.create([User, Organization], {initialCollections: getInitialCollections()});
 
         return User;
       });
@@ -123,7 +146,10 @@ describe('Storable', () => {
 
         class Picture extends BasePicture {}
 
+        class Organization extends BaseOrganization {}
+
         User.registerRelatedComponent(Picture);
+        User.registerRelatedComponent(Organization);
 
         server = new MongoMemoryServer();
 
@@ -131,7 +157,7 @@ describe('Storable', () => {
 
         await seedMongoDB(connectionString);
 
-        store = new MongoDBStore([User], {connectionString});
+        store = new MongoDBStore([User, Organization], {connectionString});
 
         await store.connect();
       });
@@ -162,6 +188,7 @@ describe('Storable', () => {
             @expose({get: true, set: true}) @inherit() pastLocations;
             @expose({get: true, set: true}) @inherit() picture;
             @expose({get: true, set: true}) @inherit() pastPictures;
+            @expose({get: true, set: true}) @inherit() organization;
             @expose({get: true, set: true}) @inherit() emailIsVerified;
             @expose({get: true, set: true}) @inherit() createdOn;
             @expose({get: true, set: true}) @inherit() updatedOn;
@@ -178,11 +205,19 @@ describe('Storable', () => {
             @expose({get: true, set: true}) @inherit() url;
           }
 
+          class Organization extends BaseOrganization {
+            @expose({get: true, set: true}) @inherit() id;
+            @expose({get: true, set: true}) @inherit() name;
+
+            @expose({call: true}) @inherit() load;
+          }
+
           User.registerRelatedComponent(Picture);
+          User.registerRelatedComponent(Organization);
 
-          MockStore.create([User], {initialCollections: getInitialCollections()});
+          MockStore.create([User, Organization], {initialCollections: getInitialCollections()});
 
-          return new ComponentServer([User, Picture]);
+          return new ComponentServer([User, Picture, Organization]);
         })();
 
         const client = new ComponentClient(server, {baseComponents: [Model, Storable]});
@@ -198,7 +233,10 @@ describe('Storable', () => {
 
         class Picture extends BasePicture {}
 
+        class Organization extends BaseOrganization {}
+
         User.registerRelatedComponent(Picture);
+        User.registerRelatedComponent(Organization);
 
         return User;
       });
@@ -235,16 +273,21 @@ describe('Storable', () => {
               {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
               {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
             ],
+            organization: {__component: 'organization', id: 'org1', name: 'Organization 1'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
           };
 
-          expect(user.serialize()).toStrictEqual(expectedSerializedUser);
+          expect(user.serialize({includeReferencedEntities: true})).toStrictEqual(
+            expectedSerializedUser
+          );
 
           user = await User.fork().get({id: 'user1'});
 
-          expect(user.serialize()).toStrictEqual(expectedSerializedUser);
+          expect(user.serialize({includeReferencedEntities: true})).toStrictEqual(
+            expectedSerializedUser
+          );
 
           user = await User.fork().get({id: 'user1'}, {fullName: true});
 
@@ -268,7 +311,9 @@ describe('Storable', () => {
 
           user = await User.fork().get({email: '1@user.com'});
 
-          expect(user.serialize()).toStrictEqual(expectedSerializedUser);
+          expect(user.serialize({includeReferencedEntities: true})).toStrictEqual(
+            expectedSerializedUser
+          );
 
           user = await User.fork().get({email: '1@user.com'}, {fullName: true});
 
@@ -357,7 +402,7 @@ describe('Storable', () => {
           });
 
           expect(await user.load()).toBe(user);
-          expect(user.serialize()).toStrictEqual({
+          expect(user.serialize({includeReferencedEntities: true})).toStrictEqual({
             __component: 'user',
             id: 'user1',
             email: '1@user.com',
@@ -375,6 +420,7 @@ describe('Storable', () => {
               {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
               {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
             ],
+            organization: {__component: 'organization', id: 'org1', name: 'Organization 1'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -422,6 +468,7 @@ describe('Storable', () => {
 
           let ForkedUser = User.fork();
           let ForkedPicture = ForkedUser.getRelatedComponent('Picture');
+          let ForkedOrganization = ForkedUser.getRelatedComponent('Organization');
 
           let user = new ForkedUser({
             id: 'user2',
@@ -430,7 +477,8 @@ describe('Storable', () => {
             fullName: 'User 2',
             tags: ['newcomer'],
             location: {country: 'USA', city: 'New York'},
-            picture: new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
+            picture: new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}),
+            organization: ForkedOrganization.instantiate({id: 'org2'})
           });
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
@@ -443,10 +491,11 @@ describe('Storable', () => {
 
           ForkedUser = User.fork();
           ForkedPicture = ForkedUser.getRelatedComponent('Picture');
+          ForkedOrganization = ForkedUser.getRelatedComponent('Organization');
 
           user = await ForkedUser.get('user2');
 
-          expect(user.serialize()).toStrictEqual({
+          expect(user.serialize({includeReferencedEntities: true})).toStrictEqual({
             __component: 'user',
             id: 'user2',
             email: '2@user.com',
@@ -458,6 +507,7 @@ describe('Storable', () => {
             pastLocations: [],
             picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'},
             pastPictures: [],
+            organization: {__component: 'organization', id: 'org2', name: 'Organization 2'},
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -472,6 +522,7 @@ describe('Storable', () => {
           user.pastPictures.push(
             new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
           );
+          user.organization = ForkedOrganization.instantiate({id: 'org1'});
           user.updatedOn = UPDATED_ON;
 
           expect(await user.save()).toBe(user);
@@ -484,10 +535,11 @@ describe('Storable', () => {
             pastLocations: true,
             picture: true,
             pastPictures: true,
+            organization: true,
             updatedOn: true
           });
 
-          expect(user.serialize()).toStrictEqual({
+          expect(user.serialize({includeReferencedEntities: true})).toStrictEqual({
             __component: 'user',
             id: 'user2',
             fullName: 'User 2 (modified)',
@@ -499,6 +551,7 @@ describe('Storable', () => {
             pastPictures: [
               {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}
             ],
+            organization: {__component: 'organization', id: 'org1', name: 'Organization 1'},
             updatedOn: {__date: UPDATED_ON.toISOString()}
           });
 
@@ -508,6 +561,7 @@ describe('Storable', () => {
           delete user.pastLocations[0].city;
           user.picture.type = undefined;
           user.pastPictures[0].type = undefined;
+          user.organization = undefined;
           user.updatedOn = undefined;
 
           expect(await user.save()).toBe(user);
@@ -517,6 +571,7 @@ describe('Storable', () => {
             pastLocations: true,
             picture: true,
             pastPictures: true,
+            organization: true,
             updatedOn: true
           });
 
@@ -537,6 +592,7 @@ describe('Storable', () => {
                 url: 'https://pictures.com/2-1.jpg'
               }
             ],
+            organization: {__undefined: true},
             updatedOn: {__undefined: true}
           });
 
@@ -624,7 +680,7 @@ describe('Storable', () => {
 
           let users = await User.fork().find();
 
-          expect(serialize(users)).toStrictEqual([
+          expect(serialize(users, {includeReferencedEntities: true})).toStrictEqual([
             {
               __component: 'user',
               id: 'user1',
@@ -643,6 +699,7 @@ describe('Storable', () => {
                 {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
                 {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
               ],
+              organization: {__component: 'organization', id: 'org1', name: 'Organization 1'},
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -661,6 +718,7 @@ describe('Storable', () => {
               pastPictures: [
                 {__component: 'picture', type: 'PNG', url: 'https://pictures.com/11-1.png'}
               ],
+              organization: {__component: 'organization', id: 'org2', name: 'Organization 2'},
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -683,6 +741,7 @@ describe('Storable', () => {
                 {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
                 {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
               ],
+              organization: {__component: 'organization', id: 'org2', name: 'Organization 2'},
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -699,6 +758,7 @@ describe('Storable', () => {
               pastLocations: [],
               picture: {__undefined: true},
               pastPictures: [],
+              organization: {__undefined: true},
               emailIsVerified: false,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -709,7 +769,7 @@ describe('Storable', () => {
 
           users = await User.fork().find({fullName: 'User 12'});
 
-          expect(serialize(users)).toStrictEqual([
+          expect(serialize(users, {includeReferencedEntities: true})).toStrictEqual([
             {
               __component: 'user',
               id: 'user12',
@@ -728,6 +788,7 @@ describe('Storable', () => {
                 {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
                 {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
               ],
+              organization: {__component: 'organization', id: 'org2', name: 'Organization 2'},
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
               updatedOn: {__undefined: true}
@@ -1279,9 +1340,12 @@ describe('Storable', () => {
 
       class Picture extends BasePicture {}
 
-      User.registerRelatedComponent(Picture);
+      class Organization extends BaseOrganization {}
 
-      MockStore.create([User], {initialCollections: getInitialCollections()});
+      User.registerRelatedComponent(Picture);
+      User.registerRelatedComponent(Organization);
+
+      MockStore.create([User, Organization], {initialCollections: getInitialCollections()});
 
       return User;
     }
@@ -1353,9 +1417,12 @@ describe('Storable', () => {
 
       class Picture extends BasePicture {}
 
-      User.registerRelatedComponent(Picture);
+      class Organization extends BaseOrganization {}
 
-      MockStore.create([User], {initialCollections: getInitialCollections()});
+      User.registerRelatedComponent(Picture);
+      User.registerRelatedComponent(Organization);
+
+      MockStore.create([User, Organization], {initialCollections: getInitialCollections()});
 
       return User;
     }
@@ -1552,9 +1619,12 @@ describe('Storable', () => {
 
       class Picture extends BasePicture {}
 
-      User.registerRelatedComponent(Picture);
+      class Organization extends BaseOrganization {}
 
-      MockStore.create([User], {initialCollections: getInitialCollections()});
+      User.registerRelatedComponent(Picture);
+      User.registerRelatedComponent(Organization);
+
+      MockStore.create([User, Organization], {initialCollections: getInitialCollections()});
 
       return User;
     }

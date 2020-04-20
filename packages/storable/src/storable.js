@@ -11,7 +11,7 @@ import {StorableAttribute, isStorableAttribute} from './storable-attribute';
 import {StorableMethod} from './storable-method';
 import {StorablePrimaryIdentifierAttribute} from './storable-primary-identifier-attribute';
 import {StorableSecondaryIdentifierAttribute} from './storable-secondary-identifier-attribute';
-import {isStorableClass, isStorableInstance} from './utilities';
+import {isStorableClass, isStorableInstance, isStorableClassOrInstance} from './utilities';
 
 const StorableMixin = (Base = Object) => {
   ow(Base, 'Base', ow.function);
@@ -200,7 +200,7 @@ const StorableMixin = (Base = Object) => {
         );
       }
 
-      attributeSelector = this.expandAttributeSelector(attributeSelector);
+      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector);
 
       const {reload = false, throwIfMissing = true, _callerMethodName} = options;
 
@@ -208,9 +208,11 @@ const StorableMixin = (Base = Object) => {
         // TODO
       }
 
-      const computedAttributes = this.getStorableComputedAttributes({attributeSelector});
+      const computedAttributes = this.getStorableComputedAttributes({
+        attributeSelector: expandedAttributeSelector
+      });
       const nonComputedAttributeSelector = AttributeSelector.remove(
-        attributeSelector,
+        expandedAttributeSelector,
         AttributeSelector.fromAttributes(computedAttributes)
       );
 
@@ -234,13 +236,21 @@ const StorableMixin = (Base = Object) => {
         return undefined;
       }
 
-      for (const attribute of loadedStorable.getStorableAttributesWithLoader({attributeSelector})) {
+      for (const attribute of loadedStorable.getStorableAttributesWithLoader({
+        attributeSelector: expandedAttributeSelector
+      })) {
         const value = await attribute.callLoader();
 
         attribute.setValue(value);
       }
 
       await loadedStorable.afterLoad(nonComputedAttributeSelector);
+
+      await loadedStorable.__populate(attributeSelector, {
+        reload,
+        throwIfMissing,
+        _callerMethodName
+      });
 
       return loadedStorable;
     }
@@ -269,6 +279,43 @@ const StorableMixin = (Base = Object) => {
       const loadedStorable = this.deserialize(serializedStorable);
 
       return loadedStorable;
+    }
+
+    async __populate(attributeSelector, {reload, throwIfMissing, _callerMethodName}) {
+      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+        includeReferencedEntities: true
+      });
+
+      const storablesWithAttributeSelectors = new Map(); // {storable: attributeSelector}
+
+      AttributeSelector.traverse(
+        this,
+        expandedAttributeSelector,
+        (componentOrObject, subattributeSelector) => {
+          if (isStorableClassOrInstance(componentOrObject)) {
+            const storable = componentOrObject;
+
+            if (!storablesWithAttributeSelectors.has(storable)) {
+              storablesWithAttributeSelectors.set(storable, subattributeSelector);
+            } else {
+              const mergedAttributeSelector = AttributeSelector.add(
+                storablesWithAttributeSelectors.get(storable),
+                subattributeSelector
+              );
+              storablesWithAttributeSelectors.set(storable, mergedAttributeSelector);
+            }
+          }
+        },
+        {includeSubtrees: true, includeLeafs: false}
+      );
+
+      if (storablesWithAttributeSelectors.size > 0) {
+        await Promise.all(
+          Array.from(storablesWithAttributeSelectors).map(([storable, attributeSelector]) =>
+            storable.load(attributeSelector, {reload, throwIfMissing, _callerMethodName})
+          )
+        );
+      }
     }
 
     async reload(attributeSelector = true, options = {}) {
@@ -454,18 +501,13 @@ const StorableMixin = (Base = Object) => {
         );
       }
 
-      const loadedStorables = [];
+      const loadedStorables = await Promise.all(
+        foundStorables.map(foundStorable =>
+          foundStorable.load(attributeSelector, {reload, _callerMethodName: 'find'})
+        )
+      );
 
-      // TODO: Batch loading
-      for (const foundStorable of foundStorables) {
-        const loadedStorable = await foundStorable.load(attributeSelector, {
-          reload,
-          _callerMethodName: 'find'
-        });
-        loadedStorables.push(loadedStorable);
-      }
-
-      return foundStorables;
+      return loadedStorables;
     }
 
     static async __findInStore(query, {sort, skip, limit}) {
