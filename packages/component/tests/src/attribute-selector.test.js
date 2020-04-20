@@ -268,6 +268,13 @@ describe('AttributeSelector', () => {
   });
 
   test('pick()', () => {
+    class Organization extends Component {
+      @attribute() name;
+      @attribute() country;
+    }
+
+    const organization = Organization.instantiate({name: 'Paradise Inc.'});
+
     const createdOn = new Date();
 
     const person = {
@@ -277,6 +284,7 @@ describe('AttributeSelector', () => {
       reference: 123,
       tags: ['admin', 'creator'],
       location: undefined,
+      organization,
       friends: [
         {__component: 'person', id: 'def456', reference: 456},
         {__component: 'person', id: 'ghi789', reference: 789}
@@ -313,6 +321,12 @@ describe('AttributeSelector', () => {
 
     expect(AttributeSelector.pick(person, {tags: true})).toStrictEqual({
       tags: ['admin', 'creator']
+    });
+
+    expect(AttributeSelector.pick(person, {organization: true})).toStrictEqual({organization});
+
+    expect(AttributeSelector.pick(person, {organization: {name: true}})).toStrictEqual({
+      organization: {name: 'Paradise Inc.'}
     });
 
     expect(AttributeSelector.pick(person, {friends: true})).toStrictEqual({
@@ -357,19 +371,25 @@ describe('AttributeSelector', () => {
     });
 
     expect(() => AttributeSelector.pick(null, {id: true})).toThrow(
-      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'null')"
+      "Cannot pick attributes from a value that is not a component, a plain object, or an array (value type: 'null')"
     );
     expect(() => AttributeSelector.pick('abc123', {id: true})).toThrow(
-      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'string')"
+      "Cannot pick attributes from a value that is not a component, a plain object, or an array (value type: 'string')"
     );
     expect(() => AttributeSelector.pick(createdOn, {id: true})).toThrow(
-      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'date')"
+      "Cannot pick attributes from a value that is not a component, a plain object, or an array (value type: 'date')"
     );
     expect(() => AttributeSelector.pick(person, {reference: {value: true}})).toThrow(
-      "Cannot pick attributes from a value that is not a plain object or an array (value type: 'number')"
+      "Cannot pick attributes from a value that is not a component, a plain object, or an array (value type: 'number')"
     );
     expect(() => AttributeSelector.pick(person, false)).toThrow(
       "Cannot pick attributes from a value when the specified attribute selector is 'false'"
+    );
+    expect(() => AttributeSelector.pick(person, {organization: {country: true}})).toThrow(
+      "Cannot get the value of an unset attribute (component name: 'organization', attribute name: 'country')"
+    );
+    expect(() => AttributeSelector.pick(person, {organization: {city: true}})).toThrow(
+      "The property 'city' is missing (component name: 'organization')"
     );
   });
 
@@ -379,7 +399,7 @@ describe('AttributeSelector', () => {
       @attribute() country;
     }
 
-    const organization = new Organization({name: 'Paradise Inc.'});
+    const organization = Organization.instantiate({name: 'Paradise Inc.'});
 
     const createdOn = new Date();
 
@@ -390,11 +410,11 @@ describe('AttributeSelector', () => {
       reference: 123,
       tags: ['admin', 'creator'],
       location: undefined,
+      organization,
       friends: [
         {firstName: 'Bob', lastName: 'Sinclair'},
         {firstName: 'John', lastName: 'Thomas'}
       ],
-      organization,
       matrix: [
         [
           {name: 'a', value: 111},
@@ -452,8 +472,7 @@ describe('AttributeSelector', () => {
     ]);
 
     expect(runTraverse(person, {organization: {name: true, country: true}})).toStrictEqual([
-      {value: 'Paradise Inc.', attributeSelector: true, name: 'name', object: person.organization},
-      {value: undefined, attributeSelector: true, name: 'country', object: person.organization}
+      {value: 'Paradise Inc.', attributeSelector: true, name: 'name', object: person.organization}
     ]);
 
     expect(runTraverse(person, {friends: true})).toStrictEqual([

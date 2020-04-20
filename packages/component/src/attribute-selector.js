@@ -211,41 +211,43 @@ export const AttributeSelector = {
       return undefined;
     }
 
-    if (isPlainObject(value)) {
-      return this._pickFromObject(value, attributeSelector, {includeAttributeNames});
-    }
-
     if (Array.isArray(value)) {
-      return this._pickFromArray(value, attributeSelector, {includeAttributeNames});
+      const array = value;
+
+      return array.map(value => this._pick(value, attributeSelector, {includeAttributeNames}));
     }
 
-    throw new Error(
-      `Cannot pick attributes from a value that is not a plain object or an array (value type: '${getHumanTypeOf(
-        value
-      )}')`
-    );
-  },
+    const isComponent = isComponentClassOrInstance(value);
 
-  _pickFromObject(object, attributeSelector, {includeAttributeNames}) {
+    if (!(isComponent || isPlainObject(value))) {
+      throw new Error(
+        `Cannot pick attributes from a value that is not a component, a plain object, or an array (value type: '${getHumanTypeOf(
+          value
+        )}')`
+      );
+    }
+
+    const componentOrObject = value;
+
     const result = {};
 
-    for (const name of includeAttributeNames) {
-      if (hasOwnProperty(object, name)) {
-        result[name] = object[name];
+    if (!isComponent) {
+      for (const name of includeAttributeNames) {
+        if (hasOwnProperty(componentOrObject, name)) {
+          result[name] = componentOrObject[name];
+        }
       }
     }
 
     for (const [name, subattributeSelector] of this.iterate(attributeSelector)) {
-      const value = object[name];
+      const value = isComponent
+        ? componentOrObject.getAttribute(name).getValue()
+        : componentOrObject[name];
 
       result[name] = this._pick(value, subattributeSelector, {includeAttributeNames});
     }
 
     return result;
-  },
-
-  _pickFromArray(array, attributeSelector, {includeAttributeNames}) {
-    return array.map(value => this._pick(value, attributeSelector, {includeAttributeNames}));
   },
 
   traverse(value, attributeSelector, iteratee, options = {}) {
@@ -321,9 +323,11 @@ export const AttributeSelector = {
     }
 
     for (const [name, subattributeSelector] of this.iterate(attributeSelector)) {
-      const value = isComponent
-        ? componentOrObject.getAttribute(name).getValue({throwIfUnset: false})
-        : componentOrObject[name];
+      if (isComponent && !componentOrObject.getAttribute(name).isSet()) {
+        continue;
+      }
+
+      const value = componentOrObject[name];
 
       this._traverse(value, subattributeSelector, iteratee, {
         includeSubtrees,
