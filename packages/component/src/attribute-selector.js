@@ -248,21 +248,43 @@ export const AttributeSelector = {
     return array.map(value => this._pick(value, attributeSelector, {includeAttributeNames}));
   },
 
-  traverse(value, attributeSelector, iteratee) {
+  traverse(value, attributeSelector, iteratee, options = {}) {
     ow(iteratee, 'iteratee', ow.function);
+    ow(
+      options,
+      'options',
+      ow.object.exactShape({
+        includeSubtrees: ow.optional.boolean,
+        includeLeafs: ow.optional.boolean
+      })
+    );
 
     attributeSelector = this.normalize(attributeSelector);
+
+    const {includeSubtrees = false, includeLeafs = true} = options;
 
     if (attributeSelector === false) {
       return;
     }
 
-    this._traverse(value, attributeSelector, iteratee);
+    this._traverse(value, attributeSelector, iteratee, {
+      includeSubtrees,
+      includeLeafs,
+      _context: {},
+      _isDeep: false
+    });
   },
 
-  _traverse(value, attributeSelector, iteratee, {name, object} = {}) {
+  _traverse(
+    value,
+    attributeSelector,
+    iteratee,
+    {includeSubtrees, includeLeafs, _context, _isDeep}
+  ) {
     if (attributeSelector === true || value === undefined) {
-      iteratee(value, name, object, attributeSelector);
+      if (includeLeafs) {
+        iteratee(value, attributeSelector, _context);
+      }
 
       return;
     }
@@ -271,7 +293,12 @@ export const AttributeSelector = {
       const array = value;
 
       for (const value of array) {
-        this._traverse(value, attributeSelector, iteratee);
+        this._traverse(value, attributeSelector, iteratee, {
+          includeSubtrees,
+          includeLeafs,
+          _context,
+          _isDeep
+        });
       }
 
       return;
@@ -289,12 +316,21 @@ export const AttributeSelector = {
 
     const componentOrObject = value;
 
+    if (_isDeep && includeSubtrees) {
+      iteratee(componentOrObject, attributeSelector, _context);
+    }
+
     for (const [name, subattributeSelector] of this.iterate(attributeSelector)) {
       const value = isComponent
         ? componentOrObject.getAttribute(name).getValue({throwIfUnset: false})
         : componentOrObject[name];
 
-      this._traverse(value, subattributeSelector, iteratee, {name, object: componentOrObject});
+      this._traverse(value, subattributeSelector, iteratee, {
+        includeSubtrees,
+        includeLeafs,
+        _context: {name, object: componentOrObject},
+        _isDeep: true
+      });
     }
   },
 
