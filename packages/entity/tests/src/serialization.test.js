@@ -85,6 +85,13 @@ describe('Serialization', () => {
       movies: [{__component: 'movie', id: 'abc123'}]
     });
 
+    expect(cinema.serialize({includeReferencedEntities: true})).toEqual({
+      __component: 'cinema',
+      id: 'xyz456',
+      name: 'Paradiso',
+      movies: [{__component: 'movie', id: 'abc123', title: 'Inception'}]
+    });
+
     let referencedComponents = new Set();
 
     expect(cinema.serialize({referencedComponents})).toEqual({

@@ -468,7 +468,8 @@ export const EntityMixin = (Base = Object) => {
           returnComponentReferences: ow.optional.boolean,
           referencedComponents: ow.optional.set,
           includeComponentNames: ow.optional.boolean,
-          includeIsNewMarks: ow.optional.boolean
+          includeIsNewMarks: ow.optional.boolean,
+          includeReferencedEntities: ow.optional.boolean
         })
       );
 

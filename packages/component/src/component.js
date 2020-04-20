@@ -563,7 +563,8 @@ export const ComponentMixin = (Base = Object) => {
           returnComponentReferences: ow.optional.boolean,
           referencedComponents: ow.optional.set,
           ignoreEmptyComponents: ow.optional.boolean,
-          includeComponentNames: ow.optional.boolean
+          includeComponentNames: ow.optional.boolean,
+          includeReferencedEntities: ow.optional.boolean
         })
       );
 
@@ -613,7 +614,8 @@ export const ComponentMixin = (Base = Object) => {
           referencedComponents: ow.optional.set,
           ignoreEmptyComponents: ow.optional.boolean,
           includeComponentNames: ow.optional.boolean,
-          includeIsNewMarks: ow.optional.boolean
+          includeIsNewMarks: ow.optional.boolean,
+          includeReferencedEntities: ow.optional.boolean
         })
       );
 
@@ -895,7 +897,7 @@ export const ComponentMixin = (Base = Object) => {
     // === Serialization ===
 
     __serializeAttributes(serializedComponent, options) {
-      let {attributeSelector = true, attributeFilter} = options;
+      let {includeReferencedEntities = false, attributeSelector = true, attributeFilter} = options;
 
       attributeSelector = AttributeSelector.normalize(attributeSelector);
 
@@ -927,7 +929,7 @@ export const ComponentMixin = (Base = Object) => {
                     serialize(attributeValue, {
                       ...options,
                       attributeSelector: subattributeSelector,
-                      returnComponentReferences: true
+                      returnComponentReferences: !includeReferencedEntities
                     }),
                     {
                       then: serializedAttributeValue => {

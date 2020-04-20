@@ -1,7 +1,7 @@
 {
   "@import": "1place/npm-package#^0.2.0",
   "name": "@liaison/component",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "The base class of all your components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
