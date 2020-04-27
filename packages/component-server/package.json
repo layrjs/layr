@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-server",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A server to locally serve your Liaison components",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -14,7 +14,7 @@
   "dependencies": {
     "core-helpers": "^0.1.0",
     "debug": "^4.1.1",
-    "@deepr/runtime": "^0.3.0",
+    "@deepr/runtime": "^0.4.0",
     "@liaison/component": "^0.1.0",
     "lodash": "^4.17.15",
     "ow": "^0.15.1",
