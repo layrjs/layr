@@ -1,5 +1,4 @@
 {
-  "@import": "1place/js-repository#^0.1.0",
   "abstractRouter": {
     "@include": "./packages/abstract-router"
   },
@@ -8,9 +7,6 @@
   },
   "browserRouter": {
     "@include": "./packages/browser-router"
-  },
-  "component": {
-    "@include": "./packages/component"
   },
   "componentClient": {
     "@include": "./packages/component-client"
