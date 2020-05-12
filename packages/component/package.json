@@ -2,15 +2,29 @@
   "name": "@liaison/component",
   "version": "0.1.9",
   "description": "The base class of all your components",
+  "keywords": [
+    "liaison",
+    "component",
+    "base",
+    "class"
+  ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component",
   "files": [
     "dist"
   ],
-  "main": "dist/node/cjs",
-  "module": "dist/node/esm",
-  "browser": "dist/browser/esm",
+  "main": "dist/node-cjs/index.js",
+  "module": "dist/node-esm/index.js",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "dev-tools build:ts-library",
+    "link": "dev-tools link:local-packages",
+    "prepare": "npm run build && npm run test",
+    "test": "dev-tools test:ts-library"
+  },
   "dependencies": {
     "core-helpers": "^0.1.0",
     "debug": "^4.1.1",
@@ -21,30 +35,15 @@
     "possibly-async": "^0.2.0",
     "simple-cloning": "^0.1.0",
     "simple-forking": "^0.1.0",
-    "simple-serialization": "^0.2.0"
+    "simple-serialization": "^0.2.0",
+    "tslib": "^1.11.1"
   },
-  "@managed": {
-    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
-    "properties": [
-      "name",
-      "version",
-      "private",
-      "description",
-      "keywords",
-      "homepage",
-      "author",
-      "contributors",
-      "license",
-      "repository",
-      "files",
-      "main",
-      "module",
-      "browser",
-      "bin",
-      "dependencies",
-      "peerDependencies",
-      "optionalDependencies",
-      "devDependencies"
-    ]
+  "devDependencies": {
+    "@mvila/dev-tools": "^1.0.13",
+    "@mvila/tsconfig": "^1.0.3",
+    "@types/indefinite": "^2.3.0",
+    "@types/jest": "^25.2.1",
+    "@types/lodash": "^4.14.150",
+    "sleep-promise": "^8.0.1"
   }
 }

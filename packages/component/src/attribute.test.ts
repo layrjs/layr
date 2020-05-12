@@ -1,4 +1,5 @@
-import {Component, Attribute, isAttribute} from '../../..';
+import {Component} from './component';
+import {Attribute} from './attribute';
 
 describe('Attribute', () => {
   test('Creation', async () => {
@@ -6,7 +7,7 @@ describe('Attribute', () => {
 
     const attribute = new Attribute('limit', Movie);
 
-    expect(isAttribute(attribute)).toBe(true);
+    expect(Attribute.isAttribute(attribute)).toBe(true);
     expect(attribute.getName()).toBe('limit');
     expect(attribute.getParent()).toBe(Movie);
   });
@@ -20,7 +21,7 @@ describe('Attribute', () => {
 
     expect(attribute.isSet()).toBe(false);
     expect(() => attribute.getValue()).toThrow(
-      "Cannot get the value of an unset attribute (component name: 'movie', attribute name: 'title')"
+      "Cannot get the value of an unset attribute (component: 'Movie', attribute: 'title')"
     );
     expect(attribute.getValue({throwIfUnset: false})).toBeUndefined();
 
@@ -65,7 +66,7 @@ describe('Attribute', () => {
           }
         })
     ).toThrow(
-      "An attribute cannot have a setter without a getter (component name: 'movie', attribute name: 'title')"
+      "An attribute cannot have a setter without a getter (component: 'Movie', attribute: 'title')"
     );
   });
 
@@ -90,7 +91,7 @@ describe('Attribute', () => {
           }
         })
     ).toThrow(
-      "An attribute cannot have both a getter or setter and an initial value (component name: 'Movie', attribute name: 'limit')"
+      "An attribute cannot have both a getter or setter and an initial value (component: 'Movie', attribute: 'limit')"
     );
   });
 
@@ -99,31 +100,24 @@ describe('Attribute', () => {
 
     const movie = new Movie();
 
-    const attribute = new Attribute('title', movie, {
-      default() {
-        expect(this).toBe(movie);
-        return '';
-      }
-    });
+    const attribute = new Attribute('title', movie, {default: ''});
 
-    expect(attribute.getDefaultValue()).toBe('');
+    expect(attribute.getDefault()).toBe('');
 
     const attributeWithoutDefault = new Attribute('duration', movie);
 
-    expect(attributeWithoutDefault.getDefaultValue()).toBe(undefined);
+    expect(attributeWithoutDefault.getDefault()).toBe(undefined);
 
     expect(
       () =>
         new Attribute('title', movie, {
-          default() {
-            return '';
-          },
+          default: '',
           getter() {
             return '';
           }
         })
     ).toThrow(
-      "An attribute cannot have both a getter or setter and a default value (component name: 'movie', attribute name: 'title')"
+      "An attribute cannot have both a getter or setter and a default value (component: 'Movie', attribute: 'title')"
     );
   });
 
@@ -148,62 +142,62 @@ describe('Attribute', () => {
     expect(attribute.getValue()).toBe('Inception');
   });
 
-  test('Introspection', async () => {
-    class Movie extends Component {}
+  // test('Introspection', async () => {
+  //   class Movie extends Component {}
 
-    expect(new Attribute('limit', Movie, {exposure: {get: true}}).introspect()).toStrictEqual({
-      name: 'limit',
-      type: 'attribute',
-      exposure: {get: true}
-    });
+  //   expect(new Attribute('limit', Movie, {exposure: {get: true}}).introspect()).toStrictEqual({
+  //     name: 'limit',
+  //     type: 'attribute',
+  //     exposure: {get: true}
+  //   });
 
-    expect(
-      new Attribute('limit', Movie, {value: 100, exposure: {set: true}}).introspect()
-    ).toStrictEqual({name: 'limit', type: 'attribute', exposure: {set: true}});
+  //   expect(
+  //     new Attribute('limit', Movie, {value: 100, exposure: {set: true}}).introspect()
+  //   ).toStrictEqual({name: 'limit', type: 'attribute', exposure: {set: true}});
 
-    expect(
-      new Attribute('limit', Movie, {value: 100, exposure: {get: true}}).introspect()
-    ).toStrictEqual({name: 'limit', type: 'attribute', value: 100, exposure: {get: true}});
+  //   expect(
+  //     new Attribute('limit', Movie, {value: 100, exposure: {get: true}}).introspect()
+  //   ).toStrictEqual({name: 'limit', type: 'attribute', value: 100, exposure: {get: true}});
 
-    const defaultTitle = function() {
-      return '';
-    };
+  //   const defaultTitle = function() {
+  //     return '';
+  //   };
 
-    expect(
-      new Attribute('title', Movie.prototype, {
-        default: defaultTitle,
-        exposure: {get: true}
-      }).introspect()
-    ).toStrictEqual({
-      name: 'title',
-      type: 'attribute',
-      default: defaultTitle,
-      exposure: {get: true}
-    });
-  });
+  //   expect(
+  //     new Attribute('title', Movie.prototype, {
+  //       default: defaultTitle,
+  //       exposure: {get: true}
+  //     }).introspect()
+  //   ).toStrictEqual({
+  //     name: 'title',
+  //     type: 'attribute',
+  //     default: defaultTitle,
+  //     exposure: {get: true}
+  //   });
+  // });
 
-  test('Unintrospection', async () => {
-    expect(Attribute.unintrospect({name: 'limit', exposure: {get: true}})).toStrictEqual({
-      name: 'limit',
-      options: {exposure: {get: true}}
-    });
+  // test('Unintrospection', async () => {
+  //   expect(Attribute.unintrospect({name: 'limit', exposure: {get: true}})).toStrictEqual({
+  //     name: 'limit',
+  //     options: {exposure: {get: true}}
+  //   });
 
-    expect(
-      Attribute.unintrospect({name: 'limit', value: 100, exposure: {get: true}})
-    ).toStrictEqual({
-      name: 'limit',
-      options: {value: 100, exposure: {get: true}}
-    });
+  //   expect(
+  //     Attribute.unintrospect({name: 'limit', value: 100, exposure: {get: true}})
+  //   ).toStrictEqual({
+  //     name: 'limit',
+  //     options: {value: 100, exposure: {get: true}}
+  //   });
 
-    const defaultTitle = function() {
-      return '';
-    };
+  //   const defaultTitle = function() {
+  //     return '';
+  //   };
 
-    expect(
-      Attribute.unintrospect({name: 'title', default: defaultTitle, exposure: {get: true}})
-    ).toStrictEqual({
-      name: 'title',
-      options: {default: defaultTitle, exposure: {get: true}}
-    });
-  });
+  //   expect(
+  //     Attribute.unintrospect({name: 'title', default: defaultTitle, exposure: {get: true}})
+  //   ).toStrictEqual({
+  //     name: 'title',
+  //     options: {default: defaultTitle, exposure: {get: true}}
+  //   });
+  // });
 });

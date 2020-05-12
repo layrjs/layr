@@ -1,22 +1,21 @@
-import {deserialize as simpleDeserialize} from 'simple-serialization';
+import {
+  deserialize as simpleDeserialize,
+  DeserializeOptions as SimpleDeserializeOptions
+} from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
-import ow from 'ow';
+import {PlainObject} from 'core-helpers';
 
+import type {Component, ComponentGetter} from './component';
+import type {PropertyFilter} from './property';
 import {isComponentClass} from './utilities';
 
-export function deserialize(value, options = {}) {
-  ow(
-    options,
-    'options',
-    ow.object.partialShape({
-      objectDeserializer: ow.optional.function,
-      functionDeserializer: ow.optional.function,
-      componentGetter: ow.optional.function,
-      attributeFilter: ow.optional.function,
-      deserializeFunctions: ow.optional.boolean
-    })
-  );
+export type DeserializeOptions = SimpleDeserializeOptions & {
+  componentGetter?: ComponentGetter;
+  attributeFilter?: PropertyFilter;
+  deserializeFunctions?: boolean;
+};
 
+export function deserialize(value: any, options: DeserializeOptions = {}) {
   const {
     objectDeserializer: originalObjectDeserializer,
     functionDeserializer: originalFunctionDeserializer,
@@ -26,7 +25,7 @@ export function deserialize(value, options = {}) {
     ...otherOptions
   } = options;
 
-  const objectDeserializer = function(object) {
+  const objectDeserializer = function (object: PlainObject) {
     if (originalObjectDeserializer !== undefined) {
       const deserializedObject = originalObjectDeserializer(object);
 
@@ -35,9 +34,9 @@ export function deserialize(value, options = {}) {
       }
     }
 
-    const {__component: componentName, ...attributes} = object;
+    const {__component: componentType, ...attributes} = object;
 
-    if (componentName === undefined) {
+    if (componentType === undefined) {
       return undefined;
     }
 
@@ -45,19 +44,19 @@ export function deserialize(value, options = {}) {
       throw new Error("Cannot deserialize a component without a 'componentGetter'");
     }
 
-    const component = componentGetter(componentName);
+    const component = componentGetter(componentType);
 
     if (isComponentClass(component)) {
       return component.deserialize(attributes, options);
     }
 
-    return component.constructor.deserializeInstance(attributes, options);
+    return (component.constructor as typeof Component).deserializeInstance(attributes, options);
   };
 
-  let functionDeserializer;
+  let functionDeserializer: DeserializeOptions['functionDeserializer'];
 
   if (deserializeFunctions) {
-    functionDeserializer = function(object) {
+    functionDeserializer = function (object) {
       if (originalFunctionDeserializer !== undefined) {
         const deserializedFunction = originalFunctionDeserializer(object);
 
@@ -74,21 +73,19 @@ export function deserialize(value, options = {}) {
 
       const functionCode = __function;
 
-      return possiblyAsync.mapValues(
-        serializedAttributes,
-        attributeValue =>
+      return possiblyAsync(
+        possiblyAsync.mapValues(serializedAttributes, (attributeValue) =>
           simpleDeserialize(attributeValue, {
             ...otherOptions,
             objectDeserializer,
             functionDeserializer
-          }),
-        {
-          then: deserializedAttributes => {
-            const {__context: context} = deserializedAttributes;
-            const deserializedFunction = deserializeFunction(functionCode, context);
-            Object.assign(deserializedFunction, deserializedAttributes);
-            return deserializedFunction;
-          }
+          })
+        ),
+        (deserializedAttributes) => {
+          const {__context: context} = deserializedAttributes;
+          const deserializedFunction = deserializeFunction(functionCode, context);
+          Object.assign(deserializedFunction, deserializedAttributes);
+          return deserializedFunction;
         }
       );
     };
@@ -97,7 +94,7 @@ export function deserialize(value, options = {}) {
   return simpleDeserialize(value, {...otherOptions, objectDeserializer, functionDeserializer});
 }
 
-export function deserializeFunction(functionCode, context) {
+export function deserializeFunction(functionCode: string, context?: PlainObject) {
   let evalCode = `(${functionCode});`;
 
   if (context !== undefined) {
@@ -106,6 +103,5 @@ export function deserializeFunction(functionCode, context) {
     evalCode = `${contextCode} ${evalCode}`;
   }
 
-  // eslint-disable-next-line no-eval
   return eval(evalCode);
 }

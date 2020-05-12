@@ -7,3 +7,7 @@ The base class of all your components.
 ```
 npm install @liaison/component
 ```
+
+## License
+
+MIT

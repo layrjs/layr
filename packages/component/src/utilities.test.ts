@@ -1,11 +1,11 @@
+import {Component} from './component';
 import {
-  Component,
   isComponentClass,
   isComponentInstance,
   isComponentClassOrInstance,
   isComponentName,
-  getTypeOf
-} from '../../..';
+  isComponentType
+} from './utilities';
 
 describe('Utilities', () => {
   test('isComponentClass()', async () => {
@@ -59,36 +59,31 @@ describe('Utilities', () => {
   });
 
   test('isComponentName()', async () => {
-    expect(isComponentName('Movie')).toBe('componentClassName');
-    expect(isComponentName('movie')).toBe('componentInstanceName');
-    expect(isComponentName('MotionPicture')).toBe('componentClassName');
-    expect(isComponentName('motionPicture')).toBe('componentInstanceName');
-    expect(isComponentName('Prefix_Movie')).toBe('componentClassName');
-    expect(isComponentName('prefix_Movie')).toBe('componentInstanceName');
+    expect(isComponentName('Movie')).toBe(true);
+    expect(isComponentName('Movie2')).toBe(true);
+    expect(isComponentName('MotionPicture')).toBe(true);
+    expect(isComponentName('Prefix_Movie')).toBe(true);
 
     expect(isComponentName('$Movie')).toBe(false);
     expect(isComponentName('_Movie')).toBe(false);
     expect(isComponentName('Movie!')).toBe(false);
     expect(isComponentName('1Place')).toBe(false);
-
-    expect(isComponentName('Movie', {allowClasses: false})).toBe(false);
-    expect(isComponentName('movie', {allowInstances: false})).toBe(false);
-
-    expect(() => isComponentName(undefined)).toThrow();
-    expect(() => isComponentName(1)).toThrow();
   });
 
-  test('getTypeOf()', async () => {
-    class Movie extends Component {}
+  test('isComponentType()', async () => {
+    expect(isComponentType('typeof Movie')).toBe('componentClassType');
+    expect(isComponentType('Movie')).toBe('componentInstanceType');
+    expect(isComponentType('typeof MotionPicture')).toBe('componentClassType');
+    expect(isComponentType('MotionPicture')).toBe('componentInstanceType');
+    expect(isComponentType('typeof Prefix_Movie')).toBe('componentClassType');
+    expect(isComponentType('Prefix_Movie')).toBe('componentInstanceType');
 
-    const movie = new Movie();
+    expect(isComponentType('$Movie')).toBe(false);
+    expect(isComponentType('_Movie')).toBe(false);
+    expect(isComponentType('Movie!')).toBe(false);
+    expect(isComponentType('1Place')).toBe(false);
 
-    expect(getTypeOf(Movie)).toBe('Movie');
-    expect(getTypeOf(movie)).toBe('movie');
-
-    Movie.setComponentName('Film');
-
-    expect(getTypeOf(Movie)).toBe('Film');
-    expect(getTypeOf(movie)).toBe('film');
+    expect(isComponentType('typeof Movie', {allowClasses: false})).toBe(false);
+    expect(isComponentType('Movie', {allowInstances: false})).toBe(false);
   });
 });

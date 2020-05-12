@@ -1,24 +1,33 @@
-import {Component, Property, isProperty} from '../../..';
+import {Component} from './component';
+import {Property, PropertyOperationSetting} from './property';
 
 describe('Property', () => {
   test('Creation', async () => {
     class Movie extends Component {}
 
+    // @ts-ignore
     expect(() => new Property()).toThrow(
-      'Expected `name` to be of type `string` but received type `undefined`'
+      "Expected a string, but received a value of type 'undefined'"
     );
 
+    // @ts-ignore
     expect(() => new Property('title')).toThrow(
-      'Expected `parent` to be of type `object` but received type `undefined`'
+      "Expected a component class or instance, but received a value of type 'undefined'"
     );
 
+    // @ts-ignore
+    expect(() => new Property('title', {})).toThrow(
+      "Expected a component class or instance, but received a value of type 'Object'"
+    );
+
+    // @ts-ignore
     expect(() => new Property('title', Movie, {unknownOption: 123})).toThrow(
-      'Did not expect property `unknownOption` to exist, got `123` in object `options`'
+      "Did not expect the option 'unknownOption' to exist"
     );
 
     const property = new Property('title', Movie.prototype);
 
-    expect(isProperty(property)).toBe(true);
+    expect(Property.isProperty(property)).toBe(true);
     expect(property.getName()).toBe('title');
     expect(property.getParent()).toBe(Movie.prototype);
   });
@@ -47,7 +56,10 @@ describe('Property', () => {
     );
 
     class Film extends Component {
-      static normalizePropertyOperationSetting(setting, {throwIfInvalid = true} = {}) {
+      static normalizePropertyOperationSetting(
+        setting: PropertyOperationSetting,
+        {throwIfInvalid = true} = {}
+      ) {
         const normalizedSetting = super.normalizePropertyOperationSetting(setting, {
           throwIfInvalid: false
         });
@@ -61,8 +73,12 @@ describe('Property', () => {
         }
 
         if (throwIfInvalid) {
-          throw new Error(`Invalid property operation setting: ${JSON.stringify(setting)}`);
+          throw new Error(
+            `The specified property operation setting (${JSON.stringify(setting)}) is invalid`
+          );
         }
+
+        return undefined;
       }
     }
 
@@ -75,7 +91,7 @@ describe('Property', () => {
     });
 
     expect(() => new Property('find', Film, {exposure: {call: false}})).toThrow(
-      'Invalid property operation setting: false'
+      'The specified property operation setting (false) is invalid'
     );
   });
 
@@ -94,42 +110,42 @@ describe('Property', () => {
     expect(forkedProperty.getParent()).toBe(movie);
   });
 
-  test('Introspection', async () => {
-    class Movie extends Component {
-      static normalizePropertyOperationSetting(setting, {throwIfInvalid = true} = {}) {
-        const normalizedSetting = super.normalizePropertyOperationSetting(setting, {
-          throwIfInvalid: false
-        });
+  // test('Introspection', async () => {
+  //   class Movie extends Component {
+  //     static normalizePropertyOperationSetting(setting, {throwIfInvalid = true} = {}) {
+  //       const normalizedSetting = super.normalizePropertyOperationSetting(setting, {
+  //         throwIfInvalid: false
+  //       });
 
-        if (normalizedSetting !== undefined) {
-          return normalizedSetting;
-        }
+  //       if (normalizedSetting !== undefined) {
+  //         return normalizedSetting;
+  //       }
 
-        if (typeof setting === 'string') {
-          return setting;
-        }
+  //       if (typeof setting === 'string') {
+  //         return setting;
+  //       }
 
-        if (throwIfInvalid) {
-          throw new Error(`Invalid property operation setting: ${JSON.stringify(setting)}`);
-        }
-      }
-    }
+  //       if (throwIfInvalid) {
+  //         throw new Error(`Invalid property operation setting: ${JSON.stringify(setting)}`);
+  //       }
+  //     }
+  //   }
 
-    expect(new Property('title', Movie.prototype).introspect()).toBeUndefined();
+  //   expect(new Property('title', Movie.prototype).introspect()).toBeUndefined();
 
-    expect(
-      new Property('title', Movie.prototype, {exposure: {get: true}}).introspect()
-    ).toStrictEqual({name: 'title', type: 'property', exposure: {get: true}});
+  //   expect(
+  //     new Property('title', Movie.prototype, {exposure: {get: true}}).introspect()
+  //   ).toStrictEqual({name: 'title', type: 'property', exposure: {get: true}});
 
-    expect(
-      new Property('title', Movie.prototype, {exposure: {get: true, set: 'admin'}}).introspect()
-    ).toStrictEqual({name: 'title', type: 'property', exposure: {get: true, set: true}});
-  });
+  //   expect(
+  //     new Property('title', Movie.prototype, {exposure: {get: true, set: 'admin'}}).introspect()
+  //   ).toStrictEqual({name: 'title', type: 'property', exposure: {get: true, set: true}});
+  // });
 
-  test('Unintrospection', async () => {
-    expect(Property.unintrospect({name: 'title', exposure: {get: true, set: true}})).toStrictEqual({
-      name: 'title',
-      options: {exposure: {get: true, set: true}}
-    });
-  });
+  // test('Unintrospection', async () => {
+  //   expect(Property.unintrospect({name: 'title', exposure: {get: true, set: true}})).toStrictEqual({
+  //     name: 'title',
+  //     options: {exposure: {get: true, set: true}}
+  //   });
+  // });
 });
