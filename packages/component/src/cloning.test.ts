@@ -1,11 +1,12 @@
-import {Component, attribute} from '../../..';
+import {Component} from './component';
+import {attribute} from './decorators';
 
 describe('Cloning', () => {
   test('Simple component', async () => {
     class Movie extends Component {
-      @attribute() title;
-      @attribute() tags;
-      @attribute() specs;
+      @attribute() title?: string;
+      @attribute() tags?: string[];
+      @attribute() specs?: {duration?: number};
     }
 
     expect(Movie.clone()).toBe(Movie);
@@ -15,7 +16,7 @@ describe('Cloning', () => {
     let clonedMovie = movie.clone();
 
     expect(clonedMovie).not.toBe(movie);
-    expect(clonedMovie.getComponentName()).toBe('movie');
+    expect(clonedMovie.getComponentType()).toBe('Movie');
     expect(clonedMovie.isNew()).toBe(true);
     expect(clonedMovie.title).toBe(movie.title);
     expect(clonedMovie.tags).not.toBe(movie.tags);
@@ -28,7 +29,7 @@ describe('Cloning', () => {
     clonedMovie = movie.clone();
 
     expect(clonedMovie).not.toBe(movie);
-    expect(clonedMovie.getComponentName()).toBe('movie');
+    expect(clonedMovie.getComponentType()).toBe('Movie');
     expect(clonedMovie.isNew()).toBe(true);
     expect(clonedMovie.title).toBe(movie.title);
     expect(clonedMovie.tags).toBeUndefined();
@@ -39,7 +40,7 @@ describe('Cloning', () => {
     clonedMovie = movie.clone();
 
     expect(clonedMovie).not.toBe(movie);
-    expect(clonedMovie.getComponentName()).toBe('movie');
+    expect(clonedMovie.getComponentType()).toBe('Movie');
     expect(clonedMovie.isNew()).toBe(false);
     expect(clonedMovie.title).toBe(movie.title);
     expect(clonedMovie.getAttribute('tags').isSet()).toBe(false);
@@ -48,18 +49,18 @@ describe('Cloning', () => {
 
   test('Nested component', async () => {
     class Movie extends Component {
-      @attribute() director;
+      @attribute() director!: Director;
     }
 
     class Director extends Component {
-      @attribute() name;
+      @attribute() name?: string;
     }
 
     const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
 
     const clonedMovie = movie.clone();
 
-    expect(clonedMovie.director.getComponentName()).toBe('director');
+    expect(clonedMovie.director.getComponentType()).toBe('Director');
     expect(clonedMovie.director).not.toBe(movie.director);
     expect(clonedMovie.director.name).toBe('Christopher Nolan');
 

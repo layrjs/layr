@@ -64,7 +64,7 @@ export function cloneAttributeSelector(attributeSelector: AttributeSelector) {
   return cloneDeep(attributeSelector);
 }
 
-export function AttributeSelectorsAreEqual(
+export function attributeSelectorsAreEqual(
   attributeSelector: AttributeSelector,
   otherAttributeSelector: AttributeSelector
 ) {

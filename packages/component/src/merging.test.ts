@@ -1,13 +1,14 @@
-import {Component, attribute} from '../../..';
+import {Component} from './component';
+import {attribute} from './decorators';
 
 describe('Merging', () => {
   test('Simple component', async () => {
     class Movie extends Component {
       @attribute() static limit = 100;
 
-      @attribute() title;
-      @attribute() tags;
-      @attribute() specs;
+      @attribute() title!: string;
+      @attribute() tags!: string[];
+      @attribute() specs!: {duration?: number};
     }
 
     const ForkedMovie = Movie.fork();
@@ -51,14 +52,12 @@ describe('Merging', () => {
 
   test('Nested component', async () => {
     class Movie extends Component {
-      @attribute() director;
+      @attribute() director!: Director;
     }
 
     class Director extends Component {
-      @attribute() name;
+      @attribute() name!: string;
     }
-
-    Movie.registerRelatedComponent(Director);
 
     const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
 
