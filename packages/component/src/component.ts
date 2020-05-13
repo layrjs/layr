@@ -39,7 +39,8 @@ import {
   getComponentNameFromComponentInstanceType,
   assertIsComponentType,
   getComponentClassTypeFromComponentName,
-  getComponentInstanceTypeFromComponentName
+  getComponentInstanceTypeFromComponentName,
+  composeDescription
 } from './utilities';
 
 export type ComponentGetter = (name: string) => typeof Component | Component;
@@ -778,16 +779,16 @@ export const ComponentMixin = (Base = Object) => {
       return this.getProperties<Method>({filter, autoFork, methodsOnly: true});
     }
 
-    // === Component getter ===
+    // === Dependency management ===
+
+    // --- Component getters ---
 
     static getComponent(name: string) {
       const component = this.__getComponent(name);
 
       if (component === undefined) {
         throw new Error(
-          `Cannot get the component '${name}' (${this.describeComponent({
-            componentPrefix: 'from'
-          })})`
+          `Cannot get the component '${name}' from the component '${this.getComponentName()}'`
         );
       }
 
@@ -798,10 +799,26 @@ export const ComponentMixin = (Base = Object) => {
       return this.__getComponent(name) !== undefined;
     }
 
-    static __getComponent(name: string) {
+    static __getComponent(name: string): typeof Component | undefined {
       assertIsComponentName(name);
 
-      return this.getComponentName() === name ? this : this.getRelatedComponent(name);
+      if (this.getComponentName() === name) {
+        return this;
+      }
+
+      let providedComponent = this.getProvidedComponent(name);
+
+      if (providedComponent !== undefined) {
+        return providedComponent;
+      }
+
+      const componentProvider = this.__getComponentProvider();
+
+      if (componentProvider !== undefined) {
+        return componentProvider.__getComponent(name);
+      }
+
+      return undefined;
     }
 
     static getComponentOfType(type: string) {
@@ -809,9 +826,7 @@ export const ComponentMixin = (Base = Object) => {
 
       if (component === undefined) {
         throw new Error(
-          `Cannot get the component '${type}' (${this.describeComponent({
-            componentPrefix: 'from'
-          })})`
+          `Cannot get the component of type '${type}' from the component '${this.getComponentName()}'`
         );
       }
 
@@ -838,38 +853,95 @@ export const ComponentMixin = (Base = Object) => {
       return isComponentClassType ? component : component.prototype;
     }
 
-    // === Related components ===
+    // --- Component provision ---
 
-    static getRelatedComponent(name: string) {
+    static getProvidedComponent(name: string) {
       assertIsComponentName(name);
 
-      const relatedComponents = this.__getRelatedComponents();
+      const providedComponents = this.__getProvidedComponents();
 
-      let relatedComponent = relatedComponents[name];
+      let providedComponent = providedComponents[name];
 
-      if (relatedComponent === undefined) {
+      if (providedComponent === undefined) {
         return undefined;
       }
 
-      if (!hasOwnProperty(relatedComponents, name)) {
-        // Since the component has been forked, the related component must be forked as well
-        relatedComponent = relatedComponent.fork();
-        relatedComponents[name] = relatedComponent;
+      if (!hasOwnProperty(providedComponents, name)) {
+        // Since the host component has been forked, the provided component must be forked as well
+        providedComponent = providedComponent.fork({_newComponentProvider: this});
+        providedComponents[name] = providedComponent;
       }
 
-      return relatedComponent;
+      return providedComponent;
     }
 
-    static registerRelatedComponent(relatedComponent: typeof Component) {
-      assertIsComponentClass(relatedComponent);
+    static provideComponent(component: typeof Component) {
+      assertIsComponentClass(component);
 
-      const relatedComponents = this.__getRelatedComponents();
-      const componentName = relatedComponent.getComponentName();
-      relatedComponents[componentName] = relatedComponent;
+      const providedComponents = this.__getProvidedComponents();
+
+      const existingProvider = component.__getComponentProvider();
+
+      if (existingProvider !== undefined) {
+        if (existingProvider === this) {
+          return;
+        }
+
+        throw new Error(
+          `Cannot provide a component that is already provided by another component${composeDescription(
+            [
+              component.describeComponent(),
+              existingProvider.describeComponent({componentPrefix: 'existing provider'}),
+              this.describeComponent({componentPrefix: 'requested provider'})
+            ]
+          )}`
+        );
+      }
+
+      const componentName = component.getComponentName();
+
+      const existingComponent = providedComponents[componentName];
+
+      if (existingComponent !== undefined && !component.isForkOf(existingComponent)) {
+        throw new Error(
+          `A component with the same name is already provided${composeDescription([
+            existingComponent.describeComponent(),
+            this.describeComponent({componentPrefix: 'provider'})
+          ])}`
+        );
+      }
+
+      if (componentName in this) {
+        const existingPropertyValue = (this as any)[componentName];
+
+        if (
+          existingPropertyValue !== undefined &&
+          !(
+            isComponentClass(existingPropertyValue) &&
+            existingPropertyValue.getComponentName() === component.getComponentName()
+          )
+        ) {
+          throw new Error(
+            `Cannot provide a component with a name conflicting with an existing property (${this.describeComponent()}, property: '${componentName}')`
+          );
+        }
+      }
+
+      component.__setComponentProvider(this);
+      providedComponents[componentName] = component;
+
+      Object.defineProperty(this, componentName, {
+        get<T extends typeof Component>(this: T) {
+          return this.getProvidedComponent(componentName);
+        },
+        set<T extends typeof Component>(this: T, component: typeof Component) {
+          this.provideComponent(component);
+        }
+      });
     }
 
-    static getRelatedComponents(
-      options: {filter?: (relatedComponent: typeof Component) => boolean} = {}
+    static getProvidedComponents(
+      options: {filter?: (providedComponent: typeof Component) => boolean} = {}
     ) {
       const {filter} = options;
 
@@ -877,33 +949,125 @@ export const ComponentMixin = (Base = Object) => {
 
       return {
         *[Symbol.iterator]() {
-          for (const name in component.__getRelatedComponents()) {
-            const relatedComponent = component.getRelatedComponent(name)!;
+          for (const name in component.__getProvidedComponents()) {
+            const providedComponent = component.getProvidedComponent(name)!;
 
-            if (filter !== undefined && !filter(relatedComponent)) {
+            if (filter !== undefined && !filter(providedComponent)) {
               continue;
             }
 
-            yield relatedComponent;
+            yield providedComponent;
           }
         }
       };
     }
 
-    static __relatedComponents: {[name: string]: typeof Component};
+    static __componentProvider?: typeof Component;
 
-    static __getRelatedComponents() {
-      if (this.__relatedComponents === undefined) {
-        Object.defineProperty(this, '__relatedComponents', {
+    static __getComponentProvider() {
+      return hasOwnProperty(this, '__componentProvider') ? this.__componentProvider : undefined;
+    }
+
+    static __setComponentProvider(componentProvider: typeof Component) {
+      this.__componentProvider = componentProvider;
+    }
+
+    static __providedComponents: {[name: string]: typeof Component};
+
+    static __getProvidedComponents() {
+      if (this.__providedComponents === undefined) {
+        Object.defineProperty(this, '__providedComponents', {
           value: Object.create(null)
         });
-      } else if (!hasOwnProperty(this, '__relatedComponents')) {
-        Object.defineProperty(this, '__relatedComponents', {
-          value: Object.create(this.__relatedComponents)
+      } else if (!hasOwnProperty(this, '__providedComponents')) {
+        Object.defineProperty(this, '__providedComponents', {
+          value: Object.create(this.__providedComponents)
         });
       }
 
-      return this.__relatedComponents;
+      return this.__providedComponents;
+    }
+
+    // --- Component consumption ---
+
+    static getConsumedComponent(name: string) {
+      assertIsComponentName(name);
+
+      const consumedComponents = this.__getConsumedComponents();
+
+      if (!consumedComponents.has(name)) {
+        return undefined;
+      }
+
+      const componentProvider = this.__getComponentProvider();
+
+      if (componentProvider === undefined) {
+        return undefined;
+      }
+
+      return componentProvider.__getComponent(name);
+    }
+
+    static consumeComponent(name: string) {
+      assertIsComponentName(name);
+
+      const consumedComponents = this.__getConsumedComponents(true);
+
+      if (consumedComponents.has(name)) {
+        return;
+      }
+
+      if (name in this) {
+        throw new Error(
+          `Cannot consume a component with a name conflicting with an existing property (${this.describeComponent()}, property: '${name}')`
+        );
+      }
+
+      consumedComponents.add(name);
+
+      Object.defineProperty(this, name, {
+        get<T extends typeof Component>(this: T) {
+          return this.getConsumedComponent(name);
+        }
+      });
+    }
+
+    static getConsumedComponents(
+      options: {filter?: (consumedComponent: typeof Component) => boolean} = {}
+    ) {
+      const {filter} = options;
+
+      const component = this;
+
+      return {
+        *[Symbol.iterator]() {
+          for (const name of component.__getConsumedComponents()) {
+            const consumedComponent = component.getConsumedComponent(name)!;
+
+            if (filter !== undefined && !filter(consumedComponent)) {
+              continue;
+            }
+
+            yield consumedComponent;
+          }
+        }
+      };
+    }
+
+    static __consumedComponents: Set<string>;
+
+    static __getConsumedComponents(autoFork = false) {
+      if (this.__consumedComponents === undefined) {
+        Object.defineProperty(this, '__consumedComponents', {
+          value: new Set()
+        });
+      } else if (autoFork && !hasOwnProperty(this, '__consumedComponents')) {
+        Object.defineProperty(this, '__consumedComponents', {
+          value: new Set(this.__consumedComponents)
+        });
+      }
+
+      return this.__consumedComponents;
     }
 
     // === Cloning ===
@@ -918,7 +1082,10 @@ export const ComponentMixin = (Base = Object) => {
     //   const clonedComponent = component.clone();
     // }
 
-    clone<T extends Component>(this: T, options: CloneOptions = {}) {
+    clone<
+      T extends Component,
+      R = ReturnType<T['initialize']> extends PromiseLike<void> ? PromiseLike<T> : T
+    >(this: T, options: CloneOptions = {}): R {
       const attributes: PlainObject = {};
 
       for (const attribute of this.getAttributes({setAttributesOnly: true})) {
@@ -939,7 +1106,7 @@ export const ComponentMixin = (Base = Object) => {
       );
 
       if (clonedComponent === this) {
-        return this;
+        return (this as unknown) as R;
       }
 
       clonedComponent.__cloneAttributes(otherAttributes, options);
@@ -964,13 +1131,30 @@ export const ComponentMixin = (Base = Object) => {
     //   const ForkedComponent = Component.fork();
     // }
 
-    static fork<T extends typeof Component>(this: T) {
+    static fork<T extends typeof Component>(
+      this: T,
+      options: {_newComponentProvider?: typeof Component} = {}
+    ) {
+      const {_newComponentProvider} = options;
+
+      const existingComponentProvider = this.__getComponentProvider();
+
+      if (existingComponentProvider !== undefined && _newComponentProvider === undefined) {
+        throw new Error(
+          `Cannot fork a component class which is provided by another component; please consider forking the component root instead (${this.describeComponent()})`
+        );
+      }
+
       const name = this.getComponentName();
 
       // Use a little trick to make sure the generated subclass
       // has the 'name' attribute set properly
       // @ts-ignore
       const {[name]: forkedComponent} = {[name]: class extends this {}};
+
+      if (_newComponentProvider !== undefined) {
+        forkedComponent.__setComponentProvider(_newComponentProvider);
+      }
 
       return forkedComponent as T;
     }
@@ -1054,7 +1238,11 @@ export const ComponentMixin = (Base = Object) => {
 
     // === Merging ===
 
-    static merge(forkedComponent: typeof Component, options: MergeOptions = {}) {
+    static merge<T extends typeof Component>(
+      this: T,
+      forkedComponent: typeof Component,
+      options: MergeOptions = {}
+    ) {
       assertIsComponentClass(forkedComponent);
 
       if (!isPrototypeOf(this, forkedComponent)) {
@@ -1167,8 +1355,8 @@ export const ComponentMixin = (Base = Object) => {
 
       if (returnComponentReferences) {
         if (referencedComponents !== undefined) {
-          for (const RelatedComponent of this.getRelatedComponents()) {
-            referencedComponents.add(RelatedComponent);
+          for (const providedComponent of this.getProvidedComponents()) {
+            referencedComponents.add(providedComponent);
           }
 
           referencedComponents.add(this);
@@ -1204,9 +1392,9 @@ export const ComponentMixin = (Base = Object) => {
       }
 
       if (returnComponentReferences && referencedComponents !== undefined) {
-        for (const relatedComponent of (this
-          .constructor as typeof Component).getRelatedComponents()) {
-          referencedComponents.add(relatedComponent);
+        for (const providedComponent of (this
+          .constructor as typeof Component).getProvidedComponents()) {
+          referencedComponents.add(providedComponent);
         }
 
         referencedComponents.add(this.constructor as typeof Component);

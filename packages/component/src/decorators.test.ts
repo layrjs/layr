@@ -1,16 +1,16 @@
 import {Component} from './component';
 import {isAttributeInstance} from './attribute';
-import {attribute} from './decorators';
+import {isMethodInstance} from './method';
+import {attribute, method, provide, consume} from './decorators';
 
 describe('Decorators', () => {
   test('@attribute()', async () => {
-    // TODO: Improve @attribute developer experience
     class Movie extends Component {
-      @attribute({value: 100}) static limit: number;
-      @attribute({value: undefined}) static token?: string;
+      @attribute() static limit = 100;
+      @attribute() static token?: string;
 
-      @attribute({default: ''}) title!: string;
-      @attribute({default: undefined}) country?: string;
+      @attribute() title = '';
+      @attribute() country?: string;
     }
 
     let attr = Movie.getAttribute('limit');
@@ -28,20 +28,6 @@ describe('Decorators', () => {
     expect(attr.getParent()).toBe(Movie);
     expect(attr.getValue()).toBeUndefined();
     expect(Movie.token).toBeUndefined();
-
-    attr = Movie.prototype.getAttribute('title');
-
-    expect(isAttributeInstance(attr)).toBe(true);
-    expect(attr.getName()).toBe('title');
-    expect(attr.getParent()).toBe(Movie.prototype);
-    expect(attr.isSet()).toBe(false);
-
-    attr = Movie.prototype.getAttribute('country');
-
-    expect(isAttributeInstance(attr)).toBe(true);
-    expect(attr.getName()).toBe('country');
-    expect(attr.getParent()).toBe(Movie.prototype);
-    expect(attr.isSet()).toBe(false);
 
     const movie = new Movie();
 
@@ -67,11 +53,11 @@ describe('Decorators', () => {
     );
 
     class Film extends Movie {
-      @attribute({value: undefined}) static limit: number;
-      @attribute({value: ''}) static token?: string;
+      @attribute() static limit: number;
+      @attribute() static token = '';
 
-      @attribute({default: undefined}) title!: string;
-      @attribute({default: ''}) country?: string;
+      @attribute() title!: string;
+      @attribute() country = '';
     }
 
     attr = Film.getAttribute('limit');
@@ -79,8 +65,8 @@ describe('Decorators', () => {
     expect(isAttributeInstance(attr)).toBe(true);
     expect(attr.getName()).toBe('limit');
     expect(attr.getParent()).toBe(Film);
-    expect(attr.getValue()).toBeUndefined();
-    expect(Film.limit).toBeUndefined();
+    expect(attr.getValue()).toBe(100);
+    expect(Film.limit).toBe(100);
 
     attr = Film.getAttribute('token');
 
@@ -90,20 +76,6 @@ describe('Decorators', () => {
     expect(attr.getValue()).toBe('');
     expect(Film.token).toBe('');
 
-    attr = Film.prototype.getAttribute('title');
-
-    expect(isAttributeInstance(attr)).toBe(true);
-    expect(attr.getName()).toBe('title');
-    expect(attr.getParent()).toBe(Film.prototype);
-    expect(attr.isSet()).toBe(false);
-
-    attr = Film.prototype.getAttribute('country');
-
-    expect(isAttributeInstance(attr)).toBe(true);
-    expect(attr.getName()).toBe('country');
-    expect(attr.getParent()).toBe(Film.prototype);
-    expect(attr.isSet()).toBe(false);
-
     const film = new Film();
 
     attr = film.getAttribute('title');
@@ -111,8 +83,8 @@ describe('Decorators', () => {
     expect(isAttributeInstance(attr)).toBe(true);
     expect(attr.getName()).toBe('title');
     expect(attr.getParent()).toBe(film);
-    expect(attr.getValue()).toBeUndefined();
-    expect(film.title).toBeUndefined();
+    expect(attr.getValue()).toBe('');
+    expect(film.title).toBe('');
 
     attr = film.getAttribute('country');
 
@@ -123,47 +95,151 @@ describe('Decorators', () => {
     expect(film.country).toBe('');
   });
 
-  // test('@method()', async () => {
-  //   class Movie extends Component {
-  //     @method() static find() {}
+  test('@method()', async () => {
+    class Movie extends Component {
+      @method() static find() {}
 
-  //     @method() load() {}
-  //   }
+      @method() load() {}
+    }
 
-  //   expect(typeof Movie.find).toBe('function');
+    expect(typeof Movie.find).toBe('function');
 
-  //   const movie = new Movie();
+    const movie = new Movie();
 
-  //   expect(typeof movie.load).toBe('function');
+    expect(typeof movie.load).toBe('function');
 
-  //   const classMethod = Movie.getMethod('find');
+    let meth = Movie.getMethod('find');
 
-  //   expect(isMethod(classMethod)).toBe(true);
-  //   expect(classMethod.getName()).toBe('find');
-  //   expect(classMethod.getParent()).toBe(Movie);
+    expect(isMethodInstance(meth)).toBe(true);
+    expect(meth.getName()).toBe('find');
+    expect(meth.getParent()).toBe(Movie);
 
-  //   const prototypeMethod = Movie.prototype.getMethod('load');
+    meth = movie.getMethod('load');
 
-  //   expect(isMethod(prototypeMethod)).toBe(true);
-  //   expect(prototypeMethod.getName()).toBe('load');
-  //   expect(prototypeMethod.getParent()).toBe(Movie.prototype);
+    expect(isMethodInstance(meth)).toBe(true);
+    expect(meth.getName()).toBe('load');
+    expect(meth.getParent()).toBe(movie);
 
-  //   const instanceMethod = movie.getMethod('load');
+    expect(Movie.hasMethod('delete')).toBe(false);
+    expect(() => Movie.getMethod('delete')).toThrow(
+      "The method 'delete' is missing (component: 'Movie')"
+    );
+  });
 
-  //   expect(isMethod(instanceMethod)).toBe(true);
-  //   expect(instanceMethod.getName()).toBe('load');
-  //   expect(instanceMethod.getParent()).toBe(movie);
+  test('@provide()', async () => {
+    class Movie extends Component {}
 
-  //   expect(() => Movie.getMethod('delete')).toThrow("The property 'delete' is missing");
-  //   expect(Movie.getMethod('delete', {throwIfMissing: false})).toBeUndefined();
+    class Backend extends Component {
+      @provide() static Movie = Movie;
+    }
 
-  //   expect(
-  //     () =>
-  //       class Film extends Movie {
-  //         @method() static find;
-  //       }
-  //   ).toThrow("@method() cannot be used without a method declaration (property name: 'find')");
-  // });
+    expect(Backend.getProvidedComponent('Movie')).toBe(Movie);
+
+    ((Backend, BackendMovie) => {
+      class Movie extends BackendMovie {}
+
+      class Frontend extends Backend {
+        @provide() static Movie = Movie;
+      }
+
+      expect(Frontend.getProvidedComponent('Movie')).toBe(Movie);
+    })(Backend, Movie);
+
+    // The backend should not be affected by the frontend
+    expect(Backend.getProvidedComponent('Movie')).toBe(Movie);
+
+    expect(() => {
+      class Movie extends Component {}
+
+      class Backend extends Component {
+        // @ts-ignore
+        @provide() Movie = Movie;
+      }
+
+      return Backend;
+    }).toThrow(
+      "@provide() must be used inside a component class with as static attribute declaration (attribute: 'Movie')"
+    );
+
+    expect(() => {
+      class Movie {}
+
+      class Backend extends Component {
+        @provide() static Movie = Movie;
+      }
+
+      return Backend;
+    }).toThrow(
+      "@provide() must be used with an attribute declaration specifying a component class (attribute: 'Movie')"
+    );
+  });
+
+  test('@consume()', async () => {
+    class Movie extends Component {
+      @consume() static Director: typeof Director;
+    }
+
+    class Director extends Component {
+      @consume() static Movie: typeof Movie;
+    }
+
+    class Backend extends Component {
+      @provide() static Movie = Movie;
+      @provide() static Director = Director;
+    }
+
+    expect(Movie.getConsumedComponent('Director')).toBe(Director);
+    expect(Director.getConsumedComponent('Movie')).toBe(Movie);
+
+    ((Backend, BackendMovie, BackendDirector) => {
+      class Movie extends BackendMovie {
+        @consume() static Director: typeof Director;
+      }
+
+      class Director extends BackendDirector {
+        @consume() static Movie: typeof Movie;
+      }
+
+      class Frontend extends Backend {
+        @provide() static Movie = Movie;
+        @provide() static Director = Director;
+      }
+
+      expect(Movie.getConsumedComponent('Director')).toBe(Director);
+      expect(Director.getConsumedComponent('Movie')).toBe(Movie);
+
+      return Frontend;
+    })(Backend, Movie, Director);
+
+    // The backend should not be affected by the frontend
+    expect(Movie.getConsumedComponent('Director')).toBe(Director);
+    expect(Director.getConsumedComponent('Movie')).toBe(Movie);
+
+    expect(() => {
+      class Movie extends Component {
+        // @ts-ignore
+        @consume() Director: typeof Director;
+      }
+
+      class Director extends Component {}
+
+      return Movie;
+    }).toThrow(
+      "@consume() must be used inside a component class with as static attribute declaration (attribute: 'Director')"
+    );
+
+    expect(() => {
+      class Director extends Component {}
+
+      class Movie extends Component {
+        @consume() static Director = Director;
+      }
+
+      return Movie;
+    }).toThrow(
+      "@consume() must be used with an attribute declaration which doesn't specify any value (attribute: 'Director')"
+    );
+  });
 
   // test('@expose() used with an attribute or a method declaration', async () => {
   //   class Movie extends Component {

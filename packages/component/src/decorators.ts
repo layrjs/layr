@@ -1,9 +1,9 @@
-// import {getInheritedPropertyDescriptor} from 'core-helpers';
+import {hasOwnProperty} from 'core-helpers';
 
 import type {Component} from './component';
 import {Attribute, AttributeOptions} from './attribute';
-// import {Method} from './method';
-import {isComponentClassOrInstance} from './utilities';
+import {Method, MethodOptions} from './method';
+import {isComponentClassOrInstance, isComponentClass} from './utilities';
 
 // export function property(options = {}) {
 //   ow(options, 'options', ow.object);
@@ -30,51 +30,83 @@ import {isComponentClassOrInstance} from './utilities';
 export function attribute(options: AttributeOptions = {}) {
   return function (target: typeof Component | Component, name: string) {
     if (!isComponentClassOrInstance(target)) {
-      throw new Error(
-        `@attribute() target doesn't inherit from Component (property name: '${name}')`
-      );
+      throw new Error(`@attribute() must be used inside a component class (property: '${name}')`);
+    }
+
+    if (isComponentClass(target)) {
+      if (
+        target.hasAttribute(name) &&
+        target.getAttribute(name, {autoFork: false}).getParent() === target
+      ) {
+        // If the attribute already exists in the target, it means it was forked from
+        // the parent class as a side effect of the attribute declaration
+        // In this case, the new value should have already been set and there is nothing more to do
+      } else {
+        // It is a new attribute or the attribute declaration didn't specify an initial value
+        const initialValue = (target as any)[name];
+        options = {value: initialValue, ...options};
+      }
     }
 
     target.setProperty(name, Attribute, options);
   };
 }
 
-// export function method(options = {}) {
-//   ow(options, 'options', ow.object);
+export function method(options: MethodOptions = {}) {
+  return function (
+    target: typeof Component | Component,
+    name: string,
+    descriptor: PropertyDescriptor
+  ) {
+    if (!isComponentClassOrInstance(target)) {
+      throw new Error(`@method() must be used inside a component class (property: '${name}')`);
+    }
 
-//   return function (target, name, descriptor) {
-//     ow(target, 'target', ow.object);
-//     ow(name, 'name', ow.string.nonEmpty);
-//     ow(descriptor, 'descriptor', ow.object);
+    if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
+      throw new Error(`@method() must be used with a method declaration (property: '${name}')`);
+    }
 
-//     if (!isWithProperties(target)) {
-//       throw new Error(
-//         `@method() target doesn't inherit from WithProperties (property name: '${name}')`
-//       );
-//     }
+    target.setProperty(name, Method, options);
+  };
+}
 
-//     return _decorateMethod({target, name, descriptor, MethodClass: Method, options});
-//   };
-// }
+export function provide() {
+  return function (target: typeof Component, name: string) {
+    if (!isComponentClass(target)) {
+      throw new Error(
+        `@provide() must be used inside a component class with as static attribute declaration (attribute: '${name}')`
+      );
+    }
 
-// export function _decorateMethod({
-//   target,
-//   name,
-//   descriptor,
-//   MethodClass,
-//   decoratorName = 'method',
-//   options
-// }) {
-//   if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
-//     throw new Error(
-//       `@${decoratorName}() cannot be used without a method declaration (property name: '${name}')`
-//     );
-//   }
+    const component = (target as any)[name];
 
-//   target.setProperty(name, MethodClass, options);
+    if (!isComponentClass(component)) {
+      throw new Error(
+        `@provide() must be used with an attribute declaration specifying a component class (attribute: '${name}')`
+      );
+    }
 
-//   return {...descriptor, __decoratedBy: '@method()'};
-// }
+    target.provideComponent(component);
+  };
+}
+
+export function consume() {
+  return function (target: typeof Component, name: string) {
+    if (!isComponentClass(target)) {
+      throw new Error(
+        `@consume() must be used inside a component class with as static attribute declaration (attribute: '${name}')`
+      );
+    }
+
+    if (hasOwnProperty(target, name)) {
+      throw new Error(
+        `@consume() must be used with an attribute declaration which doesn't specify any value (attribute: '${name}')`
+      );
+    }
+
+    target.consumeComponent(name);
+  };
+}
 
 // export function inherit() {
 //   return function (target, name, descriptor) {
