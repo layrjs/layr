@@ -912,15 +912,10 @@ export const ComponentMixin = (Base = Object) => {
       }
 
       if (componentName in this) {
-        const existingPropertyValue = (this as any)[componentName];
+        const descriptor = Object.getOwnPropertyDescriptor(this, componentName);
+        const value = descriptor?.value;
 
-        if (
-          existingPropertyValue !== undefined &&
-          !(
-            isComponentClass(existingPropertyValue) &&
-            existingPropertyValue.getComponentName() === component.getComponentName()
-          )
-        ) {
+        if (!(isComponentClass(value) && (value === component || value.isForkOf(component)))) {
           throw new Error(
             `Cannot provide a component with a name conflicting with an existing property (${this.describeComponent()}, property: '${componentName}')`
           );
@@ -935,7 +930,13 @@ export const ComponentMixin = (Base = Object) => {
           return this.getProvidedComponent(componentName);
         },
         set<T extends typeof Component>(this: T, component: typeof Component) {
-          this.provideComponent(component);
+          // Set the value temporarily so @provide() can get it
+          Object.defineProperty(this, componentName, {
+            value: component,
+            configurable: true,
+            enumerable: true,
+            writable: true
+          });
         }
       });
     }
@@ -1028,6 +1029,11 @@ export const ComponentMixin = (Base = Object) => {
       Object.defineProperty(this, name, {
         get<T extends typeof Component>(this: T) {
           return this.getConsumedComponent(name);
+        },
+        set<T extends typeof Component>(this: T, _value: never) {
+          throw new Error(
+            `A consumed component accessor may not be set (${this.describeComponent()}, property: '${name}')`
+          );
         }
       });
     }

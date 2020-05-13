@@ -1,20 +1,19 @@
-import {Layer} from '@liaison/layer';
-
-import {Component, attribute} from '../../..';
+import {Component} from './component';
+import {attribute} from './decorators';
 
 describe('Forking', () => {
   test('Simple component', async () => {
     class Movie extends Component {
       @attribute() static limit = 100;
 
-      @attribute() title;
-      @attribute() tags;
-      @attribute() specs;
+      @attribute() title!: string;
+      @attribute() tags!: string[];
+      @attribute() specs!: {duration?: number};
     }
 
     const ForkedMovie = Movie.fork();
 
-    expect(ForkedMovie.getComponentName()).toBe('Movie');
+    expect(ForkedMovie.getComponentType()).toBe('typeof Movie');
     expect(ForkedMovie.limit).toBe(100);
 
     expect(ForkedMovie.isForkOf(Movie)).toBe(true);
@@ -26,9 +25,10 @@ describe('Forking', () => {
     expect(ForkedMovie.limit).toBe(500);
     expect(Movie.limit).toBe(100);
 
-    expect(() => Movie.getGhost()).toThrow(
-      "Cannot get the ghost of a component class that is not registered into a layer (component name: 'Movie')"
-    );
+    // TODO
+    // expect(() => Movie.getGhost()).toThrow(
+    //   "Cannot get the ghost of a component class that is not registered into a layer (component name: 'Movie')"
+    // );
 
     const movie = new Movie({title: 'Inception', tags: ['drama'], specs: {duration: 120}});
 
@@ -40,7 +40,7 @@ describe('Forking', () => {
     expect(forkedMovie).toBeInstanceOf(Component);
     expect(forkedMovie).toBeInstanceOf(Movie);
 
-    expect(forkedMovie.getComponentName()).toBe('movie');
+    expect(forkedMovie.getComponentType()).toBe('Movie');
     expect(forkedMovie.title).toBe('Inception');
     expect(forkedMovie.tags).toEqual(['drama']);
     expect(forkedMovie.specs).toEqual({duration: 120});
@@ -66,39 +66,39 @@ describe('Forking', () => {
     expect(forkedMovie).toBeInstanceOf(Movie);
     expect(forkedMovie).toBeInstanceOf(ForkedMovie);
 
-    expect(() => movie.getGhost()).toThrow(
-      "Cannot get the ghost of a component that is not managed by an entity manager (component name: 'movie')"
-    );
+    // TODO
+    // expect(() => movie.getGhost()).toThrow(
+    //   "Cannot get the ghost of a component that is not managed by an entity manager (component name: 'movie')"
+    // );
   });
 
-  test('Component registered into a layer', async () => {
-    class Movie extends Component {}
+  // TODO
+  // test('Component registered into a layer', async () => {
+  //   class Movie extends Component {}
 
-    const layer = new Layer([Movie]);
+  //   const layer = new Layer([Movie]);
 
-    const GhostMovie = Movie.getGhost();
+  //   const GhostMovie = Movie.getGhost();
 
-    expect(GhostMovie.isForkOf(Movie)).toBe(true);
+  //   expect(GhostMovie.isForkOf(Movie)).toBe(true);
 
-    const OtherGhostMovie = Movie.getGhost();
+  //   const OtherGhostMovie = Movie.getGhost();
 
-    expect(OtherGhostMovie).toBe(GhostMovie);
+  //   expect(OtherGhostMovie).toBe(GhostMovie);
 
-    const ghostLayer = layer.getGhost();
+  //   const ghostLayer = layer.getGhost();
 
-    expect(ghostLayer.Movie).toBe(GhostMovie);
-  });
+  //   expect(ghostLayer.Movie).toBe(GhostMovie);
+  // });
 
   test('Nested component', async () => {
     class Movie extends Component {
-      @attribute() director;
+      @attribute() director!: Director;
     }
 
     class Director extends Component {
-      @attribute() name;
+      @attribute() name!: string;
     }
-
-    Movie.registerRelatedComponent(Director);
 
     const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
 

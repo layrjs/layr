@@ -78,7 +78,8 @@ export function provide() {
       );
     }
 
-    const component = (target as any)[name];
+    const descriptor = Object.getOwnPropertyDescriptor(target, name);
+    const component = descriptor?.value;
 
     if (!isComponentClass(component)) {
       throw new Error(
