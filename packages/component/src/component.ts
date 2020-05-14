@@ -963,6 +963,28 @@ export const ComponentMixin = (Base = Object) => {
       };
     }
 
+    static getComponentProvider() {
+      const componentName = this.getComponentName();
+
+      let currentComponent = this;
+
+      while (true) {
+        const componentProvider = currentComponent.__getComponentProvider();
+
+        if (componentProvider === undefined) {
+          return currentComponent;
+        }
+
+        const providedComponent = componentProvider.getProvidedComponent(componentName);
+
+        if (providedComponent !== undefined) {
+          return componentProvider;
+        }
+
+        currentComponent = componentProvider;
+      }
+    }
+
     static __componentProvider?: typeof Component;
 
     static __getComponentProvider() {
@@ -970,7 +992,7 @@ export const ComponentMixin = (Base = Object) => {
     }
 
     static __setComponentProvider(componentProvider: typeof Component) {
-      this.__componentProvider = componentProvider;
+      Object.defineProperty(this, '__componentProvider', {value: componentProvider});
     }
 
     static __providedComponents: {[name: string]: typeof Component};
@@ -1216,30 +1238,31 @@ export const ComponentMixin = (Base = Object) => {
       return instance.constructor === this || isPrototypeOf(this, instance.constructor);
     }
 
-    // static getGhost() {
-    //   const layer = this.getLayer({throwIfMissing: false});
+    static __ghost: typeof Component;
 
-    //   if (layer === undefined) {
-    //     throw new Error(
-    //       `Cannot get the ghost of ${this.describeComponentType()} class that is not registered into a layer (${this.describeComponent()})`
-    //     );
-    //   }
+    static getGhost<T extends typeof Component>(this: T) {
+      let ghost = this.__ghost;
 
-    //   return this.layer.getGhost().getComponent(this.getComponentName());
-    // }
+      if (ghost === undefined) {
+        const componentProvider = this.getComponentProvider();
 
-    // static get ghost() {
-    //   return this.getGhost();
-    // }
+        if (componentProvider === this) {
+          ghost = this.fork();
+        } else {
+          ghost = componentProvider.getGhost().getComponent(this.getComponentName());
+        }
 
+        Object.defineProperty(this, '__ghost', {value: ghost});
+      }
+
+      return ghost as T;
+    }
+
+    // TODO
     // getGhost() {
     //   throw new Error(
     //     `Cannot get the ghost of a component that is not managed by an entity manager (${this.describeComponent()})`
     //   );
-    // }
-
-    // get ghost() {
-    //   return this.getGhost();
     // }
 
     // === Merging ===
@@ -1302,7 +1325,7 @@ export const ComponentMixin = (Base = Object) => {
     // === Detachment ===
 
     // static detach() {
-    //   this.__isDetached = true;
+    //   this.__isDetached = true; // TODO: Use Object.defineProperty()
     //   return this;
     // }
 
@@ -1757,7 +1780,7 @@ export const ComponentMixin = (Base = Object) => {
     // }
 
     // static __setRemoteComponent(RemoteComponent) {
-    //   this.__RemoteComponent = RemoteComponent;
+    //   this.__RemoteComponent = RemoteComponent; // TODO: Use Object.defineProperty()
     // }
 
     // getRemoteComponent() {

@@ -1,5 +1,5 @@
 import {Component} from './component';
-import {attribute} from './decorators';
+import {attribute, provide} from './decorators';
 
 describe('Forking', () => {
   test('Simple component', async () => {
@@ -25,10 +25,11 @@ describe('Forking', () => {
     expect(ForkedMovie.limit).toBe(500);
     expect(Movie.limit).toBe(100);
 
-    // TODO
-    // expect(() => Movie.getGhost()).toThrow(
-    //   "Cannot get the ghost of a component class that is not registered into a layer (component name: 'Movie')"
-    // );
+    const GhostMovie = Movie.getGhost();
+    const SameGhostMovie = Movie.getGhost();
+
+    expect(GhostMovie.isForkOf(Movie)).toBe(true);
+    expect(SameGhostMovie).toBe(GhostMovie);
 
     const movie = new Movie({title: 'Inception', tags: ['drama'], specs: {duration: 120}});
 
@@ -72,24 +73,38 @@ describe('Forking', () => {
     // );
   });
 
-  // TODO
-  // test('Component registered into a layer', async () => {
-  //   class Movie extends Component {}
+  test('Component provision', async () => {
+    class MovieDetails extends Component {}
 
-  //   const layer = new Layer([Movie]);
+    class Movie extends Component {
+      @provide() static MovieDetails = MovieDetails;
+    }
 
-  //   const GhostMovie = Movie.getGhost();
+    class App extends Component {
+      @provide() static Movie = Movie;
+    }
 
-  //   expect(GhostMovie.isForkOf(Movie)).toBe(true);
+    const GhostApp = App.getGhost();
+    const SameGhostApp = App.getGhost();
 
-  //   const OtherGhostMovie = Movie.getGhost();
+    expect(GhostApp.isForkOf(App)).toBe(true);
+    expect(SameGhostApp).toBe(GhostApp);
 
-  //   expect(OtherGhostMovie).toBe(GhostMovie);
+    const GhostMovie = Movie.getGhost();
+    const SameGhostMovie = Movie.getGhost();
 
-  //   const ghostLayer = layer.getGhost();
+    expect(GhostMovie.isForkOf(Movie)).toBe(true);
+    expect(SameGhostMovie).toBe(GhostMovie);
+    expect(GhostApp.Movie).toBe(GhostMovie);
 
-  //   expect(ghostLayer.Movie).toBe(GhostMovie);
-  // });
+    const GhostMovieDetails = MovieDetails.getGhost();
+    const SameGhostMovieDetails = MovieDetails.getGhost();
+
+    expect(GhostMovieDetails.isForkOf(MovieDetails)).toBe(true);
+    expect(SameGhostMovieDetails).toBe(GhostMovieDetails);
+    expect(GhostMovie.MovieDetails).toBe(GhostMovieDetails);
+    expect(GhostApp.Movie.MovieDetails).toBe(GhostMovieDetails);
+  });
 
   test('Nested component', async () => {
     class Movie extends Component {

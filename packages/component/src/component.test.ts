@@ -909,6 +909,10 @@ describe('Component', () => {
       expect(Movie.getProvidedComponent('Actor')).toBeUndefined();
       expect(Movie.getProvidedComponent('Producer')).toBeUndefined();
 
+      expect(Movie.getComponentProvider()).toBe(Movie);
+      expect(Director.getComponentProvider()).toBe(Director);
+      expect(Actor.getComponentProvider()).toBe(Actor);
+
       Movie.provideComponent(Director);
       Movie.provideComponent(Actor);
 
@@ -934,10 +938,13 @@ describe('Component', () => {
 
       expect(Array.from(Movie.getProvidedComponents())).toEqual([Director, Actor]);
 
+      expect(Movie.getComponentProvider()).toBe(Movie);
+      expect(Director.getComponentProvider()).toBe(Movie);
+      expect(Actor.getComponentProvider()).toBe(Movie);
+
       const ForkedMovie = Movie.fork();
 
       const ForkedDirector = ForkedMovie.Director;
-      return;
 
       expect(ForkedDirector?.isForkOf(Director)).toBe(true);
       expect(ForkedDirector).not.toBe(Director);
@@ -945,6 +952,8 @@ describe('Component', () => {
       const SameForkedDirector = ForkedMovie.Director;
 
       expect(SameForkedDirector).toBe(ForkedDirector);
+
+      expect(ForkedDirector.getComponentProvider()).toBe(ForkedMovie);
 
       class Film extends Component {}
 
@@ -989,6 +998,9 @@ describe('Component', () => {
       expect(Director.getConsumedComponent('Movie')).toBeUndefined();
       expect(Movie.getConsumedComponent('Producer')).toBeUndefined();
 
+      expect(Movie.getComponentProvider()).toBe(App);
+      expect(Director.getComponentProvider()).toBe(App);
+
       Movie.consumeComponent('Director');
       Director.consumeComponent('Movie');
 
@@ -1030,6 +1042,9 @@ describe('Component', () => {
 
       expect(ForkedMovie.Director).toBe(ForkedDirector);
       expect(ForkedDirector.Movie).toBe(ForkedMovie);
+
+      expect(ForkedMovie.getComponentProvider()).toBe(ForkedApp);
+      expect(ForkedDirector.getComponentProvider()).toBe(ForkedApp);
 
       (Movie as any).Producer = Producer;
 
