@@ -39,8 +39,7 @@ import {
   getComponentNameFromComponentInstanceType,
   assertIsComponentType,
   getComponentClassTypeFromComponentName,
-  getComponentInstanceTypeFromComponentName,
-  composeDescription
+  getComponentInstanceTypeFromComponentName
 } from './utilities';
 
 export type ComponentGetter = (name: string) => typeof Component | Component;
@@ -221,6 +220,25 @@ export const ComponentMixin = (Base = Object) => {
       assertIsComponentName(name);
 
       Object.defineProperty(this, 'name', {value: name});
+    }
+
+    static getComponentPath() {
+      let path: string[] = [];
+      let currentComponent = this;
+
+      while (true) {
+        path.unshift(currentComponent.getComponentName());
+
+        const componentProvider = currentComponent.getComponentProvider();
+
+        if (componentProvider === currentComponent) {
+          break;
+        }
+
+        currentComponent = componentProvider;
+      }
+
+      return path.join('.');
     }
 
     // === Typing ===
@@ -788,7 +806,7 @@ export const ComponentMixin = (Base = Object) => {
 
       if (component === undefined) {
         throw new Error(
-          `Cannot get the component '${name}' from the component '${this.getComponentName()}'`
+          `Cannot get the component '${name}' from the component '${this.getComponentPath()}'`
         );
       }
 
@@ -826,7 +844,7 @@ export const ComponentMixin = (Base = Object) => {
 
       if (component === undefined) {
         throw new Error(
-          `Cannot get the component of type '${type}' from the component '${this.getComponentName()}'`
+          `Cannot get the component of type '${type}' from the component '${this.getComponentPath()}'`
         );
       }
 
@@ -888,13 +906,7 @@ export const ComponentMixin = (Base = Object) => {
         }
 
         throw new Error(
-          `Cannot provide a component that is already provided by another component${composeDescription(
-            [
-              component.describeComponent(),
-              existingProvider.describeComponent({componentPrefix: 'existing provider'}),
-              this.describeComponent({componentPrefix: 'requested provider'})
-            ]
-          )}`
+          `Cannot provide the component '${component.getComponentName()}' from '${this.getComponentName()}' because '${component.getComponentName()}' is already provided by '${existingProvider.getComponentName()}'`
         );
       }
 
@@ -904,10 +916,7 @@ export const ComponentMixin = (Base = Object) => {
 
       if (existingComponent !== undefined && !component.isForkOf(existingComponent)) {
         throw new Error(
-          `A component with the same name is already provided${composeDescription([
-            existingComponent.describeComponent(),
-            this.describeComponent({componentPrefix: 'provider'})
-          ])}`
+          `Cannot provide the component '${component.getComponentName()}' from '${this.getComponentName()}' because a component with the same name is already provided`
         );
       }
 
@@ -917,7 +926,7 @@ export const ComponentMixin = (Base = Object) => {
 
         if (!(isComponentClass(value) && (value === component || value.isForkOf(component)))) {
           throw new Error(
-            `Cannot provide a component with a name conflicting with an existing property (${this.describeComponent()}, property: '${componentName}')`
+            `Cannot provide the component '${component.getComponentName()}' from '${this.getComponentName()}' because there is an existing property with the same name`
           );
         }
       }
@@ -1042,7 +1051,7 @@ export const ComponentMixin = (Base = Object) => {
 
       if (name in this) {
         throw new Error(
-          `Cannot consume a component with a name conflicting with an existing property (${this.describeComponent()}, property: '${name}')`
+          `Cannot consume the component '${name}' from '${this.getComponentName()}' because there is an existing property with the same name`
         );
       }
 
@@ -1054,7 +1063,7 @@ export const ComponentMixin = (Base = Object) => {
         },
         set<T extends typeof Component>(this: T, _value: never) {
           throw new Error(
-            `A consumed component accessor may not be set (${this.describeComponent()}, property: '${name}')`
+            `A component consumer may not be set directly (${this.describeComponent()}, property: '${name}')`
           );
         }
       });
@@ -1804,7 +1813,7 @@ export const ComponentMixin = (Base = Object) => {
         componentPrefix = `${componentPrefix} `;
       }
 
-      return `${componentPrefix}component: '${ensureComponentClass(this).getComponentName()}'`;
+      return `${componentPrefix}component: '${ensureComponentClass(this).getComponentPath()}'`;
     }
   };
 

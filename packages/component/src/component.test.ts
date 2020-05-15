@@ -233,9 +233,23 @@ describe('Component', () => {
         "The specified component name ('MotionPicture!') is invalid"
       );
     });
-  });
 
-  describe('Naming', () => {
+    test('getComponentPath()', async () => {
+      class MovieDetails extends Component {}
+
+      class Movie extends Component {
+        @provide() static MovieDetails = MovieDetails;
+      }
+
+      class App extends Component {
+        @provide() static Movie = Movie;
+      }
+
+      expect(App.getComponentPath()).toBe('App');
+      expect(Movie.getComponentPath()).toBe('App.Movie');
+      expect(MovieDetails.getComponentPath()).toBe('App.Movie.MovieDetails');
+    });
+
     test('getComponentType()', async () => {
       class Movie extends Component {}
 
@@ -958,7 +972,7 @@ describe('Component', () => {
       class Film extends Component {}
 
       expect(() => Film.provideComponent(Director)).toThrow(
-        "Cannot provide a component that is already provided by another component (component: 'Director', existing provider component: 'Movie', requested provider component: 'Film')"
+        "Cannot provide the component 'Director' from 'Film' because 'Director' is already provided by 'Movie'"
       );
 
       class OtherComponent extends Component {}
@@ -966,13 +980,13 @@ describe('Component', () => {
       OtherComponent.setComponentName('Director');
 
       expect(() => Movie.provideComponent(OtherComponent)).toThrow(
-        "A component with the same name is already provided (component: 'Director', provider component: 'Movie')"
+        "Cannot provide the component 'Director' from 'Movie' because a component with the same name is already provided"
       );
 
       (Movie as any).Producer = {};
 
       expect(() => Movie.provideComponent(Producer)).toThrow(
-        "Cannot provide a component with a name conflicting with an existing property (component: 'Movie', property: 'Producer')"
+        "Cannot provide the component 'Producer' from 'Movie' because there is an existing property with the same name"
       );
     });
 
@@ -1049,7 +1063,7 @@ describe('Component', () => {
       (Movie as any).Producer = Producer;
 
       expect(() => Movie.consumeComponent('Producer')).toThrow(
-        "Cannot consume a component with a name conflicting with an existing property (component: 'Movie', property: 'Producer')"
+        "Cannot consume the component 'Producer' from 'Movie' because there is an existing property with the same name"
       );
     });
   });
