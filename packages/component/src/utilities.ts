@@ -165,3 +165,23 @@ export function composeDescription(description: string[]) {
 
   return composedDescription;
 }
+
+export function joinAttributePath(path: [string?, string?]) {
+  const compactedPath = compact(path);
+
+  if (compactedPath.length === 0) {
+    return '';
+  }
+
+  if (compactedPath.length === 1) {
+    return compactedPath[0];
+  }
+
+  const [first, second] = compactedPath;
+
+  if (second.startsWith('[')) {
+    return `${first}${second}`;
+  }
+
+  return `${first}.${second}`;
+}

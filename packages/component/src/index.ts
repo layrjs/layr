@@ -10,3 +10,5 @@ export * from './method';
 export * from './property';
 export * from './serialization';
 export * from './utilities';
+export * from './validation';
+export * from './value-types';

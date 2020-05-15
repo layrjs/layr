@@ -17,7 +17,7 @@ describe('Property', () => {
 
     // @ts-ignore
     expect(() => new Property('title', {})).toThrow(
-      "Expected a component class or instance, but received a value of type 'Object'"
+      "Expected a component class or instance, but received a value of type 'object'"
     );
 
     // @ts-ignore

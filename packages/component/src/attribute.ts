@@ -4,12 +4,21 @@ import type {Component, ExpandAttributeSelectorOptions} from './component';
 import {Property, PropertyOptions} from './property';
 import {fork} from './forking';
 import {AttributeSelector} from './attribute-selector';
+import type {Validator, ValidatorFunction} from './validation';
 
 export type AttributeOptions = PropertyOptions & {
+  valueType?: string;
   value?: any;
   default?: any;
   getter?: (this: any) => any;
   setter?: (this: any, value: any) => void;
+  validators?: (Validator | ValidatorFunction)[];
+  items?: AttributeItemsOptions;
+};
+
+type AttributeItemsOptions = {
+  validators?: (Validator | ValidatorFunction)[];
+  items?: AttributeItemsOptions;
 };
 
 export class Attribute extends Property {

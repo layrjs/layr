@@ -727,6 +727,18 @@ export const ComponentMixin = (Base = Object) => {
       return expandedAttributeSelector;
     }
 
+    // === Validation ===
+
+    // TODO
+
+    static get runValidators() {
+      return this.prototype.runValidators;
+    }
+
+    runValidators(_attributeSelector: AttributeSelector = true) {
+      return [];
+    }
+
     // === Methods ===
 
     static get getMethod() {
