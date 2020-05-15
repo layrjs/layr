@@ -1068,28 +1068,106 @@ describe('Component', () => {
     });
   });
 
-  // test('Detachment', async () => {
-  //   class Movie extends Component {}
+  describe('Attachment', () => {
+    test('attach(), detach(), isAttached(), and isDetached()', async () => {
+      class Movie extends Component {}
 
-  //   const movie = new Movie();
-  //   const otherMovie = new Movie();
+      class App extends Component {
+        @provide() static Movie = Movie;
+      }
 
-  //   expect(Movie.isDetached()).toBe(false);
-  //   expect(otherMovie.isDetached()).toBe(false);
-  //   expect(movie.isDetached()).toBe(false);
+      const movie = new Movie();
+      const otherMovie = new Movie();
 
-  //   movie.detach();
+      expect(App.isAttached()).toBe(true);
+      expect(Movie.isAttached()).toBe(true);
+      expect(movie.isAttached()).toBe(true);
+      expect(otherMovie.isAttached()).toBe(true);
+      expect(App.isDetached()).toBe(false);
+      expect(Movie.isDetached()).toBe(false);
+      expect(movie.isDetached()).toBe(false);
+      expect(otherMovie.isDetached()).toBe(false);
 
-  //   expect(Movie.isDetached()).toBe(false);
-  //   expect(movie.isDetached()).toBe(true);
-  //   expect(otherMovie.isDetached()).toBe(false);
+      App.detach();
 
-  //   Movie.detach();
+      expect(App.isAttached()).toBe(false);
+      expect(Movie.isAttached()).toBe(false);
+      expect(movie.isAttached()).toBe(false);
+      expect(otherMovie.isAttached()).toBe(false);
+      expect(App.isDetached()).toBe(true);
+      expect(Movie.isDetached()).toBe(true);
+      expect(movie.isDetached()).toBe(true);
+      expect(otherMovie.isDetached()).toBe(true);
 
-  //   expect(Movie.isDetached()).toBe(true);
-  //   expect(movie.isDetached()).toBe(true);
-  //   expect(otherMovie.isDetached()).toBe(true);
-  // });
+      App.attach();
+
+      expect(App.isAttached()).toBe(true);
+      expect(Movie.isAttached()).toBe(true);
+      expect(movie.isAttached()).toBe(true);
+      expect(otherMovie.isAttached()).toBe(true);
+      expect(App.isDetached()).toBe(false);
+      expect(Movie.isDetached()).toBe(false);
+      expect(movie.isDetached()).toBe(false);
+      expect(otherMovie.isDetached()).toBe(false);
+
+      Movie.detach();
+
+      expect(App.isAttached()).toBe(true);
+      expect(Movie.isAttached()).toBe(false);
+      expect(movie.isAttached()).toBe(false);
+      expect(otherMovie.isAttached()).toBe(false);
+      expect(App.isDetached()).toBe(false);
+      expect(Movie.isDetached()).toBe(true);
+      expect(movie.isDetached()).toBe(true);
+      expect(otherMovie.isDetached()).toBe(true);
+
+      Movie.attach();
+
+      expect(App.isAttached()).toBe(true);
+      expect(Movie.isAttached()).toBe(true);
+      expect(movie.isAttached()).toBe(true);
+      expect(otherMovie.isAttached()).toBe(true);
+      expect(App.isDetached()).toBe(false);
+      expect(Movie.isDetached()).toBe(false);
+      expect(movie.isDetached()).toBe(false);
+      expect(otherMovie.isDetached()).toBe(false);
+
+      movie.detach();
+
+      expect(App.isAttached()).toBe(true);
+      expect(Movie.isAttached()).toBe(true);
+      expect(movie.isAttached()).toBe(false);
+      expect(otherMovie.isAttached()).toBe(true);
+      expect(App.isDetached()).toBe(false);
+      expect(Movie.isDetached()).toBe(false);
+      expect(movie.isDetached()).toBe(true);
+      expect(otherMovie.isDetached()).toBe(false);
+
+      movie.attach();
+
+      expect(App.isAttached()).toBe(true);
+      expect(Movie.isAttached()).toBe(true);
+      expect(movie.isAttached()).toBe(true);
+      expect(otherMovie.isAttached()).toBe(true);
+      expect(App.isDetached()).toBe(false);
+      expect(Movie.isDetached()).toBe(false);
+      expect(movie.isDetached()).toBe(false);
+      expect(otherMovie.isDetached()).toBe(false);
+
+      App.detach();
+
+      // Since Movie and movie has been explicitly attached,
+      // they should remain so even though App is detached
+      expect(App.isAttached()).toBe(false);
+      expect(Movie.isAttached()).toBe(true);
+      expect(movie.isAttached()).toBe(true);
+      expect(otherMovie.isAttached()).toBe(true);
+      expect(App.isDetached()).toBe(true);
+      expect(Movie.isDetached()).toBe(false);
+      expect(movie.isDetached()).toBe(false);
+      expect(otherMovie.isDetached()).toBe(false);
+    });
+  });
 
   // test('Introspection', async () => {
   //   class Movie extends Component {

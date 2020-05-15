@@ -1331,43 +1331,71 @@ export const ComponentMixin = (Base = Object) => {
       }
     }
 
-    // === Detachment ===
+    // === Attachment ===
 
-    // static detach() {
-    //   this.__isDetached = true; // TODO: Use Object.defineProperty()
-    //   return this;
-    // }
+    static __isAttached: boolean;
 
-    // static isDetached() {
-    //   if (this.__isDetached === true) {
-    //     return true;
-    //   }
+    static attach<T extends typeof Component>(this: T) {
+      Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
 
-    //   const layer = this.getLayer({throwIfMissing: false});
+      return this;
+    }
 
-    //   if (layer !== undefined && layer.isDetached()) {
-    //     return true;
-    //   }
+    static detach<T extends typeof Component>(this: T) {
+      Object.defineProperty(this, '__isAttached', {value: false, configurable: true});
 
-    //   return false;
-    // }
+      return this;
+    }
 
-    // detach() {
-    //   this.__isDetached = true;
-    //   return this;
-    // }
+    static isAttached() {
+      let currentComponent = this;
 
-    // isDetached() {
-    //   if (this.__isDetached === true) {
-    //     return true;
-    //   }
+      while (true) {
+        const isAttached = currentComponent.__isAttached;
 
-    //   if ((this.constructor as typeof Component).isDetached() === true) {
-    //     return true;
-    //   }
+        if (isAttached !== undefined) {
+          return isAttached;
+        }
 
-    //   return false;
-    // }
+        const componentProvider = currentComponent.getComponentProvider();
+
+        if (componentProvider === currentComponent) {
+          return true;
+        }
+
+        currentComponent = componentProvider;
+      }
+    }
+
+    static isDetached() {
+      return !this.isAttached();
+    }
+
+    __isAttached?: boolean;
+
+    attach() {
+      Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
+
+      return this;
+    }
+
+    detach() {
+      Object.defineProperty(this, '__isAttached', {value: false, configurable: true});
+
+      return this;
+    }
+
+    isAttached() {
+      if (this.__isAttached !== undefined) {
+        return this.__isAttached;
+      }
+
+      return (this.constructor as typeof Component).isAttached();
+    }
+
+    isDetached() {
+      return !this.isAttached();
+    }
 
     // === Serialization ===
 
