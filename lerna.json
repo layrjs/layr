@@ -1,5 +1,5 @@
 {
   "version": "independent",
   "npmClient": "npm",
-  "packages": ["packages/component"]
+  "packages": ["packages/component", "packages/observable"]
 }

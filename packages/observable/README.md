@@ -7,3 +7,7 @@ Observe JavaScript objects, arrays, or your own classes.
 ```
 npm install @liaison/observable
 ```
+
+## License
+
+MIT

@@ -1,9 +1,15 @@
-import {Observable, createObservable, isObservable, canBeObserved} from '../../..';
+import {
+  Observable,
+  createObservable,
+  isObservable,
+  canBeObserved,
+  ObservableType
+} from './observable';
 
 describe('Observable', () => {
   describe('Observable array', () => {
-    let originalArray;
-    let observableArray;
+    let originalArray: any[];
+    let observableArray: any[] & ObservableType;
 
     beforeEach(() => {
       originalArray = [3, 2, 1];
@@ -90,7 +96,7 @@ describe('Observable', () => {
 
     describe('Observable item', () => {
       it('Should call observers when updating an observable item', () => {
-        const observableItem = createObservable([]);
+        const observableItem = createObservable([] as any[]);
         observableArray[0] = observableItem;
         const observer = jest.fn();
         observableArray.addObserver(observer);
@@ -100,7 +106,7 @@ describe('Observable', () => {
       });
 
       it(`Should stop calling observers when an observable item has been removed`, () => {
-        const observableItem = createObservable([]);
+        const observableItem = createObservable([] as any[]);
         observableArray[0] = observableItem;
 
         const observer = jest.fn();
@@ -192,8 +198,8 @@ describe('Observable', () => {
   });
 
   describe('Observable object', () => {
-    let originalObject;
-    let observableObject;
+    let originalObject: {[key: string]: any};
+    let observableObject: {[key: string]: any} & ObservableType;
 
     beforeEach(() => {
       originalObject = {
@@ -284,7 +290,7 @@ describe('Observable', () => {
       });
 
       it(`Should stop calling observers when an observable attribute has been removed`, () => {
-        const observableAttribute = createObservable([]);
+        const observableAttribute = createObservable({} as any);
         observableObject.attribute = observableAttribute;
 
         const observer = jest.fn();
@@ -299,14 +305,67 @@ describe('Observable', () => {
         expect(observer.mock.calls.length).toBe(numberOfCalls);
       });
     });
+
+    describe('Forked observable object', () => {
+      let forkedObservableObject: {[key: string]: any} & ObservableType;
+
+      beforeEach(() => {
+        forkedObservableObject = Object.create(observableObject);
+      });
+
+      it('Should not be an observable', () => {
+        expect(isObservable(forkedObservableObject)).toBe(false);
+      });
+
+      it('Should not have a method such as addObserver()', () => {
+        expect(forkedObservableObject.addObserver).toBeUndefined();
+        expect(forkedObservableObject.removeObserver).toBeUndefined();
+        expect(forkedObservableObject.callObservers).toBeUndefined();
+        expect(forkedObservableObject.isObservable).toBeUndefined();
+      });
+
+      it('Should allow changing an attribute without changing the original observable', () => {
+        forkedObservableObject.id = 2;
+        expect(forkedObservableObject.id).toBe(2);
+        expect(observableObject.id).toBe(1);
+      });
+
+      it('Should not call the observers of the original observable when changing an attribute', () => {
+        const observer = jest.fn();
+        observableObject.addObserver(observer);
+        expect(observer).not.toHaveBeenCalled();
+        forkedObservableObject.id = 2;
+        expect(observer).not.toHaveBeenCalled();
+      });
+
+      it('Should be able to become an observable', () => {
+        expect(isObservable(forkedObservableObject)).toBe(false);
+        const observableForkedObservableObject = createObservable(forkedObservableObject);
+        expect(isObservable(observableForkedObservableObject)).toBe(true);
+
+        const objectObserver = jest.fn();
+        observableObject.addObserver(objectObserver);
+        const forkedObjectObserver = jest.fn();
+        observableForkedObservableObject.addObserver(forkedObjectObserver);
+        expect(objectObserver).not.toHaveBeenCalled();
+        expect(forkedObjectObserver).not.toHaveBeenCalled();
+        observableForkedObservableObject.id = 2;
+        expect(forkedObjectObserver).toHaveBeenCalled();
+        expect(objectObserver).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('Custom observable', () => {
-    class BaseCustomObservable extends Observable() {
-      constructor({id} = {}) {
+    class BaseCustomObservable extends Observable(Object) {
+      _id: number | undefined;
+
+      constructor({id}: {id?: number} = {}) {
         super();
         this._id = id;
       }
+
+      static _limit: number;
 
       static get limit() {
         return this._limit;
@@ -328,7 +387,7 @@ describe('Observable', () => {
     }
 
     describe('Observable class', () => {
-      let CustomObservable;
+      let CustomObservable: typeof BaseCustomObservable;
 
       beforeEach(() => {
         CustomObservable = class CustomObservable extends BaseCustomObservable {};
@@ -384,7 +443,7 @@ describe('Observable', () => {
     });
 
     describe('Observable instance', () => {
-      let customObservable;
+      let customObservable: BaseCustomObservable;
 
       beforeEach(() => {
         customObservable = new BaseCustomObservable({id: 1});
@@ -454,6 +513,7 @@ describe('Observable', () => {
 
       expect(canBeObserved(null)).toBe(false);
 
+      // @ts-ignore
       expect(() => createObservable('Hello')).toThrow(
         'Cannot create an observable from a target that is not an object, an array, or a function'
       );
@@ -462,7 +522,7 @@ describe('Observable', () => {
 
   describe('Observable with a circular reference', () => {
     it('Should not loop indefinitely', () => {
-      const observableObject = createObservable({});
+      const observableObject = createObservable({} as any);
 
       const observer = jest.fn();
       observableObject.addObserver(observer);

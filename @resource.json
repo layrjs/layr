@@ -53,9 +53,6 @@
   "mongoDBStore": {
     "@include": "./packages/mongodb-store"
   },
-  "observable": {
-    "@include": "./packages/observable"
-  },
   "reactIntegration": {
     "@include": "./packages/react-integration"
   },
