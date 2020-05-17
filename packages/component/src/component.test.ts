@@ -3,6 +3,7 @@ import sleep from 'sleep-promise';
 import {Component} from './component';
 import {isPropertyInstance} from './property';
 import {Attribute, isAttributeInstance} from './attribute';
+import {validators} from './validation';
 import {Method, isMethodInstance} from './method';
 import {attribute, method, provide, consume} from './decorators';
 import {isComponentClass, isComponentInstance} from './utilities';
@@ -19,8 +20,8 @@ describe('Component', () => {
         country!: string;
       }
 
-      Movie.prototype.setAttribute('title', {default: ''});
-      Movie.prototype.setAttribute('country', {default: ''});
+      Movie.prototype.setAttribute('title', {valueType: 'string', default: ''});
+      Movie.prototype.setAttribute('country', {valueType: 'string', default: ''});
 
       expect(isComponentClass(Movie)).toBe(true);
       expect(Object.keys(Movie)).toEqual(['classAttribute']);
@@ -63,8 +64,8 @@ describe('Component', () => {
         country!: string;
       }
 
-      Movie.prototype.setAttribute('title', {default: ''});
-      Movie.prototype.setAttribute('country', {default: ''});
+      Movie.prototype.setAttribute('title', {valueType: 'string', default: ''});
+      Movie.prototype.setAttribute('country', {valueType: 'string', default: ''});
 
       let movie = Movie.instantiate();
 
@@ -80,10 +81,11 @@ describe('Component', () => {
       expect(movie.title).toBe('Inception');
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
-      movie = Movie.instantiate({title: 'Inception'}, {attributeSelector: {country: true}});
-
-      expect(movie.title).toBe('Inception');
-      expect(movie.country).toBeUndefined();
+      expect(() =>
+        Movie.instantiate({title: 'Inception'}, {attributeSelector: {country: true}})
+      ).toThrow(
+        "Cannot assign a value of an unexpected type (component: 'Movie', attribute: 'country', expected type: 'string', received type: 'undefined')"
+      );
 
       movie = Movie.instantiate({}, {isNew: true});
 
@@ -694,20 +696,165 @@ describe('Component', () => {
     });
 
     test('expandAttributeSelector()', async () => {
-      class Movie extends Component {
-        @attribute() title = '';
-        @attribute() duration = 0;
+      class Person extends Component {
+        @attribute('string') name = '';
       }
 
-      expect(Movie.prototype.expandAttributeSelector(false)).toStrictEqual({});
-      expect(Movie.prototype.expandAttributeSelector({})).toStrictEqual({});
+      class Movie extends Component {
+        @provide() static Person = Person;
+
+        @attribute('string') title = '';
+        @attribute('number') duration = 0;
+        @attribute('Person?') director?: Person;
+        @attribute('Person[]') actors: Person[] = [];
+      }
+
       expect(Movie.prototype.expandAttributeSelector(true)).toStrictEqual({
         title: true,
-        duration: true
+        duration: true,
+        director: {name: true},
+        actors: {name: true}
       });
-      expect(Movie.prototype.expandAttributeSelector({title: true})).toStrictEqual({
-        title: true
+
+      expect(Movie.prototype.expandAttributeSelector(false)).toStrictEqual({});
+
+      expect(Movie.prototype.expandAttributeSelector({})).toStrictEqual({});
+
+      expect(Movie.prototype.expandAttributeSelector({title: true, director: true})).toStrictEqual({
+        title: true,
+        director: {name: true}
       });
+
+      expect(Movie.prototype.expandAttributeSelector({title: true, director: false})).toStrictEqual(
+        {
+          title: true
+        }
+      );
+
+      expect(Movie.prototype.expandAttributeSelector({title: true, director: {}})).toStrictEqual({
+        title: true,
+        director: {}
+      });
+
+      expect(Movie.prototype.expandAttributeSelector(true, {depth: 0})).toStrictEqual({
+        title: true,
+        duration: true,
+        director: true,
+        actors: true
+      });
+
+      expect(
+        Movie.prototype.expandAttributeSelector({title: true, actors: true}, {depth: 0})
+      ).toStrictEqual({title: true, actors: true});
+    });
+
+    test('Validation', async () => {
+      const notEmpty = validators.notEmpty();
+      const maxLength = validators.maxLength(3);
+
+      // TODO: Remove 'default' attribute options
+      class Person extends Component {
+        @attribute('string', {default: '', validators: [notEmpty]}) name = '';
+        @attribute('string?') country?: string;
+      }
+
+      // TODO: Remove 'default' attribute options
+      class Movie extends Component {
+        @provide() static Person = Person;
+
+        @attribute('string', {default: '', validators: [notEmpty]}) title = '';
+        @attribute('string[]', {
+          default: [],
+          validators: [maxLength],
+          items: {validators: [notEmpty]}
+        })
+        tags: string[] = [];
+        @attribute('Person?') director?: Person;
+        @attribute('Person[]', {default: []}) actors: Person[] = [];
+      }
+
+      const movie = new Movie();
+
+      expect(() => movie.validate()).toThrow(
+        "The following error(s) occurred while validating the component 'Movie': The validator `notEmpty()` failed (path: 'title')"
+      );
+      expect(movie.isValid()).toBe(false);
+      expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'title'}]);
+      expect(movie.runValidators({title: true})).toEqual([{validator: notEmpty, path: 'title'}]);
+      expect(movie.runValidators({tags: true})).toEqual([]);
+
+      movie.title = 'Inception';
+
+      expect(() => movie.validate()).not.toThrow();
+      expect(movie.isValid()).toBe(true);
+      expect(movie.runValidators()).toEqual([]);
+
+      movie.tags = ['action'];
+
+      expect(() => movie.validate()).not.toThrow();
+      expect(movie.isValid()).toBe(true);
+      expect(movie.runValidators()).toEqual([]);
+
+      movie.tags.push('adventure');
+
+      expect(() => movie.validate()).not.toThrow();
+      expect(movie.isValid()).toBe(true);
+      expect(movie.runValidators()).toEqual([]);
+
+      movie.tags.push('');
+
+      expect(() => movie.validate()).toThrow(
+        "The following error(s) occurred while validating the component 'Movie': The validator `notEmpty()` failed (path: 'tags[2]')"
+      );
+      expect(movie.isValid()).toBe(false);
+      expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'tags[2]'}]);
+      expect(movie.runValidators({tags: true})).toEqual([{validator: notEmpty, path: 'tags[2]'}]);
+      expect(movie.runValidators({title: true})).toEqual([]);
+
+      movie.tags.push('sci-fi');
+
+      expect(() => movie.validate()).toThrow(
+        "The following error(s) occurred while validating the component 'Movie': The validator `maxLength(3)` failed (path: 'tags'), The validator `notEmpty()` failed (path: 'tags[2]')"
+      );
+      expect(movie.isValid()).toBe(false);
+      expect(movie.runValidators()).toEqual([
+        {validator: maxLength, path: 'tags'},
+        {validator: notEmpty, path: 'tags[2]'}
+      ]);
+
+      movie.tags.splice(2, 1);
+
+      movie.director = new Person();
+
+      expect(() => movie.validate()).toThrow(
+        "The following error(s) occurred while validating the component 'Movie': The validator `notEmpty()` failed (path: 'director.name')"
+      );
+      expect(movie.isValid()).toBe(false);
+      expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'director.name'}]);
+      expect(movie.runValidators({director: {name: true}})).toEqual([
+        {validator: notEmpty, path: 'director.name'}
+      ]);
+      expect(movie.runValidators({director: {country: true}})).toEqual([]);
+
+      movie.director.name = 'Christopher Nolan';
+
+      expect(() => movie.validate()).not.toThrow();
+      expect(movie.isValid()).toBe(true);
+      expect(movie.runValidators()).toEqual([]);
+
+      movie.actors.push(new Person());
+
+      expect(() => movie.validate()).toThrow(
+        "The following error(s) occurred while validating the component 'Movie': The validator `notEmpty()` failed (path: 'actors[0].name')"
+      );
+      expect(movie.isValid()).toBe(false);
+      expect(movie.runValidators()).toEqual([{validator: notEmpty, path: 'actors[0].name'}]);
+
+      movie.actors[0].name = 'Leonardo DiCaprio';
+
+      expect(() => movie.validate()).not.toThrow();
+      expect(movie.isValid()).toBe(true);
+      expect(movie.runValidators()).toEqual([]);
     });
   });
 

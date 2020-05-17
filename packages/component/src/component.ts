@@ -40,7 +40,8 @@ import {
   getComponentNameFromComponentInstanceType,
   assertIsComponentType,
   getComponentClassTypeFromComponentName,
-  getComponentInstanceTypeFromComponentName
+  getComponentInstanceTypeFromComponentName,
+  joinAttributePath
 } from './utilities';
 
 export type ComponentGetter = (name: string) => typeof Component | Component;
@@ -718,14 +719,69 @@ export class Component extends Observable(Object) {
 
   // === Validation ===
 
-  // TODO
+  static get validate() {
+    return this.prototype.validate;
+  }
+
+  validate(attributeSelector: AttributeSelector = true) {
+    const failedValidators = this.runValidators(attributeSelector);
+
+    if (failedValidators.length === 0) {
+      return;
+    }
+
+    const details = failedValidators
+      .map(({validator, path}) => `${validator.getMessage()} (path: '${path}')`)
+      .join(', ');
+
+    const error = Object.assign(
+      new Error(
+        `The following error(s) occurred while validating the component '${ensureComponentClass(
+          this
+        ).getComponentName()}': ${details}`
+      ),
+      {failedValidators}
+    );
+
+    throw error;
+  }
+
+  static get isValid() {
+    return this.prototype.isValid;
+  }
+
+  isValid(attributeSelector: AttributeSelector = true) {
+    const failedValidators = this.runValidators(attributeSelector);
+
+    return failedValidators.length === 0;
+  }
 
   static get runValidators() {
     return this.prototype.runValidators;
   }
 
-  runValidators(_attributeSelector: AttributeSelector = true) {
-    return [];
+  runValidators(attributeSelector: AttributeSelector = true) {
+    attributeSelector = this.expandAttributeSelector(attributeSelector);
+
+    const failedValidators = [];
+
+    for (const attribute of this.getAttributes({setAttributesOnly: true})) {
+      const name = attribute.getName();
+
+      const subattributeSelector = getFromAttributeSelector(attributeSelector, name);
+
+      if (subattributeSelector === false) {
+        continue;
+      }
+
+      const attributeFailedValidators = attribute.runValidators(subattributeSelector);
+
+      for (const {validator, path} of attributeFailedValidators) {
+        failedValidators.push({validator, path: joinAttributePath([name, path])});
+      }
+    }
+
+    return failedValidators;
   }
 
   // === Methods ===

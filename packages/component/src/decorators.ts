@@ -27,7 +27,15 @@ import {isComponentClassOrInstance, isComponentClass} from './utilities';
 //   };
 // }
 
-export function attribute(options: AttributeOptions = {}) {
+export function attribute(valueType?: string, options?: AttributeOptions): PropertyDecorator;
+export function attribute(options?: AttributeOptions): PropertyDecorator;
+export function attribute(valueType?: string | AttributeOptions, options: AttributeOptions = {}) {
+  if (typeof valueType === 'string') {
+    options.valueType = valueType;
+  } else if (valueType !== undefined) {
+    options = valueType;
+  }
+
   return function (target: typeof Component | Component, name: string) {
     if (!isComponentClassOrInstance(target)) {
       throw new Error(`@attribute() must be used inside a component class (property: '${name}')`);

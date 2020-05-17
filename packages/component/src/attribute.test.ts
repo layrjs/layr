@@ -1,15 +1,18 @@
 import {Component} from './component';
 import {Attribute} from './attribute';
+import {isNumberValueTypeInstance} from './value-types';
+import {validators} from './validation';
 
 describe('Attribute', () => {
   test('Creation', async () => {
     class Movie extends Component {}
 
-    const attribute = new Attribute('limit', Movie);
+    const attribute = new Attribute('limit', Movie, {valueType: 'number'});
 
     expect(Attribute.isAttribute(attribute)).toBe(true);
     expect(attribute.getName()).toBe('limit');
     expect(attribute.getParent()).toBe(Movie);
+    expect(isNumberValueTypeInstance(attribute.getValueType())).toBe(true);
   });
 
   test('Value', async () => {
@@ -17,7 +20,7 @@ describe('Attribute', () => {
 
     const movie = new Movie();
 
-    const attribute = new Attribute('title', movie);
+    const attribute = new Attribute('title', movie, {valueType: 'string'});
 
     expect(attribute.isSet()).toBe(false);
     expect(() => attribute.getValue()).toThrow(
@@ -33,6 +36,13 @@ describe('Attribute', () => {
     attribute.unsetValue();
 
     expect(attribute.isSet()).toBe(false);
+
+    expect(() => attribute.setValue(123)).toThrow(
+      "Cannot assign a value of an unexpected type (component: 'Movie', attribute: 'title', expected type: 'string', received type: 'number')"
+    );
+    expect(() => attribute.setValue(undefined)).toThrow(
+      "Cannot assign a value of an unexpected type (component: 'Movie', attribute: 'title', expected type: 'string', received type: 'undefined')"
+    );
   });
 
   test('Accessors', async () => {
@@ -41,6 +51,7 @@ describe('Attribute', () => {
     const movie = new Movie();
 
     const attribute = new Attribute('title', movie, {
+      valueType: 'string',
       getter() {
         expect(this).toBe(movie);
         return this._title;
@@ -73,11 +84,11 @@ describe('Attribute', () => {
   test('Initial value', async () => {
     class Movie extends Component {}
 
-    let attribute = new Attribute('limit', Movie);
+    let attribute = new Attribute('limit', Movie, {valueType: 'number'});
 
     expect(attribute.isSet()).toBe(false);
 
-    attribute = new Attribute('limit', Movie, {value: 100});
+    attribute = new Attribute('limit', Movie, {valueType: 'number', value: 100});
 
     expect(attribute.isSet()).toBe(true);
     expect(attribute.getValue()).toBe(100);
@@ -85,6 +96,7 @@ describe('Attribute', () => {
     expect(
       () =>
         new Attribute('limit', Movie, {
+          valueType: 'number',
           value: 100,
           getter() {
             return 100;
@@ -100,17 +112,18 @@ describe('Attribute', () => {
 
     const movie = new Movie();
 
-    const attribute = new Attribute('title', movie, {default: ''});
+    const attribute = new Attribute('title', movie, {valueType: 'string', default: ''});
 
     expect(attribute.getDefault()).toBe('');
 
-    const attributeWithoutDefault = new Attribute('duration', movie);
+    const attributeWithoutDefault = new Attribute('duration', movie, {valueType: 'number?'});
 
     expect(attributeWithoutDefault.getDefault()).toBe(undefined);
 
     expect(
       () =>
         new Attribute('title', movie, {
+          valueType: 'number?',
           default: '',
           getter() {
             return '';
@@ -121,12 +134,139 @@ describe('Attribute', () => {
     );
   });
 
+  test('Validation', async () => {
+    class Movie extends Component {}
+
+    const movie = new Movie();
+
+    const notEmpty = validators.notEmpty();
+    const attribute = new Attribute('title', movie, {valueType: 'string?', validators: [notEmpty]});
+
+    expect(() => attribute.runValidators()).toThrow(
+      "Cannot run the validators of an unset attribute (component: 'Movie', attribute: 'title')"
+    );
+
+    attribute.setValue('Inception');
+
+    expect(() => attribute.validate()).not.toThrow();
+    expect(attribute.isValid()).toBe(true);
+    expect(attribute.runValidators()).toEqual([]);
+
+    attribute.setValue('');
+
+    expect(() => attribute.validate()).toThrow(
+      "The following error(s) occurred while validating the attribute 'title': The validator `notEmpty()` failed (path: '')"
+    );
+    expect(attribute.isValid()).toBe(false);
+    expect(attribute.runValidators()).toEqual([{validator: notEmpty, path: ''}]);
+
+    attribute.setValue(undefined);
+
+    expect(() => attribute.validate()).not.toThrow();
+    expect(attribute.isValid()).toBe(true);
+    expect(attribute.runValidators()).toEqual([]);
+  });
+
+  test('Observability', async () => {
+    class Movie extends Component {}
+
+    const movie = new Movie();
+
+    const movieObserver = jest.fn();
+    movie.addObserver(movieObserver);
+
+    const title = new Attribute('title', movie, {valueType: 'string'});
+
+    const titleObserver = jest.fn();
+    title.addObserver(titleObserver);
+
+    expect(titleObserver).toHaveBeenCalledTimes(0);
+    expect(movieObserver).toHaveBeenCalledTimes(0);
+
+    title.setValue('Inception');
+
+    expect(titleObserver).toHaveBeenCalledTimes(1);
+    expect(movieObserver).toHaveBeenCalledTimes(1);
+
+    title.setValue('Inception 2');
+
+    expect(titleObserver).toHaveBeenCalledTimes(2);
+    expect(movieObserver).toHaveBeenCalledTimes(2);
+
+    title.setValue('Inception 2');
+
+    // Assigning the same value should not call the observers
+    expect(titleObserver).toHaveBeenCalledTimes(2);
+    expect(movieObserver).toHaveBeenCalledTimes(2);
+
+    const tags = new Attribute('title', movie, {valueType: 'string[]'});
+
+    const tagsObserver = jest.fn();
+    tags.addObserver(tagsObserver);
+
+    expect(tagsObserver).toHaveBeenCalledTimes(0);
+    expect(movieObserver).toHaveBeenCalledTimes(2);
+
+    tags.setValue(['drama', 'action']);
+
+    expect(tagsObserver).toHaveBeenCalledTimes(1);
+    expect(movieObserver).toHaveBeenCalledTimes(3);
+
+    const tagArray = tags.getValue();
+
+    tagArray[0] = 'Drama';
+
+    expect(tagsObserver).toHaveBeenCalledTimes(2);
+    expect(movieObserver).toHaveBeenCalledTimes(4);
+
+    tagArray[0] = 'Drama';
+
+    // Assigning the same value should not call the observers
+    expect(tagsObserver).toHaveBeenCalledTimes(2);
+    expect(movieObserver).toHaveBeenCalledTimes(4);
+
+    tags.setValue(['Drama', 'Action']);
+
+    expect(tagsObserver).toHaveBeenCalledTimes(3);
+    expect(movieObserver).toHaveBeenCalledTimes(5);
+
+    const newTagArray = tags.getValue();
+
+    newTagArray[0] = 'drama';
+
+    expect(tagsObserver).toHaveBeenCalledTimes(4);
+    expect(movieObserver).toHaveBeenCalledTimes(6);
+
+    tagArray[0] = 'DRAMA';
+
+    // Modifying the previous array should not call the observers
+    expect(tagsObserver).toHaveBeenCalledTimes(4);
+    expect(movieObserver).toHaveBeenCalledTimes(6);
+
+    tags.unsetValue();
+
+    expect(tagsObserver).toHaveBeenCalledTimes(5);
+    expect(movieObserver).toHaveBeenCalledTimes(7);
+
+    tags.unsetValue();
+
+    // Calling unset again should not call the observers
+    expect(tagsObserver).toHaveBeenCalledTimes(5);
+    expect(movieObserver).toHaveBeenCalledTimes(7);
+
+    newTagArray[0] = 'drama';
+
+    // Modifying the detached array should not call the observers
+    expect(tagsObserver).toHaveBeenCalledTimes(5);
+    expect(movieObserver).toHaveBeenCalledTimes(7);
+  });
+
   test('Forking', async () => {
     class Movie extends Component {}
 
     const movie = new Movie();
 
-    const attribute = new Attribute('title', movie);
+    const attribute = new Attribute('title', movie, {valueType: 'string'});
     attribute.setValue('Inception');
 
     expect(attribute.getValue()).toBe('Inception');

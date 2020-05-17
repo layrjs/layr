@@ -1,7 +1,9 @@
 import {hasOwnProperty} from 'core-helpers';
+import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
 
 import type {Component, ExpandAttributeSelectorOptions} from './component';
 import {Property, PropertyOptions} from './property';
+import {ValueType, createValueType} from './value-types';
 import {fork} from './forking';
 import {AttributeSelector} from './attribute-selector';
 import type {Validator, ValidatorFunction} from './validation';
@@ -10,10 +12,10 @@ export type AttributeOptions = PropertyOptions & {
   valueType?: string;
   value?: any;
   default?: any;
-  getter?: (this: any) => any;
-  setter?: (this: any, value: any) => void;
   validators?: (Validator | ValidatorFunction)[];
   items?: AttributeItemsOptions;
+  getter?: (this: any) => any;
+  setter?: (this: any, value: any) => void;
 };
 
 type AttributeItemsOptions = {
@@ -21,24 +23,34 @@ type AttributeItemsOptions = {
   items?: AttributeItemsOptions;
 };
 
-export class Attribute extends Property {
+export class Attribute extends Observable(Property) {
   constructor(name: string, parent: typeof Component | Component, options: AttributeOptions = {}) {
     super(name, parent, options);
   }
 
   // === Options ===
 
-  private _default?: any;
   private _getter?: () => any;
   private _setter?: (value: any) => void;
 
   setOptions(options: AttributeOptions = {}) {
-    const {value: initialValue, default: defaultValue, getter, setter, ...otherOptions} = options;
+    const {
+      valueType,
+      value: initialValue,
+      default: defaultValue,
+      validators,
+      items,
+      getter,
+      setter,
+      ...otherOptions
+    } = options;
 
     const hasInitialValue = 'value' in options;
     const hasDefaultValue = 'default' in options;
 
     super.setOptions(otherOptions);
+
+    this._valueType = createValueType(valueType, this, {validators, items});
 
     if (getter !== undefined || setter !== undefined) {
       if (hasInitialValue) {
@@ -80,6 +92,14 @@ export class Attribute extends Property {
     }
   }
 
+  // === Value type ===
+
+  private _valueType!: ValueType;
+
+  getValueType() {
+    return this._valueType;
+  }
+
   // === Value ===
 
   private _value?: any;
@@ -100,13 +120,28 @@ export class Attribute extends Property {
     }
 
     if (autoFork && !hasOwnProperty(this, '_value')) {
-      this._value = fork(this._value, {parentComponent: this.getParent()});
+      const parent = this.getParent();
+
+      let forkedValue = fork(this._value, {parentComponent: parent});
+
+      if (canBeObserved(forkedValue)) {
+        if (!isObservable(forkedValue)) {
+          forkedValue = createObservable(forkedValue);
+        }
+
+        forkedValue.addObserver(this);
+        forkedValue.addObserver(parent);
+      }
+
+      this._value = forkedValue;
     }
 
     return this._value;
   }
 
   setValue(value: any) {
+    this.checkValue(value);
+
     if (this._setter !== undefined) {
       this._setter.call(this.getParent(), value);
       return;
@@ -118,9 +153,31 @@ export class Attribute extends Property {
       );
     }
 
+    if (canBeObserved(value) && !isObservable(value)) {
+      value = createObservable(value);
+    }
+
     const previousValue = this.getValue({throwIfUnset: false});
     this._value = value;
     this._isSet = true;
+
+    if (value?.valueOf() !== previousValue?.valueOf()) {
+      this.callObservers();
+
+      const parent = this.getParent();
+
+      if (isObservable(previousValue)) {
+        previousValue.removeObserver(this);
+        previousValue.removeObserver(parent);
+      }
+
+      if (isObservable(value)) {
+        value.addObserver(this);
+        value.addObserver(parent);
+      }
+
+      parent.callObservers();
+    }
 
     return {previousValue, newValue: value};
   }
@@ -132,9 +189,24 @@ export class Attribute extends Property {
       );
     }
 
+    if (this._isSet !== true) {
+      return;
+    }
+
     const previousValue = this.getValue({throwIfUnset: false});
     this._value = undefined;
     this._isSet = false;
+
+    this.callObservers();
+
+    const parent = this.getParent();
+
+    if (isObservable(previousValue)) {
+      previousValue.removeObserver(this);
+      previousValue.removeObserver(parent);
+    }
+
+    parent.callObservers();
 
     return {previousValue};
   }
@@ -143,19 +215,64 @@ export class Attribute extends Property {
     return this._isSet === true;
   }
 
+  checkValue(value: any) {
+    return this.getValueType().checkValue(value, this);
+  }
+
   // === Default value ===
+
+  private _default?: any;
 
   getDefault() {
     return this._default;
   }
 
-  // Attribute selectors
+  // === Attribute selectors ===
 
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
-    _options: ExpandAttributeSelectorOptions
+    options: ExpandAttributeSelectorOptions
   ) {
-    return normalizedAttributeSelector;
+    return this.getValueType()._expandAttributeSelector(normalizedAttributeSelector, this, options);
+  }
+
+  // === Validation ===
+
+  validate(attributeSelector: AttributeSelector = true) {
+    const failedValidators = this.runValidators(attributeSelector);
+
+    if (failedValidators.length === 0) {
+      return;
+    }
+
+    const details = failedValidators
+      .map(({validator, path}) => `${validator.getMessage()} (path: '${path}')`)
+      .join(', ');
+
+    const error = Object.assign(
+      new Error(
+        `The following error(s) occurred while validating the attribute '${this.getName()}': ${details}`
+      ),
+      {failedValidators}
+    );
+
+    throw error;
+  }
+
+  isValid(attributeSelector: AttributeSelector = true) {
+    const failedValidators = this.runValidators(attributeSelector);
+
+    return failedValidators.length === 0;
+  }
+
+  runValidators(attributeSelector: AttributeSelector = true) {
+    if (!this.isSet()) {
+      throw new Error(`Cannot run the validators of an unset attribute (${this.describe()})`);
+    }
+
+    const failedValidators = this.getValueType().runValidators(this.getValue(), attributeSelector);
+
+    return failedValidators;
   }
 
   // // === Introspection ===
