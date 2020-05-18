@@ -754,7 +754,7 @@ describe('Component', () => {
 
       // TODO: Remove 'default' attribute options
       class Person extends Component {
-        @attribute('string', {default: '', validators: [notEmpty]}) name = '';
+        @attribute('string', {validators: [notEmpty]}) name = '';
         @attribute('string?') country?: string;
       }
 
@@ -762,15 +762,14 @@ describe('Component', () => {
       class Movie extends Component {
         @provide() static Person = Person;
 
-        @attribute('string', {default: '', validators: [notEmpty]}) title = '';
+        @attribute('string', {validators: [notEmpty]}) title = '';
         @attribute('string[]', {
-          default: [],
           validators: [maxLength],
           items: {validators: [notEmpty]}
         })
         tags: string[] = [];
         @attribute('Person?') director?: Person;
-        @attribute('Person[]', {default: []}) actors: Person[] = [];
+        @attribute('Person[]') actors: Person[] = [];
       }
 
       const movie = new Movie();

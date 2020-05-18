@@ -112,13 +112,25 @@ describe('Attribute', () => {
 
     const movie = new Movie();
 
-    const attribute = new Attribute('title', movie, {valueType: 'string', default: ''});
+    let attribute = new Attribute('duration', movie, {valueType: 'number?'});
+
+    expect(attribute.getDefault()).toBe(undefined);
+    expect(attribute.evaluateDefault()).toBe(undefined);
+
+    attribute = new Attribute('title', movie, {valueType: 'string', default: ''});
 
     expect(attribute.getDefault()).toBe('');
+    expect(attribute.evaluateDefault()).toBe('');
 
-    const attributeWithoutDefault = new Attribute('duration', movie, {valueType: 'number?'});
+    attribute = new Attribute('title', movie, {valueType: 'string', default: () => 1 + 1});
 
-    expect(attributeWithoutDefault.getDefault()).toBe(undefined);
+    expect(typeof attribute.getDefault()).toBe('function');
+    expect(attribute.evaluateDefault()).toBe(2);
+
+    attribute = new Attribute('movieClass', movie, {valueType: 'string', default: Movie});
+
+    expect(typeof attribute.getDefault()).toBe('function');
+    expect(attribute.evaluateDefault()).toBe(Movie);
 
     expect(
       () =>

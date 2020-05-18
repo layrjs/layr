@@ -4,6 +4,10 @@ import type {Component} from './component';
 import {Attribute, AttributeOptions} from './attribute';
 import {Method, MethodOptions} from './method';
 import {isComponentClassOrInstance, isComponentClass} from './utilities';
+import {
+  getConstructorSourceCode,
+  getAttributeInitializerFromConstructorSourceCode
+} from './js-parser';
 
 // export function property(options = {}) {
 //   ow(options, 'options', ow.object);
@@ -27,14 +31,28 @@ import {isComponentClassOrInstance, isComponentClass} from './utilities';
 //   };
 // }
 
-export function attribute(valueType?: string, options?: AttributeOptions): PropertyDecorator;
-export function attribute(options?: AttributeOptions): PropertyDecorator;
-export function attribute(valueType?: string | AttributeOptions, options: AttributeOptions = {}) {
+type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
+
+export function attribute(
+  valueType?: string,
+  options?: AttributeDecoratorOptions
+): PropertyDecorator;
+export function attribute(options?: AttributeDecoratorOptions): PropertyDecorator;
+export function attribute(
+  valueType?: string | AttributeDecoratorOptions,
+  options: AttributeDecoratorOptions = {}
+) {
   if (typeof valueType === 'string') {
     options.valueType = valueType;
   } else if (valueType !== undefined) {
     options = valueType;
   }
+
+  if ('value' in options || 'default' in options) {
+    throw new Error(`The options 'value' and 'default' are not authorized in $attribute()`);
+  }
+
+  let attributeOptions: AttributeOptions = {...options};
 
   return function (target: typeof Component | Component, name: string) {
     if (!isComponentClassOrInstance(target)) {
@@ -42,22 +60,33 @@ export function attribute(valueType?: string | AttributeOptions, options: Attrib
     }
 
     if (isComponentClass(target)) {
-      if (
-        target.hasAttribute(name) &&
-        target.getAttribute(name, {autoFork: false}).getParent() === target
-      ) {
-        // If the attribute already exists in the target, it means it was forked from
-        // the parent class as a side effect of the attribute declaration
-        // In this case, the new value should have already been set and there is nothing more to do
-      } else {
-        // It is a new attribute or the attribute declaration didn't specify an initial value
-        const initialValue = (target as any)[name];
-        options = {value: initialValue, ...options};
+      const value = (target as any)[name];
+      attributeOptions = {value, ...attributeOptions};
+    } else {
+      const initializer = getAttributeInitializer(target, name);
+      if (initializer !== undefined) {
+        attributeOptions = {default: initializer, ...attributeOptions};
       }
     }
 
-    target.setProperty(name, Attribute, options);
+    target.setProperty(name, Attribute, attributeOptions);
   };
+}
+
+function getAttributeInitializer(component: Component, attributeName: string) {
+  if (!hasOwnProperty(component, '__constructorSourceCode')) {
+    const classSourceCode = component.constructor.toString();
+    const constructorSourceCode = getConstructorSourceCode(classSourceCode);
+    Object.defineProperty(component, '__constructorSourceCode', {value: constructorSourceCode});
+  }
+
+  const constructorSourceCode = component.__constructorSourceCode;
+
+  if (constructorSourceCode === undefined) {
+    return undefined;
+  }
+
+  return getAttributeInitializerFromConstructorSourceCode(constructorSourceCode, attributeName);
 }
 
 export function method(options: MethodOptions = {}) {

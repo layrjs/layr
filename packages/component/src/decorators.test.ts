@@ -36,6 +36,8 @@ describe('Decorators', () => {
     expect(isAttributeInstance(attr)).toBe(true);
     expect(attr.getName()).toBe('title');
     expect(attr.getParent()).toBe(movie);
+    expect(typeof attr.getDefault()).toBe('function');
+    expect(attr.evaluateDefault()).toBe('');
     expect(attr.getValue()).toBe('');
     expect(movie.title).toBe('');
 
@@ -44,6 +46,8 @@ describe('Decorators', () => {
     expect(isAttributeInstance(attr)).toBe(true);
     expect(attr.getName()).toBe('country');
     expect(attr.getParent()).toBe(movie);
+    expect(attr.getDefault()).toBeUndefined();
+    expect(attr.evaluateDefault()).toBeUndefined();
     expect(attr.getValue()).toBeUndefined();
     expect(movie.country).toBeUndefined();
 
@@ -83,6 +87,8 @@ describe('Decorators', () => {
     expect(isAttributeInstance(attr)).toBe(true);
     expect(attr.getName()).toBe('title');
     expect(attr.getParent()).toBe(film);
+    expect(typeof attr.getDefault()).toBe('function');
+    expect(attr.evaluateDefault()).toBe('');
     expect(attr.getValue()).toBe('');
     expect(film.title).toBe('');
 
@@ -91,6 +97,8 @@ describe('Decorators', () => {
     expect(isAttributeInstance(attr)).toBe(true);
     expect(attr.getName()).toBe('country');
     expect(attr.getParent()).toBe(film);
+    expect(typeof attr.getDefault()).toBe('function');
+    expect(attr.evaluateDefault()).toBe('');
     expect(attr.getValue()).toBe('');
     expect(film.country).toBe('');
   });

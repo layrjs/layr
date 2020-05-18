@@ -7,6 +7,7 @@ import {ValueType, createValueType} from './value-types';
 import {fork} from './forking';
 import {AttributeSelector} from './attribute-selector';
 import type {Validator, ValidatorFunction} from './validation';
+import {isComponentClass} from './utilities';
 
 export type AttributeOptions = PropertyOptions & {
   valueType?: string;
@@ -225,6 +226,16 @@ export class Attribute extends Observable(Property) {
 
   getDefault() {
     return this._default;
+  }
+
+  evaluateDefault() {
+    let value = this._default;
+
+    if (typeof value === 'function' && !isComponentClass(value)) {
+      value = value.call(this.getParent());
+    }
+
+    return value;
   }
 
   // === Attribute selectors ===

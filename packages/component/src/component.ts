@@ -173,7 +173,7 @@ export class Component extends Observable(Object) {
                 const value = hasOwnProperty(object, name)
                   ? object[name]
                   : isNew
-                  ? attribute.getDefault()
+                  ? attribute.evaluateDefault()
                   : undefined;
                 attribute.setValue(value);
               }
@@ -516,6 +516,8 @@ export class Component extends Observable(Object) {
   }
 
   // === Attributes ===
+
+  __constructorSourceCode?: string; // Used by @attribute() decorator
 
   static get getAttribute() {
     return this.prototype.getAttribute;
