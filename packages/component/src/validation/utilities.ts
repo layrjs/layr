@@ -1,6 +1,6 @@
 import {validators, ValidatorBuilder} from './validator-builders';
 import {Validator, ValidatorFunction, isValidatorInstance} from './validator';
-import type {Attribute} from '../attribute';
+import type {Attribute} from '../properties';
 
 export function normalizeValidator(validator: Validator | ValidatorFunction, attribute: Attribute) {
   if (isValidatorInstance(validator)) {

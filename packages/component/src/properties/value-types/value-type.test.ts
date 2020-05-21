@@ -1,6 +1,6 @@
-import {Component} from '../component';
+import {Component} from '../../component';
 import {Attribute} from '../attribute';
-import {provide} from '../decorators';
+import {provide} from '../../decorators';
 import {AnyValueType, isAnyValueTypeInstance} from './any-value-type';
 import {BooleanValueType, isBooleanValueTypeInstance} from './boolean-value-type';
 import {NumberValueType, isNumberValueTypeInstance} from './number-value-type';

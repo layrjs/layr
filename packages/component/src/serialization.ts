@@ -6,8 +6,7 @@ import {possiblyAsync} from 'possibly-async';
 import {isES2015Class} from 'core-helpers';
 
 import type {Component} from './component';
-import type {PropertyFilter} from './property';
-import {AttributeSelector} from './attribute-selector';
+import type {PropertyFilter, AttributeSelector} from './properties';
 import {isComponentClassOrInstance} from './utilities';
 
 export type SerializeOptions = SimpleSerializeOptions & {

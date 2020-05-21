@@ -3,7 +3,7 @@ import omit from 'lodash/omit';
 import cloneDeep from 'lodash/cloneDeep';
 
 import type {Attribute} from './attribute';
-import {isComponentClassOrInstance} from './utilities';
+import {isComponentClassOrInstance} from '../utilities';
 
 export type AttributeSelector = boolean | PlainObject;
 

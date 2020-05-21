@@ -1,5 +1,5 @@
 import {Component} from '../component';
-import {Attribute} from '../attribute';
+import {Attribute} from '../properties';
 import {Validator, isValidatorInstance} from './validator';
 import {validators} from './validator-builders';
 import {normalizeValidator} from './utilities';

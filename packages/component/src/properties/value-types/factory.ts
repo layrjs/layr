@@ -9,8 +9,8 @@ import {DateValueType} from './date-value-type';
 import {RegExpValueType} from './regexp-value-type';
 import {ArrayValueType} from './array-value-type';
 import {ComponentValueType} from './component-value-type';
-import {Validator, ValidatorFunction} from '../validation';
-import {isComponentType} from '../utilities';
+import {Validator, ValidatorFunction} from '../../validation';
+import {isComponentType} from '../../utilities';
 
 const VALUE_TYPE_MAP = new Map(
   Object.entries({

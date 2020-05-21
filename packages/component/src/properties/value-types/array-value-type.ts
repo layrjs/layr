@@ -1,10 +1,10 @@
 import isEmpty from 'lodash/isEmpty';
 
 import {ValueType, ValueTypeOptions} from './value-type';
-import type {ExpandAttributeSelectorOptions} from '../component';
+import type {ExpandAttributeSelectorOptions} from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
-import {joinAttributePath} from '../utilities';
+import {joinAttributePath} from '../../utilities';
 
 export class ArrayValueType extends ValueType {
   _itemType: ValueType;

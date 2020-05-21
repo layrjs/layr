@@ -1,4 +1,4 @@
-import {Component} from './component';
+import {Component} from '../component';
 import {Property, PropertyOperationSetting} from './property';
 
 describe('Property', () => {

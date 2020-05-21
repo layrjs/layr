@@ -1,13 +1,13 @@
 import {hasOwnProperty} from 'core-helpers';
 import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
 
-import type {Component, ExpandAttributeSelectorOptions} from './component';
+import type {Component, ExpandAttributeSelectorOptions} from '../component';
 import {Property, PropertyOptions} from './property';
 import {ValueType, createValueType} from './value-types';
-import {fork} from './forking';
+import {fork} from '../forking';
 import {AttributeSelector} from './attribute-selector';
-import type {Validator, ValidatorFunction} from './validation';
-import {isComponentClass} from './utilities';
+import type {Validator, ValidatorFunction} from '../validation';
+import {isComponentClass} from '../utilities';
 
 export type AttributeOptions = PropertyOptions & {
   valueType?: string;

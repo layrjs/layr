@@ -1,10 +1,14 @@
 import sleep from 'sleep-promise';
 
 import {Component} from './component';
-import {isPropertyInstance} from './property';
-import {Attribute, isAttributeInstance} from './attribute';
+import {
+  isPropertyInstance,
+  Attribute,
+  isAttributeInstance,
+  Method,
+  isMethodInstance
+} from './properties';
 import {validators} from './validation';
-import {Method, isMethodInstance} from './method';
 import {attribute, method, provide, consume} from './decorators';
 import {isComponentClass, isComponentInstance} from './utilities';
 

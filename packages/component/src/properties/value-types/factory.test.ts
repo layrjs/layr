@@ -1,7 +1,7 @@
-import {Component} from '../component';
+import {Component} from '../../component';
 import {Attribute} from '../attribute';
 import {createValueType} from './factory';
-import {validators, requiredValidator} from '../validation';
+import {validators, requiredValidator} from '../../validation';
 import {isAnyValueTypeInstance} from './any-value-type';
 import {isNumberValueTypeInstance} from './number-value-type';
 import {isStringValueTypeInstance} from './string-value-type';

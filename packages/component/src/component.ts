@@ -8,10 +8,11 @@ import {
   PropertyOperationSetting,
   PropertyFilter,
   PropertyFilterSync,
-  PropertyFilterAsync
-} from './property';
-import {Attribute, isAttributeClass, isAttributeInstance, AttributeOptions} from './attribute';
-import {
+  PropertyFilterAsync,
+  Attribute,
+  isAttributeClass,
+  isAttributeInstance,
+  AttributeOptions,
   AttributeSelector,
   createAttributeSelectorFromNames,
   createAttributeSelectorFromAttributes,
@@ -19,9 +20,11 @@ import {
   setWithinAttributeSelector,
   mergeAttributeSelectors,
   removeFromAttributeSelector,
-  normalizeAttributeSelector
-} from './attribute-selector';
-import {Method, isMethodInstance, MethodOptions} from './method';
+  normalizeAttributeSelector,
+  Method,
+  isMethodInstance,
+  MethodOptions
+} from './properties';
 import {clone, CloneOptions} from './cloning';
 import {ForkOptions} from './forking';
 import {merge, MergeOptions} from './merging';

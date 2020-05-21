@@ -1,5 +1,5 @@
 import {ValueType, ValueTypeOptions} from './value-type';
-import type {ExpandAttributeSelectorOptions} from '../component';
+import type {ExpandAttributeSelectorOptions} from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
 import {
@@ -8,7 +8,7 @@ import {
   isComponentInstance,
   ensureComponentClass,
   assertIsComponentType
-} from '../utilities';
+} from '../../utilities';
 
 export class ComponentValueType extends ValueType {
   _componentType: string;

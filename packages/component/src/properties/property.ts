@@ -2,8 +2,8 @@ import {possiblyAsync} from 'possibly-async';
 import {getTypeOf, assertIsString, assertNoUnknownOptions, PlainObject} from 'core-helpers';
 import lowerFirst from 'lodash/lowerFirst';
 
-import type {Component} from './component';
-import {ensureComponentClass, assertIsComponentClassOrInstance} from './utilities';
+import type {Component} from '../component';
+import {ensureComponentClass, assertIsComponentClassOrInstance} from '../utilities';
 
 export type PropertyOptions = {
   exposure?: PropertyExposure;

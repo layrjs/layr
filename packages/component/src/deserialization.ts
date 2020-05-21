@@ -6,7 +6,7 @@ import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
 
 import type {Component, ComponentGetter} from './component';
-import type {PropertyFilter} from './property';
+import type {PropertyFilter} from './properties';
 import {isComponentClass} from './utilities';
 
 export type DeserializeOptions = SimpleDeserializeOptions & {

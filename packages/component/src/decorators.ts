@@ -1,8 +1,7 @@
 import {hasOwnProperty} from 'core-helpers';
 
 import type {Component} from './component';
-import {Attribute, AttributeOptions} from './attribute';
-import {Method, MethodOptions} from './method';
+import {Attribute, AttributeOptions, Method, MethodOptions} from './properties';
 import {isComponentClassOrInstance, isComponentClass} from './utilities';
 import {
   getConstructorSourceCode,

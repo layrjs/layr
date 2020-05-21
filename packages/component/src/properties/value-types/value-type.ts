@@ -1,6 +1,6 @@
 import {getTypeOf} from 'core-helpers';
 
-import type {ExpandAttributeSelectorOptions} from '../component';
+import type {ExpandAttributeSelectorOptions} from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
 import {
@@ -9,7 +9,7 @@ import {
   IntrospectedValidator,
   runValidators,
   normalizeValidator
-} from '../validation';
+} from '../../validation';
 
 export type IntrospectedValueType = {
   valueType: string;

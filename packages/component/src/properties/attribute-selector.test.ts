@@ -1,4 +1,4 @@
-import {Component} from './component';
+import {Component} from '../component';
 import {Attribute} from './attribute';
 import {
   createAttributeSelectorFromNames,
@@ -15,7 +15,7 @@ import {
   traverseAttributeSelector,
   normalizeAttributeSelector
 } from './attribute-selector';
-import {attribute} from './decorators';
+import {attribute} from '../decorators';
 
 describe('AttributeSelector', () => {
   test('createAttributeSelectorFromNames()', () => {

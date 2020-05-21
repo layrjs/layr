@@ -1,6 +1,5 @@
 import {Component} from './component';
-import {isAttributeInstance} from './attribute';
-import {isMethodInstance} from './method';
+import {isAttributeInstance, isMethodInstance} from './properties';
 import {attribute, method, provide, consume} from './decorators';
 
 describe('Decorators', () => {

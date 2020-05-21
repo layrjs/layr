@@ -1,7 +1,7 @@
-import {Component} from './component';
+import {Component} from '../component';
 import {Attribute} from './attribute';
 import {isNumberValueTypeInstance} from './value-types';
-import {validators} from './validation';
+import {validators} from '../validation';
 
 describe('Attribute', () => {
   test('Creation', async () => {
