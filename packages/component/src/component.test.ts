@@ -1444,51 +1444,64 @@ describe('Component', () => {
   });
 
   test('Unintrospection', async () => {
-    class UnintrospectedComponent extends Component {
-      static limit: number;
-
-      title!: string;
-    }
-
-    UnintrospectedComponent.unintrospect({
-      name: 'Movie',
-      properties: [
-        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}},
-        {name: 'find', type: 'Method', exposure: {call: true}}
-      ]
-    });
-
-    expect(UnintrospectedComponent.getComponentName()).toBe('Movie');
-    expect(UnintrospectedComponent.limit).toBe(100);
-    expect(UnintrospectedComponent.getAttribute('limit').getExposure()).toStrictEqual({get: true});
-    expect(UnintrospectedComponent.getMethod('find').getExposure()).toStrictEqual({call: true});
-
     const defaultTitle = function () {
       return '';
     };
 
-    UnintrospectedComponent.unintrospect({
-      name: 'Movie',
+    const Cinema = Component.unintrospect({
+      name: 'Cinema',
       prototype: {
         properties: [
-          {
-            name: 'title',
-            type: 'Attribute',
-            valueType: 'string',
-            default: defaultTitle,
-            exposure: {get: true}
-          }
+          {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
         ]
-      }
+      },
+      providedComponents: [
+        {
+          name: 'Movie',
+          properties: [
+            {
+              name: 'limit',
+              type: 'Attribute',
+              valueType: 'number',
+              value: 100,
+              exposure: {get: true}
+            },
+            {name: 'find', type: 'Method', exposure: {call: true}}
+          ],
+          prototype: {
+            properties: [
+              {
+                name: 'title',
+                type: 'Attribute',
+                valueType: 'string',
+                default: defaultTitle,
+                exposure: {get: true}
+              }
+            ]
+          },
+          consumedComponents: ['Cinema']
+        }
+      ]
     });
 
-    expect(UnintrospectedComponent.prototype.getAttribute('title').getDefault()).toBe(defaultTitle);
-    expect(UnintrospectedComponent.prototype.getAttribute('title').getExposure()).toStrictEqual({
+    expect(Cinema.getComponentName()).toBe('Cinema');
+    expect(Cinema.prototype.getAttribute('movies').getValueType().toString()).toBe('Movie[]?');
+
+    const Movie = Cinema.getProvidedComponent('Movie')!;
+
+    expect(Movie.getComponentName()).toBe('Movie');
+    expect(Movie.getAttribute('limit').getValue()).toBe(100);
+    expect(Movie.getAttribute('limit').getExposure()).toStrictEqual({get: true});
+    expect(Movie.getMethod('find').getExposure()).toStrictEqual({call: true});
+    expect(Movie.getConsumedComponent('Cinema')).toBe(Cinema);
+
+    expect(Movie.prototype.getAttribute('title').getDefault()).toBe(defaultTitle);
+    expect(Movie.prototype.getAttribute('title').getExposure()).toStrictEqual({
       get: true
     });
 
-    const movie = new UnintrospectedComponent();
+    const movie = new Movie();
 
-    expect(movie.title).toBe('');
+    expect(movie.getAttribute('title').getValue()).toBe('');
   });
 });

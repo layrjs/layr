@@ -2162,7 +2162,9 @@ export class Component extends Observable(Object) {
 
   // === Introspection ===
 
-  static introspect(_introspectedComponents: IntrospectedComponentMap = new Map()) {
+  static introspect({
+    _introspectedComponents = new Map()
+  }: {_introspectedComponents?: IntrospectedComponentMap} = {}) {
     if (_introspectedComponents.has(this)) {
       return _introspectedComponents.get(this);
     }
@@ -2171,9 +2173,9 @@ export class Component extends Observable(Object) {
 
     const introspectedProperties = this.introspectProperties();
     const introspectedPrototypeProperties = this.prototype.introspectProperties();
-    const introspectedProvidedComponents = this.__introspectProvidedComponents(
+    const introspectedProvidedComponents = this.__introspectProvidedComponents({
       _introspectedComponents
-    );
+    });
 
     if (
       introspectedProperties.length > 0 ||
@@ -2204,61 +2206,15 @@ export class Component extends Observable(Object) {
       introspectedComponent.providedComponents = introspectedProvidedComponents;
     }
 
-    const introspectedConsumedComponents = this.__introspectConsumedComponents(
+    const introspectedConsumedComponents = this.__introspectConsumedComponents({
       _introspectedComponents
-    );
+    });
 
     if (introspectedConsumedComponents.length > 0) {
       introspectedComponent.consumedComponents = introspectedConsumedComponents;
     }
 
     return introspectedComponent;
-  }
-
-  static __introspectProvidedComponents(_introspectedComponents: IntrospectedComponentMap) {
-    const introspectedProvidedComponents = [];
-
-    for (const providedComponent of this.getProvidedComponents()) {
-      const introspectedProvidedComponent = providedComponent.introspect(_introspectedComponents);
-
-      if (introspectedProvidedComponent !== undefined) {
-        introspectedProvidedComponents.push(introspectedProvidedComponent);
-      }
-    }
-
-    return introspectedProvidedComponents;
-  }
-
-  static __introspectConsumedComponents(_introspectedComponents: IntrospectedComponentMap) {
-    const introspectedConsumedComponents = [];
-
-    for (const consumedComponent of this.getConsumedComponents()) {
-      const introspectedConsumedComponent = consumedComponent.introspect(_introspectedComponents);
-
-      if (introspectedConsumedComponent !== undefined) {
-        introspectedConsumedComponents.push(consumedComponent.getComponentName());
-      }
-    }
-
-    return introspectedConsumedComponents;
-  }
-
-  static unintrospect(introspectedComponent: IntrospectedComponent) {
-    const {
-      name,
-      properties: introspectedProperties,
-      prototype: {properties: introspectedPrototypeProperties} = {}
-    } = introspectedComponent;
-
-    this.setComponentName(name);
-
-    if (introspectedProperties !== undefined) {
-      this.unintrospectProperties(introspectedProperties);
-    }
-
-    if (introspectedPrototypeProperties !== undefined) {
-      this.prototype.unintrospectProperties(introspectedPrototypeProperties);
-    }
   }
 
   static get introspectProperties() {
@@ -2279,6 +2235,74 @@ export class Component extends Observable(Object) {
     return introspectedProperties;
   }
 
+  static __introspectProvidedComponents({
+    _introspectedComponents
+  }: {
+    _introspectedComponents: IntrospectedComponentMap;
+  }) {
+    const introspectedProvidedComponents = [];
+
+    for (const providedComponent of this.getProvidedComponents()) {
+      const introspectedProvidedComponent = providedComponent.introspect({_introspectedComponents});
+
+      if (introspectedProvidedComponent !== undefined) {
+        introspectedProvidedComponents.push(introspectedProvidedComponent);
+      }
+    }
+
+    return introspectedProvidedComponents;
+  }
+
+  static __introspectConsumedComponents({
+    _introspectedComponents
+  }: {
+    _introspectedComponents: IntrospectedComponentMap;
+  }) {
+    const introspectedConsumedComponents = [];
+
+    for (const consumedComponent of this.getConsumedComponents()) {
+      const introspectedConsumedComponent = consumedComponent.introspect({_introspectedComponents});
+
+      if (introspectedConsumedComponent !== undefined) {
+        introspectedConsumedComponents.push(consumedComponent.getComponentName());
+      }
+    }
+
+    return introspectedConsumedComponents;
+  }
+
+  static unintrospect(introspectedComponent: IntrospectedComponent): typeof Component {
+    const {
+      name,
+      properties: introspectedProperties,
+      prototype: {properties: introspectedPrototypeProperties} = {},
+      providedComponents: introspectedProvidedComponents,
+      consumedComponents: introspectedConsumedComponents
+    } = introspectedComponent;
+
+    class UnintrospectedComponent extends Component {}
+
+    if (introspectedProperties !== undefined) {
+      UnintrospectedComponent.unintrospectProperties(introspectedProperties);
+    }
+
+    if (introspectedPrototypeProperties !== undefined) {
+      UnintrospectedComponent.prototype.unintrospectProperties(introspectedPrototypeProperties);
+    }
+
+    UnintrospectedComponent.setComponentName(name);
+
+    if (introspectedProvidedComponents !== undefined) {
+      UnintrospectedComponent.__unintrospectProvidedComponents(introspectedProvidedComponents);
+    }
+
+    if (introspectedConsumedComponents !== undefined) {
+      UnintrospectedComponent.__unintrospectConsumedComponents(introspectedConsumedComponents);
+    }
+
+    return UnintrospectedComponent;
+  }
+
   static get unintrospectProperties() {
     return this.prototype.unintrospectProperties;
   }
@@ -2289,6 +2313,18 @@ export class Component extends Observable(Object) {
       const PropertyClass = ensureComponentClass(this).getPropertyClass(type);
       const {name, options} = PropertyClass.unintrospect(introspectedProperty);
       this.setProperty(name, PropertyClass, options);
+    }
+  }
+
+  static __unintrospectProvidedComponents(introspectedProvidedComponents: IntrospectedComponent[]) {
+    for (const introspectedProvidedComponent of introspectedProvidedComponents) {
+      this.provideComponent(Component.unintrospect(introspectedProvidedComponent));
+    }
+  }
+
+  static __unintrospectConsumedComponents(introspectedConsumedComponents: string[]) {
+    for (const introspectedConsumedComponent of introspectedConsumedComponents) {
+      this.consumeComponent(introspectedConsumedComponent);
     }
   }
 
