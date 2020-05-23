@@ -1319,6 +1319,8 @@ describe('Component', () => {
 
   test('Introspection', async () => {
     class Movie extends Component {
+      @consume() static Cinema: typeof Cinema;
+
       @attribute('number') static limit = 100;
       @attribute('number?') static offset?: number;
       @method() static find() {}
@@ -1359,7 +1361,8 @@ describe('Component', () => {
       name: 'Movie',
       properties: [
         {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}}
-      ]
+      ],
+      consumedComponents: ['Cinema']
     });
 
     expect(Cinema.introspect()).toStrictEqual({
@@ -1380,7 +1383,8 @@ describe('Component', () => {
               value: 100,
               exposure: {get: true}
             }
-          ]
+          ],
+          consumedComponents: ['Cinema']
         }
       ]
     });
@@ -1401,7 +1405,8 @@ describe('Component', () => {
           exposure: {get: true}
         },
         {name: 'find', type: 'Method', exposure: {call: true}}
-      ]
+      ],
+      consumedComponents: ['Cinema']
     });
 
     Movie.prototype.getAttribute('title').setExposure({get: true});
@@ -1433,7 +1438,8 @@ describe('Component', () => {
           {name: 'country', type: 'Attribute', valueType: 'string?', exposure: {get: true}},
           {name: 'load', type: 'Method', exposure: {call: true}}
         ]
-      }
+      },
+      consumedComponents: ['Cinema']
     });
   });
 
