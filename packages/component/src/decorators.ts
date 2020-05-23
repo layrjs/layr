@@ -1,34 +1,19 @@
 import {hasOwnProperty} from 'core-helpers';
 
 import type {Component} from './component';
-import {Attribute, AttributeOptions, Method, MethodOptions} from './properties';
+import {
+  Attribute,
+  AttributeOptions,
+  PrimaryIdentifierAttribute,
+  SecondaryIdentifierAttribute,
+  Method,
+  MethodOptions
+} from './properties';
 import {isComponentClassOrInstance, isComponentClass} from './utilities';
 import {
   getConstructorSourceCode,
   getAttributeInitializerFromConstructorSourceCode
 } from './js-parser';
-
-// export function property(options = {}) {
-//   ow(options, 'options', ow.object);
-
-//   return function(target, name, descriptor) {
-//     ow(target, 'target', ow.object);
-//     ow(name, 'name', ow.string.nonEmpty);
-//     ow(descriptor, 'descriptor', ow.object);
-
-//     if (!isWithProperties(target)) {
-//       throw new Error(
-//         `@property() target doesn't inherit from WithProperties (property name: '${name}')`
-//       );
-//     }
-
-//     if (typeof descriptor.value === 'function' && descriptor.enumerable === false) {
-//       return method(options)(target, name, descriptor);
-//     }
-
-//     return attribute(options)(target, name, descriptor);
-//   };
-// }
 
 type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
 
@@ -39,23 +24,68 @@ export function attribute(
 export function attribute(options?: AttributeDecoratorOptions): PropertyDecorator;
 export function attribute(
   valueType?: string | AttributeDecoratorOptions,
+  options?: AttributeDecoratorOptions
+) {
+  return createAttributeDecorator(Attribute, 'attribute', valueType, options);
+}
+
+export function primaryIdentifier(
+  valueType?: string,
+  options?: AttributeDecoratorOptions
+): PropertyDecorator;
+export function primaryIdentifier(options?: AttributeDecoratorOptions): PropertyDecorator;
+export function primaryIdentifier(
+  valueType?: string | AttributeDecoratorOptions,
+  options?: AttributeDecoratorOptions
+) {
+  return createAttributeDecorator(
+    PrimaryIdentifierAttribute,
+    'primaryIdentifier',
+    valueType,
+    options
+  );
+}
+
+export function secondaryIdentifier(
+  valueType?: string,
+  options?: AttributeDecoratorOptions
+): PropertyDecorator;
+export function secondaryIdentifier(options?: AttributeDecoratorOptions): PropertyDecorator;
+export function secondaryIdentifier(
+  valueType?: string | AttributeDecoratorOptions,
+  options?: AttributeDecoratorOptions
+) {
+  return createAttributeDecorator(
+    SecondaryIdentifierAttribute,
+    'secondaryIdentifier',
+    valueType,
+    options
+  );
+}
+
+function createAttributeDecorator(
+  AttributeClass: typeof Attribute,
+  decoratorName: string,
+  valueType?: string | AttributeDecoratorOptions,
   options: AttributeDecoratorOptions = {}
 ) {
   if (typeof valueType === 'string') {
-    options.valueType = valueType;
+    options = {...options, valueType};
   } else if (valueType !== undefined) {
     options = valueType;
   }
 
   if ('value' in options || 'default' in options) {
-    throw new Error(`The options 'value' and 'default' are not authorized in $attribute()`);
+    throw new Error(`The options 'value' and 'default' are not authorized in @${decoratorName}()`);
   }
 
-  let attributeOptions: AttributeOptions = {...options};
+  let attributeOptions: AttributeOptions = options;
 
   return function (target: typeof Component | Component, name: string) {
     if (!isComponentClassOrInstance(target)) {
-      throw new Error(`@attribute() must be used inside a component class (property: '${name}')`);
+      throw new Error(
+        `@${decoratorName}() must be used inside a component class (property: '${name}')`
+      );
     }
 
     if (isComponentClass(target)) {
@@ -68,7 +98,7 @@ export function attribute(
       }
     }
 
-    target.setProperty(name, Attribute, attributeOptions);
+    target.setProperty(name, AttributeClass, attributeOptions);
   };
 }
 

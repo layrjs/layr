@@ -1,6 +1,6 @@
 import {Component} from './component';
-import {attribute} from './decorators';
-import {serialize} from './serialization';
+import {attribute, primaryIdentifier, secondaryIdentifier, provide} from './decorators';
+import {serialize, SerializeOptions} from './serialization';
 
 describe('Serialization', () => {
   test('Component classes', async () => {
@@ -145,13 +145,6 @@ describe('Serialization', () => {
       director: {__component: 'Director', name: 'Christopher Nolan', country: {__undefined: true}}
     });
 
-    expect(movie.serialize({includeComponentTypes: false, includeIsNewMarks: false})).toStrictEqual(
-      {
-        title: 'Inception',
-        director: {name: 'Christopher Nolan', country: {__undefined: true}}
-      }
-    );
-
     expect(
       movie.serialize({
         attributeFilter(attribute) {
@@ -177,6 +170,115 @@ describe('Serialization', () => {
       __component: 'Movie',
       title: 'Inception'
     });
+  });
+
+  test('Identifiable component instances', async () => {
+    class Movie extends Component {
+      @primaryIdentifier() id!: string;
+      @secondaryIdentifier() slug!: string;
+      @attribute('string') title = '';
+    }
+
+    let movie = Movie.fork().instantiate({title: 'Inception'});
+
+    expect(movie.serialize()).toEqual({
+      __component: 'Movie',
+      title: 'Inception'
+    });
+
+    expect(() => movie.serialize({returnComponentReferences: true})).toThrow(
+      "Cannot get an identifier descriptor from a component that has no set identifier (component: 'Movie')"
+    );
+
+    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'});
+
+    expect(movie.serialize()).toEqual({
+      __component: 'Movie',
+      id: 'abc123',
+      title: 'Inception'
+    });
+
+    expect(movie.serialize({returnComponentReferences: true})).toEqual({
+      __component: 'Movie',
+      id: 'abc123'
+    });
+
+    movie = Movie.fork().instantiate({slug: 'inception', title: 'Inception'});
+
+    expect(movie.serialize()).toEqual({
+      __component: 'Movie',
+      slug: 'inception',
+      title: 'Inception'
+    });
+
+    expect(movie.serialize({returnComponentReferences: true})).toEqual({
+      __component: 'Movie',
+      slug: 'inception'
+    });
+
+    movie = Movie.fork().instantiate({id: 'abc123', slug: 'inception', title: 'Inception'});
+
+    expect(movie.serialize()).toEqual({
+      __component: 'Movie',
+      id: 'abc123',
+      slug: 'inception',
+      title: 'Inception'
+    });
+
+    expect(movie.serialize({returnComponentReferences: true})).toEqual({
+      __component: 'Movie',
+      id: 'abc123'
+    });
+
+    // --- With nested identifiable component instances ---
+
+    class Cinema extends Component {
+      @provide() static Movie = Movie;
+
+      @primaryIdentifier() id!: string;
+      @attribute('string') name = '';
+      @attribute('Movie[]') movies!: Movie[];
+    }
+
+    movie = Movie.instantiate({id: 'abc123', title: 'Inception'});
+
+    const cinema = Cinema.instantiate({
+      id: 'xyz456',
+      name: 'Paradiso',
+      movies: [movie]
+    });
+
+    expect(cinema.serialize()).toEqual({
+      __component: 'Cinema',
+      id: 'xyz456',
+      name: 'Paradiso',
+      movies: [{__component: 'Movie', id: 'abc123'}]
+    });
+
+    expect(cinema.serialize({includeReferencedComponents: true})).toEqual({
+      __component: 'Cinema',
+      id: 'xyz456',
+      name: 'Paradiso',
+      movies: [{__component: 'Movie', id: 'abc123', title: 'Inception'}]
+    });
+
+    let referencedComponents: SerializeOptions['referencedComponents'] = new Set();
+
+    expect(cinema.serialize({referencedComponents})).toEqual({
+      __component: 'Cinema',
+      id: 'xyz456',
+      name: 'Paradiso',
+      movies: [{__component: 'Movie', id: 'abc123'}]
+    });
+    expect(Array.from(referencedComponents)).toEqual([Movie, movie]);
+
+    referencedComponents = new Set();
+
+    expect(cinema.serialize({returnComponentReferences: true, referencedComponents})).toEqual({
+      __component: 'Cinema',
+      id: 'xyz456'
+    });
+    expect(Array.from(referencedComponents)).toEqual([Movie, Cinema, cinema]);
   });
 
   test('Functions', async () => {

@@ -1,6 +1,5 @@
 import {possiblyAsync} from 'possibly-async';
-import {getTypeOf, assertIsString, assertNoUnknownOptions, PlainObject} from 'core-helpers';
-import lowerFirst from 'lodash/lowerFirst';
+import {assertIsString, assertNoUnknownOptions, PlainObject} from 'core-helpers';
 
 import type {Component} from '../component';
 import {ensureComponentClass, assertIsComponentClassOrInstance} from '../utilities';
@@ -162,10 +161,12 @@ export class Property {
     return isPropertyInstance(value);
   }
 
+  describeType() {
+    return 'property';
+  }
+
   describe() {
-    return `${this.getParent().describeComponent()}, ${lowerFirst(
-      getTypeOf(this)
-    )}: '${this.getName()}'`;
+    return `${this.getParent().describeComponent()}, ${this.describeType()}: '${this.getName()}'`;
   }
 }
 

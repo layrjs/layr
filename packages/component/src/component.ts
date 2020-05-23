@@ -1,6 +1,7 @@
 import {Observable} from '@liaison/observable';
-import {hasOwnProperty, isPrototypeOf, getTypeOf, PlainObject} from 'core-helpers';
+import {hasOwnProperty, isPrototypeOf, getTypeOf, PlainObject, isPlainObject} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
+import cuid from 'cuid';
 
 import {
   Property,
@@ -13,6 +14,13 @@ import {
   isAttributeClass,
   isAttributeInstance,
   AttributeOptions,
+  IdentifierAttribute,
+  isIdentifierAttributeInstance,
+  PrimaryIdentifierAttribute,
+  isPrimaryIdentifierAttributeInstance,
+  SecondaryIdentifierAttribute,
+  isSecondaryIdentifierAttributeInstance,
+  IdentifierValue,
   AttributeSelector,
   createAttributeSelectorFromNames,
   createAttributeSelectorFromAttributes,
@@ -25,6 +33,7 @@ import {
   isMethodInstance,
   MethodOptions
 } from './properties';
+import {IdentityMap} from './identity-map';
 import {clone, CloneOptions} from './cloning';
 import {ForkOptions} from './forking';
 import {merge, MergeOptions} from './merging';
@@ -47,12 +56,18 @@ import {
   joinAttributePath
 } from './utilities';
 
+export type IdentifierObject = {[name: string]: IdentifierValue};
+
+export type IdentifierDescriptor = NormalizedIdentifierDescriptor | string | number;
+
+export type NormalizedIdentifierDescriptor = {[name: string]: IdentifierValue};
+
 export type ComponentGetter = (name: string) => typeof Component | Component;
 
 export type ExpandAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
   depth?: number;
-  includeReferencedEntities?: boolean;
+  includeReferencedComponents?: boolean;
   _isDeep?: boolean;
   _attributeStack?: Set<Attribute>;
 };
@@ -122,14 +137,37 @@ export class Component extends Observable(Object) {
       initialize?: boolean;
     } = {}
   ) {
-    const {isNew = false, attributeSelector = {}, attributeFilter, initialize = true} = options;
+    const {isNew, attributeSelector = {}, attributeFilter, initialize = true} = options;
 
-    const component = isNew
-      ? new this({}, {attributeSelector: {}})
-      : (Object.create(this.prototype) as InstanceType<T>);
+    let component: Component | undefined;
+
+    if (this.prototype.hasPrimaryIdentifierAttribute()) {
+      const identityMap = this.__getIdentityMap();
+      component = identityMap.getComponent(object);
+
+      if (component !== undefined) {
+        if (isNew !== undefined) {
+          if (isNew && !component.isNew()) {
+            throw new Error(
+              `Cannot mark as new an existing non-new component (${component.describeComponent()})`
+            );
+          }
+
+          if (!isNew && component.isNew()) {
+            component.markAsNotNew();
+          }
+        }
+      }
+    }
+
+    if (component === undefined) {
+      component = isNew
+        ? new this({}, {attributeSelector: {}})
+        : (Object.create(this.prototype) as Component);
+    }
 
     return component.__finishInstantiation(object, {
-      isNew,
+      isNew: Boolean(isNew),
       attributeSelector,
       attributeFilter,
       initialize
@@ -286,6 +324,14 @@ export class Component extends Observable(Object) {
 
     if (type === 'attribute') {
       return Attribute;
+    }
+
+    if (type === 'primaryIdentifierAttribute') {
+      return PrimaryIdentifierAttribute;
+    }
+
+    if (type === 'secondaryIdentifierAttribute') {
+      return SecondaryIdentifierAttribute;
     }
 
     if (type === 'method') {
@@ -603,13 +649,240 @@ export class Component extends Observable(Object) {
 
   // === Identifier attributes ===
 
-  getIdentifierAttributes(_options = {}) {
-    // Identifier attributes are implemented in the Entity subclass
-    // For other subclasses, return an empty iterable
+  getIdentifierAttribute(name: string, options: {autoFork?: boolean} = {}) {
+    const {autoFork = true} = options;
 
-    return {
-      *[Symbol.iterator]() {}
+    const identifierAttribute = this.__getIdentifierAttribute(name, {autoFork});
+
+    if (identifierAttribute === undefined) {
+      throw new Error(
+        `The identifier attribute '${name}' is missing (${this.describeComponent()})`
+      );
+    }
+
+    return identifierAttribute;
+  }
+
+  hasIdentifierAttribute(name: string) {
+    return this.__getIdentifierAttribute(name, {autoFork: false}) !== undefined;
+  }
+
+  __getIdentifierAttribute(name: string, options: {autoFork: boolean}) {
+    const {autoFork} = options;
+
+    const property = this.__getProperty(name, {autoFork});
+
+    if (property === undefined) {
+      return undefined;
+    }
+
+    if (!isIdentifierAttributeInstance(property)) {
+      throw new Error(
+        `A property with the specified name was found, but it is not an identifier attribute (${property.describe()})`
+      );
+    }
+
+    return property;
+  }
+
+  getPrimaryIdentifierAttribute(options: {autoFork?: boolean} = {}) {
+    const {autoFork = true} = options;
+
+    const primaryIdentifierAttribute = this.__getPrimaryIdentifierAttribute({autoFork});
+
+    if (primaryIdentifierAttribute === undefined) {
+      throw new Error(
+        `The component '${this.constructor.getComponentName()}' doesn't have a primary identifier attribute`
+      );
+    }
+
+    return primaryIdentifierAttribute;
+  }
+
+  hasPrimaryIdentifierAttribute() {
+    return this.__getPrimaryIdentifierAttribute({autoFork: false}) !== undefined;
+  }
+
+  __getPrimaryIdentifierAttribute(options: {autoFork: boolean}) {
+    const {autoFork} = options;
+
+    for (const identifierAttribute of this.getIdentifierAttributes({autoFork})) {
+      if (isPrimaryIdentifierAttributeInstance(identifierAttribute)) {
+        return identifierAttribute;
+      }
+    }
+
+    return undefined;
+  }
+
+  setPrimaryIdentifierAttribute(
+    name: string,
+    attributeOptions: AttributeOptions = {},
+    options: {returnDescriptor?: boolean} = {}
+  ) {
+    return this.setProperty(name, PrimaryIdentifierAttribute, attributeOptions, options);
+  }
+
+  getSecondaryIdentifierAttribute(name: string, options: {autoFork?: boolean} = {}) {
+    const {autoFork = true} = options;
+
+    const secondaryIdentifierAttribute = this.__getSecondaryIdentifierAttribute(name, {autoFork});
+
+    if (secondaryIdentifierAttribute === undefined) {
+      throw new Error(
+        `The secondary identifier attribute '${name}' is missing (${this.describeComponent()})`
+      );
+    }
+
+    return secondaryIdentifierAttribute;
+  }
+
+  hasSecondaryIdentifierAttribute(name: string) {
+    return this.__getSecondaryIdentifierAttribute(name, {autoFork: false}) !== undefined;
+  }
+
+  __getSecondaryIdentifierAttribute(name: string, options: {autoFork: boolean}) {
+    const {autoFork} = options;
+
+    const property = this.__getProperty(name, {autoFork});
+
+    if (property === undefined) {
+      return undefined;
+    }
+
+    if (!isSecondaryIdentifierAttributeInstance(property)) {
+      throw new Error(
+        `A property with the specified name was found, but it is not a secondary identifier attribute (${property.describe()})`
+      );
+    }
+
+    return property;
+  }
+
+  setSecondaryIdentifierAttribute(
+    name: string,
+    attributeOptions: AttributeOptions = {},
+    options: {returnDescriptor?: boolean} = {}
+  ) {
+    return this.setProperty(name, SecondaryIdentifierAttribute, attributeOptions, options);
+  }
+
+  getIdentifierAttributes(
+    options: {
+      filter?: PropertyFilterSync;
+      autoFork?: boolean;
+    } & CreatePropertyFilterOptionsForAttributes = {}
+  ) {
+    const {
+      filter: originalFilter,
+      attributeSelector = true,
+      setAttributesOnly = false,
+      autoFork = true
+    } = options;
+
+    const filter = function (this: Component, property: Property) {
+      if (!isIdentifierAttributeInstance(property)) {
+        return false;
+      }
+
+      if (originalFilter !== undefined) {
+        return originalFilter.call(this, property);
+      }
+
+      return true;
     };
+
+    return this.getProperties<IdentifierAttribute>({
+      filter,
+      autoFork,
+      attributeSelector,
+      setAttributesOnly
+    });
+  }
+
+  getSecondaryIdentifierAttributes(
+    options: {
+      filter?: PropertyFilterSync;
+      autoFork?: boolean;
+    } & CreatePropertyFilterOptionsForAttributes = {}
+  ) {
+    const {
+      filter: originalFilter,
+      attributeSelector = true,
+      setAttributesOnly = false,
+      autoFork = true
+    } = options;
+
+    const filter = function (this: Component, property: Property) {
+      if (!isSecondaryIdentifierAttributeInstance(property)) {
+        return false;
+      }
+
+      if (originalFilter !== undefined) {
+        return originalFilter.call(this, property);
+      }
+
+      return true;
+    };
+
+    return this.getProperties<SecondaryIdentifierAttribute>({
+      filter,
+      autoFork,
+      attributeSelector,
+      setAttributesOnly
+    });
+  }
+
+  getIdentifiers() {
+    const identifiers = this.__getIdentifiers();
+
+    if (identifiers === undefined) {
+      throw new Error(
+        `Cannot get the identifiers of a component that has no set identifier (${this.describeComponent()})`
+      );
+    }
+
+    return identifiers;
+  }
+
+  hasIdentifiers() {
+    return this.__getIdentifiers() !== undefined;
+  }
+
+  __getIdentifiers() {
+    let identifiers: IdentifierObject | undefined;
+
+    for (const identifierAttribute of this.getIdentifierAttributes({
+      setAttributesOnly: true,
+      autoFork: false
+    })) {
+      const name = identifierAttribute.getName();
+      const value = identifierAttribute.getValue();
+
+      if (identifiers === undefined) {
+        identifiers = {};
+      }
+
+      identifiers[name] = value;
+    }
+
+    return identifiers;
+  }
+
+  static generateId() {
+    return cuid();
+  }
+
+  private static __identityMap: IdentityMap;
+
+  static __getIdentityMap() {
+    if (this.__identityMap === undefined) {
+      Object.defineProperty(this, '__identityMap', {value: new IdentityMap(this)});
+    } else if (!hasOwnProperty(this, '__identityMap')) {
+      Object.defineProperty(this, '__identityMap', {value: this.__identityMap.fork(this)});
+    }
+
+    return this.__identityMap;
   }
 
   __partitionAttributes(object: PlainObject) {
@@ -632,7 +905,93 @@ export class Component extends Observable(Object) {
   }
 
   __getMinimumAttributeCount() {
-    return 0;
+    return this.hasPrimaryIdentifierAttribute() ? 1 : 0;
+  }
+
+  // === Identifier descriptor ===
+
+  getIdentifierDescriptor() {
+    const identifierDescriptor = this.__getIdentifierDescriptor();
+
+    if (identifierDescriptor === undefined) {
+      throw new Error(
+        `Cannot get an identifier descriptor from a component that has no set identifier (${this.describeComponent()})`
+      );
+    }
+
+    return identifierDescriptor;
+  }
+
+  hasIdentifierDescriptor() {
+    return this.__getIdentifierDescriptor() !== undefined;
+  }
+
+  __getIdentifierDescriptor(): NormalizedIdentifierDescriptor | undefined {
+    const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
+
+    if (primaryIdentifierAttribute.isSet()) {
+      const name = primaryIdentifierAttribute.getName();
+      const value = primaryIdentifierAttribute.getValue();
+
+      return {[name]: value};
+    }
+
+    for (const secondaryIdentifierAttribute of this.getSecondaryIdentifierAttributes({
+      setAttributesOnly: true
+    })) {
+      const name = secondaryIdentifierAttribute.getName();
+      const value = secondaryIdentifierAttribute.getValue();
+
+      return {[name]: value};
+    }
+
+    return undefined;
+  }
+
+  static normalizeIdentifierDescriptor(
+    identifierDescriptor: IdentifierDescriptor
+  ): NormalizedIdentifierDescriptor {
+    if (typeof identifierDescriptor === 'string' || typeof identifierDescriptor === 'number') {
+      const primaryIdentifierAttribute = this.prototype.getPrimaryIdentifierAttribute();
+      const name = primaryIdentifierAttribute.getName();
+      primaryIdentifierAttribute.checkValue(identifierDescriptor);
+
+      return {[name]: identifierDescriptor};
+    }
+
+    if (!isPlainObject(identifierDescriptor)) {
+      throw new Error(
+        `An identifier descriptor should be a string, a number, or an object, but received a value of type '${getTypeOf(
+          identifierDescriptor
+        )}' (${this.describeComponent()})`
+      );
+    }
+
+    const attributes = Object.entries(identifierDescriptor);
+
+    if (attributes.length !== 1) {
+      throw new Error(
+        `An identifier descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of ${
+          attributes.length
+        } attributes (${this.describeComponent()}, received object: ${JSON.stringify(
+          identifierDescriptor
+        )})`
+      );
+    }
+
+    const [name, value] = attributes[0];
+    const identifierAttribute = this.prototype.getIdentifierAttribute(name);
+    identifierAttribute.checkValue(value);
+
+    return {[name]: value};
+  }
+
+  static describeIdentifierDescriptor(identifierDescriptor: IdentifierDescriptor) {
+    const normalizedIdentifierDescriptor = this.normalizeIdentifierDescriptor(identifierDescriptor);
+    const [[name, value]] = Object.entries(normalizedIdentifierDescriptor);
+    const valueString = typeof value === 'string' ? `'${value}'` : value.toString();
+
+    return `${name}: ${valueString}`;
   }
 
   // === Attribute selectors ===
@@ -648,7 +1007,6 @@ export class Component extends Observable(Object) {
 
     for (const attribute of this.getAttributes({setAttributesOnly})) {
       const name = attribute.getName();
-
       attributeSelector = setWithinAttributeSelector(attributeSelector, name, true);
     }
 
@@ -668,7 +1026,8 @@ export class Component extends Observable(Object) {
     let {
       filter,
       depth = Number.MAX_SAFE_INTEGER,
-      includeReferencedEntities = false,
+      includeReferencedComponents = false,
+      _isDeep = false,
       _attributeStack = new Set()
     } = options;
 
@@ -684,38 +1043,54 @@ export class Component extends Observable(Object) {
       return expandedAttributeSelector; // Optimization
     }
 
-    for (const attribute of this.getAttributes({filter})) {
-      const name = attribute.getName();
+    const hasPrimaryIdentifierAttribute = this.hasPrimaryIdentifierAttribute();
 
-      const subattributeSelector = getFromAttributeSelector(attributeSelector, name);
+    // By default, referenced components are not expanded
+    if (!(hasPrimaryIdentifierAttribute && _isDeep && !includeReferencedComponents)) {
+      for (const attribute of this.getAttributes({filter})) {
+        const name = attribute.getName();
 
-      if (subattributeSelector === false) {
-        continue;
-      }
+        const subattributeSelector = getFromAttributeSelector(attributeSelector, name);
 
-      if (_attributeStack.has(attribute)) {
-        continue; // Avoid looping indefinitely when a circular attribute is encountered
-      }
-
-      _attributeStack.add(attribute);
-
-      const expandedSubattributeSelector = attribute._expandAttributeSelector(
-        subattributeSelector,
-        {
-          filter,
-          depth,
-          includeReferencedEntities,
-          _isDeep: true,
-          _attributeStack
+        if (subattributeSelector === false) {
+          continue;
         }
-      );
 
-      _attributeStack.delete(attribute);
+        if (_attributeStack.has(attribute)) {
+          continue; // Avoid looping indefinitely when a circular attribute is encountered
+        }
+
+        _attributeStack.add(attribute);
+
+        const expandedSubattributeSelector = attribute._expandAttributeSelector(
+          subattributeSelector,
+          {
+            filter,
+            depth,
+            includeReferencedComponents,
+            _isDeep: true,
+            _attributeStack
+          }
+        );
+
+        _attributeStack.delete(attribute);
+
+        expandedAttributeSelector = setWithinAttributeSelector(
+          expandedAttributeSelector,
+          name,
+          expandedSubattributeSelector
+        );
+      }
+    }
+
+    // If the component has a primary identifier attribute, always include it
+    if (hasPrimaryIdentifierAttribute) {
+      const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute({autoFork: false});
 
       expandedAttributeSelector = setWithinAttributeSelector(
         expandedAttributeSelector,
-        name,
-        expandedSubattributeSelector
+        primaryIdentifierAttribute.getName(),
+        true
       );
     }
 
@@ -1326,12 +1701,19 @@ export class Component extends Observable(Object) {
     return ghost as T;
   }
 
-  // TODO
-  // getGhost() {
-  //   throw new Error(
-  //     `Cannot get the ghost of a component that is not managed by an entity manager (${this.describeComponent()})`
-  //   );
-  // }
+  getGhost<T extends Component>(this: T): T {
+    const identifiers = this.getIdentifiers();
+    const ghostClass = this.constructor.getGhost();
+    const ghostIdentityMap = ghostClass.__getIdentityMap();
+    let ghostComponent = ghostIdentityMap.getComponent(identifiers);
+
+    if (ghostComponent === undefined) {
+      ghostComponent = this.fork({parentComponent: ghostClass});
+      ghostIdentityMap.addComponent(ghostComponent);
+    }
+
+    return ghostComponent as T;
+  }
 
   // === Merging ===
 
@@ -1435,10 +1817,20 @@ export class Component extends Observable(Object) {
   attach() {
     Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
 
+    if (this.hasPrimaryIdentifierAttribute()) {
+      const identityMap = this.constructor.__getIdentityMap();
+      identityMap.addComponent(this);
+    }
+
     return this;
   }
 
   detach() {
+    if (this.hasPrimaryIdentifierAttribute()) {
+      const identityMap = this.constructor.__getIdentityMap();
+      identityMap.removeComponent(this);
+    }
+
     Object.defineProperty(this, '__isAttached', {value: false, configurable: true});
 
     return this;
@@ -1506,6 +1898,12 @@ export class Component extends Observable(Object) {
       includeIsNewMarks = true
     } = options;
 
+    if (returnComponentReferences && !includeComponentTypes) {
+      throw new Error(
+        `The 'returnComponentReferences' option cannot be 'true' when the 'includeComponentTypes' option is 'false' (${this.describeComponent()})`
+      );
+    }
+
     const serializedComponent: PlainObject = {};
 
     if (includeComponentTypes) {
@@ -1516,12 +1914,26 @@ export class Component extends Observable(Object) {
       serializedComponent.__new = true;
     }
 
-    if (returnComponentReferences && referencedComponents !== undefined) {
-      for (const providedComponent of this.constructor.getProvidedComponents()) {
-        referencedComponents.add(providedComponent);
+    if (returnComponentReferences) {
+      const hasPrimaryIdentifierAttribute = this.hasPrimaryIdentifierAttribute();
+
+      if (referencedComponents !== undefined) {
+        for (const providedComponent of this.constructor.getProvidedComponents()) {
+          referencedComponents.add(providedComponent);
+        }
+
+        referencedComponents.add(this.constructor);
+
+        if (hasPrimaryIdentifierAttribute) {
+          referencedComponents.add(this);
+        }
       }
 
-      referencedComponents.add(this.constructor);
+      if (hasPrimaryIdentifierAttribute) {
+        Object.assign(serializedComponent, this.getIdentifierDescriptor());
+
+        return serializedComponent;
+      }
     }
 
     return possiblyAsync(
@@ -1538,7 +1950,7 @@ export class Component extends Observable(Object) {
   }
 
   __serializeAttributes(serializedComponent: PlainObject, options: SerializeOptions) {
-    let {includeReferencedEntities = false, attributeSelector = true, attributeFilter} = options;
+    let {includeReferencedComponents = false, attributeSelector = true, attributeFilter} = options;
 
     attributeSelector = normalizeAttributeSelector(attributeSelector);
 
@@ -1564,7 +1976,7 @@ export class Component extends Observable(Object) {
                 serialize(attributeValue, {
                   ...options,
                   attributeSelector: subattributeSelector,
-                  returnComponentReferences: !includeReferencedEntities
+                  returnComponentReferences: !includeReferencedComponents
                 }),
                 (serializedAttributeValue) => {
                   serializedComponent[attributeName] = serializedAttributeValue;

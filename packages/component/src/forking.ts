@@ -24,7 +24,7 @@ export function fork(value: any, options: ForkOptions = {}) {
     }
 
     if (isComponentInstance(object)) {
-      return object.fork();
+      return object.fork(options);
     }
   };
 

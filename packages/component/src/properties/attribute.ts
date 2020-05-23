@@ -145,7 +145,7 @@ export class Attribute extends Observable(Property) {
 
     if (this._setter !== undefined) {
       this._setter.call(this.getParent(), value);
-      return;
+      return {previousValue: undefined, newValue: undefined};
     }
 
     if (this._getter !== undefined) {
@@ -191,7 +191,7 @@ export class Attribute extends Observable(Property) {
     }
 
     if (this._isSet !== true) {
-      return;
+      return {previousValue: undefined};
     }
 
     const previousValue = this.getValue({throwIfUnset: false});
@@ -344,6 +344,10 @@ export class Attribute extends Observable(Property) {
 
   static isAttribute(value: any): value is Attribute {
     return isAttributeInstance(value);
+  }
+
+  describeType() {
+    return 'attribute';
   }
 }
 

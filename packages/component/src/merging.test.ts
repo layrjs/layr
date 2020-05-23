@@ -1,5 +1,5 @@
 import {Component} from './component';
-import {attribute} from './decorators';
+import {attribute, provide} from './decorators';
 
 describe('Merging', () => {
   test('Simple component', async () => {
@@ -51,12 +51,14 @@ describe('Merging', () => {
   });
 
   test('Nested component', async () => {
-    class Movie extends Component {
-      @attribute() director!: Director;
-    }
-
     class Director extends Component {
       @attribute() name!: string;
+    }
+
+    class Movie extends Component {
+      @provide() static Director = Director;
+
+      @attribute() director!: Director;
     }
 
     const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});

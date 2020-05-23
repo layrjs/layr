@@ -1,6 +1,20 @@
 import {Component} from './component';
-import {isAttributeInstance, isMethodInstance} from './properties';
-import {attribute, method, provide, consume} from './decorators';
+import {
+  isAttributeInstance,
+  isPrimaryIdentifierAttributeInstance,
+  isSecondaryIdentifierAttributeInstance,
+  isStringValueTypeInstance,
+  isNumberValueTypeInstance,
+  isMethodInstance
+} from './properties';
+import {
+  attribute,
+  primaryIdentifier,
+  secondaryIdentifier,
+  method,
+  provide,
+  consume
+} from './decorators';
 
 describe('Decorators', () => {
   test('@attribute()', async () => {
@@ -100,6 +114,94 @@ describe('Decorators', () => {
     expect(attr.evaluateDefault()).toBe('');
     expect(attr.getValue()).toBe('');
     expect(film.country).toBe('');
+  });
+
+  test('@primaryIdentifier()', async () => {
+    class Movie1 extends Component {
+      @primaryIdentifier() id!: string;
+    }
+
+    let idAttribute = Movie1.prototype.getPrimaryIdentifierAttribute();
+
+    expect(isPrimaryIdentifierAttributeInstance(idAttribute)).toBe(true);
+    expect(idAttribute.getName()).toBe('id');
+    expect(idAttribute.getParent()).toBe(Movie1.prototype);
+    expect(isStringValueTypeInstance(idAttribute.getValueType())).toBe(true);
+    expect(typeof idAttribute.getDefault()).toBe('function');
+
+    class Movie2 extends Component {
+      @primaryIdentifier('number') id!: number;
+    }
+
+    idAttribute = Movie2.prototype.getPrimaryIdentifierAttribute();
+
+    expect(isPrimaryIdentifierAttributeInstance(idAttribute)).toBe(true);
+    expect(idAttribute.getName()).toBe('id');
+    expect(idAttribute.getParent()).toBe(Movie2.prototype);
+    expect(isNumberValueTypeInstance(idAttribute.getValueType())).toBe(true);
+    expect(idAttribute.getDefault()).toBeUndefined();
+
+    class Movie3 extends Component {
+      @primaryIdentifier('number') id = Math.random();
+    }
+
+    idAttribute = Movie3.prototype.getPrimaryIdentifierAttribute();
+
+    expect(isPrimaryIdentifierAttributeInstance(idAttribute)).toBe(true);
+    expect(idAttribute.getName()).toBe('id');
+    expect(idAttribute.getParent()).toBe(Movie3.prototype);
+    expect(isNumberValueTypeInstance(idAttribute.getValueType())).toBe(true);
+    expect(typeof idAttribute.getDefault()).toBe('function');
+
+    expect(() => {
+      class Movie extends Component {
+        @primaryIdentifier() static id: string;
+      }
+
+      return Movie;
+    }).toThrow(
+      "Cannot create a primary identifier attribute with a parent that is not a component instance (property: 'id')"
+    );
+
+    expect(() => {
+      class Movie {
+        @primaryIdentifier() id!: string;
+      }
+
+      return Movie;
+    }).toThrow("@primaryIdentifier() must be used inside a component class (property: 'id')");
+
+    expect(() => {
+      class Movie extends Component {
+        @primaryIdentifier() id!: string;
+        @primaryIdentifier() slug!: string;
+      }
+
+      return Movie;
+    }).toThrow("The component 'Movie' already has a primary identifier attribute");
+  });
+
+  test('@secondaryIdentifier()', async () => {
+    class User extends Component {
+      @secondaryIdentifier() email!: string;
+      @secondaryIdentifier() username!: string;
+    }
+
+    const emailAttribute = User.prototype.getSecondaryIdentifierAttribute('email');
+
+    expect(isSecondaryIdentifierAttributeInstance(emailAttribute)).toBe(true);
+    expect(emailAttribute.getName()).toBe('email');
+    expect(emailAttribute.getParent()).toBe(User.prototype);
+    expect(isStringValueTypeInstance(emailAttribute.getValueType())).toBe(true);
+    expect(emailAttribute.getDefault()).toBeUndefined();
+
+    const usernameAttribute = User.prototype.getSecondaryIdentifierAttribute('username');
+
+    expect(isSecondaryIdentifierAttributeInstance(usernameAttribute)).toBe(true);
+    expect(usernameAttribute.getName()).toBe('username');
+    expect(usernameAttribute.getParent()).toBe(User.prototype);
+    expect(isStringValueTypeInstance(usernameAttribute.getValueType())).toBe(true);
+    expect(usernameAttribute.getDefault()).toBeUndefined();
   });
 
   test('@method()', async () => {

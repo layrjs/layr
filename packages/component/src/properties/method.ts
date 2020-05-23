@@ -9,6 +9,10 @@ export class Method extends Property {
   static isMethod(value: any): value is Method {
     return isMethodInstance(value);
   }
+
+  describeType() {
+    return 'method';
+  }
 }
 
 export function isMethodClass(value: any): value is typeof Method {

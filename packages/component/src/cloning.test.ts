@@ -1,5 +1,5 @@
 import {Component} from './component';
-import {attribute} from './decorators';
+import {attribute, primaryIdentifier, provide} from './decorators';
 
 describe('Cloning', () => {
   test('Simple component', async () => {
@@ -68,5 +68,38 @@ describe('Cloning', () => {
 
     expect(clonedMovie.director.name).toBe('Christopher Nolan 2');
     expect(movie.director.name).toBe('Christopher Nolan');
+  });
+
+  test('Identifiable component', async () => {
+    class Movie extends Component {
+      @primaryIdentifier() id!: string;
+      @attribute('string') title = '';
+    }
+
+    const movie = new Movie({title: 'Inception'});
+
+    const clonedMovie = movie.clone();
+
+    expect(clonedMovie).toBe(movie);
+  });
+
+  test('Nested identifiable component', async () => {
+    class Director extends Component {
+      @primaryIdentifier() id!: string;
+      @attribute('string') name = '';
+    }
+
+    class Movie extends Component {
+      @provide() static Director = Director;
+
+      @attribute('Director') director!: Director;
+    }
+
+    const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
+
+    const clonedMovie = movie.clone();
+
+    expect(clonedMovie).not.toBe(movie);
+    expect(clonedMovie.director).toBe(movie.director);
   });
 });
