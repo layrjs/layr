@@ -1,4 +1,4 @@
-import type {Attribute, AttributeOptions} from '../attribute';
+import type {Attribute} from '../attribute';
 import type {ValueType, IntrospectedValueType} from './value-type';
 import {AnyValueType} from './any-value-type';
 import {BooleanValueType} from './boolean-value-type';
@@ -23,6 +23,12 @@ const VALUE_TYPE_MAP = new Map(
     RegExp: RegExpValueType
   })
 );
+
+export type UnintrospectedValueType = {
+  valueType?: string;
+  validators?: Validator[];
+  items?: UnintrospectedValueType;
+};
 
 type CreateValueTypeOptions = {
   validators?: (Validator | ValidatorFunction)[];
@@ -83,7 +89,7 @@ export function unintrospectValueType({
   items: introspectedItems
 }: IntrospectedValueType) {
   let unintrospectedValidators: Validator[] | undefined;
-  let unintrospectedItems: Partial<AttributeOptions> | undefined;
+  let unintrospectedItems: UnintrospectedValueType | undefined;
 
   if (introspectedValidators !== undefined) {
     unintrospectedValidators = introspectedValidators.map((introspectedValidator) => {
@@ -98,7 +104,7 @@ export function unintrospectValueType({
     unintrospectedItems = unintrospectValueType(introspectedItems);
   }
 
-  const unintrospectedValueType: Partial<AttributeOptions> = {};
+  const unintrospectedValueType: UnintrospectedValueType = {};
 
   if (valueType !== undefined) {
     unintrospectedValueType.valueType = valueType;

@@ -2,8 +2,14 @@ import {hasOwnProperty} from 'core-helpers';
 import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
 
 import type {Component, ExpandAttributeSelectorOptions} from '../component';
-import {Property, PropertyOptions} from './property';
-import {ValueType, createValueType} from './value-types';
+import {Property, PropertyOptions, IntrospectedProperty, UnintrospectedProperty} from './property';
+import {
+  ValueType,
+  IntrospectedValueType,
+  UnintrospectedValueType,
+  createValueType,
+  unintrospectValueType
+} from './value-types';
 import {fork} from '../forking';
 import {AttributeSelector} from './attribute-selector';
 import type {Validator, ValidatorFunction} from '../validation';
@@ -22,6 +28,18 @@ export type AttributeOptions = PropertyOptions & {
 type AttributeItemsOptions = {
   validators?: (Validator | ValidatorFunction)[];
   items?: AttributeItemsOptions;
+};
+
+export type IntrospectedAttribute = IntrospectedProperty & {
+  value?: any;
+  default?: any;
+} & IntrospectedValueType;
+
+export type UnintrospectedAttribute = UnintrospectedProperty & {
+  options: {
+    value?: any;
+    default?: any;
+  } & UnintrospectedValueType;
 };
 
 export class Attribute extends Observable(Property) {
@@ -286,59 +304,60 @@ export class Attribute extends Observable(Property) {
     return failedValidators;
   }
 
-  // // === Introspection ===
+  // === Introspection ===
 
-  // introspect() {
-  //   const introspectedAttribute = super.introspect();
+  introspect() {
+    const introspectedAttribute = super.introspect() as IntrospectedAttribute;
 
-  //   if (introspectedAttribute === undefined) {
-  //     return undefined;
-  //   }
+    if (introspectedAttribute === undefined) {
+      return undefined;
+    }
 
-  //   const exposure = this.getExposure();
-  //   const getIsExposed = exposure !== undefined ? hasOwnProperty(exposure, 'get') : false;
+    const exposure = this.getExposure();
+    const getIsExposed = exposure !== undefined ? hasOwnProperty(exposure, 'get') : false;
 
-  //   if (getIsExposed && this.isSet()) {
-  //     introspectedAttribute.value = this.getValue();
-  //   }
+    if (getIsExposed && this.isSet()) {
+      introspectedAttribute.value = this.getValue();
+    }
 
-  //   const defaultValueFunction = this.getDefaultValueFunction();
+    const defaultValue = this.getDefault();
 
-  //   if (defaultValueFunction !== undefined) {
-  //     introspectedAttribute.default = defaultValueFunction;
-  //   }
+    if (defaultValue !== undefined) {
+      introspectedAttribute.default = defaultValue;
+    }
 
-  //   return introspectedAttribute;
-  // }
+    Object.assign(introspectedAttribute, this.getValueType().introspect());
 
-  // static unintrospect(introspectedAttribute) {
-  //   ow(
-  //     introspectedAttribute,
-  //     'introspectedAttribute',
-  //     ow.object.partialShape({value: ow.optional.any, default: ow.optional.function})
-  //   );
+    return introspectedAttribute;
+  }
 
-  //   const {
-  //     value: initialValue,
-  //     default: defaultValue,
-  //     ...introspectedProperty
-  //   } = introspectedAttribute;
+  static unintrospect(introspectedAttribute: IntrospectedAttribute) {
+    const {
+      value: initialValue,
+      default: defaultValue,
+      valueType,
+      validators,
+      items,
+      ...introspectedProperty
+    } = introspectedAttribute;
 
-  //   const hasInitialValue = 'value' in introspectedAttribute;
-  //   const hasDefaultValue = 'default' in introspectedAttribute;
+    const hasInitialValue = 'value' in introspectedAttribute;
+    const hasDefaultValue = 'default' in introspectedAttribute;
 
-  //   const {name, options} = super.unintrospect(introspectedProperty);
+    const {name, options} = super.unintrospect(introspectedProperty) as UnintrospectedAttribute;
 
-  //   if (hasInitialValue) {
-  //     options.value = initialValue;
-  //   }
+    if (hasInitialValue) {
+      options.value = initialValue;
+    }
 
-  //   if (hasDefaultValue) {
-  //     options.default = defaultValue;
-  //   }
+    if (hasDefaultValue) {
+      options.default = defaultValue;
+    }
 
-  //   return {name, options};
-  // }
+    Object.assign(options, unintrospectValueType({valueType, validators, items}));
+
+    return {name, options};
+  }
 
   // === Utilities ===
 

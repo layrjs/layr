@@ -756,13 +756,11 @@ describe('Component', () => {
       const notEmpty = validators.notEmpty();
       const maxLength = validators.maxLength(3);
 
-      // TODO: Remove 'default' attribute options
       class Person extends Component {
         @attribute('string', {validators: [notEmpty]}) name = '';
         @attribute('string?') country?: string;
       }
 
-      // TODO: Remove 'default' attribute options
       class Movie extends Component {
         @provide() static Person = Person;
 
@@ -1319,152 +1317,172 @@ describe('Component', () => {
     });
   });
 
-  // test('Introspection', async () => {
-  //   class Movie extends Component {
-  //     @attribute() static limit = 100;
-  //     @attribute() static offset;
-  //     @method() static find() {}
+  test('Introspection', async () => {
+    class Movie extends Component {
+      @attribute('number') static limit = 100;
+      @attribute('number?') static offset?: number;
+      @method() static find() {}
 
-  //     @attribute() title = '';
-  //     @attribute() country;
-  //     @method() load() {}
-  //   }
+      @attribute('string') title = '';
+      @attribute('string?') country?: string;
+      @method() load() {}
+    }
 
-  //   class Cinema extends Component {
-  //     @attribute() movies;
-  //   }
+    class Cinema extends Component {
+      @provide() static Movie = Movie;
 
-  //   Cinema.registerRelatedComponent(Movie);
+      @attribute('Movie[]?') movies?: Movie[];
+    }
 
-  //   const defaultTitle = Movie.prototype.getAttribute('title').getDefaultValueFunction();
+    const defaultTitle = Movie.prototype.getAttribute('title').getDefault();
 
-  //   expect(typeof defaultTitle).toBe('function');
+    expect(typeof defaultTitle).toBe('function');
 
-  //   expect(Movie.introspect()).toBeUndefined();
+    expect(Movie.introspect()).toBeUndefined();
 
-  //   expect(Cinema.introspect()).toBeUndefined();
+    expect(Cinema.introspect()).toBeUndefined();
 
-  //   Cinema.prototype.getAttribute('movies').setExposure({get: true});
+    Cinema.prototype.getAttribute('movies').setExposure({get: true});
 
-  //   expect(Cinema.introspect()).toStrictEqual({
-  //     name: 'Cinema',
-  //     type: 'Component',
-  //     prototype: {
-  //       properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
-  //     }
-  //   });
+    expect(Cinema.introspect()).toStrictEqual({
+      name: 'Cinema',
+      prototype: {
+        properties: [
+          {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
+        ]
+      }
+    });
 
-  //   Movie.getAttribute('limit').setExposure({get: true});
+    Movie.getAttribute('limit').setExposure({get: true});
 
-  //   expect(Movie.introspect()).toStrictEqual({
-  //     name: 'Movie',
-  //     type: 'Component',
-  //     properties: [{name: 'limit', type: 'attribute', value: 100, exposure: {get: true}}]
-  //   });
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      properties: [
+        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}}
+      ]
+    });
 
-  //   expect(Cinema.introspect()).toStrictEqual({
-  //     name: 'Cinema',
-  //     type: 'Component',
-  //     relatedComponents: ['Movie'],
-  //     prototype: {
-  //       properties: [{name: 'movies', type: 'attribute', exposure: {get: true}}]
-  //     }
-  //   });
+    expect(Cinema.introspect()).toStrictEqual({
+      name: 'Cinema',
+      prototype: {
+        properties: [
+          {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
+        ]
+      },
+      providedComponents: [
+        {
+          name: 'Movie',
+          properties: [
+            {
+              name: 'limit',
+              type: 'Attribute',
+              valueType: 'number',
+              value: 100,
+              exposure: {get: true}
+            }
+          ]
+        }
+      ]
+    });
 
-  //   Movie.getAttribute('limit').setExposure({get: true});
-  //   Movie.getAttribute('offset').setExposure({get: true});
-  //   Movie.getMethod('find').setExposure({call: true});
+    Movie.getAttribute('limit').setExposure({get: true});
+    Movie.getAttribute('offset').setExposure({get: true});
+    Movie.getMethod('find').setExposure({call: true});
 
-  //   expect(Movie.introspect()).toStrictEqual({
-  //     name: 'Movie',
-  //     type: 'Component',
-  //     properties: [
-  //       {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
-  //       {name: 'offset', type: 'attribute', value: undefined, exposure: {get: true}},
-  //       {name: 'find', type: 'method', exposure: {call: true}}
-  //     ]
-  //   });
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      properties: [
+        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}},
+        {
+          name: 'offset',
+          type: 'Attribute',
+          valueType: 'number?',
+          value: undefined,
+          exposure: {get: true}
+        },
+        {name: 'find', type: 'Method', exposure: {call: true}}
+      ]
+    });
 
-  //   Movie.prototype.getAttribute('title').setExposure({get: true});
+    Movie.prototype.getAttribute('title').setExposure({get: true});
+    Movie.prototype.getAttribute('country').setExposure({get: true});
+    Movie.prototype.getMethod('load').setExposure({call: true});
 
-  //   expect(Movie.introspect()).toStrictEqual({
-  //     name: 'Movie',
-  //     type: 'Component',
-  //     properties: [
-  //       {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
-  //       {name: 'offset', type: 'attribute', value: undefined, exposure: {get: true}},
-  //       {name: 'find', type: 'method', exposure: {call: true}}
-  //     ],
-  //     prototype: {
-  //       properties: [
-  //         {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}
-  //       ]
-  //     }
-  //   });
+    expect(Movie.introspect()).toStrictEqual({
+      name: 'Movie',
+      properties: [
+        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}},
+        {
+          name: 'offset',
+          type: 'Attribute',
+          valueType: 'number?',
+          value: undefined,
+          exposure: {get: true}
+        },
+        {name: 'find', type: 'Method', exposure: {call: true}}
+      ],
+      prototype: {
+        properties: [
+          {
+            name: 'title',
+            type: 'Attribute',
+            valueType: 'string',
+            default: defaultTitle,
+            exposure: {get: true}
+          },
+          {name: 'country', type: 'Attribute', valueType: 'string?', exposure: {get: true}},
+          {name: 'load', type: 'Method', exposure: {call: true}}
+        ]
+      }
+    });
+  });
 
-  //   Movie.prototype.getAttribute('country').setExposure({get: true});
-  //   Movie.prototype.getMethod('load').setExposure({call: true});
+  test('Unintrospection', async () => {
+    class UnintrospectedComponent extends Component {
+      static limit: number;
 
-  //   expect(Movie.introspect()).toStrictEqual({
-  //     name: 'Movie',
-  //     type: 'Component',
-  //     properties: [
-  //       {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
-  //       {name: 'offset', type: 'attribute', value: undefined, exposure: {get: true}},
-  //       {name: 'find', type: 'method', exposure: {call: true}}
-  //     ],
-  //     prototype: {
-  //       properties: [
-  //         {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}},
-  //         {name: 'country', type: 'attribute', exposure: {get: true}},
-  //         {name: 'load', type: 'method', exposure: {call: true}}
-  //       ]
-  //     }
-  //   });
-  // });
+      title!: string;
+    }
 
-  // test('Unintrospection', async () => {
-  //   class UnintrospectedComponent extends Component {}
+    UnintrospectedComponent.unintrospect({
+      name: 'Movie',
+      properties: [
+        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}},
+        {name: 'find', type: 'Method', exposure: {call: true}}
+      ]
+    });
 
-  //   UnintrospectedComponent.unintrospect({
-  //     name: 'Movie',
-  //     properties: [
-  //       {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
-  //       {name: 'find', type: 'method', exposure: {call: true}}
-  //     ]
-  //   });
+    expect(UnintrospectedComponent.getComponentName()).toBe('Movie');
+    expect(UnintrospectedComponent.limit).toBe(100);
+    expect(UnintrospectedComponent.getAttribute('limit').getExposure()).toStrictEqual({get: true});
+    expect(UnintrospectedComponent.getMethod('find').getExposure()).toStrictEqual({call: true});
 
-  //   expect(UnintrospectedComponent.getComponentName()).toBe('Movie');
-  //   expect(UnintrospectedComponent.limit).toBe(100);
-  //   expect(UnintrospectedComponent.getAttribute('limit').getExposure()).toStrictEqual({get: true});
-  //   expect(UnintrospectedComponent.getMethod('find').getExposure()).toStrictEqual({call: true});
+    const defaultTitle = function () {
+      return '';
+    };
 
-  //   const defaultTitle = function() {
-  //     return '';
-  //   };
+    UnintrospectedComponent.unintrospect({
+      name: 'Movie',
+      prototype: {
+        properties: [
+          {
+            name: 'title',
+            type: 'Attribute',
+            valueType: 'string',
+            default: defaultTitle,
+            exposure: {get: true}
+          }
+        ]
+      }
+    });
 
-  //   UnintrospectedComponent.unintrospect({
-  //     name: 'Movie',
-  //     properties: [
-  //       {name: 'limit', type: 'attribute', value: 100, exposure: {get: true}},
-  //       {name: 'find', type: 'method', exposure: {call: true}}
-  //     ],
-  //     prototype: {
-  //       properties: [
-  //         {name: 'title', type: 'attribute', default: defaultTitle, exposure: {get: true}}
-  //       ]
-  //     }
-  //   });
+    expect(UnintrospectedComponent.prototype.getAttribute('title').getDefault()).toBe(defaultTitle);
+    expect(UnintrospectedComponent.prototype.getAttribute('title').getExposure()).toStrictEqual({
+      get: true
+    });
 
-  //   expect(UnintrospectedComponent.prototype.getAttribute('title').getDefaultValueFunction()).toBe(
-  //     defaultTitle
-  //   );
-  //   expect(UnintrospectedComponent.prototype.getAttribute('title').getExposure()).toStrictEqual({
-  //     get: true
-  //   });
+    const movie = new UnintrospectedComponent();
 
-  //   const movie = new UnintrospectedComponent();
-
-  //   expect(movie.title).toBe('');
-  // });
+    expect(movie.title).toBe('');
+  });
 });

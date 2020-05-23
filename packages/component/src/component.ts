@@ -10,10 +10,12 @@ import {
   PropertyFilter,
   PropertyFilterSync,
   PropertyFilterAsync,
+  IntrospectedProperty,
   Attribute,
   isAttributeClass,
   isAttributeInstance,
   AttributeOptions,
+  IntrospectedAttribute,
   IdentifierAttribute,
   isIdentifierAttributeInstance,
   PrimaryIdentifierAttribute,
@@ -31,7 +33,8 @@ import {
   normalizeAttributeSelector,
   Method,
   isMethodInstance,
-  MethodOptions
+  MethodOptions,
+  IntrospectedMethod
 } from './properties';
 import {IdentityMap} from './identity-map';
 import {clone, CloneOptions} from './cloning';
@@ -72,6 +75,16 @@ export type ExpandAttributeSelectorOptions = {
   _attributeStack?: Set<Attribute>;
 };
 
+export type IntrospectedComponent = {
+  name: string;
+  // TODO: Consider adding a 'mixins' attribute
+  properties?: (IntrospectedProperty | IntrospectedAttribute | IntrospectedMethod)[];
+  prototype?: {
+    properties?: (IntrospectedProperty | IntrospectedAttribute | IntrospectedMethod)[];
+  };
+  providedComponents?: IntrospectedComponent[];
+};
+
 export class Component extends Observable(Object) {
   ['constructor']: typeof Component;
 
@@ -89,11 +102,6 @@ export class Component extends Observable(Object) {
       initialize: false
     }) as this;
   }
-
-  // TODO: Remove
-  // static test(attributeFilter: PropertyFilter) {
-  //   const component = this.instantiate({}, {attributeFilter});
-  // }
 
   static instantiate<T extends typeof Component>(
     this: T,
@@ -318,23 +326,23 @@ export class Component extends Observable(Object) {
   // === Properties ===
 
   static getPropertyClass(type: string) {
-    if (type === 'property') {
+    if (type === 'Property') {
       return Property;
     }
 
-    if (type === 'attribute') {
+    if (type === 'Attribute') {
       return Attribute;
     }
 
-    if (type === 'primaryIdentifierAttribute') {
+    if (type === 'PrimaryIdentifierAttribute') {
       return PrimaryIdentifierAttribute;
     }
 
-    if (type === 'secondaryIdentifierAttribute') {
+    if (type === 'SecondaryIdentifierAttribute') {
       return SecondaryIdentifierAttribute;
     }
 
-    if (type === 'method') {
+    if (type === 'Method') {
       return Method;
     }
 
@@ -1550,12 +1558,6 @@ export class Component extends Observable(Object) {
     return this;
   }
 
-  // TODO: Remove
-  // static test() {
-  //   const component = new this();
-  //   const clonedComponent = component.clone();
-  // }
-
   clone<
     T extends Component,
     R = ReturnType<T['initialize']> extends PromiseLike<void> ? PromiseLike<T> : T
@@ -1597,11 +1599,6 @@ export class Component extends Observable(Object) {
 
   // === Forking ===
 
-  // TODO: Remove
-  // static test() {
-  //   const ForkedComponent = Component.fork();
-  // }
-
   static fork<T extends typeof Component>(
     this: T,
     options: {_newComponentProvider?: typeof Component} = {}
@@ -1629,12 +1626,6 @@ export class Component extends Observable(Object) {
 
     return forkedComponent as T;
   }
-
-  // TODO: Remove
-  // static test() {
-  //   const component = new Component();
-  //   const forkedComponent = component.fork();
-  // }
 
   fork<T extends Component>(this: T, options: ForkOptions = {}) {
     const {parentComponent} = options;
@@ -2168,111 +2159,101 @@ export class Component extends Observable(Object) {
 
   // === Introspection ===
 
-  // static introspect() {
-  //   const introspectedProperties = this.introspectProperties();
-  //   const introspectedPrototypeProperties = this.prototype.introspectProperties();
+  static introspect() {
+    const introspectedProperties = this.introspectProperties();
+    const introspectedPrototypeProperties = this.prototype.introspectProperties();
+    const introspectedProvidedComponents = this.__introspectProvidedComponents();
 
-  //   if (introspectedProperties.length === 0 && introspectedPrototypeProperties.length === 0) {
-  //     return undefined;
-  //   }
+    if (
+      introspectedProperties.length === 0 &&
+      introspectedPrototypeProperties.length === 0 &&
+      introspectedProvidedComponents.length === 0
+    ) {
+      return undefined;
+    }
 
-  //   const introspectedComponent = {
-  //     name: this.getComponentName(),
-  //     type: this.getComponentType()
-  //   };
+    const introspectedComponent: IntrospectedComponent = {
+      name: this.getComponentName()
+      // TODO: Consider adding a 'mixins' attribute
+    };
 
-  //   if (introspectedProperties.length > 0) {
-  //     introspectedComponent.properties = introspectedProperties;
-  //   }
+    if (introspectedProperties.length > 0) {
+      introspectedComponent.properties = introspectedProperties;
+    }
 
-  //   const introspectedRelatedComponents = this.__introspectRelatedComponents();
+    if (introspectedPrototypeProperties.length > 0) {
+      introspectedComponent.prototype = {properties: introspectedPrototypeProperties};
+    }
 
-  //   if (introspectedRelatedComponents.length > 0) {
-  //     introspectedComponent.relatedComponents = introspectedRelatedComponents;
-  //   }
+    if (introspectedProvidedComponents.length > 0) {
+      introspectedComponent.providedComponents = introspectedProvidedComponents;
+    }
 
-  //   if (introspectedPrototypeProperties.length > 0) {
-  //     introspectedComponent.prototype = {properties: introspectedPrototypeProperties};
-  //   }
+    return introspectedComponent;
+  }
 
-  //   return introspectedComponent;
-  // }
+  static __introspectProvidedComponents() {
+    const introspectedProvidedComponents = [];
 
-  // static __introspectRelatedComponents() {
-  //   const introspectedRelatedComponents = [];
+    for (const providedComponent of this.getProvidedComponents()) {
+      const introspectedProvidedComponent = providedComponent.introspect();
 
-  //   for (const RelatedComponent of this.getRelatedComponents()) {
-  //     if (
-  //       RelatedComponent.introspectProperties().length > 0 ||
-  //       RelatedComponent.prototype.introspectProperties().length > 0
-  //     ) {
-  //       introspectedRelatedComponents.push(RelatedComponent.getComponentName());
-  //     }
-  //   }
+      if (introspectedProvidedComponent !== undefined) {
+        introspectedProvidedComponents.push(introspectedProvidedComponent);
+      }
+    }
 
-  //   return introspectedRelatedComponents;
-  // }
+    return introspectedProvidedComponents;
+  }
 
-  // static unintrospect(introspectedComponent) {
-  //   ow(
-  //     introspectedComponent,
-  //     'introspectedComponent',
-  //     ow.object.partialShape({
-  //       name: ow.string.nonEmpty,
-  //       properties: ow.optional.array,
-  //       prototype: ow.optional.object.partialShape({properties: ow.optional.array})
-  //     })
-  //   );
+  static unintrospect(introspectedComponent: IntrospectedComponent) {
+    const {
+      name,
+      properties: introspectedProperties,
+      prototype: {properties: introspectedPrototypeProperties} = {}
+    } = introspectedComponent;
 
-  //   const {
-  //     name,
-  //     properties: introspectedProperties,
-  //     prototype: {properties: introspectedPrototypeProperties} = {}
-  //   } = introspectedComponent;
+    this.setComponentName(name);
 
-  //   this.setComponentName(name);
+    if (introspectedProperties !== undefined) {
+      this.unintrospectProperties(introspectedProperties);
+    }
 
-  //   if (introspectedProperties !== undefined) {
-  //     this.unintrospectProperties(introspectedProperties);
-  //   }
+    if (introspectedPrototypeProperties !== undefined) {
+      this.prototype.unintrospectProperties(introspectedPrototypeProperties);
+    }
+  }
 
-  //   if (introspectedPrototypeProperties !== undefined) {
-  //     this.prototype.unintrospectProperties(introspectedPrototypeProperties);
-  //   }
-  // }
+  static get introspectProperties() {
+    return this.prototype.introspectProperties;
+  }
 
-  // static get introspectProperties() {
-  //   return this.prototype.introspectProperties;
-  // }
+  introspectProperties() {
+    const introspectedProperties = [];
 
-  // introspectProperties() {
-  //   const introspectedProperties = [];
+    for (const property of this.getProperties({autoFork: false})) {
+      const introspectedProperty = property.introspect();
 
-  //   for (const property of this.getProperties({autoFork: false})) {
-  //     const introspectedProperty = property.introspect();
+      if (introspectedProperty !== undefined) {
+        introspectedProperties.push(introspectedProperty);
+      }
+    }
 
-  //     if (introspectedProperty !== undefined) {
-  //       introspectedProperties.push(introspectedProperty);
-  //     }
-  //   }
+    return introspectedProperties;
+  }
 
-  //   return introspectedProperties;
-  // }
+  static get unintrospectProperties() {
+    return this.prototype.unintrospectProperties;
+  }
 
-  // static get unintrospectProperties() {
-  //   return this.prototype.unintrospectProperties;
-  // }
-
-  // unintrospectProperties(introspectedProperties) {
-  //   ow(introspectedProperties, 'introspectedProperties', ow.array);
-
-  //   for (const introspectedProperty of introspectedProperties) {
-  //     const {type, ...introspectedPropertyWithoutType} = introspectedProperty;
-  //     const PropertyClass = getClassOf(this).getPropertyClass(type);
-  //     const {name, options} = PropertyClass.unintrospect(introspectedPropertyWithoutType);
-  //     this.setProperty(name, PropertyClass, options);
-  //   }
-  // }
+  unintrospectProperties(introspectedProperties: IntrospectedProperty[]) {
+    for (const introspectedProperty of introspectedProperties) {
+      const {type} = introspectedProperty;
+      const PropertyClass = ensureComponentClass(this).getPropertyClass(type);
+      const {name, options} = PropertyClass.unintrospect(introspectedProperty);
+      this.setProperty(name, PropertyClass, options);
+    }
+  }
 
   // static getRemoteComponent() {
   //   return this.__RemoteComponent;

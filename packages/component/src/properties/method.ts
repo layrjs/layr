@@ -1,4 +1,6 @@
-import {Property, PropertyOptions} from './property';
+import {Property, PropertyOptions, IntrospectedProperty} from './property';
+
+export type IntrospectedMethod = IntrospectedProperty;
 
 export type MethodOptions = PropertyOptions;
 

@@ -28,27 +28,4 @@ describe('IdentifierAttribute', () => {
       "The value of an identifier attribute cannot be optional (component: 'Movie', attribute: 'id', specified type: 'string?')"
     );
   });
-
-  // TODO
-  // test('Introspection', async () => {
-  //   class Movie extends Component {}
-
-  //   const defaultValueFunction = function () {
-  //     return this.constructor.generateId();
-  //   };
-
-  //   expect(
-  //     new IdentifierAttribute('id', Movie.prototype, {
-  //       type: 'string',
-  //       default: defaultValueFunction,
-  //       exposure: {get: true}
-  //     }).introspect()
-  //   ).toStrictEqual({
-  //     name: 'id',
-  //     type: 'identifierAttribute',
-  //     valueType: 'string',
-  //     default: defaultValueFunction,
-  //     exposure: {get: true}
-  //   });
-  // });
 });

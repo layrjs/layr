@@ -294,62 +294,267 @@ describe('Attribute', () => {
     expect(attribute.getValue()).toBe('Inception');
   });
 
-  // test('Introspection', async () => {
-  //   class Movie extends Component {}
+  test('Introspection', async () => {
+    class Movie extends Component {}
 
-  //   expect(new Attribute('limit', Movie, {exposure: {get: true}}).introspect()).toStrictEqual({
-  //     name: 'limit',
-  //     type: 'attribute',
-  //     exposure: {get: true}
-  //   });
+    expect(
+      new Attribute('limit', Movie, {valueType: 'number', exposure: {get: true}}).introspect()
+    ).toStrictEqual({
+      name: 'limit',
+      type: 'Attribute',
+      exposure: {get: true},
+      valueType: 'number'
+    });
 
-  //   expect(
-  //     new Attribute('limit', Movie, {value: 100, exposure: {set: true}}).introspect()
-  //   ).toStrictEqual({name: 'limit', type: 'attribute', exposure: {set: true}});
+    expect(
+      new Attribute('limit', Movie, {
+        valueType: 'number',
+        value: 100,
+        exposure: {set: true}
+      }).introspect()
+    ).toStrictEqual({name: 'limit', type: 'Attribute', exposure: {set: true}, valueType: 'number'});
 
-  //   expect(
-  //     new Attribute('limit', Movie, {value: 100, exposure: {get: true}}).introspect()
-  //   ).toStrictEqual({name: 'limit', type: 'attribute', value: 100, exposure: {get: true}});
+    expect(
+      new Attribute('limit', Movie, {
+        valueType: 'number',
+        value: 100,
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'limit',
+      type: 'Attribute',
+      value: 100,
+      exposure: {get: true},
+      valueType: 'number'
+    });
 
-  //   const defaultTitle = function() {
-  //     return '';
-  //   };
+    const defaultTitle = function () {
+      return '';
+    };
 
-  //   expect(
-  //     new Attribute('title', Movie.prototype, {
-  //       default: defaultTitle,
-  //       exposure: {get: true}
-  //     }).introspect()
-  //   ).toStrictEqual({
-  //     name: 'title',
-  //     type: 'attribute',
-  //     default: defaultTitle,
-  //     exposure: {get: true}
-  //   });
-  // });
+    expect(
+      new Attribute('title', Movie.prototype, {
+        valueType: 'string',
+        default: defaultTitle,
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'title',
+      type: 'Attribute',
+      default: defaultTitle,
+      exposure: {get: true},
+      valueType: 'string'
+    });
 
-  // test('Unintrospection', async () => {
-  //   expect(Attribute.unintrospect({name: 'limit', exposure: {get: true}})).toStrictEqual({
-  //     name: 'limit',
-  //     options: {exposure: {get: true}}
-  //   });
+    const notEmpty = validators.notEmpty();
 
-  //   expect(
-  //     Attribute.unintrospect({name: 'limit', value: 100, exposure: {get: true}})
-  //   ).toStrictEqual({
-  //     name: 'limit',
-  //     options: {value: 100, exposure: {get: true}}
-  //   });
+    expect(
+      new Attribute('title', Movie.prototype, {
+        valueType: 'string?',
+        validators: [notEmpty],
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'title',
+      type: 'Attribute',
+      valueType: 'string?',
+      exposure: {get: true},
+      validators: [
+        {
+          name: 'notEmpty',
+          function: notEmpty.getFunction(),
+          message: 'The validator `notEmpty()` failed'
+        }
+      ]
+    });
 
-  //   const defaultTitle = function() {
-  //     return '';
-  //   };
+    expect(
+      new Attribute('tags', Movie.prototype, {
+        valueType: 'string[]',
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'tags',
+      type: 'Attribute',
+      valueType: 'string[]',
+      exposure: {get: true}
+    });
 
-  //   expect(
-  //     Attribute.unintrospect({name: 'title', default: defaultTitle, exposure: {get: true}})
-  //   ).toStrictEqual({
-  //     name: 'title',
-  //     options: {default: defaultTitle, exposure: {get: true}}
-  //   });
-  // });
+    expect(
+      new Attribute('tags', Movie.prototype, {
+        valueType: 'string[]',
+        items: {validators: [notEmpty]},
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'tags',
+      type: 'Attribute',
+      valueType: 'string[]',
+      items: {
+        validators: [
+          {
+            name: 'notEmpty',
+            function: notEmpty.getFunction(),
+            message: 'The validator `notEmpty()` failed'
+          }
+        ]
+      },
+      exposure: {get: true}
+    });
+
+    expect(
+      new Attribute('tags', Movie.prototype, {
+        valueType: 'string[][]',
+        items: {items: {validators: [notEmpty]}},
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'tags',
+      type: 'Attribute',
+      valueType: 'string[][]',
+      items: {
+        items: {
+          validators: [
+            {
+              name: 'notEmpty',
+              function: notEmpty.getFunction(),
+              message: 'The validator `notEmpty()` failed'
+            }
+          ]
+        }
+      },
+      exposure: {get: true}
+    });
+  });
+
+  test('Unintrospection', async () => {
+    class Movie extends Component {}
+
+    let {name, options} = Attribute.unintrospect({
+      name: 'limit',
+      type: 'Attribute',
+      valueType: 'number',
+      exposure: {get: true}
+    });
+
+    expect({name, options}).toEqual({
+      name: 'limit',
+      options: {valueType: 'number', exposure: {get: true}}
+    });
+    expect(() => new Attribute(name, Movie, options)).not.toThrow();
+
+    ({name, options} = Attribute.unintrospect({
+      name: 'limit',
+      type: 'Attribute',
+      valueType: 'number',
+      value: 100,
+      exposure: {get: true}
+    }));
+
+    expect({name, options}).toEqual({
+      name: 'limit',
+      options: {valueType: 'number', value: 100, exposure: {get: true}}
+    });
+    expect(() => new Attribute(name, Movie, options)).not.toThrow();
+
+    const defaultTitle = function () {
+      return '';
+    };
+
+    ({name, options} = Attribute.unintrospect({
+      name: 'title',
+      type: 'Attribute',
+      valueType: 'string',
+      default: defaultTitle,
+      exposure: {get: true}
+    }));
+
+    expect({name, options}).toEqual({
+      name: 'title',
+      options: {valueType: 'string', default: defaultTitle, exposure: {get: true}}
+    });
+    expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
+
+    const notEmptyFunction = validators.notEmpty().getFunction();
+
+    ({name, options} = Attribute.unintrospect({
+      name: 'title',
+      type: 'Attribute',
+      valueType: 'string?',
+      validators: [
+        {
+          name: 'notEmpty',
+          function: notEmptyFunction,
+          message: 'The validator `notEmpty()` failed'
+        }
+      ],
+      exposure: {get: true}
+    }));
+
+    expect(name).toBe('title');
+    expect(options.valueType).toBe('string?');
+    expect(options.validators).toHaveLength(1);
+    expect(options.validators![0].getName()).toBe('notEmpty');
+    expect(options.validators![0].getFunction()).toBe(notEmptyFunction);
+    expect(options.validators![0].getMessage()).toBe('The validator `notEmpty()` failed');
+    expect(options.exposure).toEqual({get: true});
+    expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
+
+    ({name, options} = Attribute.unintrospect({
+      name: 'tags',
+      type: 'Attribute',
+      valueType: 'string[]',
+      items: {
+        validators: [
+          {
+            name: 'notEmpty',
+            function: notEmptyFunction,
+            message: 'The validator `notEmpty()` failed'
+          }
+        ]
+      },
+      exposure: {get: true}
+    }));
+
+    expect(name).toBe('tags');
+    expect(options.valueType).toBe('string[]');
+    expect(options.validators).toBeUndefined();
+    expect(options.items!.validators).toHaveLength(1);
+    expect(options.items!.validators![0].getName()).toBe('notEmpty');
+    expect(options.items!.validators![0].getFunction()).toBe(notEmptyFunction);
+    expect(options.items!.validators![0].getMessage()).toBe('The validator `notEmpty()` failed');
+    expect(options.exposure).toEqual({get: true});
+    expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
+
+    ({name, options} = Attribute.unintrospect({
+      name: 'tags',
+      type: 'Attribute',
+      valueType: 'string[][]',
+      items: {
+        items: {
+          validators: [
+            {
+              name: 'notEmpty',
+              function: notEmptyFunction,
+              message: 'The validator `notEmpty()` failed'
+            }
+          ]
+        }
+      },
+      exposure: {get: true}
+    }));
+
+    expect(name).toBe('tags');
+    expect(options.valueType).toBe('string[][]');
+    expect(options.validators).toBeUndefined();
+    expect(options.items!.validators).toBeUndefined();
+    expect(options.items!.items!.validators).toHaveLength(1);
+    expect(options.items!.items!.validators![0].getName()).toBe('notEmpty');
+    expect(options.items!.items!.validators![0].getFunction()).toBe(notEmptyFunction);
+    expect(options.items!.items!.validators![0].getMessage()).toBe(
+      'The validator `notEmpty()` failed'
+    );
+    expect(options.exposure).toEqual({get: true});
+    expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
+  });
 });

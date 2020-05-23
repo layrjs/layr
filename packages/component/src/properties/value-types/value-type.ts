@@ -12,7 +12,7 @@ import {
 } from '../../validation';
 
 export type IntrospectedValueType = {
-  valueType: string;
+  valueType?: string;
   validators?: IntrospectedValidator[];
   items?: IntrospectedValueType;
 };

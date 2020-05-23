@@ -35,32 +35,33 @@ describe('SecondaryIdentifierAttribute', () => {
     expect(emailAttribute.getValue()).toBe('salut@bonjour.com');
   });
 
-  // test('Introspection', async () => {
-  //   class Movie extends Component {}
+  test('Introspection', async () => {
+    class Movie extends Component {}
 
-  //   expect(
-  //     new SecondaryIdentifierAttribute('email', Movie.prototype, {
-  //       type: 'string',
-  //       exposure: {get: true}
-  //     }).introspect()
-  //   ).toStrictEqual({
-  //     name: 'email',
-  //     type: 'secondaryIdentifierAttribute',
-  //     valueType: 'string',
-  //     exposure: {get: true}
-  //   });
-  // });
+    expect(
+      new SecondaryIdentifierAttribute('email', Movie.prototype, {
+        valueType: 'string',
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'email',
+      type: 'SecondaryIdentifierAttribute',
+      valueType: 'string',
+      exposure: {get: true}
+    });
+  });
 
-  // test('Unintrospection', async () => {
-  //   expect(
-  //     SecondaryIdentifierAttribute.unintrospect({
-  //       name: 'email',
-  //       valueType: 'string',
-  //       exposure: {get: true}
-  //     })
-  //   ).toEqual({
-  //     name: 'email',
-  //     options: {type: 'string', exposure: {get: true}}
-  //   });
-  // });
+  test('Unintrospection', async () => {
+    expect(
+      SecondaryIdentifierAttribute.unintrospect({
+        name: 'email',
+        type: 'SecondaryIdentifierAttribute',
+        valueType: 'string',
+        exposure: {get: true}
+      })
+    ).toEqual({
+      name: 'email',
+      options: {valueType: 'string', exposure: {get: true}}
+    });
+  });
 });

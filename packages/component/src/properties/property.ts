@@ -1,5 +1,6 @@
 import {possiblyAsync} from 'possibly-async';
-import {assertIsString, assertNoUnknownOptions, PlainObject} from 'core-helpers';
+import {assertIsString, assertNoUnknownOptions, PlainObject, getTypeOf} from 'core-helpers';
+import mapValues from 'lodash/mapValues';
 
 import type {Component} from '../component';
 import {ensureComponentClass, assertIsComponentClassOrInstance} from '../utilities';
@@ -17,6 +18,23 @@ export type PropertyOperationSetting = boolean | string | string[];
 export type PropertyFilter = (property: any) => boolean | PromiseLike<boolean>;
 export type PropertyFilterSync = (property: any) => boolean;
 export type PropertyFilterAsync = (property: any) => PromiseLike<boolean>;
+
+export type IntrospectedProperty = {
+  name: string;
+  type: string;
+  exposure?: IntrospectedExposure;
+};
+
+export type IntrospectedExposure = Partial<Record<PropertyOperation, boolean>>;
+
+export type UnintrospectedProperty = {
+  name: string;
+  options: {
+    exposure?: UnintrospectedExposure;
+  };
+};
+
+export type UnintrospectedExposure = Partial<Record<PropertyOperation, true>>;
 
 export class Property {
   private _name: string;
@@ -115,45 +133,39 @@ export class Property {
 
   // === Introspection ===
 
-  // introspect() {
-  //   const introspectedExposure = this.introspectExposure();
+  introspect() {
+    const introspectedExposure = this.introspectExposure();
 
-  //   if (introspectedExposure === undefined) {
-  //     return undefined;
-  //   }
+    if (introspectedExposure === undefined) {
+      return undefined;
+    }
 
-  //   return {
-  //     name: this.getName(),
-  //     type: getTypeOf(this),
-  //     exposure: introspectedExposure
-  //   };
-  // }
+    return {
+      name: this.getName(),
+      type: getTypeOf(this),
+      exposure: introspectedExposure
+    } as IntrospectedProperty;
+  }
 
-  // introspectExposure() {
-  //   const exposure = this.getExposure();
+  introspectExposure() {
+    const exposure = this.getExposure();
 
-  //   if (exposure === undefined) {
-  //     return undefined;
-  //   }
+    if (exposure === undefined) {
+      return undefined;
+    }
 
-  //   // We don't want to expose backend operation settings to the frontend
-  //   // So if there is a {call: 'admin'} exposure, we want to return {call: true}
-  //   const introspectedExposure = mapValues(exposure, () => true);
+    // We don't want to expose backend operation settings to the frontend
+    // So if there is a {call: 'admin'} exposure, we want to return {call: true}
+    const introspectedExposure = mapValues(exposure, () => true);
 
-  //   return introspectedExposure;
-  // }
+    return introspectedExposure as IntrospectedExposure;
+  }
 
-  // static unintrospect(introspectedProperty) {
-  //   ow(
-  //     introspectedProperty,
-  //     'introspectedProperty',
-  //     ow.object.exactShape({name: ow.string.nonEmpty, exposure: ow.optional.object})
-  //   );
+  static unintrospect(introspectedProperty: IntrospectedProperty) {
+    const {name, type: _type, ...options} = introspectedProperty;
 
-  //   const {name, ...options} = introspectedProperty;
-
-  //   return {name, options};
-  // }
+    return {name, options} as UnintrospectedProperty;
+  }
 
   // === Utilities ===
 

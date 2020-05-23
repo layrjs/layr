@@ -67,10 +67,9 @@ describe('Forking', () => {
     expect(forkedMovie).toBeInstanceOf(Movie);
     expect(forkedMovie).toBeInstanceOf(ForkedMovie);
 
-    // TODO
-    // expect(() => movie.getGhost()).toThrow(
-    //   "Cannot get the ghost of a component that is not managed by an entity manager (component name: 'movie')"
-    // );
+    expect(() => movie.getGhost()).toThrow(
+      "Cannot get the identifiers of a component that has no set identifier (component: 'Movie')"
+    );
   });
 
   test('Component provision', async () => {

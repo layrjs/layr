@@ -58,62 +58,63 @@ describe('PrimaryIdentifierAttribute', () => {
     expect(id.length >= 25);
   });
 
-  // TODO
-  // test('Introspection', async () => {
-  //   class Movie extends Component {}
+  test('Introspection', async () => {
+    class Movie extends Component {}
 
-  //   expect(
-  //     new PrimaryIdentifierAttribute('id', Movie.prototype, {exposure: {get: true}}).introspect()
-  //   ).toStrictEqual({
-  //     name: 'id',
-  //     type: 'primaryIdentifierAttribute',
-  //     valueType: 'string',
-  //     default: primaryIdentifierAttributeStringDefaultValue,
-  //     exposure: {get: true}
-  //   });
+    expect(
+      new PrimaryIdentifierAttribute('id', Movie.prototype, {exposure: {get: true}}).introspect()
+    ).toStrictEqual({
+      name: 'id',
+      type: 'PrimaryIdentifierAttribute',
+      valueType: 'string',
+      default: primaryIdentifierAttributeStringDefaultValue,
+      exposure: {get: true}
+    });
 
-  //   expect(
-  //     new PrimaryIdentifierAttribute('id', Movie.prototype, {
-  //       type: 'number',
-  //       exposure: {get: true}
-  //     }).introspect()
-  //   ).toStrictEqual({
-  //     name: 'id',
-  //     type: 'primaryIdentifierAttribute',
-  //     valueType: 'number',
-  //     exposure: {get: true}
-  //   });
-  // });
+    expect(
+      new PrimaryIdentifierAttribute('id', Movie.prototype, {
+        valueType: 'number',
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'id',
+      type: 'PrimaryIdentifierAttribute',
+      valueType: 'number',
+      exposure: {get: true}
+    });
+  });
 
-  // test('Unintrospection', async () => {
-  //   expect(
-  //     PrimaryIdentifierAttribute.unintrospect({
-  //       name: 'id',
-  //       valueType: 'string',
-  //       default: primaryIdentifierAttributeStringDefaultValue,
-  //       exposure: {get: true}
-  //     })
-  //   ).toEqual({
-  //     name: 'id',
-  //     options: {
-  //       type: 'string',
-  //       default: primaryIdentifierAttributeStringDefaultValue,
-  //       exposure: {get: true}
-  //     }
-  //   });
+  test('Unintrospection', async () => {
+    expect(
+      PrimaryIdentifierAttribute.unintrospect({
+        name: 'id',
+        type: 'PrimaryIdentifierAttribute',
+        valueType: 'string',
+        default: primaryIdentifierAttributeStringDefaultValue,
+        exposure: {get: true}
+      })
+    ).toEqual({
+      name: 'id',
+      options: {
+        valueType: 'string',
+        default: primaryIdentifierAttributeStringDefaultValue,
+        exposure: {get: true}
+      }
+    });
 
-  //   expect(
-  //     PrimaryIdentifierAttribute.unintrospect({
-  //       name: 'id',
-  //       valueType: 'number',
-  //       exposure: {get: true}
-  //     })
-  //   ).toEqual({
-  //     name: 'id',
-  //     options: {
-  //       type: 'number',
-  //       exposure: {get: true}
-  //     }
-  //   });
-  // });
+    expect(
+      PrimaryIdentifierAttribute.unintrospect({
+        name: 'id',
+        type: 'PrimaryIdentifierAttribute',
+        valueType: 'number',
+        exposure: {get: true}
+      })
+    ).toEqual({
+      name: 'id',
+      options: {
+        valueType: 'number',
+        exposure: {get: true}
+      }
+    });
+  });
 });
