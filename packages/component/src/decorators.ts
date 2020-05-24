@@ -7,7 +7,8 @@ import {
   PrimaryIdentifierAttribute,
   SecondaryIdentifierAttribute,
   Method,
-  MethodOptions
+  MethodOptions,
+  PropertyExposure
 } from './properties';
 import {isComponentClassOrInstance, isComponentClass} from './utilities';
 import {
@@ -136,6 +137,66 @@ export function method(options: MethodOptions = {}) {
   };
 }
 
+type ClassExposure = {
+  [name: string]: PropertyExposure | {[name: string]: PropertyExposure};
+};
+
+export function expose(exposure: ClassExposure): (target: typeof Component | Component) => void;
+export function expose(
+  exposure: PropertyExposure
+): (target: typeof Component | Component, name: string) => void;
+export function expose(exposure: ClassExposure | PropertyExposure = {}) {
+  return function (target: typeof Component | Component, name?: string) {
+    if (name === undefined) {
+      // Class decorator
+
+      if (!isComponentClass(target)) {
+        throw new Error(
+          `@expose() must be used as a component class decorator or a component property decorator`
+        );
+      }
+
+      const _expose = (
+        target: typeof Component | Component,
+        exposures: {[name: string]: PropertyExposure}
+      ) => {
+        for (const [name, exposure] of Object.entries(exposures)) {
+          target.getProperty(name).setExposure(exposure);
+        }
+      };
+
+      const {prototype: prototypeExposure, ...classExposure} = exposure as ClassExposure;
+
+      _expose(target, classExposure);
+
+      if (prototypeExposure !== undefined) {
+        _expose(target.prototype, prototypeExposure as {[name: string]: PropertyExposure});
+      }
+
+      return;
+    }
+
+    // Property decorator
+
+    if (!isComponentClassOrInstance(target)) {
+      throw new Error(
+        `@expose() must be as a component class decorator or a component property decorator (property: '${name}')`
+      );
+    }
+
+    if (
+      !target.hasProperty(name) ||
+      target.getProperty(name, {autoFork: false}).getParent() !== target
+    ) {
+      throw new Error(
+        `@expose() must be used in combination with @attribute() or @method() (property: '${name}')`
+      );
+    }
+
+    target.getProperty(name).setExposure(exposure);
+  };
+}
+
 export function provide() {
   return function (target: typeof Component, name: string) {
     if (!isComponentClass(target)) {
@@ -204,38 +265,5 @@ export function consume() {
 //     descriptor = getInheritedPropertyDescriptor(target, name);
 
 //     return {...descriptor, __decoratedBy: '@inherit()'};
-//   };
-// }
-
-// export function expose(exposure = {}) {
-//   ow(exposure, 'exposure', ow.object);
-
-//   return function (target, name, descriptor) {
-//     ow(target, 'target', ow.object);
-//     ow(name, 'name', ow.string.nonEmpty);
-//     ow(descriptor, 'descriptor', ow.object);
-
-//     if (!isWithProperties(target)) {
-//       throw new Error(
-//         `@expose() target doesn't inherit from WithProperties (property name: '${name}')`
-//       );
-//     }
-
-//     const {__decoratedBy: decoratedBy} = descriptor;
-
-//     if (
-//       decoratedBy === '@attribute()' ||
-//       decoratedBy === '@method()' ||
-//       decoratedBy === '@inherit()'
-//     ) {
-//       // @expose() is used after @property(), @attribute(), @method(), or @inherit()
-//       const property = target.getProperty(name);
-//       property.setExposure(exposure);
-//       return descriptor;
-//     }
-
-//     descriptor = property({exposure})(target, name, descriptor);
-
-//     return descriptor;
 //   };
 // }

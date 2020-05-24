@@ -65,7 +65,7 @@ export type IdentifierDescriptor = NormalizedIdentifierDescriptor | string | num
 
 export type NormalizedIdentifierDescriptor = {[name: string]: IdentifierValue};
 
-export type ComponentGetter = (name: string) => typeof Component | Component;
+export type ComponentGetter = (type: string) => typeof Component | Component;
 
 export type ExpandAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
@@ -2093,7 +2093,7 @@ export class Component extends Observable(Object) {
   ): T | PromiseLike<T> {
     const {attributeFilter} = options;
 
-    const componentGetter = (name: string) => ensureComponentClass(this).getComponentOfType(name);
+    const componentGetter = (type: string) => ensureComponentClass(this).getComponentOfType(type);
 
     return possiblyAsync(
       possiblyAsync.forEach(

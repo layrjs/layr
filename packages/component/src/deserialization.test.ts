@@ -14,8 +14,8 @@ describe('Deserialization', () => {
 
     // --- Using the deserialize() function ---
 
-    const componentGetter = function (name: string): any {
-      if (name === 'typeof Movie') {
+    const componentGetter = function (type: string): any {
+      if (type === 'typeof Movie') {
         return Movie;
       }
 
@@ -79,8 +79,8 @@ describe('Deserialization', () => {
 
     // --- Using the deserialize() function ---
 
-    let componentGetter = function (name: string) {
-      if (name === 'Movie') {
+    let componentGetter = function (type: string) {
+      if (type === 'Movie') {
         return Movie.prototype;
       }
 
@@ -195,8 +195,8 @@ describe('Deserialization', () => {
       @attribute() movie?: Movie;
     }
 
-    componentGetter = function (name: string): any {
-      if (name === 'Trailer') {
+    componentGetter = function (type: string): any {
+      if (type === 'Trailer') {
         return Trailer.prototype;
       }
 
@@ -254,8 +254,8 @@ describe('Deserialization', () => {
       @attribute() movies?: Movie[];
     }
 
-    componentGetter = function (name: string): any {
-      if (name === 'Cinema') {
+    componentGetter = function (type: string): any {
+      if (type === 'Cinema') {
         return Cinema.prototype;
       }
 

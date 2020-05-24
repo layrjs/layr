@@ -14,12 +14,15 @@ export type SerializeOptions = SimpleSerializeOptions & {
   attributeFilter?: PropertyFilter;
   serializeFunctions?: boolean;
   returnComponentReferences?: boolean;
-  referencedComponents?: Set<typeof Component | Component>;
+  referencedComponents?: ReferencedComponentSet;
   ignoreEmptyComponents?: boolean;
   includeComponentTypes?: boolean;
   includeIsNewMarks?: boolean;
   includeReferencedComponents?: boolean;
+  target?: number;
 };
+
+export type ReferencedComponentSet = Set<typeof Component | Component>;
 
 export function serialize(value: any, options: SerializeOptions = {}) {
   const {

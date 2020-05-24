@@ -13,6 +13,7 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
   componentGetter?: ComponentGetter;
   attributeFilter?: PropertyFilter;
   deserializeFunctions?: boolean;
+  source?: number;
 };
 
 export function deserialize(value: any, options: DeserializeOptions = {}) {

@@ -12,6 +12,7 @@ import {
   primaryIdentifier,
   secondaryIdentifier,
   method,
+  expose,
   provide,
   consume
 } from './decorators';
@@ -233,6 +234,90 @@ describe('Decorators', () => {
     expect(() => Movie.getMethod('delete')).toThrow(
       "The method 'delete' is missing (component: 'Movie')"
     );
+  });
+
+  test('@expose()', async () => {
+    const testExposure = (componentProvider: () => typeof Component) => {
+      const component = componentProvider();
+
+      let prop = component.getProperty('limit');
+
+      expect(isAttributeInstance(prop)).toBe(true);
+      expect(prop.getName()).toBe('limit');
+      expect(prop.getExposure()).toStrictEqual({get: true});
+
+      prop = component.getProperty('find');
+
+      expect(isMethodInstance(prop)).toBe(true);
+      expect(prop.getName()).toBe('find');
+      expect(prop.getExposure()).toStrictEqual({call: true});
+
+      prop = component.prototype.getProperty('title');
+
+      expect(isAttributeInstance(prop)).toBe(true);
+      expect(prop.getName()).toBe('title');
+      expect(prop.getExposure()).toStrictEqual({get: true, set: true});
+
+      prop = component.prototype.getProperty('load');
+
+      expect(isMethodInstance(prop)).toBe(true);
+      expect(prop.getName()).toBe('load');
+      expect(prop.getExposure()).toStrictEqual({call: true});
+    };
+
+    testExposure(() => {
+      class Movie extends Component {
+        @expose({get: true}) @attribute() static limit: string;
+        @expose({call: true}) @method() static find() {}
+
+        @expose({get: true, set: true}) @attribute() title!: string;
+        @expose({call: true}) @method() load() {}
+      }
+
+      return Movie;
+    });
+
+    testExposure(() => {
+      @expose({
+        limit: {get: true},
+        find: {call: true},
+        prototype: {
+          title: {get: true, set: true},
+          load: {call: true}
+        }
+      })
+      class Movie extends Component {
+        @attribute() static limit: string;
+        @method() static find() {}
+
+        @attribute() title!: string;
+        @method() load() {}
+      }
+
+      return Movie;
+    });
+
+    testExposure(() => {
+      class Movie extends Component {
+        @attribute() static limit: string;
+        @method() static find() {}
+
+        @attribute() title!: string;
+        @method() load() {}
+      }
+
+      @expose({
+        limit: {get: true},
+        find: {call: true},
+        prototype: {
+          title: {get: true, set: true},
+          load: {call: true}
+        }
+      })
+      class ExposedMovie extends Movie {}
+
+      return ExposedMovie;
+    });
   });
 
   test('@provide()', async () => {
