@@ -1,10 +1,11 @@
 import {Component, isComponentClass} from '@liaison/component';
+import type {ComponentServerLike} from '@liaison/component-server';
 import isEqual from 'lodash/isEqual';
 
-import {ComponentClient, ComponentServer} from './component-client';
+import {ComponentClient} from './component-client';
 
 describe('ComponentClient', () => {
-  const server: ComponentServer = {
+  const server: ComponentServerLike = {
     receive({query, components, version: clientVersion}) {
       const serverVersion = 1;
 

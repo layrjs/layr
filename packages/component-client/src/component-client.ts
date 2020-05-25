@@ -8,33 +8,26 @@ import {
   deserialize,
   ensureComponentClass
 } from '@liaison/component';
+import type {ComponentServerLike} from '@liaison/component-server';
 import {getTypeOf, PlainObject} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import debugModule from 'debug';
 
 const debug = debugModule('liaison:component-client');
 // To display the debug log, set this environment:
-// DEBUG=liaison:component-client DEBUG_DEPTH=10
+// DEBUG=liaison:component-client DEBUG_DEPTH=5
 
 import {isComponentClientInstance} from './utilities';
-
-export interface ComponentServer {
-  receive: (request: {
-    query: PlainObject;
-    components?: PlainObject[];
-    version?: number;
-  }) => {result: PlainObject; components?: PlainObject[]};
-}
 
 type ComponentClientOptions = {
   version?: number;
 };
 
 export class ComponentClient {
-  _componentServer: ComponentServer;
+  _componentServer: ComponentServerLike;
   _version: number | undefined;
 
-  constructor(componentServer: ComponentServer, options: ComponentClientOptions = {}) {
+  constructor(componentServer: ComponentServerLike, options: ComponentClientOptions = {}) {
     const {version} = options;
 
     if (typeof componentServer?.receive !== 'function') {
@@ -147,7 +140,7 @@ export class ComponentClient {
         ...(serializedComponents && {components: serializedComponents}),
         version
       }),
-      ({result, components}) => {
+      ({result, components}: {result: any; components?: PlainObject[]}) => {
         debug(`Query sent to remote components (result: %o, components: %o)`, result, components);
 
         return this._deserializeResponse({result, components}, {componentGetter, errorHandler});

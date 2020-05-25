@@ -5,6 +5,7 @@
     "packages/component",
     "packages/component-client",
     "packages/component-server",
+    "packages/integration-testing",
     "packages/observable"
   ]
 }

@@ -22,6 +22,10 @@ const debug = debugModule('liaison:component-server');
 
 import {isComponentServerInstance} from './utilities';
 
+export interface ComponentServerLike {
+  receive: ComponentServer['receive'];
+}
+
 type ComponentServerOptions = {
   name?: string;
   version?: number;
@@ -133,8 +137,8 @@ export class ComponentServer {
                 );
 
                 return {
-                  result: serializedResult,
-                  ...(serializedComponents && {components: serializedComponents})
+                  ...(serializedResult !== undefined && {result: serializedResult}),
+                  ...(serializedComponents !== undefined && {components: serializedComponents})
                 };
               }
             )
@@ -179,13 +183,16 @@ export class ComponentServer {
   ) {
     const referencedComponents: ReferencedComponentSet = new Set(components);
 
-    const serializedResult = serialize(result, {
-      returnComponentReferences: true,
-      referencedComponents,
-      attributeFilter,
-      serializeFunctions: true,
-      target: -1
-    });
+    const serializedResult =
+      result !== undefined
+        ? serialize(result, {
+            returnComponentReferences: true,
+            referencedComponents,
+            attributeFilter,
+            serializeFunctions: true,
+            target: -1
+          })
+        : undefined;
 
     let serializedComponents: PlainObject[] | undefined;
     const handledReferencedComponents: ReferencedComponentSet = new Set();
