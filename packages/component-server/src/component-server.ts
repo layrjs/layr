@@ -122,7 +122,7 @@ export class ComponentServer {
           (result) =>
             possiblyAsync(
               this._serializeResponse(
-                {result, deserializedComponents},
+                {result, components: deserializedComponents},
                 {attributeFilter: getFilter}
               ),
               ({serializedResult, serializedComponents}) => {
@@ -174,13 +174,10 @@ export class ComponentServer {
   }
 
   _serializeResponse(
-    {
-      result,
-      deserializedComponents
-    }: {result: any; deserializedComponents: (typeof Component | Component)[] | undefined},
+    {result, components}: {result: any; components: (typeof Component | Component)[] | undefined},
     {attributeFilter}: {attributeFilter: PropertyFilter}
   ) {
-    const referencedComponents: ReferencedComponentSet = new Set(deserializedComponents);
+    const referencedComponents: ReferencedComponentSet = new Set(components);
 
     const serializedResult = serialize(result, {
       returnComponentReferences: true,

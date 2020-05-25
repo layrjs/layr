@@ -1,5 +1,10 @@
 {
   "version": "independent",
   "npmClient": "npm",
-  "packages": ["packages/component", "packages/component-server", "packages/observable"]
+  "packages": [
+    "packages/component",
+    "packages/component-client",
+    "packages/component-server",
+    "packages/observable"
+  ]
 }

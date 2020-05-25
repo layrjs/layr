@@ -75,6 +75,8 @@ export type ExpandAttributeSelectorOptions = {
   _attributeStack?: Set<Attribute>;
 };
 
+type MethodBuilder = (name: string) => Function;
+
 export type IntrospectedComponent = {
   name: string;
   // TODO: Consider adding a 'mixins' attribute
@@ -1870,6 +1872,10 @@ export class Component extends Observable(Object) {
           referencedComponents.add(providedComponent);
         }
 
+        for (const consumedComponent of this.getConsumedComponents()) {
+          referencedComponents.add(consumedComponent);
+        }
+
         referencedComponents.add(this);
       }
 
@@ -1914,6 +1920,10 @@ export class Component extends Observable(Object) {
       if (referencedComponents !== undefined) {
         for (const providedComponent of this.constructor.getProvidedComponents()) {
           referencedComponents.add(providedComponent);
+        }
+
+        for (const consumedComponent of this.constructor.getConsumedComponents()) {
+          referencedComponents.add(consumedComponent);
         }
 
         referencedComponents.add(this.constructor);
@@ -2171,8 +2181,8 @@ export class Component extends Observable(Object) {
 
     let introspectedComponent: IntrospectedComponent | undefined;
 
-    const introspectedProperties = this.introspectProperties();
-    const introspectedPrototypeProperties = this.prototype.introspectProperties();
+    const introspectedProperties = this.__introspectProperties();
+    const introspectedPrototypeProperties = this.prototype.__introspectProperties();
     const introspectedProvidedComponents = this.__introspectProvidedComponents({
       _introspectedComponents
     });
@@ -2217,11 +2227,11 @@ export class Component extends Observable(Object) {
     return introspectedComponent;
   }
 
-  static get introspectProperties() {
-    return this.prototype.introspectProperties;
+  static get __introspectProperties() {
+    return this.prototype.__introspectProperties;
   }
 
-  introspectProperties() {
+  __introspectProperties() {
     const introspectedProperties = [];
 
     for (const property of this.getProperties({autoFork: false})) {
@@ -2271,7 +2281,10 @@ export class Component extends Observable(Object) {
     return introspectedConsumedComponents;
   }
 
-  static unintrospect(introspectedComponent: IntrospectedComponent): typeof Component {
+  static unintrospect(
+    introspectedComponent: IntrospectedComponent,
+    options: {methodBuilder?: MethodBuilder} = {}
+  ): typeof Component {
     const {
       name,
       properties: introspectedProperties,
@@ -2280,20 +2293,26 @@ export class Component extends Observable(Object) {
       consumedComponents: introspectedConsumedComponents
     } = introspectedComponent;
 
+    const {methodBuilder} = options;
+
     class UnintrospectedComponent extends Component {}
 
     if (introspectedProperties !== undefined) {
-      UnintrospectedComponent.unintrospectProperties(introspectedProperties);
+      UnintrospectedComponent.__unintrospectProperties(introspectedProperties, {methodBuilder});
     }
 
     if (introspectedPrototypeProperties !== undefined) {
-      UnintrospectedComponent.prototype.unintrospectProperties(introspectedPrototypeProperties);
+      UnintrospectedComponent.prototype.__unintrospectProperties(introspectedPrototypeProperties, {
+        methodBuilder
+      });
     }
 
     UnintrospectedComponent.setComponentName(name);
 
     if (introspectedProvidedComponents !== undefined) {
-      UnintrospectedComponent.__unintrospectProvidedComponents(introspectedProvidedComponents);
+      UnintrospectedComponent.__unintrospectProvidedComponents(introspectedProvidedComponents, {
+        methodBuilder
+      });
     }
 
     if (introspectedConsumedComponents !== undefined) {
@@ -2303,22 +2322,41 @@ export class Component extends Observable(Object) {
     return UnintrospectedComponent;
   }
 
-  static get unintrospectProperties() {
-    return this.prototype.unintrospectProperties;
+  static get __unintrospectProperties() {
+    return this.prototype.__unintrospectProperties;
   }
 
-  unintrospectProperties(introspectedProperties: IntrospectedProperty[]) {
+  __unintrospectProperties(
+    introspectedProperties: IntrospectedProperty[],
+    {methodBuilder}: {methodBuilder: MethodBuilder | undefined}
+  ) {
     for (const introspectedProperty of introspectedProperties) {
       const {type} = introspectedProperty;
       const PropertyClass = ensureComponentClass(this).getPropertyClass(type);
       const {name, options} = PropertyClass.unintrospect(introspectedProperty);
-      this.setProperty(name, PropertyClass, options);
+      const property = this.setProperty(name, PropertyClass, options);
+
+      if (
+        isMethodInstance(property) &&
+        property.getExposure()?.call === true &&
+        methodBuilder !== undefined
+      ) {
+        Object.defineProperty(this, name, {
+          value: methodBuilder(name),
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+      }
     }
   }
 
-  static __unintrospectProvidedComponents(introspectedProvidedComponents: IntrospectedComponent[]) {
+  static __unintrospectProvidedComponents(
+    introspectedProvidedComponents: IntrospectedComponent[],
+    {methodBuilder}: {methodBuilder: MethodBuilder | undefined}
+  ) {
     for (const introspectedProvidedComponent of introspectedProvidedComponents) {
-      this.provideComponent(Component.unintrospect(introspectedProvidedComponent));
+      this.provideComponent(Component.unintrospect(introspectedProvidedComponent, {methodBuilder}));
     }
   }
 

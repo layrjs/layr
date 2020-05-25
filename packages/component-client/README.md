@@ -1,9 +1,13 @@
 # @liaison/component-client
 
-A client to consume your locally served Liaison components.
+Consumes Liaison components served by @liaison/component-server.
 
 ## Installation
 
 ```
 npm install @liaison/component-client
 ```
+
+## License
+
+MIT

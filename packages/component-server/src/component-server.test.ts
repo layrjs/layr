@@ -6,6 +6,7 @@ import {
   method,
   expose,
   provide,
+  consume,
   validators
 } from '@liaison/component';
 import {PlainObject, forEachDeep} from 'core-helpers';
@@ -14,9 +15,13 @@ import {ComponentServer} from './component-server';
 
 describe('ComponentServer', () => {
   test('Introspecting components', async () => {
+    class Session extends Component {
+      @expose({get: true, set: true}) @attribute('string?') static token?: string;
+    }
+
     class Movie extends Component {
-      @expose({get: true}) @attribute('number') static limit = 100;
-      @attribute('string?') static token: string;
+      @consume() static Session: typeof Session;
+
       @expose({call: true}) @method() static find() {}
       @method() static count() {}
 
@@ -25,17 +30,17 @@ describe('ComponentServer', () => {
       @expose({get: true, set: true})
       @attribute('string', {validators: [validators.notEmpty()]})
       title = '';
-      @expose({call: true}) @method() load() {}
+      @expose({get: true}) @attribute('boolean') isPlaying = false;
+      @expose({call: true}) @method() play() {}
       @method() delete() {}
     }
 
-    class Cinema extends Component {
+    class Backend extends Component {
+      @provide() static Session = Session;
       @provide() static Movie = Movie;
-
-      @expose({get: true}) @attribute('Movie[]?') movies?: Movie[];
     }
 
-    const server = new ComponentServer(Cinema);
+    const server = new ComponentServer(Backend);
 
     const response = server.receive({query: {'introspect=>': {'()': []}}});
     trimSerializedFunctions(response);
@@ -43,30 +48,23 @@ describe('ComponentServer', () => {
     expect(response).toStrictEqual({
       result: {
         component: {
-          name: 'Cinema',
-          prototype: {
-            properties: [
-              {
-                name: 'movies',
-                type: 'Attribute',
-                valueType: 'Movie[]?',
-                exposure: {get: true}
-              }
-            ]
-          },
+          name: 'Backend',
           providedComponents: [
             {
-              name: 'Movie',
+              name: 'Session',
               properties: [
                 {
-                  name: 'limit',
+                  name: 'token',
                   type: 'Attribute',
-                  valueType: 'number',
-                  value: 100,
-                  exposure: {get: true}
-                },
-                {name: 'find', type: 'Method', exposure: {call: true}}
-              ],
+                  valueType: 'string?',
+                  value: {__undefined: true},
+                  exposure: {get: true, set: true}
+                }
+              ]
+            },
+            {
+              name: 'Movie',
+              properties: [{name: 'find', type: 'Method', exposure: {call: true}}],
               prototype: {
                 properties: [
                   {
@@ -98,9 +96,17 @@ describe('ComponentServer', () => {
                     ],
                     exposure: {get: true, set: true}
                   },
-                  {name: 'load', type: 'Method', exposure: {call: true}}
+                  {
+                    name: 'isPlaying',
+                    type: 'Attribute',
+                    valueType: 'boolean',
+                    default: {__function: 'function () {\nreturn false;\n}'},
+                    exposure: {get: true}
+                  },
+                  {name: 'play', type: 'Method', exposure: {call: true}}
                 ]
-              }
+              },
+              consumedComponents: ['Session']
             }
           ]
         }
