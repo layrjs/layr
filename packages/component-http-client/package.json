@@ -1,44 +1,52 @@
 {
   "name": "@liaison/component-http-client",
-  "version": "0.1.4",
+  "version": "0.5.0",
   "description": "An HTTP client for your Liaison components",
+  "keywords": [
+    "liaison",
+    "component",
+    "http",
+    "client"
+  ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component-http-client",
   "files": [
     "dist"
   ],
-  "main": "dist/node/cjs",
-  "module": "dist/node/esm",
-  "browser": "dist/browser/esm",
+  "main": "dist/node-cjs/index.js",
+  "module": "dist/node-esm/index.js",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "dev-tools build:ts-library",
+    "link": "dev-tools link:local-packages",
+    "prepare": "npm run build && npm run test",
+    "test": "dev-tools test:ts-library"
+  },
   "dependencies": {
+    "core-helpers": "^0.1.0",
     "cross-fetch": "^3.0.4",
     "debug": "^4.1.1",
-    "@liaison/component-client": "^0.1.0",
-    "ow": "^0.15.1"
+    "@liaison/component-client": "^0.5.0",
+    "tslib": "^1.11.1"
   },
-  "@managed": {
-    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
-    "properties": [
-      "name",
-      "version",
-      "private",
-      "description",
-      "keywords",
-      "homepage",
-      "author",
-      "contributors",
-      "license",
-      "repository",
-      "files",
-      "main",
-      "module",
-      "browser",
-      "bin",
-      "dependencies",
-      "peerDependencies",
-      "optionalDependencies",
-      "devDependencies"
-    ]
+  "devDependencies": {
+    "co-body": "^6.0.0",
+    "@liaison/component": "^0.5.0",
+    "koa": "^2.12.0",
+    "@koa/cors": "^3.1.0",
+    "koa-json-error": "^3.1.2",
+    "lodash": "^4.17.15",
+    "@mvila/dev-tools": "^1.0.13",
+    "@mvila/tsconfig": "^1.0.3",
+    "@types/co-body": "^5.1.0",
+    "@types/debug": "^4.1.5",
+    "@types/jest": "^25.2.1",
+    "@types/koa": "^2.11.3",
+    "@types/koa-json-error": "^3.1.2",
+    "@types/koa__cors": "^3.0.1",
+    "@types/lodash": "^4.14.150"
   }
 }

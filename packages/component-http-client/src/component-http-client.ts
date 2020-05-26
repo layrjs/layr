@@ -1,6 +1,6 @@
 import {ComponentClient} from '@liaison/component-client';
 import fetch from 'cross-fetch';
-import ow from 'ow';
+import type {PlainObject} from 'core-helpers';
 import debugModule from 'debug';
 
 const debug = debugModule('liaison:component-http-client');
@@ -8,36 +8,23 @@ const debug = debugModule('liaison:component-http-client');
 // To display the debug log, set this environment:
 // DEBUG=liaison:component-http-client DEBUG_DEPTH=10
 
-export class ComponentHTTPClient extends ComponentClient {
-  constructor(url, options = {}) {
-    ow(url, 'url', ow.string.nonEmpty);
-    ow(
-      options,
-      'options',
-      ow.object.exactShape({version: ow.optional.number.integer, baseComponents: ow.optional.array})
-    );
+export type ComponentHTTPClientOptions = {
+  version?: number;
+};
 
-    const {version, baseComponents = []} = options;
+export class ComponentHTTPClient extends ComponentClient {
+  constructor(url: string, options: ComponentHTTPClientOptions = {}) {
+    const {version} = options;
 
     const componentServer = createComponentServer(url);
 
-    super(componentServer, {version, baseComponents});
+    super(componentServer, {version});
   }
 }
 
-function createComponentServer(url) {
+function createComponentServer(url: string) {
   return {
-    async receive(request) {
-      ow(
-        request,
-        'request',
-        ow.object.exactShape({
-          query: ow.object,
-          components: ow.optional.array,
-          version: ow.optional.number.integer
-        })
-      );
-
+    async receive(request: {query: PlainObject; components?: PlainObject[]; version?: number}) {
       const {query, components, version} = request;
 
       debug(`Sending query to remote components (url: %o, request: %o)`, url, {query, components});

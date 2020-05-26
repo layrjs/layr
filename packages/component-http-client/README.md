@@ -7,3 +7,7 @@ An HTTP client for your Liaison components.
 ```
 npm install @liaison/component-http-client
 ```
+
+## License
+
+MIT
