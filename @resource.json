@@ -29,9 +29,6 @@
   "memoryRouter": {
     "@include": "./packages/memory-router"
   },
-  "model": {
-    "@include": "./packages/model"
-  },
   "mongoDBStore": {
     "@include": "./packages/mongodb-store"
   },
