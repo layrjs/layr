@@ -17,11 +17,11 @@ import {isComponentClass} from '../utilities';
 
 export type AttributeOptions = PropertyOptions & {
   valueType?: string;
-  value?: any;
-  default?: any;
+  value?: unknown;
+  default?: unknown;
   validators?: (Validator | ValidatorFunction)[];
   items?: AttributeItemsOptions;
-  getter?: (this: any) => any;
+  getter?: (this: any) => unknown;
   setter?: (this: any, value: any) => void;
 };
 
@@ -31,14 +31,14 @@ type AttributeItemsOptions = {
 };
 
 export type IntrospectedAttribute = IntrospectedProperty & {
-  value?: any;
-  default?: any;
+  value?: unknown;
+  default?: unknown;
 } & IntrospectedValueType;
 
 export type UnintrospectedAttribute = UnintrospectedProperty & {
   options: {
-    value?: any;
-    default?: any;
+    value?: unknown;
+    default?: unknown;
   } & UnintrospectedValueType;
 };
 
@@ -49,7 +49,7 @@ export class Attribute extends Observable(Property) {
 
   // === Options ===
 
-  private _getter?: () => any;
+  private _getter?: () => unknown;
   private _setter?: (value: any) => void;
 
   setOptions(options: AttributeOptions = {}) {
@@ -121,7 +121,7 @@ export class Attribute extends Observable(Property) {
 
   // === Value ===
 
-  private _value?: any;
+  private _value?: unknown;
   private _isSet?: boolean;
 
   getValue(options: {throwIfUnset?: boolean; autoFork?: boolean} = {}) {
@@ -158,7 +158,7 @@ export class Attribute extends Observable(Property) {
     return this._value;
   }
 
-  setValue(value: any) {
+  setValue(value: unknown) {
     this.checkValue(value);
 
     if (this._setter !== undefined) {
@@ -180,7 +180,7 @@ export class Attribute extends Observable(Property) {
     this._value = value;
     this._isSet = true;
 
-    if (value?.valueOf() !== previousValue?.valueOf()) {
+    if ((value as any)?.valueOf() !== (previousValue as any)?.valueOf()) {
       this.callObservers();
 
       const parent = this.getParent();
@@ -234,13 +234,13 @@ export class Attribute extends Observable(Property) {
     return this._isSet === true;
   }
 
-  checkValue(value: any) {
+  checkValue(value: unknown) {
     return this.getValueType().checkValue(value, this);
   }
 
   // === Default value ===
 
-  private _default?: any;
+  private _default?: unknown;
 
   getDefault() {
     return this._default;

@@ -1,6 +1,7 @@
 import {
   deserialize as simpleDeserialize,
-  DeserializeOptions as SimpleDeserializeOptions
+  DeserializeOptions as SimpleDeserializeOptions,
+  DeserializeResult
 } from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
@@ -16,6 +17,10 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
   source?: number;
 };
 
+export function deserialize<Value>(
+  value: Value,
+  options?: DeserializeOptions
+): DeserializeResult<Value>;
 export function deserialize(value: any, options: DeserializeOptions = {}) {
   const {
     objectDeserializer: originalObjectDeserializer,
@@ -84,7 +89,10 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
         ),
         (deserializedAttributes) => {
           const {__context: context} = deserializedAttributes;
-          const deserializedFunction = deserializeFunction(functionCode, context);
+          const deserializedFunction = deserializeFunction(
+            functionCode,
+            context as PlainObject | undefined
+          );
           Object.assign(deserializedFunction, deserializedAttributes);
           return deserializedFunction;
         }
@@ -95,7 +103,7 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
   return simpleDeserialize(value, {...otherOptions, objectDeserializer, functionDeserializer});
 }
 
-export function deserializeFunction(functionCode: string, context?: PlainObject) {
+export function deserializeFunction(functionCode: string, context?: PlainObject): Function {
   let evalCode = `(${functionCode});`;
 
   if (context !== undefined) {

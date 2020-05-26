@@ -33,7 +33,7 @@ export class ComponentValueType extends ValueType {
     return `${this.getComponentType()}${super.toString()}`;
   }
 
-  _checkValue(value: any, attribute: Attribute) {
+  _checkValue(value: unknown, attribute: Attribute) {
     const result = super._checkValue(value, attribute);
 
     if (result !== undefined) {
@@ -71,7 +71,7 @@ export class ComponentValueType extends ValueType {
     return component.expandAttributeSelector(normalizedAttributeSelector, options);
   }
 
-  runValidators(value: any, attributeSelector?: AttributeSelector) {
+  runValidators(value: unknown, attributeSelector?: AttributeSelector) {
     const failedValidators = super.runValidators(value, attributeSelector);
 
     if (isComponentClassOrInstance(value)) {

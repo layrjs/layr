@@ -6,7 +6,7 @@ export class DateValueType extends ValueType {
     return `Date${super.toString()}`;
   }
 
-  _checkValue(value: any, attribute: Attribute) {
+  _checkValue(value: unknown, attribute: Attribute) {
     return super._checkValue(value, attribute) ?? value instanceof Date;
   }
 

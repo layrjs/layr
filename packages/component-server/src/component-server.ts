@@ -78,12 +78,7 @@ export class ComponentServer {
       return attribute.operationIsAllowed('set');
     };
 
-    const authorizer = function (
-      this: any,
-      name: string,
-      operation: PropertyOperation,
-      _params: any[]
-    ) {
+    const authorizer = function (this: any, name: string, operation: string, _params?: any[]) {
       if (this === deeprRoot && name === 'introspect' && operation === 'call') {
         return true;
       }
@@ -92,7 +87,7 @@ export class ComponentServer {
         const property = this.hasProperty(name) ? this.getProperty(name) : undefined;
 
         if (property !== undefined) {
-          return property.operationIsAllowed(operation);
+          return property.operationIsAllowed(operation as PropertyOperation);
         }
       }
 
@@ -114,13 +109,7 @@ export class ComponentServer {
         {serializedQuery, serializedComponents},
         {componentGetter, attributeFilter: setFilter}
       ),
-      ({
-        deserializedQuery,
-        deserializedComponents
-      }: {
-        deserializedQuery: PlainObject;
-        deserializedComponents: (typeof Component | Component)[] | undefined;
-      }) =>
+      ({deserializedQuery, deserializedComponents}) =>
         possiblyAsync(
           invokeQuery(deeprRoot, deserializedQuery, {authorizer, errorHandler}),
           (result) =>
@@ -162,14 +151,14 @@ export class ComponentServer {
         attributeFilter,
         source: -1
       }),
-      (deserializedComponents) =>
+      (deserializedComponents: (typeof Component | Component)[] | undefined) =>
         possiblyAsync(
           deserialize(serializedQuery, {
             componentGetter,
             attributeFilter,
             source: -1
           }),
-          (deserializedQuery) => ({
+          (deserializedQuery: PlainObject) => ({
             deserializedQuery,
             deserializedComponents
           })
@@ -178,7 +167,10 @@ export class ComponentServer {
   }
 
   _serializeResponse(
-    {result, components}: {result: any; components: (typeof Component | Component)[] | undefined},
+    {
+      result,
+      components
+    }: {result: unknown; components: (typeof Component | Component)[] | undefined},
     {attributeFilter}: {attributeFilter: PropertyFilter}
   ) {
     const referencedComponents: ReferencedComponentSet = new Set(components);

@@ -224,7 +224,7 @@ describe('Attribute', () => {
     expect(tagsObserver).toHaveBeenCalledTimes(1);
     expect(movieObserver).toHaveBeenCalledTimes(3);
 
-    const tagArray = tags.getValue();
+    const tagArray = tags.getValue() as string[];
 
     tagArray[0] = 'Drama';
 
@@ -242,7 +242,7 @@ describe('Attribute', () => {
     expect(tagsObserver).toHaveBeenCalledTimes(3);
     expect(movieObserver).toHaveBeenCalledTimes(5);
 
-    const newTagArray = tags.getValue();
+    const newTagArray = tags.getValue() as string[];
 
     newTagArray[0] = 'drama';
 

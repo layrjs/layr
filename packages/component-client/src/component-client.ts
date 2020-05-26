@@ -140,7 +140,7 @@ export class ComponentClient {
         ...(serializedComponents && {components: serializedComponents}),
         version
       }),
-      ({result, components}: {result: any; components?: PlainObject[]}) => {
+      ({result, components}) => {
         debug(`Query sent to remote components (result: %o, components: %o)`, result, components);
 
         return this._deserializeResponse({result, components}, {componentGetter, errorHandler});
@@ -207,7 +207,7 @@ export class ComponentClient {
     {
       componentGetter,
       errorHandler
-    }: {componentGetter: ComponentGetter | undefined; errorHandler: (error: Error) => any}
+    }: {componentGetter: ComponentGetter | undefined; errorHandler: (error: Error) => unknown}
   ) {
     const {result: serializedResult, components: serializedComponents} = response;
 

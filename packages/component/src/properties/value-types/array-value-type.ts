@@ -23,7 +23,7 @@ export class ArrayValueType extends ValueType {
     return `${this.getItemType().toString()}[]${super.toString()}`;
   }
 
-  checkValue(values: any, attribute: Attribute) {
+  checkValue(values: unknown[], attribute: Attribute) {
     super.checkValue(values, attribute);
 
     if (values === undefined) {
@@ -38,7 +38,7 @@ export class ArrayValueType extends ValueType {
     }
   }
 
-  _checkValue(values: any, attribute: Attribute) {
+  _checkValue(values: unknown, attribute: Attribute) {
     return super._checkValue(values, attribute) ?? Array.isArray(values);
   }
 
@@ -54,7 +54,7 @@ export class ArrayValueType extends ValueType {
     );
   }
 
-  runValidators(values: any[] | undefined, attributeSelector?: AttributeSelector) {
+  runValidators(values: unknown[] | undefined, attributeSelector?: AttributeSelector) {
     const failedValidators = super.runValidators(values, attributeSelector);
 
     if (values !== undefined) {

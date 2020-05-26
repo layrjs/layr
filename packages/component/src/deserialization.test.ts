@@ -87,7 +87,7 @@ describe('Deserialization', () => {
       throw new Error('Component not found');
     };
 
-    let movie = deserialize({__component: 'Movie', title: 'Inception'}, {componentGetter});
+    let movie = deserialize({__component: 'Movie', title: 'Inception'}, {componentGetter}) as Movie;
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
@@ -95,7 +95,10 @@ describe('Deserialization', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
-    movie = deserialize({__component: 'Movie', __new: true, title: 'Inception'}, {componentGetter});
+    movie = deserialize(
+      {__component: 'Movie', __new: true, title: 'Inception'},
+      {componentGetter}
+    ) as Movie;
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
@@ -106,7 +109,7 @@ describe('Deserialization', () => {
     movie = deserialize(
       {__component: 'Movie', __new: true, duration: {__undefined: true}},
       {componentGetter}
-    );
+    ) as Movie;
 
     expect(movie.title).toBeUndefined();
     expect(movie.duration).toBeUndefined();
@@ -121,7 +124,7 @@ describe('Deserialization', () => {
           return attribute.getName() === 'title';
         }
       }
-    );
+    ) as Movie;
 
     expect(movie.title).toBe('Inception');
     expect(movie.duration).toBe(0);
@@ -132,7 +135,7 @@ describe('Deserialization', () => {
 
     // --- Using Component.deserializeInstance() method ---
 
-    movie = Movie.deserializeInstance({__component: 'Movie', title: 'Inception'});
+    movie = Movie.deserializeInstance({__component: 'Movie', title: 'Inception'}) as Movie;
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
@@ -140,7 +143,7 @@ describe('Deserialization', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
-    movie = Movie.deserializeInstance({__new: true, title: 'Inception'});
+    movie = Movie.deserializeInstance({__new: true, title: 'Inception'}) as Movie;
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
@@ -223,12 +226,12 @@ describe('Deserialization', () => {
         movie: {__component: 'Movie', title: 'The Matrix'}
       },
       {componentGetter}
-    );
+    ) as Trailer;
 
     expect(trailer).toBeInstanceOf(Trailer);
     expect(trailer.url).toBe('https://trailer.com/abc123');
 
-    movie = trailer.movie;
+    movie = trailer.movie!;
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie.title).toBe('The Matrix');
@@ -271,13 +274,13 @@ describe('Deserialization', () => {
         movies: [{__component: 'Movie', title: 'The Matrix'}]
       },
       {componentGetter}
-    );
+    ) as Cinema;
 
     expect(cinema).toBeInstanceOf(Cinema);
     expect(cinema.name).toBe('Paradiso');
     expect(cinema.movies).toHaveLength(1);
 
-    movie = cinema.movies[0];
+    movie = cinema.movies![0];
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie.title).toBe('The Matrix');
@@ -287,12 +290,12 @@ describe('Deserialization', () => {
       __component: 'Cinema',
       name: 'New Paradiso',
       movies: [{__component: 'Movie', title: 'The Matrix 2', duration: 120}]
-    });
+    }) as Cinema;
 
     expect(cinema.name).toBe('New Paradiso');
     expect(cinema.movies).toHaveLength(1);
 
-    const otherMovie = cinema.movies[0];
+    const otherMovie = cinema.movies![0];
 
     // For nested components in arrays, the identity is not (currently) be preserved
     expect(otherMovie).not.toBe(movie);
@@ -307,12 +310,12 @@ describe('Deserialization', () => {
       __function: 'function sum(a, b) { return a + b; }'
     };
 
-    let func = deserialize(serializedFunction);
+    let func = deserialize(serializedFunction) as Function;
 
     expect(typeof func).toBe('object');
     expect(func).toEqual(serializedFunction);
 
-    func = deserialize(serializedFunction, {deserializeFunctions: true});
+    func = deserialize(serializedFunction, {deserializeFunctions: true}) as Function;
 
     expect(typeof func).toBe('function');
     expect(Object.keys(func)).toEqual([]);
@@ -321,17 +324,17 @@ describe('Deserialization', () => {
 
     serializedFunction.displayName = 'sum';
 
-    func = deserialize(serializedFunction);
+    func = deserialize(serializedFunction) as Function;
 
     expect(typeof func).toBe('object');
     expect(func).toEqual(serializedFunction);
 
-    func = deserialize(serializedFunction, {deserializeFunctions: true});
+    func = deserialize(serializedFunction, {deserializeFunctions: true}) as Function;
 
     expect(typeof func).toBe('function');
     expect(func.name).toBe('sum');
     expect(Object.keys(func)).toEqual(['displayName']);
-    expect(func.displayName).toBe('sum');
+    expect((func as any).displayName).toBe('sum');
     expect(func(1, 2)).toBe(3);
 
     serializedFunction = {
@@ -339,12 +342,12 @@ describe('Deserialization', () => {
       __context: {a: 1, b: 2}
     };
 
-    func = deserialize(serializedFunction, {deserializeFunctions: true});
+    func = deserialize(serializedFunction, {deserializeFunctions: true}) as Function;
 
     expect(typeof func).toBe('function');
     expect(func.name).toBe('sum');
     expect(Object.keys(func)).toEqual(['__context']);
-    expect(func.__context).toEqual({a: 1, b: 2});
+    expect((func as any).__context).toEqual({a: 1, b: 2});
     expect(func(1, 2)).toBe(3);
   });
 });

@@ -252,7 +252,7 @@ export function isObservable(value: any): value is ObservableType {
   return typeof value?.isObservable === 'function';
 }
 
-export function canBeObserved(value: any) {
+export function canBeObserved(value: any): value is object {
   return (
     (typeof value === 'object' && value !== null && !(value instanceof Date)) ||
     typeof value === 'function'

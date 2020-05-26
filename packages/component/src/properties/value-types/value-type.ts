@@ -49,7 +49,7 @@ export class ValueType {
     return this.isOptional() ? '?' : '';
   }
 
-  checkValue(value: any, attribute: Attribute) {
+  checkValue(value: unknown, attribute: Attribute) {
     if (!this._checkValue(value, attribute)) {
       throw new Error(
         `Cannot assign a value of an unexpected type (${attribute.describe()}, expected type: '${this.toString()}', received type: '${getTypeOf(
@@ -59,7 +59,7 @@ export class ValueType {
     }
   }
 
-  _checkValue(value: any, _attribute: Attribute) {
+  _checkValue(value: unknown, _attribute: Attribute) {
     return value === undefined ? this.isOptional() : undefined;
   }
 
@@ -71,7 +71,7 @@ export class ValueType {
     return normalizedAttributeSelector !== false;
   }
 
-  runValidators(value: any, _attributeSelector?: AttributeSelector) {
+  runValidators(value: unknown, _attributeSelector?: AttributeSelector) {
     const failedValidators = runValidators(this.getValidators(), value, {
       isOptional: this.isOptional()
     });

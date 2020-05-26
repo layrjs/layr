@@ -41,8 +41,15 @@ export class IdentifierAttribute extends Attribute {
 
   // === Value ===
 
-  setValue(value: any) {
-    const {previousValue, newValue} = super.setValue(value);
+  getValue(options: {throwIfUnset?: boolean; autoFork?: boolean} = {}) {
+    return super.getValue(options) as IdentifierValue | undefined;
+  }
+
+  setValue(value: IdentifierValue) {
+    const {previousValue, newValue} = super.setValue(value) as {
+      previousValue: IdentifierValue | undefined;
+      newValue: IdentifierValue | undefined;
+    };
 
     const parent = this.getParent();
     const identityMap = parent.constructor.__getIdentityMap();
@@ -56,7 +63,7 @@ export class IdentifierAttribute extends Attribute {
       return {previousValue: undefined};
     }
 
-    const {previousValue} = super.unsetValue();
+    const {previousValue} = super.unsetValue() as {previousValue: IdentifierValue | undefined};
 
     const parent = this.getParent();
     const identityMap = parent.constructor.__getIdentityMap();

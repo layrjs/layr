@@ -1,6 +1,6 @@
 import type {Component} from '../component';
 import {AttributeOptions} from './attribute';
-import {IdentifierAttribute} from './identifier-attribute';
+import {IdentifierAttribute, IdentifierValue} from './identifier-attribute';
 import {isComponentInstance, ensureComponentClass} from '../utilities';
 
 export class PrimaryIdentifierAttribute extends IdentifierAttribute {
@@ -34,7 +34,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
 
   // === Value ===
 
-  setValue(value: any) {
+  setValue(value: IdentifierValue) {
     const previousValue = this.getValue({throwIfUnset: false, autoFork: false});
 
     if (previousValue !== undefined && value !== previousValue) {

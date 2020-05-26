@@ -1,6 +1,7 @@
 import {
   serialize as simpleSerialize,
-  SerializeOptions as SimpleSerializeOptions
+  SerializeOptions as SimpleSerializeOptions,
+  SerializeResult
 } from 'simple-serialization';
 import {possiblyAsync} from 'possibly-async';
 import {isES2015Class} from 'core-helpers';
@@ -24,6 +25,7 @@ export type SerializeOptions = SimpleSerializeOptions & {
 
 export type ReferencedComponentSet = Set<typeof Component | Component>;
 
+export function serialize<Value>(value: Value, options?: SerializeOptions): SerializeResult<Value>;
 export function serialize(value: any, options: SerializeOptions = {}) {
   const {
     objectSerializer: originalObjectSerializer,

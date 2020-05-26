@@ -52,7 +52,7 @@ describe('PrimaryIdentifierAttribute', () => {
 
     const idAttribute = new PrimaryIdentifierAttribute('id', Movie.prototype);
 
-    const id = idAttribute.evaluateDefault();
+    const id = idAttribute.evaluateDefault() as string;
 
     expect(typeof id).toBe('string');
     expect(id.length >= 25);

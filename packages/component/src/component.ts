@@ -1,5 +1,12 @@
 import {Observable} from '@liaison/observable';
-import {hasOwnProperty, isPrototypeOf, getTypeOf, PlainObject, isPlainObject} from 'core-helpers';
+import {
+  hasOwnProperty,
+  isPrototypeOf,
+  getTypeOf,
+  PlainObject,
+  isPlainObject,
+  PromiseLikeable
+} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import cuid from 'cuid';
 
@@ -430,7 +437,7 @@ export class Component extends Observable(Object) {
       const descriptor: PropertyDescriptor = {
         configurable: true,
         enumerable: true,
-        get(this: typeof Component | Component): any {
+        get(this: typeof Component | Component) {
           return this.getAttribute(name).getValue();
         },
         set(this: typeof Component | Component, value: any): void {
@@ -870,7 +877,7 @@ export class Component extends Observable(Object) {
       autoFork: false
     })) {
       const name = identifierAttribute.getName();
-      const value = identifierAttribute.getValue();
+      const value = identifierAttribute.getValue() as IdentifierValue;
 
       if (identifiers === undefined) {
         identifiers = {};
@@ -944,7 +951,7 @@ export class Component extends Observable(Object) {
 
     if (primaryIdentifierAttribute.isSet()) {
       const name = primaryIdentifierAttribute.getName();
-      const value = primaryIdentifierAttribute.getValue();
+      const value = primaryIdentifierAttribute.getValue() as IdentifierValue;
 
       return {[name]: value};
     }
@@ -953,7 +960,7 @@ export class Component extends Observable(Object) {
       setAttributesOnly: true
     })) {
       const name = secondaryIdentifierAttribute.getName();
-      const value = secondaryIdentifierAttribute.getValue();
+      const value = secondaryIdentifierAttribute.getValue() as IdentifierValue;
 
       return {[name]: value};
     }
@@ -1607,7 +1614,7 @@ export class Component extends Observable(Object) {
   static fork<T extends typeof Component>(
     this: T,
     options: {_newComponentProvider?: typeof Component} = {}
-  ) {
+  ): T {
     const {_newComponentProvider} = options;
 
     const existingComponentProvider = this.__getComponentProvider();
@@ -1629,7 +1636,7 @@ export class Component extends Observable(Object) {
       forkedComponent.__setComponentProvider(_newComponentProvider);
     }
 
-    return forkedComponent as T;
+    return forkedComponent;
   }
 
   fork<T extends Component>(this: T, options: ForkOptions = {}) {
@@ -1953,7 +1960,10 @@ export class Component extends Observable(Object) {
     return this.prototype.__serializeAttributes;
   }
 
-  __serializeAttributes(serializedComponent: PlainObject, options: SerializeOptions) {
+  __serializeAttributes(
+    serializedComponent: PlainObject,
+    options: SerializeOptions
+  ): PromiseLikeable<number> {
     let {includeReferencedComponents = false, attributeSelector = true, attributeFilter} = options;
 
     attributeSelector = normalizeAttributeSelector(attributeSelector);
@@ -2108,7 +2118,7 @@ export class Component extends Observable(Object) {
     return possiblyAsync(
       possiblyAsync.forEach(
         Object.entries(serializedAttributes),
-        ([attributeName, serializedAttributeValue]: [string, any]) => {
+        ([attributeName, serializedAttributeValue]: [string, unknown]) => {
           if (!this.hasAttribute(attributeName)) {
             return;
           }
@@ -2140,7 +2150,7 @@ export class Component extends Observable(Object) {
 
   __deserializeAttribute(
     attribute: Attribute,
-    serializedAttributeValue: any,
+    serializedAttributeValue: unknown,
     componentGetter: ComponentGetter,
     options: DeserializeOptions
   ): void | PromiseLike<void> {
@@ -2149,7 +2159,7 @@ export class Component extends Observable(Object) {
 
     return possiblyAsync(
       deserialize(serializedAttributeValue, {...options, componentGetter}),
-      (newAttributeValue): any => {
+      (newAttributeValue) => {
         if (attribute.isSet()) {
           const previousAttributeValue = attribute.getValue();
 
@@ -2159,9 +2169,10 @@ export class Component extends Observable(Object) {
 
           if (
             isComponentClassOrInstance(newAttributeValue) &&
-            newAttributeValue.getComponentType() === previousAttributeValue.getComponentType()
+            newAttributeValue.getComponentType() ===
+              (previousAttributeValue as typeof Component | Component).getComponentType()
           ) {
-            return previousAttributeValue.deserialize(serializedAttributeValue, options);
+            return (previousAttributeValue as any).deserialize(serializedAttributeValue, options);
           }
         }
 

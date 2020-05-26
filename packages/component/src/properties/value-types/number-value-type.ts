@@ -6,7 +6,7 @@ export class NumberValueType extends ValueType {
     return `number${super.toString()}`;
   }
 
-  _checkValue(value: any, attribute: Attribute) {
+  _checkValue(value: unknown, attribute: Attribute) {
     return super._checkValue(value, attribute) ?? typeof value === 'number';
   }
 

@@ -69,7 +69,7 @@ export class IdentityMap {
       setAttributesOnly: true
     })) {
       const name = identifierAttribute.getName();
-      const value: IdentifierValue = identifierAttribute.getValue();
+      const value = identifierAttribute.getValue() as IdentifierValue;
       const index = this._getIndex(name);
 
       if (hasOwnProperty(index, value)) {
@@ -128,7 +128,7 @@ export class IdentityMap {
       setAttributesOnly: true
     })) {
       const name = identifierAttribute.getName();
-      const value: IdentifierValue = identifierAttribute.getValue();
+      const value = identifierAttribute.getValue() as IdentifierValue;
       const index = this._getIndex(name);
       delete index[value];
     }
