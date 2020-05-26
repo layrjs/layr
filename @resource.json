@@ -8,9 +8,6 @@
   "browserRouter": {
     "@include": "./packages/browser-router"
   },
-  "entity": {
-    "@include": "./packages/entity"
-  },
   "layer": {
     "@include": "./packages/layer"
   },
