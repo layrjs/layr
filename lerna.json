@@ -4,6 +4,9 @@
   "packages": [
     "packages/component",
     "packages/component-client",
+    "packages/component-http-client",
+    "packages/component-http-server",
+    "packages/component-koa-middleware",
     "packages/component-server",
     "packages/integration-testing",
     "packages/observable"

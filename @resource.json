@@ -8,15 +8,6 @@
   "browserRouter": {
     "@include": "./packages/browser-router"
   },
-  "componentHTTPClient": {
-    "@include": "./packages/component-http-client"
-  },
-  "componentHTTPServer": {
-    "@include": "./packages/component-http-server"
-  },
-  "componentKoaMiddleware": {
-    "@include": "./packages/component-koa-middleware"
-  },
   "entity": {
     "@include": "./packages/entity"
   },
