@@ -7,3 +7,7 @@ A Koa middleware for your Liaison components.
 ```
 npm install @liaison/component-koa-middleware
 ```
+
+## License
+
+MIT

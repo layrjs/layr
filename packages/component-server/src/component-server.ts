@@ -26,7 +26,7 @@ export interface ComponentServerLike {
   receive: ComponentServer['receive'];
 }
 
-type ComponentServerOptions = {
+export type ComponentServerOptions = {
   name?: string;
   version?: number;
 };
@@ -269,4 +269,15 @@ export class ComponentServer {
   static isComponentServer(value: any): value is ComponentServer {
     return isComponentServerInstance(value);
   }
+}
+
+export function ensureComponentServer(
+  componentOrComponentServer: typeof Component | ComponentServer,
+  options: ComponentServerOptions = {}
+): ComponentServer {
+  if (isComponentServerInstance(componentOrComponentServer)) {
+    return componentOrComponentServer;
+  }
+
+  return new ComponentServer(componentOrComponentServer, options);
 }
