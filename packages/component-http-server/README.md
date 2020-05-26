@@ -7,3 +7,7 @@ A basic HTTP server for your Liaison components.
 ```
 npm install @liaison/component-http-server
 ```
+
+## License
+
+MIT
