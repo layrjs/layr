@@ -1408,14 +1408,14 @@ export class Component extends Observable(Object) {
   }
 
   static getProvidedComponents(
-    options: {filter?: (providedComponent: typeof Component) => boolean} = {}
+    options: {deep?: boolean; filter?: (providedComponent: typeof Component) => boolean} = {}
   ) {
-    const {filter} = options;
+    const {deep = false, filter} = options;
 
     const component = this;
 
     return {
-      *[Symbol.iterator]() {
+      *[Symbol.iterator](): Generator<typeof Component> {
         for (const name in component.__getProvidedComponents()) {
           const providedComponent = component.getProvidedComponent(name)!;
 
@@ -1424,6 +1424,15 @@ export class Component extends Observable(Object) {
           }
 
           yield providedComponent;
+
+          if (deep) {
+            for (const nestedProvidedComponent of providedComponent.getProvidedComponents({
+              deep,
+              filter
+            })) {
+              yield nestedProvidedComponent;
+            }
+          }
         }
       }
     };

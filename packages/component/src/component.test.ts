@@ -1117,6 +1117,17 @@ describe('Component', () => {
 
       expect(ForkedDirector.getComponentProvider()).toBe(ForkedMovie);
 
+      class Root extends Component {}
+
+      Root.provideComponent(Movie);
+
+      expect(Array.from(Root.getProvidedComponents())).toEqual([Movie]);
+      expect(Array.from(Root.getProvidedComponents({deep: true}))).toEqual([
+        Movie,
+        Director,
+        Actor
+      ]);
+
       class Film extends Component {}
 
       expect(() => Film.provideComponent(Director)).toThrow(
