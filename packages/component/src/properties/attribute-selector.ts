@@ -193,8 +193,19 @@ export function iterateOverAttributeSelector(attributeSelector: AttributeSelecto
   };
 }
 
+type PickFromAttributeSelectorResult<Value> = Value extends Array<infer Element>
+  ? Array<PickFromAttributeSelectorResult<Element>>
+  : Value extends object
+  ? object
+  : Value;
+
+export function pickFromAttributeSelector<Value>(
+  value: Value,
+  attributeSelector: AttributeSelector,
+  options?: {includeAttributeNames?: string[]}
+): PickFromAttributeSelectorResult<Value>;
 export function pickFromAttributeSelector(
-  value: any,
+  value: unknown,
   attributeSelector: AttributeSelector,
   options: {includeAttributeNames?: string[]} = {}
 ) {
@@ -212,10 +223,10 @@ export function pickFromAttributeSelector(
 }
 
 function _pick(
-  value: any,
+  value: unknown,
   attributeSelector: AttributeSelector,
   {includeAttributeNames}: {includeAttributeNames: string[]}
-): any {
+): unknown {
   if (attributeSelector === true) {
     return value;
   }
@@ -240,7 +251,7 @@ function _pick(
     );
   }
 
-  const componentOrObject = value;
+  const componentOrObject = value as PlainObject;
 
   const result: PlainObject = {};
 
