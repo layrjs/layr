@@ -1,5 +1,7 @@
+import type {AttributeValue} from './document';
 import type {Path} from './path';
-import type {Operator, OperatorValue} from './operator';
+import type {Operator} from './operator';
 
-export type Expression = [Path, Operator, OperatorValue];
-export type ExpressionValue = undefined | null | boolean | number | string | Date;
+export type Expression = [Path, Operator, Operand];
+
+export type Operand = AttributeValue | Expression[] | Expression[][];

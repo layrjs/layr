@@ -14,9 +14,16 @@ import {isPlainObject, deleteUndefinedProperties, assertNoUnknownOptions} from '
 import {serialize, deserialize} from 'simple-serialization';
 
 import {StorableLike, isStorableLikeClass, assertIsStorableLikeClass} from './storable-like';
-import {Document, Projection, buildProjection, DocumentPatch, buildDocumentPatch} from './document';
+import {
+  Document,
+  AttributeValue,
+  Projection,
+  buildProjection,
+  DocumentPatch,
+  buildDocumentPatch
+} from './document';
 import type {Query} from './query';
-import type {Expression, ExpressionValue} from './expression';
+import type {Expression} from './expression';
 import {Operator, looksLikeOperator, normalizeOperatorForValue} from './operator';
 import type {Path} from './path';
 import {isStoreInstance} from './utilities';
@@ -464,7 +471,7 @@ export abstract class AbstractStore {
     };
 
     const handleValue = function (
-      value: ExpressionValue | object,
+      value: AttributeValue | object,
       expressions: Expression[],
       subpath: Path,
       {query}: {query: Query}
@@ -513,7 +520,7 @@ export abstract class AbstractStore {
 
     const handleOperator = function (
       operator: Operator,
-      value: ExpressionValue | object,
+      value: AttributeValue | object,
       expressions: Expression[],
       path: Path,
       {query}: {query: Query}
@@ -536,7 +543,7 @@ export abstract class AbstractStore {
         normalizedOperator === '$or' ||
         normalizedOperator === '$nor'
       ) {
-        const values = value as (ExpressionValue | object)[];
+        const values = value as (AttributeValue | object)[];
         const operatorExpressions = values.map((value) => {
           const subexpressions: Expression[] = [];
           handleValue(value, subexpressions, '', {query});

@@ -12,7 +12,7 @@ import {
   Expression,
   Path,
   Operator,
-  OperatorValue,
+  Operand,
   SortDescriptor,
   SortDirection
 } from '@liaison/abstract-store';
@@ -323,7 +323,7 @@ function buildMongoQuery(expressions: Expression[]) {
 
 function handleOperator(
   operator: Operator,
-  value: OperatorValue,
+  value: Operand,
   {path}: {path: Path}
 ): [Operator, unknown] {
   // --- Basic operators ---

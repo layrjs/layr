@@ -5,6 +5,8 @@ import type {Path} from './path';
 
 export type Document = PlainObject;
 
+export type AttributeValue = undefined | null | boolean | number | string | Date;
+
 export type Projection = {[path: string]: 1};
 
 export type DocumentPatch = {$set?: {[path: string]: any}; $unset?: {[path: string]: 1}};

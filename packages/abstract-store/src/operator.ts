@@ -1,11 +1,8 @@
 import {getTypeOf} from 'core-helpers';
 
 import type {Query} from './query';
-import type {Expression, ExpressionValue} from './expression';
 
 export type Operator = string;
-
-export type OperatorValue = ExpressionValue | Expression[] | Expression[][];
 
 const basicOperators = new Set<Operator>([
   '$equal',
