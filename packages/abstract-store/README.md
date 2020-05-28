@@ -7,3 +7,7 @@ A base class for implementing Liaison stores.
 ```
 npm install @liaison/abstract-store
 ```
+
+## License
+
+MIT

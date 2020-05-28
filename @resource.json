@@ -2,9 +2,6 @@
   "abstractRouter": {
     "@include": "./packages/abstract-router"
   },
-  "abstractStore": {
-    "@include": "./packages/abstract-store"
-  },
   "browserRouter": {
     "@include": "./packages/browser-router"
   },
