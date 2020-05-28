@@ -58,6 +58,20 @@ export function ensureComponentClass(component: typeof Component | Component) {
   );
 }
 
+export function ensureComponentInstance(component: typeof Component | Component) {
+  if (isComponentClass(component)) {
+    return component.prototype;
+  }
+
+  if (isComponentInstance(component)) {
+    return component;
+  }
+
+  throw new Error(
+    `Expected a component class or instance, but received a value of type '${getTypeOf(component)}'`
+  );
+}
+
 const COMPONENT_NAME_PATTERN = /^[A-Z][A-Za-z0-9_]*$/;
 
 export function isComponentName(name: string) {

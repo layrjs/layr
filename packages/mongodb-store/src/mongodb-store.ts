@@ -1,9 +1,27 @@
-import {AbstractStore} from '@liaison/abstract-store';
-import {MongoClient} from 'mongodb';
+import {
+  AbstractStore,
+  StorableLike,
+  CreateDocumentParams,
+  ReadDocumentParams,
+  UpdateDocumentParams,
+  DeleteDocumentParams,
+  FindDocumentsParams,
+  CountDocumentsParams,
+  Document,
+  Query,
+  Expression,
+  Path,
+  Operator,
+  OperatorValue,
+  SortDescriptor,
+  SortDirection
+} from '@liaison/abstract-store';
+import {Component, ensureComponentInstance} from '@liaison/component';
+import {MongoClient, Db} from 'mongodb';
 import isEmpty from 'lodash/isEmpty';
 import mapKeys from 'lodash/mapKeys';
+import mapValues from 'lodash/mapValues';
 import escapeRegExp from 'lodash/escapeRegExp';
-import ow from 'ow';
 import debugModule from 'debug';
 
 const debug = debugModule('liaison:mongodb-store');
@@ -13,12 +31,10 @@ const debug = debugModule('liaison:mongodb-store');
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 
 export class MongoDBStore extends AbstractStore {
-  constructor(storables, options = {}) {
-    ow(options, 'options', ow.object.partialShape({connectionString: ow.string.url}));
+  _connectionString: string;
 
-    const {connectionString, ...otherOptions} = options;
-
-    super(storables, otherOptions);
+  constructor(connectionString: string, rootComponent?: typeof Component, options = {}) {
+    super(rootComponent, options);
 
     this._connectionString = connectionString;
   }
@@ -33,7 +49,7 @@ export class MongoDBStore extends AbstractStore {
 
   // === Documents ===
 
-  async createDocument({collectionName, document}) {
+  async createDocument({collectionName, document}: CreateDocumentParams) {
     const collection = await this._getCollection(collectionName);
 
     try {
@@ -58,13 +74,17 @@ export class MongoDBStore extends AbstractStore {
     }
   }
 
-  async readDocument({collectionName, identifierDescriptor, projection}) {
+  async readDocument({
+    collectionName,
+    identifierDescriptor,
+    projection
+  }: ReadDocumentParams): Promise<Document | undefined> {
     const collection = await this._getCollection(collectionName);
 
     const query = identifierDescriptor;
     const options = {projection};
 
-    const document = await debugCall(
+    const document: Document | null = await debugCall(
       async () => await collection.findOne(query, options),
       'db.%s.findOne(%o, %o)',
       collectionName,
@@ -79,7 +99,11 @@ export class MongoDBStore extends AbstractStore {
     return document;
   }
 
-  async updateDocument({collectionName, identifierDescriptor, documentPatch}) {
+  async updateDocument({
+    collectionName,
+    identifierDescriptor,
+    documentPatch
+  }: UpdateDocumentParams) {
     const collection = await this._getCollection(collectionName);
 
     const filter = identifierDescriptor;
@@ -99,7 +123,7 @@ export class MongoDBStore extends AbstractStore {
     return matchedCount === 1;
   }
 
-  async deleteDocument({collectionName, identifierDescriptor}) {
+  async deleteDocument({collectionName, identifierDescriptor}: DeleteDocumentParams) {
     const collection = await this._getCollection(collectionName);
 
     const filter = identifierDescriptor;
@@ -118,19 +142,27 @@ export class MongoDBStore extends AbstractStore {
     return deletedCount === 1;
   }
 
-  async findDocuments({collectionName, expressions, projection, sort, skip, limit}) {
+  async findDocuments({
+    collectionName,
+    expressions,
+    projection,
+    sort,
+    skip,
+    limit
+  }: FindDocumentsParams): Promise<Document[]> {
     const collection = await this._getCollection(collectionName);
 
-    const query = buildQuery(expressions);
+    const mongoQuery = buildMongoQuery(expressions);
+    const mongoSort = buildMongoSort(sort);
 
     const options = {projection};
 
-    const documents = await debugCall(
+    const documents: Document[] = await debugCall(
       async () => {
-        const cursor = await collection.find(query, options);
+        const cursor = await collection.find(mongoQuery, options);
 
-        if (!isEmpty(sort)) {
-          cursor.sort(sort);
+        if (mongoSort !== undefined) {
+          cursor.sort(mongoSort);
         }
 
         if (skip !== undefined) {
@@ -147,17 +179,17 @@ export class MongoDBStore extends AbstractStore {
       },
       'db.%s.find(%o, %o)',
       collectionName,
-      query,
+      mongoQuery,
       options
     );
 
     return documents;
   }
 
-  async countDocuments({collectionName, expressions}) {
+  async countDocuments({collectionName, expressions}: CountDocumentsParams) {
     const collection = await this._getCollection(collectionName);
 
-    const query = buildQuery(expressions);
+    const query = buildMongoQuery(expressions);
 
     const documentsCount = await debugCall(
       async () => {
@@ -175,25 +207,29 @@ export class MongoDBStore extends AbstractStore {
 
   // === Serialization ===
 
-  toDocument(storable, serializedStorable) {
-    let document = super.toDocument(storable, serializedStorable);
+  toDocument<Value>(storable: typeof StorableLike | StorableLike, value: Value) {
+    let document = super.toDocument(storable, value);
 
     if (typeof document === 'object') {
-      const primaryIdentifierAttributeName = storable.getPrimaryIdentifierAttribute().getName();
+      const primaryIdentifierAttributeName = ensureComponentInstance(storable)
+        .getPrimaryIdentifierAttribute()
+        .getName();
 
-      document = mapKeys(document, (_, name) =>
+      document = mapKeys(document as any, (_, name) =>
         name === primaryIdentifierAttributeName ? MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME : name
-      );
+      ) as Value;
     }
 
     return document;
   }
 
-  fromDocument(storable, document) {
+  fromDocument(storable: typeof StorableLike | StorableLike, document: Document): Document {
     let serializedStorable = super.fromDocument(storable, document);
 
     if (typeof serializedStorable === 'object') {
-      const primaryIdentifierAttributeName = storable.getPrimaryIdentifierAttribute().getName();
+      const primaryIdentifierAttributeName = ensureComponentInstance(storable)
+        .getPrimaryIdentifierAttribute()
+        .getName();
 
       serializedStorable = mapKeys(serializedStorable, (_, name) =>
         name === MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME ? primaryIdentifierAttributeName : name
@@ -205,14 +241,16 @@ export class MongoDBStore extends AbstractStore {
 
   // === MongoDB client ===
 
+  _client: MongoClient | undefined;
+
   async _getClient() {
     await this._connectClient();
 
-    return this._client;
+    return this._client!;
   }
 
   async _connectClient() {
-    if (!this._client) {
+    if (this._client === undefined) {
       debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
 
       this._client = await MongoClient.connect(this._connectionString, {
@@ -227,9 +265,10 @@ export class MongoDBStore extends AbstractStore {
   async _disconnectClient() {
     const client = this._client;
 
-    if (client) {
-      // Unset `this._client` early to avoid issue in case of concurrent execution
+    if (client !== undefined) {
+      // Unset `this._client` and `this._db` early to avoid issue in case of concurrent execution
       this._client = undefined;
+      this._db = undefined;
 
       debug(`Disconnecting from MongoDB Server (connectionString: ${this._connectionString})...`);
 
@@ -238,6 +277,8 @@ export class MongoDBStore extends AbstractStore {
       debug(`Disconnected from MongoDB Server (connectionString: ${this._connectionString})`);
     }
   }
+
+  _db: Db | undefined;
 
   async _getDatabase() {
     if (!this._db) {
@@ -248,20 +289,18 @@ export class MongoDBStore extends AbstractStore {
     return this._db;
   }
 
-  async _getCollection(name) {
-    ow(name, ow.string.nonEmpty);
-
+  async _getCollection(name: string) {
     const database = await this._getDatabase();
 
     return database.collection(name);
   }
 }
 
-function buildQuery(expressions) {
-  const query = {};
+function buildMongoQuery(expressions: Expression[]) {
+  const query: Query = {};
 
   for (const [path, operator, value] of expressions) {
-    let subquery;
+    let subquery: Query;
 
     if (path !== '') {
       subquery = query[path];
@@ -282,7 +321,11 @@ function buildQuery(expressions) {
   return query;
 }
 
-function handleOperator(operator, value, {path}) {
+function handleOperator(
+  operator: Operator,
+  value: OperatorValue,
+  {path}: {path: Path}
+): [Operator, unknown] {
   // --- Basic operators ---
 
   if (operator === '$equal') {
@@ -316,15 +359,15 @@ function handleOperator(operator, value, {path}) {
   // --- String operators ---
 
   if (operator === '$includes') {
-    return ['$regex', escapeRegExp(value)];
+    return ['$regex', escapeRegExp(value as string)];
   }
 
   if (operator === '$startsWith') {
-    return ['$regex', `^${escapeRegExp(value)}`];
+    return ['$regex', `^${escapeRegExp(value as string)}`];
   }
 
   if (operator === '$endsWith') {
-    return ['$regex', `${escapeRegExp(value)}$`];
+    return ['$regex', `${escapeRegExp(value as string)}$`];
   }
 
   if (operator === '$matches') {
@@ -334,15 +377,15 @@ function handleOperator(operator, value, {path}) {
   // --- Array operators ---
 
   if (operator === '$some') {
-    const subexpressions = value;
-    const subquery = buildQuery(subexpressions);
+    const subexpressions = value as Expression[];
+    const subquery = buildMongoQuery(subexpressions);
     return ['$elemMatch', subquery];
   }
 
   if (operator === '$every') {
     // TODO: Make it works for complex queries (regexps, array of objects, etc.)
-    const subexpressions = value;
-    const subquery = buildQuery(subexpressions);
+    const subexpressions = value as Expression[];
+    const subquery = buildMongoQuery(subexpressions);
     return ['$not', {$elemMatch: {$not: subquery}}];
   }
 
@@ -353,26 +396,30 @@ function handleOperator(operator, value, {path}) {
   // --- Logical operators ---
 
   if (operator === '$not') {
-    const subexpressions = value;
-    const subquery = buildQuery(subexpressions);
+    const subexpressions = value as Expression[];
+    const subquery = buildMongoQuery(subexpressions);
     return ['$not', subquery];
   }
 
   if (operator === '$and') {
-    const andSubexpressions = value;
-    const andSubqueries = andSubexpressions.map(subexpressions => buildQuery(subexpressions));
+    const andSubexpressions = value as Expression[][];
+    const andSubqueries = andSubexpressions.map((subexpressions) =>
+      buildMongoQuery(subexpressions)
+    );
     return ['$and', andSubqueries];
   }
 
   if (operator === '$or') {
-    const orSubexpressions = value;
-    const orSubqueries = orSubexpressions.map(subexpressions => buildQuery(subexpressions));
+    const orSubexpressions = value as Expression[][];
+    const orSubqueries = orSubexpressions.map((subexpressions) => buildMongoQuery(subexpressions));
     return ['$or', orSubqueries];
   }
 
   if (operator === '$nor') {
-    const norSubexpressions = value;
-    const norSubqueries = norSubexpressions.map(subexpressions => buildQuery(subexpressions));
+    const norSubexpressions = value as Expression[][];
+    const norSubqueries = norSubexpressions.map((subexpressions) =>
+      buildMongoQuery(subexpressions)
+    );
     return ['$nor', norSubqueries];
   }
 
@@ -381,7 +428,21 @@ function handleOperator(operator, value, {path}) {
   );
 }
 
-async function debugCall(func, message, ...params) {
+function buildMongoSort(sort: SortDescriptor | undefined) {
+  if (sort === undefined || isEmpty(sort)) {
+    return undefined;
+  }
+
+  return mapValues(sort, (direction: SortDirection) =>
+    direction.toLowerCase() === 'desc' ? -1 : 1
+  );
+}
+
+async function debugCall<Result>(
+  func: () => Promise<Result>,
+  message: string,
+  ...params: unknown[]
+): Promise<Result> {
   let result;
   let error;
 
@@ -399,5 +460,5 @@ async function debugCall(func, message, ...params) {
 
   debug(`${message} => %o`, ...params, result);
 
-  return result;
+  return result as Result;
 }

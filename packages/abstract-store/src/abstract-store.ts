@@ -15,8 +15,10 @@ import {serialize, deserialize} from 'simple-serialization';
 
 import {StorableLike, isStorableLikeClass, assertIsStorableLikeClass} from './storable-like';
 import {Document, Projection, buildProjection, DocumentPatch, buildDocumentPatch} from './document';
-import {Query, Expression, ExpressionValue} from './query';
-import {looksLikeOperator, normalizeOperatorForValue} from './operators';
+import type {Query} from './query';
+import type {Expression, ExpressionValue} from './expression';
+import {Operator, looksLikeOperator, normalizeOperatorForValue} from './operator';
+import type {Path} from './path';
 import {isStoreInstance} from './utilities';
 
 export type CreateDocumentParams = {
@@ -56,7 +58,9 @@ export type CountDocumentsParams = {
   expressions: Expression[];
 };
 
-export type SortDescriptor = {[name: string]: 'asc' | 'desc'};
+export type SortDescriptor = {[name: string]: SortDirection};
+
+export type SortDirection = 'asc' | 'desc';
 
 export abstract class AbstractStore {
   constructor(rootComponent?: typeof Component, options = {}) {
@@ -436,7 +440,7 @@ export abstract class AbstractStore {
   toDocumentExpressions(storable: typeof StorableLike | StorableLike, query: Query) {
     const documentQuery = this.toDocument(storable, query);
 
-    const build = function (query: Query, expressions: Expression[], path: string) {
+    const build = function (query: Query, expressions: Expression[], path: Path) {
       for (const [name, value] of Object.entries(query)) {
         if (looksLikeOperator(name)) {
           const operator = name;
@@ -453,7 +457,7 @@ export abstract class AbstractStore {
           );
         }
 
-        const subpath = path !== '' ? `${path}.${name}` : name;
+        const subpath: Path = path !== '' ? `${path}.${name}` : name;
 
         handleValue(value, expressions, subpath, {query});
       }
@@ -462,7 +466,7 @@ export abstract class AbstractStore {
     const handleValue = function (
       value: ExpressionValue | object,
       expressions: Expression[],
-      subpath: string,
+      subpath: Path,
       {query}: {query: Query}
     ) {
       if (!isPlainObject(value)) {
@@ -508,10 +512,10 @@ export abstract class AbstractStore {
     };
 
     const handleOperator = function (
-      operator: string,
+      operator: Operator,
       value: ExpressionValue | object,
       expressions: Expression[],
-      path: string,
+      path: Path,
       {query}: {query: Query}
     ) {
       const normalizedOperator = normalizeOperatorForValue(operator, value, {query});
@@ -556,8 +560,8 @@ export abstract class AbstractStore {
     return documentExpressions;
   }
 
-  fromDocument(_storable: typeof StorableLike | StorableLike, document: Document) {
-    return serialize(document) as Document;
+  fromDocument(_storable: typeof StorableLike | StorableLike, document: Document): Document {
+    return serialize(document);
   }
 
   // === Utilities ===

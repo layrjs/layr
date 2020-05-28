@@ -7,3 +7,7 @@ A Liaison store for MongoDB.
 ```
 npm install @liaison/mongodb-store
 ```
+
+## License
+
+MIT

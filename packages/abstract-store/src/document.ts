@@ -1,11 +1,13 @@
 import {AttributeSelector, iterateOverAttributeSelector} from '@liaison/component';
 import {PlainObject, isPlainObject, deleteUndefinedProperties} from 'core-helpers';
 
+import type {Path} from './path';
+
 export type Document = PlainObject;
 
-export type Projection = {[name: string]: 1};
+export type Projection = {[path: string]: 1};
 
-export type DocumentPatch = {$set?: PlainObject; $unset?: {[name: string]: 1}};
+export type DocumentPatch = {$set?: {[path: string]: any}; $unset?: {[path: string]: 1}};
 
 // {a: true, b: {c: true}} => {__component: 1, a: 1, "b.__component": 1, "b.c": 1}
 export function buildProjection(attributeSelector: AttributeSelector) {
@@ -19,11 +21,11 @@ export function buildProjection(attributeSelector: AttributeSelector) {
 
   const projection: Projection = {};
 
-  const build = function (attributeSelector: Exclude<AttributeSelector, boolean>, path: string) {
+  const build = function (attributeSelector: Exclude<AttributeSelector, boolean>, path: Path) {
     attributeSelector = {__component: true, ...attributeSelector};
 
     for (const [name, subattributeSelector] of iterateOverAttributeSelector(attributeSelector)) {
-      const subpath = (path !== '' ? path + '.' : '') + name;
+      const subpath: Path = (path !== '' ? path + '.' : '') + name;
 
       if (typeof subattributeSelector === 'boolean') {
         if (subattributeSelector === true) {
@@ -43,7 +45,7 @@ export function buildProjection(attributeSelector: AttributeSelector) {
 export function buildDocumentPatch(document: Document) {
   const documentPatch: DocumentPatch = {};
 
-  const build = function (document: unknown, path: string) {
+  const build = function (document: unknown, path: Path) {
     if (document === undefined) {
       if (documentPatch.$unset === undefined) {
         documentPatch.$unset = {};
@@ -56,7 +58,7 @@ export function buildDocumentPatch(document: Document) {
 
     if (isPlainObject(document) && '__component' in document) {
       for (const [name, value] of Object.entries(document)) {
-        const subpath = (path !== '' ? path + '.' : '') + name;
+        const subpath: Path = (path !== '' ? path + '.' : '') + name;
         build(value, subpath);
       }
 

@@ -8,9 +8,6 @@
   "memoryRouter": {
     "@include": "./packages/memory-router"
   },
-  "mongoDBStore": {
-    "@include": "./packages/mongodb-store"
-  },
   "reactIntegration": {
     "@include": "./packages/react-integration"
   },

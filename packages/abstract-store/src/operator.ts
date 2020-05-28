@@ -1,8 +1,13 @@
 import {getTypeOf} from 'core-helpers';
 
-import {Query} from './query';
+import type {Query} from './query';
+import type {Expression, ExpressionValue} from './expression';
 
-const basicOperators = new Set([
+export type Operator = string;
+
+export type OperatorValue = ExpressionValue | Expression[] | Expression[][];
+
+const basicOperators = new Set<Operator>([
   '$equal',
   '$notEqual',
   '$greaterThan',
@@ -12,13 +17,13 @@ const basicOperators = new Set([
   '$any'
 ]);
 
-const stringOperators = new Set(['$includes', '$startsWith', '$endsWith', '$matches']);
+const stringOperators = new Set<Operator>(['$includes', '$startsWith', '$endsWith', '$matches']);
 
-const arrayOperators = new Set(['$some', '$every', '$length']);
+const arrayOperators = new Set<Operator>(['$some', '$every', '$length']);
 
-const logicalOperators = new Set(['$not', '$and', '$or', '$nor']);
+const logicalOperators = new Set<Operator>(['$not', '$and', '$or', '$nor']);
 
-const aliases = new Map(
+const aliases = new Map<Operator, Operator>(
   Object.entries({
     $equals: '$equal',
     $notEquals: '$notEqual',
@@ -33,11 +38,15 @@ const aliases = new Map(
   })
 );
 
-export function looksLikeOperator(string: string) {
+export function looksLikeOperator(string: string): string is Operator {
   return string.startsWith('$');
 }
 
-export function normalizeOperatorForValue(operator: string, value: unknown, query: Query) {
+export function normalizeOperatorForValue(
+  operator: Operator,
+  value: unknown,
+  query: Query
+): Operator {
   const alias = aliases.get(operator);
 
   if (alias !== undefined) {
@@ -67,7 +76,11 @@ export function normalizeOperatorForValue(operator: string, value: unknown, quer
   );
 }
 
-function normalizeBasicOperatorForValue(operator: string, value: unknown, query: Query) {
+function normalizeBasicOperatorForValue(
+  operator: Operator,
+  value: unknown,
+  query: Query
+): Operator {
   if (operator === '$any') {
     if (!Array.isArray(value)) {
       throw new Error(
@@ -91,7 +104,11 @@ function normalizeBasicOperatorForValue(operator: string, value: unknown, query:
   return operator;
 }
 
-function normalizeStringOperatorForValue(operator: string, value: unknown, query: Query) {
+function normalizeStringOperatorForValue(
+  operator: Operator,
+  value: unknown,
+  query: Query
+): Operator {
   if (operator === '$matches') {
     if (!(value instanceof RegExp)) {
       throw new Error(
@@ -115,7 +132,11 @@ function normalizeStringOperatorForValue(operator: string, value: unknown, query
   return operator;
 }
 
-function normalizeArrayOperatorForValue(operator: string, value: unknown, query: Query) {
+function normalizeArrayOperatorForValue(
+  operator: Operator,
+  value: unknown,
+  query: Query
+): Operator {
   if (operator === '$length') {
     if (typeof value !== 'number') {
       throw new Error(
@@ -131,7 +152,11 @@ function normalizeArrayOperatorForValue(operator: string, value: unknown, query:
   return operator;
 }
 
-function normalizeLogicalOperatorForValue(operator: string, value: unknown, query: Query) {
+function normalizeLogicalOperatorForValue(
+  operator: Operator,
+  value: unknown,
+  query: Query
+): Operator {
   if (operator === '$and' || operator === '$or' || operator === '$nor') {
     if (!Array.isArray(value)) {
       throw new Error(
