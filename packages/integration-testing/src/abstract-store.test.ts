@@ -1,0 +1,156 @@
+import {Component, provide} from '@liaison/component';
+import {Storable} from '@liaison/storable';
+import {AbstractStore, isStoreInstance} from '@liaison/abstract-store';
+
+describe('AbstractStore', () => {
+  class MockStore extends AbstractStore {
+    async createDocument() {
+      return false;
+    }
+
+    async readDocument() {
+      return undefined;
+    }
+
+    async updateDocument() {
+      return false;
+    }
+
+    async deleteDocument() {
+      return false;
+    }
+
+    async findDocuments() {
+      return [];
+    }
+
+    async countDocuments() {
+      return 0;
+    }
+  }
+
+  test('Creation', async () => {
+    class User extends Storable {}
+
+    let store = new MockStore();
+
+    expect(isStoreInstance(store)).toBe(true);
+
+    expect(Array.from(store.getStorables())).toEqual([]);
+
+    store = new MockStore(User);
+
+    expect(Array.from(store.getStorables())).toEqual([User]);
+    expect(User.getStore()).toBe(store);
+
+    expect(() => new MockStore(User, {unknown: true})).toThrow(
+      "Did not expect the option 'unknown' to exist"
+    );
+  });
+
+  test('registerRootComponent() and getRootComponents()', async () => {
+    class Profile extends Storable {}
+
+    class User extends Storable {
+      @provide() static Profile = Profile;
+    }
+
+    class Movie extends Storable {}
+
+    class Root extends Component {
+      @provide() static User = User;
+      @provide() static Movie = Movie;
+    }
+
+    const store = new MockStore();
+
+    store.registerRootComponent(Root);
+
+    expect(Array.from(store.getRootComponents())).toEqual([Root]);
+
+    expect(Array.from(store.getStorables())).toEqual([User, Profile, Movie]);
+  });
+
+  test('getStorable() and hasStorable()', async () => {
+    class User extends Storable {}
+
+    let store = new MockStore();
+
+    expect(store.hasStorable('User')).toBe(false);
+    expect(() => store.getStorable('User')).toThrow(
+      "The storable 'User' is not registered in the store"
+    );
+
+    store = new MockStore(User);
+
+    expect(store.hasStorable('User')).toBe(true);
+    expect(store.getStorable('User')).toBe(User);
+  });
+
+  test('getStorableOfType()', async () => {
+    class User extends Storable {}
+
+    let store = new MockStore(User);
+
+    expect(store.getStorableOfType('typeof User')).toBe(User);
+    expect(store.getStorableOfType('User')).toBe(User.prototype);
+
+    expect(() => store.getStorableOfType('typeof Movie')).toThrow(
+      "The storable component of type 'typeof Movie' is not registered in the store"
+    );
+  });
+
+  test('registerStorable()', async () => {
+    class User extends Storable {}
+
+    const store = new MockStore();
+
+    store.registerStorable(User);
+
+    expect(store.getStorable('User')).toBe(User);
+
+    // Registering a storable twice in the same store should be okay
+    store.registerStorable(User);
+
+    expect(store.getStorable('User')).toBe(User);
+
+    class NotAStorable {}
+
+    // @ts-ignore
+    expect(() => store.registerStorable(NotAStorable)).toThrow(
+      "Expected a storable component class, but received a value of type 'typeof NotAStorable'"
+    );
+
+    const store2 = new MockStore();
+
+    expect(() => store2.registerStorable(User)).toThrow(
+      "Cannot register a storable component that is already registered in another store (component: 'User')"
+    );
+
+    class User2 extends Storable {}
+
+    User2.setComponentName('User');
+
+    expect(() => store.registerStorable(User2)).toThrow(
+      "A storable component with the same name is already registered (component: 'User')"
+    );
+  });
+
+  test('getStorables()', async () => {
+    class User extends Storable {}
+
+    class Movie extends Storable {}
+
+    const store = new MockStore();
+
+    expect(Array.from(store.getStorables())).toEqual([]);
+
+    store.registerStorable(User);
+
+    expect(Array.from(store.getStorables())).toEqual([User]);
+
+    store.registerStorable(Movie);
+
+    expect(Array.from(store.getStorables())).toEqual([User, Movie]);
+  });
+});

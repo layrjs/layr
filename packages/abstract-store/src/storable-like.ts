@@ -10,7 +10,7 @@ export class StorableLike extends Component {
 
   static __setStore: (store: AbstractStore) => void;
 
-  static isStorable: (value: any) => value is typeof StorableLike;
+  static isStorable: (value: any) => value is StorableLike;
 }
 
 export function isStorableLikeClass(value: any): value is typeof StorableLike {
@@ -20,7 +20,7 @@ export function isStorableLikeClass(value: any): value is typeof StorableLike {
 export function assertIsStorableLikeClass(value: any): asserts value is typeof StorableLike {
   if (!isStorableLikeClass(value)) {
     throw new Error(
-      `Expected a storable class, but received a value of type '${getTypeOf(value)}'`
+      `Expected a storable component class, but received a value of type '${getTypeOf(value)}'`
     );
   }
 }

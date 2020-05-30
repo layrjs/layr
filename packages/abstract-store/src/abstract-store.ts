@@ -136,7 +136,7 @@ export abstract class AbstractStore {
   }
 
   getStorableOfType(type: string) {
-    const storable = this._getStorableOfType(name);
+    const storable = this._getStorableOfType(type);
 
     if (storable !== undefined) {
       return storable;

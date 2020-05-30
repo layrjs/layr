@@ -1,7 +1,7 @@
 import {ComponentHTTPClient} from '@liaison/component-http-client';
 import {ComponentHTTPServer} from '@liaison/component-http-server';
 
-import {Counter as BackendCounter} from './counter';
+import {Counter as BackendCounter} from './counter.fixture';
 
 const SERVER_PORT = 4444;
 

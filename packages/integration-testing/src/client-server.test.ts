@@ -1,7 +1,7 @@
 import {ComponentClient} from '@liaison/component-client';
 import {ComponentServer} from '@liaison/component-server';
 
-import {Counter as BackendCounter} from './counter';
+import {Counter as BackendCounter} from './counter.fixture';
 
 describe('Client/server', () => {
   test('Simple component', async () => {
