@@ -5,8 +5,7 @@ export type IntrospectedMethod = IntrospectedProperty;
 export type MethodOptions = PropertyOptions;
 
 export class Method extends Property {
-  // @ts-ignore
-  private __nominal!: void; // Make TS believe that Method is different than Property
+  _methodBrand!: void;
 
   static isMethod(value: any): value is Method {
     return isMethodInstance(value);

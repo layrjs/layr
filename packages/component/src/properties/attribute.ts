@@ -49,8 +49,8 @@ export class Attribute extends Observable(Property) {
 
   // === Options ===
 
-  private _getter?: () => unknown;
-  private _setter?: (value: any) => void;
+  _getter?: () => unknown;
+  _setter?: (value: any) => void;
 
   setOptions(options: AttributeOptions = {}) {
     const {
@@ -113,7 +113,7 @@ export class Attribute extends Observable(Property) {
 
   // === Value type ===
 
-  private _valueType!: ValueType;
+  _valueType!: ValueType;
 
   getValueType() {
     return this._valueType;
@@ -121,8 +121,8 @@ export class Attribute extends Observable(Property) {
 
   // === Value ===
 
-  private _value?: unknown;
-  private _isSet?: boolean;
+  _value?: unknown;
+  _isSet?: boolean;
 
   getValue(options: {throwIfUnset?: boolean; autoFork?: boolean} = {}) {
     const {throwIfUnset = true, autoFork = true} = options;
@@ -240,7 +240,7 @@ export class Attribute extends Observable(Property) {
 
   // === Default value ===
 
-  private _default?: unknown;
+  _default?: unknown;
 
   getDefault() {
     return this._default;

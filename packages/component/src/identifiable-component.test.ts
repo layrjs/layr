@@ -491,12 +491,12 @@ describe('Identifiable component', () => {
     const id1 = Movie.generateId();
 
     expect(typeof id1).toBe('string');
-    expect(id1.length >= 25);
+    expect(id1.length >= 25).toBe(true);
 
     const id2 = Movie.generateId();
 
     expect(typeof id2).toBe('string');
-    expect(id2.length >= 25);
+    expect(id2.length >= 25).toBe(true);
     expect(id2).not.toBe(id1);
   });
 

@@ -1,7 +1,8 @@
 import {hasOwnProperty} from 'core-helpers';
 
-import type {Component} from './component';
+import {Component} from './component';
 import {
+  Property,
   Attribute,
   AttributeOptions,
   PrimaryIdentifierAttribute,
@@ -10,7 +11,7 @@ import {
   MethodOptions,
   PropertyExposure
 } from './properties';
-import {isComponentClassOrInstance, isComponentClass} from './utilities';
+import {isComponentClassOrInstance, isComponentClass, ensureComponentClass} from './utilities';
 import {
   getConstructorSourceCode,
   getAttributeInitializerFromConstructorSourceCode
@@ -27,7 +28,12 @@ export function attribute(
   valueType?: string | AttributeDecoratorOptions,
   options?: AttributeDecoratorOptions
 ) {
-  return createAttributeDecorator(Attribute, 'attribute', valueType, options);
+  return createAttributeDecorator(
+    new Map([[Component, Attribute]]),
+    'attribute',
+    valueType,
+    options
+  );
 }
 
 export function primaryIdentifier(
@@ -40,7 +46,7 @@ export function primaryIdentifier(
   options?: AttributeDecoratorOptions
 ) {
   return createAttributeDecorator(
-    PrimaryIdentifierAttribute,
+    new Map([[Component, PrimaryIdentifierAttribute]]),
     'primaryIdentifier',
     valueType,
     options
@@ -57,15 +63,15 @@ export function secondaryIdentifier(
   options?: AttributeDecoratorOptions
 ) {
   return createAttributeDecorator(
-    SecondaryIdentifierAttribute,
+    new Map([[Component, SecondaryIdentifierAttribute]]),
     'secondaryIdentifier',
     valueType,
     options
   );
 }
 
-function createAttributeDecorator(
-  AttributeClass: typeof Attribute,
+export function createAttributeDecorator(
+  AttributeClassMap: PropertyClassMap,
   decoratorName: string,
   valueType?: string | AttributeDecoratorOptions,
   options: AttributeDecoratorOptions = {}
@@ -99,6 +105,8 @@ function createAttributeDecorator(
       }
     }
 
+    const AttributeClass = getPropertyClass(AttributeClassMap, target);
+
     target.setProperty(name, AttributeClass, attributeOptions);
   };
 }
@@ -120,21 +128,54 @@ function getAttributeInitializer(component: Component, attributeName: string) {
 }
 
 export function method(options: MethodOptions = {}) {
+  return createMethodDecorator(new Map([[Component, Method]]), 'method', options);
+}
+
+export function createMethodDecorator(
+  MethodClassMap: PropertyClassMap,
+  decoratorName: string,
+  options: MethodOptions = {}
+) {
   return function (
     target: typeof Component | Component,
     name: string,
     descriptor: PropertyDescriptor
   ) {
     if (!isComponentClassOrInstance(target)) {
-      throw new Error(`@method() must be used inside a component class (property: '${name}')`);
+      throw new Error(
+        `@${decoratorName}() must be used inside a component class (property: '${name}')`
+      );
     }
 
     if (!(typeof descriptor.value === 'function' && descriptor.enumerable === false)) {
-      throw new Error(`@method() must be used with a method declaration (property: '${name}')`);
+      throw new Error(
+        `@${decoratorName}() must be used with a method declaration (property: '${name}')`
+      );
     }
 
-    target.setProperty(name, Method, options);
+    const MethodClass = getPropertyClass(MethodClassMap, target);
+
+    target.setProperty(name, MethodClass, options);
   };
+}
+
+type PropertyClassMap = Map<typeof Component, typeof Property>;
+
+function getPropertyClass(
+  propertyClassMap: PropertyClassMap,
+  target: typeof Component | Component
+) {
+  target = ensureComponentClass(target);
+
+  for (const [componentClass, propertyClass] of propertyClassMap.entries()) {
+    if (target.isForkOf(componentClass)) {
+      return propertyClass;
+    }
+  }
+
+  throw new Error(
+    `Couldn't find a property class for the component '${target.describeComponent()}'`
+  );
 }
 
 type ClassExposure = {

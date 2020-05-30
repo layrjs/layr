@@ -107,7 +107,7 @@ export class ComponentClient {
     const attributeFilter = function (this: typeof Component | Component, attribute: Attribute) {
       // Exclude properties that cannot be set in the remote components
 
-      const remoteComponent = this; // TODO: this.getRemoteComponent();
+      const remoteComponent = this.getUnintrospectedComponent()!;
       const attributeName = attribute.getName();
       const remoteAttribute = remoteComponent.hasAttribute(attributeName)
         ? remoteComponent.getAttribute(attributeName)

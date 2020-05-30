@@ -1,8 +1,7 @@
 import {IdentifierAttribute} from './identifier-attribute';
 
 export class SecondaryIdentifierAttribute extends IdentifierAttribute {
-  // @ts-ignore
-  private __nominal!: void; // Make TS believe that SecondaryIdentifierAttribute is different than IdentifierAttribute
+  _secondaryIdentifierAttributeBrand!: void;
 
   // === Utilities ===
 

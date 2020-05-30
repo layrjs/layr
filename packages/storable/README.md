@@ -1,9 +1,13 @@
 # @liaison/storable
 
-Base class extending Liaison's Entity class to provide persistence capabilities.
+A mixin providing persistence capabilities to Liaison components.
 
 ## Installation
 
 ```
 npm install @liaison/storable
 ```
+
+## License
+
+MIT

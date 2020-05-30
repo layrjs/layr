@@ -55,7 +55,7 @@ describe('PrimaryIdentifierAttribute', () => {
     const id = idAttribute.evaluateDefault() as string;
 
     expect(typeof id).toBe('string');
-    expect(id.length >= 25);
+    expect(id.length >= 25).toBe(true);
   });
 
   test('Introspection', async () => {

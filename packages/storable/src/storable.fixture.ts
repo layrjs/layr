@@ -8,7 +8,7 @@ export function getInitialCollections() {
   return {
     User: [
       {
-        __component: 'user',
+        __component: 'User',
         id: 'user1',
         email: '1@user.com',
         reference: 1,
@@ -20,17 +20,17 @@ export function getInitialCollections() {
           {country: 'USA', city: 'Nice'},
           {country: 'USA', city: 'New York'}
         ],
-        picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
+        picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
         pastPictures: [
-          {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
-          {__component: 'picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
+          {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
+          {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
         ],
-        organization: {__component: 'organization', id: 'org1'},
+        organization: {__component: 'Organization', id: 'org1'},
         emailIsVerified: false,
         createdOn: CREATED_ON
       },
       {
-        __component: 'user',
+        __component: 'User',
         id: 'user11',
         email: '11@user.com',
         reference: 11,
@@ -39,14 +39,14 @@ export function getInitialCollections() {
         tags: ['owner', 'admin'],
         location: {country: 'USA'},
         pastLocations: [{country: 'France'}],
-        picture: {__component: 'picture', type: 'JPEG', url: 'https://pictures.com/11-1.jpg'},
-        pastPictures: [{__component: 'picture', type: 'PNG', url: 'https://pictures.com/11-1.png'}],
-        organization: {__component: 'organization', id: 'org2'},
+        picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/11-1.jpg'},
+        pastPictures: [{__component: 'Picture', type: 'PNG', url: 'https://pictures.com/11-1.png'}],
+        organization: {__component: 'Organization', id: 'org2'},
         emailIsVerified: true,
         createdOn: CREATED_ON
       },
       {
-        __component: 'user',
+        __component: 'User',
         id: 'user12',
         email: '12@user.com',
         reference: 12,
@@ -58,17 +58,17 @@ export function getInitialCollections() {
           {country: 'France', city: 'Nice'},
           {country: 'Japan', city: 'Tokyo'}
         ],
-        picture: {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-3.png'},
+        picture: {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-3.png'},
         pastPictures: [
-          {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
-          {__component: 'picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
+          {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
+          {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
         ],
-        organization: {__component: 'organization', id: 'org2'},
+        organization: {__component: 'Organization', id: 'org2'},
         emailIsVerified: true,
         createdOn: CREATED_ON
       },
       {
-        __component: 'user',
+        __component: 'User',
         id: 'user13',
         email: '13@user.com',
         reference: 13,
@@ -83,12 +83,12 @@ export function getInitialCollections() {
     ],
     Organization: [
       {
-        __component: 'organization',
+        __component: 'Organization',
         id: 'org1',
         name: 'Organization 1'
       },
       {
-        __component: 'organization',
+        __component: 'Organization',
         id: 'org2',
         name: 'Organization 2'
       }
@@ -96,7 +96,7 @@ export function getInitialCollections() {
   };
 }
 
-export async function seedMongoDB(connectionString) {
+export async function seedMongoDB(connectionString: string) {
   const client = await MongoClient.connect(connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true

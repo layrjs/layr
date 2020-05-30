@@ -650,7 +650,7 @@ export class Component extends Observable(Object) {
     return this.prototype.getAttributes;
   }
 
-  getAttributes(
+  getAttributes<AttributeType extends Attribute = Attribute>(
     options: {
       filter?: PropertyFilterSync;
       autoFork?: boolean;
@@ -658,7 +658,7 @@ export class Component extends Observable(Object) {
   ) {
     const {filter, attributeSelector = true, setAttributesOnly = false, autoFork = true} = options;
 
-    return this.getProperties<Attribute>({
+    return this.getProperties<AttributeType>({
       filter,
       autoFork,
       attributesOnly: true,
@@ -893,7 +893,7 @@ export class Component extends Observable(Object) {
     return cuid();
   }
 
-  private static __identityMap: IdentityMap;
+  static __identityMap: IdentityMap;
 
   static __getIdentityMap() {
     if (this.__identityMap === undefined) {
@@ -2339,6 +2339,8 @@ export class Component extends Observable(Object) {
       UnintrospectedComponent.__unintrospectConsumedComponents(introspectedConsumedComponents);
     }
 
+    UnintrospectedComponent.__setUnintrospectedComponent(UnintrospectedComponent);
+
     return UnintrospectedComponent;
   }
 
@@ -2386,17 +2388,19 @@ export class Component extends Observable(Object) {
     }
   }
 
-  // static getRemoteComponent() {
-  //   return this.__RemoteComponent;
-  // }
+  static __unintrospectedComponent: typeof Component | undefined;
 
-  // static __setRemoteComponent(RemoteComponent) {
-  //   this.__RemoteComponent = RemoteComponent; // TODO: Use Object.defineProperty()
-  // }
+  static getUnintrospectedComponent() {
+    return this.__unintrospectedComponent;
+  }
 
-  // getRemoteComponent() {
-  //   return this.constructor.getRemoteComponent()?.prototype;
-  // }
+  static __setUnintrospectedComponent(unintrospectedComponent: typeof Component) {
+    Object.defineProperty(this, '__unintrospectedComponent', {value: unintrospectedComponent});
+  }
+
+  getUnintrospectedComponent() {
+    return this.constructor.getUnintrospectedComponent()?.prototype;
+  }
 
   // === Utilities ===
 

@@ -1,4 +1,5 @@
-import {Storable, StorableAttribute, isStorableAttribute} from '../../..';
+import {Storable} from '../storable';
+import {StorableAttribute, isStorableAttributeInstance} from './storable-attribute';
 
 describe('StorableAttribute', () => {
   test('new StorableAttribute()', async () => {
@@ -9,7 +10,7 @@ describe('StorableAttribute', () => {
     let beforeLoadHasBeenCalled = false;
 
     const storableAttribute = new StorableAttribute('title', Movie.prototype, {
-      type: 'string',
+      valueType: 'string',
       async loader() {
         expect(this).toBe(Movie.prototype);
         loaderHasBeenCalled = true;
@@ -24,7 +25,7 @@ describe('StorableAttribute', () => {
       }
     });
 
-    expect(isStorableAttribute(storableAttribute)).toBe(true);
+    expect(isStorableAttributeInstance(storableAttribute)).toBe(true);
     expect(storableAttribute.getName()).toBe('title');
     expect(storableAttribute.getParent()).toBe(Movie.prototype);
 
@@ -38,7 +39,7 @@ describe('StorableAttribute', () => {
     expect(loaderHasBeenCalled).toBe(true);
 
     expect(finderHasBeenCalled).toBe(false);
-    await storableAttribute.callFinder();
+    await storableAttribute.callFinder(1);
     expect(finderHasBeenCalled).toBe(true);
 
     expect(beforeLoadHasBeenCalled).toBe(false);
@@ -46,22 +47,22 @@ describe('StorableAttribute', () => {
     expect(beforeLoadHasBeenCalled).toBe(true);
 
     const otherStorableAttribute = new StorableAttribute('country', Movie.prototype, {
-      type: 'string'
+      valueType: 'string'
     });
 
     expect(otherStorableAttribute.hasLoader()).toBe(false);
     expect(otherStorableAttribute.hasFinder()).toBe(false);
     expect(otherStorableAttribute.isComputed()).toBe(false);
     await expect(otherStorableAttribute.callLoader()).rejects.toThrow(
-      "Cannot call a loader that is missing (storable name: 'movie', attribute name: 'country')"
+      "Cannot call a loader that is missing (component: 'Movie', attribute: 'country')"
     );
-    await expect(otherStorableAttribute.callFinder()).rejects.toThrow(
-      "Cannot call a finder that is missing (storable name: 'movie', attribute name: 'country')"
+    await expect(otherStorableAttribute.callFinder(1)).rejects.toThrow(
+      "Cannot call a finder that is missing (component: 'Movie', attribute: 'country')"
     );
 
     expect(otherStorableAttribute.hasHook('beforeLoad')).toBe(false);
     await expect(otherStorableAttribute.callHook('beforeLoad')).rejects.toThrow(
-      "Cannot call a hook that is missing (storable name: 'movie', attribute name: 'country', hook name: 'beforeLoad')"
+      "Cannot call a hook that is missing (component: 'Movie', attribute: 'country', hook: 'beforeLoad')"
     );
   });
 
@@ -70,13 +71,13 @@ describe('StorableAttribute', () => {
 
     expect(
       new StorableAttribute('limit', Movie, {
-        type: 'number',
+        valueType: 'number',
         value: 100,
         exposure: {get: true}
       }).introspect()
     ).toStrictEqual({
       name: 'limit',
-      type: 'storableAttribute',
+      type: 'StorableAttribute',
       valueType: 'number',
       value: 100,
       exposure: {get: true}
@@ -87,13 +88,14 @@ describe('StorableAttribute', () => {
     expect(
       StorableAttribute.unintrospect({
         name: 'limit',
+        type: 'StorableAttribute',
         valueType: 'number',
         value: 100,
         exposure: {get: true}
       })
     ).toEqual({
       name: 'limit',
-      options: {type: 'number', value: 100, exposure: {get: true}}
+      options: {valueType: 'number', value: 100, exposure: {get: true}}
     });
   });
 });

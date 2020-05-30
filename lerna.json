@@ -12,6 +12,7 @@
     "packages/integration-testing",
     "packages/memory-store",
     "packages/mongodb-store",
-    "packages/observable"
+    "packages/observable",
+    "packages/storable"
   ]
 }

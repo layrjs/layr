@@ -14,9 +14,6 @@
   "routable": {
     "@include": "./packages/routable"
   },
-  "storable": {
-    "@include": "./packages/storable"
-  },
   "withRoles": {
     "@include": "./packages/with-roles"
   },

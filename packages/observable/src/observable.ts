@@ -1,4 +1,4 @@
-import {hasOwnProperty, ClassConstructor} from 'core-helpers';
+import {hasOwnProperty, Constructor} from 'core-helpers';
 
 export type ObservableType = {
   addObserver(observer: Observer): void;
@@ -13,7 +13,7 @@ export type ObserverFunction = (...args: any[]) => void;
 
 export type ObserverStack = Set<Observer>;
 
-export const Observable = <T extends ClassConstructor>(Base: T) => {
+export const Observable = <T extends Constructor>(Base: T) => {
   if (typeof (Base as any).isObservable === 'function') {
     return Base as typeof _Observable;
   }

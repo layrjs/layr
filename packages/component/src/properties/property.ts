@@ -37,8 +37,8 @@ export type UnintrospectedProperty = {
 export type UnintrospectedExposure = Partial<Record<PropertyOperation, true>>;
 
 export class Property {
-  private _name: string;
-  private _parent: typeof Component | Component;
+  _name: string;
+  _parent: typeof Component | Component;
 
   constructor(name: string, parent: typeof Component | Component, options: PropertyOptions = {}) {
     assertIsString(name);
@@ -72,7 +72,7 @@ export class Property {
 
   // === Exposure ===
 
-  private _exposure?: PropertyExposure;
+  _exposure?: PropertyExposure;
 
   getExposure() {
     return this._exposure;
@@ -82,7 +82,7 @@ export class Property {
     this._exposure = this._normalizeExposure(exposure);
   }
 
-  private _normalizeExposure(exposure: PropertyExposure) {
+  _normalizeExposure(exposure: PropertyExposure) {
     let normalizedExposure: PlainObject | undefined;
 
     for (const [operation, setting] of Object.entries(exposure)) {
