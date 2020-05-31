@@ -1,3 +1,5 @@
+import {hasOwnProperty} from 'core-helpers';
+
 import type {Component} from '../component';
 import {Attribute, AttributeOptions} from './attribute';
 import {isComponentInstance} from '../utilities';
@@ -46,13 +48,18 @@ export class IdentifierAttribute extends Attribute {
   }
 
   setValue(value: IdentifierValue) {
+    if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
+      delete this._ignoreNextSetValueCall;
+      return {previousValue: undefined, newValue: undefined};
+    }
+
     const {previousValue, newValue} = super.setValue(value) as {
       previousValue: IdentifierValue | undefined;
       newValue: IdentifierValue | undefined;
     };
 
     const parent = this.getParent();
-    const identityMap = parent.constructor.__getIdentityMap();
+    const identityMap = parent.constructor.getIdentityMap();
     identityMap.updateComponent(parent, this.getName(), {previousValue, newValue});
 
     return {previousValue, newValue};
@@ -66,7 +73,7 @@ export class IdentifierAttribute extends Attribute {
     const {previousValue} = super.unsetValue() as {previousValue: IdentifierValue | undefined};
 
     const parent = this.getParent();
-    const identityMap = parent.constructor.__getIdentityMap();
+    const identityMap = parent.constructor.getIdentityMap();
     identityMap.updateComponent(parent, this.getName(), {previousValue, newValue: undefined});
 
     return {previousValue};

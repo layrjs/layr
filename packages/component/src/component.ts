@@ -36,7 +36,6 @@ import {
   getFromAttributeSelector,
   setWithinAttributeSelector,
   mergeAttributeSelectors,
-  removeFromAttributeSelector,
   normalizeAttributeSelector,
   Method,
   isMethodInstance,
@@ -102,22 +101,25 @@ export class Component extends Observable(Object) {
 
   // === Creation ===
 
-  constructor(object: PlainObject = {}, options: {attributeSelector?: AttributeSelector} = {}) {
-    const {attributeSelector = true} = options;
-
+  constructor(object: PlainObject = {}) {
     super();
 
-    return this.__finishInstantiation(object, {
-      isNew: true,
-      attributeSelector,
-      attributeFilter: undefined,
-      initialize: false
-    }) as this;
+    this.markAsNew();
+
+    for (const attribute of this.getAttributes()) {
+      const name = attribute.getName();
+      const value = hasOwnProperty(object, name) ? object[name] : attribute.evaluateDefault();
+      attribute.setValue(value);
+
+      if (attribute._isDefaultFromConstructor) {
+        attribute._ignoreNextSetValueCall = true;
+      }
+    }
   }
 
-  static instantiate<T extends typeof Component>(
+  static create<T extends typeof Component>(
     this: T,
-    object: PlainObject | undefined,
+    object: PlainObject | null | undefined,
     options: {
       isNew?: boolean;
       attributeSelector?: AttributeSelector;
@@ -125,9 +127,9 @@ export class Component extends Observable(Object) {
       initialize?: boolean;
     }
   ): PromiseLike<InstanceType<T>>;
-  static instantiate<T extends typeof Component>(
+  static create<T extends typeof Component>(
     this: T,
-    object: PlainObject | undefined,
+    object: PlainObject | null | undefined,
     options: {
       isNew?: boolean;
       attributeSelector?: AttributeSelector;
@@ -135,9 +137,9 @@ export class Component extends Observable(Object) {
       initialize: false;
     }
   ): InstanceType<T>;
-  static instantiate<T extends typeof Component>(
+  static create<T extends typeof Component>(
     this: T,
-    object?: PlainObject,
+    object?: PlainObject | null,
     options?: {
       isNew?: boolean;
       attributeSelector?: AttributeSelector;
@@ -147,7 +149,7 @@ export class Component extends Observable(Object) {
   ): ReturnType<InstanceType<T>['initialize']> extends PromiseLike<void>
     ? PromiseLike<InstanceType<T>>
     : InstanceType<T>;
-  static instantiate<T extends typeof Component>(
+  static create<T extends typeof Component>(
     this: T,
     object: PlainObject = {},
     options: {
@@ -157,56 +159,17 @@ export class Component extends Observable(Object) {
       initialize?: boolean;
     } = {}
   ) {
-    const {isNew, attributeSelector = {}, attributeFilter, initialize = true} = options;
-
-    let component: Component | undefined;
-
-    if (this.prototype.hasPrimaryIdentifierAttribute()) {
-      const identityMap = this.__getIdentityMap();
-      component = identityMap.getComponent(object);
-
-      if (component !== undefined) {
-        if (isNew !== undefined) {
-          if (isNew && !component.isNew()) {
-            throw new Error(
-              `Cannot mark as new an existing non-new component (${component.describeComponent()})`
-            );
-          }
-
-          if (!isNew && component.isNew()) {
-            component.markAsNotNew();
-          }
-        }
-      }
-    }
-
-    if (component === undefined) {
-      component = isNew
-        ? new this({}, {attributeSelector: {}})
-        : (Object.create(this.prototype) as Component);
-    }
-
-    return component.__finishInstantiation(object, {
-      isNew: Boolean(isNew),
-      attributeSelector,
+    const {
+      isNew = true,
+      attributeSelector = isNew ? true : {},
       attributeFilter,
-      initialize
-    });
-  }
+      initialize = true
+    } = options;
 
-  __finishInstantiation(
-    object: PlainObject,
-    options: {
-      isNew: boolean;
-      attributeSelector: AttributeSelector;
-      attributeFilter: PropertyFilter | undefined;
-      initialize: boolean;
-    }
-  ) {
-    const {isNew, attributeSelector, attributeFilter, initialize} = options;
+    const component: Component = Object.create(this.prototype);
 
     if (isNew) {
-      this.markAsNew();
+      component.markAsNew();
     }
 
     // Always include attributes present in the specified object
@@ -217,17 +180,10 @@ export class Component extends Observable(Object) {
 
     return possiblyAsync(
       possiblyAsync.forEach(
-        this.getAttributes({attributeSelector: fullAttributeSelector}),
+        component.getAttributes({attributeSelector: fullAttributeSelector}),
         (attribute) => {
-          if (attribute.isSet()) {
-            // This can happen when an entity was returned from the entity manager
-            return;
-          }
-
           return possiblyAsync(
-            attributeFilter !== undefined
-              ? (attributeFilter as PropertyFilterAsync).call(this, attribute)
-              : true,
+            attributeFilter !== undefined ? attributeFilter.call(component, attribute) : true,
             (isNotFilteredOut) => {
               if (isNotFilteredOut) {
                 const name = attribute.getName();
@@ -242,13 +198,7 @@ export class Component extends Observable(Object) {
           );
         }
       ),
-      () => {
-        if (initialize) {
-          return possiblyAsync(this.initialize(), () => this);
-        }
-
-        return this;
-      }
+      () => (initialize ? possiblyAsync(component.initialize(), () => component) : component)
     );
   }
 
@@ -893,18 +843,6 @@ export class Component extends Observable(Object) {
     return cuid();
   }
 
-  static __identityMap: IdentityMap;
-
-  static __getIdentityMap() {
-    if (this.__identityMap === undefined) {
-      Object.defineProperty(this, '__identityMap', {value: new IdentityMap(this)});
-    } else if (!hasOwnProperty(this, '__identityMap')) {
-      Object.defineProperty(this, '__identityMap', {value: this.__identityMap.fork(this)});
-    }
-
-    return this.__identityMap;
-  }
-
   __partitionAttributes(object: PlainObject) {
     const identifierAttributes: PlainObject = {};
     const otherAttributes: PlainObject = {};
@@ -1012,6 +950,20 @@ export class Component extends Observable(Object) {
     const valueString = typeof value === 'string' ? `'${value}'` : value.toString();
 
     return `${name}: ${valueString}`;
+  }
+
+  // === Identity map ===
+
+  static __identityMap: IdentityMap;
+
+  static getIdentityMap() {
+    if (this.__identityMap === undefined) {
+      Object.defineProperty(this, '__identityMap', {value: new IdentityMap(this)});
+    } else if (!hasOwnProperty(this, '__identityMap')) {
+      Object.defineProperty(this, '__identityMap', {value: this.__identityMap.fork(this)});
+    }
+
+    return this.__identityMap;
   }
 
   // === Attribute selectors ===
@@ -1582,40 +1534,29 @@ export class Component extends Observable(Object) {
   clone<
     T extends Component,
     R = ReturnType<T['initialize']> extends PromiseLike<void> ? PromiseLike<T> : T
-  >(this: T, options: CloneOptions = {}): R {
-    const attributes: PlainObject = {};
+  >(this: T, options?: CloneOptions): R;
+  clone(options: CloneOptions = {}) {
+    if (this.hasPrimaryIdentifierAttribute()) {
+      return this;
+    }
+
+    const clonedComponent = this.constructor.create(
+      {},
+      {
+        isNew: this.isNew(),
+        attributeSelector: {},
+        initialize: false
+      }
+    );
 
     for (const attribute of this.getAttributes({setAttributesOnly: true})) {
       const name = attribute.getName();
       const value = attribute.getValue();
-
-      attributes[name] = value;
+      const clonedValue = clone(value, options);
+      clonedComponent.getAttribute(name).setValue(clonedValue);
     }
-
-    const {identifierAttributes, otherAttributes} = this.__partitionAttributes(attributes);
-
-    const clonedComponent = this.constructor.instantiate(identifierAttributes, {
-      isNew: this.isNew(),
-      initialize: false
-    });
-
-    if (clonedComponent === this) {
-      return (this as unknown) as R;
-    }
-
-    clonedComponent.__cloneAttributes(otherAttributes, options);
 
     return possiblyAsync(clonedComponent.initialize(), () => clonedComponent);
-  }
-
-  __cloneAttributes(attributeValues: PlainObject, options: CloneOptions) {
-    for (const [name, value] of Object.entries(attributeValues)) {
-      const attribute = this.getAttribute(name);
-
-      const clonedValue = clone(value, options);
-
-      attribute.setValue(clonedValue);
-    }
   }
 
   // === Forking ===
@@ -1716,7 +1657,7 @@ export class Component extends Observable(Object) {
   getGhost<T extends Component>(this: T): T {
     const identifiers = this.getIdentifiers();
     const ghostClass = this.constructor.getGhost();
-    const ghostIdentityMap = ghostClass.__getIdentityMap();
+    const ghostIdentityMap = ghostClass.getIdentityMap();
     let ghostComponent = ghostIdentityMap.getComponent(identifiers);
 
     if (ghostComponent === undefined) {
@@ -1830,7 +1771,7 @@ export class Component extends Observable(Object) {
     Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
 
     if (this.hasPrimaryIdentifierAttribute()) {
-      const identityMap = this.constructor.__getIdentityMap();
+      const identityMap = this.constructor.getIdentityMap();
       identityMap.addComponent(this);
     }
 
@@ -1839,7 +1780,7 @@ export class Component extends Observable(Object) {
 
   detach() {
     if (this.hasPrimaryIdentifierAttribute()) {
-      const identityMap = this.constructor.__getIdentityMap();
+      const identityMap = this.constructor.getIdentityMap();
       identityMap.removeComponent(this);
     }
 
@@ -2033,7 +1974,9 @@ export class Component extends Observable(Object) {
       }
     }
 
-    return this.__finishDeserialization(attributes, options);
+    return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
+      possiblyAsync(this.initialize(), () => this)
+    );
   }
 
   static deserializeInstance<T extends typeof Component>(
@@ -2058,29 +2001,37 @@ export class Component extends Observable(Object) {
       attributes
     );
 
-    let attributeSelector;
+    let component: Component | undefined;
 
-    if (isNew) {
-      // When deserializing a component, we must select the attributes that are not part
-      // of the deserialization so they can be set to their default values
-      attributeSelector = this.prototype.expandAttributeSelector(true, {depth: 0});
-      const otherAttributeSelector = createAttributeSelectorFromNames(Object.keys(otherAttributes));
-      attributeSelector = removeFromAttributeSelector(attributeSelector, otherAttributeSelector);
-    } else {
-      attributeSelector = {};
+    if (!isNew && this.prototype.hasPrimaryIdentifierAttribute()) {
+      component = this.getIdentityMap().getComponent(identifierAttributes);
     }
 
-    return possiblyAsync(
-      this.instantiate(identifierAttributes, {
+    if (component === undefined) {
+      component = this.create(identifierAttributes, {
         isNew,
-        attributeSelector,
+        attributeSelector: {},
         attributeFilter,
         initialize: false
-      }),
-      (instantiatedComponent) => instantiatedComponent.__finishDeserialization(attributes, options)
+      });
+    }
+
+    return possiblyAsync(component, (component) =>
+      possiblyAsync(component.__deserializeAttributes(otherAttributes, options), () => {
+        if (isNew) {
+          for (const attribute of component.getAttributes()) {
+            if (!attribute.isSet()) {
+              attribute.setValue(attribute.evaluateDefault());
+            }
+          }
+        }
+
+        return possiblyAsync(component.initialize(), () => component);
+      })
     );
   }
 
+  // TODO: Consider removing this method
   deserialize<T extends Component>(
     this: T,
     object: PlainObject = {},
@@ -2108,48 +2059,43 @@ export class Component extends Observable(Object) {
       this.markAsNotNew();
     }
 
-    return this.__finishDeserialization(attributes, options);
+    return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
+      possiblyAsync(this.initialize(), () => this)
+    );
   }
 
-  static get __finishDeserialization() {
-    return this.prototype.__finishDeserialization;
+  static get __deserializeAttributes() {
+    return this.prototype.__deserializeAttributes;
   }
 
-  __finishDeserialization<T extends typeof Component | Component>(
-    this: T,
+  __deserializeAttributes(
     serializedAttributes: PlainObject,
     options: DeserializeOptions
-  ): T | PromiseLike<T> {
+  ): void | PromiseLike<void> {
     const {attributeFilter} = options;
 
-    const componentGetter = (type: string) => ensureComponentClass(this).getComponentOfType(type);
+    const componentClass = ensureComponentClass(this);
+    const componentGetter = (type: string) => componentClass.getComponentOfType(type);
 
-    return possiblyAsync(
-      possiblyAsync.forEach(
-        Object.entries(serializedAttributes),
-        ([attributeName, serializedAttributeValue]: [string, unknown]) => {
-          if (!this.hasAttribute(attributeName)) {
-            return;
-          }
+    return possiblyAsync.forEach(
+      Object.entries(serializedAttributes),
+      ([attributeName, serializedAttributeValue]: [string, unknown]) => {
+        const attribute = this.getAttribute(attributeName);
 
-          const attribute = this.getAttribute(attributeName);
-
-          return possiblyAsync(
-            attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
-            (isNotFilteredOut) => {
-              if (isNotFilteredOut) {
-                return this.__deserializeAttribute(
-                  attribute,
-                  serializedAttributeValue,
-                  componentGetter,
-                  options
-                );
-              }
+        return possiblyAsync(
+          attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
+          (isNotFilteredOut) => {
+            if (isNotFilteredOut) {
+              return this.__deserializeAttribute(
+                attribute,
+                serializedAttributeValue,
+                componentGetter,
+                options
+              );
             }
-          );
-        }
-      ),
-      () => possiblyAsync(this.initialize(), () => this)
+          }
+        );
+      }
     );
   }
 

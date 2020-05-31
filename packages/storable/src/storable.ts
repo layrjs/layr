@@ -351,7 +351,13 @@ const StorableMixin = (Base: typeof Component) => {
 
       const {reload = false, throwIfMissing = true, _callerMethodName = 'get'} = options;
 
-      const storable = (this.instantiate(identifierDescriptor) as unknown) as InstanceType<T>;
+      let storable = this.getIdentityMap().getComponent(identifierDescriptor) as InstanceType<T>;
+
+      if (storable === undefined) {
+        storable = ((await this.create(identifierDescriptor, {
+          isNew: false
+        })) as unknown) as InstanceType<T>;
+      }
 
       return await storable.load(attributeSelector, {reload, throwIfMissing, _callerMethodName});
     }

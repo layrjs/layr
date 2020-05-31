@@ -157,10 +157,10 @@ describe('Deserialization', () => {
 
     // --- Using component.deserialize() method ---
 
-    movie = Movie.instantiate({}, {isNew: true});
+    movie = Movie.create();
 
     expect(movie.isNew()).toBe(true);
-    expect(movie.getAttribute('title').isSet()).toBe(false);
+    expect(movie.title).toBeUndefined();
     expect(movie.duration).toBe(0);
 
     const deserializedMovie = movie.deserialize({__new: true, title: 'Inception'});

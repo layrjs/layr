@@ -107,7 +107,17 @@ export function createAttributeDecorator(
 
     const AttributeClass = getPropertyClass(AttributeClassMap, target);
 
-    target.setProperty(name, AttributeClass, attributeOptions);
+    const attribute = target.setProperty(name, AttributeClass, attributeOptions) as Attribute;
+
+    if ('default' in attributeOptions) {
+      if (attribute._isDefaultFromConstructor) {
+        throw new Error(
+          `Cannot set a default value to an attribute that already has an inherited default value (property: '${name}')`
+        );
+      }
+
+      attribute._isDefaultFromConstructor = true;
+    }
   };
 }
 

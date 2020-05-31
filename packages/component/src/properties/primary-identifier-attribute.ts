@@ -1,3 +1,5 @@
+import {hasOwnProperty} from 'core-helpers';
+
 import type {Component} from '../component';
 import {AttributeOptions} from './attribute';
 import {IdentifierAttribute, IdentifierValue} from './identifier-attribute';
@@ -35,6 +37,11 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
   // === Value ===
 
   setValue(value: IdentifierValue) {
+    if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
+      delete this._ignoreNextSetValueCall;
+      return {previousValue: undefined, newValue: undefined};
+    }
+
     const previousValue = this.getValue({throwIfUnset: false, autoFork: false});
 
     if (previousValue !== undefined && value !== previousValue) {

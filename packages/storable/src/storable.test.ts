@@ -9,7 +9,7 @@ import {PlainObject} from 'core-helpers';
 import {Storable} from './storable';
 import {attribute, primaryIdentifier, secondaryIdentifier} from './decorators'; // loader, finder
 import {isStorableClass, isStorableInstance} from './utilities';
-import {getInitialCollections, CREATED_ON} from './storable.fixture'; // seedMongoDB, UPDATED_ON
+import {getInitialCollections, CREATED_ON, UPDATED_ON} from './storable.fixture'; // seedMongoDB
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000; // 1 minute
 
@@ -383,7 +383,7 @@ describe('Storable', () => {
         test('load()', async () => {
           const User = userClassProvider();
 
-          let user = User.fork().instantiate({id: 'user1'});
+          let user = User.fork().create({id: 'user1'}, {isNew: false});
 
           if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
             return await expect(user.load()).rejects.toThrow(
@@ -426,14 +426,14 @@ describe('Storable', () => {
             updatedOn: {__undefined: true}
           });
 
-          user = User.fork().instantiate({id: 'user2'});
+          user = User.fork().create({id: 'user2'}, {isNew: false});
 
           await expect(user.load({})).rejects.toThrow(
             "Cannot load a document that is missing from the store (collection: 'User', id: 'user2'"
           );
           expect(await user.load({}, {throwIfMissing: false})).toBeUndefined();
 
-          user = User.fork().instantiate({email: '1@user.com'});
+          user = User.fork().create({email: '1@user.com'}, {isNew: false});
 
           expect(await user.load({})).toBe(user);
           expect(user.serialize()).toStrictEqual({
@@ -450,7 +450,7 @@ describe('Storable', () => {
             fullName: 'User 1'
           });
 
-          user = User.fork().instantiate({fullName: 'User 1'});
+          user = User.fork().create({fullName: 'User 1'}, {isNew: false});
 
           await expect(user.load({})).rejects.toThrow(
             "Cannot get an identifier descriptor from a component that has no set identifier (component: 'User')"
@@ -478,10 +478,8 @@ describe('Storable', () => {
             tags: ['newcomer'],
             location: {country: 'USA', city: 'New York'},
             picture: new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}),
-            organization: ForkedOrganization.instantiate({id: 'org2'})
+            organization: ForkedOrganization.create({id: 'org2'}, {isNew: false})
           });
-
-          console.log(user.serialize({includeReferencedComponents: true}));
 
           if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
             return await expect(user.save()).rejects.toThrow(
@@ -497,154 +495,154 @@ describe('Storable', () => {
 
           user = await ForkedUser.get('user2');
 
-          // expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
-          //   __component: 'User',
-          //   id: 'user2',
-          //   email: '2@user.com',
-          //   reference: 2,
-          //   fullName: 'User 2',
-          //   accessLevel: 0,
-          //   tags: ['newcomer'],
-          //   location: {country: 'USA', city: 'New York'},
-          //   pastLocations: [],
-          //   picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'},
-          //   pastPictures: [],
-          //   organization: {__component: 'Organization', id: 'org2', name: 'Organization 2'},
-          //   emailIsVerified: false,
-          //   createdOn: {__date: CREATED_ON.toISOString()},
-          //   updatedOn: {__undefined: true}
-          // });
+          expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
+            __component: 'User',
+            id: 'user2',
+            email: '2@user.com',
+            reference: 2,
+            fullName: 'User 2',
+            accessLevel: 0,
+            tags: ['newcomer'],
+            location: {country: 'USA', city: 'New York'},
+            pastLocations: [],
+            picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'},
+            pastPictures: [],
+            organization: {__component: 'Organization', id: 'org2', name: 'Organization 2'},
+            emailIsVerified: false,
+            createdOn: {__date: CREATED_ON.toISOString()},
+            updatedOn: {__undefined: true}
+          });
 
-          // user.fullName = 'User 2 (modified)';
-          // user.accessLevel = 1;
-          // user.tags = [];
-          // user.location!.state = 'New York';
-          // user.pastLocations.push({country: 'USA', city: 'San Francisco'});
-          // user.picture!.url = 'https://pictures.com/2-2.jpg';
-          // user.pastPictures.push(
-          //   new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
-          // );
-          // user.organization = ForkedOrganization.instantiate({id: 'org1'});
-          // user.updatedOn = UPDATED_ON;
+          user.fullName = 'User 2 (modified)';
+          user.accessLevel = 1;
+          user.tags = [];
+          user.location!.state = 'New York';
+          user.pastLocations.push({country: 'USA', city: 'San Francisco'});
+          user.picture!.url = 'https://pictures.com/2-2.jpg';
+          user.pastPictures.push(
+            new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
+          );
+          user.organization = ForkedOrganization.create({id: 'org1'}, {isNew: false});
+          user.updatedOn = UPDATED_ON;
 
-          // expect(await user.save()).toBe(user);
+          expect(await user.save()).toBe(user);
 
-          // user = await User.fork().get('user2', {
-          //   fullName: true,
-          //   accessLevel: true,
-          //   tags: true,
-          //   location: true,
-          //   pastLocations: true,
-          //   picture: true,
-          //   pastPictures: true,
-          //   organization: true,
-          //   updatedOn: true
-          // });
+          user = await User.fork().get('user2', {
+            fullName: true,
+            accessLevel: true,
+            tags: true,
+            location: true,
+            pastLocations: true,
+            picture: true,
+            pastPictures: true,
+            organization: true,
+            updatedOn: true
+          });
 
-          // expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
-          //   __component: 'User',
-          //   id: 'user2',
-          //   fullName: 'User 2 (modified)',
-          //   accessLevel: 1,
-          //   tags: [],
-          //   location: {country: 'USA', state: 'New York', city: 'New York'},
-          //   pastLocations: [{country: 'USA', city: 'San Francisco'}],
-          //   picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-2.jpg'},
-          //   pastPictures: [
-          //     {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}
-          //   ],
-          //   organization: {__component: 'Organization', id: 'org1', name: 'Organization 1'},
-          //   updatedOn: {__date: UPDATED_ON.toISOString()}
-          // });
+          expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
+            __component: 'User',
+            id: 'user2',
+            fullName: 'User 2 (modified)',
+            accessLevel: 1,
+            tags: [],
+            location: {country: 'USA', state: 'New York', city: 'New York'},
+            pastLocations: [{country: 'USA', city: 'San Francisco'}],
+            picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-2.jpg'},
+            pastPictures: [
+              {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}
+            ],
+            organization: {__component: 'Organization', id: 'org1', name: 'Organization 1'},
+            updatedOn: {__date: UPDATED_ON.toISOString()}
+          });
 
-          // user.location = {country: 'USA'};
-          // delete user.location.state;
-          // delete user.location.city;
-          // delete user.pastLocations[0].city;
-          // user.picture!.type = undefined;
-          // user.pastPictures[0].type = undefined;
-          // user.organization = undefined;
-          // user.updatedOn = undefined;
+          user.location = {country: 'USA'};
+          delete user.location.state;
+          delete user.location.city;
+          delete user.pastLocations[0].city;
+          user.picture!.type = undefined;
+          user.pastPictures[0].type = undefined;
+          user.organization = undefined;
+          user.updatedOn = undefined;
 
-          // expect(await user.save()).toBe(user);
+          expect(await user.save()).toBe(user);
 
-          // user = await User.fork().get('user2', {
-          //   location: true,
-          //   pastLocations: true,
-          //   picture: true,
-          //   pastPictures: true,
-          //   organization: true,
-          //   updatedOn: true
-          // });
+          user = await User.fork().get('user2', {
+            location: true,
+            pastLocations: true,
+            picture: true,
+            pastPictures: true,
+            organization: true,
+            updatedOn: true
+          });
 
-          // expect(user.serialize()).toStrictEqual({
-          //   __component: 'User',
-          //   id: 'user2',
-          //   location: {country: 'USA'},
-          //   pastLocations: [{country: 'USA'}],
-          //   picture: {
-          //     __component: 'Picture',
-          //     type: {__undefined: true},
-          //     url: 'https://pictures.com/2-2.jpg'
-          //   },
-          //   pastPictures: [
-          //     {
-          //       __component: 'Picture',
-          //       type: {__undefined: true},
-          //       url: 'https://pictures.com/2-1.jpg'
-          //     }
-          //   ],
-          //   organization: {__undefined: true},
-          //   updatedOn: {__undefined: true}
-          // });
+          expect(user.serialize()).toStrictEqual({
+            __component: 'User',
+            id: 'user2',
+            location: {country: 'USA'},
+            pastLocations: [{country: 'USA'}],
+            picture: {
+              __component: 'Picture',
+              type: {__undefined: true},
+              url: 'https://pictures.com/2-2.jpg'
+            },
+            pastPictures: [
+              {
+                __component: 'Picture',
+                type: {__undefined: true},
+                url: 'https://pictures.com/2-1.jpg'
+              }
+            ],
+            organization: {__undefined: true},
+            updatedOn: {__undefined: true}
+          });
 
-          // // Undefined values in object attributes should not be saved
-          // user.location!.country = undefined;
-          // user.pastLocations[0].country = undefined;
+          // Undefined values in object attributes should not be saved
+          user.location!.country = undefined;
+          user.pastLocations[0].country = undefined;
 
-          // expect(await user.save()).toBe(user);
+          expect(await user.save()).toBe(user);
 
-          // user = await User.fork().get('user2', {location: true, pastLocations: true});
+          user = await User.fork().get('user2', {location: true, pastLocations: true});
 
-          // expect(user.serialize()).toStrictEqual({
-          //   __component: 'User',
-          //   id: 'user2',
-          //   location: {},
-          //   pastLocations: [{}]
-          // });
+          expect(user.serialize()).toStrictEqual({
+            __component: 'User',
+            id: 'user2',
+            location: {},
+            pastLocations: [{}]
+          });
 
-          // user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
+          user = User.fork().create({id: 'user3', fullName: 'User 3'}, {isNew: false});
 
-          // expect(await user.save(true, {throwIfMissing: false})).toBe(undefined);
-          // await expect(user.save()).rejects.toThrow(
-          //   "Cannot save a non-new document that is missing from the store (collection: 'User', id: 'user3')"
-          // );
+          expect(await user.save(true, {throwIfMissing: false})).toBe(undefined);
+          await expect(user.save()).rejects.toThrow(
+            "Cannot save a non-new document that is missing from the store (collection: 'User', id: 'user3')"
+          );
 
-          // user = new (User.fork())({
-          //   id: 'user1',
-          //   email: '1@user.com',
-          //   reference: 1,
-          //   fullName: 'User 1 (modified)'
-          // });
+          user = new (User.fork())({
+            id: 'user1',
+            email: '1@user.com',
+            reference: 1,
+            fullName: 'User 1 (modified)'
+          });
 
-          // expect(await user.save(true, {throwIfExists: false})).toBe(undefined);
-          // await expect(user.save()).rejects.toThrow(
-          //   "Cannot save a new document that already exists in the store (collection: 'User', id: 'user1')"
-          // );
+          expect(await user.save(true, {throwIfExists: false})).toBe(undefined);
+          await expect(user.save()).rejects.toThrow(
+            "Cannot save a new document that already exists in the store (collection: 'User', id: 'user1')"
+          );
 
-          // user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
+          user = User.fork().create({id: 'user3', fullName: 'User 3'}, {isNew: false});
 
-          // await expect(
-          //   user.save(true, {throwIfMissing: true, throwIfExists: true})
-          // ).rejects.toThrow(
-          //   "The 'throwIfMissing' and 'throwIfExists' options cannot be both set to true"
-          // );
+          await expect(
+            user.save(true, {throwIfMissing: true, throwIfExists: true})
+          ).rejects.toThrow(
+            "The 'throwIfMissing' and 'throwIfExists' options cannot be both set to true"
+          );
         });
 
         // test('delete()', async () => {
         //   const User = userClassProvider();
 
-        //   let user = User.fork().instantiate({id: 'user1'});
+        //   let user = User.fork().create({id: 'user1'}, {isNew: false});
 
         //   if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
         //     return await expect(user.delete()).rejects.toThrow(
@@ -1226,7 +1224,7 @@ describe('Storable', () => {
 
         //   const ForkedUser = User.fork();
 
-        //   const user = ForkedUser.instantiate({id: 'user1'});
+        //   const user = ForkedUser.create({id: 'user1'}, {isNew: false});
 
         //   users = await ForkedUser.find(user, {email: true});
 
@@ -1276,7 +1274,7 @@ describe('Storable', () => {
 
         //   const ForkedUser = User.fork();
 
-        //   const user = ForkedUser.instantiate({fullName: 'User 1'});
+        //   const user = ForkedUser.create({fullName: 'User 1'}, {isNew: false});
 
         //   expect(await ForkedUser.count(user)).toBe(1);
         // });
@@ -1306,17 +1304,17 @@ describe('Storable', () => {
   //   test('load()', async () => {
   //     const User = getUserClass();
 
-  //     let user = User.fork().instantiate({id: 'user1'});
+  //     let user = User.fork().create({id: 'user1'}, {isNew: false});
   //     await user.load({});
 
   //     expect(user.getAttribute('firstName').isSet()).toBe(false);
 
-  //     user = User.fork().instantiate({id: 'user1'});
+  //     user = User.fork().create({id: 'user1'}, {isNew: false});
   //     await user.load({firstName: true});
 
   //     expect(user.firstName).toBe('User');
 
-  //     user = User.fork().instantiate({id: 'user1'});
+  //     user = User.fork().create({id: 'user1'}, {isNew: false});
   //     await user.load({fullName: true, firstName: true});
 
   //     expect(user.serialize()).toStrictEqual({
@@ -1445,7 +1443,7 @@ describe('Storable', () => {
 
   //     expect(getAttributesWithHook(User.prototype, 'beforeLoad')).toEqual(['email', 'fullName']);
 
-  //     const user = User.fork().instantiate({id: 'user1'});
+  //     const user = User.fork().create({id: 'user1'}, {isNew: false});
 
   //     expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([]);
 
@@ -1471,7 +1469,7 @@ describe('Storable', () => {
   //   test('beforeLoad() and afterLoad()', async () => {
   //     const User = getUserClass();
 
-  //     const user = User.fork().instantiate({id: 'user1'});
+  //     const user = User.fork().create({id: 'user1'}, {isNew: false});
 
   //     expect(user.beforeLoadHasBeenCalled).toBeUndefined();
   //     expect(user.afterLoadHasBeenCalled).toBeUndefined();

@@ -158,7 +158,14 @@ export class Attribute extends Observable(Property) {
     return this._value;
   }
 
+  _ignoreNextSetValueCall?: boolean;
+
   setValue(value: unknown) {
+    if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
+      delete this._ignoreNextSetValueCall;
+      return {previousValue: undefined, newValue: undefined};
+    }
+
     this.checkValue(value);
 
     if (this._setter !== undefined) {
@@ -241,6 +248,7 @@ export class Attribute extends Observable(Property) {
   // === Default value ===
 
   _default?: unknown;
+  _isDefaultFromConstructor?: boolean;
 
   getDefault() {
     return this._default;

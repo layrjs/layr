@@ -70,11 +70,10 @@ describe('Decorators', () => {
       "The attribute 'offset' is missing (component: 'Movie')"
     );
 
-    // TODO
-    // movie = new Movie({title: 'Inception', country: 'USA'});
+    movie = new Movie({title: 'Inception', country: 'USA'});
 
-    // expect(movie.title).toBe('Inception');
-    // expect(movie.country).toBe('USA');
+    expect(movie.title).toBe('Inception');
+    expect(movie.country).toBe('USA');
 
     class Film extends Movie {
       @attribute() static limit: number;
@@ -160,10 +159,9 @@ describe('Decorators', () => {
     expect(isNumberValueTypeInstance(idAttribute.getValueType())).toBe(true);
     expect(typeof idAttribute.getDefault()).toBe('function');
 
-    // TODO
-    // const movie = new Movie3();
+    const movie = new Movie3();
 
-    // expect(typeof movie.id === 'number').toBe(true);
+    expect(typeof movie.id === 'number').toBe(true);
 
     expect(() => {
       class Movie extends Component {

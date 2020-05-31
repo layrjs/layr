@@ -7,7 +7,7 @@ import {
 import {attribute, primaryIdentifier, secondaryIdentifier, provide} from './decorators';
 
 describe('Identifiable component', () => {
-  test('Creation', async () => {
+  test('new ()', async () => {
     class User extends Component {
       @primaryIdentifier() id!: string;
       @secondaryIdentifier() email!: string;
@@ -16,79 +16,43 @@ describe('Identifiable component', () => {
 
     const user = new User({email: 'hi@hello.com', username: 'hi'});
 
-    expect(user.getPrimaryIdentifierAttribute().isSet()).toBe(true);
     expect(user.id.length >= 25).toBe(true);
-    expect(user.getSecondaryIdentifierAttribute('email').isSet()).toBe(true);
     expect(user.email).toBe('hi@hello.com');
-    expect(user.getSecondaryIdentifierAttribute('username').isSet()).toBe(true);
     expect(user.username).toBe('hi');
+
+    expect(() => new User({id: user.id, email: 'user1@email.com', username: 'user1'})).toThrow(
+      "A component with the same identifier already exists (component: 'User', attribute: 'id')"
+    );
+
+    expect(() => new User({email: 'hi@hello.com', username: 'user2'})).toThrow(
+      "A component with the same identifier already exists (component: 'User', attribute: 'email')"
+    );
+
+    expect(() => new User({email: 'user3@email.com', username: 'hi'})).toThrow(
+      "A component with the same identifier already exists (component: 'User', attribute: 'username')"
+    );
 
     expect(() => new User()).toThrow(
       "Cannot assign a value of an unexpected type (component: 'User', attribute: 'email', expected type: 'string', received type: 'undefined')"
     );
   });
 
-  test('Instantiation', async () => {
+  test('create()', async () => {
     class User extends Component {
       @primaryIdentifier() id!: string;
-      @secondaryIdentifier() email!: string;
     }
 
-    const user1 = User.instantiate({id: 'abc123'});
+    let user = User.create();
 
-    expect(() => new User({id: 'abc123'})).toThrow(
+    expect(user.id.length >= 25).toBe(true);
+
+    user = User.create({id: 'abc123'});
+
+    expect(user.id).toBe('abc123');
+
+    expect(() => User.create({id: 'abc123'})).toThrow(
       "A component with the same identifier already exists (component: 'User', attribute: 'id')"
     );
-
-    expect(() => User.instantiate({id: 'abc123'}, {isNew: true})).toThrow(
-      "Cannot mark as new an existing non-new component (component: 'User')"
-    );
-
-    const user2 = User.instantiate({id: 'abc123'});
-
-    expect(user2).toBe(user1);
-
-    const user3 = User.instantiate({id: 'def456'});
-
-    expect(user3).not.toBe(user1);
-
-    const user4 = User.instantiate({email: 'hi@hello.com'});
-
-    expect(user4).not.toBe(user1);
-
-    const user5 = User.instantiate({email: 'hi@hello.com'});
-
-    expect(user5).toBe(user4);
-
-    user4.email = 'salut@bonjour.com';
-
-    const user6 = User.instantiate({email: 'hi@hello.com'});
-
-    expect(user6).not.toBe(user4);
-
-    expect(() => {
-      user4.email = 'hi@hello.com';
-    }).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'email')"
-    );
-
-    const user7 = new User({id: 'xyz789', email: 'salut@bonjour.com'});
-
-    expect(user7.isNew()).toBe(true);
-
-    const user8 = User.instantiate({id: 'xyz789'}, {isNew: false});
-
-    expect(user8).toBe(user7);
-    expect(user8.isNew()).toBe(false);
-
-    const user9 = new User({id: 'jjj000', email: 'hey@konichiwa.com'});
-
-    expect(user9.isNew()).toBe(true);
-
-    const user10 = User.instantiate({id: 'jjj000'});
-
-    expect(user10).toBe(user9);
-    expect(user10.isNew()).toBe(true);
   });
 
   test('getIdentifierAttribute()', async () => {
@@ -284,30 +248,34 @@ describe('Identifiable component', () => {
       @attribute('string') name = '';
     }
 
-    expect(User.fork().instantiate({id: 'abc123'}).getIdentifiers()).toStrictEqual({
+    expect(User.fork().create({id: 'abc123'}, {isNew: false}).getIdentifiers()).toStrictEqual({
       id: 'abc123'
     });
     expect(
-      User.fork().instantiate({id: 'abc123', email: 'hi@hello.com'}).getIdentifiers()
+      User.fork().create({id: 'abc123', email: 'hi@hello.com'}, {isNew: false}).getIdentifiers()
     ).toStrictEqual({
       id: 'abc123',
       email: 'hi@hello.com'
     });
-    expect(User.fork().instantiate({email: 'hi@hello.com'}).getIdentifiers()).toStrictEqual({
+    expect(
+      User.fork().create({email: 'hi@hello.com'}, {isNew: false}).getIdentifiers()
+    ).toStrictEqual({
       email: 'hi@hello.com'
     });
     expect(
-      User.fork().instantiate({email: 'hi@hello.com', reference: 123456}).getIdentifiers()
+      User.fork()
+        .create({email: 'hi@hello.com', reference: 123456}, {isNew: false})
+        .getIdentifiers()
     ).toStrictEqual({
       email: 'hi@hello.com',
       reference: 123456
     });
-    expect(User.fork().instantiate({reference: 123456}).getIdentifiers()).toStrictEqual({
+    expect(User.fork().create({reference: 123456}, {isNew: false}).getIdentifiers()).toStrictEqual({
       reference: 123456
     });
 
-    expect(User.fork().instantiate({name: 'john'}).hasIdentifiers()).toBe(false);
-    expect(() => User.fork().instantiate({name: 'john'}).getIdentifiers()).toThrow(
+    expect(User.fork().create({name: 'john'}, {isNew: false}).hasIdentifiers()).toBe(false);
+    expect(() => User.fork().create({name: 'john'}, {isNew: false}).getIdentifiers()).toThrow(
       "Cannot get the identifiers of a component that has no set identifier (component: 'User')"
     );
   });
@@ -320,30 +288,42 @@ describe('Identifiable component', () => {
       @attribute('string') name = '';
     }
 
-    expect(User.fork().instantiate({id: 'abc123'}).getIdentifierDescriptor()).toStrictEqual({
-      id: 'abc123'
-    });
     expect(
-      User.fork().instantiate({id: 'abc123', email: 'hi@hello.com'}).getIdentifierDescriptor()
+      User.fork().create({id: 'abc123'}, {isNew: false}).getIdentifierDescriptor()
     ).toStrictEqual({
       id: 'abc123'
     });
     expect(
-      User.fork().instantiate({email: 'hi@hello.com'}).getIdentifierDescriptor()
+      User.fork()
+        .create({id: 'abc123', email: 'hi@hello.com'}, {isNew: false})
+        .getIdentifierDescriptor()
+    ).toStrictEqual({
+      id: 'abc123'
+    });
+    expect(
+      User.fork().create({email: 'hi@hello.com'}, {isNew: false}).getIdentifierDescriptor()
     ).toStrictEqual({
       email: 'hi@hello.com'
     });
     expect(
-      User.fork().instantiate({email: 'hi@hello.com', reference: 123456}).getIdentifierDescriptor()
+      User.fork()
+        .create({email: 'hi@hello.com', reference: 123456}, {isNew: false})
+        .getIdentifierDescriptor()
     ).toStrictEqual({
       email: 'hi@hello.com'
     });
-    expect(User.fork().instantiate({reference: 123456}).getIdentifierDescriptor()).toStrictEqual({
+    expect(
+      User.fork().create({reference: 123456}, {isNew: false}).getIdentifierDescriptor()
+    ).toStrictEqual({
       reference: 123456
     });
 
-    expect(User.fork().instantiate({name: 'john'}).hasIdentifierDescriptor()).toBe(false);
-    expect(() => User.fork().instantiate({name: 'john'}).getIdentifierDescriptor()).toThrow(
+    expect(User.fork().create({name: 'john'}, {isNew: false}).hasIdentifierDescriptor()).toBe(
+      false
+    );
+    expect(() =>
+      User.fork().create({name: 'john'}, {isNew: false}).getIdentifierDescriptor()
+    ).toThrow(
       "Cannot get an identifier descriptor from a component that has no set identifier (component: 'User')"
     );
   });
@@ -506,14 +486,14 @@ describe('Identifiable component', () => {
       @secondaryIdentifier() email!: string;
     }
 
-    const user = User.instantiate({id: 'abc123', email: 'hi@hello.com'});
+    const user = User.create({id: 'abc123', email: 'hi@hello.com'});
 
     expect(user.id).toBe('abc123');
     expect(user.email).toBe('hi@hello.com');
 
     let ForkedUser = User.fork();
 
-    const forkedUser = ForkedUser.instantiate({id: 'abc123'});
+    const forkedUser = ForkedUser.getIdentityMap().getComponent({id: 'abc123'}) as User;
 
     expect(forkedUser.constructor).toBe(ForkedUser);
     expect(forkedUser).toBeInstanceOf(ForkedUser);
@@ -533,7 +513,7 @@ describe('Identifiable component', () => {
       @attribute('User') author!: User;
     }
 
-    const article = Article.instantiate({id: 'xyz456', title: 'Hello', author: user});
+    const article = Article.create({id: 'xyz456', title: 'Hello', author: user});
 
     expect(article.id).toBe('xyz456');
     expect(article.title).toBe('Hello');
@@ -544,7 +524,7 @@ describe('Identifiable component', () => {
 
     const ForkedArticle = Article.fork();
 
-    const forkedArticle = ForkedArticle.instantiate({id: 'xyz456'});
+    const forkedArticle = ForkedArticle.getIdentityMap().getComponent({id: 'xyz456'}) as Article;
 
     expect(forkedArticle.constructor).toBe(ForkedArticle);
     expect(forkedArticle).toBeInstanceOf(ForkedArticle);
@@ -592,23 +572,23 @@ describe('Identifiable component', () => {
       @primaryIdentifier() id!: string;
     }
 
-    const user = User.instantiate({id: 'abc123'});
-    const sameUser = User.instantiate({id: 'abc123'});
+    const user = User.create({id: 'abc123'});
+    const sameUser = User.getIdentityMap().getComponent({id: 'abc123'});
 
     expect(sameUser).toBe(user);
 
     user.detach();
 
-    const otherUser = User.instantiate({id: 'abc123'});
-    const sameOtherUser = User.instantiate({id: 'abc123'});
+    const otherUser = User.create({id: 'abc123'});
+    const sameOtherUser = User.getIdentityMap().getComponent({id: 'abc123'});
 
     expect(otherUser).not.toBe(user);
     expect(sameOtherUser).toBe(otherUser);
 
     User.detach();
 
-    const user2 = User.instantiate({id: 'xyz456'});
-    const otherUser2 = User.instantiate({id: 'xyz456'});
+    const user2 = User.create({id: 'xyz456'});
+    const otherUser2 = User.create({id: 'xyz456'});
 
     expect(otherUser2).not.toBe(user2);
   });

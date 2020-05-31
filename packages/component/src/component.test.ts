@@ -45,24 +45,9 @@ describe('Component', () => {
 
       expect(movie.title).toBe('Inception');
       expect(movie.country).toBe('');
-
-      movie = new Movie({}, {attributeSelector: {}});
-
-      expect(movie.getAttribute('title').isSet()).toBe(false);
-      expect(movie.getAttribute('country').isSet()).toBe(false);
-
-      movie = new Movie({}, {attributeSelector: {title: true}});
-
-      expect(movie.title).toBe('');
-      expect(movie.getAttribute('country').isSet()).toBe(false);
-
-      movie = new Movie({title: 'Inception', country: 'USA'}, {attributeSelector: {country: true}});
-
-      expect(movie.title).toBe('Inception'); // Attributes in the specified object are always included
-      expect(movie.country).toBe('USA');
     });
 
-    test('Instantiation', async () => {
+    test('create()', async () => {
       class Movie extends Component {
         title!: string;
         country!: string;
@@ -71,49 +56,44 @@ describe('Component', () => {
       Movie.prototype.setAttribute('title', {valueType: 'string', default: ''});
       Movie.prototype.setAttribute('country', {valueType: 'string', default: ''});
 
-      let movie = Movie.instantiate();
+      let movie = Movie.create();
 
-      expect(isComponentInstance(movie)).toBe(true);
-      expect(movie).toBeInstanceOf(Movie);
+      expect(movie.isNew()).toBe(true);
+      expect(movie.title).toBe('');
+      expect(movie.country).toBe('');
+
+      movie = Movie.create({}, {attributeSelector: {title: true}});
+
+      expect(movie.isNew()).toBe(true);
+      expect(movie.title).toBe('');
+      expect(movie.getAttribute('country').isSet()).toBe(false);
+
+      movie = Movie.create({title: 'Inception'}, {attributeSelector: {country: true}});
+
+      expect(movie.isNew()).toBe(true);
+      expect(movie.title).toBe('Inception');
+      expect(movie.country).toBe('');
+
+      movie = Movie.create({}, {isNew: false});
+
       expect(movie.isNew()).toBe(false);
-
       expect(movie.getAttribute('title').isSet()).toBe(false);
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
-      movie = Movie.instantiate({title: 'Inception'});
+      movie = Movie.create({title: 'Inception'}, {isNew: false});
 
       expect(movie.title).toBe('Inception');
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
       expect(() =>
-        Movie.instantiate({title: 'Inception'}, {attributeSelector: {country: true}})
+        Movie.create({title: 'Inception'}, {isNew: false, attributeSelector: {country: true}})
       ).toThrow(
         "Cannot assign a value of an unexpected type (component: 'Movie', attribute: 'country', expected type: 'string', received type: 'undefined')"
       );
 
-      movie = Movie.instantiate({}, {isNew: true});
-
-      expect(movie.isNew()).toBe(true);
-
-      expect(movie.getAttribute('title').isSet()).toBe(false);
-      expect(movie.getAttribute('country').isSet()).toBe(false);
-
-      movie = Movie.instantiate({}, {isNew: true, attributeSelector: {title: true}});
-
-      expect(movie.title).toBe('');
-      expect(movie.getAttribute('country').isSet()).toBe(false);
-
-      movie = Movie.instantiate(
-        {title: 'Inception'},
-        {isNew: true, attributeSelector: {country: true}}
-      );
-
-      expect(movie.title).toBe('Inception');
-      expect(movie.country).toBe('');
-
-      movie = await Movie.instantiate(
+      movie = await Movie.create(
         {title: 'Inception', country: 'USA'},
-        {attributeFilter: async (attribute) => attribute.getName() !== 'country'}
+        {isNew: false, attributeFilter: async (attribute) => attribute.getName() !== 'country'}
       );
 
       expect(movie.title).toBe('Inception');
@@ -151,7 +131,7 @@ describe('Component', () => {
 
       expect(movie.isInitialized).toBe(true);
 
-      movie = Movie.instantiate();
+      movie = Movie.create();
 
       expect(movie.isInitialized).toBe(true);
 
@@ -196,7 +176,7 @@ describe('Component', () => {
 
       expect(movie.isInitialized).toBe(true);
 
-      movie = await Movie.instantiate();
+      movie = await Movie.create();
 
       expect(movie.isInitialized).toBe(true);
 
@@ -628,7 +608,7 @@ describe('Component', () => {
         @attribute() director?: string;
       }
 
-      const film = Film.instantiate({title: 'Inception', director: 'Christopher Nolan'});
+      const film = Film.create({title: 'Inception', director: 'Christopher Nolan'}, {isNew: false});
 
       attributes = film.getAttributes();
 
@@ -678,7 +658,7 @@ describe('Component', () => {
 
       expect(Movie.prototype.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({});
 
-      const movie = Movie.instantiate();
+      const movie = Movie.create({}, {isNew: false});
 
       expect(movie.getAttributeSelector()).toStrictEqual({
         title: true,
