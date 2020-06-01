@@ -257,6 +257,7 @@ describe('Storable', () => {
 
           const expectedSerializedUser = {
             __component: 'User',
+            __new: false,
             id: 'user1',
             email: '1@user.com',
             reference: 1,
@@ -268,12 +269,32 @@ describe('Storable', () => {
               {country: 'USA', city: 'Nice'},
               {country: 'USA', city: 'New York'}
             ],
-            picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
+            picture: {
+              __component: 'Picture',
+              __new: false,
+              type: 'JPEG',
+              url: 'https://pictures.com/1-2.jpg'
+            },
             pastPictures: [
-              {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
-              {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
+              {
+                __component: 'Picture',
+                __new: false,
+                type: 'JPEG',
+                url: 'https://pictures.com/1-1.jpg'
+              },
+              {
+                __component: 'Picture',
+                __new: false,
+                type: 'PNG',
+                url: 'https://pictures.com/1-1.png'
+              }
             ],
-            organization: {__component: 'Organization', id: 'org1', name: 'Organization 1'},
+            organization: {
+              __component: 'Organization',
+              __new: false,
+              id: 'org1',
+              name: 'Organization 1'
+            },
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -293,13 +314,14 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user1',
             fullName: 'User 1'
           });
 
           user = await User.fork().get({id: 'user1'}, {});
 
-          expect(user.serialize()).toStrictEqual({__component: 'User', id: 'user1'});
+          expect(user.serialize()).toStrictEqual({__component: 'User', __new: false, id: 'user1'});
 
           await expect(User.fork().get({id: 'user2'})).rejects.toThrow(
             "Cannot load a document that is missing from the store (collection: 'User', id: 'user2')"
@@ -319,6 +341,7 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user1',
             email: '1@user.com',
             fullName: 'User 1'
@@ -332,6 +355,7 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user1',
             reference: 1,
             fullName: 'User 1'
@@ -392,11 +416,12 @@ describe('Storable', () => {
           }
 
           expect(await user.load({})).toBe(user);
-          expect(user.serialize()).toStrictEqual({__component: 'User', id: 'user1'});
+          expect(user.serialize()).toStrictEqual({__component: 'User', __new: false, id: 'user1'});
 
           expect(await user.load({email: true})).toBe(user);
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user1',
             email: '1@user.com'
           });
@@ -404,6 +429,7 @@ describe('Storable', () => {
           expect(await user.load()).toBe(user);
           expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user1',
             email: '1@user.com',
             reference: 1,
@@ -415,12 +441,32 @@ describe('Storable', () => {
               {country: 'USA', city: 'Nice'},
               {country: 'USA', city: 'New York'}
             ],
-            picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
+            picture: {
+              __component: 'Picture',
+              __new: false,
+              type: 'JPEG',
+              url: 'https://pictures.com/1-2.jpg'
+            },
             pastPictures: [
-              {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
-              {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
+              {
+                __component: 'Picture',
+                __new: false,
+                type: 'JPEG',
+                url: 'https://pictures.com/1-1.jpg'
+              },
+              {
+                __component: 'Picture',
+                __new: false,
+                type: 'PNG',
+                url: 'https://pictures.com/1-1.png'
+              }
             ],
-            organization: {__component: 'Organization', id: 'org1', name: 'Organization 1'},
+            organization: {
+              __component: 'Organization',
+              __new: false,
+              id: 'org1',
+              name: 'Organization 1'
+            },
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -438,6 +484,7 @@ describe('Storable', () => {
           expect(await user.load({})).toBe(user);
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user1',
             email: '1@user.com'
           });
@@ -445,6 +492,7 @@ describe('Storable', () => {
           expect(await user.load({fullName: true})).toBe(user);
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user1',
             email: '1@user.com',
             fullName: 'User 1'
@@ -497,6 +545,7 @@ describe('Storable', () => {
 
           expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user2',
             email: '2@user.com',
             reference: 2,
@@ -505,9 +554,19 @@ describe('Storable', () => {
             tags: ['newcomer'],
             location: {country: 'USA', city: 'New York'},
             pastLocations: [],
-            picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'},
+            picture: {
+              __component: 'Picture',
+              __new: false,
+              type: 'JPEG',
+              url: 'https://pictures.com/2-1.jpg'
+            },
             pastPictures: [],
-            organization: {__component: 'Organization', id: 'org2', name: 'Organization 2'},
+            organization: {
+              __component: 'Organization',
+              __new: false,
+              id: 'org2',
+              name: 'Organization 2'
+            },
             emailIsVerified: false,
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
@@ -541,17 +600,33 @@ describe('Storable', () => {
 
           expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user2',
             fullName: 'User 2 (modified)',
             accessLevel: 1,
             tags: [],
             location: {country: 'USA', state: 'New York', city: 'New York'},
             pastLocations: [{country: 'USA', city: 'San Francisco'}],
-            picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-2.jpg'},
+            picture: {
+              __component: 'Picture',
+              __new: false,
+              type: 'JPEG',
+              url: 'https://pictures.com/2-2.jpg'
+            },
             pastPictures: [
-              {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}
+              {
+                __component: 'Picture',
+                __new: false,
+                type: 'JPEG',
+                url: 'https://pictures.com/2-1.jpg'
+              }
             ],
-            organization: {__component: 'Organization', id: 'org1', name: 'Organization 1'},
+            organization: {
+              __component: 'Organization',
+              __new: false,
+              id: 'org1',
+              name: 'Organization 1'
+            },
             updatedOn: {__date: UPDATED_ON.toISOString()}
           });
 
@@ -577,17 +652,20 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user2',
             location: {country: 'USA'},
             pastLocations: [{country: 'USA'}],
             picture: {
               __component: 'Picture',
+              __new: false,
               type: {__undefined: true},
               url: 'https://pictures.com/2-2.jpg'
             },
             pastPictures: [
               {
                 __component: 'Picture',
+                __new: false,
                 type: {__undefined: true},
                 url: 'https://pictures.com/2-1.jpg'
               }
@@ -606,6 +684,7 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
+            __new: false,
             id: 'user2',
             location: {},
             pastLocations: [{}]

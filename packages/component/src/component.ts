@@ -122,6 +122,7 @@ export class Component extends Observable(Object) {
     object: PlainObject | null | undefined,
     options: {
       isNew?: boolean;
+      source?: number;
       attributeSelector?: AttributeSelector;
       attributeFilter: PropertyFilterAsync;
       initialize?: boolean;
@@ -132,6 +133,7 @@ export class Component extends Observable(Object) {
     object: PlainObject | null | undefined,
     options: {
       isNew?: boolean;
+      source?: number;
       attributeSelector?: AttributeSelector;
       attributeFilter?: PropertyFilter;
       initialize: false;
@@ -142,6 +144,7 @@ export class Component extends Observable(Object) {
     object?: PlainObject | null,
     options?: {
       isNew?: boolean;
+      source?: number;
       attributeSelector?: AttributeSelector;
       attributeFilter?: PropertyFilter;
       initialize?: boolean;
@@ -154,6 +157,7 @@ export class Component extends Observable(Object) {
     object: PlainObject = {},
     options: {
       isNew?: boolean;
+      source?: number;
       attributeSelector?: AttributeSelector;
       attributeFilter?: PropertyFilter;
       initialize?: boolean;
@@ -161,6 +165,7 @@ export class Component extends Observable(Object) {
   ) {
     const {
       isNew = true,
+      source,
       attributeSelector = isNew ? true : {},
       attributeFilter,
       initialize = true
@@ -168,9 +173,7 @@ export class Component extends Observable(Object) {
 
     const component: Component = Object.create(this.prototype);
 
-    if (isNew) {
-      component.markAsNew();
-    }
+    component.setIsNewMark(isNew, {source});
 
     // Always include attributes present in the specified object
     const fullAttributeSelector = mergeAttributeSelectors(
@@ -192,7 +195,7 @@ export class Component extends Observable(Object) {
                   : isNew
                   ? attribute.evaluateDefault()
                   : undefined;
-                attribute.setValue(value);
+                attribute.setValue(value, {source});
               }
             }
           );
@@ -273,16 +276,37 @@ export class Component extends Observable(Object) {
 
   __isNew: boolean | undefined;
 
-  isNew() {
+  getIsNewMark() {
     return this.__isNew === true;
   }
 
-  markAsNew() {
-    Object.defineProperty(this, '__isNew', {value: true, configurable: true});
+  setIsNewMark(isNew: boolean, {source}: {source?: number} = {}) {
+    Object.defineProperty(this, '__isNew', {value: isNew, configurable: true});
+    this.setIsNewMarkSource(source);
   }
 
-  markAsNotNew() {
-    Object.defineProperty(this, '__isNew', {value: false, configurable: true});
+  isNew() {
+    return this.getIsNewMark();
+  }
+
+  markAsNew({source}: {source?: number} = {}) {
+    this.setIsNewMark(true, {source});
+  }
+
+  markAsNotNew({source}: {source?: number} = {}) {
+    this.setIsNewMark(false, {source});
+  }
+
+  // === isNew mark source ===
+
+  __isNewSource: number | undefined;
+
+  getIsNewMarkSource() {
+    return this.__isNewSource !== undefined ? this.__isNewSource : 0;
+  }
+
+  setIsNewMarkSource(source = 0) {
+    Object.defineProperty(this, '__isNewSource', {value: source, configurable: true});
   }
 
   // === Properties ===
@@ -1543,7 +1567,8 @@ export class Component extends Observable(Object) {
     const clonedComponent = this.constructor.create(
       {},
       {
-        isNew: this.isNew(),
+        isNew: this.getIsNewMark(),
+        source: this.getIsNewMarkSource(),
         attributeSelector: {},
         initialize: false
       }
@@ -1552,8 +1577,9 @@ export class Component extends Observable(Object) {
     for (const attribute of this.getAttributes({setAttributesOnly: true})) {
       const name = attribute.getName();
       const value = attribute.getValue();
+      const source = attribute.getValueSource();
       const clonedValue = clone(value, options);
-      clonedComponent.getAttribute(name).setValue(clonedValue);
+      clonedComponent.getAttribute(name).setValue(clonedValue, {source});
     }
 
     return possiblyAsync(clonedComponent.initialize(), () => clonedComponent);
@@ -1848,6 +1874,7 @@ export class Component extends Observable(Object) {
 
   serialize(options: SerializeOptions = {}) {
     const {
+      target,
       returnComponentReferences = false,
       referencedComponents,
       ignoreEmptyComponents = false,
@@ -1867,13 +1894,9 @@ export class Component extends Observable(Object) {
       serializedComponent.__component = this.getComponentType();
     }
 
-    if (includeIsNewMarks && this.isNew()) {
-      serializedComponent.__new = true;
-    }
+    const isIdentifiable = this.hasPrimaryIdentifierAttribute();
 
     if (returnComponentReferences) {
-      const hasPrimaryIdentifierAttribute = this.hasPrimaryIdentifierAttribute();
-
       if (referencedComponents !== undefined) {
         for (const providedComponent of this.constructor.getProvidedComponents()) {
           referencedComponents.add(providedComponent);
@@ -1885,16 +1908,20 @@ export class Component extends Observable(Object) {
 
         referencedComponents.add(this.constructor);
 
-        if (hasPrimaryIdentifierAttribute) {
+        if (isIdentifiable) {
           referencedComponents.add(this);
         }
       }
 
-      if (hasPrimaryIdentifierAttribute) {
+      if (isIdentifiable) {
         Object.assign(serializedComponent, this.getIdentifierDescriptor());
 
         return serializedComponent;
       }
+    }
+
+    if (includeIsNewMarks && (!isIdentifiable || this.getIsNewMarkSource() !== target)) {
+      serializedComponent.__new = this.getIsNewMark();
     }
 
     return possiblyAsync(
@@ -1929,6 +1956,15 @@ export class Component extends Observable(Object) {
         if (subattributeSelector === false) {
           return;
         }
+
+        // TODO
+        // if (
+        //   isStorable &&
+        //   !isPrimaryIdentifierAttributeInstance(attribute) &&
+        //   attribute.getValueSource() === target
+        // ) {
+        //   return;
+        // }
 
         return possiblyAsync(
           attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
@@ -1984,8 +2020,8 @@ export class Component extends Observable(Object) {
     object: PlainObject = {},
     options: DeserializeOptions = {}
   ): InstanceType<T> | PromiseLike<InstanceType<T>> {
-    const {__component: componentType, __new: isNew = false, ...attributes} = object;
-    const {attributeFilter} = options;
+    const {__component: componentType, __new: isNew, ...attributes} = object;
+    const {source, attributeFilter} = options;
 
     if (componentType !== undefined) {
       const expectedComponentType = this.prototype.getComponentType();
@@ -2009,11 +2045,16 @@ export class Component extends Observable(Object) {
 
     if (component === undefined) {
       component = this.create(identifierAttributes, {
-        isNew,
+        isNew: Boolean(isNew),
+        source,
         attributeSelector: {},
         attributeFilter,
         initialize: false
       });
+    } else {
+      if (isNew !== undefined) {
+        component.setIsNewMark(isNew, {source});
+      }
     }
 
     return possiblyAsync(component, (component) =>
@@ -2037,7 +2078,9 @@ export class Component extends Observable(Object) {
     object: PlainObject = {},
     options: DeserializeOptions = {}
   ): T | PromiseLike<T> {
-    const {__component: componentType, __new: isNew = false, ...attributes} = object;
+    const {source} = options;
+
+    const {__component: componentType, __new: isNew, ...attributes} = object;
 
     if (componentType !== undefined) {
       const expectedComponentType = this.getComponentType();
@@ -2049,14 +2092,14 @@ export class Component extends Observable(Object) {
       }
     }
 
-    if (isNew && !this.isNew()) {
-      throw new Error(
-        `Cannot mark as new an existing non-new component (${this.describeComponent()})`
-      );
-    }
+    if (isNew !== undefined) {
+      if (isNew && !this.getIsNewMark()) {
+        throw new Error(
+          `Cannot mark as new an existing non-new component (${this.describeComponent()})`
+        );
+      }
 
-    if (!isNew && this.isNew()) {
-      this.markAsNotNew();
+      this.setIsNewMark(isNew, {source});
     }
 
     return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
@@ -2109,8 +2152,10 @@ export class Component extends Observable(Object) {
     componentGetter: ComponentGetter,
     options: DeserializeOptions
   ): void | PromiseLike<void> {
-    // OPTIMIZE: Move this logic into the Attribute class so we can avoid deserializing two times
-    // in case of in place deserialization of nested models
+    const {source} = options;
+
+    // OPTIMIZE: Move the following logic into the Attribute class so we can avoid
+    // deserializing two times in case of in place deserialization of nested models
 
     return possiblyAsync(
       deserialize(serializedAttributeValue, {...options, componentGetter}),
@@ -2119,7 +2164,9 @@ export class Component extends Observable(Object) {
           const previousAttributeValue = attribute.getValue();
 
           if (newAttributeValue === previousAttributeValue) {
-            return; // Optimization
+            // Optimization
+            attribute.setValueSource(source);
+            return;
           }
 
           if (
@@ -2131,7 +2178,7 @@ export class Component extends Observable(Object) {
           }
         }
 
-        attribute.setValue(newAttributeValue);
+        attribute.setValue(newAttributeValue, {source});
       }
     );
   }

@@ -218,7 +218,7 @@ describe('ComponentServer', () => {
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie'},
+      result: {__component: 'Movie', __new: false},
       components: [{__component: 'typeof Movie', offset: 0}]
     });
 
@@ -245,7 +245,7 @@ describe('ComponentServer', () => {
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie'},
+      result: {__component: 'Movie', __new: false},
       components: [{__component: 'typeof Movie', offset: 0}]
     });
 

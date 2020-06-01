@@ -36,7 +36,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
 
   // === Value ===
 
-  setValue(value: IdentifierValue) {
+  setValue(value: IdentifierValue, {source = 0} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};
@@ -50,7 +50,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
       );
     }
 
-    return super.setValue(value);
+    return super.setValue(value, {source});
   }
 
   // === Utilities ===

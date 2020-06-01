@@ -47,13 +47,13 @@ export class IdentifierAttribute extends Attribute {
     return super.getValue(options) as IdentifierValue | undefined;
   }
 
-  setValue(value: IdentifierValue) {
+  setValue(value: IdentifierValue, {source = 0} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};
     }
 
-    const {previousValue, newValue} = super.setValue(value) as {
+    const {previousValue, newValue} = super.setValue(value, {source}) as {
       previousValue: IdentifierValue | undefined;
       newValue: IdentifierValue | undefined;
     };

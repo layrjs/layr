@@ -58,6 +58,24 @@ describe('Deserialization', () => {
       "Cannot deserialize a component without a 'componentGetter'"
     );
 
+    // --- Using the deserialize() function with the 'source' option ---
+
+    expect(Movie.limit).toBe(1000);
+    expect(Movie.getAttribute('limit').getValueSource()).toBe(0);
+
+    DeserializedMovie = deserialize(
+      {__component: 'typeof Movie', limit: 5000},
+      {source: 1, componentGetter}
+    );
+
+    expect(Movie.limit).toBe(5000);
+    expect(Movie.getAttribute('limit').getValueSource()).toBe(1);
+
+    DeserializedMovie = deserialize({__component: 'typeof Movie', limit: 5000}, {componentGetter});
+
+    expect(Movie.limit).toBe(5000);
+    expect(Movie.getAttribute('limit').getValueSource()).toBe(0);
+
     // --- Using Component.deserialize() method ---
 
     DeserializedMovie = Movie.deserialize({limit: {__undefined: true}, offset: 100});
@@ -133,6 +151,33 @@ describe('Deserialization', () => {
       'Component not found'
     );
 
+    // --- Using the deserialize() function with the 'source' option ---
+
+    movie = deserialize({__component: 'Movie', title: 'Inception'}, {componentGetter}) as Movie;
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('title').getValueSource()).toBe(0);
+    expect(movie.getAttribute('duration').isSet()).toBe(false);
+
+    movie = deserialize(
+      {__component: 'Movie', title: 'Inception'},
+      {source: 1, componentGetter}
+    ) as Movie;
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('title').getValueSource()).toBe(1);
+    expect(movie.getAttribute('duration').isSet()).toBe(false);
+
+    movie = deserialize(
+      {__component: 'Movie', __new: true, title: 'Inception'},
+      {source: 1, componentGetter}
+    ) as Movie;
+
+    expect(movie.title).toBe('Inception');
+    expect(movie.getAttribute('title').getValueSource()).toBe(1);
+    expect(movie.duration).toBe(0);
+    expect(movie.getAttribute('duration').getValueSource()).toBe(0);
+
     // --- Using Component.deserializeInstance() method ---
 
     movie = Movie.deserializeInstance({__component: 'Movie', title: 'Inception'}) as Movie;
@@ -177,6 +222,13 @@ describe('Deserialization', () => {
     expect(movie.duration).toBe(120);
 
     movie.deserialize({});
+
+    expect(movie).toBe(movie);
+    expect(movie.isNew()).toBe(true);
+    expect(movie.title).toBe('Inception');
+    expect(movie.duration).toBe(120);
+
+    movie.deserialize({__new: false});
 
     expect(movie).toBe(movie);
     expect(movie.isNew()).toBe(false);

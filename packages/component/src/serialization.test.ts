@@ -28,6 +28,27 @@ describe('Serialization', () => {
       __component: 'typeof Movie'
     });
 
+    // TODO
+    // // --- With value sourcing ---
+
+    // Movie.getAttribute('limit').setValueSource(1);
+
+    // expect(Movie.serialize()).toStrictEqual({
+    //   __component: 'typeof Movie',
+    //   limit: 100,
+    //   offset: {__undefined: true}
+    // });
+    // expect(Movie.serialize({target: 1})).toStrictEqual({
+    //   __component: 'typeof Movie',
+    //   offset: {__undefined: true}
+    // });
+
+    // Movie.getAttribute('offset').setValueSource(1);
+
+    // expect(Movie.serialize({target: 1})).toStrictEqual({
+    //   __component: 'typeof Movie'
+    // });
+
     // --- With nested components ---
 
     class Cinema extends Component {
@@ -91,21 +112,42 @@ describe('Serialization', () => {
     movie = Movie.create({}, {isNew: false});
 
     expect(movie.serialize()).toStrictEqual({
-      __component: 'Movie'
+      __component: 'Movie',
+      __new: false
     });
 
-    expect(movie.serialize({includeComponentTypes: false})).toStrictEqual({});
+    expect(movie.serialize({includeComponentTypes: false})).toStrictEqual({__new: false});
 
     movie.title = 'Inception';
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
+      __new: false,
       title: 'Inception'
     });
 
-    expect(movie.serialize({includeComponentTypes: false})).toStrictEqual({title: 'Inception'});
+    expect(movie.serialize({includeComponentTypes: false})).toStrictEqual({
+      title: 'Inception',
+      __new: false
+    });
 
-    // // --- With nested components ---
+    // TODO
+    // // --- With value sourcing ---
+
+    // movie = Movie.create({title: 'Inception'}, {isNew: false, source: 1});
+
+    // expect(movie.serialize()).toStrictEqual({
+    //   __component: 'Movie',
+    //   __new: false,
+    //   title: 'Inception'
+    // });
+    // expect(movie.serialize({target: 1})).toStrictEqual({
+    //   __component: 'Movie',
+    //   __new: false,
+    //   title: 'Inception'
+    // });
+
+    // --- With nested components ---
 
     class Director extends Component {
       @attribute() name?: string;
@@ -116,6 +158,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
+      __new: false,
       title: 'Inception',
       director: {
         __component: 'Director',
@@ -129,12 +172,14 @@ describe('Serialization', () => {
       movie.serialize({attributeSelector: {title: true, director: {name: true}}})
     ).toStrictEqual({
       __component: 'Movie',
+      __new: false,
       title: 'Inception',
       director: {__component: 'Director', __new: true, name: 'Christopher Nolan'}
     });
 
     expect(movie.serialize({attributeSelector: {title: true, director: {}}})).toStrictEqual({
       __component: 'Movie',
+      __new: false,
       title: 'Inception',
       director: {__component: 'Director', __new: true}
     });
@@ -155,6 +200,7 @@ describe('Serialization', () => {
       })
     ).toStrictEqual({
       __component: 'Movie',
+      __new: false,
       title: 'Inception'
     });
 
@@ -168,6 +214,7 @@ describe('Serialization', () => {
       })
     ).toStrictEqual({
       __component: 'Movie',
+      __new: false,
       title: 'Inception'
     });
   });
@@ -183,6 +230,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
+      __new: false,
       title: 'Inception'
     });
 
@@ -194,6 +242,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
+      __new: false,
       id: 'abc123',
       title: 'Inception'
     });
@@ -207,6 +256,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
+      __new: false,
       slug: 'inception',
       title: 'Inception'
     });
@@ -223,6 +273,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
+      __new: false,
       id: 'abc123',
       slug: 'inception',
       title: 'Inception'
@@ -232,6 +283,22 @@ describe('Serialization', () => {
       __component: 'Movie',
       id: 'abc123'
     });
+
+    // TODO
+    // // --- With value sourcing ---
+
+    // movie = Movie.fork().create({id: 'abc123', title: 'Inception'}, {isNew: false, source: 1});
+
+    // expect(movie.serialize()).toStrictEqual({
+    //   __component: 'Movie',
+    //   __new: false,
+    //   id: 'abc123',
+    //   title: 'Inception'
+    // });
+    // expect(movie.serialize({target: 1})).toStrictEqual({
+    //   __component: 'Movie',
+    //   id: 'abc123'
+    // });
 
     // --- With nested identifiable component instances ---
 
@@ -256,6 +323,7 @@ describe('Serialization', () => {
 
     expect(cinema.serialize()).toEqual({
       __component: 'Cinema',
+      __new: false,
       id: 'xyz456',
       name: 'Paradiso',
       movies: [{__component: 'Movie', id: 'abc123'}]
@@ -263,15 +331,17 @@ describe('Serialization', () => {
 
     expect(cinema.serialize({includeReferencedComponents: true})).toEqual({
       __component: 'Cinema',
+      __new: false,
       id: 'xyz456',
       name: 'Paradiso',
-      movies: [{__component: 'Movie', id: 'abc123', title: 'Inception'}]
+      movies: [{__component: 'Movie', __new: false, id: 'abc123', title: 'Inception'}]
     });
 
     let referencedComponents: SerializeOptions['referencedComponents'] = new Set();
 
     expect(cinema.serialize({referencedComponents})).toEqual({
       __component: 'Cinema',
+      __new: false,
       id: 'xyz456',
       name: 'Paradiso',
       movies: [{__component: 'Movie', id: 'abc123'}]

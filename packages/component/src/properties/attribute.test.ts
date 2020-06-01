@@ -45,6 +45,22 @@ describe('Attribute', () => {
     );
   });
 
+  test('Value source', async () => {
+    class Movie extends Component {}
+
+    const movie = new Movie();
+
+    const attribute = new Attribute('title', movie, {valueType: 'string'});
+
+    attribute.setValue('Inception');
+
+    expect(attribute.getValueSource()).toBe(0);
+
+    attribute.setValue('Inception', {source: 1});
+
+    expect(attribute.getValueSource()).toBe(1);
+  });
+
   test('Accessors', async () => {
     class Movie extends Component {}
 

@@ -160,7 +160,7 @@ export class Attribute extends Observable(Property) {
 
   _ignoreNextSetValueCall?: boolean;
 
-  setValue(value: unknown) {
+  setValue(value: unknown, {source = 0} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};
@@ -186,6 +186,7 @@ export class Attribute extends Observable(Property) {
     const previousValue = this.getValue({throwIfUnset: false});
     this._value = value;
     this._isSet = true;
+    this._source = source;
 
     if ((value as any)?.valueOf() !== (previousValue as any)?.valueOf()) {
       this.callObservers();
@@ -222,6 +223,7 @@ export class Attribute extends Observable(Property) {
     const previousValue = this.getValue({throwIfUnset: false});
     this._value = undefined;
     this._isSet = false;
+    this._source = undefined;
 
     this.callObservers();
 
@@ -243,6 +245,18 @@ export class Attribute extends Observable(Property) {
 
   checkValue(value: unknown) {
     return this.getValueType().checkValue(value, this);
+  }
+
+  // === Value source ===
+
+  _source: number | undefined;
+
+  getValueSource() {
+    return this._source !== undefined ? this._source : 0;
+  }
+
+  setValueSource(source = 0) {
+    this._source = source;
   }
 
   // === Default value ===
