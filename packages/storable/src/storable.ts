@@ -2,6 +2,7 @@ import {
   Component,
   isComponentClassOrInstance,
   isComponentValueTypeInstance,
+  assertIsComponentClass,
   Attribute,
   ValueType,
   isArrayValueTypeInstance,
@@ -13,10 +14,11 @@ import {
   traverseAttributeSelector,
   normalizeAttributeSelector,
   IdentifierDescriptor,
+  method,
   serialize
 } from '@liaison/component';
 import type {AbstractStore, Query, SortDescriptor} from '@liaison/abstract-store';
-import {hasOwnProperty, isPrototypeOf, isPlainObject, getTypeOf} from 'core-helpers';
+import {hasOwnProperty, isPrototypeOf, isPlainObject, getTypeOf, Constructor} from 'core-helpers';
 import mapKeys from 'lodash/mapKeys';
 
 import {
@@ -35,12 +37,14 @@ import {
 } from './properties';
 import {isStorableInstance, isStorableClassOrInstance} from './utilities';
 
-export function Storable(Base = Component) {
+export function Storable<T extends Constructor<typeof Component>>(Base: T) {
   if (typeof (Base as any).isStorable === 'function') {
-    return Base as typeof _Storable;
+    return Base as T & typeof Storable;
   }
 
-  const _Storable = class extends Base {
+  assertIsComponentClass(Base);
+
+  class Storable extends Base {
     // === Store registration ===
 
     static __store: AbstractStore | undefined;
@@ -364,7 +368,7 @@ export function Storable(Base = Component) {
     static async has(identifierDescriptor: IdentifierDescriptor, options: {reload?: boolean} = {}) {
       const {reload = false} = options;
 
-      const storable = await this.get(
+      const storable: StorableComponent | undefined = await this.get(
         identifierDescriptor,
         {},
         {reload, throwIfMissing: false, _callerMethodName: 'has'}
@@ -383,7 +387,7 @@ export function Storable(Base = Component) {
       attributeSelector?: AttributeSelector,
       options?: {reload?: boolean; throwIfMissing?: boolean; _callerMethodName?: string}
     ): Promise<T>;
-    async load<T extends StorableComponent>(
+    @method() async load<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector = true,
       options: {reload?: boolean; throwIfMissing?: boolean; _callerMethodName?: string} = {}
@@ -554,7 +558,7 @@ export function Storable(Base = Component) {
       });
     }
 
-    async save<T extends StorableComponent>(
+    @method() async save<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector = true,
       options: {throwIfMissing?: boolean; throwIfExists?: boolean} = {}
@@ -636,7 +640,10 @@ export function Storable(Base = Component) {
       return this;
     }
 
-    async delete<T extends StorableComponent>(this: T, options: {throwIfMissing?: boolean} = {}) {
+    @method() async delete<T extends StorableComponent>(
+      this: T,
+      options: {throwIfMissing?: boolean} = {}
+    ) {
       if (this.isNew()) {
         throw new Error(
           `Cannot delete a storable component that is new (${this.describeComponent()})`
@@ -692,7 +699,7 @@ export function Storable(Base = Component) {
       return this;
     }
 
-    static async find<T extends typeof StorableComponent>(
+    @method() static async find<T extends typeof StorableComponent>(
       this: T,
       query: Query = {},
       attributeSelector: AttributeSelector = true,
@@ -755,7 +762,7 @@ export function Storable(Base = Component) {
       return foundStorables;
     }
 
-    static async count(query: Query = {}) {
+    @method() static async count(query: Query = {}) {
       query = await this.__callStorablePropertyFindersForQuery(query);
 
       let storablesCount: number;
@@ -966,17 +973,11 @@ export function Storable(Base = Component) {
     static isStorable(value: any): value is StorableComponent {
       return isStorableInstance(value);
     }
-  };
+  }
 
-  Object.defineProperty(_Storable, '__mixin', {value: 'Storable'});
+  Object.defineProperty(Storable, '__mixin', {value: 'Storable'});
 
-  _Storable.prototype.setMethod('load');
-  _Storable.prototype.setMethod('save');
-  _Storable.prototype.setMethod('delete');
-  _Storable.setMethod('find');
-  _Storable.setMethod('count');
-
-  return _Storable;
+  return Storable;
 }
 
 export class StorableComponent extends Storable(Component) {}

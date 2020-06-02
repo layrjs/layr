@@ -6,7 +6,7 @@ import {assertIsStorableClassOrInstance} from '../utilities';
 
 export type StorableMethodOptions = StorablePropertyOptions;
 
-export const StorableMethodMixin = <T extends Constructor<Method>>(Base: T) =>
+export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: T) =>
   class extends StorablePropertyMixin(Base) {
     _storableMethodBrand!: void;
 

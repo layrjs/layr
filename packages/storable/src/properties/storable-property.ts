@@ -10,7 +10,7 @@ export type StorablePropertyOptions = PropertyOptions & {
 
 export type StorablePropertyFinder = (value: unknown) => PromiseLikeable<Query>;
 
-export const StorablePropertyMixin = <T extends Constructor<Property>>(Base: T) =>
+export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Base: T) =>
   class extends Base {
     // === Options ===
 

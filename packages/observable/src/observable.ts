@@ -13,12 +13,12 @@ export type ObserverFunction = (...args: any[]) => void;
 
 export type ObserverStack = Set<Observer>;
 
-export const Observable = <T extends Constructor>(Base: T) => {
+export function Observable<T extends Constructor>(Base: T) {
   if (typeof (Base as any).isObservable === 'function') {
-    return Base as T & typeof _Observable;
+    return Base as T & typeof Observable;
   }
 
-  const _Observable = class extends Base {
+  const Observable = class extends Base {
     static get addObserver() {
       return this.prototype.addObserver;
     }
@@ -68,8 +68,8 @@ export const Observable = <T extends Constructor>(Base: T) => {
     }
   };
 
-  return _Observable;
-};
+  return Observable;
+}
 
 export function createObservable<T extends object>(target: T) {
   if (!canBeObserved(target)) {

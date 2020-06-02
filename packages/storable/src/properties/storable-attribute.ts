@@ -27,7 +27,7 @@ export type StorableAttributeHookName =
   | 'beforeDelete'
   | 'afterDelete';
 
-export const StorableAttributeMixin = <T extends Constructor<Attribute>>(Base: T) =>
+export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(Base: T) =>
   class extends StorablePropertyMixin(Base) {
     // === Options ===
 
