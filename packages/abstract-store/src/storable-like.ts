@@ -1,9 +1,15 @@
-import {Component} from '@liaison/component';
+import type {IdentifierDescriptor} from '@liaison/component';
 import {getTypeOf} from 'core-helpers';
 
 import type {AbstractStore} from './abstract-store';
 
-export class StorableLike extends Component {
+export class StorableLike {
+  static getComponentName: () => string;
+
+  static describeIdentifierDescriptor: (identifierDescriptor: IdentifierDescriptor) => string;
+
+  static describeComponent: () => string;
+
   static getStore: () => AbstractStore;
 
   static hasStore: () => boolean;

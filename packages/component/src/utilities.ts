@@ -44,7 +44,7 @@ export function assertIsComponentClassOrInstance(
   }
 }
 
-export function ensureComponentClass(component: typeof Component | Component) {
+export function ensureComponentClass(component: any) {
   if (isComponentClass(component)) {
     return component;
   }
@@ -58,7 +58,7 @@ export function ensureComponentClass(component: typeof Component | Component) {
   );
 }
 
-export function ensureComponentInstance(component: typeof Component | Component) {
+export function ensureComponentInstance(component: any) {
   if (isComponentClass(component)) {
     return component.prototype;
   }

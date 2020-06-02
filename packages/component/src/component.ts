@@ -2518,7 +2518,7 @@ export class Component extends Observable(Object) {
     return this.prototype.describeComponent;
   }
 
-  describeComponent(options: {componentPrefix?: string} = {}): string {
+  describeComponent(options: {componentPrefix?: string} = {}) {
     let {componentPrefix = ''} = options;
 
     if (componentPrefix !== '') {
