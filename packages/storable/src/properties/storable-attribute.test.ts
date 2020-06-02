@@ -1,9 +1,11 @@
+import {Component} from '@liaison/component';
+
 import {Storable} from '../storable';
 import {StorableAttribute, isStorableAttributeInstance} from './storable-attribute';
 
 describe('StorableAttribute', () => {
   test('new StorableAttribute()', async () => {
-    class Movie extends Storable {}
+    class Movie extends Storable(Component) {}
 
     let loaderHasBeenCalled = false;
     let finderHasBeenCalled = false;
@@ -67,7 +69,7 @@ describe('StorableAttribute', () => {
   });
 
   test('Introspection', async () => {
-    class Movie extends Storable {}
+    class Movie extends Storable(Component) {}
 
     expect(
       new StorableAttribute('limit', Movie, {

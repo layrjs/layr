@@ -11,7 +11,7 @@ import {
   MethodOptions,
   PropertyExposure
 } from './properties';
-import {isComponentClassOrInstance, isComponentClass, ensureComponentClass} from './utilities';
+import {isComponentClassOrInstance, isComponentClass, isComponentInstance} from './utilities';
 import {
   getConstructorSourceCode,
   getAttributeInitializerFromConstructorSourceCode
@@ -29,7 +29,7 @@ export function attribute(
   options?: AttributeDecoratorOptions
 ) {
   return createAttributeDecorator(
-    new Map([[Component, Attribute]]),
+    new Map([[isComponentClassOrInstance, Attribute]]),
     'attribute',
     valueType,
     options
@@ -46,7 +46,7 @@ export function primaryIdentifier(
   options?: AttributeDecoratorOptions
 ) {
   return createAttributeDecorator(
-    new Map([[Component, PrimaryIdentifierAttribute]]),
+    new Map([[isComponentInstance, PrimaryIdentifierAttribute]]),
     'primaryIdentifier',
     valueType,
     options
@@ -63,7 +63,7 @@ export function secondaryIdentifier(
   options?: AttributeDecoratorOptions
 ) {
   return createAttributeDecorator(
-    new Map([[Component, SecondaryIdentifierAttribute]]),
+    new Map([[isComponentInstance, SecondaryIdentifierAttribute]]),
     'secondaryIdentifier',
     valueType,
     options
@@ -105,7 +105,10 @@ export function createAttributeDecorator(
       }
     }
 
-    const AttributeClass = getPropertyClass(AttributeClassMap, target);
+    const AttributeClass = getPropertyClass(AttributeClassMap, target, {
+      decoratorName,
+      propertyName: name
+    });
 
     const attribute = target.setProperty(name, AttributeClass, attributeOptions) as Attribute;
 
@@ -138,7 +141,7 @@ function getAttributeInitializer(component: Component, attributeName: string) {
 }
 
 export function method(options: MethodOptions = {}) {
-  return createMethodDecorator(new Map([[Component, Method]]), 'method', options);
+  return createMethodDecorator(new Map([[isComponentClassOrInstance, Method]]), 'method', options);
 }
 
 export function createMethodDecorator(
@@ -163,28 +166,30 @@ export function createMethodDecorator(
       );
     }
 
-    const MethodClass = getPropertyClass(MethodClassMap, target);
+    const MethodClass = getPropertyClass(MethodClassMap, target, {
+      decoratorName,
+      propertyName: name
+    });
 
     target.setProperty(name, MethodClass, options);
   };
 }
 
-type PropertyClassMap = Map<typeof Component, typeof Property>;
+type PropertyClassMap = Map<(value: any) => boolean, typeof Property>;
 
 function getPropertyClass(
   propertyClassMap: PropertyClassMap,
-  target: typeof Component | Component
+  target: typeof Component | Component,
+  {decoratorName, propertyName}: {decoratorName: string; propertyName: string}
 ) {
-  target = ensureComponentClass(target);
-
-  for (const [componentClass, propertyClass] of propertyClassMap.entries()) {
-    if (target.isForkOf(componentClass)) {
+  for (const [func, propertyClass] of propertyClassMap.entries()) {
+    if (func(target)) {
       return propertyClass;
     }
   }
 
   throw new Error(
-    `Couldn't find a property class for the component '${target.describeComponent()}'`
+    `Couldn't find a property class while executing @${decoratorName}() (${target.describeComponent()}, property: '${propertyName}')`
   );
 }
 

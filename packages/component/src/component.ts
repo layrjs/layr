@@ -5,7 +5,8 @@ import {
   getTypeOf,
   PlainObject,
   isPlainObject,
-  PromiseLikeable
+  PromiseLikeable,
+  getFunctionName
 } from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import cuid from 'cuid';
@@ -81,11 +82,13 @@ export type ExpandAttributeSelectorOptions = {
   _attributeStack?: Set<Attribute>;
 };
 
+export type ComponentMixin = (Base: typeof Component) => typeof Component;
+
 type MethodBuilder = (name: string) => Function;
 
 export type IntrospectedComponent = {
   name: string;
-  // TODO: Consider adding a 'mixins' attribute
+  mixins?: string[];
   properties?: (IntrospectedProperty | IntrospectedAttribute | IntrospectedMethod)[];
   prototype?: {
     properties?: (IntrospectedProperty | IntrospectedAttribute | IntrospectedMethod)[];
@@ -1894,7 +1897,7 @@ export class Component extends Observable(Object) {
       serializedComponent.__component = this.getComponentType();
     }
 
-    const isIdentifiable = this.hasPrimaryIdentifierAttribute();
+    const hasIdentifers = this.hasIdentifiers();
 
     if (returnComponentReferences) {
       if (referencedComponents !== undefined) {
@@ -1908,19 +1911,19 @@ export class Component extends Observable(Object) {
 
         referencedComponents.add(this.constructor);
 
-        if (isIdentifiable) {
+        if (hasIdentifers) {
           referencedComponents.add(this);
         }
       }
 
-      if (isIdentifiable) {
+      if (hasIdentifers) {
         Object.assign(serializedComponent, this.getIdentifierDescriptor());
 
         return serializedComponent;
       }
     }
 
-    if (includeIsNewMarks && (!isIdentifiable || this.getIsNewMarkSource() !== target)) {
+    if (includeIsNewMarks && (!hasIdentifers || this.getIsNewMarkSource() !== target)) {
       serializedComponent.__new = this.getIsNewMark();
     }
 
@@ -2033,9 +2036,7 @@ export class Component extends Observable(Object) {
       }
     }
 
-    const {identifierAttributes, otherAttributes} = this.prototype.__partitionAttributes(
-      attributes
-    );
+    const {identifierAttributes} = this.prototype.__partitionAttributes(attributes);
 
     let component: Component | undefined;
 
@@ -2058,7 +2059,7 @@ export class Component extends Observable(Object) {
     }
 
     return possiblyAsync(component, (component) =>
-      possiblyAsync(component.__deserializeAttributes(otherAttributes, options), () => {
+      possiblyAsync(component.__deserializeAttributes(attributes, options), () => {
         if (isNew) {
           for (const attribute of component.getAttributes()) {
             if (!attribute.isSet()) {
@@ -2207,7 +2208,6 @@ export class Component extends Observable(Object) {
     ) {
       introspectedComponent = {
         name: this.getComponentName()
-        // TODO: Consider adding a 'mixins' attribute
       };
     }
 
@@ -2215,6 +2215,12 @@ export class Component extends Observable(Object) {
 
     if (introspectedComponent === undefined) {
       return undefined;
+    }
+
+    const introspectedMixins = this.__introspectMixins();
+
+    if (introspectedMixins.length > 0) {
+      introspectedComponent.mixins = introspectedMixins;
     }
 
     if (introspectedProperties.length > 0) {
@@ -2238,6 +2244,26 @@ export class Component extends Observable(Object) {
     }
 
     return introspectedComponent;
+  }
+
+  static __introspectMixins() {
+    const introspectedMixins = new Array<string>();
+
+    let currentClass = this;
+
+    while (isComponentClass(currentClass)) {
+      if (hasOwnProperty(currentClass, '__mixin')) {
+        const mixinName = (currentClass as any).__mixin;
+
+        if (!introspectedMixins.includes(mixinName)) {
+          introspectedMixins.unshift(mixinName);
+        }
+      }
+
+      currentClass = Object.getPrototypeOf(currentClass);
+    }
+
+    return introspectedMixins;
   }
 
   static get __introspectProperties() {
@@ -2296,34 +2322,50 @@ export class Component extends Observable(Object) {
 
   static unintrospect(
     introspectedComponent: IntrospectedComponent,
-    options: {methodBuilder?: MethodBuilder} = {}
+    options: {mixins?: ComponentMixin[]; methodBuilder?: MethodBuilder} = {}
   ): typeof Component {
     const {
       name,
+      mixins: introspectedMixins,
       properties: introspectedProperties,
       prototype: {properties: introspectedPrototypeProperties} = {},
       providedComponents: introspectedProvidedComponents,
       consumedComponents: introspectedConsumedComponents
     } = introspectedComponent;
 
-    const {methodBuilder} = options;
+    const {mixins = [], methodBuilder} = options;
 
-    class UnintrospectedComponent extends Component {}
+    let UnintrospectedComponent = class extends Component {};
+
+    if (introspectedMixins !== undefined) {
+      UnintrospectedComponent = UnintrospectedComponent.__unintrospectMixins(introspectedMixins, {
+        mixins
+      });
+    }
+
+    const propertyClassGetter = UnintrospectedComponent.getPropertyClass;
 
     if (introspectedProperties !== undefined) {
-      UnintrospectedComponent.__unintrospectProperties(introspectedProperties, {methodBuilder});
+      UnintrospectedComponent.__unintrospectProperties(
+        introspectedProperties,
+        propertyClassGetter,
+        {methodBuilder}
+      );
     }
 
     if (introspectedPrototypeProperties !== undefined) {
-      UnintrospectedComponent.prototype.__unintrospectProperties(introspectedPrototypeProperties, {
-        methodBuilder
-      });
+      UnintrospectedComponent.prototype.__unintrospectProperties(
+        introspectedPrototypeProperties,
+        propertyClassGetter,
+        {methodBuilder}
+      );
     }
 
     UnintrospectedComponent.setComponentName(name);
 
     if (introspectedProvidedComponents !== undefined) {
       UnintrospectedComponent.__unintrospectProvidedComponents(introspectedProvidedComponents, {
+        mixins,
         methodBuilder
       });
     }
@@ -2332,9 +2374,31 @@ export class Component extends Observable(Object) {
       UnintrospectedComponent.__unintrospectConsumedComponents(introspectedConsumedComponents);
     }
 
-    UnintrospectedComponent.__setUnintrospectedComponent(UnintrospectedComponent);
+    UnintrospectedComponent.__setRemoteComponent(UnintrospectedComponent);
+
+    if (methodBuilder !== undefined) {
+      UnintrospectedComponent.__setRemoteMethodBuilder(methodBuilder);
+    }
 
     return UnintrospectedComponent;
+  }
+
+  static __unintrospectMixins(introspectedMixins: string[], {mixins}: {mixins: ComponentMixin[]}) {
+    let UnintrospectedComponentWithMixins = this;
+
+    for (const mixinName of introspectedMixins) {
+      const Mixin = mixins.find((Mixin) => getFunctionName(Mixin) === mixinName);
+
+      if (Mixin === undefined) {
+        throw new Error(
+          `Couldn't find a component mixin named '${mixinName}'. Please make sure you specified it when creating your 'ComponentClient'.`
+        );
+      }
+
+      UnintrospectedComponentWithMixins = Mixin(UnintrospectedComponentWithMixins);
+    }
+
+    return UnintrospectedComponentWithMixins;
   }
 
   static get __unintrospectProperties() {
@@ -2343,18 +2407,20 @@ export class Component extends Observable(Object) {
 
   __unintrospectProperties(
     introspectedProperties: IntrospectedProperty[],
+    propertyClassGetter: typeof Component['getPropertyClass'],
     {methodBuilder}: {methodBuilder: MethodBuilder | undefined}
   ) {
     for (const introspectedProperty of introspectedProperties) {
       const {type} = introspectedProperty;
-      const PropertyClass = ensureComponentClass(this).getPropertyClass(type);
+      const PropertyClass = propertyClassGetter.call(ensureComponentClass(this), type);
       const {name, options} = PropertyClass.unintrospect(introspectedProperty);
       const property = this.setProperty(name, PropertyClass, options);
 
       if (
         isMethodInstance(property) &&
         property.getExposure()?.call === true &&
-        methodBuilder !== undefined
+        methodBuilder !== undefined &&
+        !(name in this)
       ) {
         Object.defineProperty(this, name, {
           value: methodBuilder(name),
@@ -2368,10 +2434,15 @@ export class Component extends Observable(Object) {
 
   static __unintrospectProvidedComponents(
     introspectedProvidedComponents: IntrospectedComponent[],
-    {methodBuilder}: {methodBuilder: MethodBuilder | undefined}
+    {
+      mixins,
+      methodBuilder
+    }: {mixins: ComponentMixin[] | undefined; methodBuilder: MethodBuilder | undefined}
   ) {
     for (const introspectedProvidedComponent of introspectedProvidedComponents) {
-      this.provideComponent(Component.unintrospect(introspectedProvidedComponent, {methodBuilder}));
+      this.provideComponent(
+        Component.unintrospect(introspectedProvidedComponent, {mixins, methodBuilder})
+      );
     }
   }
 
@@ -2381,18 +2452,60 @@ export class Component extends Observable(Object) {
     }
   }
 
-  static __unintrospectedComponent: typeof Component | undefined;
+  // === Remote component ===
 
-  static getUnintrospectedComponent() {
-    return this.__unintrospectedComponent;
+  static __remoteComponent: typeof Component | undefined;
+
+  static getRemoteComponent() {
+    return this.__remoteComponent;
   }
 
-  static __setUnintrospectedComponent(unintrospectedComponent: typeof Component) {
-    Object.defineProperty(this, '__unintrospectedComponent', {value: unintrospectedComponent});
+  getRemoteComponent() {
+    return this.constructor.getRemoteComponent()?.prototype;
   }
 
-  getUnintrospectedComponent() {
-    return this.constructor.getUnintrospectedComponent()?.prototype;
+  static __setRemoteComponent(remoteComponent: typeof Component) {
+    Object.defineProperty(this, '__remoteComponent', {value: remoteComponent});
+  }
+
+  // === Remote methods ===
+
+  static get hasRemoteMethod() {
+    return this.prototype.hasRemoteMethod;
+  }
+
+  hasRemoteMethod(name: string) {
+    const remoteComponent = this.getRemoteComponent();
+
+    if (!remoteComponent?.hasMethod(name)) {
+      return false;
+    }
+
+    const remoteMethod = remoteComponent.getMethod(name, {autoFork: false});
+
+    return remoteMethod.getExposure()?.call === true;
+  }
+
+  static get callRemoteMethod() {
+    return this.prototype.callRemoteMethod;
+  }
+
+  callRemoteMethod(name: string, ...args: any[]): any {
+    const remoteMethodBuilder = ensureComponentClass(this).__remoteMethodBuilder;
+
+    if (remoteMethodBuilder === undefined) {
+      throw new Error(
+        `Cannot call the remote method '${name}' for a component that does not come from a component client (${this.describeComponent()})`
+      );
+    }
+
+    return remoteMethodBuilder(name).apply(this, args);
+  }
+
+  static __remoteMethodBuilder: MethodBuilder | undefined;
+
+  static __setRemoteMethodBuilder(methodBuilder: MethodBuilder) {
+    Object.defineProperty(this, '__remoteMethodBuilder', {value: methodBuilder});
   }
 
   // === Utilities ===

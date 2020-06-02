@@ -41,6 +41,7 @@ describe('ComponentClient', () => {
                 },
                 {
                   name: 'Movie',
+                  mixins: ['Storable'],
                   properties: [{name: 'find', type: 'Method', exposure: {call: true}}],
                   prototype: {
                     properties: [
@@ -200,6 +201,16 @@ describe('ComponentClient', () => {
     }
   };
 
+  const Storable = (Base = Component) => {
+    const _Storable = class extends Base {
+      static storableMethod() {}
+    };
+
+    Object.defineProperty(_Storable, '__mixin', {value: 'Storable'});
+
+    return _Storable;
+  };
+
   test('Getting component', async () => {
     let client = new ComponentClient(server);
 
@@ -207,7 +218,7 @@ describe('ComponentClient', () => {
       "The component client version (undefined) doesn't match the component server version (1)"
     );
 
-    client = new ComponentClient(server, {version: 1});
+    client = new ComponentClient(server, {version: 1, mixins: [Storable]});
 
     const Backend = client.getComponent() as typeof Component;
 
@@ -264,6 +275,8 @@ describe('ComponentClient', () => {
     method = Movie.prototype.getMethod('play');
 
     expect(method.getExposure()).toEqual({call: true});
+
+    expect(typeof (Movie as any).storableMethod).toBe('function');
   });
 
   test('Invoking methods', async () => {
@@ -289,7 +302,7 @@ describe('ComponentClient', () => {
       static Movie: typeof BaseMovie;
     }
 
-    const client = new ComponentClient(server, {version: 1});
+    const client = new ComponentClient(server, {version: 1, mixins: [Storable]});
 
     const {Movie, Session} = client.getComponent() as typeof BaseBackend;
 

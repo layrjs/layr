@@ -1,3 +1,5 @@
+import {Component} from '@liaison/component';
+
 import {Storable} from './storable';
 import {attribute, method, loader, finder} from './decorators';
 import {isStorableAttributeInstance, isStorableMethodInstance} from './properties';
@@ -7,7 +9,7 @@ describe('Decorators', () => {
     const beforeLoadHook = function () {};
     const beforeSaveHook = function () {};
 
-    class Movie extends Storable {
+    class Movie extends Storable(Component) {
       @attribute('number', {beforeLoad: beforeLoadHook}) static limit = 100;
 
       @attribute('string', {beforeSave: beforeSaveHook}) title = '';
@@ -36,7 +38,7 @@ describe('Decorators', () => {
     const limitLoader = function () {};
     const titleLoader = function () {};
 
-    class Movie extends Storable {
+    class Movie extends Storable(Component) {
       @loader(limitLoader) @attribute('number?') static limit: number;
 
       @loader(titleLoader) @attribute('string') title = '';
@@ -67,7 +69,7 @@ describe('Decorators', () => {
       return {};
     };
 
-    class Movie extends Storable {
+    class Movie extends Storable(Component) {
       @finder(hasNoAccessFinder) @attribute('boolean?') hasNoAccess?: boolean;
       @finder(hasAccessLevelFinder) @method() hasAccessLevel() {}
     }

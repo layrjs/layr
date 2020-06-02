@@ -15,7 +15,7 @@ export type ObserverStack = Set<Observer>;
 
 export const Observable = <T extends Constructor>(Base: T) => {
   if (typeof (Base as any).isObservable === 'function') {
-    return Base as typeof _Observable;
+    return Base as T & typeof _Observable;
   }
 
   const _Observable = class extends Base {

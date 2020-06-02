@@ -234,9 +234,11 @@ describe('Serialization', () => {
       title: 'Inception'
     });
 
-    expect(() => movie.serialize({returnComponentReferences: true})).toThrow(
-      "Cannot get an identifier descriptor from a component that has no set identifier (component: 'Movie')"
-    );
+    expect(movie.serialize({returnComponentReferences: true})).toEqual({
+      __component: 'Movie',
+      __new: false,
+      title: 'Inception'
+    });
 
     movie = Movie.fork().create({id: 'abc123', title: 'Inception'}, {isNew: false});
 

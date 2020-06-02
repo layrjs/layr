@@ -30,7 +30,7 @@ describe('AbstractStore', () => {
   }
 
   test('Creation', async () => {
-    class User extends Storable {}
+    class User extends Storable(Component) {}
 
     let store = new MockStore();
 
@@ -49,13 +49,13 @@ describe('AbstractStore', () => {
   });
 
   test('registerRootComponent() and getRootComponents()', async () => {
-    class Profile extends Storable {}
+    class Profile extends Storable(Component) {}
 
-    class User extends Storable {
+    class User extends Storable(Component) {
       @provide() static Profile = Profile;
     }
 
-    class Movie extends Storable {}
+    class Movie extends Storable(Component) {}
 
     class Root extends Component {
       @provide() static User = User;
@@ -72,7 +72,7 @@ describe('AbstractStore', () => {
   });
 
   test('getStorable() and hasStorable()', async () => {
-    class User extends Storable {}
+    class User extends Storable(Component) {}
 
     let store = new MockStore();
 
@@ -88,7 +88,7 @@ describe('AbstractStore', () => {
   });
 
   test('getStorableOfType()', async () => {
-    class User extends Storable {}
+    class User extends Storable(Component) {}
 
     let store = new MockStore(User);
 
@@ -101,7 +101,7 @@ describe('AbstractStore', () => {
   });
 
   test('registerStorable()', async () => {
-    class User extends Storable {}
+    class User extends Storable(Component) {}
 
     const store = new MockStore();
 
@@ -127,7 +127,7 @@ describe('AbstractStore', () => {
       "Cannot register a storable component that is already registered in another store (component: 'User')"
     );
 
-    class User2 extends Storable {}
+    class User2 extends Storable(Component) {}
 
     User2.setComponentName('User');
 
@@ -137,9 +137,9 @@ describe('AbstractStore', () => {
   });
 
   test('getStorables()', async () => {
-    class User extends Storable {}
+    class User extends Storable(Component) {}
 
-    class Movie extends Storable {}
+    class Movie extends Storable(Component) {}
 
     const store = new MockStore();
 

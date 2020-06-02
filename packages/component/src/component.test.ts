@@ -9,7 +9,7 @@ import {
   isMethodInstance
 } from './properties';
 import {validators} from './validation';
-import {attribute, method, provide, consume} from './decorators';
+import {attribute, method, expose, provide, consume} from './decorators';
 import {isComponentClass, isComponentInstance} from './utilities';
 
 describe('Component', () => {
@@ -1308,191 +1308,272 @@ describe('Component', () => {
     });
   });
 
-  test('Introspection', async () => {
-    class Movie extends Component {
-      @consume() static Cinema: typeof Cinema;
+  describe('Introspection', () => {
+    test('introspect()', async () => {
+      class Movie extends Component {
+        @consume() static Cinema: typeof Cinema;
 
-      @attribute('number') static limit = 100;
-      @attribute('number?') static offset?: number;
-      @method() static find() {}
+        @attribute('number') static limit = 100;
+        @attribute('number?') static offset?: number;
+        @method() static find() {}
 
-      @attribute('string') title = '';
-      @attribute('string?') country?: string;
-      @method() load() {}
-    }
-
-    class Cinema extends Component {
-      @provide() static Movie = Movie;
-
-      @attribute('Movie[]?') movies?: Movie[];
-    }
-
-    const defaultTitle = Movie.prototype.getAttribute('title').getDefault();
-
-    expect(typeof defaultTitle).toBe('function');
-
-    expect(Movie.introspect()).toBeUndefined();
-
-    expect(Cinema.introspect()).toBeUndefined();
-
-    Cinema.prototype.getAttribute('movies').setExposure({get: true});
-
-    expect(Cinema.introspect()).toStrictEqual({
-      name: 'Cinema',
-      prototype: {
-        properties: [
-          {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
-        ]
+        @attribute('string') title = '';
+        @attribute('string?') country?: string;
+        @method() load() {}
       }
-    });
 
-    Movie.getAttribute('limit').setExposure({get: true});
+      class Cinema extends Component {
+        @provide() static Movie = Movie;
 
-    expect(Movie.introspect()).toStrictEqual({
-      name: 'Movie',
-      properties: [
-        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}}
-      ],
-      consumedComponents: ['Cinema']
-    });
+        @attribute('Movie[]?') movies?: Movie[];
+      }
 
-    expect(Cinema.introspect()).toStrictEqual({
-      name: 'Cinema',
-      prototype: {
-        properties: [
-          {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
-        ]
-      },
-      providedComponents: [
-        {
-          name: 'Movie',
+      const defaultTitle = Movie.prototype.getAttribute('title').getDefault();
+
+      expect(typeof defaultTitle).toBe('function');
+
+      expect(Movie.introspect()).toBeUndefined();
+
+      expect(Cinema.introspect()).toBeUndefined();
+
+      Cinema.prototype.getAttribute('movies').setExposure({get: true});
+
+      expect(Cinema.introspect()).toStrictEqual({
+        name: 'Cinema',
+        prototype: {
           properties: [
-            {
-              name: 'limit',
-              type: 'Attribute',
-              valueType: 'number',
-              value: 100,
-              exposure: {get: true}
-            }
-          ],
-          consumedComponents: ['Cinema']
+            {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
+          ]
         }
-      ]
-    });
+      });
 
-    Movie.getAttribute('limit').setExposure({get: true});
-    Movie.getAttribute('offset').setExposure({get: true});
-    Movie.getMethod('find').setExposure({call: true});
+      Movie.getAttribute('limit').setExposure({get: true});
 
-    expect(Movie.introspect()).toStrictEqual({
-      name: 'Movie',
-      properties: [
-        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}},
-        {
-          name: 'offset',
-          type: 'Attribute',
-          valueType: 'number?',
-          value: undefined,
-          exposure: {get: true}
+      expect(Movie.introspect()).toStrictEqual({
+        name: 'Movie',
+        properties: [
+          {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}}
+        ],
+        consumedComponents: ['Cinema']
+      });
+
+      expect(Cinema.introspect()).toStrictEqual({
+        name: 'Cinema',
+        prototype: {
+          properties: [
+            {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
+          ]
         },
-        {name: 'find', type: 'Method', exposure: {call: true}}
-      ],
-      consumedComponents: ['Cinema']
-    });
+        providedComponents: [
+          {
+            name: 'Movie',
+            properties: [
+              {
+                name: 'limit',
+                type: 'Attribute',
+                valueType: 'number',
+                value: 100,
+                exposure: {get: true}
+              }
+            ],
+            consumedComponents: ['Cinema']
+          }
+        ]
+      });
 
-    Movie.prototype.getAttribute('title').setExposure({get: true});
-    Movie.prototype.getAttribute('country').setExposure({get: true});
-    Movie.prototype.getMethod('load').setExposure({call: true});
+      Movie.getAttribute('limit').setExposure({get: true});
+      Movie.getAttribute('offset').setExposure({get: true});
+      Movie.getMethod('find').setExposure({call: true});
 
-    expect(Movie.introspect()).toStrictEqual({
-      name: 'Movie',
-      properties: [
-        {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}},
-        {
-          name: 'offset',
-          type: 'Attribute',
-          valueType: 'number?',
-          value: undefined,
-          exposure: {get: true}
-        },
-        {name: 'find', type: 'Method', exposure: {call: true}}
-      ],
-      prototype: {
+      expect(Movie.introspect()).toStrictEqual({
+        name: 'Movie',
         properties: [
           {
-            name: 'title',
+            name: 'limit',
             type: 'Attribute',
-            valueType: 'string',
-            default: defaultTitle,
+            valueType: 'number',
+            value: 100,
             exposure: {get: true}
           },
-          {name: 'country', type: 'Attribute', valueType: 'string?', exposure: {get: true}},
-          {name: 'load', type: 'Method', exposure: {call: true}}
-        ]
-      },
-      consumedComponents: ['Cinema']
-    });
-  });
+          {
+            name: 'offset',
+            type: 'Attribute',
+            valueType: 'number?',
+            value: undefined,
+            exposure: {get: true}
+          },
+          {name: 'find', type: 'Method', exposure: {call: true}}
+        ],
+        consumedComponents: ['Cinema']
+      });
 
-  test('Unintrospection', async () => {
-    const defaultTitle = function () {
-      return '';
-    };
+      Movie.prototype.getAttribute('title').setExposure({get: true});
+      Movie.prototype.getAttribute('country').setExposure({get: true});
+      Movie.prototype.getMethod('load').setExposure({call: true});
 
-    const Cinema = Component.unintrospect({
-      name: 'Cinema',
-      prototype: {
+      expect(Movie.introspect()).toStrictEqual({
+        name: 'Movie',
         properties: [
-          {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
-        ]
-      },
-      providedComponents: [
-        {
-          name: 'Movie',
+          {
+            name: 'limit',
+            type: 'Attribute',
+            valueType: 'number',
+            value: 100,
+            exposure: {get: true}
+          },
+          {
+            name: 'offset',
+            type: 'Attribute',
+            valueType: 'number?',
+            value: undefined,
+            exposure: {get: true}
+          },
+          {name: 'find', type: 'Method', exposure: {call: true}}
+        ],
+        prototype: {
           properties: [
             {
-              name: 'limit',
+              name: 'title',
               type: 'Attribute',
-              valueType: 'number',
-              value: 100,
+              valueType: 'string',
+              default: defaultTitle,
               exposure: {get: true}
             },
-            {name: 'find', type: 'Method', exposure: {call: true}}
-          ],
+            {name: 'country', type: 'Attribute', valueType: 'string?', exposure: {get: true}},
+            {name: 'load', type: 'Method', exposure: {call: true}}
+          ]
+        },
+        consumedComponents: ['Cinema']
+      });
+
+      // --- With a mixin ---
+
+      const Storable = (Base = Component) => {
+        const _Storable = class extends Base {};
+
+        Object.defineProperty(_Storable, '__mixin', {value: 'Storable'});
+
+        return _Storable;
+      };
+
+      class Film extends Storable(Component) {
+        @expose({get: true, set: true}) @attribute('string?') title?: string;
+      }
+
+      expect(Film.introspect()).toStrictEqual({
+        name: 'Film',
+        mixins: ['Storable'],
+        prototype: {
+          properties: [
+            {
+              name: 'title',
+              type: 'Attribute',
+              valueType: 'string?',
+              exposure: {get: true, set: true}
+            }
+          ]
+        }
+      });
+    });
+
+    test('unintrospect()', async () => {
+      const defaultTitle = function () {
+        return '';
+      };
+
+      const Cinema = Component.unintrospect({
+        name: 'Cinema',
+        prototype: {
+          properties: [
+            {name: 'movies', type: 'Attribute', valueType: 'Movie[]?', exposure: {get: true}}
+          ]
+        },
+        providedComponents: [
+          {
+            name: 'Movie',
+            properties: [
+              {
+                name: 'limit',
+                type: 'Attribute',
+                valueType: 'number',
+                value: 100,
+                exposure: {get: true}
+              },
+              {name: 'find', type: 'Method', exposure: {call: true}}
+            ],
+            prototype: {
+              properties: [
+                {
+                  name: 'title',
+                  type: 'Attribute',
+                  valueType: 'string',
+                  default: defaultTitle,
+                  exposure: {get: true}
+                }
+              ]
+            },
+            consumedComponents: ['Cinema']
+          }
+        ]
+      });
+
+      expect(Cinema.getComponentName()).toBe('Cinema');
+      expect(Cinema.prototype.getAttribute('movies').getValueType().toString()).toBe('Movie[]?');
+
+      const Movie = Cinema.getProvidedComponent('Movie')!;
+
+      expect(Movie.getComponentName()).toBe('Movie');
+      expect(Movie.getAttribute('limit').getValue()).toBe(100);
+      expect(Movie.getAttribute('limit').getExposure()).toStrictEqual({get: true});
+      expect(Movie.getMethod('find').getExposure()).toStrictEqual({call: true});
+      expect(Movie.getConsumedComponent('Cinema')).toBe(Cinema);
+
+      expect(Movie.prototype.getAttribute('title').getDefault()).toBe(defaultTitle);
+      expect(Movie.prototype.getAttribute('title').getExposure()).toStrictEqual({
+        get: true
+      });
+
+      const movie = new Movie();
+
+      expect(movie.getAttribute('title').getValue()).toBe('');
+
+      // --- With a mixin ---
+
+      const Storable = (Base = Component) => {
+        const _Storable = class extends Base {
+          static storableMethod() {}
+        };
+
+        Object.defineProperty(_Storable, '__mixin', {value: 'Storable'});
+
+        return _Storable;
+      };
+
+      const Film = Component.unintrospect(
+        {
+          name: 'Film',
+          mixins: ['Storable'],
           prototype: {
             properties: [
               {
                 name: 'title',
                 type: 'Attribute',
-                valueType: 'string',
-                default: defaultTitle,
-                exposure: {get: true}
+                valueType: 'string?',
+                exposure: {get: true, set: true}
               }
             ]
-          },
-          consumedComponents: ['Cinema']
-        }
-      ]
+          }
+        },
+        {mixins: [Storable]}
+      );
+
+      expect(Film.getComponentName()).toBe('Film');
+      expect(Film.prototype.getAttribute('title').getValueType().toString()).toBe('string?');
+      expect(typeof (Film as any).storableMethod).toBe('function');
+
+      expect(() => Component.unintrospect({name: 'Film', mixins: ['Storable']})).toThrow(
+        "Couldn't find a component mixin named 'Storable'. Please make sure you specified it when creating your 'ComponentClient'."
+      );
     });
-
-    expect(Cinema.getComponentName()).toBe('Cinema');
-    expect(Cinema.prototype.getAttribute('movies').getValueType().toString()).toBe('Movie[]?');
-
-    const Movie = Cinema.getProvidedComponent('Movie')!;
-
-    expect(Movie.getComponentName()).toBe('Movie');
-    expect(Movie.getAttribute('limit').getValue()).toBe(100);
-    expect(Movie.getAttribute('limit').getExposure()).toStrictEqual({get: true});
-    expect(Movie.getMethod('find').getExposure()).toStrictEqual({call: true});
-    expect(Movie.getConsumedComponent('Cinema')).toBe(Cinema);
-
-    expect(Movie.prototype.getAttribute('title').getDefault()).toBe(defaultTitle);
-    expect(Movie.prototype.getAttribute('title').getExposure()).toStrictEqual({
-      get: true
-    });
-
-    const movie = new Movie();
-
-    expect(movie.getAttribute('title').getValue()).toBe('');
   });
 });

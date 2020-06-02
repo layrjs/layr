@@ -6,7 +6,9 @@ import {
   PropertyFilterSync,
   serialize,
   deserialize,
-  ensureComponentClass
+  ensureComponentClass,
+  ComponentMixin,
+  assertIsComponentMixin
 } from '@liaison/component';
 import type {ComponentServerLike} from '@liaison/component-server';
 import {getTypeOf, PlainObject} from 'core-helpers';
@@ -21,14 +23,16 @@ import {isComponentClientInstance} from './utilities';
 
 type ComponentClientOptions = {
   version?: number;
+  mixins?: ComponentMixin[];
 };
 
 export class ComponentClient {
   _componentServer: ComponentServerLike;
   _version: number | undefined;
+  _mixins: ComponentMixin[] | undefined;
 
   constructor(componentServer: ComponentServerLike, options: ComponentClientOptions = {}) {
-    const {version} = options;
+    const {version, mixins} = options;
 
     if (typeof componentServer?.receive !== 'function') {
       throw new Error(
@@ -36,8 +40,15 @@ export class ComponentClient {
       );
     }
 
+    if (mixins !== undefined) {
+      for (const mixin of mixins) {
+        assertIsComponentMixin(mixin);
+      }
+    }
+
     this._componentServer = componentServer;
     this._version = version;
+    this._mixins = mixins;
   }
 
   _component!: typeof Component;
@@ -57,7 +68,10 @@ export class ComponentClient {
     return possiblyAsync(this._introspectComponentServer(), (introspectedComponentServer) => {
       const methodBuilder = (name: string) => this._createMethodProxy(name);
 
-      return Component.unintrospect(introspectedComponentServer.component, {methodBuilder});
+      return Component.unintrospect(introspectedComponentServer.component, {
+        mixins: this._mixins,
+        methodBuilder
+      });
     });
   }
 
@@ -107,7 +121,7 @@ export class ComponentClient {
     const attributeFilter = function (this: typeof Component | Component, attribute: Attribute) {
       // Exclude properties that cannot be set in the remote components
 
-      const remoteComponent = this.getUnintrospectedComponent()!;
+      const remoteComponent = this.getRemoteComponent()!;
       const attributeName = attribute.getName();
       const remoteAttribute = remoteComponent.hasAttribute(attributeName)
         ? remoteComponent.getAttribute(attributeName)

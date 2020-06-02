@@ -170,7 +170,7 @@ describe('Decorators', () => {
 
       return Movie;
     }).toThrow(
-      "Cannot create a primary identifier attribute with a parent that is not a component instance (property: 'id')"
+      "Couldn't find a property class while executing @primaryIdentifier() (component: 'Movie', property: 'id')"
     );
 
     expect(() => {

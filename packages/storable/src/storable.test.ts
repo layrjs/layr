@@ -1,15 +1,23 @@
-import {Component, provide} from '@liaison/component'; // expose, serialize
+import {Component, AttributeSelector, provide, expose, serialize} from '@liaison/component';
 import {MemoryStore} from '@liaison/memory-store';
-// import {MongoDBStore} from '@liaison/mongodb-store';
-// import {MongoMemoryServer} from 'mongodb-memory-server';
-// import {ComponentClient} from '@liaison/component-client';
-// import {ComponentServer} from '@liaison/component-server';
+import {MongoDBStore} from '@liaison/mongodb-store';
+import {MongoMemoryServer} from 'mongodb-memory-server';
+import {ComponentClient} from '@liaison/component-client';
+import {ComponentServer} from '@liaison/component-server';
 import {PlainObject} from 'core-helpers';
 
-import {Storable} from './storable';
-import {attribute, primaryIdentifier, secondaryIdentifier} from './decorators'; // loader, finder
+import {Storable, StorableComponent} from './storable';
+import {StorableAttributeHookName} from './properties';
+import {
+  attribute,
+  primaryIdentifier,
+  secondaryIdentifier,
+  method,
+  loader,
+  finder
+} from './decorators';
 import {isStorableClass, isStorableInstance} from './utilities';
-import {getInitialCollections, CREATED_ON, UPDATED_ON} from './storable.fixture'; // seedMongoDB
+import {getInitialCollections, CREATED_ON, UPDATED_ON, seedMongoDB} from './storable.fixture';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000; // 1 minute
 
@@ -19,12 +27,12 @@ describe('Storable', () => {
     @attribute('string') url!: string;
   }
 
-  class BaseOrganization extends Storable {
+  class BaseOrganization extends Storable(Component) {
     @primaryIdentifier() id!: string;
     @attribute('string') name!: string;
   }
 
-  class BaseUser extends Storable {
+  class BaseUser extends Storable(Component) {
     @provide() static Picture = BasePicture;
     @provide() static Organization = BaseOrganization;
 
@@ -136,120 +144,132 @@ describe('Storable', () => {
       });
     });
 
-    // describe('With a local MongoDB store', () => {
-    //   let User;
-    //   let server;
-    //   let store;
+    describe('With a local MongoDB store', () => {
+      let userClass: typeof BaseUser;
+      let server: MongoMemoryServer;
+      let store: MongoDBStore;
 
-    //   beforeEach(async () => {
-    //     User = class User extends BaseUser {};
+      beforeEach(async () => {
+        class Picture extends BasePicture {}
 
-    //     class Picture extends BasePicture {}
+        class Organization extends BaseOrganization {}
 
-    //     class Organization extends BaseOrganization {}
+        class User extends BaseUser {
+          @provide() static Picture = Picture;
+          @provide() static Organization = Organization;
+        }
 
-    //     User.registerRelatedComponent(Picture);
-    //     User.registerRelatedComponent(Organization);
+        userClass = User;
 
-    //     server = new MongoMemoryServer();
+        server = new MongoMemoryServer();
 
-    //     const connectionString = await server.getConnectionString();
+        const connectionString = await server.getConnectionString();
 
-    //     await seedMongoDB(connectionString);
+        await seedMongoDB(connectionString);
 
-    //     store = new MongoDBStore([User, Organization], {connectionString});
+        store = new MongoDBStore(connectionString, User);
 
-    //     await store.connect();
-    //   });
+        await store.connect();
+      });
 
-    //   afterEach(async () => {
-    //     await store?.disconnect();
+      afterEach(async () => {
+        await store?.disconnect();
 
-    //     await server?.stop();
-    //   });
+        await server?.stop();
+      });
 
-    //   testOperations(function () {
-    //     return User;
-    //   });
-    // });
+      testOperations(function () {
+        return userClass;
+      });
+    });
 
-    // describe('With a remote memory store', () => {
-    //   testOperations(() => {
-    //     // eslint-disable-next-line max-nested-callbacks
-    //     const server = (() => {
-    //       class User extends BaseUser {
-    //         @expose({get: true, set: true}) @inherit() id;
-    //         @expose({get: true, set: true}) @inherit() email;
-    //         @expose({get: true, set: true}) @inherit() reference;
-    //         @expose({get: true, set: true}) @inherit() fullName;
-    //         @expose({get: true, set: true}) @inherit() accessLevel;
-    //         @expose({get: true, set: true}) @inherit() tags;
-    //         @expose({get: true, set: true}) @inherit() location;
-    //         @expose({get: true, set: true}) @inherit() pastLocations;
-    //         @expose({get: true, set: true}) @inherit() picture;
-    //         @expose({get: true, set: true}) @inherit() pastPictures;
-    //         @expose({get: true, set: true}) @inherit() organization;
-    //         @expose({get: true, set: true}) @inherit() emailIsVerified;
-    //         @expose({get: true, set: true}) @inherit() createdOn;
-    //         @expose({get: true, set: true}) @inherit() updatedOn;
+    describe('With a remote memory store', () => {
+      testOperations(() => {
+        // eslint-disable-next-line max-nested-callbacks
+        const server = (() => {
+          @expose({
+            prototype: {
+              type: {get: true, set: true},
+              url: {get: true, set: true}
+            }
+          })
+          class Picture extends BasePicture {}
 
-    //         @expose({call: true}) @inherit() load;
-    //         @expose({call: true}) @inherit() save;
-    //         @expose({call: true}) @inherit() delete;
-    //         @expose({call: true}) @inherit() static find;
-    //         @expose({call: true}) @inherit() static count;
-    //       }
+          @expose({
+            prototype: {
+              id: {get: true, set: true},
+              name: {get: true, set: true},
 
-    //       class Picture extends BasePicture {
-    //         @expose({get: true, set: true}) @inherit() type;
-    //         @expose({get: true, set: true}) @inherit() url;
-    //       }
+              load: {call: true}
+            }
+          })
+          class Organization extends BaseOrganization {}
 
-    //       class Organization extends BaseOrganization {
-    //         @expose({get: true, set: true}) @inherit() id;
-    //         @expose({get: true, set: true}) @inherit() name;
+          @expose({
+            find: {call: true},
+            count: {call: true},
 
-    //         @expose({call: true}) @inherit() load;
-    //       }
+            prototype: {
+              id: {get: true, set: true},
+              email: {get: true, set: true},
+              reference: {get: true, set: true},
+              fullName: {get: true, set: true},
+              accessLevel: {get: true, set: true},
+              tags: {get: true, set: true},
+              location: {get: true, set: true},
+              pastLocations: {get: true, set: true},
+              picture: {get: true, set: true},
+              pastPictures: {get: true, set: true},
+              organization: {get: true, set: true},
+              emailIsVerified: {get: true, set: true},
+              createdOn: {get: true, set: true},
+              updatedOn: {get: true, set: true},
 
-    //       User.registerRelatedComponent(Picture);
-    //       User.registerRelatedComponent(Organization);
+              load: {call: true},
+              save: {call: true},
+              delete: {call: true}
+            }
+          })
+          class User extends BaseUser {
+            @provide() static Picture = Picture;
+            @provide() static Organization = Organization;
+          }
 
-    //       MemoryStore.create([User, Organization], {initialCollections: getInitialCollections()});
+          new MemoryStore(User, {initialCollections: getInitialCollections()});
 
-    //       return new ComponentServer([User, Picture, Organization]);
-    //     })();
+          return new ComponentServer(User);
+        })();
 
-    //     const client = new ComponentClient(server, {baseComponents: [Model, Storable]});
-    //     const [User] = client.getComponents();
+        const client = new ComponentClient(server, {mixins: [Storable]});
+        const User = client.getComponent() as typeof BaseUser;
 
-    //     return User;
-    //   });
-    // });
+        return User;
+      });
+    });
 
-    // describe('Without a store', () => {
-    //   testOperations(function () {
-    //     class User extends BaseUser {}
+    describe('Without a store', () => {
+      testOperations(function () {
+        class Picture extends BasePicture {}
 
-    //     class Picture extends BasePicture {}
+        class Organization extends BaseOrganization {}
 
-    //     class Organization extends BaseOrganization {}
+        class User extends BaseUser {
+          @provide() static Picture = Picture;
+          @provide() static Organization = Organization;
+        }
 
-    //     User.registerRelatedComponent(Picture);
-    //     User.registerRelatedComponent(Organization);
-
-    //     return User;
-    //   });
-    // });
+        return User;
+      });
+    });
 
     function testOperations(userClassProvider: () => typeof BaseUser) {
       describe('Storable instances', () => {
         test('get()', async () => {
           const User = userClassProvider();
 
-          if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
+          if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(User.fork().get({id: 'user1'})).rejects.toThrow(
-              "To be able to execute the load() method (called from get()), a storable should be registered in a store or have an exposed load() remote method (component: 'User')"
+              "To be able to execute the load() method (called from get()), a storable component should be registered in a store or have an exposed load() remote method (component: 'User')"
             );
           }
 
@@ -385,9 +405,9 @@ describe('Storable', () => {
         test('has()', async () => {
           const User = userClassProvider();
 
-          if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
+          if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(User.fork().has('user1')).rejects.toThrow(
-              "To be able to execute the load() method (called from has()), a storable should be registered in a store or have an exposed load() remote method (component: 'User')"
+              "To be able to execute the load() method (called from has()), a storable component should be registered in a store or have an exposed load() remote method (component: 'User')"
             );
           }
 
@@ -409,9 +429,9 @@ describe('Storable', () => {
 
           let user = User.fork().create({id: 'user1'}, {isNew: false});
 
-          if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
+          if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(user.load()).rejects.toThrow(
-              "To be able to execute the load() method, a storable should be registered in a store or have an exposed load() remote method (component: 'User')"
+              "To be able to execute the load() method, a storable component should be registered in a store or have an exposed load() remote method (component: 'User')"
             );
           }
 
@@ -529,9 +549,9 @@ describe('Storable', () => {
             organization: ForkedOrganization.create({id: 'org2'}, {isNew: false})
           });
 
-          if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
+          if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(user.save()).rejects.toThrow(
-              "To be able to execute the save() method, a storable should be registered in a store or have an exposed save() remote method (component: 'User')"
+              "To be able to execute the save() method, a storable component should be registered in a store or have an exposed save() remote method (component: 'User')"
             );
           }
 
@@ -718,994 +738,1150 @@ describe('Storable', () => {
           );
         });
 
-        // test('delete()', async () => {
-        //   const User = userClassProvider();
-
-        //   let user = User.fork().create({id: 'user1'}, {isNew: false});
-
-        //   if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
-        //     return await expect(user.delete()).rejects.toThrow(
-        //       "To be able to execute the delete() method, a storable should be registered in a store or have an exposed delete() remote method (component: 'User')"
-        //     );
-        //   }
-
-        //   expect(await user.delete()).toBe(user);
-
-        //   await expect(user.delete()).rejects.toThrow(
-        //     "Cannot delete a document that is missing from the store (collection: 'User', id: 'user1'"
-        //   );
-
-        //   expect(await user.delete({throwIfMissing: false})).toBeUndefined();
-
-        //   user = new (User.fork())({id: 'user1', email: '1@user.com', reference: 1});
-
-        //   await expect(user.delete()).rejects.toThrow(
-        //     "Cannot delete a storable that is new (component: 'User')"
-        //   );
-        // });
-
-        // test('find()', async () => {
-        //   const User = userClassProvider();
-
-        //   if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
-        //     return await expect(User.fork().find()).rejects.toThrow(
-        //       "To be able to execute the find() method, a storable should be registered in a store or have an exposed find() remote method (storable name: 'User')"
-        //     );
-        //   }
-
-        //   // === Simple queries ===
-
-        //   // --- Without a query ---
-
-        //   let users = await User.fork().find();
-
-        //   expect(serialize(users, {includeReferencedComponents: true})).toStrictEqual([
-        //     {
-        //       __component: 'User',
-        //       id: 'user1',
-        //       email: '1@user.com',
-        //       reference: 1,
-        //       fullName: 'User 1',
-        //       accessLevel: 0,
-        //       tags: ['spammer', 'blocked'],
-        //       location: {country: 'USA', city: 'Paris'},
-        //       pastLocations: [
-        //         {country: 'USA', city: 'Nice'},
-        //         {country: 'USA', city: 'New York'}
-        //       ],
-        //       picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-2.jpg'},
-        //       pastPictures: [
-        //         {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/1-1.jpg'},
-        //         {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/1-1.png'}
-        //       ],
-        //       organization: {__component: 'Organization', id: 'org1', name: 'Organization 1'},
-        //       emailIsVerified: false,
-        //       createdOn: {__date: CREATED_ON.toISOString()},
-        //       updatedOn: {__undefined: true}
-        //     },
-        //     {
-        //       __component: 'User',
-        //       id: 'user11',
-        //       email: '11@user.com',
-        //       reference: 11,
-        //       fullName: 'User 11',
-        //       accessLevel: 3,
-        //       tags: ['owner', 'admin'],
-        //       location: {country: 'USA'},
-        //       pastLocations: [{country: 'France'}],
-        //       picture: {__component: 'Picture', type: 'JPEG', url: 'https://pictures.com/11-1.jpg'},
-        //       pastPictures: [
-        //         {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/11-1.png'}
-        //       ],
-        //       organization: {__component: 'Organization', id: 'org2', name: 'Organization 2'},
-        //       emailIsVerified: true,
-        //       createdOn: {__date: CREATED_ON.toISOString()},
-        //       updatedOn: {__undefined: true}
-        //     },
-        //     {
-        //       __component: 'User',
-        //       id: 'user12',
-        //       email: '12@user.com',
-        //       reference: 12,
-        //       fullName: 'User 12',
-        //       accessLevel: 1,
-        //       tags: [],
-        //       location: {country: 'France', city: 'Paris'},
-        //       pastLocations: [
-        //         {country: 'France', city: 'Nice'},
-        //         {country: 'Japan', city: 'Tokyo'}
-        //       ],
-        //       picture: {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-3.png'},
-        //       pastPictures: [
-        //         {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
-        //         {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
-        //       ],
-        //       organization: {__component: 'Organization', id: 'org2', name: 'Organization 2'},
-        //       emailIsVerified: true,
-        //       createdOn: {__date: CREATED_ON.toISOString()},
-        //       updatedOn: {__undefined: true}
-        //     },
-        //     {
-        //       __component: 'User',
-        //       id: 'user13',
-        //       email: '13@user.com',
-        //       reference: 13,
-        //       fullName: 'User 13',
-        //       accessLevel: 3,
-        //       tags: ['admin'],
-        //       location: {__undefined: true},
-        //       pastLocations: [],
-        //       picture: {__undefined: true},
-        //       pastPictures: [],
-        //       organization: {__undefined: true},
-        //       emailIsVerified: false,
-        //       createdOn: {__date: CREATED_ON.toISOString()},
-        //       updatedOn: {__undefined: true}
-        //     }
-        //   ]);
-
-        //   // --- With a simple query ---
-
-        //   users = await User.fork().find({fullName: 'User 12'});
-
-        //   expect(serialize(users, {includeReferencedComponents: true})).toStrictEqual([
-        //     {
-        //       __component: 'User',
-        //       id: 'user12',
-        //       email: '12@user.com',
-        //       reference: 12,
-        //       fullName: 'User 12',
-        //       accessLevel: 1,
-        //       tags: [],
-        //       location: {country: 'France', city: 'Paris'},
-        //       pastLocations: [
-        //         {country: 'France', city: 'Nice'},
-        //         {country: 'Japan', city: 'Tokyo'}
-        //       ],
-        //       picture: {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-3.png'},
-        //       pastPictures: [
-        //         {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-2.png'},
-        //         {__component: 'Picture', type: 'PNG', url: 'https://pictures.com/12-1.png'}
-        //       ],
-        //       organization: {__component: 'Organization', id: 'org2', name: 'Organization 2'},
-        //       emailIsVerified: true,
-        //       createdOn: {__date: CREATED_ON.toISOString()},
-        //       updatedOn: {__undefined: true}
-        //     }
-        //   ]);
-
-        //   // --- With an attribute selector ---
-
-        //   users = await User.fork().find({accessLevel: 3}, {email: true});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11', email: '11@user.com'},
-        //     {__component: 'User', id: 'user13', email: '13@user.com'}
-        //   ]);
-
-        //   users = await User.fork().find({emailIsVerified: false}, {email: true});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1', email: '1@user.com'},
-        //     {__component: 'User', id: 'user13', email: '13@user.com'}
-        //   ]);
-
-        //   // --- With a query involving two attributes ---
-
-        //   users = await User.fork().find({accessLevel: 3, emailIsVerified: true}, {});
-
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user11'}]);
-
-        //   // --- With 'sort' ---
-
-        //   users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 1}});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1', accessLevel: 0},
-        //     {__component: 'User', id: 'user12', accessLevel: 1},
-        //     {__component: 'User', id: 'user11', accessLevel: 3},
-        //     {__component: 'User', id: 'user13', accessLevel: 3}
-        //   ]);
+        test('delete()', async () => {
+          const User = userClassProvider();
+
+          let user = User.fork().create({id: 'user1'}, {isNew: false});
+
+          if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
+            return await expect(user.delete()).rejects.toThrow(
+              "To be able to execute the delete() method, a storable component should be registered in a store or have an exposed delete() remote method (component: 'User')"
+            );
+          }
+
+          expect(await user.delete()).toBe(user);
+
+          await expect(user.delete()).rejects.toThrow(
+            "Cannot delete a document that is missing from the store (collection: 'User', id: 'user1'"
+          );
+
+          expect(await user.delete({throwIfMissing: false})).toBeUndefined();
+
+          user = new (User.fork())({id: 'user1', email: '1@user.com', reference: 1});
+
+          await expect(user.delete()).rejects.toThrow(
+            "Cannot delete a storable component that is new (component: 'User')"
+          );
+        });
+
+        test('find()', async () => {
+          const User = userClassProvider();
+
+          if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
+            return await expect(User.fork().find()).rejects.toThrow(
+              "To be able to execute the find() method, a storable component should be registered in a store or have an exposed find() remote method (component: 'User')"
+            );
+          }
+
+          // === Simple queries ===
+
+          // --- Without a query ---
+
+          let users = await User.fork().find();
+
+          expect(serialize(users, {includeReferencedComponents: true})).toStrictEqual([
+            {
+              __component: 'User',
+              __new: false,
+              id: 'user1',
+              email: '1@user.com',
+              reference: 1,
+              fullName: 'User 1',
+              accessLevel: 0,
+              tags: ['spammer', 'blocked'],
+              location: {country: 'USA', city: 'Paris'},
+              pastLocations: [
+                {country: 'USA', city: 'Nice'},
+                {country: 'USA', city: 'New York'}
+              ],
+              picture: {
+                __component: 'Picture',
+                __new: false,
+                type: 'JPEG',
+                url: 'https://pictures.com/1-2.jpg'
+              },
+              pastPictures: [
+                {
+                  __component: 'Picture',
+                  __new: false,
+                  type: 'JPEG',
+                  url: 'https://pictures.com/1-1.jpg'
+                },
+                {
+                  __component: 'Picture',
+                  __new: false,
+                  type: 'PNG',
+                  url: 'https://pictures.com/1-1.png'
+                }
+              ],
+              organization: {
+                __component: 'Organization',
+                __new: false,
+                id: 'org1',
+                name: 'Organization 1'
+              },
+              emailIsVerified: false,
+              createdOn: {__date: CREATED_ON.toISOString()},
+              updatedOn: {__undefined: true}
+            },
+            {
+              __component: 'User',
+              __new: false,
+              id: 'user11',
+              email: '11@user.com',
+              reference: 11,
+              fullName: 'User 11',
+              accessLevel: 3,
+              tags: ['owner', 'admin'],
+              location: {country: 'USA'},
+              pastLocations: [{country: 'France'}],
+              picture: {
+                __component: 'Picture',
+                __new: false,
+                type: 'JPEG',
+                url: 'https://pictures.com/11-1.jpg'
+              },
+              pastPictures: [
+                {
+                  __component: 'Picture',
+                  __new: false,
+                  type: 'PNG',
+                  url: 'https://pictures.com/11-1.png'
+                }
+              ],
+              organization: {
+                __component: 'Organization',
+                __new: false,
+                id: 'org2',
+                name: 'Organization 2'
+              },
+              emailIsVerified: true,
+              createdOn: {__date: CREATED_ON.toISOString()},
+              updatedOn: {__undefined: true}
+            },
+            {
+              __component: 'User',
+              __new: false,
+              id: 'user12',
+              email: '12@user.com',
+              reference: 12,
+              fullName: 'User 12',
+              accessLevel: 1,
+              tags: [],
+              location: {country: 'France', city: 'Paris'},
+              pastLocations: [
+                {country: 'France', city: 'Nice'},
+                {country: 'Japan', city: 'Tokyo'}
+              ],
+              picture: {
+                __component: 'Picture',
+                __new: false,
+                type: 'PNG',
+                url: 'https://pictures.com/12-3.png'
+              },
+              pastPictures: [
+                {
+                  __component: 'Picture',
+                  __new: false,
+                  type: 'PNG',
+                  url: 'https://pictures.com/12-2.png'
+                },
+                {
+                  __component: 'Picture',
+                  __new: false,
+                  type: 'PNG',
+                  url: 'https://pictures.com/12-1.png'
+                }
+              ],
+              organization: {
+                __component: 'Organization',
+                __new: false,
+                id: 'org2',
+                name: 'Organization 2'
+              },
+              emailIsVerified: true,
+              createdOn: {__date: CREATED_ON.toISOString()},
+              updatedOn: {__undefined: true}
+            },
+            {
+              __component: 'User',
+              __new: false,
+              id: 'user13',
+              email: '13@user.com',
+              reference: 13,
+              fullName: 'User 13',
+              accessLevel: 3,
+              tags: ['admin'],
+              location: {__undefined: true},
+              pastLocations: [],
+              picture: {__undefined: true},
+              pastPictures: [],
+              organization: {__undefined: true},
+              emailIsVerified: false,
+              createdOn: {__date: CREATED_ON.toISOString()},
+              updatedOn: {__undefined: true}
+            }
+          ]);
+
+          // --- With a simple query ---
+
+          users = await User.fork().find({fullName: 'User 12'});
+
+          expect(serialize(users, {includeReferencedComponents: true})).toStrictEqual([
+            {
+              __component: 'User',
+              __new: false,
+              id: 'user12',
+              email: '12@user.com',
+              reference: 12,
+              fullName: 'User 12',
+              accessLevel: 1,
+              tags: [],
+              location: {country: 'France', city: 'Paris'},
+              pastLocations: [
+                {country: 'France', city: 'Nice'},
+                {country: 'Japan', city: 'Tokyo'}
+              ],
+              picture: {
+                __component: 'Picture',
+                __new: false,
+                type: 'PNG',
+                url: 'https://pictures.com/12-3.png'
+              },
+              pastPictures: [
+                {
+                  __component: 'Picture',
+                  __new: false,
+                  type: 'PNG',
+                  url: 'https://pictures.com/12-2.png'
+                },
+                {
+                  __component: 'Picture',
+                  __new: false,
+                  type: 'PNG',
+                  url: 'https://pictures.com/12-1.png'
+                }
+              ],
+              organization: {
+                __component: 'Organization',
+                __new: false,
+                id: 'org2',
+                name: 'Organization 2'
+              },
+              emailIsVerified: true,
+              createdOn: {__date: CREATED_ON.toISOString()},
+              updatedOn: {__undefined: true}
+            }
+          ]);
+
+          // --- With an attribute selector ---
+
+          users = await User.fork().find({accessLevel: 3}, {email: true});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11', email: '11@user.com'},
+            {__component: 'User', __new: false, id: 'user13', email: '13@user.com'}
+          ]);
+
+          users = await User.fork().find({emailIsVerified: false}, {email: true});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1', email: '1@user.com'},
+            {__component: 'User', __new: false, id: 'user13', email: '13@user.com'}
+          ]);
+
+          // --- With a query involving two attributes ---
+
+          users = await User.fork().find({accessLevel: 3, emailIsVerified: true}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
+
+          // --- With 'sort' ---
+
+          users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 'asc'}});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1', accessLevel: 0},
+            {__component: 'User', __new: false, id: 'user12', accessLevel: 1},
+            {__component: 'User', __new: false, id: 'user11', accessLevel: 3},
+            {__component: 'User', __new: false, id: 'user13', accessLevel: 3}
+          ]);
+
+          users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 'desc'}});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11', accessLevel: 3},
+            {__component: 'User', __new: false, id: 'user13', accessLevel: 3},
+            {__component: 'User', __new: false, id: 'user12', accessLevel: 1},
+            {__component: 'User', __new: false, id: 'user1', accessLevel: 0}
+          ]);
+
+          users = await User.fork().find(
+            {},
+            {reference: true, accessLevel: true},
+            {sort: {accessLevel: 'asc', reference: 'desc'}}
+          );
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1', reference: 1, accessLevel: 0},
+            {__component: 'User', __new: false, id: 'user12', reference: 12, accessLevel: 1},
+            {__component: 'User', __new: false, id: 'user13', reference: 13, accessLevel: 3},
+            {__component: 'User', __new: false, id: 'user11', reference: 11, accessLevel: 3}
+          ]);
+
+          // --- With 'skip' ---
+
+          users = await User.fork().find({}, {}, {skip: 2});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user12'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
+
+          // --- With 'limit' ---
+
+          users = await User.fork().find({}, {}, {limit: 2});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
+
+          // --- With 'skip' and 'limit' ---
+
+          users = await User.fork().find({}, {}, {skip: 1, limit: 2});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
+
+          // --- With 'sort', 'skip', and 'limit' ---
+
+          users = await User.fork().find({}, {}, {sort: {id: 'desc'}, skip: 1, limit: 2});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user12'},
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
+
+          await expect(User.fork().find({unknownAttribute: 1})).rejects.toThrow(
+            "The attribute 'unknownAttribute' is missing (component: 'User')"
+          );
+
+          // === Advanced queries ===
+
+          // --- With a basic operator ---
+
+          // - '$equal' -
+
+          users = await User.fork().find({accessLevel: {$equal: 0}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
+
+          // '$equals' should be an alias of '$equal'
+          users = await User.fork().find({accessLevel: {$equals: 0}}, {});
+
+          await expect(User.fork().find({accessLevel: {$equals: /0/}}, {})).rejects.toThrow(
+            "Expected a scalar value of the operator '$equal', but received a value of type 'RegExp' (query: '{\"accessLevel\":{\"$equals\":{}}}')"
+          );
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
+
+          // - '$notEqual' -
+
+          users = await User.fork().find({accessLevel: {$notEqual: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
+
+          // - '$greaterThan' -
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 2}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
+
+          // - '$greaterThanOrEqual' -
+
+          users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
+
+          // - '$lessThan' -
+
+          users = await User.fork().find({accessLevel: {$lessThan: 1}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
+
+          // - '$lessThanOrEqual' -
+
+          users = await User.fork().find({accessLevel: {$lessThanOrEqual: 1}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
+
+          // - '$any' -
+
+          users = await User.fork().find({accessLevel: {$any: []}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$any: [2, 4, 5]}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$any: [0, 1]}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
+
+          // --- With two basic operators ---
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 1, $lessThan: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 0, $lessThan: 2}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
+
+          // --- With an impossible expression ---
+
+          users = await User.fork().find({accessLevel: {$greaterThan: 1, $equal: 1}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: -1}});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11', accessLevel: 3},
-        //     {__component: 'User', id: 'user13', accessLevel: 3},
-        //     {__component: 'User', id: 'user12', accessLevel: 1},
-        //     {__component: 'User', id: 'user1', accessLevel: 0}
-        //   ]);
+          // --- With a string operator ---
+
+          // - '$includes' -
 
-        //   users = await User.fork().find(
-        //     {},
-        //     {reference: true, accessLevel: true},
-        //     {sort: {accessLevel: 1, reference: -1}}
-        //   );
+          users = await User.fork().find({email: {$includes: '.org'}}, {});
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1', reference: 1, accessLevel: 0},
-        //     {__component: 'User', id: 'user12', reference: 12, accessLevel: 1},
-        //     {__component: 'User', id: 'user13', reference: 13, accessLevel: 3},
-        //     {__component: 'User', id: 'user11', reference: 11, accessLevel: 3}
-        //   ]);
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   // --- With 'skip' ---
+          users = await User.fork().find({email: {$includes: '2'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
 
-        //   users = await User.fork().find({}, {}, {skip: 2});
+          await expect(User.fork().find({email: {$includes: 2}}, {})).rejects.toThrow(
+            "Expected a string as value of the operator '$includes', but received a value of type 'number' (query: '{\"email\":{\"$includes\":2}}')"
+          );
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user12'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
+          // - '$startsWith' -
 
-        //   // --- With 'limit' ---
+          users = await User.fork().find({email: {$startsWith: '2'}}, {});
 
-        //   users = await User.fork().find({}, {}, {limit: 2});
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user11'}
-        //   ]);
+          users = await User.fork().find({email: {$startsWith: '1@'}}, {});
 
-        //   // --- With 'skip' and 'limit' ---
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
 
-        //   users = await User.fork().find({}, {}, {skip: 1, limit: 2});
+          // - '$endsWith' -
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
+          users = await User.fork().find({location: {city: {$endsWith: 'town'}}}, {});
 
-        //   // --- With 'sort', 'skip', and 'limit' ---
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   users = await User.fork().find({}, {}, {sort: {id: -1}, skip: 1, limit: 2});
+          users = await User.fork().find({location: {city: {$endsWith: 'ris'}}}, {});
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user12'},
-        //     {__component: 'User', id: 'user11'}
-        //   ]);
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
 
-        //   await expect(User.fork().find({unknownAttribute: 1})).rejects.toThrow(
-        //     "The property 'unknownAttribute' is missing (component: 'User')"
-        //   );
+          // - '$matches' -
 
-        //   // === Advanced queries ===
+          users = await User.fork().find({location: {country: {$matches: /usa/}}}, {});
 
-        //   // --- With a basic operator ---
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   // - '$equal' -
+          users = await User.fork().find({location: {country: {$matches: /usa/i}}}, {});
 
-        //   users = await User.fork().find({accessLevel: {$equal: 0}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
+          await expect(User.fork().find({location: {country: {$matches: 'usa'}}})).rejects.toThrow(
+            'Expected a regular expression as value of the operator \'$matches\', but received a value of type \'string\' (query: \'{"country":{"$matches":"usa"}}\')'
+          );
 
-        //   // '$equals' should be an alias of '$equal'
-        //   users = await User.fork().find({accessLevel: {$equals: 0}}, {});
+          // --- With a logical operator ---
 
-        //   await expect(User.fork().find({accessLevel: {$equals: /0/}}, {})).rejects.toThrow(
-        //     "Expected a scalar value of the operator '$equal', but received a value of type 'regExp' (query: '{\"accessLevel\":{\"$equals\":{}}}')"
-        //   );
+          // - '$not' -
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
+          users = await User.fork().find({createdOn: {$not: CREATED_ON}}, {});
 
-        //   // - '$notEqual' -
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   users = await User.fork().find({accessLevel: {$notEqual: 3}}, {});
+          users = await User.fork().find({accessLevel: {$not: {$lessThan: 3}}}, {});
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
 
-        //   // - '$greaterThan' -
+          // - '$and' -
 
-        //   users = await User.fork().find({accessLevel: {$greaterThan: 3}}, {});
+          users = await User.fork().find({$and: [{tags: 'owner'}, {emailIsVerified: false}]}, {});
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   users = await User.fork().find({accessLevel: {$greaterThan: 2}}, {});
+          users = await User.fork().find({$and: [{tags: 'admin'}, {emailIsVerified: true}]}, {});
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
 
-        //   // - '$greaterThanOrEqual' -
+          // - '$or' -
 
-        //   users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 3}}, {});
+          users = await User.fork().find(
+            {$or: [{accessLevel: {$lessThan: 0}}, {accessLevel: {$greaterThan: 3}}]},
+            {}
+          );
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   // - '$lessThan' -
+          users = await User.fork().find({$or: [{accessLevel: 0}, {accessLevel: 1}]}, {});
 
-        //   users = await User.fork().find({accessLevel: {$lessThan: 1}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
+          // - '$nor' -
 
-        //   // - '$lessThanOrEqual' -
+          users = await User.fork().find(
+            {$nor: [{emailIsVerified: false}, {emailIsVerified: true}]},
+            {}
+          );
 
-        //   users = await User.fork().find({accessLevel: {$lessThanOrEqual: 1}}, {});
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
+          users = await User.fork().find({$nor: [{accessLevel: 0}, {accessLevel: 1}]}, {});
 
-        //   // - '$any' -
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
 
-        //   users = await User.fork().find({accessLevel: {$any: []}}, {});
+          // --- With an object attribute ---
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          users = await User.fork().find({location: {country: 'Japan'}}, {});
 
-        //   users = await User.fork().find({accessLevel: {$any: [2, 4, 5]}}, {});
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          users = await User.fork().find({location: {country: 'France'}}, {});
 
-        //   users = await User.fork().find({accessLevel: {$any: [0, 1]}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
+          users = await User.fork().find({location: {country: 'USA'}}, {});
 
-        //   // --- With two basic operators ---
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
 
-        //   users = await User.fork().find({accessLevel: {$greaterThan: 1, $lessThan: 3}}, {});
+          users = await User.fork().find({location: {country: 'USA', city: 'Paris'}}, {});
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
 
-        //   users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 0, $lessThan: 2}}, {});
+          users = await User.fork().find({location: undefined}, {});
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
 
-        //   // --- With an impossible expression ---
+          // --- With an array attribute ---
 
-        //   users = await User.fork().find({accessLevel: {$greaterThan: 1, $equal: 1}}, {});
+          // - '$some' -
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          users = await User.fork().find({tags: {$some: 'angel'}}, {});
 
-        //   // --- With a string operator ---
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   // - '$includes' -
+          users = await User.fork().find({tags: {$some: 'blocked'}}, {});
 
-        //   users = await User.fork().find({email: {$includes: '.org'}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          users = await User.fork().find({tags: {$some: 'admin'}}, {});
 
-        //   users = await User.fork().find({email: {$includes: '2'}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
+          // '$some' should be implicit
+          users = await User.fork().find({tags: 'admin'}, {});
 
-        //   await expect(User.fork().find({email: {$includes: 2}}, {})).rejects.toThrow(
-        //     "Expected a string as value of the operator '$includes', but received a value of type 'number' (query: '{\"email\":{\"$includes\":2}}')"
-        //   );
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
 
-        //   // - '$startsWith' -
+          // '$includes' should be replaced by '$some' when '$some' is missing
+          users = await User.fork().find({tags: {$includes: 'admin'}}, {});
 
-        //   users = await User.fork().find({email: {$startsWith: '2'}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          // When '$some' is present, '$includes' remains a string operator
+          users = await User.fork().find({tags: {$some: {$includes: 'lock'}}}, {});
 
-        //   users = await User.fork().find({email: {$startsWith: '1@'}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
+          // - '$every' -
 
-        //   // - '$endsWith' -
+          users = await User.fork().find({tags: {$every: 'admin'}}, {});
 
-        //   users = await User.fork().find({location: {city: {$endsWith: 'town'}}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user12'},
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          // - '$length' -
 
-        //   users = await User.fork().find({location: {city: {$endsWith: 'ris'}}}, {});
+          users = await User.fork().find({tags: {$length: 3}}, {});
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   // - '$matches' -
+          users = await User.fork().find({tags: {$length: 0}}, {});
 
-        //   users = await User.fork().find({location: {country: {$matches: /usa/}}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          users = await User.fork().find({tags: {$length: 2}}, {});
 
-        //   users = await User.fork().find({location: {country: {$matches: /usa/i}}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user11'}
-        //   ]);
+          // --- With an array of object attribute ---
 
-        //   await expect(User.fork().find({location: {country: {$matches: 'usa'}}})).rejects.toThrow(
-        //     'Expected a regular expression as value of the operator \'$matches\', but received a value of type \'string\' (query: \'{"country":{"$matches":"usa"}}\')'
-        //   );
+          users = await User.fork().find({pastLocations: {country: 'Canada'}}, {});
 
-        //   // --- With a logical operator ---
+          expect(serialize(users)).toStrictEqual([]);
 
-        //   // - '$not' -
+          users = await User.fork().find({pastLocations: {country: 'Japan'}}, {});
 
-        //   users = await User.fork().find({createdOn: {$not: CREATED_ON}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          users = await User.fork().find({pastLocations: {country: 'France'}}, {});
 
-        //   users = await User.fork().find({accessLevel: {$not: {$lessThan: 3}}}, {});
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
+          users = await User.fork().find({pastLocations: {country: 'USA', city: 'Nice'}}, {});
 
-        //   // - '$and' -
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
 
-        //   users = await User.fork().find({$and: [{tags: 'owner'}, {emailIsVerified: false}]}, {});
+          users = await User.fork().find({pastLocations: {city: undefined}}, {});
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
 
-        //   users = await User.fork().find({$and: [{tags: 'admin'}, {emailIsVerified: true}]}, {});
+          // --- With a component specified as query ---
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user11'}]);
+          const ForkedUser = User.fork();
 
-        //   // - '$or' -
+          const user = ForkedUser.create({id: 'user1'}, {isNew: false});
 
-        //   users = await User.fork().find(
-        //     {$or: [{accessLevel: {$lessThan: 0}}, {accessLevel: {$greaterThan: 3}}]},
-        //     {}
-        //   );
+          users = await ForkedUser.find(user, {email: true});
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          expect(users).toHaveLength(1);
+          expect(users[0]).toBe(user);
+          expect(serialize(user)).toStrictEqual({
+            __component: 'User',
+            __new: false,
+            id: 'user1',
+            email: '1@user.com'
+          });
+        });
 
-        //   users = await User.fork().find({$or: [{accessLevel: 0}, {accessLevel: 1}]}, {});
+        test('count()', async () => {
+          const User = userClassProvider();
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
+          if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
+            return await expect(User.fork().count()).rejects.toThrow(
+              "To be able to execute the count() method, a storable component should be registered in a store or have an exposed count() remote method (component: 'User')"
+            );
+          }
 
-        //   // - '$nor' -
+          // === Simple queries ===
 
-        //   users = await User.fork().find(
-        //     {$nor: [{emailIsVerified: false}, {emailIsVerified: true}]},
-        //     {}
-        //   );
+          expect(await User.fork().count()).toBe(4);
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          expect(await User.fork().count({fullName: 'User 12'})).toBe(1);
 
-        //   users = await User.fork().find({$nor: [{accessLevel: 0}, {accessLevel: 1}]}, {});
+          expect(await User.fork().count({accessLevel: 3})).toBe(2);
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
+          expect(await User.fork().count({emailIsVerified: false})).toBe(2);
 
-        //   // --- With an object attribute ---
+          expect(await User.fork().count({accessLevel: 3, emailIsVerified: true})).toBe(1);
 
-        //   users = await User.fork().find({location: {country: 'Japan'}}, {});
+          // === Advanced queries ===
 
-        //   expect(serialize(users)).toStrictEqual([]);
+          // --- With an array attribute ---
 
-        //   users = await User.fork().find({location: {country: 'France'}}, {});
+          expect(await User.fork().count({tags: {$some: 'angel'}})).toBe(0);
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
+          expect(await User.fork().count({tags: {$some: 'blocked'}})).toBe(1);
 
-        //   users = await User.fork().find({location: {country: 'USA'}}, {});
+          expect(await User.fork().count({tags: {$some: 'admin'}})).toBe(2);
 
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user11'}
-        //   ]);
+          expect(await User.fork().count({tags: 'admin'})).toBe(2);
 
-        //   users = await User.fork().find({location: {country: 'USA', city: 'Paris'}}, {});
+          // --- With a component specified as query ---
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
+          const ForkedUser = User.fork();
 
-        //   users = await User.fork().find({location: undefined}, {});
+          const user = ForkedUser.create({fullName: 'User 1'}, {isNew: false});
 
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user13'}]);
-
-        //   // --- With an array attribute ---
-
-        //   // - '$some' -
-
-        //   users = await User.fork().find({tags: {$some: 'angel'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([]);
-
-        //   users = await User.fork().find({tags: {$some: 'blocked'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
-
-        //   users = await User.fork().find({tags: {$some: 'admin'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
-
-        //   // '$some' should be implicit
-        //   users = await User.fork().find({tags: 'admin'}, {});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
-
-        //   // '$includes' should be replaced by '$some' when '$some' is missing
-        //   users = await User.fork().find({tags: {$includes: 'admin'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
-
-        //   // When '$some' is present, '$includes' remains a string operator
-        //   users = await User.fork().find({tags: {$some: {$includes: 'lock'}}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
-
-        //   // - '$every' -
-
-        //   users = await User.fork().find({tags: {$every: 'admin'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user12'},
-        //     {__component: 'User', id: 'user13'}
-        //   ]);
-
-        //   // - '$length' -
-
-        //   users = await User.fork().find({tags: {$length: 3}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([]);
-
-        //   users = await User.fork().find({tags: {$length: 0}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
-
-        //   users = await User.fork().find({tags: {$length: 2}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user1'},
-        //     {__component: 'User', id: 'user11'}
-        //   ]);
-
-        //   // --- With an array of object attribute ---
-
-        //   users = await User.fork().find({pastLocations: {country: 'Canada'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([]);
-
-        //   users = await User.fork().find({pastLocations: {country: 'Japan'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
-
-        //   users = await User.fork().find({pastLocations: {country: 'France'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([
-        //     {__component: 'User', id: 'user11'},
-        //     {__component: 'User', id: 'user12'}
-        //   ]);
-
-        //   users = await User.fork().find({pastLocations: {country: 'USA', city: 'Nice'}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
-
-        //   users = await User.fork().find({pastLocations: {city: undefined}}, {});
-
-        //   expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user11'}]);
-
-        //   // --- With a component specified as query ---
-
-        //   const ForkedUser = User.fork();
-
-        //   const user = ForkedUser.create({id: 'user1'}, {isNew: false});
-
-        //   users = await ForkedUser.find(user, {email: true});
-
-        //   expect(users).toHaveLength(1);
-        //   expect(users[0]).toBe(user);
-        //   expect(serialize(user)).toStrictEqual({
-        //     __component: 'User',
-        //     id: 'user1',
-        //     email: '1@user.com'
-        //   });
-        // });
-
-        // test('count()', async () => {
-        //   const User = userClassProvider();
-
-        //   if (!(User.hasStore() || User.getUnintrospectedComponent() !== undefined)) {
-        //     return await expect(User.fork().count()).rejects.toThrow(
-        //       "To be able to execute the count() method, a storable should be registered in a store or have an exposed count() remote method (storable name: 'User')"
-        //     );
-        //   }
-
-        //   // === Simple queries ===
-
-        //   expect(await User.fork().count()).toBe(4);
-
-        //   expect(await User.fork().count({fullName: 'User 12'})).toBe(1);
-
-        //   expect(await User.fork().count({accessLevel: 3})).toBe(2);
-
-        //   expect(await User.fork().count({emailIsVerified: false})).toBe(2);
-
-        //   expect(await User.fork().count({accessLevel: 3, emailIsVerified: true})).toBe(1);
-
-        //   // === Advanced queries ===
-
-        //   // --- With an array attribute ---
-
-        //   expect(await User.fork().count({tags: {$some: 'angel'}})).toBe(0);
-
-        //   expect(await User.fork().count({tags: {$some: 'blocked'}})).toBe(1);
-
-        //   expect(await User.fork().count({tags: {$some: 'admin'}})).toBe(2);
-
-        //   expect(await User.fork().count({tags: 'admin'})).toBe(2);
-
-        //   // --- With a component specified as query ---
-
-        //   const ForkedUser = User.fork();
-
-        //   const user = ForkedUser.create({fullName: 'User 1'}, {isNew: false});
-
-        //   expect(await ForkedUser.count(user)).toBe(1);
-        // });
+          expect(await ForkedUser.count(user)).toBe(1);
+        });
       });
     }
   });
 
-  // describe('Loaders', () => {
-  //   test('getStorableAttributesWithLoader()', async () => {
-  //     const User = getUserClass();
+  describe('Loaders', () => {
+    test('getStorableAttributesWithLoader()', async () => {
+      const User = getUserClass();
 
-  //     const attributes = Array.from(User.prototype.getStorableAttributesWithLoader());
+      const attributes = Array.from(User.prototype.getStorableAttributesWithLoader());
 
-  //     expect(attributes).toHaveLength(1);
-  //     expect(attributes[0].getName()).toBe('firstName');
-  //   });
+      expect(attributes).toHaveLength(1);
+      expect(attributes[0].getName()).toBe('firstName');
+    });
 
-  //   test('getStorableComputedAttributes()', async () => {
-  //     const User = getUserClass();
+    test('getStorableComputedAttributes()', async () => {
+      const User = getUserClass();
 
-  //     const attributes = Array.from(User.prototype.getStorableComputedAttributes());
+      const attributes = Array.from(User.prototype.getStorableComputedAttributes());
 
-  //     expect(attributes).toHaveLength(1);
-  //     expect(attributes[0].getName()).toBe('firstName');
-  //   });
+      expect(attributes).toHaveLength(1);
+      expect(attributes[0].getName()).toBe('firstName');
+    });
 
-  //   test('load()', async () => {
-  //     const User = getUserClass();
+    test('load()', async () => {
+      const User = getUserClass();
 
-  //     let user = User.fork().create({id: 'user1'}, {isNew: false});
-  //     await user.load({});
+      let user = User.fork().create({id: 'user1'}, {isNew: false});
+      await user.load({});
 
-  //     expect(user.getAttribute('firstName').isSet()).toBe(false);
+      expect(user.getAttribute('firstName').isSet()).toBe(false);
 
-  //     user = User.fork().create({id: 'user1'}, {isNew: false});
-  //     await user.load({firstName: true});
+      user = User.fork().create({id: 'user1'}, {isNew: false});
+      await user.load({firstName: true});
 
-  //     expect(user.firstName).toBe('User');
+      expect(user.firstName).toBe('User');
 
-  //     user = User.fork().create({id: 'user1'}, {isNew: false});
-  //     await user.load({fullName: true, firstName: true});
+      user = User.fork().create({id: 'user1'}, {isNew: false});
+      await user.load({fullName: true, firstName: true});
 
-  //     expect(user.serialize()).toStrictEqual({
-  //       __component: 'User',
-  //       id: 'user1',
-  //       fullName: 'User 1',
-  //       firstName: 'User'
-  //     });
-  //   });
+      expect(user.serialize()).toStrictEqual({
+        __component: 'User',
+        __new: false,
+        id: 'user1',
+        fullName: 'User 1',
+        firstName: 'User'
+      });
+    });
 
-  //   function getUserClass() {
-  //     class User extends BaseUser {
-  //       @loader(async function () {
-  //         await this.load({fullName: true});
+    function getUserClass() {
+      class Picture extends BasePicture {}
 
-  //         const firstName = this.fullName.split(' ')[0];
+      class Organization extends BaseOrganization {}
 
-  //         return firstName;
-  //       })
-  //       @attribute('string')
-  //       firstName;
-  //     }
+      class User extends BaseUser {
+        @provide() static Picture = Picture;
+        @provide() static Organization = Organization;
 
-  //     class Picture extends BasePicture {}
+        @loader(async function (this: User) {
+          await this.load({fullName: true});
 
-  //     class Organization extends BaseOrganization {}
+          const firstName = this.fullName.split(' ')[0];
 
-  //     User.registerRelatedComponent(Picture);
-  //     User.registerRelatedComponent(Organization);
+          return firstName;
+        })
+        @attribute('string')
+        firstName!: string;
+      }
 
-  //     MemoryStore.create([User, Organization], {initialCollections: getInitialCollections()});
+      new MemoryStore(User, {initialCollections: getInitialCollections()});
 
-  //     return User;
-  //   }
-  // });
+      return User;
+    }
+  });
 
-  // describe('Finders', () => {
-  //   test('getStorablePropertiesWithFinder()', async () => {
-  //     const User = getUserClass();
+  describe('Finders', () => {
+    test('getStorablePropertiesWithFinder()', async () => {
+      const User = getUserClass();
 
-  //     const properties = Array.from(User.prototype.getStorablePropertiesWithFinder());
+      const properties = Array.from(User.prototype.getStorablePropertiesWithFinder());
 
-  //     expect(properties).toHaveLength(2);
-  //     expect(properties[0].getName()).toBe('hasNoAccess');
-  //     expect(properties[1].getName()).toBe('hasAccessLevel');
-  //   });
+      expect(properties).toHaveLength(2);
+      expect(properties[0].getName()).toBe('hasNoAccess');
+      expect(properties[1].getName()).toBe('hasAccessLevel');
+    });
 
-  //   test('getStorableComputedAttributes()', async () => {
-  //     const User = getUserClass();
+    test('getStorableComputedAttributes()', async () => {
+      const User = getUserClass();
 
-  //     const attributes = Array.from(User.prototype.getStorableComputedAttributes());
+      const attributes = Array.from(User.prototype.getStorableComputedAttributes());
 
-  //     expect(attributes).toHaveLength(1);
-  //     expect(attributes[0].getName()).toBe('hasNoAccess');
-  //   });
+      expect(attributes).toHaveLength(1);
+      expect(attributes[0].getName()).toBe('hasNoAccess');
+    });
 
-  //   test('find()', async () => {
-  //     const User = getUserClass();
+    test('find()', async () => {
+      const User = getUserClass();
 
-  //     let users = await User.fork().find({hasNoAccess: true}, {});
+      let users = await User.fork().find({hasNoAccess: true}, {});
 
-  //     expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
+      expect(serialize(users)).toStrictEqual([{__component: 'User', __new: false, id: 'user1'}]);
 
-  //     users = await User.fork().find({hasNoAccess: true}, {hasNoAccess: true});
+      users = await User.fork().find({hasNoAccess: true}, {hasNoAccess: true});
 
-  //     expect(serialize(users)).toStrictEqual([
-  //       {__component: 'User', id: 'user1', accessLevel: 0, hasNoAccess: true}
-  //     ]);
-
-  //     users = await User.fork().find({hasAccessLevel: 3}, {});
-
-  //     expect(serialize(users)).toStrictEqual([
-  //       {__component: 'User', id: 'user11'},
-  //       {__component: 'User', id: 'user13'}
-  //     ]);
-  //   });
-
-  //   function getUserClass() {
-  //     class User extends BaseUser {
-  //       @loader(async function () {
-  //         await this.load({accessLevel: true});
-
-  //         return this.accessLevel === 0;
-  //       })
-  //       @finder(async function () {
-  //         return {accessLevel: 0};
-  //       })
-  //       @attribute('boolean?')
-  //       hasNoAccess;
-
-  //       @finder(async function (accessLevel) {
-  //         return {accessLevel};
-  //       })
-  //       async hasAccessLevel(accessLevel) {
-  //         await this.load({accessLevel: true});
-
-  //         return this.accessLevel === accessLevel;
-  //       }
-  //     }
-
-  //     class Picture extends BasePicture {}
-
-  //     class Organization extends BaseOrganization {}
-
-  //     User.registerRelatedComponent(Picture);
-  //     User.registerRelatedComponent(Organization);
-
-  //     MemoryStore.create([User, Organization], {initialCollections: getInitialCollections()});
-
-  //     return User;
-  //   }
-  // });
-
-  // describe('Hooks', () => {
-  //   test('getStorableAttributesWithHook()', async () => {
-  //     const User = getUserClass();
-
-  //     const getAttributesWithHook = (
-  //       storable,
-  //       name,
-  //       {attributeSelector = true, setAttributesOnly = false} = {}
-  //     ) =>
-  //       Array.from(
-  //         storable.getStorableAttributesWithHook(name, {attributeSelector, setAttributesOnly})
-  //       ).map((attribute) => attribute.getName());
-
-  //     expect(getAttributesWithHook(User.prototype, 'beforeLoad')).toEqual(['email', 'fullName']);
-
-  //     const user = User.fork().create({id: 'user1'}, {isNew: false});
-
-  //     expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([]);
-
-  //     await user.load();
-
-  //     expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([
-  //       'email',
-  //       'fullName'
-  //     ]);
-
-  //     expect(
-  //       getAttributesWithHook(user, 'beforeLoad', {
-  //         attributeSelector: {fullName: true},
-  //         setAttributesOnly: true
-  //       })
-  //     ).toEqual(['fullName']);
-
-  //     expect(
-  //       getAttributesWithHook(user, 'beforeLoad', {attributeSelector: {}, setAttributesOnly: true})
-  //     ).toEqual([]);
-  //   });
-
-  //   test('beforeLoad() and afterLoad()', async () => {
-  //     const User = getUserClass();
-
-  //     const user = User.fork().create({id: 'user1'}, {isNew: false});
-
-  //     expect(user.beforeLoadHasBeenCalled).toBeUndefined();
-  //     expect(user.afterLoadHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('email').beforeLoadHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('email').afterLoadHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('fullName').beforeLoadHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('fullName').afterLoadHasBeenCalled).toBeUndefined();
-
-  //     await user.load();
-
-  //     expect(user.beforeLoadHasBeenCalled).toBe(true);
-  //     expect(user.afterLoadHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('email').beforeLoadHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('email').afterLoadHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('fullName').beforeLoadHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('fullName').afterLoadHasBeenCalled).toBe(true);
-  //   });
-
-  //   test('beforeSave() and afterSave()', async () => {
-  //     const User = getUserClass();
-
-  //     const user = await User.fork().get('user1');
-
-  //     user.fullName = 'User 1 (modified)';
-
-  //     expect(user.beforeSaveHasBeenCalled).toBeUndefined();
-  //     expect(user.afterSaveHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('email').beforeSaveHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('email').afterSaveHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('fullName').beforeSaveHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('fullName').afterSaveHasBeenCalled).toBeUndefined();
-
-  //     await user.save();
-
-  //     expect(user.beforeSaveHasBeenCalled).toBe(true);
-  //     expect(user.afterSaveHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('email').beforeSaveHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('email').afterSaveHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('fullName').beforeSaveHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('fullName').afterSaveHasBeenCalled).toBe(true);
-  //   });
-
-  //   test('beforeDelete() and afterDelete()', async () => {
-  //     const User = getUserClass();
-
-  //     const user = await User.fork().get('user1');
-
-  //     expect(user.beforeDeleteHasBeenCalled).toBeUndefined();
-  //     expect(user.afterDeleteHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('email').beforeDeleteHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('email').afterDeleteHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('fullName').beforeDeleteHasBeenCalled).toBeUndefined();
-  //     expect(user.getAttribute('fullName').afterDeleteHasBeenCalled).toBeUndefined();
-
-  //     await user.delete();
-
-  //     expect(user.beforeDeleteHasBeenCalled).toBe(true);
-  //     expect(user.afterDeleteHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('email').beforeDeleteHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('email').afterDeleteHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('fullName').beforeDeleteHasBeenCalled).toBe(true);
-  //     expect(user.getAttribute('fullName').afterDeleteHasBeenCalled).toBe(true);
-  //   });
-
-  //   function getUserClass() {
-  //     class User extends BaseUser {
-  //       @secondaryIdentifier('string', {
-  //         beforeLoad() {
-  //           this.getAttribute('email').beforeLoadHasBeenCalled = true;
-  //         },
-  //         afterLoad() {
-  //           this.getAttribute('email').afterLoadHasBeenCalled = true;
-  //         },
-  //         beforeSave() {
-  //           this.getAttribute('email').beforeSaveHasBeenCalled = true;
-  //         },
-  //         afterSave() {
-  //           this.getAttribute('email').afterSaveHasBeenCalled = true;
-  //         },
-  //         beforeDelete() {
-  //           this.getAttribute('email').beforeDeleteHasBeenCalled = true;
-  //         },
-  //         afterDelete() {
-  //           this.getAttribute('email').afterDeleteHasBeenCalled = true;
-  //         }
-  //       })
-  //       email;
-
-  //       @attribute('string', {
-  //         beforeLoad() {
-  //           this.getAttribute('fullName').beforeLoadHasBeenCalled = true;
-  //         },
-  //         afterLoad() {
-  //           this.getAttribute('fullName').afterLoadHasBeenCalled = true;
-  //         },
-  //         beforeSave() {
-  //           this.getAttribute('fullName').beforeSaveHasBeenCalled = true;
-  //         },
-  //         afterSave() {
-  //           this.getAttribute('fullName').afterSaveHasBeenCalled = true;
-  //         },
-  //         beforeDelete() {
-  //           this.getAttribute('fullName').beforeDeleteHasBeenCalled = true;
-  //         },
-  //         afterDelete() {
-  //           this.getAttribute('fullName').afterDeleteHasBeenCalled = true;
-  //         }
-  //       })
-  //       fullName = '';
-
-  //       async beforeLoad(attributeSelector) {
-  //         await super.beforeLoad(attributeSelector);
-
-  //         this.beforeLoadHasBeenCalled = true;
-  //       }
-
-  //       async afterLoad(attributeSelector) {
-  //         await super.afterLoad(attributeSelector);
-
-  //         this.afterLoadHasBeenCalled = true;
-  //       }
-
-  //       async beforeSave(attributeSelector) {
-  //         await super.beforeSave(attributeSelector);
-
-  //         this.beforeSaveHasBeenCalled = true;
-  //       }
-
-  //       async afterSave(attributeSelector) {
-  //         await super.afterSave(attributeSelector);
-
-  //         this.afterSaveHasBeenCalled = true;
-  //       }
-
-  //       async beforeDelete() {
-  //         await super.beforeDelete();
-
-  //         this.beforeDeleteHasBeenCalled = true;
-  //       }
-
-  //       async afterDelete() {
-  //         await super.afterDelete();
-
-  //         this.afterDeleteHasBeenCalled = true;
-  //       }
-  //     }
-
-  //     class Picture extends BasePicture {}
-
-  //     class Organization extends BaseOrganization {}
-
-  //     User.registerRelatedComponent(Picture);
-  //     User.registerRelatedComponent(Organization);
-
-  //     MemoryStore.create([User, Organization], {initialCollections: getInitialCollections()});
-
-  //     return User;
-  //   }
-  // });
+      expect(serialize(users)).toStrictEqual([
+        {__component: 'User', __new: false, id: 'user1', accessLevel: 0, hasNoAccess: true}
+      ]);
+
+      users = await User.fork().find({hasAccessLevel: 3}, {});
+
+      expect(serialize(users)).toStrictEqual([
+        {__component: 'User', __new: false, id: 'user11'},
+        {__component: 'User', __new: false, id: 'user13'}
+      ]);
+    });
+
+    function getUserClass() {
+      class Picture extends BasePicture {}
+
+      class Organization extends BaseOrganization {}
+
+      class User extends BaseUser {
+        @provide() static Picture = Picture;
+        @provide() static Organization = Organization;
+
+        @loader(async function (this: User) {
+          await this.load({accessLevel: true});
+
+          return this.accessLevel === 0;
+        })
+        @finder(async function () {
+          return {accessLevel: 0};
+        })
+        @attribute('boolean?')
+        hasNoAccess?: string;
+
+        @finder(async function (accessLevel) {
+          return {accessLevel};
+        })
+        @method()
+        async hasAccessLevel(accessLevel: number) {
+          await this.load({accessLevel: true});
+
+          return this.accessLevel === accessLevel;
+        }
+      }
+
+      new MemoryStore(User, {initialCollections: getInitialCollections()});
+
+      return User;
+    }
+  });
+
+  describe('Hooks', () => {
+    test('getStorableAttributesWithHook()', async () => {
+      const User = getUserClass();
+
+      const getAttributesWithHook = (
+        storable: StorableComponent,
+        name: StorableAttributeHookName,
+        {
+          attributeSelector = true,
+          setAttributesOnly = false
+        }: {attributeSelector?: AttributeSelector; setAttributesOnly?: boolean} = {}
+      ) =>
+        Array.from(
+          storable.getStorableAttributesWithHook(name, {attributeSelector, setAttributesOnly})
+        ).map((attribute) => attribute.getName());
+
+      expect(getAttributesWithHook(User.prototype, 'beforeLoad')).toEqual(['email', 'fullName']);
+
+      const user = User.fork().create({id: 'user1'}, {isNew: false});
+
+      expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([]);
+
+      await user.load();
+
+      expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([
+        'email',
+        'fullName'
+      ]);
+
+      expect(
+        getAttributesWithHook(user, 'beforeLoad', {
+          attributeSelector: {fullName: true},
+          setAttributesOnly: true
+        })
+      ).toEqual(['fullName']);
+
+      expect(
+        getAttributesWithHook(user, 'beforeLoad', {attributeSelector: {}, setAttributesOnly: true})
+      ).toEqual([]);
+    });
+
+    test('beforeLoad() and afterLoad()', async () => {
+      const User = getUserClass();
+
+      const user = User.fork().create({id: 'user1'}, {isNew: false});
+
+      expect(hookTracker.get(user, 'beforeLoadHasBeenCalled')).toBeUndefined();
+      expect(hookTracker.get(user, 'afterLoadHasBeenCalled')).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('email'), 'beforeLoadHasBeenCalled')
+      ).toBeUndefined();
+      expect(hookTracker.get(user.getAttribute('email'), 'afterLoadHasBeenCalled')).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('fullName'), 'beforeLoadHasBeenCalled')
+      ).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('fullName'), 'afterLoadHasBeenCalled')
+      ).toBeUndefined();
+
+      await user.load();
+
+      expect(hookTracker.get(user, 'beforeLoadHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user, 'afterLoadHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('email'), 'beforeLoadHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('email'), 'afterLoadHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('fullName'), 'beforeLoadHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('fullName'), 'afterLoadHasBeenCalled')).toBe(true);
+    });
+
+    test('beforeSave() and afterSave()', async () => {
+      const User = getUserClass();
+
+      const user = await User.fork().get('user1');
+
+      user.fullName = 'User 1 (modified)';
+
+      expect(hookTracker.get(user, 'beforeSaveHasBeenCalled')).toBeUndefined();
+      expect(hookTracker.get(user, 'afterSaveHasBeenCalled')).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('email'), 'beforeSaveHasBeenCalled')
+      ).toBeUndefined();
+      expect(hookTracker.get(user.getAttribute('email'), 'afterSaveHasBeenCalled')).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('fullName'), 'beforeSaveHasBeenCalled')
+      ).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('fullName'), 'afterSaveHasBeenCalled')
+      ).toBeUndefined();
+
+      await user.save();
+
+      expect(hookTracker.get(user, 'beforeSaveHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user, 'afterSaveHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('email'), 'beforeSaveHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('email'), 'afterSaveHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('fullName'), 'beforeSaveHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('fullName'), 'afterSaveHasBeenCalled')).toBe(true);
+    });
+
+    test('beforeDelete() and afterDelete()', async () => {
+      const User = getUserClass();
+
+      const user = await User.fork().get('user1');
+
+      expect(hookTracker.get(user, 'beforeDeleteHasBeenCalled')).toBeUndefined();
+      expect(hookTracker.get(user, 'afterDeleteHasBeenCalled')).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('email'), 'beforeDeleteHasBeenCalled')
+      ).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('email'), 'afterDeleteHasBeenCalled')
+      ).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('fullName'), 'beforeDeleteHasBeenCalled')
+      ).toBeUndefined();
+      expect(
+        hookTracker.get(user.getAttribute('fullName'), 'afterDeleteHasBeenCalled')
+      ).toBeUndefined();
+
+      await user.delete();
+
+      expect(hookTracker.get(user, 'beforeDeleteHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user, 'afterDeleteHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('email'), 'beforeDeleteHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('email'), 'afterDeleteHasBeenCalled')).toBe(true);
+      expect(hookTracker.get(user.getAttribute('fullName'), 'beforeDeleteHasBeenCalled')).toBe(
+        true
+      );
+      expect(hookTracker.get(user.getAttribute('fullName'), 'afterDeleteHasBeenCalled')).toBe(true);
+    });
+
+    function getUserClass() {
+      class Picture extends BasePicture {}
+
+      class Organization extends BaseOrganization {}
+
+      class User extends BaseUser {
+        @provide() static Picture = Picture;
+        @provide() static Organization = Organization;
+
+        @secondaryIdentifier('string', {
+          beforeLoad(this: User) {
+            hookTracker.set(this.getAttribute('email'), 'beforeLoadHasBeenCalled', true);
+          },
+          afterLoad(this: User) {
+            hookTracker.set(this.getAttribute('email'), 'afterLoadHasBeenCalled', true);
+          },
+          beforeSave(this: User) {
+            hookTracker.set(this.getAttribute('email'), 'beforeSaveHasBeenCalled', true);
+          },
+          afterSave(this: User) {
+            hookTracker.set(this.getAttribute('email'), 'afterSaveHasBeenCalled', true);
+          },
+          beforeDelete(this: User) {
+            hookTracker.set(this.getAttribute('email'), 'beforeDeleteHasBeenCalled', true);
+          },
+          afterDelete(this: User) {
+            hookTracker.set(this.getAttribute('email'), 'afterDeleteHasBeenCalled', true);
+          }
+        })
+        email!: string;
+
+        @attribute('string', {
+          beforeLoad(this: User) {
+            hookTracker.set(this.getAttribute('fullName'), 'beforeLoadHasBeenCalled', true);
+          },
+          afterLoad(this: User) {
+            hookTracker.set(this.getAttribute('fullName'), 'afterLoadHasBeenCalled', true);
+          },
+          beforeSave(this: User) {
+            hookTracker.set(this.getAttribute('fullName'), 'beforeSaveHasBeenCalled', true);
+          },
+          afterSave(this: User) {
+            hookTracker.set(this.getAttribute('fullName'), 'afterSaveHasBeenCalled', true);
+          },
+          beforeDelete(this: User) {
+            hookTracker.set(this.getAttribute('fullName'), 'beforeDeleteHasBeenCalled', true);
+          },
+          afterDelete(this: User) {
+            hookTracker.set(this.getAttribute('fullName'), 'afterDeleteHasBeenCalled', true);
+          }
+        })
+        fullName!: string;
+
+        async beforeLoad(attributeSelector: AttributeSelector) {
+          await super.beforeLoad(attributeSelector);
+
+          hookTracker.set(this, 'beforeLoadHasBeenCalled', true);
+        }
+
+        async afterLoad(attributeSelector: AttributeSelector) {
+          await super.afterLoad(attributeSelector);
+
+          hookTracker.set(this, 'afterLoadHasBeenCalled', true);
+        }
+
+        async beforeSave(attributeSelector: AttributeSelector) {
+          await super.beforeSave(attributeSelector);
+
+          hookTracker.set(this, 'beforeSaveHasBeenCalled', true);
+        }
+
+        async afterSave(attributeSelector: AttributeSelector) {
+          await super.afterSave(attributeSelector);
+
+          hookTracker.set(this, 'afterSaveHasBeenCalled', true);
+        }
+
+        async beforeDelete(attributeSelector: AttributeSelector) {
+          await super.beforeDelete(attributeSelector);
+
+          hookTracker.set(this, 'beforeDeleteHasBeenCalled', true);
+        }
+
+        async afterDelete(attributeSelector: AttributeSelector) {
+          await super.afterDelete(attributeSelector);
+
+          hookTracker.set(this, 'afterDeleteHasBeenCalled', true);
+        }
+      }
+
+      new MemoryStore(User, {initialCollections: getInitialCollections()});
+
+      return User;
+    }
+
+    const hookTrackerMap = new WeakMap<object, {[name: string]: any}>();
+
+    const hookTracker = {
+      get(target: object, name: string) {
+        return hookTrackerMap.get(target)?.[name];
+      },
+      set(target: object, name: string, value: any) {
+        let tracker = hookTrackerMap.get(target);
+        if (tracker === undefined) {
+          tracker = {};
+          hookTrackerMap.set(target, tracker);
+        }
+        tracker[name] = value;
+      }
+    };
+  });
 });

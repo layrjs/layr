@@ -1,14 +1,15 @@
 import {
-  Component,
   Attribute,
   PrimaryIdentifierAttribute,
   SecondaryIdentifierAttribute,
   Method,
   createAttributeDecorator,
-  createMethodDecorator
+  createMethodDecorator,
+  isComponentClassOrInstance,
+  isComponentInstance
 } from '@liaison/component';
 
-import {Storable} from './storable';
+import {StorableComponent} from './storable';
 import {
   StorablePropertyFinder,
   StorableAttribute,
@@ -19,7 +20,7 @@ import {
   StorableMethod,
   StorableMethodOptions
 } from './properties';
-import {isStorableInstance, isStorableClassOrInstance} from './utilities';
+import {isStorableClassOrInstance, isStorableInstance} from './utilities';
 
 type StorableAttributeDecoratorOptions = Omit<StorableAttributeOptions, 'value' | 'default'>;
 
@@ -34,8 +35,8 @@ export function attribute(
 ) {
   return createAttributeDecorator(
     new Map([
-      [Storable, StorableAttribute],
-      [Component, Attribute]
+      [isStorableClassOrInstance, StorableAttribute],
+      [isComponentClassOrInstance, Attribute]
     ]),
     'attribute',
     valueType,
@@ -54,8 +55,8 @@ export function primaryIdentifier(
 ) {
   return createAttributeDecorator(
     new Map([
-      [Storable, StorablePrimaryIdentifierAttribute],
-      [Component, PrimaryIdentifierAttribute]
+      [isStorableInstance, StorablePrimaryIdentifierAttribute],
+      [isComponentInstance, PrimaryIdentifierAttribute]
     ]),
     'primaryIdentifier',
     valueType,
@@ -74,8 +75,8 @@ export function secondaryIdentifier(
 ) {
   return createAttributeDecorator(
     new Map([
-      [Storable, StorableSecondaryIdentifierAttribute],
-      [Component, SecondaryIdentifierAttribute]
+      [isStorableInstance, StorableSecondaryIdentifierAttribute],
+      [isComponentInstance, SecondaryIdentifierAttribute]
     ]),
     'secondaryIdentifier',
     valueType,
@@ -86,8 +87,8 @@ export function secondaryIdentifier(
 export function method(options: StorableMethodOptions = {}) {
   return createMethodDecorator(
     new Map([
-      [Storable, StorableMethod],
-      [Component, Method]
+      [isStorableClassOrInstance, StorableMethod],
+      [isComponentClassOrInstance, Method]
     ]),
     'method',
     options
@@ -95,7 +96,7 @@ export function method(options: StorableMethodOptions = {}) {
 }
 
 export function loader(loader: StorableAttributeLoader) {
-  return function (target: typeof Storable | Storable, name: string) {
+  return function (target: typeof StorableComponent | StorableComponent, name: string) {
     if (!isStorableClassOrInstance(target)) {
       throw new Error(
         `@loader() must be used as a storable component attribute decorator (property: '${name}')`
@@ -116,7 +117,7 @@ export function loader(loader: StorableAttributeLoader) {
 }
 
 export function finder(finder: StorablePropertyFinder) {
-  return function (target: Storable, name: string) {
+  return function (target: StorableComponent, name: string) {
     if (!isStorableInstance(target)) {
       throw new Error(
         `@finder() must be used as a storable component property decorator (property: '${name}')`

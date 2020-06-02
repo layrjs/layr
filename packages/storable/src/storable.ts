@@ -16,8 +16,7 @@ import {
   serialize
 } from '@liaison/component';
 import type {AbstractStore, Query, SortDescriptor} from '@liaison/abstract-store';
-import {hasOwnProperty, isPrototypeOf, getTypeOf} from 'core-helpers';
-import isPlainObject from 'lodash/isPlainObject';
+import {hasOwnProperty, isPrototypeOf, isPlainObject, getTypeOf} from 'core-helpers';
 import mapKeys from 'lodash/mapKeys';
 
 import {
@@ -36,12 +35,12 @@ import {
 } from './properties';
 import {isStorableInstance, isStorableClassOrInstance} from './utilities';
 
-const StorableMixin = (Base: typeof Component) => {
+export function Storable(Base = Component) {
   if (typeof (Base as any).isStorable === 'function') {
-    return Base as typeof _StorableMixin;
+    return Base as typeof _Storable;
   }
 
-  const _StorableMixin = class extends Base {
+  const _Storable = class extends Base {
     // === Store registration ===
 
     static __store: AbstractStore | undefined;
@@ -328,19 +327,19 @@ const StorableMixin = (Base: typeof Component) => {
 
     // === Operations ===
 
-    static async get<T extends typeof Storable>(
+    static async get<T extends typeof StorableComponent>(
       this: T,
       identifierDescriptor: IdentifierDescriptor,
       attributeSelector: AttributeSelector | undefined,
       options: {reload?: boolean; throwIfMissing: false; _callerMethodName?: string}
     ): Promise<InstanceType<T> | undefined>;
-    static async get<T extends typeof Storable>(
+    static async get<T extends typeof StorableComponent>(
       this: T,
       identifierDescriptor: IdentifierDescriptor,
       attributeSelector?: AttributeSelector,
       options?: {reload?: boolean; throwIfMissing?: boolean; _callerMethodName?: string}
     ): Promise<InstanceType<T>>;
-    static async get<T extends typeof Storable>(
+    static async get<T extends typeof StorableComponent>(
       this: T,
       identifierDescriptor: IdentifierDescriptor,
       attributeSelector: AttributeSelector = true,
@@ -374,17 +373,17 @@ const StorableMixin = (Base: typeof Component) => {
       return storable !== undefined;
     }
 
-    async load<T extends Storable>(
+    async load<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector | undefined,
       options: {reload?: boolean; throwIfMissing: false; _callerMethodName?: string}
     ): Promise<T | undefined>;
-    async load<T extends Storable>(
+    async load<T extends StorableComponent>(
       this: T,
       attributeSelector?: AttributeSelector,
       options?: {reload?: boolean; throwIfMissing?: boolean; _callerMethodName?: string}
     ): Promise<T>;
-    async load<T extends Storable>(
+    async load<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector = true,
       options: {reload?: boolean; throwIfMissing?: boolean; _callerMethodName?: string} = {}
@@ -415,12 +414,13 @@ const StorableMixin = (Base: typeof Component) => {
 
       let loadedStorable: T | undefined;
 
-      if ((this.constructor as typeof Storable).hasStore()) {
+      if ((this.constructor as typeof StorableComponent).hasStore()) {
         loadedStorable = await this.__loadFromStore(nonComputedAttributeSelector, {throwIfMissing});
-        // @ts-ignore
-      } else if (super.load !== undefined) {
-        // @ts-ignore
-        loadedStorable = await super.load(nonComputedAttributeSelector, {reload, throwIfMissing});
+      } else if (this.hasRemoteMethod('load')) {
+        loadedStorable = await this.callRemoteMethod('load', nonComputedAttributeSelector, {
+          reload,
+          throwIfMissing
+        });
       } else {
         throw new Error(
           `To be able to execute the load() method${describeCaller(
@@ -451,12 +451,12 @@ const StorableMixin = (Base: typeof Component) => {
       return loadedStorable;
     }
 
-    async __loadFromStore<T extends Storable>(
+    async __loadFromStore<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector,
       {throwIfMissing}: {throwIfMissing: boolean}
     ) {
-      const store = (this.constructor as typeof Storable).getStore();
+      const store = (this.constructor as typeof StorableComponent).getStore();
 
       const storableType = this.getComponentType();
       const identifierDescriptor = this.getIdentifierDescriptor();
@@ -494,7 +494,7 @@ const StorableMixin = (Base: typeof Component) => {
       });
 
       const storablesWithAttributeSelectors = new Map<
-        typeof Storable | Storable,
+        typeof StorableComponent | StorableComponent,
         AttributeSelector
       >();
 
@@ -531,12 +531,12 @@ const StorableMixin = (Base: typeof Component) => {
       }
     }
 
-    async reload<T extends Storable>(
+    async reload<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector | undefined,
       options: {throwIfMissing: false}
     ): Promise<T | undefined>;
-    async reload<T extends Storable>(
+    async reload<T extends StorableComponent>(
       this: T,
       attributeSelector?: AttributeSelector,
       options?: {throwIfMissing?: boolean}
@@ -554,7 +554,7 @@ const StorableMixin = (Base: typeof Component) => {
       });
     }
 
-    async save<T extends Storable>(
+    async save<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector = true,
       options: {throwIfMissing?: boolean; throwIfExists?: boolean} = {}
@@ -581,15 +581,13 @@ const StorableMixin = (Base: typeof Component) => {
 
       let savedStorable: T | undefined;
 
-      if ((this.constructor as typeof Storable).hasStore()) {
+      if ((this.constructor as typeof StorableComponent).hasStore()) {
         savedStorable = await this.__saveToStore(nonComputedAttributeSelector, {
           throwIfMissing,
           throwIfExists
         });
-        // @ts-ignore
-      } else if (super.save !== undefined) {
-        // @ts-ignore
-        savedStorable = await super.save(nonComputedAttributeSelector, {
+      } else if (this.hasRemoteMethod('save')) {
+        savedStorable = await this.callRemoteMethod('save', nonComputedAttributeSelector, {
           throwIfMissing,
           throwIfExists
         });
@@ -614,7 +612,7 @@ const StorableMixin = (Base: typeof Component) => {
     ) {
       this.validate(attributeSelector);
 
-      const store = (this.constructor as typeof Storable).getStore();
+      const store = (this.constructor as typeof StorableComponent).getStore();
 
       const storableType = this.getComponentType();
       const identifierDescriptor = this.getIdentifierDescriptor();
@@ -638,7 +636,7 @@ const StorableMixin = (Base: typeof Component) => {
       return this;
     }
 
-    async delete<T extends Storable>(this: T, options: {throwIfMissing?: boolean} = {}) {
+    async delete<T extends StorableComponent>(this: T, options: {throwIfMissing?: boolean} = {}) {
       if (this.isNew()) {
         throw new Error(
           `Cannot delete a storable component that is new (${this.describeComponent()})`
@@ -658,12 +656,10 @@ const StorableMixin = (Base: typeof Component) => {
 
       let deletedStorable: T | undefined;
 
-      if ((this.constructor as typeof Storable).hasStore()) {
+      if ((this.constructor as typeof StorableComponent).hasStore()) {
         deletedStorable = await this.__deleteFromStore({throwIfMissing});
-        // @ts-ignore
-      } else if (super.delete !== undefined) {
-        // @ts-ignore
-        deletedStorable = await super.delete({throwIfMissing});
+      } else if (this.hasRemoteMethod('delete')) {
+        deletedStorable = await this.callRemoteMethod('delete', {throwIfMissing});
       } else {
         throw new Error(
           `To be able to execute the delete() method, a storable component should be registered in a store or have an exposed delete() remote method (${this.describeComponent()})`
@@ -682,7 +678,7 @@ const StorableMixin = (Base: typeof Component) => {
     }
 
     async __deleteFromStore({throwIfMissing}: {throwIfMissing: boolean}) {
-      const store = (this.constructor as typeof Storable).getStore();
+      const store = (this.constructor as typeof StorableComponent).getStore();
 
       const storableType = this.getComponentType();
       const identifierDescriptor = this.getIdentifierDescriptor();
@@ -696,7 +692,7 @@ const StorableMixin = (Base: typeof Component) => {
       return this;
     }
 
-    static async find<T extends typeof Storable>(
+    static async find<T extends typeof StorableComponent>(
       this: T,
       query: Query = {},
       attributeSelector: AttributeSelector = true,
@@ -710,10 +706,8 @@ const StorableMixin = (Base: typeof Component) => {
 
       if (this.hasStore()) {
         foundStorables = await this.__findInStore(query, {sort, skip, limit});
-        // @ts-ignore
-      } else if (super.find !== undefined) {
-        // @ts-ignore
-        foundStorables = await super.find(query, {}, {sort, skip, limit});
+      } else if (this.hasRemoteMethod('find')) {
+        foundStorables = await this.callRemoteMethod('find', query, {}, {sort, skip, limit});
       } else {
         throw new Error(
           `To be able to execute the find() method, a storable component should be registered in a store or have an exposed find() remote method (${this.describeComponent()})`
@@ -729,7 +723,7 @@ const StorableMixin = (Base: typeof Component) => {
       return loadedStorables;
     }
 
-    static async __findInStore<T extends typeof Storable>(
+    static async __findInStore<T extends typeof StorableComponent>(
       this: T,
       query: Query,
       {
@@ -768,10 +762,8 @@ const StorableMixin = (Base: typeof Component) => {
 
       if (this.hasStore()) {
         storablesCount = await this.__countInStore(query);
-        // @ts-ignore
-      } else if (super.count !== undefined) {
-        // @ts-ignore
-        storablesCount = await super.count(query);
+      } else if (this.hasRemoteMethod('count')) {
+        storablesCount = await this.callRemoteMethod('count', query);
       } else {
         throw new Error(
           `To be able to execute the count() method, a storable component should be registered in a store or have an exposed count() remote method (${this.describeComponent()})`
@@ -971,23 +963,23 @@ const StorableMixin = (Base: typeof Component) => {
 
     // === Utilities ===
 
-    static isStorable(value: any): value is Storable {
+    static isStorable(value: any): value is StorableComponent {
       return isStorableInstance(value);
     }
   };
 
-  _StorableMixin.prototype.setMethod('load');
-  _StorableMixin.prototype.setMethod('save');
-  _StorableMixin.prototype.setMethod('delete');
-  _StorableMixin.setMethod('find');
-  _StorableMixin.setMethod('count');
+  Object.defineProperty(_Storable, '__mixin', {value: 'Storable'});
 
-  return _StorableMixin;
-};
+  _Storable.prototype.setMethod('load');
+  _Storable.prototype.setMethod('save');
+  _Storable.prototype.setMethod('delete');
+  _Storable.setMethod('find');
+  _Storable.setMethod('count');
 
-export class Storable extends StorableMixin(Component) {
-  // static __ComponentMixin = StorableMixin;
+  return _Storable;
 }
+
+export class StorableComponent extends Storable(Component) {}
 
 function describeCaller(callerMethodName: string | undefined) {
   return callerMethodName !== undefined ? ` (called from ${callerMethodName}())` : '';

@@ -1,7 +1,7 @@
-import {getTypeOf} from 'core-helpers';
+import {isES2015Class, getFunctionName, getTypeOf} from 'core-helpers';
 import compact from 'lodash/compact';
 
-import type {Component} from './component';
+import type {Component, ComponentMixin} from './component';
 
 export function isComponentClass(value: any): value is typeof Component {
   return typeof value?.isComponent === 'function';
@@ -168,6 +168,18 @@ export function getComponentFromComponentMap(componentMap: ComponentMap, name: s
   }
 
   return component;
+}
+
+export function isComponentMixin(value: any): value is ComponentMixin {
+  return typeof value === 'function' && getFunctionName(value) !== '' && !isES2015Class(value);
+}
+
+export function assertIsComponentMixin(value: any): asserts value is ComponentMixin {
+  if (!isComponentMixin(value)) {
+    throw new Error(
+      `Expected a component mixin, but received a value of type '${getTypeOf(value)}'`
+    );
+  }
 }
 
 export function composeDescription(description: string[]) {

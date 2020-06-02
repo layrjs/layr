@@ -42,7 +42,7 @@ export function looksLikeOperator(string: string): string is Operator {
 export function normalizeOperatorForValue(
   operator: Operator,
   value: unknown,
-  query: Query
+  {query}: {query: Query}
 ): Operator {
   const alias = aliases.get(operator);
 
@@ -51,19 +51,19 @@ export function normalizeOperatorForValue(
   }
 
   if (basicOperators.has(operator)) {
-    return normalizeBasicOperatorForValue(operator, value, query);
+    return normalizeBasicOperatorForValue(operator, value, {query});
   }
 
   if (stringOperators.has(operator)) {
-    return normalizeStringOperatorForValue(operator, value, query);
+    return normalizeStringOperatorForValue(operator, value, {query});
   }
 
   if (arrayOperators.has(operator)) {
-    return normalizeArrayOperatorForValue(operator, value, query);
+    return normalizeArrayOperatorForValue(operator, value, {query});
   }
 
   if (logicalOperators.has(operator)) {
-    return normalizeLogicalOperatorForValue(operator, value, query);
+    return normalizeLogicalOperatorForValue(operator, value, {query});
   }
 
   throw new Error(
@@ -76,7 +76,7 @@ export function normalizeOperatorForValue(
 function normalizeBasicOperatorForValue(
   operator: Operator,
   value: unknown,
-  query: Query
+  {query}: {query: Query}
 ): Operator {
   if (operator === '$any') {
     if (!Array.isArray(value)) {
@@ -104,7 +104,7 @@ function normalizeBasicOperatorForValue(
 function normalizeStringOperatorForValue(
   operator: Operator,
   value: unknown,
-  query: Query
+  {query}: {query: Query}
 ): Operator {
   if (operator === '$matches') {
     if (!(value instanceof RegExp)) {
@@ -132,7 +132,7 @@ function normalizeStringOperatorForValue(
 function normalizeArrayOperatorForValue(
   operator: Operator,
   value: unknown,
-  query: Query
+  {query}: {query: Query}
 ): Operator {
   if (operator === '$length') {
     if (typeof value !== 'number') {
@@ -152,7 +152,7 @@ function normalizeArrayOperatorForValue(
 function normalizeLogicalOperatorForValue(
   operator: Operator,
   value: unknown,
-  query: Query
+  {query}: {query: Query}
 ): Operator {
   if (operator === '$and' || operator === '$or' || operator === '$nor') {
     if (!Array.isArray(value)) {
