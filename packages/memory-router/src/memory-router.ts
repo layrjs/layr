@@ -1,4 +1,4 @@
-import {Component} from '@liaison/component';
+import type {Component} from '@liaison/component';
 import {AbstractRouter, AbstractRouterOptions, normalizeURL} from '@liaison/abstract-router';
 
 export type MemoryRouterOptions = AbstractRouterOptions & {

@@ -1,7 +1,4 @@
 {
-  "browserRouter": {
-    "@include": "./packages/browser-router"
-  },
   "reactIntegration": {
     "@include": "./packages/react-integration"
   },

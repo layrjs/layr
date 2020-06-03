@@ -7,3 +7,7 @@ A Liaison router for the browser.
 ```
 npm install @liaison/browser-router
 ```
+
+## License
+
+MIT

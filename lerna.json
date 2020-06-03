@@ -4,6 +4,7 @@
   "packages": [
     "packages/abstract-router",
     "packages/abstract-store",
+    "packages/browser-router",
     "packages/component",
     "packages/component-client",
     "packages/component-http-client",
