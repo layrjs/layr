@@ -7,3 +7,7 @@ Makes the methods of your Liaison components callable by URL.
 ```
 npm install @liaison/routable
 ```
+
+## License
+
+MIT

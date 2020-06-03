@@ -1,4 +1,4 @@
-import {hasOwnProperty, Constructor} from 'core-helpers';
+import {hasOwnProperty, Constructor, isClass, getTypeOf} from 'core-helpers';
 
 export type ObservableType = {
   addObserver(observer: Observer): void;
@@ -14,6 +14,12 @@ export type ObserverFunction = (...args: any[]) => void;
 export type ObserverStack = Set<Observer>;
 
 export function Observable<T extends Constructor>(Base: T) {
+  if (!isClass(Base)) {
+    throw new Error(
+      `The Observable mixin should be applied on a class (received type: '${getTypeOf(Base)}')`
+    );
+  }
+
   if (typeof (Base as any).isObservable === 'function') {
     return Base as T & typeof Observable;
   }

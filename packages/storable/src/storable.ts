@@ -1,8 +1,8 @@
 import {
   Component,
+  isComponentClass,
   isComponentClassOrInstance,
   isComponentValueTypeInstance,
-  assertIsComponentClass,
   Attribute,
   ValueType,
   isArrayValueTypeInstance,
@@ -35,14 +35,20 @@ import {
   StorableMethodOptions,
   isStorableMethodInstance
 } from './properties';
-import {isStorableInstance, isStorableClassOrInstance} from './utilities';
+import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utilities';
 
 export function Storable<T extends Constructor<typeof Component>>(Base: T) {
+  if (!isComponentClass(Base)) {
+    throw new Error(
+      `The Storable mixin should be applied on a component class (received type: '${getTypeOf(
+        Base
+      )}')`
+    );
+  }
+
   if (typeof (Base as any).isStorable === 'function') {
     return Base as T & typeof Storable;
   }
-
-  assertIsComponentClass(Base);
 
   class Storable extends Base {
     // === Store registration ===
@@ -970,8 +976,12 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
     // === Utilities ===
 
-    static isStorable(value: any): value is StorableComponent {
-      return isStorableInstance(value);
+    static get isStorable() {
+      return this.prototype.isStorable;
+    }
+
+    isStorable(value: any): value is typeof StorableComponent | StorableComponent {
+      return isStorable(value);
     }
   }
 

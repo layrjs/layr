@@ -1,25 +1,32 @@
+import {normalizeURL} from '@liaison/abstract-router';
 import {Path} from 'path-parser';
-import ow from 'ow';
+import {PlainObject} from 'core-helpers';
 
-import {isRoute, normalizeURL} from './utilities';
+import {isRouteInstance} from './utilities';
+
+export type RoutePattern = string;
+
+export type RouteOptions = {
+  aliases?: RoutePattern[];
+};
 
 export class Route {
-  constructor(name, pattern, options = {}) {
-    ow(name, 'name', ow.string.nonEmpty);
-    ow(pattern, 'pattern', ow.string.nonEmpty);
-    ow(options, 'options', ow.object.exactShape({aliases: ow.optional.array}));
+  _name: string;
+  _pattern: RoutePattern;
+  _parsedPattern: Path;
+  _aliases: RoutePattern[];
+  _parsedAliases: Path[];
 
+  constructor(name: string, pattern: RoutePattern, options: RouteOptions = {}) {
     const {aliases = []} = options;
 
     this._name = name;
 
     this._pattern = pattern;
-    const _parsedPattern = new Path(pattern);
-    Object.defineProperty(this, '_parsedPattern', {value: _parsedPattern});
+    this._parsedPattern = new Path(pattern);
 
     this._aliases = aliases;
-    const _parsedAliases = aliases.map(alias => new Path(alias));
-    Object.defineProperty(this, '_parsedAliases', {value: _parsedAliases});
+    this._parsedAliases = aliases.map((alias) => new Path(alias));
   }
 
   getName() {
@@ -34,7 +41,7 @@ export class Route {
     return this._aliases;
   }
 
-  matchURL(url) {
+  matchURL(url: string | URL) {
     const normalizedURL = normalizeURL(url);
 
     const {pathname, search} = normalizedURL;
@@ -57,20 +64,20 @@ export class Route {
         return result;
       }
     }
+
+    return undefined;
   }
 
-  generateURL(params) {
-    ow(params, 'params', ow.optional.object);
-
+  generateURL(params?: any) {
     const parsedPattern = this._parsedPattern;
 
     // Since 'path-parser' ignore non-enumerable properties,
     // let's generate a plain object
 
-    const plainParams = {};
+    const plainParams: PlainObject = {};
 
     for (const name of parsedPattern.params) {
-      const value = params[name];
+      const value = params?.[name];
 
       if (value !== undefined) {
         plainParams[name] = value;
@@ -82,7 +89,7 @@ export class Route {
     return url;
   }
 
-  static isRoute(object) {
-    return isRoute(object);
+  static isRoute(value: any): value is Route {
+    return isRouteInstance(value);
   }
 }
