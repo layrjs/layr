@@ -78,7 +78,7 @@ describe('AbstractStore', () => {
 
     expect(store.hasStorable('User')).toBe(false);
     expect(() => store.getStorable('User')).toThrow(
-      "The storable 'User' is not registered in the store"
+      "The storable component 'User' is not registered in the store"
     );
 
     store = new MockStore(User);

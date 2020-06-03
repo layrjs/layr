@@ -7,3 +7,7 @@ A base class for implementing Liaison routers.
 ```
 npm install @liaison/abstract-router
 ```
+
+## License
+
+MIT

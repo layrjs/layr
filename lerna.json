@@ -2,6 +2,7 @@
   "version": "independent",
   "npmClient": "npm",
   "packages": [
+    "packages/abstract-router",
     "packages/abstract-store",
     "packages/component",
     "packages/component-client",
@@ -13,6 +14,7 @@
     "packages/memory-store",
     "packages/mongodb-store",
     "packages/observable",
+    "packages/routable",
     "packages/storable"
   ]
 }

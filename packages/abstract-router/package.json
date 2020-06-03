@@ -1,44 +1,39 @@
 {
   "name": "@liaison/abstract-router",
-  "version": "0.1.4",
+  "version": "0.5.0",
   "description": "A base class for implementing Liaison routers",
+  "keywords": [
+    "liaison",
+    "router",
+    "base",
+    "class"
+  ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/abstract-router",
   "files": [
     "dist"
   ],
-  "main": "dist/node/cjs",
-  "module": "dist/node/esm",
-  "browser": "dist/browser/esm",
+  "main": "dist/node-cjs/index.js",
+  "module": "dist/node-esm/index.js",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "dev-tools build:ts-library",
+    "link": "dev-tools link:local-packages",
+    "prepare": "npm run build && npm run test",
+    "test": "dev-tools test:ts-library"
+  },
   "dependencies": {
     "core-helpers": "^0.1.0",
-    "@liaison/observable": "^0.2.0",
-    "@liaison/routable": "^0.1.0",
-    "ow": "^0.15.1"
+    "@liaison/component": "^0.5.0",
+    "@liaison/observable": "^0.5.0",
+    "tslib": "^1.11.1"
   },
-  "@managed": {
-    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
-    "properties": [
-      "name",
-      "version",
-      "private",
-      "description",
-      "keywords",
-      "homepage",
-      "author",
-      "contributors",
-      "license",
-      "repository",
-      "files",
-      "main",
-      "module",
-      "browser",
-      "bin",
-      "dependencies",
-      "peerDependencies",
-      "optionalDependencies",
-      "devDependencies"
-    ]
+  "devDependencies": {
+    "@mvila/dev-tools": "^1.0.13",
+    "@mvila/tsconfig": "^1.0.3",
+    "@types/jest": "^25.2.1"
   }
 }

@@ -124,7 +124,7 @@ export abstract class AbstractStore {
       return storable;
     }
 
-    throw new Error(`The storable '${name}' is not registered in the store`);
+    throw new Error(`The storable component '${name}' is not registered in the store`);
   }
 
   hasStorable(name: string) {

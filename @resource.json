@@ -1,7 +1,4 @@
 {
-  "abstractRouter": {
-    "@include": "./packages/abstract-router"
-  },
   "browserRouter": {
     "@include": "./packages/browser-router"
   },
@@ -10,9 +7,6 @@
   },
   "reactIntegration": {
     "@include": "./packages/react-integration"
-  },
-  "routable": {
-    "@include": "./packages/routable"
   },
   "withRoles": {
     "@include": "./packages/with-roles"

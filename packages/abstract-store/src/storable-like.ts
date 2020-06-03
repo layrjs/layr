@@ -3,7 +3,7 @@ import {getTypeOf} from 'core-helpers';
 
 import type {AbstractStore} from './abstract-store';
 
-export class StorableLike {
+export declare class StorableLike {
   static getComponentName: () => string;
 
   static describeIdentifierDescriptor: (identifierDescriptor: IdentifierDescriptor) => string;
@@ -15,8 +15,6 @@ export class StorableLike {
   static hasStore: () => boolean;
 
   static __setStore: (store: AbstractStore) => void;
-
-  static isStorable: (value: any) => value is StorableLike;
 }
 
 export function isStorableLikeClass(value: any): value is typeof StorableLike {
