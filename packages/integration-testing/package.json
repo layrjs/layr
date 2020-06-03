@@ -27,6 +27,7 @@
     "@liaison/component-server": "^0.5.0",
     "@liaison/component-http-client": "^0.5.0",
     "@liaison/component-http-server": "^0.5.0",
+    "@liaison/memory-router": "^0.5.0",
     "@liaison/routable": "^0.5.0",
     "@liaison/storable": "^0.5.0",
     "tslib": "^1.11.1"

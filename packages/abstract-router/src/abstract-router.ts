@@ -7,7 +7,7 @@ import {isRouterInstance, normalizeURL, stringifyURL} from './utilities';
 
 type RouterPlugin = (router: AbstractRouter) => void;
 
-type AbstractRouterOptions = {
+export type AbstractRouterOptions = {
   plugins?: RouterPlugin[];
 };
 

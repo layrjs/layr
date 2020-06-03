@@ -11,6 +11,7 @@
     "packages/component-koa-middleware",
     "packages/component-server",
     "packages/integration-testing",
+    "packages/memory-router",
     "packages/memory-store",
     "packages/mongodb-store",
     "packages/observable",

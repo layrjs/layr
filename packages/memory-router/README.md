@@ -7,3 +7,7 @@ A simple router for Liaison that works without a browser.
 ```
 npm install @liaison/memory-router
 ```
+
+## License
+
+MIT

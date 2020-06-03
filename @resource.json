@@ -2,9 +2,6 @@
   "browserRouter": {
     "@include": "./packages/browser-router"
   },
-  "memoryRouter": {
-    "@include": "./packages/memory-router"
-  },
   "reactIntegration": {
     "@include": "./packages/react-integration"
   },
