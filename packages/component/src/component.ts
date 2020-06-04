@@ -2527,6 +2527,14 @@ export class Component extends Observable(Object) {
 
     return `${componentPrefix}component: '${ensureComponentClass(this).getComponentPath()}'`;
   }
+
+  static describeComponentProperty(name: string) {
+    return `${this.getComponentPath()}.${name}`;
+  }
+
+  describeComponentProperty(name: string) {
+    return `${this.constructor.getComponentPath()}#${name}`;
+  }
 }
 
 type CreatePropertyFilterOptions = {

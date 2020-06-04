@@ -1,11 +1,24 @@
 import {Component, assertIsComponentClass} from '@liaison/component';
 import {Observable} from '@liaison/observable';
-import {assertNoUnknownOptions} from 'core-helpers';
+import {PlainObject, assertNoUnknownOptions} from 'core-helpers';
 
 import {RoutableLike, isRoutableLikeClass, assertIsRoutableLikeClass} from './routable-like';
 import {isRouterInstance, normalizeURL, stringifyURL} from './utilities';
 
+declare global {
+  interface Function {
+    matchURL: (url: string | URL) => PlainObject | undefined;
+    generateURL: (params?: PlainObject) => string;
+    navigate: (params?: PlainObject) => void;
+    redirect: (params?: PlainObject) => void;
+    reload: (params?: PlainObject) => void;
+    isActive: (params?: PlainObject) => boolean;
+  }
+}
+
 type RouterPlugin = (router: AbstractRouter) => void;
+
+type CustomRouteDecorator = (method: Function) => void;
 
 export type AbstractRouterOptions = {
   plugins?: RouterPlugin[];
@@ -24,9 +37,7 @@ export abstract class AbstractRouter extends Observable(Object) {
     }
 
     if (plugins !== undefined) {
-      for (const plugin of plugins) {
-        plugin(this);
-      }
+      this.applyPlugins(plugins);
     }
   }
 
@@ -211,6 +222,14 @@ export abstract class AbstractRouter extends Observable(Object) {
 
   abstract _redirect(url: URL): void;
 
+  reload(url?: string | URL) {
+    const normalizedURL = url !== undefined ? normalizeURL(url) : undefined;
+
+    this._reload(normalizedURL);
+  }
+
+  abstract _reload(url?: URL): void;
+
   go(delta: number) {
     this._go(delta);
 
@@ -232,6 +251,28 @@ export abstract class AbstractRouter extends Observable(Object) {
   }
 
   abstract _getHistoryLength(): number;
+
+  Link!: (props: any) => any;
+
+  // === Customization ===
+
+  applyPlugins(plugins: RouterPlugin[]) {
+    for (const plugin of plugins) {
+      plugin(this);
+    }
+  }
+
+  _customRouteDecorators: CustomRouteDecorator[] = [];
+
+  addCustomRouteDecorator(decorator: CustomRouteDecorator) {
+    this._customRouteDecorators.push(decorator);
+  }
+
+  applyCustomRouteDecorators(routable: typeof RoutableLike, method: Function) {
+    for (const customRouteDecorator of this._customRouteDecorators) {
+      customRouteDecorator.call(routable, method);
+    }
+  }
 
   // === Utilities ===
 

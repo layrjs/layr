@@ -24,12 +24,14 @@
     "prepare": "npm run build"
   },
   "dependencies": {
+    "core-helpers": "^0.1.0",
     "@liaison/abstract-router": "^0.5.0",
     "@liaison/component": "^0.5.0",
     "tslib": "^1.11.1"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.13",
-    "@mvila/tsconfig": "^1.0.3"
+    "@mvila/tsconfig": "^1.0.3",
+    "@types/react": "^16.9.35"
   }
 }

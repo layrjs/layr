@@ -20,5 +20,8 @@ describe('Decorators', () => {
     expect(mainRoute.getAliases()).toEqual(['/films/:id']);
     expect(mainRoute.matchURL('/movies/abc123')).toStrictEqual({id: 'abc123'});
     expect(mainRoute.generateURL({id: 'abc123'})).toBe('/movies/abc123');
+
+    expect(Movie.Main.matchURL('/movies/abc123')).toStrictEqual({id: 'abc123'});
+    expect(Movie.Main.generateURL({id: 'abc123'})).toBe('/movies/abc123');
   });
 });

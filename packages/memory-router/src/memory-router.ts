@@ -42,6 +42,10 @@ export class MemoryRouter extends AbstractRouter {
     this._urls.push(url);
   }
 
+  _reload(_url?: URL | undefined): void {
+    throw new Error(`The method 'reload() is not available in a memory router`);
+  }
+
   _go(delta: number) {
     let index = this._index;
 

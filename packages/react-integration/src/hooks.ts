@@ -1,15 +1,15 @@
-import {useState, useEffect, useCallback, useRef, useMemo} from 'react';
+import type {Component} from '@liaison/component';
+import {ObservableType, isObservable} from '@liaison/observable';
 import {BrowserRouter} from '@liaison/browser-router';
-import {getTypeOf} from 'core-helpers';
-import ow from 'ow';
+import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
+import {SyncFunction, AsyncFunction, getTypeOf} from 'core-helpers';
 
 import {RouterPlugin} from './plugins';
 
-export function useBrowserRouter(routables) {
-  const router = useMemo(
-    () => new BrowserRouter(routables, {plugins: [RouterPlugin()]}),
-    Array.isArray(routables) ? routables : [routables]
-  );
+export function useBrowserRouter(rootComponent: typeof Component) {
+  const router = useMemo(() => new BrowserRouter(rootComponent, {plugins: [RouterPlugin()]}), [
+    rootComponent
+  ]);
 
   const [isReady, setIsReady] = useState(false);
 
@@ -20,16 +20,16 @@ export function useBrowserRouter(routables) {
 
     setIsReady(true);
 
-    return function() {
+    return function () {
       router.removeObserver(forceUpdate);
     };
   }, []);
 
-  return [router, isReady];
+  return [router, isReady] as const;
 }
 
-export function useObserve(observable) {
-  if (typeof observable?.isObservable !== 'function') {
+export function useObserve(observable: ObservableType) {
+  if (!isObservable(observable)) {
     throw new Error(
       `Expected an observable class or instance, but received a value of type '${getTypeOf(
         observable
@@ -40,10 +40,10 @@ export function useObserve(observable) {
   const forceUpdate = useForceUpdate();
 
   useEffect(
-    function() {
+    function () {
       observable.addObserver(forceUpdate);
 
-      return function() {
+      return function () {
         observable.removeObserver(forceUpdate);
       };
     },
@@ -51,15 +51,16 @@ export function useObserve(observable) {
   );
 }
 
-export function useAsyncCallback(callback, inputs) {
-  ow(callback, 'callback', ow.function);
-  ow(inputs, 'inputs', ow.array);
+export function useAsyncCallback<Args extends any[] = any[], Result = any>(
+  callback: AsyncFunction<Args, Result>,
+  deps: DependencyList
+) {
+  const [state, setState] = useState<{isExecuting?: boolean; error?: any; result?: Result}>({});
 
-  const [state, setState] = useState({});
   const isMounted = useIsMounted();
 
   const trackedCallback = useCallback(
-    async (...args) => {
+    async (...args: Args) => {
       setState({isExecuting: true});
 
       try {
@@ -78,17 +79,19 @@ export function useAsyncCallback(callback, inputs) {
         throw error;
       }
     },
-    [...inputs]
-  );
+    [...deps]
+  ) as SyncFunction<Args, void>;
 
-  return [trackedCallback, state.isExecuting === true, state.error, state.result];
+  return [trackedCallback, state.isExecuting === true, state.error, state.result] as const;
 }
 
-export function useAsyncMemo(func, inputs) {
-  ow(func, 'func', ow.function);
-  ow(inputs, 'inputs', ow.array);
+export function useAsyncMemo<Result>(func: () => Promise<Result>, deps: DependencyList) {
+  const [state, setState] = useState<{
+    result?: Result;
+    isExecuting?: boolean;
+    error?: any;
+  }>({isExecuting: true});
 
-  const [state, setState] = useState({isExecuting: true});
   const [retryCount, setRetryCount] = useState(0);
 
   const isMounted = useIsMounted();
@@ -97,14 +100,14 @@ export function useAsyncMemo(func, inputs) {
     setState({isExecuting: true});
 
     func().then(
-      result => {
+      (result) => {
         if (isMounted()) {
           setState({result});
         }
 
         return result;
       },
-      error => {
+      (error) => {
         if (isMounted()) {
           setState({error});
         }
@@ -112,22 +115,19 @@ export function useAsyncMemo(func, inputs) {
         throw error;
       }
     );
-  }, [...inputs, retryCount]);
+  }, [...deps, retryCount]);
 
   const retry = useCallback(() => {
-    setRetryCount(retryCount => retryCount + 1);
+    setRetryCount((retryCount) => retryCount + 1);
   }, []);
 
-  return [state.result, state.isExecuting === true, state.error, retry];
+  return [state.result, state.isExecuting === true, state.error, retry] as const;
 }
 
-export function useAsyncCall(func, inputs) {
-  ow(func, 'func', ow.function);
-  ow(inputs, 'inputs', ow.array);
+export function useAsyncCall(func: () => Promise<void>, deps: DependencyList) {
+  const [, isExecuting, error, retry] = useAsyncMemo(func, deps);
 
-  const [, isExecuting, error, retry] = useAsyncMemo(func, inputs);
-
-  return [isExecuting, error, retry];
+  return [isExecuting, error, retry] as const;
 }
 
 export function useIsMounted() {
@@ -162,8 +162,6 @@ export function useForceUpdate() {
 }
 
 export function useDelay(duration = 100) {
-  ow(duration, 'duration', ow.number);
-
   const [isElapsed, setIsElapsed] = useState(false);
 
   useEffect(() => {
@@ -176,5 +174,5 @@ export function useDelay(duration = 100) {
     };
   }, []);
 
-  return [isElapsed];
+  return [isElapsed] as const;
 }

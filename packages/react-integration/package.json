@@ -1,43 +1,43 @@
 {
   "name": "@liaison/react-integration",
-  "version": "0.2.3",
+  "version": "0.5.0",
   "description": "React integration for Liaison",
+  "keywords": [
+    "liaison",
+    "react",
+    "integration",
+    "hook",
+    "router-plugin"
+  ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/react-integration",
   "files": [
     "dist"
   ],
-  "main": "dist/node/cjs",
-  "module": "dist/node/esm",
-  "browser": "dist/browser/esm",
+  "main": "dist/node-cjs/index.js",
+  "module": "dist/node-esm/index.js",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "dev-tools build:ts-library",
+    "link": "dev-tools link:local-packages",
+    "prepare": "npm run build"
+  },
   "dependencies": {
     "core-helpers": "^0.1.0",
-    "@liaison/browser-router": "^0.1.0",
-    "ow": "^0.15.1"
+    "@liaison/browser-router": "^0.5.0",
+    "@liaison/component": "^0.5.0",
+    "@liaison/observable": "^0.5.0",
+    "tslib": "^1.11.1"
   },
-  "@managed": {
-    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
-    "properties": [
-      "name",
-      "version",
-      "private",
-      "description",
-      "keywords",
-      "homepage",
-      "author",
-      "contributors",
-      "license",
-      "repository",
-      "files",
-      "main",
-      "module",
-      "browser",
-      "bin",
-      "dependencies",
-      "peerDependencies",
-      "optionalDependencies",
-      "devDependencies"
-    ]
+  "peerDependencies": {
+    "react": "^16.13.1"
+  },
+  "devDependencies": {
+    "@mvila/dev-tools": "^1.0.13",
+    "@mvila/tsconfig": "^1.0.3",
+    "@types/react": "^16.9.35"
   }
 }

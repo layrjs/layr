@@ -1,31 +1,18 @@
+import {BrowserRouter, BrowserRouterLinkProps} from '@liaison/browser-router';
 import React, {useMemo, useCallback} from 'react';
-import ow from 'ow';
 
 export function RouterPlugin() {
-  return function(router) {
+  return function (router: BrowserRouter) {
     Object.assign(router, {
-      Link(props = {}) {
-        ow(
-          props,
-          'props',
-          ow.object.partialShape({
-            to: ow.string.nonEmpty,
-            className: ow.optional.string.nonEmpty,
-            activeClassName: ow.optional.string.nonEmpty,
-            style: ow.optional.object,
-            activeStyle: ow.optional.object
-          })
-        );
+      Link(props: BrowserRouterLinkProps) {
+        const {to, className, activeClassName, style, activeStyle, ...otherProps} = props;
 
-        // eslint-disable-next-line react/prop-types
-        const {to, onClick, className, activeClassName, style, activeStyle, ...otherProps} = props;
-
-        if (onClick !== undefined) {
-          throw new Error(`The 'onClick' attribute is not allowed`);
+        if ('onClick' in props) {
+          throw new Error(`The 'onClick' prop is not allowed in the 'Link' component`);
         }
 
         const handleClick = useCallback(
-          event => {
+          (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
             if (!(event.shiftKey || event.ctrlKey || event.altKey || event.metaKey)) {
               event.preventDefault();
 
@@ -68,8 +55,8 @@ export function RouterPlugin() {
       }
     });
 
-    router.addCustomRouteDecorator(function(method) {
-      method.Link = function({params, ...props}) {
+    router.addCustomRouteDecorator(function (method) {
+      method.Link = function ({params, ...props}) {
         const to = method.generateURL(params);
 
         return router.Link({to, ...props});

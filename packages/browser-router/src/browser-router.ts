@@ -5,6 +5,21 @@ import {
   normalizeURL,
   stringifyURL
 } from '@liaison/abstract-router';
+import {PlainObject} from 'core-helpers';
+
+declare global {
+  interface Function {
+    Link: (props: {params?: PlainObject} & PlainObject) => any;
+  }
+}
+
+export type BrowserRouterLinkProps = {
+  to: string;
+  className?: string;
+  activeClassName?: string;
+  style?: React.CSSProperties;
+  activeStyle?: React.CSSProperties;
+};
 
 export type BrowserRouterOptions = AbstractRouterOptions;
 
@@ -15,10 +30,6 @@ export class BrowserRouter extends AbstractRouter {
     window.addEventListener('popstate', () => {
       this.callObservers();
     });
-  }
-
-  reload() {
-    window.location.reload();
   }
 
   _getCurrentURL() {
@@ -33,6 +44,14 @@ export class BrowserRouter extends AbstractRouter {
     window.history.replaceState(null, '', stringifyURL(url));
   }
 
+  _reload(url?: URL) {
+    if (url !== undefined) {
+      window.location.assign(stringifyURL(url));
+    } else {
+      window.location.reload();
+    }
+  }
+
   _go(delta: number) {
     window.history.go(delta);
   }
@@ -40,4 +59,6 @@ export class BrowserRouter extends AbstractRouter {
   _getHistoryLength() {
     return window.history.length;
   }
+
+  Link!: (props: BrowserRouterLinkProps) => any;
 }

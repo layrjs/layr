@@ -1,7 +1,4 @@
 {
-  "reactIntegration": {
-    "@include": "./packages/react-integration"
-  },
   "withRoles": {
     "@include": "./packages/with-roles"
   },

@@ -16,6 +16,7 @@
     "packages/memory-store",
     "packages/mongodb-store",
     "packages/observable",
+    "packages/react-integration",
     "packages/routable",
     "packages/storable"
   ]

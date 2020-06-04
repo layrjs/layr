@@ -7,3 +7,7 @@ React integration for Liaison.
 ```
 npm install @liaison/react-integration
 ```
+
+## License
+
+MIT
