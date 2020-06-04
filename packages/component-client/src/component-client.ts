@@ -21,7 +21,7 @@ const debug = debugModule('liaison:component-client');
 
 import {isComponentClientInstance} from './utilities';
 
-type ComponentClientOptions = {
+export type ComponentClientOptions = {
   version?: number;
   mixins?: ComponentMixin[];
 };
