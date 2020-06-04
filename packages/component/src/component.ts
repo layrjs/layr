@@ -392,11 +392,9 @@ export class Component extends Observable(Object) {
   setProperty<T extends typeof Property>(
     name: string,
     PropertyClass: T,
-    propertyOptions: PropertyOptions = {},
-    options: {returnDescriptor?: boolean} = {}
-  ): InstanceType<T> | PropertyDescriptor {
-    const {returnDescriptor = false} = options;
-
+    propertyOptions?: PropertyOptions
+  ): InstanceType<T>;
+  setProperty(name: string, PropertyClass: typeof Property, propertyOptions: PropertyOptions = {}) {
     let property = this.hasProperty(name) ? this.getProperty(name) : undefined;
 
     if (property === undefined) {
@@ -422,14 +420,10 @@ export class Component extends Observable(Object) {
         }
       };
 
-      if (returnDescriptor) {
-        return descriptor;
-      }
-
       Object.defineProperty(this, name, descriptor);
     }
 
-    return property as InstanceType<T>;
+    return property;
   }
 
   static get deleteProperty() {
@@ -615,12 +609,8 @@ export class Component extends Observable(Object) {
     return this.prototype.setAttribute;
   }
 
-  setAttribute(
-    name: string,
-    attributeOptions: AttributeOptions = {},
-    options: {returnDescriptor?: boolean} = {}
-  ) {
-    return this.setProperty(name, Attribute, attributeOptions, options);
+  setAttribute(name: string, attributeOptions: AttributeOptions = {}) {
+    return this.setProperty(name, Attribute, attributeOptions);
   }
 
   static get getAttributes() {
@@ -712,12 +702,8 @@ export class Component extends Observable(Object) {
     return undefined;
   }
 
-  setPrimaryIdentifierAttribute(
-    name: string,
-    attributeOptions: AttributeOptions = {},
-    options: {returnDescriptor?: boolean} = {}
-  ) {
-    return this.setProperty(name, PrimaryIdentifierAttribute, attributeOptions, options);
+  setPrimaryIdentifierAttribute(name: string, attributeOptions: AttributeOptions = {}) {
+    return this.setProperty(name, PrimaryIdentifierAttribute, attributeOptions);
   }
 
   getSecondaryIdentifierAttribute(name: string, options: {autoFork?: boolean} = {}) {
@@ -756,12 +742,8 @@ export class Component extends Observable(Object) {
     return property;
   }
 
-  setSecondaryIdentifierAttribute(
-    name: string,
-    attributeOptions: AttributeOptions = {},
-    options: {returnDescriptor?: boolean} = {}
-  ) {
-    return this.setProperty(name, SecondaryIdentifierAttribute, attributeOptions, options);
+  setSecondaryIdentifierAttribute(name: string, attributeOptions: AttributeOptions = {}) {
+    return this.setProperty(name, SecondaryIdentifierAttribute, attributeOptions);
   }
 
   getIdentifierAttributes(
@@ -1215,12 +1197,8 @@ export class Component extends Observable(Object) {
     return this.prototype.setMethod;
   }
 
-  setMethod(
-    name: string,
-    methodOptions: MethodOptions = {},
-    options: {returnDescriptor?: boolean} = {}
-  ) {
-    return this.setProperty(name, Method, methodOptions, options);
+  setMethod(name: string, methodOptions: MethodOptions = {}) {
+    return this.setProperty(name, Method, methodOptions);
   }
 
   static get getMethods() {
@@ -1507,9 +1485,7 @@ export class Component extends Observable(Object) {
         return this.getConsumedComponent(name);
       },
       set<T extends typeof Component>(this: T, _value: never) {
-        throw new Error(
-          `A component consumer may not be set directly (${this.describeComponent()}, property: '${name}')`
-        );
+        // A component consumer should not be set directly
       }
     });
   }

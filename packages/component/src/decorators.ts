@@ -88,7 +88,11 @@ export function createAttributeDecorator(
 
   let attributeOptions: AttributeOptions = options;
 
-  return function (target: typeof Component | Component, name: string) {
+  return function (
+    target: typeof Component | Component,
+    name: string,
+    descriptor?: PropertyDescriptor
+  ) {
     if (!isComponentClassOrInstance(target)) {
       throw new Error(
         `@${decoratorName}() must be used inside a component class (property: '${name}')`
@@ -99,7 +103,7 @@ export function createAttributeDecorator(
       const value = (target as any)[name];
       attributeOptions = {value, ...attributeOptions};
     } else {
-      const initializer = getAttributeInitializer(target, name);
+      const initializer = getAttributeInitializer(target, name, descriptor);
       if (initializer !== undefined) {
         attributeOptions = {default: initializer, ...attributeOptions};
       }
@@ -121,10 +125,22 @@ export function createAttributeDecorator(
 
       attribute._isDefaultFromConstructor = true;
     }
+
+    if (determineCompiler(descriptor) === 'babel-legacy') {
+      return Object.getOwnPropertyDescriptor(target, name) as void;
+    }
   };
 }
 
-function getAttributeInitializer(component: Component, attributeName: string) {
+function getAttributeInitializer(
+  component: Component,
+  attributeName: string,
+  descriptor?: PropertyDescriptor & {initializer?: any}
+) {
+  if (determineCompiler(descriptor) === 'babel-legacy') {
+    return typeof descriptor!.initializer === 'function' ? descriptor!.initializer : undefined;
+  }
+
   if (!hasOwnProperty(component, '__constructorSourceCode')) {
     const classSourceCode = component.constructor.toString();
     const constructorSourceCode = getConstructorSourceCode(classSourceCode);
@@ -275,51 +291,43 @@ export function provide() {
 }
 
 export function consume() {
-  return function (target: typeof Component, name: string) {
+  return function (target: typeof Component, name: string, descriptor?: PropertyDescriptor) {
     if (!isComponentClass(target)) {
       throw new Error(
         `@consume() must be used inside a component class with as static attribute declaration (attribute: '${name}')`
       );
     }
 
+    const compiler = determineCompiler(descriptor);
+
     if (hasOwnProperty(target, name)) {
-      throw new Error(
-        `@consume() must be used with an attribute declaration which doesn't specify any value (attribute: '${name}')`
-      );
+      const propertyValue = (target as any)[name];
+
+      if (propertyValue !== undefined) {
+        throw new Error(
+          `@consume() must be used with an attribute declaration which does not specify any value (attribute: '${name}')`
+        );
+      }
+
+      if (compiler === 'babel-legacy') {
+        delete (target as any)[name];
+      }
     }
 
     target.consumeComponent(name);
+
+    if (compiler === 'babel-legacy') {
+      return Object.getOwnPropertyDescriptor(target, name) as void;
+    }
   };
 }
 
-// export function inherit() {
-//   return function (target, name, descriptor) {
-//     ow(target, 'target', ow.object);
-//     ow(name, 'name', ow.string.nonEmpty);
-//     ow(descriptor, 'descriptor', ow.object);
-
-//     if (!isWithProperties(target)) {
-//       throw new Error(
-//         `@inherit() target doesn't inherit from WithProperties (property name: '${name}')`
-//       );
-//     }
-
-//     const property = target.getProperty(name, {throwIfMissing: false, autoFork: false});
-
-//     if (property === undefined) {
-//       throw new Error(
-//         `@inherit() cannot be used with the property '${name}' which is missing in the parent class`
-//       );
-//     }
-
-//     if (typeof target === 'function' && isAttribute(property) && property.getParent() === target) {
-//       // If the target is a component class and the inherited property is an attribute,
-//       // we must roll back the attribute declaration that has reinitialized the value
-//       target.deleteProperty(name);
-//     }
-
-//     descriptor = getInheritedPropertyDescriptor(target, name);
-
-//     return {...descriptor, __decoratedBy: '@inherit()'};
-//   };
-// }
+export function determineCompiler(descriptor: PropertyDescriptor | undefined) {
+  if (typeof descriptor === 'object') {
+    // The class has been compiled by Babel using @babel/plugin-proposal-decorators in legacy mode
+    return 'babel-legacy';
+  } else {
+    // The class has been compiled by the TypeScript compiler
+    return 'typescript';
+  }
+}

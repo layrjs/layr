@@ -44,7 +44,7 @@ export class BrowserRouter extends AbstractRouter {
     window.history.replaceState(null, '', stringifyURL(url));
   }
 
-  _reload(url?: URL) {
+  _reload(url: URL | undefined) {
     if (url !== undefined) {
       window.location.assign(stringifyURL(url));
     } else {

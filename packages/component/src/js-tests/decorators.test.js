@@ -1,4 +1,4 @@
-import {Component} from './component';
+import {Component} from '../component';
 import {
   isAttributeInstance,
   isPrimaryIdentifierAttributeInstance,
@@ -6,7 +6,7 @@ import {
   isStringValueTypeInstance,
   isNumberValueTypeInstance,
   isMethodInstance
-} from './properties';
+} from '../properties';
 import {
   attribute,
   primaryIdentifier,
@@ -15,16 +15,16 @@ import {
   expose,
   provide,
   consume
-} from './decorators';
+} from '../decorators';
 
 describe('Decorators', () => {
   test('@attribute()', async () => {
     class Movie extends Component {
       @attribute() static limit = 100;
-      @attribute() static token?: string;
+      @attribute() static token;
 
       @attribute() title = '';
-      @attribute() country?: string;
+      @attribute() country;
     }
 
     let attr = Movie.getAttribute('limit');
@@ -35,7 +35,7 @@ describe('Decorators', () => {
     expect(attr.getValue()).toBe(100);
     expect(Movie.limit).toBe(100);
 
-    let descriptor = Object.getOwnPropertyDescriptor(Movie, 'limit')!;
+    let descriptor = Object.getOwnPropertyDescriptor(Movie, 'limit');
 
     expect(typeof descriptor.get).toBe('function');
     expect(typeof descriptor.set).toBe('function');
@@ -60,7 +60,7 @@ describe('Decorators', () => {
     expect(attr.getValue()).toBe('');
     expect(movie.title).toBe('');
 
-    descriptor = Object.getOwnPropertyDescriptor(Movie.prototype, 'title')!;
+    descriptor = Object.getOwnPropertyDescriptor(Movie.prototype, 'title');
 
     expect(typeof descriptor.get).toBe('function');
     expect(typeof descriptor.set).toBe('function');
@@ -86,10 +86,10 @@ describe('Decorators', () => {
     expect(movie.country).toBe('USA');
 
     class Film extends Movie {
-      @attribute() static limit: number;
+      @attribute() static limit = 100; // With JS, we must repeat the value of static attributes
       @attribute() static token = '';
 
-      @attribute() title!: string;
+      @attribute() title;
       @attribute() country = '';
     }
 
@@ -134,7 +134,7 @@ describe('Decorators', () => {
 
   test('@primaryIdentifier()', async () => {
     class Movie1 extends Component {
-      @primaryIdentifier() id!: string;
+      @primaryIdentifier() id;
     }
 
     let idAttribute = Movie1.prototype.getPrimaryIdentifierAttribute();
@@ -146,7 +146,7 @@ describe('Decorators', () => {
     expect(typeof idAttribute.getDefault()).toBe('function');
 
     class Movie2 extends Component {
-      @primaryIdentifier('number') id!: number;
+      @primaryIdentifier('number') id;
     }
 
     idAttribute = Movie2.prototype.getPrimaryIdentifierAttribute();
@@ -175,7 +175,7 @@ describe('Decorators', () => {
 
     expect(() => {
       class Movie extends Component {
-        @primaryIdentifier() static id: string;
+        @primaryIdentifier() static id;
       }
 
       return Movie;
@@ -185,7 +185,7 @@ describe('Decorators', () => {
 
     expect(() => {
       class Movie {
-        @primaryIdentifier() id!: string;
+        @primaryIdentifier() id;
       }
 
       return Movie;
@@ -193,8 +193,8 @@ describe('Decorators', () => {
 
     expect(() => {
       class Movie extends Component {
-        @primaryIdentifier() id!: string;
-        @primaryIdentifier() slug!: string;
+        @primaryIdentifier() id;
+        @primaryIdentifier() slug;
       }
 
       return Movie;
@@ -203,8 +203,8 @@ describe('Decorators', () => {
 
   test('@secondaryIdentifier()', async () => {
     class User extends Component {
-      @secondaryIdentifier() email!: string;
-      @secondaryIdentifier() username!: string;
+      @secondaryIdentifier() email;
+      @secondaryIdentifier() username;
     }
 
     const emailAttribute = User.prototype.getSecondaryIdentifierAttribute('email');
@@ -256,7 +256,7 @@ describe('Decorators', () => {
   });
 
   test('@expose()', async () => {
-    const testExposure = (componentProvider: () => typeof Component) => {
+    const testExposure = (componentProvider) => {
       const component = componentProvider();
 
       let prop = component.getProperty('limit');
@@ -286,10 +286,10 @@ describe('Decorators', () => {
 
     testExposure(() => {
       class Movie extends Component {
-        @expose({get: true}) @attribute() static limit: string;
+        @expose({get: true}) @attribute() static limit;
         @expose({call: true}) @method() static find() {}
 
-        @expose({get: true, set: true}) @attribute() title!: string;
+        @expose({get: true, set: true}) @attribute() title;
         @expose({call: true}) @method() load() {}
       }
 
@@ -306,10 +306,10 @@ describe('Decorators', () => {
         }
       })
       class Movie extends Component {
-        @attribute() static limit: string;
+        @attribute() static limit;
         @method() static find() {}
 
-        @attribute() title!: string;
+        @attribute() title;
         @method() load() {}
       }
 
@@ -318,10 +318,10 @@ describe('Decorators', () => {
 
     testExposure(() => {
       class Movie extends Component {
-        @attribute() static limit: string;
+        @attribute() static limit;
         @method() static find() {}
 
-        @attribute() title!: string;
+        @attribute() title;
         @method() load() {}
       }
 
@@ -389,11 +389,11 @@ describe('Decorators', () => {
 
   test('@consume()', async () => {
     class Movie extends Component {
-      @consume() static Director: typeof Director;
+      @consume() static Director;
     }
 
     class Director extends Component {
-      @consume() static Movie: typeof Movie;
+      @consume() static Movie;
     }
 
     class Backend extends Component {
@@ -406,11 +406,11 @@ describe('Decorators', () => {
 
     ((Backend, BackendMovie, BackendDirector) => {
       class Movie extends BackendMovie {
-        @consume() static Director: typeof Director;
+        @consume() static Director;
       }
 
       class Director extends BackendDirector {
-        @consume() static Movie: typeof Movie;
+        @consume() static Movie;
       }
 
       class Frontend extends Backend {
@@ -431,7 +431,7 @@ describe('Decorators', () => {
     expect(() => {
       class Movie extends Component {
         // @ts-ignore
-        @consume() Director: typeof Director;
+        @consume() Director;
       }
 
       class Director extends Component {}

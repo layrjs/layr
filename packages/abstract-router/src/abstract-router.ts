@@ -228,7 +228,7 @@ export abstract class AbstractRouter extends Observable(Object) {
     this._reload(normalizedURL);
   }
 
-  abstract _reload(url?: URL): void;
+  abstract _reload(url: URL | undefined): void;
 
   go(delta: number) {
     this._go(delta);

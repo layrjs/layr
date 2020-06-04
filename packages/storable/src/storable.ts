@@ -147,12 +147,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return this.prototype.setStorableProperty;
     }
 
-    setStorableProperty(
-      name: string,
-      propertyOptions: StorablePropertyOptions = {},
-      options: {returnDescriptor?: boolean} = {}
-    ) {
-      return this.setProperty(name, StorableProperty, propertyOptions, options);
+    setStorableProperty(name: string, propertyOptions: StorablePropertyOptions = {}) {
+      return this.setProperty(name, StorableProperty, propertyOptions);
     }
 
     getStorablePropertiesWithFinder() {
@@ -215,12 +211,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return this.prototype.setStorableAttribute;
     }
 
-    setStorableAttribute(
-      name: string,
-      attributeOptions: StorableAttributeOptions = {},
-      options: {returnDescriptor?: boolean} = {}
-    ) {
-      return this.setProperty(name, StorableAttribute, attributeOptions, options);
+    setStorableAttribute(name: string, attributeOptions: StorableAttributeOptions = {}) {
+      return this.setProperty(name, StorableAttribute, attributeOptions);
     }
 
     getStorableAttributesWithLoader(
@@ -327,12 +319,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return this.prototype.setStorableMethod;
     }
 
-    setStorableMethod(
-      name: string,
-      methodOptions: StorableMethodOptions = {},
-      options: {returnDescriptor?: boolean} = {}
-    ) {
-      return this.setProperty(name, StorableMethod, methodOptions, options);
+    setStorableMethod(name: string, methodOptions: StorableMethodOptions = {}) {
+      return this.setProperty(name, StorableMethod, methodOptions);
     }
 
     // === Operations ===

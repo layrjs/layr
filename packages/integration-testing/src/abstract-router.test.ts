@@ -12,6 +12,8 @@ describe('AbstractRouter', () => {
 
     _redirect(_url: URL) {}
 
+    _reload(_url: URL | undefined) {}
+
     _go(_delta: number) {}
 
     _getHistoryLength(): number {
