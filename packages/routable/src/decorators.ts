@@ -8,7 +8,13 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
   return function (target: typeof RoutableComponent, name: string, descriptor: PropertyDescriptor) {
     const {value: method, get: originalGet, configurable, enumerable} = descriptor;
 
-    if (!(isRoutableClass(target) && typeof method === 'function' && enumerable === false)) {
+    if (
+      !(
+        isRoutableClass(target) &&
+        (typeof method === 'function' || originalGet !== undefined) &&
+        enumerable === false
+      )
+    ) {
       throw new Error(
         `@route() should be used to decorate a routable component static method (property: '${name}')`
       );
