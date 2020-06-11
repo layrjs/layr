@@ -116,7 +116,7 @@ describe('AbstractStore', () => {
 
     class NotAStorable {}
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => store.registerStorable(NotAStorable)).toThrow(
       "Expected a storable component class, but received a value of type 'typeof NotAStorable'"
     );

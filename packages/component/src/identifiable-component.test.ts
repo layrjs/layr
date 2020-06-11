@@ -345,15 +345,15 @@ describe('Identifiable component', () => {
       reference: 123456
     });
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => User.normalizeIdentifierDescriptor(undefined)).toThrow(
       "An identifier descriptor should be a string, a number, or an object, but received a value of type 'undefined' (component: 'User')"
     );
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => User.normalizeIdentifierDescriptor(true)).toThrow(
       "An identifier descriptor should be a string, a number, or an object, but received a value of type 'boolean' (component: 'User')"
     );
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => User.normalizeIdentifierDescriptor([])).toThrow(
       "An identifier descriptor should be a string, a number, or an object, but received a value of type 'Array' (component: 'User')"
     );
@@ -372,7 +372,7 @@ describe('Identifiable component', () => {
     expect(() => User.normalizeIdentifierDescriptor({reference: 'abc123'})).toThrow(
       "Cannot assign a value of an unexpected type (component: 'User', attribute: 'reference', expected type: 'number', received type: 'string')"
     );
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => User.normalizeIdentifierDescriptor({email: undefined})).toThrow(
       "Cannot assign a value of an unexpected type (component: 'User', attribute: 'email', expected type: 'string', received type: 'undefined')"
     );

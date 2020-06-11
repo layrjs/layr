@@ -513,7 +513,7 @@ describe('Observable', () => {
 
       expect(canBeObserved(null)).toBe(false);
 
-      // @ts-ignore
+      // @ts-expect-error
       expect(() => createObservable('Hello')).toThrow(
         'Cannot create an observable from a target that is not an object, an array, or a function'
       );

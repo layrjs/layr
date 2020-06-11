@@ -221,14 +221,14 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue([], attribute)).not.toThrow();
     expect(() => type.checkValue([1], attribute)).not.toThrow();
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => type.checkValue(1, attribute)).toThrow(
       "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number[]', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], attribute)).toThrow(
       "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number', received type: 'string')"
     );
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => type.checkValue(undefined, attribute)).toThrow(
       "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number[]', received type: 'undefined')"
     );
@@ -249,14 +249,14 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue([], attribute)).not.toThrow();
     expect(() => type.checkValue([1], attribute)).not.toThrow();
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => type.checkValue(1, attribute)).toThrow(
       "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number?[]?', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], attribute)).toThrow(
       "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number?', received type: 'string')"
     );
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
     expect(() => type.checkValue([undefined], attribute)).not.toThrow();
     expect(() => type.checkValue([1, undefined], attribute)).not.toThrow();

@@ -12,7 +12,7 @@ describe('Utilities', () => {
     expect(stringifyURL(normalizeURL('/movies'))).toBe('/movies');
     expect(stringifyURL(normalizeURL('movies'))).toBe('/movies');
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => normalizeURL(123)).toThrow(
       "Expected a string or an URL instance, but received a value of type 'number'"
     );

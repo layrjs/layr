@@ -35,7 +35,7 @@ describe('AbstractRouter', () => {
     expect(Array.from(router.getRoutables())).toEqual([User]);
     expect(User.getRouter()).toBe(router);
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new MockRouter(User, {unknown: true})).toThrow(
       "Did not expect the option 'unknown' to exist"
     );
@@ -99,7 +99,7 @@ describe('AbstractRouter', () => {
 
       class NotARoutable {}
 
-      // @ts-ignore
+      // @ts-expect-error
       expect(() => router.registerRoutable(NotARoutable)).toThrow(
         "Expected a routable component class, but received a value of type 'typeof NotARoutable'"
       );

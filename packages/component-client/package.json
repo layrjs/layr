@@ -28,12 +28,12 @@
     "core-helpers": "^0.1.0",
     "debug": "^4.1.1",
     "@liaison/component": "^0.5.0",
+    "@liaison/component-server": "^0.5.0",
     "lodash": "^4.17.15",
     "possibly-async": "^0.2.15",
     "tslib": "^1.11.1"
   },
   "devDependencies": {
-    "@liaison/component-server": "^0.5.0",
     "@mvila/dev-tools": "^1.0.13",
     "@mvila/tsconfig": "^1.0.3",
     "@types/debug": "^4.1.5",

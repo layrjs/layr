@@ -365,7 +365,7 @@ describe('Decorators', () => {
       class Movie extends Component {}
 
       class Backend extends Component {
-        // @ts-ignore
+        // @ts-expect-error
         @provide() Movie = Movie;
       }
 
@@ -430,7 +430,7 @@ describe('Decorators', () => {
 
     expect(() => {
       class Movie extends Component {
-        // @ts-ignore
+        // @ts-expect-error
         @consume() Director;
       }
 

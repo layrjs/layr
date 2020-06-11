@@ -5,22 +5,22 @@ describe('Property', () => {
   test('Creation', async () => {
     class Movie extends Component {}
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new Property()).toThrow(
       "Expected a string, but received a value of type 'undefined'"
     );
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new Property('title')).toThrow(
       "Expected a component class or instance, but received a value of type 'undefined'"
     );
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new Property('title', {})).toThrow(
       "Expected a component class or instance, but received a value of type 'object'"
     );
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new Property('title', Movie, {unknownOption: 123})).toThrow(
       "Did not expect the option 'unknownOption' to exist"
     );
