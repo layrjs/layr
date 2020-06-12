@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-koa-middleware",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A Koa middleware for your Liaison components",
   "keywords": [
     "liaison",
@@ -22,19 +22,21 @@
   "scripts": {
     "build": "dev-tools build:ts-library",
     "link": "dev-tools link:local-packages",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "publish:package": "dev-tools publish:package",
+    "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "core-helpers": "^0.1.0",
+    "@liaison/component": "^0.5.1",
+    "@liaison/component-server": "^0.5.1",
     "co-body": "^6.0.0",
-    "@liaison/component": "^0.5.0",
-    "@liaison/component-server": "^0.5.0",
+    "core-helpers": "^0.1.26",
     "sleep-promise": "^8.0.1",
-    "tslib": "^1.11.1"
+    "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.13",
-    "@mvila/tsconfig": "^1.0.3",
+    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/tsconfig": "^1.0.4",
     "@types/co-body": "^5.1.0"
   }
 }

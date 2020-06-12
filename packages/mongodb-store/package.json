@@ -1,6 +1,6 @@
 {
   "name": "@liaison/mongodb-store",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A Liaison store for MongoDB",
   "keywords": [
     "liaison",
@@ -23,22 +23,24 @@
   "scripts": {
     "build": "dev-tools build:ts-library",
     "link": "dev-tools link:local-packages",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "publish:package": "dev-tools publish:package",
+    "update": "dev-tools update:dependencies"
   },
   "dependencies": {
+    "@liaison/abstract-store": "^0.5.1",
+    "@liaison/component": "^0.5.1",
+    "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
-    "core-helpers": "^0.1.0",
-    "@liaison/abstract-store": "^0.5.0",
-    "@liaison/component": "^0.5.0",
     "lodash": "^4.17.15",
-    "mongodb": "^3.5.7",
-    "tslib": "^1.11.1"
+    "mongodb": "^3.5.9",
+    "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.13",
-    "@mvila/tsconfig": "^1.0.3",
+    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/tsconfig": "^1.0.4",
     "@types/debug": "^4.1.5",
-    "@types/lodash": "^4.14.150",
-    "@types/mongodb": "^3.5.18"
+    "@types/lodash": "^4.14.155",
+    "@types/mongodb": "^3.5.20"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "The base class of all your components",
   "keywords": [
     "liaison",
@@ -23,24 +23,26 @@
     "build": "dev-tools build:ts-library",
     "link": "dev-tools link:local-packages",
     "prepare": "npm run build && npm run test",
-    "test": "dev-tools test:ts-library"
+    "test": "dev-tools test:ts-library",
+    "publish:package": "dev-tools publish:package",
+    "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/observable": "^0.5.0",
-    "core-helpers": "^0.1.0",
+    "@liaison/observable": "^0.5.2",
+    "core-helpers": "^0.1.26",
     "cuid": "^2.1.8",
     "lodash": "^4.17.15",
-    "possibly-async": "^0.2.15",
-    "simple-cloning": "^0.1.0",
-    "simple-forking": "^0.1.0",
-    "simple-serialization": "^0.2.0",
-    "tslib": "^1.11.1"
+    "possibly-async": "^0.2.19",
+    "simple-cloning": "^0.1.15",
+    "simple-forking": "^0.1.11",
+    "simple-serialization": "^0.2.14",
+    "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.13",
-    "@mvila/tsconfig": "^1.0.3",
-    "@types/jest": "^25.2.1",
-    "@types/lodash": "^4.14.150",
+    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/tsconfig": "^1.0.4",
+    "@types/jest": "^25.2.3",
+    "@types/lodash": "^4.14.155",
     "sleep-promise": "^8.0.1"
   }
 }

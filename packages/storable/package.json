@@ -1,6 +1,6 @@
 {
   "name": "@liaison/storable",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A mixin providing persistence capabilities to Liaison components",
   "keywords": [
     "liaison",
@@ -27,26 +27,28 @@
     "build": "dev-tools build:ts-library",
     "link": "dev-tools link:local-packages",
     "prepare": "npm run build && npm run test",
-    "test": "dev-tools test:ts-library"
+    "test": "dev-tools test:ts-library",
+    "publish:package": "dev-tools publish:package",
+    "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "core-helpers": "^0.1.0",
-    "@liaison/abstract-store": "^0.5.0",
-    "@liaison/component": "^0.5.0",
+    "@liaison/abstract-store": "^0.5.1",
+    "@liaison/component": "^0.5.1",
+    "core-helpers": "^0.1.26",
     "lodash": "^4.17.15",
-    "tslib": "^1.11.1"
+    "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@liaison/component-client": "^0.5.0",
-    "@liaison/component-server": "^0.5.0",
-    "@liaison/memory-store": "^0.5.0",
-    "@liaison/mongodb-store": "^0.5.0",
-    "@mvila/dev-tools": "^1.0.13",
-    "@mvila/tsconfig": "^1.0.3",
-    "@types/jest": "^25.2.1",
-    "@types/lodash": "^4.14.150",
+    "@liaison/component-client": "^0.5.1",
+    "@liaison/component-server": "^0.5.1",
+    "@liaison/memory-store": "^0.5.1",
+    "@liaison/mongodb-store": "^0.5.1",
+    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/tsconfig": "^1.0.4",
+    "@types/jest": "^25.2.3",
+    "@types/lodash": "^4.14.155",
     "@types/mongodb": "^3.5.20",
-    "mongodb": "^3.5.8",
+    "mongodb": "^3.5.9",
     "mongodb-memory-server": "^6.6.1"
   }
 }

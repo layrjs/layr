@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-server",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Serves your Liaison components",
   "keywords": [
     "liaison",
@@ -22,22 +22,24 @@
     "build": "dev-tools build:ts-library",
     "link": "dev-tools link:local-packages",
     "prepare": "npm run build && npm run test",
-    "test": "dev-tools test:ts-library"
+    "test": "dev-tools test:ts-library",
+    "publish:package": "dev-tools publish:package",
+    "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@deepr/runtime": "^0.4.0",
-    "@liaison/component": "^0.5.0",
-    "core-helpers": "^0.1.0",
+    "@deepr/runtime": "^0.4.6",
+    "@liaison/component": "^0.5.1",
+    "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
     "lodash": "^4.17.15",
-    "possibly-async": "^0.2.15",
-    "tslib": "^1.11.1"
+    "possibly-async": "^0.2.19",
+    "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.13",
-    "@mvila/tsconfig": "^1.0.3",
+    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/tsconfig": "^1.0.4",
     "@types/debug": "^4.1.5",
-    "@types/jest": "^25.2.1",
-    "@types/lodash": "^4.14.150"
+    "@types/jest": "^25.2.3",
+    "@types/lodash": "^4.14.155"
   }
 }
