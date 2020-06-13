@@ -21,10 +21,6 @@ export function serveComponent(
   const {limit = DEFAULT_LIMIT, delay = 0, errorRate = 0} = options;
 
   return async function (ctx: any) {
-    if (ctx.method !== 'POST') {
-      ctx.throw(405);
-    }
-
     if (delay > 0) {
       await sleep(delay);
     }
@@ -37,8 +33,21 @@ export function serveComponent(
       }
     }
 
-    const {query, components, version} = await body.json(ctx.req, {limit, strict: true});
+    if (ctx.url !== '/') {
+      ctx.throw(404);
+    }
 
-    ctx.body = await componentServer.receive({query, components, version});
+    if (ctx.method === 'GET') {
+      ctx.body = await componentServer.receive({query: {'introspect=>': {'()': []}}});
+      return;
+    }
+
+    if (ctx.method === 'POST') {
+      const {query, components, version} = await body.json(ctx.req, {limit, strict: true});
+      ctx.body = await componentServer.receive({query, components, version});
+      return;
+    }
+
+    ctx.throw(405);
   };
 }

@@ -23,7 +23,7 @@ describe('ComponentHTTPServer', () => {
   });
 
   test('Introspecting components', async () => {
-    expect(await postJSON({query: {'introspect=>': {'()': []}}})).toStrictEqual({
+    const expectedResponse = {
       result: {
         component: {
           name: 'Movie',
@@ -38,13 +38,25 @@ describe('ComponentHTTPServer', () => {
           ]
         }
       }
-    });
+    };
+
+    expect(await get()).toStrictEqual(expectedResponse);
+
+    expect(await postJSON({query: {'introspect=>': {'()': []}}})).toStrictEqual(expectedResponse);
 
     await expect(postJSON({query: {'introspect=>': {'()': []}}, version: 1})).rejects.toThrow(
       "The component client version (1) doesn't match the component server version (undefined)"
     );
   });
 });
+
+async function get() {
+  const url = `http://localhost:${SERVER_PORT}`;
+
+  const response = await fetch(url);
+
+  return await handleFetchResponse(response);
+}
 
 async function postJSON(json: object) {
   const url = `http://localhost:${SERVER_PORT}`;
@@ -55,6 +67,10 @@ async function postJSON(json: object) {
     body: JSON.stringify(json)
   });
 
+  return await handleFetchResponse(response);
+}
+
+async function handleFetchResponse(response: Response) {
   const result = await response.json();
 
   if (response.status !== 200) {
