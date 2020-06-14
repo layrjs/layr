@@ -978,6 +978,9 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
   return Storable;
 }
 
+// Make sure the name of the Storable mixin persists over minification
+Object.defineProperty(Storable, 'displayName', {value: 'Storable'});
+
 export class StorableComponent extends Storable(Component) {}
 
 function describeCaller(callerMethodName: string | undefined) {
