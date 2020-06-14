@@ -38,6 +38,10 @@ export function createAWSLambdaHandlerForComponentServer(componentServer: Compon
       return await componentServer.receive(request);
     }
 
+    if (method === 'OPTIONS') {
+      return {statusCode: 200};
+    }
+
     return {statusCode: 405, body: 'Method Not Allowed'};
   };
 
