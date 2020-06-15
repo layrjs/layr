@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-http-client",
-  "version": "0.5.2",
+  "version": "0.5.5",
   "description": "An HTTP client for your Liaison components",
   "keywords": [
     "liaison",
@@ -28,15 +28,15 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component-client": "^0.5.2",
+    "@liaison/component-client": "^0.5.5",
     "core-helpers": "^0.1.26",
-    "cross-fetch": "^3.0.4",
+    "cross-fetch": "^3.0.5",
     "debug": "^4.1.1",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
     "@koa/cors": "^3.1.0",
-    "@liaison/component": "^0.5.1",
+    "@liaison/component": "^0.5.4",
     "@mvila/dev-tools": "^1.0.23",
     "@mvila/tsconfig": "^1.0.4",
     "@types/co-body": "^5.1.0",
@@ -47,7 +47,7 @@
     "@types/koa__cors": "^3.0.1",
     "@types/lodash": "^4.14.155",
     "co-body": "^6.0.0",
-    "koa": "^2.12.0",
+    "koa": "^2.12.1",
     "koa-json-error": "^3.1.2",
     "lodash": "^4.17.15"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-http-server",
-  "version": "0.5.3",
+  "version": "0.5.5",
   "description": "A basic HTTP server for your Liaison components",
   "keywords": [
     "liaison",
@@ -29,12 +29,12 @@
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
-    "@liaison/component": "^0.5.1",
-    "@liaison/component-koa-middleware": "^0.5.3",
-    "@liaison/component-server": "^0.5.3",
+    "@liaison/component": "^0.5.4",
+    "@liaison/component-koa-middleware": "^0.5.5",
+    "@liaison/component-server": "^0.5.5",
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
-    "koa": "^2.12.0",
+    "koa": "^2.12.1",
     "koa-json-error": "^3.1.2",
     "koa-logger": "^3.2.1",
     "tslib": "^1.13.0"
@@ -48,6 +48,6 @@
     "@types/koa-json-error": "^3.1.2",
     "@types/koa-logger": "^3.1.1",
     "@types/koa__cors": "^3.0.1",
-    "cross-fetch": "^3.0.4"
+    "cross-fetch": "^3.0.5"
   }
 }

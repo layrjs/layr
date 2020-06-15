@@ -1,6 +1,8 @@
 import {Component} from '@liaison/component';
 
-import {WithRoles, Role, isRole} from '../../..';
+import {WithRoles} from './with-roles';
+import {Role} from './role';
+import {isRoleInstance} from './utilities';
 
 describe('Role', () => {
   test('new Role()', async () => {
@@ -8,25 +10,25 @@ describe('Role', () => {
 
     const resolver = () => true;
 
-    const role = new Role(Movie, 'anyone', resolver);
+    const role = new Role('anyone', Movie, resolver);
 
-    expect(isRole(role)).toBe(true);
+    expect(isRoleInstance(role)).toBe(true);
 
-    expect(role.getParent()).toBe(Movie);
     expect(role.getName()).toBe('anyone');
+    expect(role.getParent()).toBe(Movie);
     expect(role.getResolver()).toBe(resolver);
   });
 
   test('resolve()', async () => {
     class Movie extends WithRoles(Component) {}
 
-    const resolver = jest.fn(async function() {
+    const resolver = jest.fn(async function (this: unknown) {
       expect(this).toBe(Movie);
 
       return true;
     });
 
-    const role = new Role(Movie, 'anyone', resolver);
+    const role = new Role('anyone', Movie, resolver);
 
     expect(resolver).toHaveBeenCalledTimes(0);
 
@@ -47,10 +49,10 @@ describe('Role', () => {
 
     const resolver = () => true;
 
-    const role = new Role(Movie, 'anyone', resolver);
+    const role = new Role('anyone', Movie, resolver);
 
-    expect(role.getParent()).toBe(Movie);
     expect(role.getName()).toBe('anyone');
+    expect(role.getParent()).toBe(Movie);
     expect(role.getResolver()).toBe(resolver);
 
     const ForkedMovie = Movie.fork();
@@ -58,8 +60,8 @@ describe('Role', () => {
     const forkedRole = role.fork(ForkedMovie);
 
     expect(forkedRole).not.toBe(role);
-    expect(forkedRole.getParent()).toBe(ForkedMovie);
     expect(forkedRole.getName()).toBe('anyone');
+    expect(forkedRole.getParent()).toBe(ForkedMovie);
     expect(forkedRole.getResolver()).toBe(resolver);
 
     expect(forkedRole.isForkOf(role)).toBe(true);

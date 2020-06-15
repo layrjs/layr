@@ -1,6 +1,8 @@
 import {Component} from '@liaison/component';
 
-import {WithRoles, isRole, role} from '../../..';
+import {WithRoles} from './with-roles';
+import {role} from './decorators';
+import {isRoleInstance} from './utilities';
 
 describe('Decorators', () => {
   test('@role()', async () => {
@@ -16,16 +18,16 @@ describe('Decorators', () => {
 
     const anyoneRole = Movie.getRole('anyone');
 
-    expect(isRole(anyoneRole)).toBe(true);
-    expect(anyoneRole.getParent()).toBe(Movie);
+    expect(isRoleInstance(anyoneRole)).toBe(true);
     expect(anyoneRole.getName()).toBe('anyone');
+    expect(anyoneRole.getParent()).toBe(Movie);
     expect(anyoneRole.getResolver()).toBe(Movie.anyoneRoleResolver);
 
     const authorRole = Movie.prototype.getRole('author');
 
-    expect(isRole(authorRole)).toBe(true);
-    expect(authorRole.getParent()).toBe(Movie.prototype);
+    expect(isRoleInstance(authorRole)).toBe(true);
     expect(authorRole.getName()).toBe('author');
+    expect(authorRole.getParent()).toBe(Movie.prototype);
     expect(authorRole.getResolver()).toBe(Movie.prototype.authorRoleResolver);
   });
 });

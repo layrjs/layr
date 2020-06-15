@@ -547,7 +547,9 @@ export class Component extends Observable(Object) {
     return this.prototype.resolvePropertyOperationSetting;
   }
 
-  resolvePropertyOperationSetting(setting: PropertyOperationSetting) {
+  resolvePropertyOperationSetting(
+    setting: PropertyOperationSetting
+  ): PromiseLikeable<boolean | undefined> {
     if (setting === true) {
       return true;
     }

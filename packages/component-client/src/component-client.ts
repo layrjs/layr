@@ -128,7 +128,7 @@ export class ComponentClient {
         : undefined;
 
       if (remoteAttribute !== undefined) {
-        return remoteAttribute.operationIsAllowed('set');
+        return remoteAttribute.operationIsAllowed('set') as boolean;
       }
 
       return false;

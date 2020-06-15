@@ -7,3 +7,7 @@ Simple role system for Liaison.
 ```
 npm install @liaison/with-roles
 ```
+
+## License
+
+MIT

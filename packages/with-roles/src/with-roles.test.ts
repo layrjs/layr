@@ -1,15 +1,8 @@
 import {Component} from '@liaison/component';
 
-import {WithRoles, isWithRoles} from '../../..';
+import {WithRoles} from './with-roles';
 
 describe('WithRoles', () => {
-  test('WithRoles()', async () => {
-    class Movie extends WithRoles(Component) {}
-
-    expect(isWithRoles(Movie)).toBe(true);
-    expect(isWithRoles(Movie.prototype)).toBe(true);
-  });
-
   test('normalizePropertyOperationSetting()', async () => {
     class Movie extends WithRoles(Component) {}
 
@@ -19,23 +12,28 @@ describe('WithRoles', () => {
     expect(Movie.normalizePropertyOperationSetting([])).toBeUndefined();
     expect(Movie.normalizePropertyOperationSetting([''])).toBeUndefined();
 
+    // @ts-expect-error
     expect(() => Movie.normalizePropertyOperationSetting(undefined)).toThrow(
       'The specified property operation setting (undefined) is invalid'
     );
     expect(() => Movie.normalizePropertyOperationSetting(false)).toThrow(
       'The specified property operation setting (false) is invalid'
     );
+    // @ts-expect-error
     expect(() => Movie.normalizePropertyOperationSetting(1)).toThrow(
       'The specified property operation setting (1) is invalid'
     );
+    // @ts-expect-error
     expect(() => Movie.normalizePropertyOperationSetting({admin: true})).toThrow(
       'The specified property operation setting ({"admin":true}) is invalid'
     );
+    // @ts-expect-error
     expect(() => Movie.normalizePropertyOperationSetting([false])).toThrow(
       'The specified property operation setting ([false]) is invalid'
     );
 
     expect(
+      // @ts-expect-error
       Movie.normalizePropertyOperationSetting(undefined, {throwIfInvalid: false})
     ).toBeUndefined();
   });
@@ -46,8 +44,7 @@ describe('WithRoles', () => {
     expect(Movie.resolvePropertyOperationSetting(true)).toBe(true);
     expect(Movie.prototype.resolvePropertyOperationSetting(true)).toBe(true);
 
-    // eslint-disable-next-line prefer-const
-    let user;
+    let user: any;
 
     const resolver = async () => user !== undefined;
 
@@ -62,18 +59,18 @@ describe('WithRoles', () => {
     expect(await Movie.resolvePropertyOperationSetting(['user'])).toBe(true);
   });
 
-  test('getRole()', async () => {
+  test('getRole() and hasRole()', async () => {
     class Movie extends WithRoles(Component) {}
 
     expect(() => Movie.getRole('anyone')).toThrow(
-      "The role 'anyone' is missing (component name: 'Movie')"
+      "The role 'anyone' is missing (component: 'Movie')"
     );
-    expect(Movie.getRole('anyone', {throwIfMissing: false})).toBeUndefined();
+    expect(Movie.hasRole('anyone')).toBe(false);
 
     const role = Movie.setRole('anyone', () => true);
 
     expect(Movie.getRole('anyone')).toBe(role);
-    expect(Movie.prototype.getRole('anyone', {throwIfMissing: false})).toBeUndefined();
+    expect(Movie.prototype.hasRole('anyone')).toBe(false);
     expect(Movie.prototype.getRole('anyone', {fallbackToClass: true})).toBe(role);
 
     const ForkedMovie = Movie.fork();
@@ -90,7 +87,7 @@ describe('WithRoles', () => {
     const authorRole = Movie.prototype.setRole('author', () => true);
 
     expect(Movie.prototype.getRole('author')).toBe(authorRole);
-    expect(Movie.getRole('author', {throwIfMissing: false})).toBeUndefined();
+    expect(Movie.hasRole('author')).toBe(false);
 
     class Film extends Movie {}
 
@@ -99,7 +96,7 @@ describe('WithRoles', () => {
     const adminRole = Film.prototype.setRole('admin', () => true);
 
     expect(Film.prototype.getRole('admin')).toBe(adminRole);
-    expect(Movie.prototype.getRole('admin', {throwIfMissing: false})).toBeUndefined();
+    expect(Movie.prototype.hasRole('admin')).toBe(false);
   });
 
   test('resolveRole()', async () => {
