@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "The base class of all your components",
   "keywords": [
     "liaison",
@@ -35,7 +35,7 @@
     "possibly-async": "^0.2.20",
     "simple-cloning": "^0.1.15",
     "simple-forking": "^0.1.11",
-    "simple-serialization": "^0.2.14",
+    "simple-serialization": "^0.2.15",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
