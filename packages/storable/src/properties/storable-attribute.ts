@@ -1,5 +1,11 @@
-import {Component, Attribute, AttributeOptions} from '@liaison/component';
+import type {Component, AttributeOptions} from '@liaison/component';
+import {Attribute} from '@liaison/component';
 import {PromiseLikeable, hasOwnProperty, Constructor} from 'core-helpers';
+
+// TODO: Find a way to remove this useless import
+// I did that to remove a TypeScript error in the generated declaration file
+// @ts-ignore
+import type {Property} from '@liaison/component';
 
 import {StorablePropertyMixin, StorablePropertyOptions} from './storable-property';
 import {assertIsStorableClassOrInstance} from '../utilities';
