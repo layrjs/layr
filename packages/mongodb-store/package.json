@@ -1,6 +1,6 @@
 {
   "name": "@liaison/mongodb-store",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "A Liaison store for MongoDB",
   "keywords": [
     "liaison",

@@ -31,7 +31,7 @@ const debug = debugModule('liaison:mongodb-store');
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 
 export class MongoDBStore extends AbstractStore {
-  _connectionString: string;
+  private _connectionString: string;
 
   constructor(connectionString: string, rootComponent?: typeof Component, options = {}) {
     super(rootComponent, options);
@@ -241,15 +241,15 @@ export class MongoDBStore extends AbstractStore {
 
   // === MongoDB client ===
 
-  _client: MongoClient | undefined;
+  private _client: MongoClient | undefined;
 
-  async _getClient() {
+  private async _getClient() {
     await this._connectClient();
 
     return this._client!;
   }
 
-  async _connectClient() {
+  private async _connectClient() {
     if (this._client === undefined) {
       debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
 
@@ -262,7 +262,7 @@ export class MongoDBStore extends AbstractStore {
     }
   }
 
-  async _disconnectClient() {
+  private async _disconnectClient() {
     const client = this._client;
 
     if (client !== undefined) {
@@ -278,9 +278,9 @@ export class MongoDBStore extends AbstractStore {
     }
   }
 
-  _db: Db | undefined;
+  private _db: Db | undefined;
 
-  async _getDatabase() {
+  private async _getDatabase() {
     if (!this._db) {
       const client = await this._getClient();
       this._db = client.db();
@@ -289,7 +289,7 @@ export class MongoDBStore extends AbstractStore {
     return this._db;
   }
 
-  async _getCollection(name: string) {
+  private async _getCollection(name: string) {
     const database = await this._getDatabase();
 
     return database.collection(name);
