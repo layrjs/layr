@@ -1,6 +1,7 @@
 import {
   Component,
   isComponentClass,
+  isComponentInstance,
   isComponentClassOrInstance,
   isComponentValueTypeInstance,
   Attribute,
@@ -14,6 +15,7 @@ import {
   traverseAttributeSelector,
   normalizeAttributeSelector,
   IdentifierDescriptor,
+  IdentifierValue,
   method,
   serialize
 } from '@liaison/component';
@@ -850,6 +852,55 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
             normalizedQuery[name] = subqueries.map((subquery) =>
               normalizeQueryForComponent(subquery, component)
             );
+            continue;
+          }
+
+          if (name === '$any' || name === '$in') {
+            if (!Array.isArray(subquery)) {
+              throw new Error(
+                `Expected an array as value of the operator '${name}', but received a value of type '${getTypeOf(
+                  subquery
+                )}'`
+              );
+            }
+
+            if (!isComponentInstance(component)) {
+              throw new Error(
+                `The operator '${name}' cannot be used in the context of a component class`
+              );
+            }
+
+            const nestedComponents: Component[] = subquery;
+
+            const primaryIdentifiers: IdentifierValue[] = nestedComponents.map(
+              (nestedComponent) => {
+                if (!isComponentInstance(nestedComponent)) {
+                  throw new Error(
+                    `Expected an array of component instances as value of the operator '${name}', but received a value of type '${getTypeOf(
+                      nestedComponent
+                    )}'`
+                  );
+                }
+
+                if (!isPrototypeOf(component, nestedComponent)) {
+                  throw new Error(
+                    `An unexpected item was specified for the operator '${name}' (${component.describeComponent(
+                      {
+                        componentPrefix: 'expected'
+                      }
+                    )}, ${nestedComponent.describeComponent({componentPrefix: 'specified'})})`
+                  );
+                }
+
+                return nestedComponent.getPrimaryIdentifierAttribute().getValue()!;
+              }
+            );
+
+            const primaryIdentifierAttributeName = component
+              .getPrimaryIdentifierAttribute()
+              .getName();
+
+            normalizedQuery[primaryIdentifierAttributeName] = {[name]: primaryIdentifiers};
             continue;
           }
 

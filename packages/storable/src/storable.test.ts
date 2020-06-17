@@ -1433,7 +1433,7 @@ describe('Storable', () => {
 
           // --- With a component specified as query ---
 
-          const ForkedUser = User.fork();
+          let ForkedUser = User.fork();
 
           const user = ForkedUser.create({id: 'user1'}, {isNew: false});
 
@@ -1447,6 +1447,42 @@ describe('Storable', () => {
             id: 'user1',
             email: '1@user.com'
           });
+
+          // --- With an a nested component specified in a query ---
+
+          ForkedUser = User.fork();
+
+          const organization = ForkedUser.Organization.create({id: 'org2'}, {isNew: false});
+
+          users = await ForkedUser.find({organization}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {
+              __component: 'User',
+              __new: false,
+              id: 'user11'
+            },
+            {
+              __component: 'User',
+              __new: false,
+              id: 'user12'
+            }
+          ]);
+
+          // --- With an array of nested components specified in a query (using '$any') ---
+
+          ForkedUser = User.fork();
+
+          const organization1 = ForkedUser.Organization.create({id: 'org1'}, {isNew: false});
+          const organization2 = ForkedUser.Organization.create({id: 'org2'}, {isNew: false});
+
+          users = await ForkedUser.find({organization: {$any: [organization1, organization2]}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
         });
 
         test('count()', async () => {
