@@ -23,10 +23,10 @@ export class Route {
     this._name = name;
 
     this._pattern = pattern;
-    this._parsedPattern = new Path(pattern);
+    this._parsedPattern = new Path(pattern, {urlParamsEncoding: 'none'});
 
     this._aliases = aliases;
-    this._parsedAliases = aliases.map((alias) => new Path(alias));
+    this._parsedAliases = aliases.map((alias) => new Path(alias, {urlParamsEncoding: 'none'}));
   }
 
   getName() {

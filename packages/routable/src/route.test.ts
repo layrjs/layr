@@ -67,5 +67,11 @@ describe('Route', () => {
     expect(() => route.generateURL({})).toThrow();
     expect(() => route.generateURL({id: ''})).toThrow();
     expect(() => route.generateURL({ref: 'abc123'})).toThrow();
+
+    // --- Using parameter constraints ---
+
+    route = new Route('Main', '/:mentionName<@[a-zA-Z0-9]+>');
+
+    expect(route.generateURL({mentionName: '@user'})).toBe('/@user');
   });
 });

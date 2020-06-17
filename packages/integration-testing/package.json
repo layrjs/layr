@@ -1,6 +1,6 @@
 {
   "name": "@liaison/integration-testing",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "private": true,
   "description": "Tests involving a combination of Liaison packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -30,7 +30,7 @@
     "@liaison/component-http-server": "^0.5.7",
     "@liaison/component-server": "^0.5.7",
     "@liaison/memory-router": "^0.5.5",
-    "@liaison/routable": "^0.5.6",
+    "@liaison/routable": "^0.5.7",
     "@liaison/storable": "^0.5.14",
     "tslib": "^1.13.0"
   },
