@@ -16,9 +16,13 @@ import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
 import debugModule from 'debug';
 
-const debug = debugModule('liaison:component-server');
 // To display the debug log, set this environment:
 // DEBUG=liaison:component-server DEBUG_DEPTH=5
+const debug = debugModule('liaison:component-server');
+
+// To display errors occurring while invoking queries, set this environment:
+// DEBUG=liaison:component-server:error DEBUG_DEPTH=5
+const debugError = debugModule('liaison:component-server:error');
 
 import {isComponentServerInstance} from './utilities';
 
@@ -95,6 +99,12 @@ export class ComponentServer {
     };
 
     const errorHandler = function (error: Error) {
+      debugError(
+        `An error occurred while invoking a query (query: %o, components: %o)\n%s`,
+        serializedQuery,
+        serializedComponents,
+        error.stack
+      );
       return error;
     };
 

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-server",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "Serves your Liaison components",
   "keywords": [
     "liaison",
