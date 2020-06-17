@@ -130,6 +130,37 @@ describe('Decorators', () => {
     expect(attr.evaluateDefault()).toBe('');
     expect(attr.getValue()).toBe('');
     expect(film.country).toBe('');
+
+    // --- Using getters ---
+
+    class MotionPicture extends Component {
+      @attribute({getter: () => 100}) static limit;
+
+      @attribute({getter: () => 'Untitled'}) title;
+    }
+
+    expect(MotionPicture.limit).toBe(100);
+    expect(MotionPicture.prototype.title).toBe('Untitled');
+
+    expect(() => {
+      class MotionPicture extends Component {
+        @attribute({getter: () => 100}) static limit = 30;
+      }
+
+      return MotionPicture;
+    }).toThrow(
+      "An attribute cannot have both a getter or setter and an initial value (component: 'MotionPicture', attribute: 'limit')"
+    );
+
+    expect(() => {
+      class MotionPicture extends Component {
+        @attribute({getter: () => 'Untitled'}) title = '';
+      }
+
+      return MotionPicture;
+    }).toThrow(
+      "An attribute cannot have both a getter or setter and a default value (component: 'MotionPicture', attribute: 'title')"
+    );
   });
 
   test('@primaryIdentifier()', async () => {

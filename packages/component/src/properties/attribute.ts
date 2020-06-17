@@ -72,13 +72,13 @@ export class Attribute extends Observable(Property) {
     this._valueType = createValueType(valueType, this, {validators, items});
 
     if (getter !== undefined || setter !== undefined) {
-      if (hasInitialValue) {
+      if (initialValue !== undefined) {
         throw new Error(
           `An attribute cannot have both a getter or setter and an initial value (${this.describe()})`
         );
       }
 
-      if (hasDefaultValue) {
+      if (defaultValue !== undefined) {
         throw new Error(
           `An attribute cannot have both a getter or setter and a default value (${this.describe()})`
         );
