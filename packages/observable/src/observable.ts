@@ -241,11 +241,10 @@ export class ObserverSet {
 
       _observerStack.add(observer);
       try {
-        if (typeof observer === 'function') {
-          observer({_observerStack});
-        } else {
-          // The observer is an observable
+        if (isObservable(observer)) {
           observer.callObservers({_observerStack});
+        } else {
+          observer({_observerStack});
         }
       } finally {
         _observerStack.delete(observer);
