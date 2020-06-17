@@ -1,6 +1,6 @@
 {
   "name": "@liaison/storable",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "description": "A mixin providing persistence capabilities to Liaison components",
   "keywords": [
     "liaison",
@@ -32,22 +32,22 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-store": "^0.5.4",
-    "@liaison/component": "^0.5.5",
+    "@liaison/abstract-store": "^0.5.5",
+    "@liaison/component": "^0.5.7",
     "core-helpers": "^0.1.26",
     "lodash": "^4.17.15",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@liaison/component-client": "^0.5.8",
-    "@liaison/component-server": "^0.5.6",
-    "@liaison/memory-store": "^0.5.4",
-    "@liaison/mongodb-store": "^0.5.5",
+    "@liaison/component-client": "^0.5.9",
+    "@liaison/component-server": "^0.5.7",
+    "@liaison/memory-store": "^0.5.5",
+    "@liaison/mongodb-store": "^0.5.6",
     "@mvila/dev-tools": "^1.0.23",
     "@mvila/tsconfig": "^1.0.4",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.155",
-    "@types/mongodb": "^3.5.20",
+    "@types/mongodb": "^3.5.22",
     "mongodb": "^3.5.9",
     "mongodb-memory-server": "^6.6.1"
   }

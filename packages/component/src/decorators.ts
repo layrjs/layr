@@ -1,4 +1,4 @@
-import {hasOwnProperty} from 'core-helpers';
+import {hasOwnProperty, getPropertyDescriptor} from 'core-helpers';
 
 import {Component} from './component';
 import {
@@ -127,7 +127,7 @@ export function createAttributeDecorator(
     }
 
     if (determineCompiler(descriptor) === 'babel-legacy') {
-      return Object.getOwnPropertyDescriptor(target, name) as void;
+      return getPropertyDescriptor(target, name) as void;
     }
   };
 }
@@ -270,15 +270,16 @@ export function expose(exposure: ClassExposure | PropertyExposure = {}) {
 }
 
 export function provide() {
-  return function (target: typeof Component, name: string) {
+  return function (target: typeof Component, name: string, descriptor?: PropertyDescriptor) {
     if (!isComponentClass(target)) {
       throw new Error(
         `@provide() must be used inside a component class with as static attribute declaration (attribute: '${name}')`
       );
     }
 
-    const descriptor = Object.getOwnPropertyDescriptor(target, name);
-    const component = descriptor?.value;
+    const compiler = determineCompiler(descriptor);
+
+    const component = Object.getOwnPropertyDescriptor(target, name)?.value;
 
     if (!isComponentClass(component)) {
       throw new Error(
@@ -287,6 +288,10 @@ export function provide() {
     }
 
     target.provideComponent(component);
+
+    if (compiler === 'babel-legacy') {
+      return getPropertyDescriptor(target, name) as void;
+    }
   };
 }
 
@@ -317,7 +322,7 @@ export function consume() {
     target.consumeComponent(name);
 
     if (compiler === 'babel-legacy') {
-      return Object.getOwnPropertyDescriptor(target, name) as void;
+      return getPropertyDescriptor(target, name) as void;
     }
   };
 }

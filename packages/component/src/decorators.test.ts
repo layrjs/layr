@@ -433,7 +433,9 @@ describe('Decorators', () => {
     }
 
     expect(Movie.getConsumedComponent('Director')).toBe(Director);
+    expect(Movie.Director).toBe(Director);
     expect(Director.getConsumedComponent('Movie')).toBe(Movie);
+    expect(Director.Movie).toBe(Movie);
 
     ((Backend, BackendMovie, BackendDirector) => {
       class Movie extends BackendMovie {
@@ -450,14 +452,18 @@ describe('Decorators', () => {
       }
 
       expect(Movie.getConsumedComponent('Director')).toBe(Director);
+      expect(Movie.Director).toBe(Director);
       expect(Director.getConsumedComponent('Movie')).toBe(Movie);
+      expect(Director.Movie).toBe(Movie);
 
       return Frontend;
     })(Backend, Movie, Director);
 
     // The backend should not be affected by the frontend
     expect(Movie.getConsumedComponent('Director')).toBe(Director);
+    expect(Movie.Director).toBe(Director);
     expect(Director.getConsumedComponent('Movie')).toBe(Movie);
+    expect(Director.Movie).toBe(Movie);
 
     expect(() => {
       class Movie extends Component {

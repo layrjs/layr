@@ -1,6 +1,6 @@
 {
   "name": "@liaison/integration-testing",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "private": true,
   "description": "Tests involving a combination of Liaison packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -22,16 +22,16 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-router": "^0.5.4",
-    "@liaison/abstract-store": "^0.5.4",
-    "@liaison/component": "^0.5.5",
-    "@liaison/component-client": "^0.5.8",
-    "@liaison/component-http-client": "^0.5.8",
-    "@liaison/component-http-server": "^0.5.6",
-    "@liaison/component-server": "^0.5.6",
-    "@liaison/memory-router": "^0.5.4",
-    "@liaison/routable": "^0.5.5",
-    "@liaison/storable": "^0.5.13",
+    "@liaison/abstract-router": "^0.5.5",
+    "@liaison/abstract-store": "^0.5.5",
+    "@liaison/component": "^0.5.7",
+    "@liaison/component-client": "^0.5.9",
+    "@liaison/component-http-client": "^0.5.9",
+    "@liaison/component-http-server": "^0.5.7",
+    "@liaison/component-server": "^0.5.7",
+    "@liaison/memory-router": "^0.5.5",
+    "@liaison/routable": "^0.5.6",
+    "@liaison/storable": "^0.5.14",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
