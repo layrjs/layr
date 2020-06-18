@@ -1,6 +1,6 @@
 {
   "name": "@liaison/storable",
-  "version": "0.5.17",
+  "version": "0.5.19",
   "description": "A mixin providing persistence capabilities to Liaison components",
   "keywords": [
     "liaison",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@liaison/abstract-store": "^0.5.6",
-    "@liaison/component": "^0.5.9",
+    "@liaison/component": "^0.5.10",
     "core-helpers": "^0.1.26",
     "lodash": "^4.17.15",
     "tslib": "^1.13.0"

@@ -1822,12 +1822,6 @@ export class Component extends Observable(Object) {
       includeComponentTypes = true
     } = options;
 
-    if (returnComponentReferences && !includeComponentTypes) {
-      throw new Error(
-        `The 'returnComponentReferences' option cannot be 'true' when the 'includeComponentTypes' option is 'false' (${this.describeComponent()})`
-      );
-    }
-
     const serializedComponent: PlainObject = {};
 
     if (includeComponentTypes) {
@@ -1866,12 +1860,6 @@ export class Component extends Observable(Object) {
       includeComponentTypes = true,
       includeIsNewMarks = true
     } = options;
-
-    if (returnComponentReferences && !includeComponentTypes) {
-      throw new Error(
-        `The 'returnComponentReferences' option cannot be 'true' when the 'includeComponentTypes' option is 'false' (${this.describeComponent()})`
-      );
-    }
 
     const serializedComponent: PlainObject = {};
 

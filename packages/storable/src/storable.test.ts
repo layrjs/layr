@@ -1444,9 +1444,9 @@ describe('Storable', () => {
 
           let ForkedUser = User.fork();
 
-          const user = ForkedUser.create({id: 'user1'}, {isNew: false});
+          const user = await ForkedUser.get('user1', {email: true});
 
-          users = await ForkedUser.find(user, {email: true});
+          users = await ForkedUser.find(user, {fullName: true});
 
           expect(users).toHaveLength(1);
           expect(users[0]).toBe(user);
@@ -1454,14 +1454,15 @@ describe('Storable', () => {
             __component: 'User',
             __new: false,
             id: 'user1',
-            email: '1@user.com'
+            email: '1@user.com',
+            fullName: 'User 1'
           });
 
           // --- With an a nested component specified in a query ---
 
           ForkedUser = User.fork();
 
-          const organization = ForkedUser.Organization.create({id: 'org2'}, {isNew: false});
+          const organization = await ForkedUser.Organization.get('org2');
 
           users = await ForkedUser.find({organization}, {});
 

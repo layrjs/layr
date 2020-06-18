@@ -969,7 +969,11 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     static __serializeQuery(query: Query) {
-      return serialize(query, {includeComponentTypes: false, includeIsNewMarks: false});
+      return serialize(query, {
+        returnComponentReferences: true,
+        includeComponentTypes: false,
+        includeIsNewMarks: false
+      });
     }
 
     // === Hooks ===
