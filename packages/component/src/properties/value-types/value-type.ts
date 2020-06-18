@@ -71,6 +71,12 @@ export class ValueType {
     return normalizedAttributeSelector !== false;
   }
 
+  isValidValue(value: unknown) {
+    const failedValidators = this.runValidators(value);
+
+    return failedValidators.length === 0;
+  }
+
   runValidators(value: unknown, _attributeSelector?: AttributeSelector) {
     const failedValidators = runValidators(this.getValidators(), value, {
       isOptional: this.isOptional()
