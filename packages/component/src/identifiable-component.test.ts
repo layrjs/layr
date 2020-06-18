@@ -545,6 +545,28 @@ describe('Identifiable component', () => {
     expect(forkedAuthor).not.toBe(author);
     expect(forkedAuthor.id).toBe('abc123');
     expect(forkedAuthor.email).toBe('hi@hello.com');
+
+    expect(ForkedUser.getIdentityMap().getComponent({id: 'abc123'})).toBe(forkedAuthor);
+
+    // --- With a serialized nested entity ---
+
+    const deserializedArticle = ForkedArticle.deserializeInstance({
+      id: 'xyz789',
+      title: 'Hello 2',
+      author: {__component: 'User', __new: false, id: 'abc123'}
+    }) as Article;
+
+    const deserializedAuthor = deserializedArticle.author;
+
+    expect(deserializedAuthor.constructor).toBe(ForkedUser);
+    expect(deserializedAuthor).toBeInstanceOf(ForkedUser);
+
+    expect(deserializedAuthor.isForkOf(author)).toBe(true);
+    expect(deserializedAuthor).not.toBe(author);
+    expect(deserializedAuthor.id).toBe('abc123');
+    expect(deserializedAuthor.email).toBe('hi@hello.com');
+
+    expect(deserializedAuthor).toBe(forkedAuthor);
   });
 
   test('getGhost()', async () => {

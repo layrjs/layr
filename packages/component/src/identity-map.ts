@@ -49,7 +49,6 @@ export class IdentityMap {
       if (!hasOwnProperty(index, value)) {
         // The component's class has been forked
         component = component.fork({parentComponent: parent});
-        this.addComponent(component);
       }
 
       return component;

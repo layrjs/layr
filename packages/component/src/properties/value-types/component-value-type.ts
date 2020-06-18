@@ -51,7 +51,7 @@ export class ComponentValueType extends ValueType {
     }
 
     if (isComponentInstance(value) && isComponentInstance(component)) {
-      return value.isForkOf(component);
+      return value.constructor === component.constructor || value.isForkOf(component);
     }
 
     return false;

@@ -1617,6 +1617,10 @@ export class Component extends Observable(Object) {
           enumerable: false,
           configurable: true
         });
+
+        if (forkedComponent.hasPrimaryIdentifierAttribute() && forkedComponent.isAttached()) {
+          component.getIdentityMap().addComponent(forkedComponent);
+        }
       }
     }
 

@@ -529,6 +529,15 @@ describe('Storable', () => {
           await expect(user.load({})).rejects.toThrow(
             "Cannot load a storable component that is marked as new (component: 'User')"
           );
+
+          // --- With a nested identifiable component loaded from a fork ---
+
+          const ForkedUser = User.fork();
+          const organization = await ForkedUser.Organization.get('org1');
+          const ForkedUserFork = ForkedUser.fork();
+          user = await ForkedUserFork.get('user1', {organization: {}});
+
+          expect(user.organization?.isForkOf(organization));
         });
 
         test('save()', async () => {
