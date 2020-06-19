@@ -35,6 +35,11 @@ describe('Decorators', () => {
     expect(attr.getValue()).toBe(100);
     expect(Movie.limit).toBe(100);
 
+    Movie.limit = 500;
+
+    expect(attr.getValue()).toBe(500);
+    expect(Movie.limit).toBe(500);
+
     let descriptor = Object.getOwnPropertyDescriptor(Movie, 'limit')!;
 
     expect(typeof descriptor.get).toBe('function');
@@ -60,10 +65,17 @@ describe('Decorators', () => {
     expect(attr.getValue()).toBe('');
     expect(movie.title).toBe('');
 
+    movie.title = 'The Matrix';
+
+    expect(attr.getValue()).toBe('The Matrix');
+    expect(movie.title).toBe('The Matrix');
+
     descriptor = Object.getOwnPropertyDescriptor(Movie.prototype, 'title')!;
 
     expect(typeof descriptor.get).toBe('function');
     expect(typeof descriptor.set).toBe('function');
+
+    expect(Object.getOwnPropertyDescriptor(movie, 'title')).toBe(undefined);
 
     attr = movie.getAttribute('country');
 
@@ -74,6 +86,11 @@ describe('Decorators', () => {
     expect(attr.evaluateDefault()).toBeUndefined();
     expect(attr.getValue()).toBeUndefined();
     expect(movie.country).toBeUndefined();
+
+    movie.country = 'USA';
+
+    expect(attr.getValue()).toBe('USA');
+    expect(movie.country).toBe('USA');
 
     expect(Movie.hasAttribute('offset')).toBe(false);
     expect(() => Movie.getAttribute('offset')).toThrow(
@@ -98,8 +115,14 @@ describe('Decorators', () => {
     expect(isAttributeInstance(attr)).toBe(true);
     expect(attr.getName()).toBe('limit');
     expect(attr.getParent()).toBe(Film);
-    expect(attr.getValue()).toBe(100);
-    expect(Film.limit).toBe(100);
+    expect(attr.getValue()).toBe(500);
+    expect(Film.limit).toBe(500);
+
+    Film.limit = 1000;
+
+    expect(attr.getValue()).toBe(1000);
+    expect(Film.limit).toBe(1000);
+    expect(Movie.limit).toBe(500);
 
     attr = Film.getAttribute('token');
 
@@ -120,6 +143,11 @@ describe('Decorators', () => {
     expect(attr.evaluateDefault()).toBe('');
     expect(attr.getValue()).toBe('');
     expect(film.title).toBe('');
+
+    film.title = 'Léon';
+
+    expect(attr.getValue()).toBe('Léon');
+    expect(film.title).toBe('Léon');
 
     attr = film.getAttribute('country');
 

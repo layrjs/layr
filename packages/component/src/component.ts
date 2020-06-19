@@ -113,10 +113,7 @@ export class Component extends Observable(Object) {
       const name = attribute.getName();
       const value = hasOwnProperty(object, name) ? object[name] : attribute.evaluateDefault();
       attribute.setValue(value);
-
-      if (attribute._isDefaultFromConstructor) {
-        attribute._ignoreNextSetValueCall = true;
-      }
+      attribute._fixDecoration();
     }
   }
 

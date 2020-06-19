@@ -116,17 +116,19 @@ export function createAttributeDecorator(
 
     const attribute = target.setProperty(name, AttributeClass, attributeOptions) as Attribute;
 
-    if ('default' in attributeOptions) {
-      if (attribute._isDefaultFromConstructor) {
+    const compiler = determineCompiler(descriptor);
+
+    if (compiler === 'typescript' && 'default' in attributeOptions) {
+      if (attribute._isDefaultSetInConstructor) {
         throw new Error(
           `Cannot set a default value to an attribute that already has an inherited default value (property: '${name}')`
         );
       }
 
-      attribute._isDefaultFromConstructor = true;
+      attribute._isDefaultSetInConstructor = true;
     }
 
-    if (determineCompiler(descriptor) === 'babel-legacy') {
+    if (compiler === 'babel-legacy') {
       return getPropertyDescriptor(target, name) as void;
     }
   };

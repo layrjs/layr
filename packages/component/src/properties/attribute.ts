@@ -262,7 +262,6 @@ export class Attribute extends Observable(Property) {
   // === Default value ===
 
   _default?: unknown;
-  _isDefaultFromConstructor?: boolean;
 
   getDefault() {
     return this._default;
@@ -276,6 +275,14 @@ export class Attribute extends Observable(Property) {
     }
 
     return value;
+  }
+
+  _isDefaultSetInConstructor?: boolean;
+
+  _fixDecoration() {
+    if (this._isDefaultSetInConstructor) {
+      this._ignoreNextSetValueCall = true;
+    }
   }
 
   // === Attribute selectors ===
