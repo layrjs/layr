@@ -196,6 +196,8 @@ describe('Storable', () => {
           class Picture extends BasePicture {}
 
           @expose({
+            get: {call: true},
+
             prototype: {
               id: {get: true, set: true},
               name: {get: true, set: true},
@@ -206,6 +208,7 @@ describe('Storable', () => {
           class Organization extends BaseOrganization {}
 
           @expose({
+            get: {call: true},
             find: {call: true},
             count: {call: true},
 
@@ -268,9 +271,15 @@ describe('Storable', () => {
           const User = userClassProvider();
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
-            return await expect(User.fork().get({id: 'user1'})).rejects.toThrow(
+            await expect(User.fork().get({id: 'user1'})).rejects.toThrow(
               "To be able to execute the load() method (called from get()), a storable component should be registered in a store or have an exposed load() remote method (component: 'User')"
             );
+
+            await expect(User.fork().get({email: '1@user.com'})).rejects.toThrow(
+              "To be able to execute the get() method with a secondary identifier, a storable component should be registered in a store or have an exposed get() remote method (component: 'User')"
+            );
+
+            return;
           }
 
           let user = await User.fork().get('user1');
@@ -406,9 +415,15 @@ describe('Storable', () => {
           const User = userClassProvider();
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
-            return await expect(User.fork().has('user1')).rejects.toThrow(
+            await expect(User.fork().has('user1')).rejects.toThrow(
               "To be able to execute the load() method (called from has()), a storable component should be registered in a store or have an exposed load() remote method (component: 'User')"
             );
+
+            await expect(User.fork().has({email: '1@user.com'})).rejects.toThrow(
+              "To be able to execute the get() method (called from has()) with a secondary identifier, a storable component should be registered in a store or have an exposed get() remote method (component: 'User')"
+            );
+
+            return;
           }
 
           expect(await User.fork().has('user1')).toBe(true);

@@ -339,7 +339,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       attributeSelector?: AttributeSelector,
       options?: {reload?: boolean; throwIfMissing?: boolean; _callerMethodName?: string}
     ): Promise<InstanceType<T>>;
-    static async get<T extends typeof StorableComponent>(
+    @method() static async get<T extends typeof StorableComponent>(
       this: T,
       identifierDescriptor: IdentifierDescriptor,
       attributeSelector: AttributeSelector = true,
@@ -348,7 +348,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       identifierDescriptor = this.normalizeIdentifierDescriptor(identifierDescriptor);
       attributeSelector = normalizeAttributeSelector(attributeSelector);
 
-      const {reload = false, throwIfMissing = true, _callerMethodName = 'get'} = options;
+      const {reload = false, throwIfMissing = true, _callerMethodName} = options;
 
       let storable = this.getIdentityMap().getComponent(identifierDescriptor) as InstanceType<T>;
 
@@ -358,7 +358,38 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         })) as unknown) as InstanceType<T>;
       }
 
-      return await storable.load(attributeSelector, {reload, throwIfMissing, _callerMethodName});
+      if (!storable.getPrimaryIdentifierAttribute().isSet()) {
+        if (this.hasStore()) {
+          // Nothing to do, the storable will be loaded by load()
+        } else if (this.hasRemoteMethod('get')) {
+          // Let's fetch the primary identifier
+          storable = await this.callRemoteMethod(
+            'get',
+            identifierDescriptor,
+            {},
+            {
+              reload,
+              throwIfMissing
+            }
+          );
+
+          if (storable === undefined) {
+            return;
+          }
+        } else {
+          throw new Error(
+            `To be able to execute the get() method${describeCaller(
+              _callerMethodName
+            )} with a secondary identifier, a storable component should be registered in a store or have an exposed get() remote method (${this.describeComponent()})`
+          );
+        }
+      }
+
+      return await storable.load(attributeSelector, {
+        reload,
+        throwIfMissing,
+        _callerMethodName: _callerMethodName ?? 'get'
+      });
     }
 
     static async has(identifierDescriptor: IdentifierDescriptor, options: {reload?: boolean} = {}) {
