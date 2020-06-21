@@ -1,6 +1,6 @@
 {
   "name": "@liaison/browser-router",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "description": "A Liaison router for the browser",
   "keywords": [
     "liaison",
@@ -26,8 +26,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-router": "^0.5.8",
-    "@liaison/component": "^0.5.16",
+    "@liaison/abstract-router": "^0.5.9",
+    "@liaison/component": "^0.5.17",
     "core-helpers": "^0.1.26",
     "tslib": "^1.13.0"
   },
