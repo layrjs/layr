@@ -13,7 +13,7 @@ import {
 import {fork} from '../forking';
 import {AttributeSelector} from './attribute-selector';
 import type {Validator, ValidatorFunction} from '../validation';
-import {isComponentClass} from '../utilities';
+import {isComponentClass, isComponentInstance, ensureComponentClass} from '../utilities';
 
 export type AttributeOptions = PropertyOptions & {
   valueType?: string;
@@ -140,8 +140,12 @@ export class Attribute extends Observable(Property) {
 
     if (autoFork && !hasOwnProperty(this, '_value')) {
       const parent = this.getParent();
+      const value = this._value;
+      const componentClass = isComponentInstance(value)
+        ? ensureComponentClass(parent).getComponent(value.constructor.getComponentName())
+        : undefined;
 
-      let forkedValue = fork(this._value, {parentComponent: parent});
+      let forkedValue = fork(value, {componentClass});
 
       if (canBeObserved(forkedValue)) {
         if (!isObservable(forkedValue)) {

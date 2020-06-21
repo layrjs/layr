@@ -55,7 +55,6 @@ import {
   isComponentClassOrInstance,
   assertIsComponentClass,
   assertIsComponentInstance,
-  assertIsComponentClassOrInstance,
   ensureComponentClass,
   assertIsComponentName,
   getComponentNameFromComponentClassType,
@@ -1299,7 +1298,7 @@ export class Component extends Observable(Object) {
 
     if (!hasOwnProperty(providedComponents, name)) {
       // Since the host component has been forked, the provided component must be forked as well
-      providedComponent = providedComponent.fork({_newComponentProvider: this});
+      providedComponent = providedComponent.fork({componentProvider: this});
       providedComponents[name] = providedComponent;
     }
 
@@ -1565,19 +1564,8 @@ export class Component extends Observable(Object) {
 
   // === Forking ===
 
-  static fork<T extends typeof Component>(
-    this: T,
-    options: {_newComponentProvider?: typeof Component} = {}
-  ): T {
-    const {_newComponentProvider} = options;
-
-    const existingComponentProvider = this.__getComponentProvider();
-
-    if (existingComponentProvider !== undefined && _newComponentProvider === undefined) {
-      throw new Error(
-        `Cannot fork a component class which is provided by another component; please consider forking the component root instead (${this.describeComponent()})`
-      );
-    }
+  static fork<T extends typeof Component>(this: T, options: ForkOptions = {}): T {
+    const {componentProvider = this.__getComponentProvider()} = options;
 
     const name = this.getComponentName();
 
@@ -1586,38 +1574,36 @@ export class Component extends Observable(Object) {
     // @ts-ignore
     const {[name]: forkedComponent} = {[name]: class extends this {}};
 
-    if (_newComponentProvider !== undefined) {
-      forkedComponent.__setComponentProvider(_newComponentProvider);
+    if (componentProvider !== undefined) {
+      forkedComponent.__setComponentProvider(componentProvider);
     }
 
     return forkedComponent;
   }
 
   fork<T extends Component>(this: T, options: ForkOptions = {}) {
-    const {parentComponent} = options;
+    let {componentClass} = options;
+
+    if (componentClass === undefined) {
+      componentClass = this.constructor.fork();
+    } else {
+      assertIsComponentClass(componentClass);
+    }
 
     const forkedComponent = Object.create(this) as T;
 
-    if (parentComponent !== undefined) {
-      assertIsComponentClassOrInstance(parentComponent);
+    if (this.constructor !== componentClass) {
+      // Make 'forkedComponent' believe that it is an instance of 'Component'
+      // It can happen when a nested entity is forked
+      Object.defineProperty(forkedComponent, 'constructor', {
+        value: componentClass,
+        writable: true,
+        enumerable: false,
+        configurable: true
+      });
 
-      const component = ensureComponentClass(parentComponent).getComponent(
-        this.constructor.getComponentName()
-      );
-
-      if (this.constructor !== component) {
-        // Make 'forkedComponent' believe that it is an instance of 'Component'
-        // It can happen when a nested entity is forked
-        Object.defineProperty(forkedComponent, 'constructor', {
-          value: component,
-          writable: true,
-          enumerable: false,
-          configurable: true
-        });
-
-        if (forkedComponent.hasPrimaryIdentifierAttribute() && forkedComponent.isAttached()) {
-          component.getIdentityMap().addComponent(forkedComponent);
-        }
+      if (forkedComponent.hasPrimaryIdentifierAttribute() && forkedComponent.isAttached()) {
+        componentClass.getIdentityMap().addComponent(forkedComponent);
       }
     }
 
@@ -1669,7 +1655,7 @@ export class Component extends Observable(Object) {
     let ghostComponent = ghostIdentityMap.getComponent(identifiers);
 
     if (ghostComponent === undefined) {
-      ghostComponent = this.fork({parentComponent: ghostClass});
+      ghostComponent = this.fork({componentClass: ghostClass});
       ghostIdentityMap.addComponent(ghostComponent);
     }
 

@@ -48,7 +48,7 @@ export class IdentityMap {
 
       if (!hasOwnProperty(index, value)) {
         // The component's class has been forked
-        component = component.fork({parentComponent: parent});
+        component = component.fork({componentClass: parent});
       }
 
       return component;
@@ -106,7 +106,7 @@ export class IdentityMap {
     }
 
     if (newValue !== undefined) {
-      if (newValue in index) {
+      if (hasOwnProperty(index, newValue)) {
         throw new Error(
           `A component with the same identifier already exists (${component.describeComponent()}, attribute: '${attributeName}')`
         );

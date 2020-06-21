@@ -350,12 +350,14 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       const {reload = false, throwIfMissing = true, _callerMethodName} = options;
 
-      let storable = this.getIdentityMap().getComponent(identifierDescriptor) as InstanceType<T>;
+      let storable = this.getIdentityMap().getComponent(identifierDescriptor) as
+        | InstanceType<T>
+        | undefined;
 
       if (storable === undefined) {
-        storable = ((await this.create(identifierDescriptor, {
+        storable = (await this.create(identifierDescriptor, {
           isNew: false
-        })) as unknown) as InstanceType<T>;
+        })) as InstanceType<T>;
       }
 
       if (!storable.getPrimaryIdentifierAttribute().isSet()) {

@@ -4,7 +4,8 @@ import type {Component} from './component';
 import {isComponentClass, isComponentInstance} from './utilities';
 
 export type ForkOptions = SimpleForkOptions & {
-  parentComponent?: typeof Component | Component;
+  componentProvider?: typeof Component;
+  componentClass?: typeof Component;
 };
 
 export function fork(value: any, options: ForkOptions = {}) {
@@ -20,7 +21,7 @@ export function fork(value: any, options: ForkOptions = {}) {
     }
 
     if (isComponentClass(object)) {
-      return object.fork();
+      return object.fork(options);
     }
 
     if (isComponentInstance(object)) {

@@ -91,6 +91,29 @@ describe('Identity map', () => {
     ).toThrow(
       "A component with the same identifier already exists (component: 'User', attribute: 'email')"
     );
+
+    // --- Forking ---
+
+    const ForkedUser = User.fork();
+
+    const forkedIdentityMap = identityMap.fork(ForkedUser);
+
+    const forkedUser = forkedIdentityMap.getComponent({email: 'salut@bonjour.com'}) as User;
+
+    expect(forkedUser.isForkOf(user)).toBe(true);
+
+    forkedUser.email = 'hi@hello.com';
+
+    forkedIdentityMap.updateComponent(forkedUser, 'email', {
+      previousValue: 'salut@bonjour.com',
+      newValue: 'hi@hello.com'
+    });
+
+    expect(forkedIdentityMap.getComponent({email: 'hi@hello.com'})).toBe(forkedUser);
+
+    expect(() => forkedIdentityMap.getComponent({email: 'salut@bonjour.com'})).toThrow(
+      "A component with the same identifier already exists (component: 'User', attribute: 'id')"
+    );
   });
 
   test('removeComponent()', async () => {

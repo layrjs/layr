@@ -61,7 +61,7 @@ describe('Forking', () => {
     expect(movie.tags).toEqual(['drama']);
     expect(movie.specs).toEqual({duration: 120});
 
-    forkedMovie = movie.fork({parentComponent: ForkedMovie});
+    forkedMovie = movie.fork({componentClass: ForkedMovie});
 
     expect(forkedMovie).toBeInstanceOf(Component);
     expect(forkedMovie).toBeInstanceOf(Movie);
@@ -120,9 +120,10 @@ describe('Forking', () => {
 
     const forkedMovie = movie.fork();
 
-    expect(forkedMovie.director.constructor).toBe(Director);
     expect(forkedMovie.director).not.toBe(movie.director);
     expect(forkedMovie.director.name).toBe('Christopher Nolan');
+    expect(forkedMovie.director.constructor.isForkOf(Director)).toBe(true);
+    expect(forkedMovie.director.isForkOf(movie.director)).toBe(true);
 
     forkedMovie.director.name = 'Christopher Nolan 2';
 
