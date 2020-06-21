@@ -598,7 +598,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     ) {
       const isNew = this.isNew();
 
-      attributeSelector = this.expandAttributeSelector(attributeSelector);
+      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector);
 
       const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
 
@@ -608,9 +608,11 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         );
       }
 
-      const computedAttributes = this.getStorableComputedAttributes({attributeSelector});
+      const computedAttributes = this.getStorableComputedAttributes({
+        attributeSelector: expandedAttributeSelector
+      });
       const nonComputedAttributeSelector = removeFromAttributeSelector(
-        attributeSelector,
+        expandedAttributeSelector,
         createAttributeSelectorFromAttributes(computedAttributes)
       );
 
@@ -624,7 +626,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
           throwIfExists
         });
       } else if (this.hasRemoteMethod('save')) {
-        savedStorable = await this.callRemoteMethod('save', nonComputedAttributeSelector, {
+        savedStorable = await this.callRemoteMethod('save', attributeSelector, {
           throwIfMissing,
           throwIfExists
         });
