@@ -1733,7 +1733,7 @@ export class Component extends Observable(Object) {
 
       const mergedValue = merge(value, forkedValue, options);
 
-      attribute.setValue(mergedValue);
+      attribute.setValue(mergedValue, {source: forkedAttribute.getValueSource()});
     }
   }
 
