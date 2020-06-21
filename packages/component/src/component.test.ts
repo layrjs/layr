@@ -45,6 +45,13 @@ describe('Component', () => {
 
       expect(movie.title).toBe('Inception');
       expect(movie.country).toBe('');
+
+      Movie.prototype.getAttribute('country').markAsControlled();
+
+      movie = new Movie();
+
+      expect(movie.title).toBe('');
+      expect(movie.getAttribute('country').isSet()).toBe(false);
     });
 
     test('create()', async () => {
@@ -97,6 +104,13 @@ describe('Component', () => {
       );
 
       expect(movie.title).toBe('Inception');
+      expect(movie.getAttribute('country').isSet()).toBe(false);
+
+      Movie.prototype.getAttribute('country').markAsControlled();
+
+      movie = new Movie();
+
+      expect(movie.title).toBe('');
       expect(movie.getAttribute('country').isSet()).toBe(false);
     });
   });
@@ -1407,7 +1421,7 @@ describe('Component', () => {
         consumedComponents: ['Cinema']
       });
 
-      Movie.prototype.getAttribute('title').setExposure({get: true});
+      Movie.prototype.getAttribute('title').setExposure({get: true, set: true});
       Movie.prototype.getAttribute('country').setExposure({get: true});
       Movie.prototype.getMethod('load').setExposure({call: true});
 
@@ -1437,7 +1451,7 @@ describe('Component', () => {
               type: 'Attribute',
               valueType: 'string',
               default: defaultTitle,
-              exposure: {get: true}
+              exposure: {get: true, set: true}
             },
             {name: 'country', type: 'Attribute', valueType: 'string?', exposure: {get: true}},
             {name: 'load', type: 'Method', exposure: {call: true}}
@@ -1497,7 +1511,7 @@ describe('Component', () => {
                 type: 'Attribute',
                 valueType: 'number',
                 value: 100,
-                exposure: {get: true}
+                exposure: {get: true, set: true}
               },
               {name: 'find', type: 'Method', exposure: {call: true}}
             ],
@@ -1508,7 +1522,7 @@ describe('Component', () => {
                   type: 'Attribute',
                   valueType: 'string',
                   default: defaultTitle,
-                  exposure: {get: true}
+                  exposure: {get: true, set: true}
                 }
               ]
             },
@@ -1519,19 +1533,24 @@ describe('Component', () => {
 
       expect(Cinema.getComponentName()).toBe('Cinema');
       expect(Cinema.prototype.getAttribute('movies').getValueType().toString()).toBe('Movie[]?');
+      expect(Cinema.prototype.getAttribute('movies').getExposure()).toStrictEqual({get: true});
+      expect(Cinema.prototype.getAttribute('movies').isControlled()).toBe(true);
 
       const Movie = Cinema.getProvidedComponent('Movie')!;
 
       expect(Movie.getComponentName()).toBe('Movie');
       expect(Movie.getAttribute('limit').getValue()).toBe(100);
-      expect(Movie.getAttribute('limit').getExposure()).toStrictEqual({get: true});
+      expect(Movie.getAttribute('limit').getExposure()).toStrictEqual({get: true, set: true});
+      expect(Movie.getAttribute('limit').isControlled()).toBe(false);
       expect(Movie.getMethod('find').getExposure()).toStrictEqual({call: true});
       expect(Movie.getConsumedComponent('Cinema')).toBe(Cinema);
 
       expect(Movie.prototype.getAttribute('title').getDefault()).toBe(defaultTitle);
       expect(Movie.prototype.getAttribute('title').getExposure()).toStrictEqual({
-        get: true
+        get: true,
+        set: true
       });
+      expect(Movie.prototype.getAttribute('title').isControlled()).toBe(false);
 
       const movie = new Movie();
 

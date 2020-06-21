@@ -62,25 +62,27 @@ describe('PrimaryIdentifierAttribute', () => {
     class Movie extends Component {}
 
     expect(
-      new PrimaryIdentifierAttribute('id', Movie.prototype, {exposure: {get: true}}).introspect()
+      new PrimaryIdentifierAttribute('id', Movie.prototype, {
+        exposure: {get: true, set: true}
+      }).introspect()
     ).toStrictEqual({
       name: 'id',
       type: 'PrimaryIdentifierAttribute',
       valueType: 'string',
       default: primaryIdentifierAttributeStringDefaultValue,
-      exposure: {get: true}
+      exposure: {get: true, set: true}
     });
 
     expect(
       new PrimaryIdentifierAttribute('id', Movie.prototype, {
         valueType: 'number',
-        exposure: {get: true}
+        exposure: {get: true, set: true}
       }).introspect()
     ).toStrictEqual({
       name: 'id',
       type: 'PrimaryIdentifierAttribute',
       valueType: 'number',
-      exposure: {get: true}
+      exposure: {get: true, set: true}
     });
   });
 

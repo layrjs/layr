@@ -110,7 +110,18 @@ export class Component extends Observable(Object) {
 
     for (const attribute of this.getAttributes()) {
       const name = attribute.getName();
-      const value = hasOwnProperty(object, name) ? object[name] : attribute.evaluateDefault();
+      let value;
+
+      if (hasOwnProperty(object, name)) {
+        value = object[name];
+      } else {
+        if (attribute.isControlled()) {
+          continue; // Controlled attributes should not be set
+        }
+
+        value = attribute.evaluateDefault();
+      }
+
       attribute.setValue(value);
       attribute._fixDecoration();
     }
@@ -189,11 +200,18 @@ export class Component extends Observable(Object) {
             (isNotFilteredOut) => {
               if (isNotFilteredOut) {
                 const name = attribute.getName();
-                const value = hasOwnProperty(object, name)
-                  ? object[name]
-                  : isNew
-                  ? attribute.evaluateDefault()
-                  : undefined;
+                let value;
+
+                if (hasOwnProperty(object, name)) {
+                  value = object[name];
+                } else {
+                  if (attribute.isControlled()) {
+                    return; // Controlled attributes should not be set
+                  }
+
+                  value = isNew ? attribute.evaluateDefault() : undefined;
+                }
+
                 attribute.setValue(value, {source});
               }
             }
@@ -2015,7 +2033,7 @@ export class Component extends Observable(Object) {
       possiblyAsync(component.__deserializeAttributes(attributes, options), () => {
         if (isNew) {
           for (const attribute of component.getAttributes()) {
-            if (!attribute.isSet()) {
+            if (!(attribute.isSet() || attribute.isControlled())) {
               attribute.setValue(attribute.evaluateDefault());
             }
           }
@@ -2369,18 +2387,23 @@ export class Component extends Observable(Object) {
       const {name, options} = PropertyClass.unintrospect(introspectedProperty);
       const property = this.setProperty(name, PropertyClass, options);
 
-      if (
-        isMethodInstance(property) &&
-        property.getExposure()?.call === true &&
-        methodBuilder !== undefined &&
-        !(name in this)
-      ) {
-        Object.defineProperty(this, name, {
-          value: methodBuilder(name),
-          writable: true,
-          enumerable: false,
-          configurable: true
-        });
+      if (isAttributeInstance(property)) {
+        if (property.getExposure()?.set !== true) {
+          property.markAsControlled();
+        }
+      } else if (isMethodInstance(property)) {
+        if (
+          property.getExposure()?.call === true &&
+          methodBuilder !== undefined &&
+          !(name in this)
+        ) {
+          Object.defineProperty(this, name, {
+            value: methodBuilder(name),
+            writable: true,
+            enumerable: false,
+            configurable: true
+          });
+        }
       }
     }
   }

@@ -162,6 +162,28 @@ describe('Attribute', () => {
     );
   });
 
+  test('isControlled() and markAsControlled()', async () => {
+    class Movie extends Component {}
+
+    const attribute = new Attribute('title', Movie.prototype);
+
+    expect(attribute.isControlled()).toBe(false);
+
+    attribute.setValue('Inception');
+
+    expect(attribute.getValue()).toBe('Inception');
+
+    attribute.markAsControlled();
+
+    expect(attribute.isControlled()).toBe(true);
+
+    expect(() => attribute.setValue('Inception 2')).toThrow(
+      "Cannot set the value of a controlled attribute (component: 'Movie', attribute: 'title')"
+    );
+
+    expect(attribute.getValue()).toBe('Inception');
+  });
+
   test('Validation', async () => {
     class Movie extends Component {}
 
@@ -352,12 +374,26 @@ describe('Attribute', () => {
       new Attribute('title', Movie.prototype, {
         valueType: 'string',
         default: defaultTitle,
-        exposure: {get: true}
+        exposure: {get: true, set: true}
       }).introspect()
     ).toStrictEqual({
       name: 'title',
       type: 'Attribute',
       default: defaultTitle,
+      exposure: {get: true, set: true},
+      valueType: 'string'
+    });
+
+    // When 'set' is not exposed, the default value should not be exposed
+    expect(
+      new Attribute('title', Movie.prototype, {
+        valueType: 'string',
+        default: defaultTitle,
+        exposure: {get: true}
+      }).introspect()
+    ).toStrictEqual({
+      name: 'title',
+      type: 'Attribute',
       exposure: {get: true},
       valueType: 'string'
     });
@@ -482,12 +518,12 @@ describe('Attribute', () => {
       type: 'Attribute',
       valueType: 'string',
       default: defaultTitle,
-      exposure: {get: true}
+      exposure: {get: true, set: true}
     }));
 
     expect({name, options}).toEqual({
       name: 'title',
-      options: {valueType: 'string', default: defaultTitle, exposure: {get: true}}
+      options: {valueType: 'string', default: defaultTitle, exposure: {get: true, set: true}}
     });
     expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
 

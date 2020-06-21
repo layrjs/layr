@@ -170,6 +170,10 @@ export class Attribute extends Observable(Property) {
       return {previousValue: undefined, newValue: undefined};
     }
 
+    if (this.isControlled() && source !== 1) {
+      throw new Error(`Cannot set the value of a controlled attribute (${this.describe()})`);
+    }
+
     this.checkValue(value);
 
     if (this._setter !== undefined) {
@@ -289,6 +293,18 @@ export class Attribute extends Observable(Property) {
     }
   }
 
+  // === 'isControlled' mark
+
+  _isControlled?: boolean;
+
+  isControlled() {
+    return this._isControlled === true;
+  }
+
+  markAsControlled() {
+    Object.defineProperty(this, '_isControlled', {value: true});
+  }
+
   // === Attribute selectors ===
 
   _expandAttributeSelector(
@@ -348,15 +364,18 @@ export class Attribute extends Observable(Property) {
 
     const exposure = this.getExposure();
     const getIsExposed = exposure !== undefined ? hasOwnProperty(exposure, 'get') : false;
+    const setIsExposed = exposure !== undefined ? hasOwnProperty(exposure, 'set') : false;
 
     if (getIsExposed && this.isSet()) {
       introspectedAttribute.value = this.getValue();
     }
 
-    const defaultValue = this.getDefault();
+    if (setIsExposed) {
+      const defaultValue = this.getDefault();
 
-    if (defaultValue !== undefined) {
-      introspectedAttribute.default = defaultValue;
+      if (defaultValue !== undefined) {
+        introspectedAttribute.default = defaultValue;
+      }
     }
 
     Object.assign(introspectedAttribute, this.getValueType().introspect());
