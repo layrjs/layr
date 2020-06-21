@@ -354,13 +354,11 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         | InstanceType<T>
         | undefined;
 
-      if (storable === undefined) {
-        storable = (await this.create(identifierDescriptor, {
-          isNew: false
-        })) as InstanceType<T>;
-      }
+      const hasPrimaryIdentifier =
+        storable?.getPrimaryIdentifierAttribute().isSet() ||
+        this.prototype.getPrimaryIdentifierAttribute().getName() in identifierDescriptor;
 
-      if (!storable.getPrimaryIdentifierAttribute().isSet()) {
+      if (!hasPrimaryIdentifier) {
         if (this.hasStore()) {
           // Nothing to do, the storable will be loaded by load()
         } else if (this.hasRemoteMethod('get')) {
@@ -385,6 +383,12 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
             )} with a secondary identifier, a storable component should be registered in a store or have an exposed get() remote method (${this.describeComponent()})`
           );
         }
+      }
+
+      if (storable === undefined) {
+        storable = (await this.create(identifierDescriptor, {
+          isNew: false
+        })) as InstanceType<T>;
       }
 
       return await storable.load(attributeSelector, {
