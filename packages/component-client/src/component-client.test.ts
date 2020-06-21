@@ -78,7 +78,6 @@ describe('ComponentClient', () => {
                         name: 'isPlaying',
                         type: 'Attribute',
                         valueType: 'boolean',
-                        default: {__function: 'function () {\nreturn false;\n}'},
                         exposure: {get: true}
                       },
                       {name: 'play', type: 'Method', exposure: {call: true}}
@@ -269,8 +268,9 @@ describe('ComponentClient', () => {
     attribute = Movie.prototype.getAttribute('isPlaying');
 
     expect(attribute.getValueType().toString()).toBe('boolean');
-    expect(attribute.evaluateDefault()).toBe(false);
+    expect(attribute.evaluateDefault()).toBe(undefined);
     expect(attribute.getExposure()).toEqual({get: true});
+    expect(attribute.isControlled()).toBe(true);
 
     method = Movie.prototype.getMethod('play');
 

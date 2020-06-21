@@ -100,7 +100,6 @@ describe('ComponentServer', () => {
                     name: 'isPlaying',
                     type: 'Attribute',
                     valueType: 'boolean',
-                    default: {__function: 'function () {\nreturn false;\n}'},
                     exposure: {get: true}
                   },
                   {name: 'play', type: 'Method', exposure: {call: true}}
