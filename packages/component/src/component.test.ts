@@ -745,6 +745,24 @@ describe('Component', () => {
       expect(
         Movie.prototype.expandAttributeSelector({title: true, actors: true}, {depth: 0})
       ).toStrictEqual({title: true, actors: true});
+
+      // --- With an embedded component ---
+
+      class UserDetails extends EmbeddedComponent {
+        @attribute('string') country = '';
+      }
+
+      class User extends Component {
+        @provide() static UserDetails = UserDetails;
+
+        @attribute('string') name = '';
+        @attribute('UserDetails?') details?: UserDetails;
+      }
+
+      expect(User.prototype.expandAttributeSelector(true)).toStrictEqual({
+        name: true,
+        details: {country: true}
+      });
     });
 
     test('Validation', async () => {
@@ -1325,7 +1343,7 @@ describe('Component', () => {
 
   describe('Introspection', () => {
     test('introspect()', async () => {
-      class Movie extends Component {
+      class Movie extends EmbeddedComponent {
         @consume() static Cinema: typeof Cinema;
 
         @attribute('number') static limit = 100;
@@ -1366,6 +1384,7 @@ describe('Component', () => {
 
       expect(Movie.introspect()).toStrictEqual({
         name: 'Movie',
+        isEmbedded: true,
         properties: [
           {name: 'limit', type: 'Attribute', valueType: 'number', value: 100, exposure: {get: true}}
         ],
@@ -1382,6 +1401,7 @@ describe('Component', () => {
         providedComponents: [
           {
             name: 'Movie',
+            isEmbedded: true,
             properties: [
               {
                 name: 'limit',
@@ -1402,6 +1422,7 @@ describe('Component', () => {
 
       expect(Movie.introspect()).toStrictEqual({
         name: 'Movie',
+        isEmbedded: true,
         properties: [
           {
             name: 'limit',
@@ -1428,6 +1449,7 @@ describe('Component', () => {
 
       expect(Movie.introspect()).toStrictEqual({
         name: 'Movie',
+        isEmbedded: true,
         properties: [
           {
             name: 'limit',
@@ -1506,6 +1528,7 @@ describe('Component', () => {
         providedComponents: [
           {
             name: 'Movie',
+            isEmbedded: true,
             properties: [
               {
                 name: 'limit',
@@ -1533,6 +1556,7 @@ describe('Component', () => {
       });
 
       expect(Cinema.getComponentName()).toBe('Cinema');
+      expect(Cinema.isEmbedded()).toBe(false);
       expect(Cinema.prototype.getAttribute('movies').getValueType().toString()).toBe('Movie[]?');
       expect(Cinema.prototype.getAttribute('movies').getExposure()).toStrictEqual({get: true});
       expect(Cinema.prototype.getAttribute('movies').isControlled()).toBe(true);
@@ -1540,6 +1564,7 @@ describe('Component', () => {
       const Movie = Cinema.getProvidedComponent('Movie')!;
 
       expect(Movie.getComponentName()).toBe('Movie');
+      expect(Movie.isEmbedded()).toBe(true);
       expect(Movie.getAttribute('limit').getValue()).toBe(100);
       expect(Movie.getAttribute('limit').getExposure()).toStrictEqual({get: true, set: true});
       expect(Movie.getAttribute('limit').isControlled()).toBe(false);

@@ -87,6 +87,7 @@ type MethodBuilder = (name: string) => Function;
 
 export type IntrospectedComponent = {
   name: string;
+  isEmbedded?: boolean;
   mixins?: string[];
   properties?: (IntrospectedProperty | IntrospectedAttribute | IntrospectedMethod)[];
   prototype?: {
@@ -2195,6 +2196,10 @@ export class Component extends Observable(Object) {
       return undefined;
     }
 
+    if (this.isEmbedded()) {
+      introspectedComponent.isEmbedded = true;
+    }
+
     const introspectedMixins = this.__introspectMixins();
 
     if (introspectedMixins.length > 0) {
@@ -2304,6 +2309,7 @@ export class Component extends Observable(Object) {
   ): typeof Component {
     const {
       name,
+      isEmbedded,
       mixins: introspectedMixins,
       properties: introspectedProperties,
       prototype: {properties: introspectedPrototypeProperties} = {},
@@ -2314,6 +2320,12 @@ export class Component extends Observable(Object) {
     const {mixins = [], methodBuilder} = options;
 
     let UnintrospectedComponent = class extends Component {};
+
+    if (isEmbedded) {
+      UnintrospectedComponent.isEmbedded = function () {
+        return true;
+      };
+    }
 
     if (introspectedMixins !== undefined) {
       UnintrospectedComponent = UnintrospectedComponent.__unintrospectMixins(introspectedMixins, {
