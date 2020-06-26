@@ -1,6 +1,7 @@
 import sleep from 'sleep-promise';
 
 import {Component} from './component';
+import {EmbeddedComponent} from './embedded-component';
 import {
   isPropertyInstance,
   Attribute,
@@ -694,7 +695,7 @@ describe('Component', () => {
     });
 
     test('expandAttributeSelector()', async () => {
-      class Person extends Component {
+      class Person extends EmbeddedComponent {
         @attribute('string') name = '';
       }
 
@@ -750,7 +751,7 @@ describe('Component', () => {
       const notEmpty = validators.notEmpty();
       const maxLength = validators.maxLength(3);
 
-      class Person extends Component {
+      class Person extends EmbeddedComponent {
         @attribute('string', {validators: [notEmpty]}) name = '';
         @attribute('string?') country?: string;
       }

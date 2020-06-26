@@ -326,6 +326,12 @@ export class Component extends Observable(Object) {
     Object.defineProperty(this, '__isNewSource', {value: source, configurable: true});
   }
 
+  // === Embeddability ===
+
+  static isEmbedded() {
+    return false;
+  }
+
   // === Properties ===
 
   static getPropertyClass(type: string) {
@@ -1040,10 +1046,10 @@ export class Component extends Observable(Object) {
       return expandedAttributeSelector; // Optimization
     }
 
-    const hasPrimaryIdentifierAttribute = this.hasPrimaryIdentifierAttribute();
+    const isEmbedded = ensureComponentClass(this).isEmbedded();
 
     // By default, referenced components are not expanded
-    if (!(hasPrimaryIdentifierAttribute && _isDeep && !includeReferencedComponents)) {
+    if (isEmbedded || !_isDeep || includeReferencedComponents) {
       for (const attribute of this.getAttributes({filter})) {
         const name = attribute.getName();
 
@@ -1081,7 +1087,7 @@ export class Component extends Observable(Object) {
     }
 
     // If the component has a primary identifier attribute, always include it
-    if (hasPrimaryIdentifierAttribute) {
+    if (this.hasPrimaryIdentifierAttribute()) {
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute({autoFork: false});
 
       expandedAttributeSelector = setWithinAttributeSelector(
@@ -1868,7 +1874,7 @@ export class Component extends Observable(Object) {
       serializedComponent.__component = this.getComponentType();
     }
 
-    const hasIdentifers = this.hasIdentifiers();
+    const isEmbedded = this.constructor.isEmbedded();
 
     if (returnComponentReferences) {
       if (referencedComponents !== undefined) {
@@ -1882,19 +1888,20 @@ export class Component extends Observable(Object) {
 
         referencedComponents.add(this.constructor);
 
-        if (hasIdentifers) {
+        if (!isEmbedded) {
           referencedComponents.add(this);
         }
       }
 
-      if (hasIdentifers) {
+      if (!isEmbedded) {
         Object.assign(serializedComponent, this.getIdentifierDescriptor());
 
         return serializedComponent;
       }
     }
 
-    if (includeIsNewMarks && (!hasIdentifers || this.getIsNewMarkSource() !== target)) {
+    // TODO: Rethink the logic
+    if (includeIsNewMarks && (isEmbedded || this.getIsNewMarkSource() !== target)) {
       serializedComponent.__new = this.getIsNewMark();
     }
 

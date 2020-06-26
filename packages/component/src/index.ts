@@ -2,6 +2,7 @@ export * from './cloning';
 export * from './component';
 export * from './decorators';
 export * from './deserialization';
+export * from './embedded-component';
 export * from './forking';
 export * from './identity-map';
 export * from './merging';

@@ -1,4 +1,5 @@
 import {Component} from './component';
+import {EmbeddedComponent} from './embedded-component';
 import {attribute, primaryIdentifier, secondaryIdentifier, provide} from './decorators';
 import {serialize, SerializeOptions} from './serialization';
 
@@ -49,7 +50,7 @@ describe('Serialization', () => {
     //   __component: 'typeof Movie'
     // });
 
-    // --- With nested components ---
+    // --- With referenced components ---
 
     class Cinema extends Component {
       @attribute() static limit = 100;
@@ -147,9 +148,9 @@ describe('Serialization', () => {
     //   title: 'Inception'
     // });
 
-    // --- With nested components ---
+    // --- With embedded components ---
 
-    class Director extends Component {
+    class Director extends EmbeddedComponent {
       @attribute() name?: string;
       @attribute() country?: string;
     }
@@ -234,11 +235,9 @@ describe('Serialization', () => {
       title: 'Inception'
     });
 
-    expect(movie.serialize({returnComponentReferences: true})).toEqual({
-      __component: 'Movie',
-      __new: false,
-      title: 'Inception'
-    });
+    expect(() => movie.serialize({returnComponentReferences: true})).toThrow(
+      "Cannot get an identifier descriptor from a component that has no set identifier (component: 'Movie')"
+    );
 
     movie = Movie.fork().create({id: 'abc123', title: 'Inception'}, {isNew: false});
 
