@@ -130,6 +130,7 @@ describe('ComponentServer', () => {
       @attribute('number') static limit = 100;
       @expose({get: true, set: true}) @attribute('number') static offset = 0;
 
+      @expose({get: true, set: true}) @primaryIdentifier('string') id!: string;
       @expose({get: true, set: true}) @attribute('string') title = '';
       @attribute('number?') rating?: number;
     }
@@ -172,18 +173,21 @@ describe('ComponentServer', () => {
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie', __new: true}
+          '<=': {__component: 'Movie', __new: true, id: 'm1'}
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie', __new: true, title: ''},
-      components: [{__component: 'typeof Movie', offset: 0}]
+      result: {__component: 'Movie', id: 'm1'},
+      components: [
+        {__component: 'typeof Movie', offset: 0},
+        {__component: 'Movie', id: 'm1', title: ''}
+      ]
     });
 
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie', __new: true},
+          '<=': {__component: 'Movie', __new: true, id: 'm1'},
           'title': true
         },
         components: [{__component: 'typeof Movie', offset: 0}]
@@ -193,18 +197,21 @@ describe('ComponentServer', () => {
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie', __new: true, title: 'Inception'}
+          '<=': {__component: 'Movie', __new: true, id: 'm1', title: 'Inception'}
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie', __new: true, title: 'Inception'},
-      components: [{__component: 'typeof Movie', offset: 0}]
+      result: {__component: 'Movie', id: 'm1'},
+      components: [
+        {__component: 'typeof Movie', offset: 0},
+        {__component: 'Movie', id: 'm1', title: 'Inception'}
+      ]
     });
 
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie', __new: true, title: 'Inception'},
+          '<=': {__component: 'Movie', __new: true, id: 'm1', title: 'Inception'},
           'title': true
         }
       })
@@ -213,18 +220,18 @@ describe('ComponentServer', () => {
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie'}
+          '<=': {__component: 'Movie', id: 'm1'}
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie', __new: false},
+      result: {__component: 'Movie', id: 'm1'},
       components: [{__component: 'typeof Movie', offset: 0}]
     });
 
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie'},
+          '<=': {__component: 'Movie', id: 'm1'},
           'title': true
         }
       })
@@ -240,18 +247,18 @@ describe('ComponentServer', () => {
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie', rating: 10}
+          '<=': {__component: 'Movie', id: 'm1', rating: 10}
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie', __new: false},
+      result: {__component: 'Movie', id: 'm1'},
       components: [{__component: 'typeof Movie', offset: 0}]
     });
 
     expect(
       server.receive({
         query: {
-          '<=': {__component: 'Movie', rating: 10},
+          '<=': {__component: 'Movie', id: 'm1', rating: 10},
           'rating': true
         }
       })
