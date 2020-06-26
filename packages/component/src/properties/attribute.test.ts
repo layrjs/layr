@@ -1,4 +1,6 @@
 import {Component} from '../component';
+import {EmbeddedComponent} from '../embedded-component';
+import {provide} from '../decorators';
 import {Attribute} from './attribute';
 import {isNumberValueTypeInstance} from './value-types';
 import {validators} from '../validation';
@@ -225,44 +227,44 @@ describe('Attribute', () => {
     const movieObserver = jest.fn();
     movie.addObserver(movieObserver);
 
-    const title = new Attribute('title', movie, {valueType: 'string'});
+    const titleAttribute = new Attribute('title', movie, {valueType: 'string'});
 
     const titleObserver = jest.fn();
-    title.addObserver(titleObserver);
+    titleAttribute.addObserver(titleObserver);
 
     expect(titleObserver).toHaveBeenCalledTimes(0);
     expect(movieObserver).toHaveBeenCalledTimes(0);
 
-    title.setValue('Inception');
+    titleAttribute.setValue('Inception');
 
     expect(titleObserver).toHaveBeenCalledTimes(1);
     expect(movieObserver).toHaveBeenCalledTimes(1);
 
-    title.setValue('Inception 2');
+    titleAttribute.setValue('Inception 2');
 
     expect(titleObserver).toHaveBeenCalledTimes(2);
     expect(movieObserver).toHaveBeenCalledTimes(2);
 
-    title.setValue('Inception 2');
+    titleAttribute.setValue('Inception 2');
 
     // Assigning the same value should not call the observers
     expect(titleObserver).toHaveBeenCalledTimes(2);
     expect(movieObserver).toHaveBeenCalledTimes(2);
 
-    const tags = new Attribute('title', movie, {valueType: 'string[]'});
+    const tagsAttribute = new Attribute('title', movie, {valueType: 'string[]'});
 
     const tagsObserver = jest.fn();
-    tags.addObserver(tagsObserver);
+    tagsAttribute.addObserver(tagsObserver);
 
     expect(tagsObserver).toHaveBeenCalledTimes(0);
     expect(movieObserver).toHaveBeenCalledTimes(2);
 
-    tags.setValue(['drama', 'action']);
+    tagsAttribute.setValue(['drama', 'action']);
 
     expect(tagsObserver).toHaveBeenCalledTimes(1);
     expect(movieObserver).toHaveBeenCalledTimes(3);
 
-    const tagArray = tags.getValue() as string[];
+    const tagArray = tagsAttribute.getValue() as string[];
 
     tagArray[0] = 'Drama';
 
@@ -275,12 +277,12 @@ describe('Attribute', () => {
     expect(tagsObserver).toHaveBeenCalledTimes(2);
     expect(movieObserver).toHaveBeenCalledTimes(4);
 
-    tags.setValue(['Drama', 'Action']);
+    tagsAttribute.setValue(['Drama', 'Action']);
 
     expect(tagsObserver).toHaveBeenCalledTimes(3);
     expect(movieObserver).toHaveBeenCalledTimes(5);
 
-    const newTagArray = tags.getValue() as string[];
+    const newTagArray = tagsAttribute.getValue() as string[];
 
     newTagArray[0] = 'drama';
 
@@ -293,12 +295,12 @@ describe('Attribute', () => {
     expect(tagsObserver).toHaveBeenCalledTimes(4);
     expect(movieObserver).toHaveBeenCalledTimes(6);
 
-    tags.unsetValue();
+    tagsAttribute.unsetValue();
 
     expect(tagsObserver).toHaveBeenCalledTimes(5);
     expect(movieObserver).toHaveBeenCalledTimes(7);
 
-    tags.unsetValue();
+    tagsAttribute.unsetValue();
 
     // Calling unset again should not call the observers
     expect(tagsObserver).toHaveBeenCalledTimes(5);
@@ -309,6 +311,80 @@ describe('Attribute', () => {
     // Modifying the detached array should not call the observers
     expect(tagsObserver).toHaveBeenCalledTimes(5);
     expect(movieObserver).toHaveBeenCalledTimes(7);
+
+    // --- With an embedded component ---
+
+    class UserDetails extends EmbeddedComponent {}
+
+    const userDetails = new UserDetails();
+
+    const countryAttribute = new Attribute('country', userDetails, {valueType: 'string'});
+
+    class User extends Component {
+      @provide() static UserDetails = UserDetails;
+    }
+
+    const user = new User();
+
+    const userObserver = jest.fn();
+    user.addObserver(userObserver);
+
+    const detailsAttribute = new Attribute('details', user, {valueType: 'UserDetails?'});
+
+    expect(userObserver).toHaveBeenCalledTimes(0);
+
+    detailsAttribute.setValue(userDetails);
+
+    expect(userObserver).toHaveBeenCalledTimes(1);
+
+    countryAttribute.setValue('Japan');
+
+    expect(userObserver).toHaveBeenCalledTimes(2);
+
+    detailsAttribute.setValue(undefined);
+
+    expect(userObserver).toHaveBeenCalledTimes(3);
+
+    countryAttribute.setValue('France');
+
+    expect(userObserver).toHaveBeenCalledTimes(3);
+
+    // --- With a referenced component ---
+
+    class Comment extends Component {}
+
+    const comment = new Comment();
+
+    const textAttribute = new Attribute('text', comment, {valueType: 'string'});
+
+    class Article extends Component {
+      @provide() static Comment = Comment;
+    }
+
+    const article = new Article();
+
+    const articleObserver = jest.fn();
+    article.addObserver(articleObserver);
+
+    const commentAttribute = new Attribute('comment', article, {valueType: 'Comment?'});
+
+    expect(articleObserver).toHaveBeenCalledTimes(0);
+
+    commentAttribute.setValue(comment);
+
+    expect(articleObserver).toHaveBeenCalledTimes(1);
+
+    textAttribute.setValue('Hello');
+
+    expect(articleObserver).toHaveBeenCalledTimes(1);
+
+    commentAttribute.setValue(undefined);
+
+    expect(articleObserver).toHaveBeenCalledTimes(2);
+
+    textAttribute.setValue('Hey');
+
+    expect(articleObserver).toHaveBeenCalledTimes(2);
   });
 
   test('Forking', async () => {

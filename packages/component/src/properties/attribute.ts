@@ -152,8 +152,10 @@ export class Attribute extends Observable(Property) {
           forkedValue = createObservable(forkedValue);
         }
 
-        forkedValue.addObserver(this);
-        forkedValue.addObserver(parent);
+        if (!isComponentInstance(forkedValue) || forkedValue.constructor.isEmbedded()) {
+          forkedValue.addObserver(this);
+          forkedValue.addObserver(parent);
+        }
       }
 
       this._value = forkedValue;
@@ -201,12 +203,15 @@ export class Attribute extends Observable(Property) {
 
       const parent = this.getParent();
 
-      if (isObservable(previousValue)) {
+      if (
+        isObservable(previousValue) &&
+        (!isComponentInstance(previousValue) || previousValue.constructor.isEmbedded())
+      ) {
         previousValue.removeObserver(this);
         previousValue.removeObserver(parent);
       }
 
-      if (isObservable(value)) {
+      if (isObservable(value) && (!isComponentInstance(value) || value.constructor.isEmbedded())) {
         value.addObserver(this);
         value.addObserver(parent);
       }
@@ -237,7 +242,10 @@ export class Attribute extends Observable(Property) {
 
     const parent = this.getParent();
 
-    if (isObservable(previousValue)) {
+    if (
+      isObservable(previousValue) &&
+      (!isComponentInstance(previousValue) || previousValue.constructor.isEmbedded())
+    ) {
       previousValue.removeObserver(this);
       previousValue.removeObserver(parent);
     }
