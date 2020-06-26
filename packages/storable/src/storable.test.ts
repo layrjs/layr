@@ -1,4 +1,11 @@
-import {Component, AttributeSelector, provide, expose, serialize} from '@liaison/component';
+import {
+  Component,
+  EmbeddedComponent,
+  AttributeSelector,
+  provide,
+  expose,
+  serialize
+} from '@liaison/component';
 import {MemoryStore} from '@liaison/memory-store';
 import {MongoDBStore} from '@liaison/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
@@ -22,7 +29,7 @@ import {getInitialCollections, CREATED_ON, UPDATED_ON, seedMongoDB} from './stor
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000; // 1 minute
 
 describe('Storable', () => {
-  class BasePicture extends Component {
+  class BasePicture extends EmbeddedComponent {
     @attribute('string?') type?: string;
     @attribute('string') url!: string;
   }
@@ -127,112 +134,13 @@ describe('Storable', () => {
   });
 
   describe('Storage operations', () => {
-    describe('With a local memory store', () => {
-      testOperations(function () {
-        class Picture extends BasePicture {}
-
-        class Organization extends BaseOrganization {}
-
-        class User extends BaseUser {
-          @provide() static Picture = Picture;
-          @provide() static Organization = Organization;
-        }
-
-        new MemoryStore(User, {initialCollections: getInitialCollections()});
-
-        return User;
-      });
-    });
-
-    describe('With a local MongoDB store', () => {
-      let userClass: typeof BaseUser;
-      let server: MongoMemoryServer;
-      let store: MongoDBStore;
-
-      beforeEach(async () => {
-        class Picture extends BasePicture {}
-
-        class Organization extends BaseOrganization {}
-
-        class User extends BaseUser {
-          @provide() static Picture = Picture;
-          @provide() static Organization = Organization;
-        }
-
-        userClass = User;
-
-        server = new MongoMemoryServer();
-
-        const connectionString = await server.getConnectionString();
-
-        await seedMongoDB(connectionString);
-
-        store = new MongoDBStore(connectionString, User);
-
-        await store.connect();
-      });
-
-      afterEach(async () => {
-        await store?.disconnect();
-
-        await server?.stop();
-      });
-
-      testOperations(function () {
-        return userClass;
-      });
-    });
-
-    describe('With a remote memory store', () => {
-      testOperations(() => {
-        // eslint-disable-next-line max-nested-callbacks
-        const server = (() => {
-          @expose({
-            prototype: {
-              type: {get: true, set: true},
-              url: {get: true, set: true}
-            }
-          })
+    if (true) {
+      describe('With a local memory store', () => {
+        testOperations(function () {
           class Picture extends BasePicture {}
 
-          @expose({
-            get: {call: true},
-
-            prototype: {
-              id: {get: true, set: true},
-              name: {get: true, set: true},
-
-              load: {call: true}
-            }
-          })
           class Organization extends BaseOrganization {}
 
-          @expose({
-            get: {call: true},
-            find: {call: true},
-            count: {call: true},
-
-            prototype: {
-              id: {get: true, set: true},
-              email: {get: true, set: true},
-              reference: {get: true, set: true},
-              fullName: {get: true, set: true},
-              accessLevel: {get: true, set: true},
-              tags: {get: true, set: true},
-              location: {get: true, set: true},
-              pastLocations: {get: true, set: true},
-              picture: {get: true, set: true},
-              pastPictures: {get: true, set: true},
-              organization: {get: true, set: true},
-              emailIsVerified: {get: true, set: true},
-              createdOn: {get: true, set: true},
-              updatedOn: {get: true, set: true},
-
-              load: {call: true},
-              save: {call: true},
-              delete: {call: true}
-            }
-          })
           class User extends BaseUser {
             @provide() static Picture = Picture;
             @provide() static Organization = Organization;
@@ -240,30 +148,137 @@ describe('Storable', () => {
 
           new MemoryStore(User, {initialCollections: getInitialCollections()});
 
-          return new ComponentServer(User);
-        })();
-
-        const client = new ComponentClient(server, {mixins: [Storable]});
-        const User = client.getComponent() as typeof BaseUser;
-
-        return User;
+          return User;
+        });
       });
-    });
+    }
 
-    describe('Without a store', () => {
-      testOperations(function () {
-        class Picture extends BasePicture {}
+    if (true) {
+      describe('With a local MongoDB store', () => {
+        let userClass: typeof BaseUser;
+        let server: MongoMemoryServer;
+        let store: MongoDBStore;
 
-        class Organization extends BaseOrganization {}
+        beforeEach(async () => {
+          class Picture extends BasePicture {}
 
-        class User extends BaseUser {
-          @provide() static Picture = Picture;
-          @provide() static Organization = Organization;
-        }
+          class Organization extends BaseOrganization {}
 
-        return User;
+          class User extends BaseUser {
+            @provide() static Picture = Picture;
+            @provide() static Organization = Organization;
+          }
+
+          userClass = User;
+
+          server = new MongoMemoryServer();
+
+          const connectionString = await server.getConnectionString();
+
+          await seedMongoDB(connectionString);
+
+          store = new MongoDBStore(connectionString, User);
+
+          await store.connect();
+        });
+
+        afterEach(async () => {
+          await store?.disconnect();
+
+          await server?.stop();
+        });
+
+        testOperations(function () {
+          return userClass;
+        });
       });
-    });
+    }
+
+    if (true) {
+      describe('With a remote memory store', () => {
+        testOperations(() => {
+          // eslint-disable-next-line max-nested-callbacks
+          const server = (() => {
+            @expose({
+              prototype: {
+                type: {get: true, set: true},
+                url: {get: true, set: true}
+              }
+            })
+            class Picture extends BasePicture {}
+
+            @expose({
+              get: {call: true},
+
+              prototype: {
+                id: {get: true, set: true},
+                name: {get: true, set: true},
+
+                load: {call: true}
+              }
+            })
+            class Organization extends BaseOrganization {}
+
+            @expose({
+              get: {call: true},
+              find: {call: true},
+              count: {call: true},
+
+              prototype: {
+                id: {get: true, set: true},
+                email: {get: true, set: true},
+                reference: {get: true, set: true},
+                fullName: {get: true, set: true},
+                accessLevel: {get: true, set: true},
+                tags: {get: true, set: true},
+                location: {get: true, set: true},
+                pastLocations: {get: true, set: true},
+                picture: {get: true, set: true},
+                pastPictures: {get: true, set: true},
+                organization: {get: true, set: true},
+                emailIsVerified: {get: true, set: true},
+                createdOn: {get: true, set: true},
+                updatedOn: {get: true, set: true},
+
+                load: {call: true},
+                save: {call: true},
+                delete: {call: true}
+              }
+            })
+            class User extends BaseUser {
+              @provide() static Picture = Picture;
+              @provide() static Organization = Organization;
+            }
+
+            new MemoryStore(User, {initialCollections: getInitialCollections()});
+
+            return new ComponentServer(User);
+          })();
+
+          const client = new ComponentClient(server, {mixins: [Storable]});
+          const User = client.getComponent() as typeof BaseUser;
+
+          return User;
+        });
+      });
+    }
+
+    if (true) {
+      describe('Without a store', () => {
+        testOperations(function () {
+          class Picture extends BasePicture {}
+
+          class Organization extends BaseOrganization {}
+
+          class User extends BaseUser {
+            @provide() static Picture = Picture;
+            @provide() static Organization = Organization;
+          }
+
+          return User;
+        });
+      });
+    }
 
     function testOperations(userClassProvider: () => typeof BaseUser) {
       describe('Storable instances', () => {
@@ -1092,7 +1107,7 @@ describe('Storable', () => {
           ]);
 
           await expect(User.fork().find({unknownAttribute: 1})).rejects.toThrow(
-            "The attribute 'unknownAttribute' is missing (component: 'User')"
+            "An unknown attribute was specified in a query (component: 'User', attribute: 'unknownAttribute')"
           );
 
           // === Advanced queries ===

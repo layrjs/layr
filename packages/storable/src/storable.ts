@@ -743,6 +743,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       const {sort, skip, limit, reload = false} = options;
 
       query = await this.__callStorablePropertyFindersForQuery(query);
+      query = this.__normalizeQuery(query, {loose: !this.hasStore()});
 
       let foundStorables: InstanceType<T>[];
 
@@ -774,13 +775,11 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         limit
       }: {sort?: SortDescriptor | undefined; skip?: number | undefined; limit?: number | undefined}
     ) {
-      query = this.__normalizeQuery(query);
-
       const store = this.getStore();
 
       const storableType = this.prototype.getComponentType();
 
-      const serializedQuery = this.__serializeQuery(query);
+      const serializedQuery = serialize(query);
 
       const primaryIdentifierAttribute = this.prototype.getPrimaryIdentifierAttribute();
       const attributeSelector = {[primaryIdentifierAttribute.getName()]: true};
@@ -799,6 +798,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
     @method() static async count(query: Query = {}) {
       query = await this.__callStorablePropertyFindersForQuery(query);
+      query = this.__normalizeQuery(query, {loose: !this.hasStore()});
 
       let storablesCount: number;
 
@@ -816,13 +816,11 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     static async __countInStore(query: Query) {
-      query = this.__normalizeQuery(query);
-
       const store = this.getStore();
 
       const storableType = this.prototype.getComponentType();
 
-      const serializedQuery = this.__serializeQuery(query);
+      const serializedQuery = serialize(query);
 
       const storablesCount = await store.count({storableType, query: serializedQuery});
 
@@ -847,14 +845,15 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return query;
     }
 
-    static __normalizeQuery(query: Query) {
+    static __normalizeQuery(query: Query, {loose = false}: {loose?: boolean} = {}) {
       const normalizeQueryForComponent = function (
         query: Query | typeof Component | Component,
         component: typeof Component | Component
       ) {
         if (isComponentClassOrInstance(query)) {
           if (component === query || isPrototypeOf(component, query)) {
-            return query;
+            return query.toObject({minimize: true});
+            // return query.serialize({includeComponentTypes: false, includeIsNewMarks: false})!;
           }
 
           throw new Error(
@@ -943,9 +942,19 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
             continue;
           }
 
-          const attribute = component.getAttribute(name);
+          if (component.hasAttribute(name)) {
+            const attribute = component.getAttribute(name);
 
-          normalizedQuery[name] = normalizeQueryForAttribute(subquery, attribute);
+            normalizedQuery[name] = normalizeQueryForAttribute(subquery, attribute);
+          } else {
+            if (!loose) {
+              throw new Error(
+                `An unknown attribute was specified in a query (${component.describeComponent()}, attribute: '${name}')`
+              );
+            }
+
+            normalizedQuery[name] = subquery;
+          }
         }
 
         return normalizedQuery;
@@ -1005,14 +1014,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       };
 
       return normalizeQueryForComponent(query, this.prototype);
-    }
-
-    static __serializeQuery(query: Query) {
-      return serialize(query, {
-        returnComponentReferences: true,
-        includeComponentTypes: false,
-        includeIsNewMarks: false
-      });
     }
 
     // === Hooks ===
