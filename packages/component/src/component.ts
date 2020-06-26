@@ -2497,6 +2497,50 @@ export class Component extends Observable(Object) {
     return isComponentInstance(value);
   }
 
+  static get toObject() {
+    return this.prototype.toObject;
+  }
+
+  toObject(options: {minimize?: boolean} = {}) {
+    const {minimize = false} = options;
+
+    if (minimize) {
+      if (isComponentClass(this)) {
+        return {};
+      }
+
+      if (this.hasIdentifiers()) {
+        return this.getIdentifierDescriptor();
+      }
+    }
+
+    const object: PlainObject = {};
+
+    const handleValue = (value: unknown): unknown => {
+      if (isComponentClassOrInstance(value)) {
+        const component = value;
+
+        if (!ensureComponentClass(component).isEmbedded()) {
+          return component.toObject({minimize: true});
+        } else {
+          return component.toObject({minimize});
+        }
+      }
+
+      if (Array.isArray(value)) {
+        return value.map(handleValue);
+      }
+
+      return value;
+    };
+
+    for (const attribute of this.getAttributes({setAttributesOnly: true})) {
+      object[attribute.getName()] = handleValue(attribute.getValue());
+    }
+
+    return object;
+  }
+
   static get describeComponent() {
     return this.prototype.describeComponent;
   }

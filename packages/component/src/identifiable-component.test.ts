@@ -614,4 +614,33 @@ describe('Identifiable component', () => {
 
     expect(otherUser2).not.toBe(user2);
   });
+
+  test('toObject()', async () => {
+    class Director extends Component {
+      @primaryIdentifier() id!: string;
+      @attribute() name = '';
+    }
+
+    class Movie extends Component {
+      @provide() static Director = Director;
+
+      @primaryIdentifier() id!: string;
+      @attribute() title = '';
+      @attribute('Director') director!: Director;
+    }
+
+    let movie = new Movie({
+      id: 'm1',
+      title: 'Inception',
+      director: new Director({id: 'd1', name: 'Christopher Nolan'})
+    });
+
+    expect(movie.toObject()).toStrictEqual({id: 'm1', title: 'Inception', director: {id: 'd1'}});
+    expect(movie.toObject({minimize: true})).toStrictEqual({id: 'm1'});
+
+    movie = Movie.create({title: 'Inception'}, {isNew: false});
+
+    expect(movie.toObject()).toStrictEqual({title: 'Inception'});
+    expect(movie.toObject({minimize: true})).toStrictEqual({title: 'Inception'});
+  });
 });

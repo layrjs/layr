@@ -1596,4 +1596,37 @@ describe('Component', () => {
       );
     });
   });
+
+  describe('Utilities', () => {
+    test('toObject()', async () => {
+      class MovieDetails extends EmbeddedComponent {
+        @attribute() duration = 0;
+      }
+
+      class Movie extends Component {
+        @provide() static MovieDetails = MovieDetails;
+
+        @attribute() title = '';
+        @attribute('MovieDetails') details!: MovieDetails;
+      }
+
+      const movie = new Movie({title: 'Inception', details: new MovieDetails({duration: 120})});
+
+      expect(movie.toObject()).toStrictEqual({title: 'Inception', details: {duration: 120}});
+
+      class Cinema extends Component {
+        @provide() static Movie = Movie;
+
+        @attribute() name = '';
+        @attribute('Movie[]') movies = new Array<Movie>();
+      }
+
+      const cinema = new Cinema({name: 'Paradiso', movies: [movie]});
+
+      expect(cinema.toObject()).toStrictEqual({
+        name: 'Paradiso',
+        movies: [{title: 'Inception', details: {duration: 120}}]
+      });
+    });
+  });
 });
