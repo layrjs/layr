@@ -161,11 +161,11 @@ export function createObservable<T extends object>(target: T) {
       const result = Reflect.set(target, key, newValue, receiver);
 
       if (receiver === proxy && newValue?.valueOf() !== previousValue?.valueOf()) {
-        if (isObservable(previousValue)) {
+        if (isObservable(previousValue) && isEmbeddable(previousValue)) {
           previousValue.removeObserver(handleCallObservers);
         }
 
-        if (isObservable(newValue)) {
+        if (isObservable(newValue) && isEmbeddable(newValue)) {
           newValue.addObserver(handleCallObservers);
         }
 
@@ -189,7 +189,7 @@ export function createObservable<T extends object>(target: T) {
 
       const previousValue = Reflect.get(target, key);
 
-      if (isObservable(previousValue)) {
+      if (isObservable(previousValue) && isEmbeddable(previousValue)) {
         previousValue.removeObserver(handleCallObservers);
       }
 
@@ -262,4 +262,14 @@ export function canBeObserved(value: any): value is object {
     (typeof value === 'object' && value !== null && !(value instanceof Date)) ||
     typeof value === 'function'
   );
+}
+
+export function isEmbeddable(value: any) {
+  const isEmbedded = value?.constructor?.isEmbedded;
+
+  if (typeof isEmbedded === 'function' && isEmbedded() === false) {
+    return false;
+  }
+
+  return true;
 }

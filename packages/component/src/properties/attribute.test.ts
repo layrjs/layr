@@ -1,6 +1,5 @@
 import {Component} from '../component';
 import {EmbeddedComponent} from '../embedded-component';
-import {provide} from '../decorators';
 import {Attribute} from './attribute';
 import {isNumberValueTypeInstance} from './value-types';
 import {validators} from '../validation';
@@ -320,13 +319,13 @@ describe('Attribute', () => {
 
     const countryAttribute = new Attribute('country', userDetails, {valueType: 'string'});
 
-    class User extends Component {
-      @provide() static UserDetails = UserDetails;
-    }
+    class User extends Component {}
 
-    const user = new User();
+    User.provideComponent(UserDetails);
 
-    const userObserver = jest.fn();
+    let user = new User();
+
+    let userObserver = jest.fn();
     user.addObserver(userObserver);
 
     const detailsAttribute = new Attribute('details', user, {valueType: 'UserDetails?'});
@@ -349,42 +348,122 @@ describe('Attribute', () => {
 
     expect(userObserver).toHaveBeenCalledTimes(3);
 
+    // --- With an array of embedded components ---
+
+    class Organization extends EmbeddedComponent {}
+
+    const organization = new Organization();
+
+    const organizationNameAttribute = new Attribute('name', organization, {valueType: 'string'});
+
+    User.provideComponent(Organization);
+
+    user = new User();
+
+    userObserver = jest.fn();
+    user.addObserver(userObserver);
+
+    const organizationsAttribute = new Attribute('organizations', user, {
+      valueType: 'Organization[]'
+    });
+
+    expect(userObserver).toHaveBeenCalledTimes(0);
+
+    organizationsAttribute.setValue([]);
+
+    expect(userObserver).toHaveBeenCalledTimes(1);
+
+    (organizationsAttribute.getValue() as Organization[]).push(organization);
+
+    expect(userObserver).toHaveBeenCalledTimes(2);
+
+    organizationNameAttribute.setValue('The Inc.');
+
+    expect(userObserver).toHaveBeenCalledTimes(3);
+
+    (organizationsAttribute.getValue() as Organization[]).pop();
+
+    expect(userObserver).toHaveBeenCalledTimes(5);
+
+    organizationNameAttribute.setValue('Nice Inc.');
+
+    expect(userObserver).toHaveBeenCalledTimes(5);
+
     // --- With a referenced component ---
+
+    class Blog extends Component {}
+
+    const blog = new Blog();
+
+    const blogNameAttribute = new Attribute('name', blog, {valueType: 'string'});
+
+    class Article extends Component {}
+
+    Article.provideComponent(Blog);
+
+    let article = new Article();
+
+    let articleObserver = jest.fn();
+    article.addObserver(articleObserver);
+
+    const blogAttribute = new Attribute('blog', article, {valueType: 'Blog?'});
+
+    expect(articleObserver).toHaveBeenCalledTimes(0);
+
+    blogAttribute.setValue(blog);
+
+    expect(articleObserver).toHaveBeenCalledTimes(1);
+
+    blogNameAttribute.setValue('My Blog');
+
+    expect(articleObserver).toHaveBeenCalledTimes(1);
+
+    blogAttribute.setValue(undefined);
+
+    expect(articleObserver).toHaveBeenCalledTimes(2);
+
+    blogNameAttribute.setValue('The Blog');
+
+    expect(articleObserver).toHaveBeenCalledTimes(2);
+
+    // --- With an array of referenced components ---
 
     class Comment extends Component {}
 
     const comment = new Comment();
 
-    const textAttribute = new Attribute('text', comment, {valueType: 'string'});
+    const commentTextAttribute = new Attribute('text', comment, {valueType: 'string'});
 
-    class Article extends Component {
-      @provide() static Comment = Comment;
-    }
+    Article.provideComponent(Comment);
 
-    const article = new Article();
+    article = new Article();
 
-    const articleObserver = jest.fn();
+    articleObserver = jest.fn();
     article.addObserver(articleObserver);
 
-    const commentAttribute = new Attribute('comment', article, {valueType: 'Comment?'});
+    const commentsAttribute = new Attribute('comments', article, {valueType: 'Comment[]'});
 
     expect(articleObserver).toHaveBeenCalledTimes(0);
 
-    commentAttribute.setValue(comment);
+    commentsAttribute.setValue([]);
 
     expect(articleObserver).toHaveBeenCalledTimes(1);
 
-    textAttribute.setValue('Hello');
-
-    expect(articleObserver).toHaveBeenCalledTimes(1);
-
-    commentAttribute.setValue(undefined);
+    (commentsAttribute.getValue() as Comment[]).push(comment);
 
     expect(articleObserver).toHaveBeenCalledTimes(2);
 
-    textAttribute.setValue('Hey');
+    commentTextAttribute.setValue('Hello');
 
     expect(articleObserver).toHaveBeenCalledTimes(2);
+
+    (commentsAttribute.getValue() as Comment[]).pop();
+
+    expect(articleObserver).toHaveBeenCalledTimes(4);
+
+    commentTextAttribute.setValue('Hey');
+
+    expect(articleObserver).toHaveBeenCalledTimes(4);
   });
 
   test('Forking', async () => {

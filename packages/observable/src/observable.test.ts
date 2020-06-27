@@ -3,6 +3,7 @@ import {
   createObservable,
   isObservable,
   canBeObserved,
+  isEmbeddable,
   ObservableType
 } from './observable';
 
@@ -24,6 +25,10 @@ describe('Observable', () => {
     it('Should be an observable', () => {
       expect(isObservable(originalArray)).toBe(false);
       expect(isObservable(observableArray)).toBe(true);
+    });
+
+    it('Should be embeddable', () => {
+      expect(isEmbeddable(observableArray)).toBe(true);
     });
 
     it('Should be usable as the target of a new observable', () => {
@@ -96,29 +101,68 @@ describe('Observable', () => {
 
     describe('Observable item', () => {
       it('Should call observers when updating an observable item', () => {
-        const observableItem = createObservable([] as any[]);
-        observableArray[0] = observableItem;
         const observer = jest.fn();
         observableArray.addObserver(observer);
-        expect(observer).not.toHaveBeenCalled();
-        observableItem.push(1);
-        expect(observer).toHaveBeenCalled();
+
+        expect(observer).toHaveBeenCalledTimes(0);
+
+        const observableItem = createObservable([] as any[]);
+        observableArray[0] = observableItem;
+
+        expect(observer).toHaveBeenCalledTimes(1);
+
+        observableItem[0] = 1;
+
+        expect(observer).toHaveBeenCalledTimes(2);
+
+        const observableItem2 = createObservable([] as any[]);
+        observableArray.push(observableItem2);
+
+        expect(observer).toHaveBeenCalledTimes(3);
+
+        observableItem2[0] = 1;
+
+        expect(observer).toHaveBeenCalledTimes(4);
       });
 
       it(`Should stop calling observers when an observable item has been removed`, () => {
-        const observableItem = createObservable([] as any[]);
-        observableArray[0] = observableItem;
-
         const observer = jest.fn();
         observableArray.addObserver(observer);
 
-        observableArray[0] = null;
+        expect(observer).toHaveBeenCalledTimes(0);
 
-        const numberOfCalls = observer.mock.calls.length;
-        expect(numberOfCalls).not.toBe(0);
+        const observableItem = createObservable([] as any[]);
+        observableArray[3] = observableItem;
 
-        observableItem.push(1);
-        expect(observer.mock.calls.length).toBe(numberOfCalls);
+        expect(observer).toHaveBeenCalledTimes(1);
+
+        observableItem[0] = 1;
+
+        expect(observer).toHaveBeenCalledTimes(2);
+
+        observableArray[3] = undefined;
+
+        expect(observer).toHaveBeenCalledTimes(3);
+
+        observableItem[0] = 2;
+
+        expect(observer).toHaveBeenCalledTimes(3);
+
+        observableArray[3] = observableItem;
+
+        expect(observer).toHaveBeenCalledTimes(4);
+
+        observableItem[0] = 3;
+
+        expect(observer).toHaveBeenCalledTimes(5);
+
+        observableArray.pop();
+
+        expect(observer).toHaveBeenCalledTimes(7);
+
+        observableItem[0] = 4;
+
+        expect(observer).toHaveBeenCalledTimes(7);
       });
     });
 
@@ -216,6 +260,10 @@ describe('Observable', () => {
     it('Should be an observable', () => {
       expect(isObservable(originalObject)).toBe(false);
       expect(isObservable(observableObject)).toBe(true);
+    });
+
+    it('Should be embeddable', () => {
+      expect(isEmbeddable(observableObject)).toBe(true);
     });
 
     it('Should be usable as the target of a new observable', () => {
@@ -496,6 +544,41 @@ describe('Observable', () => {
         expect(observer1.mock.calls.length).toBe(numberOfCalls1);
         expect(observer2.mock.calls.length).not.toBe(numberOfCalls1);
       });
+    });
+  });
+
+  describe('Observable object referencing a non-embeddable object', () => {
+    let originalObject: {[key: string]: any};
+    let observableObject: {[key: string]: any} & ObservableType;
+
+    beforeEach(() => {
+      originalObject = {};
+      observableObject = createObservable(originalObject);
+    });
+
+    it("Shouldn't call referrer's observers", () => {
+      class NonEmbeddable extends Observable(Object) {
+        static isEmbedded() {
+          return false;
+        }
+      }
+
+      const nonEmbeddable = new NonEmbeddable();
+
+      expect(isEmbeddable(nonEmbeddable)).toBe(false);
+
+      const observer = jest.fn();
+      observableObject.addObserver(observer);
+
+      expect(observer).toHaveBeenCalledTimes(0);
+
+      observableObject.nonEmbeddable = nonEmbeddable;
+
+      expect(observer).toHaveBeenCalledTimes(1);
+
+      nonEmbeddable.callObservers();
+
+      expect(observer).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -1,5 +1,11 @@
 import {hasOwnProperty} from 'core-helpers';
-import {Observable, createObservable, isObservable, canBeObserved} from '@liaison/observable';
+import {
+  Observable,
+  createObservable,
+  isObservable,
+  canBeObserved,
+  isEmbeddable
+} from '@liaison/observable';
 
 import type {Component, ExpandAttributeSelectorOptions} from '../component';
 import {Property, PropertyOptions, IntrospectedProperty, UnintrospectedProperty} from './property';
@@ -152,7 +158,7 @@ export class Attribute extends Observable(Property) {
           forkedValue = createObservable(forkedValue);
         }
 
-        if (!isComponentInstance(forkedValue) || forkedValue.constructor.isEmbedded()) {
+        if (isEmbeddable(forkedValue)) {
           forkedValue.addObserver(this);
           forkedValue.addObserver(parent);
         }
@@ -203,15 +209,12 @@ export class Attribute extends Observable(Property) {
 
       const parent = this.getParent();
 
-      if (
-        isObservable(previousValue) &&
-        (!isComponentInstance(previousValue) || previousValue.constructor.isEmbedded())
-      ) {
+      if (isObservable(previousValue) && isEmbeddable(previousValue)) {
         previousValue.removeObserver(this);
         previousValue.removeObserver(parent);
       }
 
-      if (isObservable(value) && (!isComponentInstance(value) || value.constructor.isEmbedded())) {
+      if (isObservable(value) && isEmbeddable(value)) {
         value.addObserver(this);
         value.addObserver(parent);
       }
@@ -242,10 +245,7 @@ export class Attribute extends Observable(Property) {
 
     const parent = this.getParent();
 
-    if (
-      isObservable(previousValue) &&
-      (!isComponentInstance(previousValue) || previousValue.constructor.isEmbedded())
-    ) {
+    if (isObservable(previousValue) && isEmbeddable(previousValue)) {
       previousValue.removeObserver(this);
       previousValue.removeObserver(parent);
     }
