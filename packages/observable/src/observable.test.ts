@@ -582,6 +582,20 @@ describe('Observable', () => {
     });
   });
 
+  describe('Observer payload', () => {
+    it('Should allow to specify a payload when calling observers', () => {
+      const observableObject = createObservable({} as any);
+      const observer = jest.fn();
+      observableObject.addObserver(observer);
+
+      expect(observer).not.toHaveBeenCalled();
+
+      observableObject.callObservers({source: 1});
+
+      expect(observer.mock.calls[0][0].source).toBe(1);
+    });
+  });
+
   describe('Unobservable value', () => {
     it('Should not be possible to observe a primitive', () => {
       expect(canBeObserved(true)).toBe(false);

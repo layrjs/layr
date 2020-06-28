@@ -11,7 +11,7 @@ export type Observer = ObserverFunction | ObservableType;
 
 export type ObserverFunction = (...args: any[]) => void;
 
-export type ObserverStack = Set<Observer>;
+export type ObserverPayload = {[key: string]: unknown};
 
 export function Observable<T extends Constructor>(Base: T) {
   if (!isClass(Base)) {
@@ -45,8 +45,8 @@ export function Observable<T extends Constructor>(Base: T) {
       return this.prototype.callObservers;
     }
 
-    callObservers({_observerStack}: {_observerStack?: ObserverStack} = {}) {
-      this.__getObservers().call({_observerStack});
+    callObservers(payload?: ObserverPayload) {
+      this.__getObservers().call(payload);
     }
 
     static __observers?: ObserverSet;
@@ -98,8 +98,8 @@ export function createObservable<T extends object>(target: T) {
     observers.remove(observer);
   };
 
-  const handleCallObservers = function ({_observerStack}: {_observerStack?: ObserverStack} = {}) {
-    observers.call({_observerStack});
+  const handleCallObservers = function (payload?: ObserverPayload) {
+    observers.call(payload);
   };
 
   const handleIsObservable = function (value: any) {
@@ -233,18 +233,22 @@ export class ObserverSet {
     }
   }
 
-  call({_observerStack = new Set()}: {_observerStack?: ObserverStack} = {}) {
+  call({
+    _observerStack = new Set(),
+    ...payload
+  }: ObserverPayload & {_observerStack?: Set<Observer>} = {}) {
     for (const observer of this._observers) {
       if (_observerStack.has(observer)) {
         continue; // Avoid looping indefinitely when a circular reference is encountered
       }
 
       _observerStack.add(observer);
+
       try {
         if (isObservable(observer)) {
-          observer.callObservers({_observerStack});
+          observer.callObservers({_observerStack, ...payload});
         } else {
-          observer({_observerStack});
+          observer({_observerStack, ...payload});
         }
       } finally {
         _observerStack.delete(observer);
