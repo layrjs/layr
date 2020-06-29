@@ -4,7 +4,8 @@ import {
   createObservable,
   isObservable,
   canBeObserved,
-  isEmbeddable
+  isEmbeddable,
+  ObserverPayload
 } from '@liaison/observable';
 
 import type {Component, ExpandAttributeSelectorOptions} from '../component';
@@ -19,6 +20,7 @@ import {
 import {fork} from '../forking';
 import {AttributeSelector} from './attribute-selector';
 import type {Validator, ValidatorFunction} from '../validation';
+import {SerializeOptions} from '../serialization';
 import {isComponentClass, isComponentInstance, ensureComponentClass} from '../utilities';
 
 export type AttributeOptions = PropertyOptions & {
@@ -51,6 +53,10 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
 export class Attribute extends Observable(Property) {
   constructor(name: string, parent: typeof Component | Component, options: AttributeOptions = {}) {
     super(name, parent, options);
+  }
+
+  _initialize() {
+    this.addObserver(this._onChange.bind(this));
   }
 
   // === Options ===
@@ -160,7 +166,6 @@ export class Attribute extends Observable(Property) {
 
         if (isEmbeddable(forkedValue)) {
           forkedValue.addObserver(this);
-          forkedValue.addObserver(parent);
         }
       }
 
@@ -202,24 +207,21 @@ export class Attribute extends Observable(Property) {
     const previousValue = this.getValue({throwIfUnset: false});
     this._value = value;
     this._isSet = true;
-    this._source = source;
 
-    if ((value as any)?.valueOf() !== (previousValue as any)?.valueOf()) {
-      this.callObservers();
+    const valueHasChanged = (value as any)?.valueOf() !== (previousValue as any)?.valueOf();
 
-      const parent = this.getParent();
-
+    if (valueHasChanged) {
       if (isObservable(previousValue) && isEmbeddable(previousValue)) {
         previousValue.removeObserver(this);
-        previousValue.removeObserver(parent);
       }
 
       if (isObservable(value) && isEmbeddable(value)) {
         value.addObserver(this);
-        value.addObserver(parent);
       }
+    }
 
-      parent.callObservers();
+    if (valueHasChanged || source !== this._source) {
+      this.callObservers({source});
     }
 
     return {previousValue, newValue: value};
@@ -239,18 +241,12 @@ export class Attribute extends Observable(Property) {
     const previousValue = this.getValue({throwIfUnset: false});
     this._value = undefined;
     this._isSet = false;
-    this._source = undefined;
-
-    this.callObservers();
-
-    const parent = this.getParent();
 
     if (isObservable(previousValue) && isEmbeddable(previousValue)) {
       previousValue.removeObserver(this);
-      previousValue.removeObserver(parent);
     }
 
-    parent.callObservers();
+    this.callObservers({source: 0});
 
     return {previousValue};
   }
@@ -265,14 +261,17 @@ export class Attribute extends Observable(Property) {
 
   // === Value source ===
 
-  _source: number | undefined;
+  _source = 0;
 
   getValueSource() {
-    return this._source !== undefined ? this._source : 0;
+    return this._source;
   }
 
-  setValueSource(source = 0) {
-    this._source = source;
+  setValueSource(source: number) {
+    if (source !== this._source) {
+      this._source = source;
+      this.callObservers({source});
+    }
   }
 
   // === Default value ===
@@ -313,13 +312,39 @@ export class Attribute extends Observable(Property) {
     Object.defineProperty(this, '_isControlled', {value: true});
   }
 
+  // === Observers ===
+
+  _onChange(payload: ObserverPayload & {source?: number}) {
+    const {source = 0} = payload;
+
+    if (source !== this._source) {
+      this._source = source;
+    }
+
+    this.getParent().callObservers(payload);
+  }
+
   // === Attribute selectors ===
+
+  _getAttributeSelector() {
+    return this.getValueType()._getAttributeSelector(this);
+  }
 
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     options: ExpandAttributeSelectorOptions
   ) {
     return this.getValueType()._expandAttributeSelector(normalizedAttributeSelector, this, options);
+  }
+
+  // === Serialization ===
+
+  serialize(options: SerializeOptions = {}) {
+    if (!this.isSet()) {
+      throw new Error(`Cannot serialize an unset attribute (${this.describe()})`);
+    }
+
+    return this.getValueType().serializeValue(this.getValue(), this, options);
   }
 
   // === Validation ===

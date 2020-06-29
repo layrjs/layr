@@ -6,13 +6,14 @@ import {
 import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
 
-import type {Component, ComponentGetter} from './component';
+import type {Component, ComponentSet, ComponentGetter} from './component';
 import type {PropertyFilter} from './properties';
 import {isComponentClass} from './utilities';
 
 export type DeserializeOptions = SimpleDeserializeOptions & {
   componentGetter?: ComponentGetter;
   attributeFilter?: PropertyFilter;
+  deserializedComponents?: ComponentSet;
   deserializeFunctions?: boolean;
   source?: number;
 };

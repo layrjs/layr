@@ -80,7 +80,8 @@ describe('ComponentClient', () => {
                         valueType: 'boolean',
                         exposure: {get: true}
                       },
-                      {name: 'play', type: 'Method', exposure: {call: true}}
+                      {name: 'play', type: 'Method', exposure: {call: true}},
+                      {name: 'validateTitle', type: 'Method', exposure: {call: true}}
                     ]
                   },
                   consumedComponents: ['Session']
@@ -174,21 +175,48 @@ describe('ComponentClient', () => {
           {query, components},
           {
             query: {'<=': {__component: 'Movie', id: 'movie1'}, 'play=>': {'()': []}},
-            components: [
-              {__component: 'typeof Session', token: 'abc123'},
-              {__component: 'Movie', id: 'movie1', slug: 'inception', title: 'Inception'}
-            ]
+            components: [{__component: 'typeof Session', token: 'abc123'}]
           }
         )
       ) {
         return {
-          result: {
-            __component: 'Movie',
-            id: 'movie1',
-            slug: 'inception',
-            title: 'Inception',
-            isPlaying: true
+          result: {__component: 'Movie', id: 'movie1', isPlaying: true}
+        };
+      }
+
+      // movie.validateTitle('')
+      if (
+        isEqual(
+          {query, components},
+          {
+            query: {
+              '<=': {__component: 'Movie', id: 'movie1', title: ''},
+              'validateTitle=>': {'()': []}
+            },
+            components: [{__component: 'typeof Session', token: 'abc123'}]
           }
+        )
+      ) {
+        return {
+          result: false
+        };
+      }
+
+      // movie.validateTitle('Inception 2')
+      if (
+        isEqual(
+          {query, components},
+          {
+            query: {
+              '<=': {__component: 'Movie', id: 'movie1', title: 'Inception 2'},
+              'validateTitle=>': {'()': []}
+            },
+            components: [{__component: 'typeof Session', token: 'abc123'}]
+          }
+        )
+      ) {
+        return {
+          result: true
         };
       }
 
@@ -202,7 +230,8 @@ describe('ComponentClient', () => {
 
   const Storable = (Base = Component) => {
     const _Storable = class extends Base {
-      static storableMethod() {}
+      static isStorable() {}
+      isStorable() {}
     };
 
     Object.defineProperty(_Storable, '__mixin', {value: 'Storable'});
@@ -276,7 +305,11 @@ describe('ComponentClient', () => {
 
     expect(method.getExposure()).toEqual({call: true});
 
-    expect(typeof (Movie as any).storableMethod).toBe('function');
+    method = Movie.prototype.getMethod('validateTitle');
+
+    expect(method.getExposure()).toEqual({call: true});
+
+    expect(typeof (Movie as any).isStorable).toBe('function');
   });
 
   test('Invoking methods', async () => {
@@ -288,13 +321,15 @@ describe('ComponentClient', () => {
       static Session: typeof BaseSession;
 
       // @ts-ignore
-      static find({limit}: {limit?: number} = {}): Movies[] {}
+      static find({limit}: {limit?: number} = {}): BaseMovie[] {}
 
       id!: string;
       slug!: string;
       title = '';
       isPlaying = false;
       play() {}
+      // @ts-ignore
+      validateTitle(): boolean {}
     }
 
     class BaseBackend extends Component {
@@ -335,5 +370,13 @@ describe('ComponentClient', () => {
     movie.play();
 
     expect(movie.isPlaying).toBe(true);
+
+    movie.title = '';
+
+    expect(movie.validateTitle()).toBe(false);
+
+    movie.title = 'Inception 2';
+
+    expect(movie.validateTitle()).toBe(true);
   });
 });

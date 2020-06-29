@@ -142,8 +142,7 @@ describe('ComponentServer', () => {
         query: {'<=': {__component: 'typeof Movie'}}
       })
     ).toStrictEqual({
-      result: {__component: 'typeof Movie'},
-      components: [{__component: 'typeof Movie', offset: 0}]
+      result: {__component: 'typeof Movie', offset: 0}
     });
 
     expect(
@@ -153,7 +152,10 @@ describe('ComponentServer', () => {
           'offset': true
         }
       })
-    ).toStrictEqual({result: {offset: 0}});
+    ).toStrictEqual({
+      result: {offset: 0},
+      components: [{__component: 'typeof Movie', offset: 0}]
+    });
 
     expect(
       server.receive({
@@ -167,7 +169,8 @@ describe('ComponentServer', () => {
       result: {
         offset: 0,
         limit: {__error: "Cannot get the value of an attribute that is not allowed (name: 'limit')"}
-      }
+      },
+      components: [{__component: 'typeof Movie', offset: 0}]
     });
 
     expect(
@@ -177,11 +180,8 @@ describe('ComponentServer', () => {
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie', id: 'm1'},
-      components: [
-        {__component: 'typeof Movie', offset: 0},
-        {__component: 'Movie', id: 'm1', title: ''}
-      ]
+      result: {__component: 'Movie', id: 'm1', title: ''},
+      components: [{__component: 'typeof Movie', offset: 0}]
     });
 
     expect(
@@ -192,7 +192,10 @@ describe('ComponentServer', () => {
         },
         components: [{__component: 'typeof Movie', offset: 0}]
       })
-    ).toStrictEqual({result: {title: ''}, components: [{__component: 'typeof Movie', offset: 0}]});
+    ).toStrictEqual({
+      result: {title: ''},
+      components: [{__component: 'Movie', id: 'm1', title: ''}]
+    });
 
     expect(
       server.receive({
@@ -202,10 +205,7 @@ describe('ComponentServer', () => {
       })
     ).toStrictEqual({
       result: {__component: 'Movie', id: 'm1'},
-      components: [
-        {__component: 'typeof Movie', offset: 0},
-        {__component: 'Movie', id: 'm1', title: 'Inception'}
-      ]
+      components: [{__component: 'typeof Movie', offset: 0}]
     });
 
     expect(
@@ -215,7 +215,10 @@ describe('ComponentServer', () => {
           'title': true
         }
       })
-    ).toStrictEqual({result: {title: 'Inception'}});
+    ).toStrictEqual({
+      result: {title: 'Inception'},
+      components: [{__component: 'typeof Movie', offset: 0}]
+    });
 
     expect(
       server.receive({
@@ -241,7 +244,8 @@ describe('ComponentServer', () => {
           __error:
             "Cannot get the value of an unset attribute (component: 'Movie', attribute: 'title')"
         }
-      }
+      },
+      components: [{__component: 'typeof Movie', offset: 0}]
     });
 
     expect(
@@ -268,7 +272,8 @@ describe('ComponentServer', () => {
           __error:
             "Cannot get the value of an unset attribute (component: 'Movie', attribute: 'rating')"
         }
-      }
+      },
+      components: [{__component: 'typeof Movie', offset: 0}]
     });
   });
 

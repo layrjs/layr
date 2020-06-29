@@ -10,6 +10,7 @@ import {
   AttributeSelector,
   createAttributeSelectorFromNames,
   createAttributeSelectorFromAttributes,
+  attributeSelectorsAreEqual,
   mergeAttributeSelectors,
   removeFromAttributeSelector,
   traverseAttributeSelector,
@@ -618,6 +619,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       await this.beforeSave(nonComputedAttributeSelector);
 
+      this._assertArrayItemsAreFullyLoaded(nonComputedAttributeSelector);
+
       let savedStorable: T | undefined;
 
       if ((this.constructor as typeof StorableComponent).hasStore()) {
@@ -673,6 +676,31 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       }
 
       return this;
+    }
+
+    _assertArrayItemsAreFullyLoaded(attributeSelector: AttributeSelector) {
+      // const fullAttributeSelector = this.expandAttributeSelector(true);
+
+      traverseAttributeSelector(
+        this,
+        attributeSelector,
+        (value, attributeSelector, {isArray}) => {
+          if (isArray && isComponentInstance(value)) {
+            const component = value;
+
+            if (component.constructor.isEmbedded()) {
+              if (
+                !attributeSelectorsAreEqual(component.getAttributeSelector(), attributeSelector)
+              ) {
+                throw new Error(
+                  `Cannot save an array item that has not been fully loaded (${component.describeComponent()})`
+                );
+              }
+            }
+          }
+        },
+        {includeSubtrees: true, includeLeafs: false}
+      );
     }
 
     @method() async delete<T extends StorableComponent>(

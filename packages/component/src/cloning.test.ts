@@ -47,7 +47,7 @@ describe('Cloning', () => {
     expect(clonedMovie.getAttribute('specs').isSet()).toBe(false);
   });
 
-  test('Nested component', async () => {
+  test('Referenced component', async () => {
     class Movie extends Component {
       @attribute() director!: Director;
     }
@@ -83,7 +83,7 @@ describe('Cloning', () => {
     expect(clonedMovie).toBe(movie);
   });
 
-  test('Nested identifiable component', async () => {
+  test('Referenced identifiable component', async () => {
     class Director extends Component {
       @primaryIdentifier() id!: string;
       @attribute('string') name = '';

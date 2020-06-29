@@ -48,7 +48,11 @@ export class Property {
     this._parent = parent;
 
     this.setOptions(options);
+
+    this._initialize();
   }
+
+  _initialize() {}
 
   getName() {
     return this._name;
@@ -127,6 +131,8 @@ export class Property {
     const forkedProperty = Object.create(this) as T;
 
     forkedProperty._parent = parent;
+
+    forkedProperty._initialize();
 
     return forkedProperty;
   }

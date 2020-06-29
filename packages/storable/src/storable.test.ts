@@ -197,7 +197,6 @@ describe('Storable', () => {
     if (true) {
       describe('With a remote memory store', () => {
         testOperations(() => {
-          // eslint-disable-next-line max-nested-callbacks
           const server = (() => {
             @expose({
               prototype: {
@@ -560,7 +559,7 @@ describe('Storable', () => {
             "Cannot load a storable component that is marked as new (component: 'User')"
           );
 
-          // --- With a nested identifiable component loaded from a fork ---
+          // --- With a referenced identifiable component loaded from a fork ---
 
           const ForkedUser = User.fork();
           const organization = await ForkedUser.Organization.get('org1');
@@ -749,6 +748,21 @@ describe('Storable', () => {
             pastLocations: [{}]
           });
 
+          user = await User.fork().get('user2', {pastPictures: {type: true}});
+
+          expect(user.serialize()).toStrictEqual({
+            __component: 'User',
+            __new: false,
+            id: 'user2',
+            pastPictures: [{__component: 'Picture', __new: false, type: {__undefined: true}}]
+          });
+
+          user.pastPictures[0].type = 'JPEG';
+
+          await expect(user.save()).rejects.toThrow(
+            "Cannot save an array item that has not been fully loaded (component: 'User.Picture')"
+          );
+
           user = User.fork().create({id: 'user3', fullName: 'User 3'}, {isNew: false});
 
           expect(await user.save(true, {throwIfMissing: false})).toBe(undefined);
@@ -934,9 +948,7 @@ describe('Storable', () => {
               ],
               organization: {
                 __component: 'Organization',
-                __new: false,
-                id: 'org2',
-                name: 'Organization 2'
+                id: 'org2'
               },
               emailIsVerified: true,
               createdOn: {__date: CREATED_ON.toISOString()},
@@ -1488,7 +1500,7 @@ describe('Storable', () => {
             fullName: 'User 1'
           });
 
-          // --- With an a nested component specified in a query ---
+          // --- With an a referenced component specified in a query ---
 
           ForkedUser = User.fork();
 
@@ -1509,7 +1521,7 @@ describe('Storable', () => {
             }
           ]);
 
-          // --- With an array of nested components specified in a query (using '$any') ---
+          // --- With an array of referenced components specified in a query (using '$any') ---
 
           ForkedUser = User.fork();
 

@@ -50,7 +50,7 @@ describe('Merging', () => {
     expect(movie.getAttribute('title').isSet()).toBe(false);
   });
 
-  test('Nested component', async () => {
+  test('Referenced component', async () => {
     class Director extends Component {
       @attribute() name!: string;
     }

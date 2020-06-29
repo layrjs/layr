@@ -503,7 +503,7 @@ describe('Identifiable component', () => {
     expect(forkedUser.id).toBe('abc123');
     expect(forkedUser.email).toBe('hi@hello.com');
 
-    // --- With a nested entity ---
+    // --- With a referenced identifiable component ---
 
     class Article extends Component {
       @provide() static User = User;
@@ -548,7 +548,7 @@ describe('Identifiable component', () => {
 
     expect(ForkedUser.getIdentityMap().getComponent({id: 'abc123'})).toBe(forkedAuthor);
 
-    // --- With a serialized nested entity ---
+    // --- With a serialized referenced identifiable component ---
 
     const deserializedArticle = ForkedArticle.deserializeInstance({
       id: 'xyz789',

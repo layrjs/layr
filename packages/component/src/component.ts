@@ -47,7 +47,7 @@ import {IdentityMap} from './identity-map';
 import {clone, CloneOptions} from './cloning';
 import {ForkOptions} from './forking';
 import {merge, MergeOptions} from './merging';
-import {serialize, SerializeOptions} from './serialization';
+import {SerializeOptions} from './serialization';
 import {deserialize, DeserializeOptions} from './deserialization';
 import {
   isComponentClass,
@@ -65,6 +65,8 @@ import {
   joinAttributePath
 } from './utilities';
 
+export type ComponentSet = Set<typeof Component | Component>;
+
 export type IdentifierObject = {[name: string]: IdentifierValue};
 
 export type IdentifierDescriptor = NormalizedIdentifierDescriptor | string | number;
@@ -75,6 +77,7 @@ export type ComponentGetter = (type: string) => typeof Component | Component;
 
 export type ExpandAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
+  setAttributesOnly?: boolean;
   depth?: number;
   includeReferencedComponents?: boolean;
   _isDeep?: boolean;
@@ -1004,14 +1007,20 @@ export class Component extends Observable(Object) {
     return this.prototype.getAttributeSelector;
   }
 
-  getAttributeSelector(options: {setAttributesOnly?: boolean} = {}) {
-    const {setAttributesOnly = false} = options;
-
+  getAttributeSelector() {
     let attributeSelector: AttributeSelector = {};
 
-    for (const attribute of this.getAttributes({setAttributesOnly})) {
+    for (const attribute of this.getAttributes({setAttributesOnly: true})) {
       const name = attribute.getName();
-      attributeSelector = setWithinAttributeSelector(attributeSelector, name, true);
+      const subattributeSelector = attribute._getAttributeSelector();
+
+      if (subattributeSelector !== false) {
+        attributeSelector = setWithinAttributeSelector(
+          attributeSelector,
+          name,
+          subattributeSelector
+        );
+      }
     }
 
     return attributeSelector;
@@ -1047,7 +1056,7 @@ export class Component extends Observable(Object) {
       return expandedAttributeSelector; // Optimization
     }
 
-    const isEmbedded = ensureComponentClass(this).isEmbedded();
+    const isEmbedded = isComponentInstance(this) && this.constructor.isEmbedded();
 
     // By default, referenced components are not expanded
     if (isEmbedded || !_isDeep || includeReferencedComponents) {
@@ -1089,8 +1098,7 @@ export class Component extends Observable(Object) {
 
     // If the component has a primary identifier attribute, always include it
     if (this.hasPrimaryIdentifierAttribute()) {
-      const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute({autoFork: false});
-
+      const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
       expandedAttributeSelector = setWithinAttributeSelector(
         expandedAttributeSelector,
         primaryIdentifierAttribute.getName(),
@@ -1619,7 +1627,7 @@ export class Component extends Observable(Object) {
 
     if (this.constructor !== componentClass) {
       // Make 'forkedComponent' believe that it is an instance of 'Component'
-      // It can happen when a nested entity is forked
+      // It can happen when a referenced component is forked
       Object.defineProperty(forkedComponent, 'constructor', {
         value: componentClass,
         writable: true,
@@ -1824,10 +1832,12 @@ export class Component extends Observable(Object) {
 
   static serialize(options: SerializeOptions = {}) {
     const {
+      serializedComponents = new Set(),
+      componentDependencies,
       returnComponentReferences = false,
-      referencedComponents,
       ignoreEmptyComponents = false,
-      includeComponentTypes = true
+      includeComponentTypes = true,
+      includeReferencedComponents = false
     } = options;
 
     const serializedComponent: PlainObject = {};
@@ -1836,19 +1846,23 @@ export class Component extends Observable(Object) {
       serializedComponent.__component = this.getComponentType();
     }
 
-    if (returnComponentReferences) {
-      if (referencedComponents !== undefined) {
+    const hasAlreadyBeenSerialized = serializedComponents.has(this);
+
+    if (!hasAlreadyBeenSerialized) {
+      serializedComponents.add(this);
+
+      if (componentDependencies !== undefined) {
         for (const providedComponent of this.getProvidedComponents()) {
-          referencedComponents.add(providedComponent);
+          componentDependencies.add(providedComponent);
         }
 
         for (const consumedComponent of this.getConsumedComponents()) {
-          referencedComponents.add(consumedComponent);
+          componentDependencies.add(consumedComponent);
         }
-
-        referencedComponents.add(this);
       }
+    }
 
+    if (hasAlreadyBeenSerialized || (returnComponentReferences && !includeReferencedComponents)) {
       return serializedComponent;
     }
 
@@ -1861,12 +1875,14 @@ export class Component extends Observable(Object) {
 
   serialize(options: SerializeOptions = {}) {
     const {
-      target,
+      serializedComponents = new Set(),
+      componentDependencies,
       returnComponentReferences = false,
-      referencedComponents,
       ignoreEmptyComponents = false,
       includeComponentTypes = true,
-      includeIsNewMarks = true
+      includeIsNewMarks = true,
+      includeReferencedComponents = false,
+      target
     } = options;
 
     const serializedComponent: PlainObject = {};
@@ -1877,37 +1893,39 @@ export class Component extends Observable(Object) {
 
     const isEmbedded = this.constructor.isEmbedded();
 
-    if (returnComponentReferences) {
-      if (referencedComponents !== undefined) {
-        for (const providedComponent of this.constructor.getProvidedComponents()) {
-          referencedComponents.add(providedComponent);
-        }
+    if (!isEmbedded) {
+      const hasAlreadyBeenSerialized = serializedComponents.has(this);
 
-        for (const consumedComponent of this.constructor.getConsumedComponents()) {
-          referencedComponents.add(consumedComponent);
-        }
+      if (!hasAlreadyBeenSerialized) {
+        serializedComponents.add(this);
 
-        referencedComponents.add(this.constructor);
+        if (componentDependencies !== undefined) {
+          componentDependencies.add(this.constructor);
 
-        if (!isEmbedded) {
-          referencedComponents.add(this);
+          for (const providedComponent of this.constructor.getProvidedComponents()) {
+            componentDependencies.add(providedComponent);
+          }
+
+          for (const consumedComponent of this.constructor.getConsumedComponents()) {
+            componentDependencies.add(consumedComponent);
+          }
         }
       }
 
-      if (!isEmbedded) {
+      if (hasAlreadyBeenSerialized || (returnComponentReferences && !includeReferencedComponents)) {
         Object.assign(serializedComponent, this.getIdentifierDescriptor());
 
         return serializedComponent;
       }
     }
 
-    // TODO: Rethink the logic
+    // TODO: Rethink the whole '__new' logic
     if (includeIsNewMarks && (isEmbedded || this.getIsNewMarkSource() !== target)) {
       serializedComponent.__new = this.getIsNewMark();
     }
 
     return possiblyAsync(
-      this.__serializeAttributes(serializedComponent, options),
+      this.__serializeAttributes(serializedComponent, {...options, serializedComponents}),
       (attributeCount) =>
         ignoreEmptyComponents && attributeCount <= this.__getMinimumAttributeCount()
           ? undefined
@@ -1923,7 +1941,11 @@ export class Component extends Observable(Object) {
     serializedComponent: PlainObject,
     options: SerializeOptions
   ): PromiseLikeable<number> {
-    let {includeReferencedComponents = false, attributeSelector = true, attributeFilter} = options;
+    let {attributeSelector = true, attributeFilter, target, skipUnchangedAttributes} = options;
+
+    if (skipUnchangedAttributes === undefined) {
+      skipUnchangedAttributes = target === -1 || typeof (this as any).isStorable === 'function';
+    }
 
     attributeSelector = normalizeAttributeSelector(attributeSelector);
 
@@ -1939,26 +1961,25 @@ export class Component extends Observable(Object) {
           return;
         }
 
-        // TODO
-        // if (
-        //   isStorable &&
-        //   !isPrimaryIdentifierAttributeInstance(attribute) &&
-        //   attribute.getValueSource() === target
-        // ) {
-        //   return;
-        // }
+        if (
+          target !== undefined &&
+          skipUnchangedAttributes &&
+          !isPrimaryIdentifierAttributeInstance(attribute) &&
+          attribute.getValueSource() === target
+        ) {
+          return;
+        }
 
         return possiblyAsync(
           attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
           (isNotFilteredOut) => {
             if (isNotFilteredOut) {
-              const attributeValue = attribute.getValue();
-
               return possiblyAsync(
-                serialize(attributeValue, {
+                attribute.serialize({
                   ...options,
                   attributeSelector: subattributeSelector,
-                  returnComponentReferences: !includeReferencedComponents
+                  returnComponentReferences: true,
+                  skipUnchangedAttributes
                 }),
                 (serializedAttributeValue) => {
                   serializedComponent[attributeName] = serializedAttributeValue;
@@ -1981,6 +2002,7 @@ export class Component extends Observable(Object) {
     options: DeserializeOptions = {}
   ): T | PromiseLike<T> {
     const {__component: componentType, ...attributes} = object;
+    const {deserializedComponents} = options;
 
     if (componentType !== undefined) {
       const expectedComponentType = this.getComponentType();
@@ -1990,6 +2012,10 @@ export class Component extends Observable(Object) {
           `An unexpected component type was encountered while deserializing an object (encountered type: '${componentType}', expected type: '${expectedComponentType}')`
         );
       }
+    }
+
+    if (deserializedComponents !== undefined) {
+      deserializedComponents.add(this);
     }
 
     return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
@@ -2003,7 +2029,7 @@ export class Component extends Observable(Object) {
     options: DeserializeOptions = {}
   ): InstanceType<T> | PromiseLike<InstanceType<T>> {
     const {__component: componentType, __new: isNew, ...attributes} = object;
-    const {source, attributeFilter} = options;
+    const {attributeFilter, deserializedComponents, source} = options;
 
     if (componentType !== undefined) {
       const expectedComponentType = this.prototype.getComponentType();
@@ -2037,6 +2063,10 @@ export class Component extends Observable(Object) {
       }
     }
 
+    if (deserializedComponents !== undefined && !component.constructor.isEmbedded()) {
+      deserializedComponents.add(component);
+    }
+
     return possiblyAsync(component, (component) =>
       possiblyAsync(component.__deserializeAttributes(attributes, options), () => {
         if (isNew) {
@@ -2058,7 +2088,7 @@ export class Component extends Observable(Object) {
     object: PlainObject = {},
     options: DeserializeOptions = {}
   ): T | PromiseLike<T> {
-    const {source} = options;
+    const {deserializedComponents, source} = options;
 
     const {__component: componentType, __new: isNew, ...attributes} = object;
 
@@ -2080,6 +2110,10 @@ export class Component extends Observable(Object) {
       }
 
       this.setIsNewMark(isNew, {source});
+    }
+
+    if (deserializedComponents !== undefined && !this.constructor.isEmbedded()) {
+      deserializedComponents.add(this);
     }
 
     return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
@@ -2132,7 +2166,7 @@ export class Component extends Observable(Object) {
     componentGetter: ComponentGetter,
     options: DeserializeOptions
   ): void | PromiseLike<void> {
-    const {source} = options;
+    const {source = 0} = options;
 
     // OPTIMIZE: Move the following logic into the Attribute class so we can avoid
     // deserializing two times in case of in place deserialization of nested models

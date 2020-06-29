@@ -1,9 +1,9 @@
 import {
   Component,
+  ComponentSet,
   IntrospectedComponent,
   ComponentGetter,
   PropertyFilter,
-  ReferencedComponentSet,
   Attribute,
   PropertyOperation,
   isComponentClassOrInstance,
@@ -161,18 +161,21 @@ export class ComponentServer {
         attributeFilter,
         source: -1
       }),
-      (deserializedComponents: (typeof Component | Component)[] | undefined) =>
-        possiblyAsync(
+      (deserializedComponents: (typeof Component | Component)[] | undefined) => {
+        const deserializedComponentSet: ComponentSet = new Set(deserializedComponents);
+        return possiblyAsync(
           deserialize(serializedQuery, {
             componentGetter,
             attributeFilter,
+            deserializedComponents: deserializedComponentSet,
             source: -1
           }),
-          (deserializedQuery: PlainObject) => ({
-            deserializedQuery,
-            deserializedComponents
-          })
-        )
+          (deserializedQuery: PlainObject) => {
+            deserializedComponents = Array.from(deserializedComponentSet);
+            return {deserializedQuery, deserializedComponents};
+          }
+        );
+      }
     );
   }
 
@@ -183,68 +186,68 @@ export class ComponentServer {
     }: {result: unknown; components: (typeof Component | Component)[] | undefined},
     {attributeFilter}: {attributeFilter: PropertyFilter}
   ) {
-    const referencedComponents: ReferencedComponentSet = new Set(components);
-
+    const serializedComponents: ComponentSet = new Set();
+    const componentDependencies: ComponentSet = new Set(components);
     const serializedResult =
       result !== undefined
         ? serialize(result, {
-            returnComponentReferences: true,
-            referencedComponents,
             attributeFilter,
+            serializedComponents,
+            componentDependencies,
             serializeFunctions: true,
             target: -1
           })
         : undefined;
 
-    let serializedComponents: PlainObject[] | undefined;
-    const handledReferencedComponents: ReferencedComponentSet = new Set();
+    let serializedComponentDependencies: PlainObject[] | undefined;
+    const handledComponentDependencies = new Set(serializedComponents);
 
-    const serializeReferencedComponents = function (
-      referencedComponents: ReferencedComponentSet
+    const serializeComponentDependencies = function (
+      componentDependencies: ComponentSet
     ): void | PromiseLike<void> {
-      if (referencedComponents.size === 0) {
+      if (componentDependencies.size === 0) {
         return;
       }
 
-      const additionalReferencedComponents: ReferencedComponentSet = new Set();
+      const additionalComponentDependencies: ComponentSet = new Set();
 
       return possiblyAsync(
         possiblyAsync.forEach(
-          referencedComponents.values(),
-          (referencedComponent: typeof Component | Component) => {
-            if (handledReferencedComponents.has(referencedComponent)) {
+          componentDependencies.values(),
+          (componentDependency: typeof Component | Component) => {
+            if (handledComponentDependencies.has(componentDependency)) {
               return;
             }
 
             return possiblyAsync(
-              referencedComponent.serialize({
-                referencedComponents: additionalReferencedComponents,
-                ignoreEmptyComponents: true,
+              componentDependency.serialize({
                 attributeFilter,
+                componentDependencies: additionalComponentDependencies,
+                ignoreEmptyComponents: true,
                 serializeFunctions: true,
                 target: -1
               }),
-              (serializedComponent) => {
-                if (serializedComponent !== undefined) {
-                  if (serializedComponents === undefined) {
-                    serializedComponents = [];
+              (serializedComponentDependency) => {
+                if (serializedComponentDependency !== undefined) {
+                  if (serializedComponentDependencies === undefined) {
+                    serializedComponentDependencies = [];
                   }
 
-                  serializedComponents.push(serializedComponent);
+                  serializedComponentDependencies.push(serializedComponentDependency);
                 }
 
-                handledReferencedComponents.add(referencedComponent);
+                handledComponentDependencies.add(componentDependency);
               }
             );
           }
         ),
-        () => serializeReferencedComponents(additionalReferencedComponents)
+        () => serializeComponentDependencies(additionalComponentDependencies)
       );
     };
 
-    return possiblyAsync(serializeReferencedComponents(referencedComponents), () => ({
+    return possiblyAsync(serializeComponentDependencies(componentDependencies), () => ({
       serializedResult,
-      serializedComponents
+      serializedComponents: serializedComponentDependencies
     }));
   }
 

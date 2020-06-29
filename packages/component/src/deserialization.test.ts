@@ -243,7 +243,7 @@ describe('Deserialization', () => {
       "Cannot mark as new an existing non-new component (component: 'Movie')"
     );
 
-    // --- With a nested component ---
+    // --- With a referenced component ---
 
     class Trailer extends Component {
       @attribute() url?: string;
@@ -296,13 +296,13 @@ describe('Deserialization', () => {
 
     expect(trailer.url).toBe('https://trailer.com/xyz456');
 
-    // Nested component identities should be preserved
+    // Referenced component identities should be preserved
     expect(trailer.movie).toBe(movie);
 
     expect(movie.title).toBe('The Matrix');
     expect(movie.duration).toBe(120);
 
-    // --- With an array of nested components ---
+    // --- With an array of a referenced components ---
 
     class Cinema extends Component {
       @attribute() name?: string;
@@ -349,7 +349,7 @@ describe('Deserialization', () => {
 
     const otherMovie = cinema.movies![0];
 
-    // For nested components in arrays, the identity is not (currently) be preserved
+    // For referenced components in arrays, the identity is not (currently) be preserved
     expect(otherMovie).not.toBe(movie);
 
     expect(otherMovie).toBeInstanceOf(Movie);

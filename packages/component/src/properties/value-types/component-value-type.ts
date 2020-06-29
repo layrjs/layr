@@ -57,6 +57,16 @@ export class ComponentValueType extends ValueType {
     return false;
   }
 
+  _getAttributeSelector(attribute: Attribute): AttributeSelector {
+    const component = attribute.getValue();
+
+    if (!isComponentClassOrInstance(component)) {
+      return false;
+    }
+
+    return component.getAttributeSelector();
+  }
+
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     attribute: Attribute,

@@ -422,8 +422,14 @@ describe('AttributeSelector', () => {
       traverseAttributeSelector(
         value,
         attributeSelector,
-        function (value, attributeSelector, {name, object}) {
-          results.push({value, attributeSelector, name, object});
+        function (value, attributeSelector, {name, object, isArray}) {
+          results.push({
+            value,
+            attributeSelector,
+            name,
+            object,
+            ...(isArray && {isArray: true})
+          });
         },
         options
       );
@@ -521,6 +527,29 @@ describe('AttributeSelector', () => {
         object: person
       },
       {value: 'Paradise Inc.', attributeSelector: true, name: 'name', object: person.organization}
+    ]);
+
+    expect(
+      runTraverse(
+        person,
+        {friends: {firstName: true}},
+        {includeSubtrees: true, includeLeafs: false}
+      )
+    ).toStrictEqual([
+      {
+        value: person.friends[0],
+        attributeSelector: {firstName: true},
+        name: 'friends',
+        object: person,
+        isArray: true
+      },
+      {
+        value: person.friends[1],
+        attributeSelector: {firstName: true},
+        name: 'friends',
+        object: person,
+        isArray: true
+      }
     ]);
 
     expect(runTraverse(person, true, {includeSubtrees: true, includeLeafs: false})).toStrictEqual(

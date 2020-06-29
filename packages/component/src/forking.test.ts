@@ -105,7 +105,7 @@ describe('Forking', () => {
     expect(GhostApp.Movie.MovieDetails).toBe(GhostMovieDetails);
   });
 
-  test('Nested component', async () => {
+  test('Referenced component', async () => {
     class Director extends Component {
       @attribute() name!: string;
     }

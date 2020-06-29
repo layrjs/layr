@@ -4,6 +4,7 @@ import {ValueType, ValueTypeOptions} from './value-type';
 import type {ExpandAttributeSelectorOptions} from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
+import {SerializeOptions} from '../../serialization';
 import {joinAttributePath} from '../../utilities';
 
 export class ArrayValueType extends ValueType {
@@ -42,6 +43,10 @@ export class ArrayValueType extends ValueType {
     return super._checkValue(values, attribute) ?? Array.isArray(values);
   }
 
+  _getAttributeSelector(_attribute: Attribute): AttributeSelector {
+    throw new Error('Method not yet implemented'); // TODO
+  }
+
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     attribute: Attribute,
@@ -70,6 +75,10 @@ export class ArrayValueType extends ValueType {
     }
 
     return failedValidators;
+  }
+
+  serializeValue(value: unknown, attribute: Attribute, options: SerializeOptions = {}) {
+    return super.serializeValue(value, attribute, {...options, skipUnchangedAttributes: false});
   }
 
   introspect() {

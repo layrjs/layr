@@ -6,28 +6,29 @@ import {
 import {possiblyAsync} from 'possibly-async';
 import {isES2015Class} from 'core-helpers';
 
-import type {Component} from './component';
+import type {ComponentSet} from './component';
 import type {PropertyFilter, AttributeSelector} from './properties';
 import {isComponentClassOrInstance} from './utilities';
 
 export type SerializeOptions = SimpleSerializeOptions & {
   attributeSelector?: AttributeSelector;
   attributeFilter?: PropertyFilter;
+  serializedComponents?: ComponentSet;
+  componentDependencies?: ComponentSet;
   serializeFunctions?: boolean;
   returnComponentReferences?: boolean;
-  referencedComponents?: ReferencedComponentSet;
   ignoreEmptyComponents?: boolean;
   includeComponentTypes?: boolean;
   includeIsNewMarks?: boolean;
   includeReferencedComponents?: boolean;
   target?: number;
+  skipUnchangedAttributes?: boolean;
 };
-
-export type ReferencedComponentSet = Set<typeof Component | Component>;
 
 export function serialize<Value>(value: Value, options?: SerializeOptions): SerializeResult<Value>;
 export function serialize(value: any, options: SerializeOptions = {}) {
   const {
+    serializedComponents = new Set(),
     objectSerializer: originalObjectSerializer,
     functionSerializer: originalFunctionSerializer,
     serializeFunctions = false,
@@ -44,7 +45,7 @@ export function serialize(value: any, options: SerializeOptions = {}) {
     }
 
     if (isComponentClassOrInstance(object)) {
-      return object.serialize(options);
+      return object.serialize({...options, serializedComponents});
     }
   };
 

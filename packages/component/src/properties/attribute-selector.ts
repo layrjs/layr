@@ -280,7 +280,7 @@ type TraverseIteratee = (
   context: TraverseContext
 ) => void;
 
-type TraverseContext = {name?: string; object?: object};
+type TraverseContext = {name?: string; object?: object; isArray?: boolean};
 
 type TraverseOptions = {includeSubtrees?: boolean; includeLeafs?: boolean};
 
@@ -332,7 +332,7 @@ function _traverse(
       _traverse(value, attributeSelector, iteratee, {
         includeSubtrees,
         includeLeafs,
-        _context,
+        _context: {..._context, isArray: true},
         _isDeep
       });
     }

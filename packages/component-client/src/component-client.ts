@@ -1,7 +1,7 @@
 import {
   Component,
+  ComponentSet,
   ComponentGetter,
-  ReferencedComponentSet,
   Attribute,
   PropertyFilterSync,
   serialize,
@@ -166,54 +166,53 @@ export class ComponentClient {
     {query, components}: {query: PlainObject; components?: (typeof Component | Component)[]},
     {attributeFilter}: {attributeFilter: PropertyFilterSync}
   ) {
-    const referencedComponents = new Set(components);
+    const componentDependencies = new Set(components);
 
     const serializedQuery: PlainObject = serialize(query, {
-      returnComponentReferences: true,
-      referencedComponents,
+      componentDependencies,
       attributeFilter,
       target: 1
     });
 
-    let serializedComponents: PlainObject[] | undefined;
-    const handledReferencedComponents: ReferencedComponentSet = new Set();
+    let serializedComponentDependencies: PlainObject[] | undefined;
+    const handledComponentDependencies: ComponentSet = new Set();
 
-    const serializeReferencedComponents = function (referencedComponents: ReferencedComponentSet) {
-      if (referencedComponents.size === 0) {
+    const serializeComponentDependencies = function (componentDependencies: ComponentSet) {
+      if (componentDependencies.size === 0) {
         return;
       }
 
-      const additionalReferencedComponents: ReferencedComponentSet = new Set();
+      const additionalComponentDependency: ComponentSet = new Set();
 
-      for (const referencedComponent of referencedComponents.values()) {
-        if (handledReferencedComponents.has(referencedComponent)) {
+      for (const componentDependency of componentDependencies.values()) {
+        if (handledComponentDependencies.has(componentDependency)) {
           continue;
         }
 
-        const serializedComponent = referencedComponent.serialize({
-          referencedComponents: additionalReferencedComponents,
+        const serializedComponentDependency = componentDependency.serialize({
+          componentDependencies: additionalComponentDependency,
           ignoreEmptyComponents: true,
           attributeFilter,
           target: 1
         });
 
-        if (serializedComponent !== undefined) {
-          if (serializedComponents === undefined) {
-            serializedComponents = [];
+        if (serializedComponentDependency !== undefined) {
+          if (serializedComponentDependencies === undefined) {
+            serializedComponentDependencies = [];
           }
 
-          serializedComponents.push(serializedComponent);
+          serializedComponentDependencies.push(serializedComponentDependency);
         }
 
-        handledReferencedComponents.add(referencedComponent);
+        handledComponentDependencies.add(componentDependency);
       }
 
-      serializeReferencedComponents(additionalReferencedComponents);
+      serializeComponentDependencies(additionalComponentDependency);
     };
 
-    serializeReferencedComponents(referencedComponents);
+    serializeComponentDependencies(componentDependencies);
 
-    return {serializedQuery, serializedComponents};
+    return {serializedQuery, serializedComponents: serializedComponentDependencies};
   }
 
   _deserializeResponse(

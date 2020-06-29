@@ -10,6 +10,7 @@ import {
   runValidators,
   normalizeValidator
 } from '../../validation';
+import {serialize, SerializeOptions} from '../../serialization';
 
 export type IntrospectedValueType = {
   valueType?: string;
@@ -63,6 +64,10 @@ export class ValueType {
     return value === undefined ? this.isOptional() : undefined;
   }
 
+  _getAttributeSelector(_attribute: Attribute): AttributeSelector {
+    return true;
+  }
+
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     _attribute: Attribute,
@@ -88,6 +93,10 @@ export class ValueType {
     }));
 
     return failedValidatorsWithPath;
+  }
+
+  serializeValue(value: unknown, _attribute: Attribute, options: SerializeOptions = {}) {
+    return serialize(value, options);
   }
 
   introspect() {

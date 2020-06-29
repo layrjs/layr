@@ -666,32 +666,51 @@ describe('Component', () => {
         @attribute() duration = 0;
       }
 
-      expect(Movie.prototype.getAttributeSelector()).toStrictEqual({
-        title: true,
-        duration: true
-      });
-
-      expect(Movie.prototype.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({});
+      expect(Movie.prototype.getAttributeSelector()).toStrictEqual({});
 
       const movie = Movie.create({}, {isNew: false});
+
+      expect(movie.getAttributeSelector()).toStrictEqual({});
+
+      movie.title = 'Inception';
+
+      expect(movie.getAttributeSelector()).toStrictEqual({title: true});
+
+      movie.duration = 120;
 
       expect(movie.getAttributeSelector()).toStrictEqual({
         title: true,
         duration: true
       });
 
-      expect(movie.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({});
+      // --- With an embedded component ---
 
-      movie.title = 'Inception';
+      class UserDetails extends EmbeddedComponent {
+        @attribute('string') country = '';
+      }
 
-      expect(movie.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({title: true});
+      class User extends Component {
+        @provide() static UserDetails = UserDetails;
 
-      movie.duration = 120;
+        @attribute('string') name = '';
+        @attribute('UserDetails?') details?: UserDetails;
+      }
 
-      expect(movie.getAttributeSelector({setAttributesOnly: true})).toStrictEqual({
-        title: true,
-        duration: true
-      });
+      const user = User.create({}, {isNew: false});
+
+      expect(user.getAttributeSelector()).toStrictEqual({});
+
+      user.name = 'John';
+
+      expect(user.getAttributeSelector()).toStrictEqual({name: true});
+
+      user.details = UserDetails.create({}, {isNew: false});
+
+      expect(user.getAttributeSelector()).toStrictEqual({name: true, details: {}});
+
+      user.details.country = 'USA';
+
+      expect(user.getAttributeSelector()).toStrictEqual({name: true, details: {country: true}});
     });
 
     test('expandAttributeSelector()', async () => {
