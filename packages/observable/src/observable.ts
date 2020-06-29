@@ -1,4 +1,4 @@
-import {hasOwnProperty, Constructor, isClass, getTypeOf} from 'core-helpers';
+import {hasOwnProperty, Constructor, isClass, getTypeOf, isPlainObject} from 'core-helpers';
 
 export type ObservableType = {
   addObserver(observer: Observer): void;
@@ -106,7 +106,7 @@ export function createObservable<T extends object>(target: T) {
     return isObservable(value);
   };
 
-  let proxy: T & ObservableType;
+  let observable: T & ObservableType;
 
   const handler = {
     has(target: object, key: string | number | symbol) {
@@ -123,7 +123,7 @@ export function createObservable<T extends object>(target: T) {
     },
 
     get(target: object, key: string | number | symbol, receiver?: any) {
-      if (receiver === proxy) {
+      if (receiver === observable) {
         if (key === 'addObserver') {
           return handleAddObserver;
         }
@@ -156,11 +156,15 @@ export function createObservable<T extends object>(target: T) {
         );
       }
 
+      if (canBeObserved(newValue) && !isObservable(newValue) && isEmbeddable(newValue)) {
+        newValue = createObservable(newValue);
+      }
+
       const previousValue = Reflect.get(target, key, receiver);
 
       const result = Reflect.set(target, key, newValue, receiver);
 
-      if (receiver === proxy && newValue?.valueOf() !== previousValue?.valueOf()) {
+      if (receiver === observable && newValue?.valueOf() !== previousValue?.valueOf()) {
         if (isObservable(previousValue) && isEmbeddable(previousValue)) {
           previousValue.removeObserver(handleCallObservers);
         }
@@ -201,9 +205,30 @@ export function createObservable<T extends object>(target: T) {
     }
   };
 
-  proxy = new Proxy<T>(target, handler) as T & ObservableType;
+  observable = new Proxy<T>(target, handler) as T & ObservableType;
 
-  return proxy;
+  const observeExistingValue = function (key: string | number, value: unknown) {
+    if (canBeObserved(value) && !isObservable(value) && isEmbeddable(value)) {
+      value = createObservable(value);
+      (target as any)[key] = value;
+    }
+
+    if (isObservable(value)) {
+      value.addObserver(observable);
+    }
+  };
+
+  if (Array.isArray(target)) {
+    for (let index = 0; index < target.length; index++) {
+      observeExistingValue(index, target[index]);
+    }
+  } else if (isPlainObject(target)) {
+    for (const [key, value] of Object.entries(target)) {
+      observeExistingValue(key, value);
+    }
+  }
+
+  return observable;
 }
 
 export class ObserverSet {

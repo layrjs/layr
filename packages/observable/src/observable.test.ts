@@ -164,6 +164,43 @@ describe('Observable', () => {
 
         expect(observer).toHaveBeenCalledTimes(7);
       });
+
+      it('Should observe existing items', () => {
+        const observableArray = createObservable([createObservable([1])]);
+        const observer = jest.fn();
+        observableArray.addObserver(observer);
+
+        expect(observer).toHaveBeenCalledTimes(0);
+
+        observableArray[0][0] = 2;
+
+        expect(observer).toHaveBeenCalledTimes(1);
+      });
+
+      it('Should make existing items observable when possible', () => {
+        const observableArray = createObservable([[1]]);
+
+        expect(isObservable(observableArray[0])).toBe(true);
+
+        const observer = jest.fn();
+        observableArray.addObserver(observer);
+
+        expect(observer).toHaveBeenCalledTimes(0);
+
+        observableArray[0][0] = 2;
+
+        expect(observer).toHaveBeenCalledTimes(1);
+
+        observableArray[0] = [3];
+
+        expect(isObservable(observableArray[0])).toBe(true);
+
+        expect(observer).toHaveBeenCalledTimes(2);
+
+        observableArray[0][0] = 4;
+
+        expect(observer).toHaveBeenCalledTimes(3);
+      });
     });
 
     describe('Mutator methods', () => {
@@ -351,6 +388,43 @@ describe('Observable', () => {
 
         observableAttribute.id = 2;
         expect(observer.mock.calls.length).toBe(numberOfCalls);
+      });
+
+      it('Should observe existing attributes', () => {
+        const observableObject = createObservable({innerObject: createObservable({id: 1})});
+        const observer = jest.fn();
+        observableObject.addObserver(observer);
+
+        expect(observer).toHaveBeenCalledTimes(0);
+
+        observableObject.innerObject.id = 2;
+
+        expect(observer).toHaveBeenCalledTimes(1);
+      });
+
+      it('Should make existing attributes observable when possible', () => {
+        const observableObject = createObservable({innerObject: {id: 1}});
+
+        expect(isObservable(observableObject.innerObject)).toBe(true);
+
+        const observer = jest.fn();
+        observableObject.addObserver(observer);
+
+        expect(observer).toHaveBeenCalledTimes(0);
+
+        observableObject.innerObject.id = 2;
+
+        expect(observer).toHaveBeenCalledTimes(1);
+
+        observableObject.innerObject = {id: 3};
+
+        expect(isObservable(observableObject.innerObject)).toBe(true);
+
+        expect(observer).toHaveBeenCalledTimes(2);
+
+        observableObject.innerObject.id = 4;
+
+        expect(observer).toHaveBeenCalledTimes(3);
       });
     });
 
