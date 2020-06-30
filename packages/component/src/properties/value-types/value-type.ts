@@ -64,13 +64,10 @@ export class ValueType {
     return value === undefined ? this.isOptional() : undefined;
   }
 
-  _getAttributeSelector(_attribute: Attribute): AttributeSelector {
-    return true;
-  }
-
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     _attribute: Attribute,
+    _value: unknown,
     _options: ExpandAttributeSelectorOptions
   ): AttributeSelector {
     return normalizedAttributeSelector !== false;

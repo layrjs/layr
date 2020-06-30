@@ -326,20 +326,25 @@ export class Attribute extends Observable(Property) {
 
   // === Attribute selectors ===
 
-  _getAttributeSelector() {
-    return this.getValueType()._getAttributeSelector(this);
-  }
-
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     options: ExpandAttributeSelectorOptions
   ) {
-    return this.getValueType()._expandAttributeSelector(normalizedAttributeSelector, this, options);
+    const {setAttributesOnly} = options;
+
+    const value = setAttributesOnly ? this.getValue() : undefined;
+
+    return this.getValueType()._expandAttributeSelector(
+      normalizedAttributeSelector,
+      this,
+      value,
+      options
+    );
   }
 
   // === Serialization ===
 
-  serialize(options: SerializeOptions = {}) {
+  serialize(options: SerializeOptions = {}): unknown {
     if (!this.isSet()) {
       throw new Error(`Cannot serialize an unset attribute (${this.describe()})`);
     }

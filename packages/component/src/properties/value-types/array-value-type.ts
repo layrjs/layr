@@ -3,7 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import {ValueType, ValueTypeOptions} from './value-type';
 import type {ExpandAttributeSelectorOptions} from '../../component';
 import type {Attribute} from '../attribute';
-import type {AttributeSelector} from '../attribute-selector';
+import {AttributeSelector, intersectAttributeSelectors} from '../attribute-selector';
 import {SerializeOptions} from '../../serialization';
 import {joinAttributePath} from '../../utilities';
 
@@ -43,20 +43,50 @@ export class ArrayValueType extends ValueType {
     return super._checkValue(values, attribute) ?? Array.isArray(values);
   }
 
-  _getAttributeSelector(_attribute: Attribute): AttributeSelector {
-    throw new Error('Method not yet implemented'); // TODO
-  }
-
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     attribute: Attribute,
+    items: unknown,
     options: ExpandAttributeSelectorOptions
-  ) {
-    return this.getItemType()._expandAttributeSelector(
-      normalizedAttributeSelector,
-      attribute,
-      options
-    );
+  ): AttributeSelector {
+    const {setAttributesOnly} = options;
+
+    if (normalizedAttributeSelector === false) {
+      return false;
+    }
+
+    const itemType = this.getItemType();
+
+    if (!setAttributesOnly || !Array.isArray(items) || items.length === 0) {
+      return itemType._expandAttributeSelector(
+        normalizedAttributeSelector,
+        attribute,
+        undefined,
+        options
+      );
+    }
+
+    let expandedAttributeSelector: AttributeSelector | undefined = undefined;
+
+    for (const item of items) {
+      const itemAttributeSelector = itemType._expandAttributeSelector(
+        normalizedAttributeSelector,
+        attribute,
+        item,
+        options
+      );
+
+      if (expandedAttributeSelector === undefined) {
+        expandedAttributeSelector = itemAttributeSelector;
+      } else {
+        expandedAttributeSelector = intersectAttributeSelectors(
+          expandedAttributeSelector,
+          itemAttributeSelector
+        );
+      }
+    }
+
+    return expandedAttributeSelector!;
   }
 
   runValidators(values: unknown[] | undefined, attributeSelector?: AttributeSelector) {

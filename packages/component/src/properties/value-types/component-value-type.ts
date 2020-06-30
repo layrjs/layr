@@ -57,26 +57,25 @@ export class ComponentValueType extends ValueType {
     return false;
   }
 
-  _getAttributeSelector(attribute: Attribute): AttributeSelector {
-    const component = attribute.getValue();
-
-    if (!isComponentClassOrInstance(component)) {
-      return false;
-    }
-
-    return component.getAttributeSelector();
-  }
-
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     attribute: Attribute,
+    component: unknown,
     options: ExpandAttributeSelectorOptions
-  ) {
+  ): AttributeSelector {
+    const {setAttributesOnly} = options;
+
     if (normalizedAttributeSelector === false) {
       return false;
     }
 
-    const component = this.getComponent(attribute);
+    if (!setAttributesOnly) {
+      component = this.getComponent(attribute);
+    }
+
+    if (!isComponentClassOrInstance(component)) {
+      return {}; // `setAttributesOnly` is true and `component` is undefined
+    }
 
     return component.expandAttributeSelector(normalizedAttributeSelector, options);
   }

@@ -1003,29 +1003,6 @@ export class Component extends Observable(Object) {
 
   // === Attribute selectors ===
 
-  static get getAttributeSelector() {
-    return this.prototype.getAttributeSelector;
-  }
-
-  getAttributeSelector() {
-    let attributeSelector: AttributeSelector = {};
-
-    for (const attribute of this.getAttributes({setAttributesOnly: true})) {
-      const name = attribute.getName();
-      const subattributeSelector = attribute._getAttributeSelector();
-
-      if (subattributeSelector !== false) {
-        attributeSelector = setWithinAttributeSelector(
-          attributeSelector,
-          name,
-          subattributeSelector
-        );
-      }
-    }
-
-    return attributeSelector;
-  }
-
   static get expandAttributeSelector() {
     return this.prototype.expandAttributeSelector;
   }
@@ -1038,6 +1015,7 @@ export class Component extends Observable(Object) {
 
     let {
       filter,
+      setAttributesOnly = false,
       depth = Number.MAX_SAFE_INTEGER,
       includeReferencedComponents = false,
       _isDeep = false,
@@ -1060,7 +1038,7 @@ export class Component extends Observable(Object) {
 
     // By default, referenced components are not expanded
     if (isEmbedded || !_isDeep || includeReferencedComponents) {
-      for (const attribute of this.getAttributes({filter})) {
+      for (const attribute of this.getAttributes({filter, setAttributesOnly})) {
         const name = attribute.getName();
 
         const subattributeSelector = getFromAttributeSelector(attributeSelector, name);
@@ -1079,6 +1057,7 @@ export class Component extends Observable(Object) {
           subattributeSelector,
           {
             filter,
+            setAttributesOnly,
             depth,
             includeReferencedComponents,
             _isDeep: true,
@@ -1088,22 +1067,27 @@ export class Component extends Observable(Object) {
 
         _attributeStack.delete(attribute);
 
-        expandedAttributeSelector = setWithinAttributeSelector(
-          expandedAttributeSelector,
-          name,
-          expandedSubattributeSelector
-        );
+        if (expandedSubattributeSelector !== false) {
+          expandedAttributeSelector = setWithinAttributeSelector(
+            expandedAttributeSelector,
+            name,
+            expandedSubattributeSelector
+          );
+        }
       }
     }
 
     // If the component has a primary identifier attribute, always include it
     if (this.hasPrimaryIdentifierAttribute()) {
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
-      expandedAttributeSelector = setWithinAttributeSelector(
-        expandedAttributeSelector,
-        primaryIdentifierAttribute.getName(),
-        true
-      );
+
+      if (!setAttributesOnly || primaryIdentifierAttribute.isSet()) {
+        expandedAttributeSelector = setWithinAttributeSelector(
+          expandedAttributeSelector,
+          primaryIdentifierAttribute.getName(),
+          true
+        );
+      }
     }
 
     return expandedAttributeSelector;

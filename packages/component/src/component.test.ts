@@ -660,59 +660,6 @@ describe('Component', () => {
       ]);
     });
 
-    test('getAttributeSelector()', async () => {
-      class Movie extends Component {
-        @attribute() title = '';
-        @attribute() duration = 0;
-      }
-
-      expect(Movie.prototype.getAttributeSelector()).toStrictEqual({});
-
-      const movie = Movie.create({}, {isNew: false});
-
-      expect(movie.getAttributeSelector()).toStrictEqual({});
-
-      movie.title = 'Inception';
-
-      expect(movie.getAttributeSelector()).toStrictEqual({title: true});
-
-      movie.duration = 120;
-
-      expect(movie.getAttributeSelector()).toStrictEqual({
-        title: true,
-        duration: true
-      });
-
-      // --- With an embedded component ---
-
-      class UserDetails extends EmbeddedComponent {
-        @attribute('string') country = '';
-      }
-
-      class User extends Component {
-        @provide() static UserDetails = UserDetails;
-
-        @attribute('string') name = '';
-        @attribute('UserDetails?') details?: UserDetails;
-      }
-
-      const user = User.create({}, {isNew: false});
-
-      expect(user.getAttributeSelector()).toStrictEqual({});
-
-      user.name = 'John';
-
-      expect(user.getAttributeSelector()).toStrictEqual({name: true});
-
-      user.details = UserDetails.create({}, {isNew: false});
-
-      expect(user.getAttributeSelector()).toStrictEqual({name: true, details: {}});
-
-      user.details.country = 'USA';
-
-      expect(user.getAttributeSelector()).toStrictEqual({name: true, details: {country: true}});
-    });
-
     test('expandAttributeSelector()', async () => {
       class Person extends EmbeddedComponent {
         @attribute('string') name = '';
@@ -781,6 +728,88 @@ describe('Component', () => {
       expect(User.prototype.expandAttributeSelector(true)).toStrictEqual({
         name: true,
         details: {country: true}
+      });
+
+      const user = User.create({}, {isNew: false});
+
+      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
+
+      user.name = 'John';
+
+      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true
+      });
+
+      user.details = UserDetails.create({}, {isNew: false});
+
+      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true,
+        details: {}
+      });
+
+      user.details.country = 'USA';
+
+      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true,
+        details: {country: true}
+      });
+
+      // --- With an array of embedded components ---
+
+      class Article extends EmbeddedComponent {
+        @attribute('string') title = '';
+      }
+
+      class Blog extends Component {
+        @provide() static Article = Article;
+
+        @attribute('string') name = '';
+        @attribute('Article[]') articles = new Array<Article>();
+      }
+
+      expect(Blog.prototype.expandAttributeSelector(true)).toStrictEqual({
+        name: true,
+        articles: {title: true}
+      });
+
+      const blog = Blog.create({}, {isNew: false});
+
+      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
+
+      blog.name = 'The Blog';
+
+      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true
+      });
+
+      blog.articles = [];
+
+      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true,
+        articles: {}
+      });
+
+      const article = Article.create({}, {isNew: false});
+
+      blog.articles.push(article);
+
+      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true,
+        articles: {}
+      });
+
+      article.title = 'The Article';
+
+      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true,
+        articles: {title: true}
+      });
+
+      blog.articles.push(Article.create({}, {isNew: false}));
+
+      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true,
+        articles: {}
       });
     });
 
