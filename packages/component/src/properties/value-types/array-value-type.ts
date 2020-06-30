@@ -81,6 +81,8 @@ export class ArrayValueType extends ValueType {
   ): AttributeSelector {
     const {setAttributesOnly, aggregationMode} = options;
 
+    options = {...options, _isArrayItem: true};
+
     if (normalizedAttributeSelector === false) {
       return false;
     }

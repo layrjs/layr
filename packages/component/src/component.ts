@@ -89,9 +89,12 @@ export type ExpandAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
   setAttributesOnly?: boolean;
   aggregationMode?: 'union' | 'intersection';
-  depth?: number;
   includeReferencedComponents?: boolean;
+  alwaysIncludePrimaryIdentifierAttributes?: boolean;
+  allowPartialArrayItems?: boolean;
+  depth?: number;
   _isDeep?: boolean;
+  _isArrayItem?: boolean;
   _attributeStack?: Set<Attribute>;
 };
 
@@ -1084,9 +1087,12 @@ export class Component extends Observable(Object) {
       filter,
       setAttributesOnly = false,
       aggregationMode = 'union',
-      depth = Number.MAX_SAFE_INTEGER,
       includeReferencedComponents = false,
+      alwaysIncludePrimaryIdentifierAttributes = true,
+      allowPartialArrayItems = true,
+      depth = Number.MAX_SAFE_INTEGER,
       _isDeep = false,
+      _isArrayItem = false,
       _attributeStack = new Set()
     } = options;
 
@@ -1103,6 +1109,10 @@ export class Component extends Observable(Object) {
     }
 
     const isEmbedded = isComponentInstance(this) && this.constructor.isEmbedded();
+
+    if (!setAttributesOnly && isEmbedded && _isArrayItem && !allowPartialArrayItems) {
+      attributeSelector = true;
+    }
 
     // By default, referenced components are not expanded
     if (isEmbedded || !_isDeep || includeReferencedComponents) {
@@ -1127,9 +1137,12 @@ export class Component extends Observable(Object) {
             filter,
             setAttributesOnly,
             aggregationMode,
-            depth,
             includeReferencedComponents,
+            alwaysIncludePrimaryIdentifierAttributes,
+            allowPartialArrayItems,
+            depth,
             _isDeep: true,
+            _isArrayItem,
             _attributeStack
           }
         );
@@ -1146,8 +1159,7 @@ export class Component extends Observable(Object) {
       }
     }
 
-    // If the component has a primary identifier attribute, always include it
-    if (this.hasPrimaryIdentifierAttribute()) {
+    if (alwaysIncludePrimaryIdentifierAttributes && this.hasPrimaryIdentifierAttribute()) {
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
 
       if (!setAttributesOnly || primaryIdentifierAttribute.isSet()) {

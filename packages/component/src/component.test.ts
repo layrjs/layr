@@ -864,6 +864,16 @@ describe('Component', () => {
         articles: {title: true}
       });
 
+      expect(Blog.prototype.expandAttributeSelector({articles: {}})).toStrictEqual({
+        articles: {}
+      });
+
+      expect(
+        Blog.prototype.expandAttributeSelector({articles: {}}, {allowPartialArrayItems: false})
+      ).toStrictEqual({
+        articles: {title: true}
+      });
+
       const blog = Blog.create({}, {isNew: false});
 
       expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
