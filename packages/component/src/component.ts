@@ -6,7 +6,8 @@ import {
   PlainObject,
   isPlainObject,
   PromiseLikeable,
-  getFunctionName
+  getFunctionName,
+  assertIsFunction
 } from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import cuid from 'cuid';
@@ -67,24 +68,32 @@ import {
 
 export type ComponentSet = Set<typeof Component | Component>;
 
+export type ComponentGetter = (type: string) => typeof Component | Component;
+
+export type ComponentMixin = (Base: typeof Component) => typeof Component;
+
+export type TraverseAttributesIteratee = (attribute: Attribute) => void;
+
+export type TraverseAttributesOptions = {
+  attributeSelector: AttributeSelector;
+  setAttributesOnly: boolean;
+};
+
 export type IdentifierObject = {[name: string]: IdentifierValue};
 
 export type IdentifierDescriptor = NormalizedIdentifierDescriptor | string | number;
 
 export type NormalizedIdentifierDescriptor = {[name: string]: IdentifierValue};
 
-export type ComponentGetter = (type: string) => typeof Component | Component;
-
 export type ExpandAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
   setAttributesOnly?: boolean;
+  aggregationMode?: 'union' | 'intersection';
   depth?: number;
   includeReferencedComponents?: boolean;
   _isDeep?: boolean;
   _attributeStack?: Set<Attribute>;
 };
-
-export type ComponentMixin = (Base: typeof Component) => typeof Component;
 
 type MethodBuilder = (name: string) => Function;
 
@@ -660,6 +669,64 @@ export class Component extends Observable(Object) {
     });
   }
 
+  static get traverseAttributes() {
+    return this.prototype.traverseAttributes;
+  }
+
+  traverseAttributes(
+    iteratee: TraverseAttributesIteratee,
+    options: Partial<TraverseAttributesOptions> & ExpandAttributeSelectorOptions = {}
+  ) {
+    assertIsFunction(iteratee);
+
+    const {
+      attributeSelector = true,
+      filter,
+      setAttributesOnly = false,
+      depth = Number.MAX_SAFE_INTEGER,
+      includeReferencedComponents = false
+    } = options;
+
+    const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+      filter,
+      setAttributesOnly,
+      depth,
+      includeReferencedComponents
+    });
+
+    this._traverseAttributes(iteratee, {
+      attributeSelector: expandedAttributeSelector,
+      setAttributesOnly
+    });
+  }
+
+  static get _traverseAttributes() {
+    return this.prototype._traverseAttributes;
+  }
+
+  _traverseAttributes(
+    iteratee: TraverseAttributesIteratee,
+    {attributeSelector, setAttributesOnly}: TraverseAttributesOptions
+  ) {
+    for (const attribute of this.getAttributes({attributeSelector})) {
+      if (setAttributesOnly && !attribute.isSet()) {
+        continue;
+      }
+
+      const name = attribute.getName();
+      const subattributeSelector = getFromAttributeSelector(attributeSelector, name);
+
+      if (subattributeSelector !== false) {
+        iteratee(attribute);
+      }
+
+      attribute._traverseAttributes(iteratee, {
+        attributeSelector: subattributeSelector,
+        setAttributesOnly
+      });
+    }
+  }
+
   // === Identifier attributes ===
 
   getIdentifierAttribute(name: string, options: {autoFork?: boolean} = {}) {
@@ -1016,6 +1083,7 @@ export class Component extends Observable(Object) {
     let {
       filter,
       setAttributesOnly = false,
+      aggregationMode = 'union',
       depth = Number.MAX_SAFE_INTEGER,
       includeReferencedComponents = false,
       _isDeep = false,
@@ -1058,6 +1126,7 @@ export class Component extends Observable(Object) {
           {
             filter,
             setAttributesOnly,
+            aggregationMode,
             depth,
             includeReferencedComponents,
             _isDeep: true,

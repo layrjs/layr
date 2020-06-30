@@ -1,9 +1,17 @@
 import isEmpty from 'lodash/isEmpty';
 
 import {ValueType, ValueTypeOptions} from './value-type';
-import type {ExpandAttributeSelectorOptions} from '../../component';
+import type {
+  TraverseAttributesIteratee,
+  TraverseAttributesOptions,
+  ExpandAttributeSelectorOptions
+} from '../../component';
 import type {Attribute} from '../attribute';
-import {AttributeSelector, intersectAttributeSelectors} from '../attribute-selector';
+import {
+  AttributeSelector,
+  mergeAttributeSelectors,
+  intersectAttributeSelectors
+} from '../attribute-selector';
 import {SerializeOptions} from '../../serialization';
 import {joinAttributePath} from '../../utilities';
 
@@ -43,13 +51,35 @@ export class ArrayValueType extends ValueType {
     return super._checkValue(values, attribute) ?? Array.isArray(values);
   }
 
+  _traverseAttributes(
+    iteratee: TraverseAttributesIteratee,
+    attribute: Attribute,
+    items: unknown,
+    options: TraverseAttributesOptions
+  ) {
+    const {setAttributesOnly} = options;
+
+    const itemType = this.getItemType();
+
+    if (!setAttributesOnly) {
+      itemType._traverseAttributes(iteratee, attribute, undefined, options);
+      return;
+    }
+
+    if (Array.isArray(items)) {
+      for (const item of items) {
+        itemType._traverseAttributes(iteratee, attribute, item, options);
+      }
+    }
+  }
+
   _expandAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     attribute: Attribute,
     items: unknown,
     options: ExpandAttributeSelectorOptions
   ): AttributeSelector {
-    const {setAttributesOnly} = options;
+    const {setAttributesOnly, aggregationMode} = options;
 
     if (normalizedAttributeSelector === false) {
       return false;
@@ -68,6 +98,9 @@ export class ArrayValueType extends ValueType {
 
     let expandedAttributeSelector: AttributeSelector | undefined = undefined;
 
+    const aggregate =
+      aggregationMode === 'union' ? mergeAttributeSelectors : intersectAttributeSelectors;
+
     for (const item of items) {
       const itemAttributeSelector = itemType._expandAttributeSelector(
         normalizedAttributeSelector,
@@ -79,10 +112,7 @@ export class ArrayValueType extends ValueType {
       if (expandedAttributeSelector === undefined) {
         expandedAttributeSelector = itemAttributeSelector;
       } else {
-        expandedAttributeSelector = intersectAttributeSelectors(
-          expandedAttributeSelector,
-          itemAttributeSelector
-        );
+        expandedAttributeSelector = aggregate(expandedAttributeSelector, itemAttributeSelector);
       }
     }
 

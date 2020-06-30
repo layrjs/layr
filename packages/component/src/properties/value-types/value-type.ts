@@ -1,6 +1,10 @@
 import {getTypeOf} from 'core-helpers';
 
-import type {ExpandAttributeSelectorOptions} from '../../component';
+import type {
+  TraverseAttributesIteratee,
+  TraverseAttributesOptions,
+  ExpandAttributeSelectorOptions
+} from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
 import {
@@ -62,6 +66,15 @@ export class ValueType {
 
   _checkValue(value: unknown, _attribute: Attribute) {
     return value === undefined ? this.isOptional() : undefined;
+  }
+
+  _traverseAttributes(
+    _iteratee: TraverseAttributesIteratee,
+    _attribute: Attribute,
+    _value: unknown,
+    _options: TraverseAttributesOptions
+  ) {
+    // NOOP
   }
 
   _expandAttributeSelector(

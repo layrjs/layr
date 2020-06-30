@@ -1,4 +1,10 @@
-import {hasOwnProperty, getTypeOf, isPlainObject, PlainObject} from 'core-helpers';
+import {
+  hasOwnProperty,
+  getTypeOf,
+  isPlainObject,
+  PlainObject,
+  assertIsFunction
+} from 'core-helpers';
 import omit from 'lodash/omit';
 import cloneDeep from 'lodash/cloneDeep';
 
@@ -325,6 +331,8 @@ export function traverseAttributeSelector(
   options: TraverseOptions = {}
 ) {
   attributeSelector = normalizeAttributeSelector(attributeSelector);
+
+  assertIsFunction(iteratee);
 
   const {includeSubtrees = false, includeLeafs = true} = options;
 

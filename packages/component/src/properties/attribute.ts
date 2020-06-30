@@ -8,7 +8,12 @@ import {
   ObserverPayload
 } from '@liaison/observable';
 
-import type {Component, ExpandAttributeSelectorOptions} from '../component';
+import type {
+  Component,
+  TraverseAttributesIteratee,
+  TraverseAttributesOptions,
+  ExpandAttributeSelectorOptions
+} from '../component';
 import {Property, PropertyOptions, IntrospectedProperty, UnintrospectedProperty} from './property';
 import {
   ValueType,
@@ -322,6 +327,16 @@ export class Attribute extends Observable(Property) {
     }
 
     this.getParent().callObservers(payload);
+  }
+
+  // === Attribute traversal ===
+
+  _traverseAttributes(iteratee: TraverseAttributesIteratee, options: TraverseAttributesOptions) {
+    const {setAttributesOnly} = options;
+
+    const value = setAttributesOnly ? this.getValue() : undefined;
+
+    this.getValueType()._traverseAttributes(iteratee, this, value, options);
   }
 
   // === Attribute selectors ===

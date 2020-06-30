@@ -660,6 +660,98 @@ describe('Component', () => {
       ]);
     });
 
+    test('traverseAttributes()', async () => {
+      class Article extends EmbeddedComponent {
+        @attribute('string') title = '';
+      }
+
+      class Blog extends Component {
+        @provide() static Article = Article;
+
+        @attribute('string') name = '';
+        @attribute('Article[]') articles = new Array<Article>();
+      }
+
+      const traverseAttributes = (component: Component, options?: any) => {
+        const traversedAttributes = new Array<Attribute>();
+        component.traverseAttributes((attribute) => {
+          traversedAttributes.push(attribute);
+        }, options);
+        return traversedAttributes;
+      };
+
+      expect(traverseAttributes(Blog.prototype)).toEqual([
+        Blog.prototype.getAttribute('name'),
+        Blog.prototype.getAttribute('articles'),
+        Article.prototype.getAttribute('title')
+      ]);
+
+      expect(traverseAttributes(Blog.prototype, {attributeSelector: {}})).toEqual([]);
+
+      expect(traverseAttributes(Blog.prototype, {attributeSelector: {name: true}})).toEqual([
+        Blog.prototype.getAttribute('name')
+      ]);
+
+      expect(traverseAttributes(Blog.prototype, {attributeSelector: {articles: {}}})).toEqual([
+        Blog.prototype.getAttribute('articles')
+      ]);
+
+      expect(
+        traverseAttributes(Blog.prototype, {attributeSelector: {articles: {title: true}}})
+      ).toEqual([Blog.prototype.getAttribute('articles'), Article.prototype.getAttribute('title')]);
+
+      const blog = Blog.create({}, {isNew: false});
+
+      expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([]);
+
+      blog.name = 'The Blog';
+
+      expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
+        blog.getAttribute('name')
+      ]);
+
+      blog.articles = [];
+
+      expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
+        blog.getAttribute('name'),
+        blog.getAttribute('articles')
+      ]);
+
+      const article1 = Article.create({}, {isNew: false});
+      blog.articles.push(article1);
+
+      expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
+        blog.getAttribute('name'),
+        blog.getAttribute('articles')
+      ]);
+
+      article1.title = 'First Article';
+
+      expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
+        blog.getAttribute('name'),
+        blog.getAttribute('articles'),
+        article1.getAttribute('title')
+      ]);
+
+      const article2 = Article.create({}, {isNew: false});
+      blog.articles.push(article2);
+
+      expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
+        blog.getAttribute('name'),
+        blog.getAttribute('articles'),
+        article1.getAttribute('title')
+      ]);
+
+      article2.title = 'Second Article';
+
+      expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
+        blog.getAttribute('name'),
+        blog.getAttribute('articles'),
+        article1.getAttribute('title'),
+        article2.getAttribute('title')
+      ]);
+    });
+
     test('expandAttributeSelector()', async () => {
       class Person extends EmbeddedComponent {
         @attribute('string') name = '';
@@ -789,27 +881,56 @@ describe('Component', () => {
         articles: {}
       });
 
-      const article = Article.create({}, {isNew: false});
+      const article1 = Article.create({}, {isNew: false});
 
-      blog.articles.push(article);
+      blog.articles.push(article1);
 
       expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         articles: {}
       });
 
-      article.title = 'The Article';
+      article1.title = 'First Article';
 
       expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         articles: {title: true}
       });
 
-      blog.articles.push(Article.create({}, {isNew: false}));
+      const article2 = Article.create({}, {isNew: false});
+
+      blog.articles.push(article2);
 
       expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
+        articles: {title: true}
+      });
+
+      expect(
+        blog.expandAttributeSelector(true, {
+          setAttributesOnly: true,
+          aggregationMode: 'intersection'
+        })
+      ).toStrictEqual({
+        name: true,
         articles: {}
+      });
+
+      article2.title = 'Second Article';
+
+      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        name: true,
+        articles: {title: true}
+      });
+
+      expect(
+        blog.expandAttributeSelector(true, {
+          setAttributesOnly: true,
+          aggregationMode: 'intersection'
+        })
+      ).toStrictEqual({
+        name: true,
+        articles: {title: true}
       });
     });
 

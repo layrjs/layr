@@ -1,5 +1,9 @@
 import {ValueType, ValueTypeOptions} from './value-type';
-import type {ExpandAttributeSelectorOptions} from '../../component';
+import type {
+  TraverseAttributesIteratee,
+  TraverseAttributesOptions,
+  ExpandAttributeSelectorOptions
+} from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
 import {
@@ -55,6 +59,23 @@ export class ComponentValueType extends ValueType {
     }
 
     return false;
+  }
+
+  _traverseAttributes(
+    iteratee: TraverseAttributesIteratee,
+    attribute: Attribute,
+    component: unknown,
+    options: TraverseAttributesOptions
+  ) {
+    const {setAttributesOnly} = options;
+
+    if (!setAttributesOnly) {
+      component = this.getComponent(attribute);
+    }
+
+    if (isComponentClassOrInstance(component)) {
+      component._traverseAttributes(iteratee, options);
+    }
   }
 
   _expandAttributeSelector(
