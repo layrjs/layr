@@ -9,6 +9,7 @@ import {
   attributeSelectorsAreEqual,
   attributeSelectorIncludes,
   mergeAttributeSelectors,
+  intersectAttributeSelectors,
   removeFromAttributeSelector,
   iterateOverAttributeSelector,
   pickFromAttributeSelector,
@@ -193,6 +194,42 @@ describe('AttributeSelector', () => {
         {title: true, director: {country: true}}
       )
     ).toStrictEqual({title: true, director: {name: true, country: true}});
+  });
+
+  test('intersectAttributeSelectors()', () => {
+    expect(intersectAttributeSelectors(false, false)).toBe(false);
+    expect(intersectAttributeSelectors(false, true)).toBe(false);
+    expect(intersectAttributeSelectors(true, false)).toBe(false);
+    expect(intersectAttributeSelectors(true, true)).toBe(true);
+    expect(intersectAttributeSelectors(true, {})).toStrictEqual({});
+    expect(intersectAttributeSelectors(true, {title: true})).toStrictEqual({title: true});
+    expect(intersectAttributeSelectors(false, {})).toBe(false);
+    expect(intersectAttributeSelectors(false, {title: true})).toBe(false);
+    expect(intersectAttributeSelectors({}, false)).toBe(false);
+    expect(intersectAttributeSelectors({}, true)).toStrictEqual({});
+    expect(intersectAttributeSelectors({}, {})).toStrictEqual({});
+    expect(intersectAttributeSelectors({title: true}, false)).toBe(false);
+    expect(intersectAttributeSelectors({title: true}, {})).toStrictEqual({});
+    expect(intersectAttributeSelectors({title: true}, {title: true})).toStrictEqual({title: true});
+    expect(intersectAttributeSelectors({title: true}, {country: true})).toStrictEqual({});
+    expect(
+      intersectAttributeSelectors(
+        {title: true, director: {name: true}},
+        {title: true, director: true}
+      )
+    ).toStrictEqual({title: true, director: {name: true}});
+    expect(
+      intersectAttributeSelectors(
+        {title: true, director: true},
+        {title: true, director: {name: true}}
+      )
+    ).toStrictEqual({title: true, director: {name: true}});
+    expect(
+      intersectAttributeSelectors(
+        {title: true, director: {name: true}},
+        {title: true, director: {country: true}}
+      )
+    ).toStrictEqual({title: true, director: {}});
   });
 
   test('removeFromAttributeSelector()', () => {

@@ -141,6 +141,40 @@ export function mergeAttributeSelectors(
   return attributeSelector;
 }
 
+export function intersectAttributeSelectors(
+  attributeSelector: AttributeSelector,
+  otherAttributeSelector: AttributeSelector
+): AttributeSelector {
+  attributeSelector = normalizeAttributeSelector(attributeSelector);
+  otherAttributeSelector = normalizeAttributeSelector(otherAttributeSelector);
+
+  if (attributeSelector === false || otherAttributeSelector === false) {
+    return false;
+  }
+
+  if (attributeSelector === true) {
+    return otherAttributeSelector;
+  }
+
+  if (otherAttributeSelector === true) {
+    return attributeSelector;
+  }
+
+  let intersectedAttributeSelector = {};
+
+  for (const [name, otherSubattributeSelector] of Object.entries(otherAttributeSelector)) {
+    const subattributeSelector = (attributeSelector as PlainObject)[name];
+
+    intersectedAttributeSelector = setWithinAttributeSelector(
+      intersectedAttributeSelector,
+      name,
+      intersectAttributeSelectors(subattributeSelector, otherSubattributeSelector)
+    );
+  }
+
+  return intersectedAttributeSelector;
+}
+
 export function removeFromAttributeSelector(
   attributeSelector: AttributeSelector,
   otherAttributeSelector: AttributeSelector
