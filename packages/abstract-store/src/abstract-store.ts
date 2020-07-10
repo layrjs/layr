@@ -10,8 +10,15 @@ import {
   normalizeAttributeSelector,
   pickFromAttributeSelector
 } from '@liaison/component';
-import {isPlainObject, deleteUndefinedProperties, assertNoUnknownOptions} from 'core-helpers';
+import {
+  PlainObject,
+  isPlainObject,
+  deleteUndefinedProperties,
+  assertNoUnknownOptions,
+  PromiseLikeValue
+} from 'core-helpers';
 import {serialize, deserialize} from 'simple-serialization';
+import cloneDeep from 'lodash/cloneDeep';
 
 import {StorableLike, isStorableLikeClass, assertIsStorableLikeClass} from './storable-like';
 import {
@@ -68,6 +75,14 @@ export type CountDocumentsParams = {
 export type SortDescriptor = {[name: string]: SortDirection};
 
 export type SortDirection = 'asc' | 'desc';
+
+export type TraceEntry = {
+  operation: string;
+  params: PlainObject;
+  options: PlainObject | undefined;
+  result?: any;
+  error?: any;
+};
 
 export abstract class AbstractStore {
   constructor(rootComponent?: typeof Component, options = {}) {
@@ -199,49 +214,51 @@ export abstract class AbstractStore {
     return ensureComponentClass(storable).getComponentName();
   }
 
-  // === Documents ===
+  // === Document operations ===
 
   async load(
     params: {storableType: string; identifierDescriptor: NormalizedIdentifierDescriptor},
     options: {attributeSelector?: AttributeSelector; throwIfMissing?: boolean} = {}
   ) {
-    const {storableType, identifierDescriptor} = params;
-    let {attributeSelector = true, throwIfMissing = true} = options;
+    return await this._runOperation('load', params, options, async () => {
+      const {storableType, identifierDescriptor} = params;
+      let {attributeSelector = true, throwIfMissing = true} = options;
 
-    attributeSelector = normalizeAttributeSelector(attributeSelector);
+      attributeSelector = normalizeAttributeSelector(attributeSelector);
 
-    const storable = this.getStorableOfType(storableType);
-    const collectionName = this._getCollectionNameFromStorable(storable);
+      const storable = this.getStorableOfType(storableType);
+      const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
-    const documentAttributeSelector = this.toDocument(storable, attributeSelector);
-    const projection = buildProjection(documentAttributeSelector);
+      const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
+      const documentAttributeSelector = this.toDocument(storable, attributeSelector);
+      const projection = buildProjection(documentAttributeSelector);
 
-    let document = await this.readDocument({
-      collectionName,
-      identifierDescriptor: documentIdentifierDescriptor,
-      projection
-    });
-
-    if (document !== undefined) {
-      document = pickFromAttributeSelector(document, documentAttributeSelector, {
-        includeAttributeNames: ['__component']
+      let document = await this.readDocument({
+        collectionName,
+        identifierDescriptor: documentIdentifierDescriptor,
+        projection
       });
 
-      const serializedStorable = this.fromDocument(storable, document);
+      if (document !== undefined) {
+        document = pickFromAttributeSelector(document, documentAttributeSelector, {
+          includeAttributeNames: ['__component']
+        });
 
-      return serializedStorable;
-    }
+        const serializedStorable = this.fromDocument(storable, document);
 
-    if (!throwIfMissing) {
-      return undefined;
-    }
+        return serializedStorable;
+      }
 
-    throw new Error(
-      `Cannot load a document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
-        storable
-      ).describeIdentifierDescriptor(identifierDescriptor)})`
-    );
+      if (!throwIfMissing) {
+        return undefined;
+      }
+
+      throw new Error(
+        `Cannot load a document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
+          storable
+        ).describeIdentifierDescriptor(identifierDescriptor)})`
+      );
+    });
   }
 
   async save(
@@ -253,90 +270,94 @@ export abstract class AbstractStore {
     },
     options: {throwIfMissing?: boolean; throwIfExists?: boolean} = {}
   ) {
-    const {storableType, identifierDescriptor, serializedStorable, isNew = false} = params;
-    const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
+    return await this._runOperation('save', params, options, async () => {
+      const {storableType, identifierDescriptor, serializedStorable, isNew = false} = params;
+      const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
 
-    if (throwIfMissing === true && throwIfExists === true) {
-      throw new Error(
-        "The 'throwIfMissing' and 'throwIfExists' options cannot be both set to true"
-      );
-    }
-
-    const storable = this.getStorableOfType(storableType);
-    const collectionName = this._getCollectionNameFromStorable(storable);
-
-    const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
-    const document = this.toDocument(storable, serializedStorable);
-
-    let wasSaved: boolean;
-
-    if (isNew) {
-      deleteUndefinedProperties(document);
-
-      wasSaved = await this.createDocument({
-        collectionName,
-        identifierDescriptor: documentIdentifierDescriptor,
-        document
-      });
-    } else {
-      const documentPatch = buildDocumentPatch(document);
-
-      wasSaved = await this.updateDocument({
-        collectionName,
-        identifierDescriptor: documentIdentifierDescriptor,
-        documentPatch
-      });
-    }
-
-    if (!wasSaved) {
-      if (throwIfMissing) {
+      if (throwIfMissing === true && throwIfExists === true) {
         throw new Error(
-          `Cannot save a non-new document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
-            storable
-          ).describeIdentifierDescriptor(identifierDescriptor)})`
+          "The 'throwIfMissing' and 'throwIfExists' options cannot be both set to true"
         );
       }
 
-      if (throwIfExists) {
-        throw new Error(
-          `Cannot save a new document that already exists in the store (collection: '${collectionName}', ${ensureComponentClass(
-            storable
-          ).describeIdentifierDescriptor(identifierDescriptor)})`
-        );
-      }
-    }
+      const storable = this.getStorableOfType(storableType);
+      const collectionName = this._getCollectionNameFromStorable(storable);
 
-    return wasSaved;
+      const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
+      const document = this.toDocument(storable, serializedStorable);
+
+      let wasSaved: boolean;
+
+      if (isNew) {
+        deleteUndefinedProperties(document);
+
+        wasSaved = await this.createDocument({
+          collectionName,
+          identifierDescriptor: documentIdentifierDescriptor,
+          document
+        });
+      } else {
+        const documentPatch = buildDocumentPatch(document);
+
+        wasSaved = await this.updateDocument({
+          collectionName,
+          identifierDescriptor: documentIdentifierDescriptor,
+          documentPatch
+        });
+      }
+
+      if (!wasSaved) {
+        if (throwIfMissing) {
+          throw new Error(
+            `Cannot save a non-new document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
+              storable
+            ).describeIdentifierDescriptor(identifierDescriptor)})`
+          );
+        }
+
+        if (throwIfExists) {
+          throw new Error(
+            `Cannot save a new document that already exists in the store (collection: '${collectionName}', ${ensureComponentClass(
+              storable
+            ).describeIdentifierDescriptor(identifierDescriptor)})`
+          );
+        }
+      }
+
+      return wasSaved;
+    });
   }
 
   async delete(
     params: {storableType: string; identifierDescriptor: NormalizedIdentifierDescriptor},
     options: {throwIfMissing?: boolean} = {}
   ) {
-    const {storableType, identifierDescriptor} = params;
-    const {throwIfMissing = true} = options;
+    return await this._runOperation('delete', params, options, async () => {
+      const {storableType, identifierDescriptor} = params;
+      const {throwIfMissing = true} = options;
 
-    const storable = this.getStorableOfType(storableType);
-    const collectionName = this._getCollectionNameFromStorable(storable);
+      const storable = this.getStorableOfType(storableType);
+      const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
+      const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
 
-    const wasDeleted = await this.deleteDocument({
-      collectionName,
-      identifierDescriptor: documentIdentifierDescriptor
-    });
+      const wasDeleted = await this.deleteDocument({
+        collectionName,
+        identifierDescriptor: documentIdentifierDescriptor
+      });
 
-    if (!wasDeleted) {
-      if (throwIfMissing) {
-        throw new Error(
-          `Cannot delete a document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
-            storable
-          ).describeIdentifierDescriptor(identifierDescriptor)})`
-        );
+      if (!wasDeleted) {
+        if (throwIfMissing) {
+          throw new Error(
+            `Cannot delete a document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
+              storable
+            ).describeIdentifierDescriptor(identifierDescriptor)})`
+          );
+        }
       }
-    }
 
-    return wasDeleted;
+      return wasDeleted;
+    });
   }
 
   async find(
@@ -349,53 +370,109 @@ export abstract class AbstractStore {
     },
     options: {attributeSelector?: AttributeSelector} = {}
   ) {
-    const {storableType, query = {}, sort = {}, skip, limit} = params;
-    let {attributeSelector = true} = options;
+    return await this._runOperation('find', params, options, async () => {
+      const {storableType, query = {}, sort = {}, skip, limit} = params;
+      let {attributeSelector = true} = options;
 
-    attributeSelector = normalizeAttributeSelector(attributeSelector);
+      attributeSelector = normalizeAttributeSelector(attributeSelector);
 
-    const storable = this.getStorableOfType(storableType);
-    const collectionName = this._getCollectionNameFromStorable(storable);
+      const storable = this.getStorableOfType(storableType);
+      const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentExpressions = this.toDocumentExpressions(storable, query);
-    const documentSort = this.toDocument(storable, sort);
-    const documentAttributeSelector = this.toDocument(storable, attributeSelector);
-    const projection = buildProjection(documentAttributeSelector);
+      const documentExpressions = this.toDocumentExpressions(storable, query);
+      const documentSort = this.toDocument(storable, sort);
+      const documentAttributeSelector = this.toDocument(storable, attributeSelector);
+      const projection = buildProjection(documentAttributeSelector);
 
-    let documents = await this.findDocuments({
-      collectionName,
-      expressions: documentExpressions,
-      projection,
-      sort: documentSort,
-      skip,
-      limit
+      let documents = await this.findDocuments({
+        collectionName,
+        expressions: documentExpressions,
+        projection,
+        sort: documentSort,
+        skip,
+        limit
+      });
+
+      documents = documents.map((document) =>
+        pickFromAttributeSelector(document, documentAttributeSelector, {
+          includeAttributeNames: ['__component']
+        })
+      );
+
+      const serializedStorables = documents.map((document) =>
+        this.fromDocument(storable, document)
+      );
+
+      return serializedStorables;
     });
-
-    documents = documents.map((document) =>
-      pickFromAttributeSelector(document, documentAttributeSelector, {
-        includeAttributeNames: ['__component']
-      })
-    );
-
-    const serializedStorables = documents.map((document) => this.fromDocument(storable, document));
-
-    return serializedStorables;
   }
 
   async count(params: {storableType: string; query?: Query}) {
-    const {storableType, query = {}} = params;
+    return await this._runOperation('find', params, undefined, async () => {
+      const {storableType, query = {}} = params;
 
-    const storable = this.getStorableOfType(storableType);
-    const collectionName = this._getCollectionNameFromStorable(storable);
+      const storable = this.getStorableOfType(storableType);
+      const collectionName = this._getCollectionNameFromStorable(storable);
 
-    const documentExpressions = this.toDocumentExpressions(storable, query);
+      const documentExpressions = this.toDocumentExpressions(storable, query);
 
-    const documentsCount = await this.countDocuments({
-      collectionName,
-      expressions: documentExpressions
+      const documentsCount = await this.countDocuments({
+        collectionName,
+        expressions: documentExpressions
+      });
+
+      return documentsCount;
     });
+  }
 
-    return documentsCount;
+  async _runOperation<
+    PromiseResult extends Promise<unknown>,
+    Result = PromiseLikeValue<PromiseResult>
+  >(
+    operation: string,
+    params: PlainObject,
+    options: PlainObject | undefined,
+    func: () => PromiseResult
+  ): Promise<Result> {
+    const trace = this._trace;
+
+    try {
+      const result = await func();
+
+      if (trace !== undefined) {
+        trace.push({operation, params: cloneDeep(params), options: cloneDeep(options), result});
+      }
+
+      return result as Result;
+    } catch (error) {
+      if (trace !== undefined) {
+        trace.push({operation, params: cloneDeep(params), options: cloneDeep(options), error});
+      }
+
+      throw error;
+    }
+  }
+
+  // === Tracing ===
+
+  _trace: TraceEntry[] | undefined;
+
+  getTrace() {
+    const trace = this._trace;
+
+    if (trace === undefined) {
+      throw new Error('The store is not currently tracing');
+    }
+
+    return trace;
+  }
+
+  startTrace() {
+    this._trace = [];
+  }
+
+  stopTrace() {
+    this._trace = undefined;
   }
 
   // === Abstract document operations ===
