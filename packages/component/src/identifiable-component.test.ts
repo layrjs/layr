@@ -399,7 +399,7 @@ describe('Identifiable component', () => {
     expect(User.describeIdentifierDescriptor({reference: 123456})).toBe('reference: 123456');
   });
 
-  test('expandAttributeSelector()', async () => {
+  test('resolveAttributeSelector()', async () => {
     class Person extends Component {
       @primaryIdentifier() id!: string;
       @attribute('string') name = '';
@@ -413,52 +413,55 @@ describe('Identifiable component', () => {
       @attribute('Person?') director?: Person;
     }
 
-    expect(Movie.prototype.expandAttributeSelector(true)).toStrictEqual({
+    expect(Movie.prototype.resolveAttributeSelector(true)).toStrictEqual({
       id: true,
       title: true,
       director: {id: true}
     });
 
     expect(
-      Movie.prototype.expandAttributeSelector(true, {includeReferencedComponents: true})
+      Movie.prototype.resolveAttributeSelector(true, {includeReferencedComponents: true})
     ).toStrictEqual({
       id: true,
       title: true,
       director: {id: true, name: true}
     });
 
-    expect(Movie.prototype.expandAttributeSelector(false)).toStrictEqual({});
+    expect(Movie.prototype.resolveAttributeSelector(false)).toStrictEqual({});
 
-    expect(Movie.prototype.expandAttributeSelector({})).toStrictEqual({id: true});
+    expect(Movie.prototype.resolveAttributeSelector({})).toStrictEqual({id: true});
 
-    expect(Movie.prototype.expandAttributeSelector({title: true})).toStrictEqual({
+    expect(Movie.prototype.resolveAttributeSelector({title: true})).toStrictEqual({
       id: true,
       title: true
     });
 
-    expect(Movie.prototype.expandAttributeSelector({director: true})).toStrictEqual({
+    expect(Movie.prototype.resolveAttributeSelector({director: true})).toStrictEqual({
       id: true,
       director: {id: true}
     });
 
     expect(
-      Movie.prototype.expandAttributeSelector({director: true}, {includeReferencedComponents: true})
+      Movie.prototype.resolveAttributeSelector(
+        {director: true},
+        {includeReferencedComponents: true}
+      )
     ).toStrictEqual({
       id: true,
       director: {id: true, name: true}
     });
 
-    expect(Movie.prototype.expandAttributeSelector({director: false})).toStrictEqual({
+    expect(Movie.prototype.resolveAttributeSelector({director: false})).toStrictEqual({
       id: true
     });
 
-    expect(Movie.prototype.expandAttributeSelector({director: {}})).toStrictEqual({
+    expect(Movie.prototype.resolveAttributeSelector({director: {}})).toStrictEqual({
       id: true,
       director: {id: true}
     });
 
     expect(
-      Movie.prototype.expandAttributeSelector({director: {}}, {includeReferencedComponents: true})
+      Movie.prototype.resolveAttributeSelector({director: {}}, {includeReferencedComponents: true})
     ).toStrictEqual({
       id: true,
       director: {id: true}

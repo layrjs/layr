@@ -752,7 +752,7 @@ describe('Component', () => {
       ]);
     });
 
-    test('expandAttributeSelector()', async () => {
+    test('resolveAttributeSelector()', async () => {
       class Person extends EmbeddedComponent {
         @attribute('string') name = '';
       }
@@ -766,34 +766,36 @@ describe('Component', () => {
         @attribute('Person[]') actors: Person[] = [];
       }
 
-      expect(Movie.prototype.expandAttributeSelector(true)).toStrictEqual({
+      expect(Movie.prototype.resolveAttributeSelector(true)).toStrictEqual({
         title: true,
         duration: true,
         director: {name: true},
         actors: {name: true}
       });
 
-      expect(Movie.prototype.expandAttributeSelector(false)).toStrictEqual({});
+      expect(Movie.prototype.resolveAttributeSelector(false)).toStrictEqual({});
 
-      expect(Movie.prototype.expandAttributeSelector({})).toStrictEqual({});
+      expect(Movie.prototype.resolveAttributeSelector({})).toStrictEqual({});
 
-      expect(Movie.prototype.expandAttributeSelector({title: true, director: true})).toStrictEqual({
-        title: true,
-        director: {name: true}
-      });
-
-      expect(Movie.prototype.expandAttributeSelector({title: true, director: false})).toStrictEqual(
+      expect(Movie.prototype.resolveAttributeSelector({title: true, director: true})).toStrictEqual(
         {
-          title: true
+          title: true,
+          director: {name: true}
         }
       );
 
-      expect(Movie.prototype.expandAttributeSelector({title: true, director: {}})).toStrictEqual({
+      expect(
+        Movie.prototype.resolveAttributeSelector({title: true, director: false})
+      ).toStrictEqual({
+        title: true
+      });
+
+      expect(Movie.prototype.resolveAttributeSelector({title: true, director: {}})).toStrictEqual({
         title: true,
         director: {}
       });
 
-      expect(Movie.prototype.expandAttributeSelector(true, {depth: 0})).toStrictEqual({
+      expect(Movie.prototype.resolveAttributeSelector(true, {depth: 0})).toStrictEqual({
         title: true,
         duration: true,
         director: true,
@@ -801,29 +803,29 @@ describe('Component', () => {
       });
 
       expect(
-        Movie.prototype.expandAttributeSelector({title: true, actors: true}, {depth: 0})
+        Movie.prototype.resolveAttributeSelector({title: true, actors: true}, {depth: 0})
       ).toStrictEqual({title: true, actors: true});
 
       const movie = Movie.create({}, {isNew: false});
 
-      expect(movie.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
+      expect(movie.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
       movie.getAttribute('title').setValue('Interception', {source: -1});
       movie.getAttribute('duration').setValue(120, {source: -1});
 
-      expect(movie.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(movie.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         title: true,
         duration: true
       });
 
       expect(
-        movie.expandAttributeSelector(true, {setAttributesOnly: true, target: -1})
+        movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: -1})
       ).toStrictEqual({});
 
       movie.getAttribute('title').setValue('Interception 2', {source: 0});
 
       expect(
-        movie.expandAttributeSelector(true, {setAttributesOnly: true, target: -1})
+        movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: -1})
       ).toStrictEqual({title: true});
 
       // --- With an embedded component ---
@@ -839,31 +841,31 @@ describe('Component', () => {
         @attribute('UserDetails?') details?: UserDetails;
       }
 
-      expect(User.prototype.expandAttributeSelector(true)).toStrictEqual({
+      expect(User.prototype.resolveAttributeSelector(true)).toStrictEqual({
         name: true,
         details: {country: true}
       });
 
       const user = User.create({}, {isNew: false});
 
-      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
+      expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
       user.name = 'John';
 
-      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true
       });
 
       user.details = UserDetails.create({}, {isNew: false});
 
-      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         details: {}
       });
 
       user.details.country = 'USA';
 
-      expect(user.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         details: {country: true}
       });
@@ -881,34 +883,34 @@ describe('Component', () => {
         @attribute('Article[]') articles = new Array<Article>();
       }
 
-      expect(Blog.prototype.expandAttributeSelector(true)).toStrictEqual({
+      expect(Blog.prototype.resolveAttributeSelector(true)).toStrictEqual({
         name: true,
         articles: {title: true}
       });
 
-      expect(Blog.prototype.expandAttributeSelector({articles: {}})).toStrictEqual({
+      expect(Blog.prototype.resolveAttributeSelector({articles: {}})).toStrictEqual({
         articles: {}
       });
 
       expect(
-        Blog.prototype.expandAttributeSelector({articles: {}}, {allowPartialArrayItems: false})
+        Blog.prototype.resolveAttributeSelector({articles: {}}, {allowPartialArrayItems: false})
       ).toStrictEqual({
         articles: {title: true}
       });
 
       const blog = Blog.create({}, {isNew: false});
 
-      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
+      expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
       blog.name = 'The Blog';
 
-      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true
       });
 
       blog.articles = [];
 
-      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         articles: {}
       });
@@ -917,14 +919,14 @@ describe('Component', () => {
 
       blog.articles.push(article1);
 
-      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         articles: {}
       });
 
       article1.title = 'First Article';
 
-      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         articles: {title: true}
       });
@@ -933,13 +935,13 @@ describe('Component', () => {
 
       blog.articles.push(article2);
 
-      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         articles: {title: true}
       });
 
       expect(
-        blog.expandAttributeSelector(true, {
+        blog.resolveAttributeSelector(true, {
           setAttributesOnly: true,
           aggregationMode: 'intersection'
         })
@@ -950,13 +952,13 @@ describe('Component', () => {
 
       article2.title = 'Second Article';
 
-      expect(blog.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+      expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
         articles: {title: true}
       });
 
       expect(
-        blog.expandAttributeSelector(true, {
+        blog.resolveAttributeSelector(true, {
           setAttributesOnly: true,
           aggregationMode: 'intersection'
         })

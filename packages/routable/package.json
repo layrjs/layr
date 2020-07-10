@@ -1,6 +1,6 @@
 {
   "name": "@liaison/routable",
-  "version": "0.5.24",
+  "version": "0.5.26",
   "description": "Makes the methods of your Liaison components callable by URL",
   "keywords": [
     "liaison",
@@ -30,8 +30,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-router": "^0.5.18",
-    "@liaison/component": "^0.5.52",
+    "@liaison/abstract-router": "^0.5.19",
+    "@liaison/component": "^0.5.53",
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
     "path-parser": "^6.1.0",

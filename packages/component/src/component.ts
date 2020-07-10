@@ -85,7 +85,7 @@ export type IdentifierDescriptor = NormalizedIdentifierDescriptor | string | num
 
 export type NormalizedIdentifierDescriptor = {[name: string]: IdentifierValue};
 
-export type ExpandAttributeSelectorOptions = {
+export type ResolveAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
   setAttributesOnly?: boolean;
   target?: number;
@@ -680,7 +680,7 @@ export class Component extends Observable(Object) {
 
   traverseAttributes(
     iteratee: TraverseAttributesIteratee,
-    options: Partial<TraverseAttributesOptions> & ExpandAttributeSelectorOptions = {}
+    options: Partial<TraverseAttributesOptions> & ResolveAttributeSelectorOptions = {}
   ) {
     assertIsFunction(iteratee);
 
@@ -692,7 +692,7 @@ export class Component extends Observable(Object) {
       includeReferencedComponents = false
     } = options;
 
-    const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+    const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
       filter,
       setAttributesOnly,
       depth,
@@ -700,7 +700,7 @@ export class Component extends Observable(Object) {
     });
 
     this.__traverseAttributes(iteratee, {
-      attributeSelector: expandedAttributeSelector,
+      attributeSelector: resolvedAttributeSelector,
       setAttributesOnly
     });
   }
@@ -1075,13 +1075,13 @@ export class Component extends Observable(Object) {
 
   // === Attribute selectors ===
 
-  static get expandAttributeSelector() {
-    return this.prototype.expandAttributeSelector;
+  static get resolveAttributeSelector() {
+    return this.prototype.resolveAttributeSelector;
   }
 
-  expandAttributeSelector(
+  resolveAttributeSelector(
     attributeSelector: AttributeSelector,
-    options: ExpandAttributeSelectorOptions = {}
+    options: ResolveAttributeSelectorOptions = {}
   ) {
     attributeSelector = normalizeAttributeSelector(attributeSelector);
 
@@ -1104,7 +1104,7 @@ export class Component extends Observable(Object) {
       target !== undefined &&
       (target === -1 || typeof (this as any).isStorable === 'function');
 
-    return this.__expandAttributeSelector(attributeSelector, {
+    return this.__resolveAttributeSelector(attributeSelector, {
       filter,
       setAttributesOnly,
       target,
@@ -1120,13 +1120,13 @@ export class Component extends Observable(Object) {
     });
   }
 
-  static get __expandAttributeSelector() {
-    return this.prototype.__expandAttributeSelector;
+  static get __resolveAttributeSelector() {
+    return this.prototype.__resolveAttributeSelector;
   }
 
-  __expandAttributeSelector(
+  __resolveAttributeSelector(
     attributeSelector: AttributeSelector,
-    options: ExpandAttributeSelectorOptions
+    options: ResolveAttributeSelectorOptions
   ) {
     const {
       filter,
@@ -1148,10 +1148,10 @@ export class Component extends Observable(Object) {
 
     const newDepth = depth! - 1;
 
-    let expandedAttributeSelector: AttributeSelector = {};
+    let resolvedAttributeSelector: AttributeSelector = {};
 
     if (attributeSelector === false) {
-      return expandedAttributeSelector; // Optimization
+      return resolvedAttributeSelector; // Optimization
     }
 
     const isEmbedded = isComponentInstance(this) && this.constructor.isEmbedded();
@@ -1160,7 +1160,7 @@ export class Component extends Observable(Object) {
       attributeSelector = true;
     }
 
-    // By default, referenced components are not expanded
+    // By default, referenced components are not resolved
     if (!_isDeep || includeReferencedComponents || isEmbedded) {
       for (const attribute of this.getAttributes({filter, setAttributesOnly})) {
         const name = attribute.getName();
@@ -1181,18 +1181,18 @@ export class Component extends Observable(Object) {
 
         _attributeStack!.add(attribute);
 
-        const expandedSubattributeSelector = attribute._expandAttributeSelector(
+        const resolvedSubattributeSelector = attribute._resolveAttributeSelector(
           subattributeSelector,
           {...options, depth: newDepth, _isDeep: true}
         );
 
         _attributeStack!.delete(attribute);
 
-        if (expandedSubattributeSelector !== false) {
-          expandedAttributeSelector = setWithinAttributeSelector(
-            expandedAttributeSelector,
+        if (resolvedSubattributeSelector !== false) {
+          resolvedAttributeSelector = setWithinAttributeSelector(
+            resolvedAttributeSelector,
             name,
-            expandedSubattributeSelector
+            resolvedSubattributeSelector
           );
         }
       }
@@ -1206,15 +1206,15 @@ export class Component extends Observable(Object) {
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
 
       if (!setAttributesOnly || primaryIdentifierAttribute.isSet()) {
-        expandedAttributeSelector = setWithinAttributeSelector(
-          expandedAttributeSelector,
+        resolvedAttributeSelector = setWithinAttributeSelector(
+          resolvedAttributeSelector,
           primaryIdentifierAttribute.getName(),
           true
         );
       }
     }
 
-    return expandedAttributeSelector;
+    return resolvedAttributeSelector;
   }
 
   // === Validation ===
@@ -1261,7 +1261,7 @@ export class Component extends Observable(Object) {
   }
 
   runValidators(attributeSelector: AttributeSelector = true) {
-    attributeSelector = this.expandAttributeSelector(attributeSelector);
+    attributeSelector = this.resolveAttributeSelector(attributeSelector);
 
     const failedValidators = [];
 
@@ -1950,7 +1950,7 @@ export class Component extends Observable(Object) {
       ...otherOptions
     } = options;
 
-    const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+    const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
       setAttributesOnly: true,
       target,
       aggregationMode: 'intersection',
@@ -1959,7 +1959,7 @@ export class Component extends Observable(Object) {
 
     return this.__serialize({
       ...otherOptions,
-      attributeSelector: expandedAttributeSelector,
+      attributeSelector: resolvedAttributeSelector,
       serializedComponents,
       returnComponentReferences,
       ignoreEmptyComponents,
@@ -2025,7 +2025,7 @@ export class Component extends Observable(Object) {
       ...otherOptions
     } = options;
 
-    const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+    const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
       setAttributesOnly: true,
       target,
       aggregationMode: 'intersection',
@@ -2034,7 +2034,7 @@ export class Component extends Observable(Object) {
 
     return this.__serialize({
       ...otherOptions,
-      attributeSelector: expandedAttributeSelector,
+      attributeSelector: resolvedAttributeSelector,
       serializedComponents,
       returnComponentReferences,
       ignoreEmptyComponents,

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/abstract-store",
-  "version": "0.5.18",
+  "version": "0.5.19",
   "description": "A base class for implementing Liaison stores",
   "keywords": [
     "liaison",
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^0.5.52",
+    "@liaison/component": "^0.5.53",
     "core-helpers": "^0.1.26",
     "lodash": "^4.17.19",
     "simple-serialization": "^0.2.15",

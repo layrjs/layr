@@ -12,7 +12,7 @@ import type {
   Component,
   TraverseAttributesIteratee,
   TraverseAttributesOptions,
-  ExpandAttributeSelectorOptions
+  ResolveAttributeSelectorOptions
 } from '../component';
 import {Property, PropertyOptions, IntrospectedProperty, UnintrospectedProperty} from './property';
 import {
@@ -341,15 +341,15 @@ export class Attribute extends Observable(Property) {
 
   // === Attribute selectors ===
 
-  _expandAttributeSelector(
+  _resolveAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
-    options: ExpandAttributeSelectorOptions
+    options: ResolveAttributeSelectorOptions
   ) {
     const {setAttributesOnly} = options;
 
     const value = setAttributesOnly ? this.getValue() : undefined;
 
-    return this.getValueType()._expandAttributeSelector(
+    return this.getValueType()._resolveAttributeSelector(
       normalizedAttributeSelector,
       this,
       value,

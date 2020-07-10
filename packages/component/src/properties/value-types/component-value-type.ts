@@ -2,7 +2,7 @@ import {ValueType, ValueTypeOptions} from './value-type';
 import type {
   TraverseAttributesIteratee,
   TraverseAttributesOptions,
-  ExpandAttributeSelectorOptions
+  ResolveAttributeSelectorOptions
 } from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
@@ -79,11 +79,11 @@ export class ComponentValueType extends ValueType {
     }
   }
 
-  _expandAttributeSelector(
+  _resolveAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     attribute: Attribute,
     component: unknown,
-    options: ExpandAttributeSelectorOptions
+    options: ResolveAttributeSelectorOptions
   ): AttributeSelector {
     const {setAttributesOnly} = options;
 
@@ -99,7 +99,7 @@ export class ComponentValueType extends ValueType {
       return {}; // `setAttributesOnly` is true and `component` is undefined
     }
 
-    return component.__expandAttributeSelector(normalizedAttributeSelector, options);
+    return component.__resolveAttributeSelector(normalizedAttributeSelector, options);
   }
 
   runValidators(value: unknown, attributeSelector?: AttributeSelector) {

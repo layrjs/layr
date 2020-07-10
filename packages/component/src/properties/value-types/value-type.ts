@@ -3,7 +3,7 @@ import {getTypeOf} from 'core-helpers';
 import type {
   TraverseAttributesIteratee,
   TraverseAttributesOptions,
-  ExpandAttributeSelectorOptions
+  ResolveAttributeSelectorOptions
 } from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
@@ -77,11 +77,11 @@ export class ValueType {
     // NOOP
   }
 
-  _expandAttributeSelector(
+  _resolveAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     _attribute: Attribute,
     _value: unknown,
-    _options: ExpandAttributeSelectorOptions
+    _options: ResolveAttributeSelectorOptions
   ): AttributeSelector {
     return normalizedAttributeSelector !== false;
   }

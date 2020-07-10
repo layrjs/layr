@@ -5,7 +5,7 @@ import {ValueType, ValueTypeOptions} from './value-type';
 import type {
   TraverseAttributesIteratee,
   TraverseAttributesOptions,
-  ExpandAttributeSelectorOptions
+  ResolveAttributeSelectorOptions
 } from '../../component';
 import type {Attribute} from '../attribute';
 import {
@@ -74,11 +74,11 @@ export class ArrayValueType extends ValueType {
     }
   }
 
-  _expandAttributeSelector(
+  _resolveAttributeSelector(
     normalizedAttributeSelector: AttributeSelector,
     attribute: Attribute,
     items: unknown,
-    options: ExpandAttributeSelectorOptions
+    options: ResolveAttributeSelectorOptions
   ): AttributeSelector {
     const {setAttributesOnly, aggregationMode} = options;
 
@@ -91,7 +91,7 @@ export class ArrayValueType extends ValueType {
     const itemType = this.getItemType();
 
     if (!setAttributesOnly || !Array.isArray(items) || items.length === 0) {
-      return itemType._expandAttributeSelector(
+      return itemType._resolveAttributeSelector(
         normalizedAttributeSelector,
         attribute,
         undefined,
@@ -99,27 +99,27 @@ export class ArrayValueType extends ValueType {
       );
     }
 
-    let expandedAttributeSelector: AttributeSelector | undefined = undefined;
+    let resolvedAttributeSelector: AttributeSelector | undefined = undefined;
 
     const aggregate =
       aggregationMode === 'union' ? mergeAttributeSelectors : intersectAttributeSelectors;
 
     for (const item of items) {
-      const itemAttributeSelector = itemType._expandAttributeSelector(
+      const itemAttributeSelector = itemType._resolveAttributeSelector(
         normalizedAttributeSelector,
         attribute,
         item,
         options
       );
 
-      if (expandedAttributeSelector === undefined) {
-        expandedAttributeSelector = itemAttributeSelector;
+      if (resolvedAttributeSelector === undefined) {
+        resolvedAttributeSelector = itemAttributeSelector;
       } else {
-        expandedAttributeSelector = aggregate(expandedAttributeSelector, itemAttributeSelector);
+        resolvedAttributeSelector = aggregate(resolvedAttributeSelector, itemAttributeSelector);
       }
     }
 
-    return expandedAttributeSelector!;
+    return resolvedAttributeSelector!;
   }
 
   runValidators(values: unknown[] | undefined, attributeSelector?: AttributeSelector) {

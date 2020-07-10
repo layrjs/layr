@@ -434,7 +434,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         );
       }
 
-      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector);
+      const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector);
 
       const {reload = false, throwIfMissing = true, _callerMethodName} = options;
 
@@ -443,10 +443,10 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       }
 
       const computedAttributes = this.getStorableComputedAttributes({
-        attributeSelector: expandedAttributeSelector
+        attributeSelector: resolvedAttributeSelector
       });
       const nonComputedAttributeSelector = removeFromAttributeSelector(
-        expandedAttributeSelector,
+        resolvedAttributeSelector,
         createAttributeSelectorFromAttributes(computedAttributes)
       );
 
@@ -474,7 +474,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       }
 
       for (const attribute of loadedStorable.getStorableAttributesWithLoader({
-        attributeSelector: expandedAttributeSelector
+        attributeSelector: resolvedAttributeSelector
       })) {
         const value = await attribute.callLoader();
         attribute.setValue(value);
@@ -529,7 +529,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         _callerMethodName
       }: {reload: boolean; throwIfMissing: boolean; _callerMethodName: string | undefined}
     ) {
-      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+      const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
         includeReferencedComponents: true
       });
 
@@ -540,7 +540,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       traverseAttributeSelector(
         this,
-        expandedAttributeSelector,
+        resolvedAttributeSelector,
         (componentOrObject, subattributeSelector) => {
           if (isStorableClassOrInstance(componentOrObject)) {
             const storable = componentOrObject;
@@ -601,13 +601,13 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     ) {
       const isNew = this.isNew();
 
-      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+      const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
         setAttributesOnly: true,
         target: 1,
         aggregationMode: 'intersection'
       });
 
-      if (!isNew && Object.keys(expandedAttributeSelector).length < 2) {
+      if (!isNew && Object.keys(resolvedAttributeSelector).length < 2) {
         return this; // OPTIMIZATION: There is nothing to save
       }
 
@@ -620,10 +620,10 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       }
 
       const computedAttributes = this.getStorableComputedAttributes({
-        attributeSelector: expandedAttributeSelector
+        attributeSelector: resolvedAttributeSelector
       });
       const nonComputedAttributeSelector = removeFromAttributeSelector(
-        expandedAttributeSelector,
+        resolvedAttributeSelector,
         createAttributeSelectorFromAttributes(computedAttributes)
       );
 
@@ -706,7 +706,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
             if (component.constructor.isEmbedded()) {
               if (
                 !attributeSelectorsAreEqual(
-                  component.expandAttributeSelector(true),
+                  component.resolveAttributeSelector(true),
                   attributeSelector
                 )
               ) {
@@ -733,7 +733,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       const {throwIfMissing = true} = options;
 
-      const attributeSelector = this.expandAttributeSelector(true);
+      const attributeSelector = this.resolveAttributeSelector(true);
       const computedAttributes = this.getStorableComputedAttributes({attributeSelector});
       const nonComputedAttributeSelector = removeFromAttributeSelector(
         attributeSelector,
