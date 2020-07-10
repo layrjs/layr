@@ -88,12 +88,14 @@ export type NormalizedIdentifierDescriptor = {[name: string]: IdentifierValue};
 export type ExpandAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
   setAttributesOnly?: boolean;
+  target?: number;
   aggregationMode?: 'union' | 'intersection';
   includeReferencedComponents?: boolean;
   alwaysIncludePrimaryIdentifierAttributes?: boolean;
   allowPartialArrayItems?: boolean;
   depth?: number;
   _isDeep?: boolean;
+  _skipUnchangedAttributes?: boolean;
   _isArrayItem?: boolean;
   _attributeStack?: Set<Attribute>;
 };
@@ -697,17 +699,17 @@ export class Component extends Observable(Object) {
       includeReferencedComponents
     });
 
-    this._traverseAttributes(iteratee, {
+    this.__traverseAttributes(iteratee, {
       attributeSelector: expandedAttributeSelector,
       setAttributesOnly
     });
   }
 
-  static get _traverseAttributes() {
-    return this.prototype._traverseAttributes;
+  static get __traverseAttributes() {
+    return this.prototype.__traverseAttributes;
   }
 
-  _traverseAttributes(
+  __traverseAttributes(
     iteratee: TraverseAttributesIteratee,
     {attributeSelector, setAttributesOnly}: TraverseAttributesOptions
   ) {
@@ -1083,9 +1085,10 @@ export class Component extends Observable(Object) {
   ) {
     attributeSelector = normalizeAttributeSelector(attributeSelector);
 
-    let {
+    const {
       filter,
       setAttributesOnly = false,
+      target,
       aggregationMode = 'union',
       includeReferencedComponents = false,
       alwaysIncludePrimaryIdentifierAttributes = true,
@@ -1096,11 +1099,54 @@ export class Component extends Observable(Object) {
       _attributeStack = new Set()
     } = options;
 
-    if (depth < 0) {
+    const _skipUnchangedAttributes =
+      setAttributesOnly &&
+      target !== undefined &&
+      (target === -1 || typeof (this as any).isStorable === 'function');
+
+    return this.__expandAttributeSelector(attributeSelector, {
+      filter,
+      setAttributesOnly,
+      target,
+      aggregationMode,
+      includeReferencedComponents,
+      alwaysIncludePrimaryIdentifierAttributes,
+      allowPartialArrayItems,
+      depth,
+      _isDeep,
+      _skipUnchangedAttributes,
+      _isArrayItem,
+      _attributeStack
+    });
+  }
+
+  static get __expandAttributeSelector() {
+    return this.prototype.__expandAttributeSelector;
+  }
+
+  __expandAttributeSelector(
+    attributeSelector: AttributeSelector,
+    options: ExpandAttributeSelectorOptions
+  ) {
+    const {
+      filter,
+      setAttributesOnly,
+      target,
+      includeReferencedComponents,
+      alwaysIncludePrimaryIdentifierAttributes,
+      allowPartialArrayItems,
+      depth,
+      _isDeep,
+      _skipUnchangedAttributes,
+      _isArrayItem,
+      _attributeStack
+    } = options;
+
+    if (depth! < 0) {
       return attributeSelector;
     }
 
-    depth -= 1;
+    const newDepth = depth! - 1;
 
     let expandedAttributeSelector: AttributeSelector = {};
 
@@ -1115,7 +1161,7 @@ export class Component extends Observable(Object) {
     }
 
     // By default, referenced components are not expanded
-    if (isEmbedded || !_isDeep || includeReferencedComponents) {
+    if (!_isDeep || includeReferencedComponents || isEmbedded) {
       for (const attribute of this.getAttributes({filter, setAttributesOnly})) {
         const name = attribute.getName();
 
@@ -1125,29 +1171,22 @@ export class Component extends Observable(Object) {
           continue;
         }
 
-        if (_attributeStack.has(attribute)) {
+        if (_skipUnchangedAttributes && attribute.getValueSource() === target) {
+          continue;
+        }
+
+        if (_attributeStack!.has(attribute)) {
           continue; // Avoid looping indefinitely when a circular attribute is encountered
         }
 
-        _attributeStack.add(attribute);
+        _attributeStack!.add(attribute);
 
         const expandedSubattributeSelector = attribute._expandAttributeSelector(
           subattributeSelector,
-          {
-            filter,
-            setAttributesOnly,
-            aggregationMode,
-            includeReferencedComponents,
-            alwaysIncludePrimaryIdentifierAttributes,
-            allowPartialArrayItems,
-            depth,
-            _isDeep: true,
-            _isArrayItem,
-            _attributeStack
-          }
+          {...options, depth: newDepth, _isDeep: true}
         );
 
-        _attributeStack.delete(attribute);
+        _attributeStack!.delete(attribute);
 
         if (expandedSubattributeSelector !== false) {
           expandedAttributeSelector = setWithinAttributeSelector(
@@ -1159,7 +1198,11 @@ export class Component extends Observable(Object) {
       }
     }
 
-    if (alwaysIncludePrimaryIdentifierAttributes && this.hasPrimaryIdentifierAttribute()) {
+    if (
+      isComponentInstance(this) &&
+      alwaysIncludePrimaryIdentifierAttributes &&
+      this.hasPrimaryIdentifierAttribute()
+    ) {
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
 
       if (!setAttributesOnly || primaryIdentifierAttribute.isSet()) {
@@ -1897,12 +1940,43 @@ export class Component extends Observable(Object) {
 
   static serialize(options: SerializeOptions = {}) {
     const {
+      attributeSelector = true,
       serializedComponents = new Set(),
-      componentDependencies,
       returnComponentReferences = false,
       ignoreEmptyComponents = false,
       includeComponentTypes = true,
-      includeReferencedComponents = false
+      includeReferencedComponents = false,
+      target,
+      ...otherOptions
+    } = options;
+
+    const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+      setAttributesOnly: true,
+      target,
+      aggregationMode: 'intersection',
+      includeReferencedComponents
+    });
+
+    return this.__serialize({
+      ...otherOptions,
+      attributeSelector: expandedAttributeSelector,
+      serializedComponents,
+      returnComponentReferences,
+      ignoreEmptyComponents,
+      includeComponentTypes,
+      includeReferencedComponents,
+      target
+    });
+  }
+
+  static __serialize(options: SerializeOptions) {
+    const {
+      serializedComponents,
+      componentDependencies,
+      returnComponentReferences,
+      ignoreEmptyComponents,
+      includeComponentTypes,
+      includeReferencedComponents
     } = options;
 
     const serializedComponent: PlainObject = {};
@@ -1911,10 +1985,10 @@ export class Component extends Observable(Object) {
       serializedComponent.__component = this.getComponentType();
     }
 
-    const hasAlreadyBeenSerialized = serializedComponents.has(this);
+    const hasAlreadyBeenSerialized = serializedComponents!.has(this);
 
     if (!hasAlreadyBeenSerialized) {
-      serializedComponents.add(this);
+      serializedComponents!.add(this);
 
       if (componentDependencies !== undefined) {
         for (const providedComponent of this.getProvidedComponents()) {
@@ -1940,13 +2014,46 @@ export class Component extends Observable(Object) {
 
   serialize(options: SerializeOptions = {}) {
     const {
+      attributeSelector = true,
       serializedComponents = new Set(),
-      componentDependencies,
       returnComponentReferences = false,
       ignoreEmptyComponents = false,
       includeComponentTypes = true,
       includeIsNewMarks = true,
       includeReferencedComponents = false,
+      target,
+      ...otherOptions
+    } = options;
+
+    const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+      setAttributesOnly: true,
+      target,
+      aggregationMode: 'intersection',
+      includeReferencedComponents
+    });
+
+    return this.__serialize({
+      ...otherOptions,
+      attributeSelector: expandedAttributeSelector,
+      serializedComponents,
+      returnComponentReferences,
+      ignoreEmptyComponents,
+      includeComponentTypes,
+      includeIsNewMarks,
+      includeReferencedComponents,
+      target
+    });
+  }
+
+  __serialize(options: SerializeOptions) {
+    const {
+      serializedComponents,
+      componentDependencies,
+      returnComponentReferences,
+      ignoreEmptyComponents,
+      includeComponentTypes,
+      includeIsNewMarks,
+      includeReferencedComponents,
       target
     } = options;
 
@@ -1959,10 +2066,10 @@ export class Component extends Observable(Object) {
     const isEmbedded = this.constructor.isEmbedded();
 
     if (!isEmbedded) {
-      const hasAlreadyBeenSerialized = serializedComponents.has(this);
+      const hasAlreadyBeenSerialized = serializedComponents!.has(this);
 
       if (!hasAlreadyBeenSerialized) {
-        serializedComponents.add(this);
+        serializedComponents!.add(this);
 
         if (componentDependencies !== undefined) {
           componentDependencies.add(this.constructor);
@@ -1990,7 +2097,7 @@ export class Component extends Observable(Object) {
     }
 
     return possiblyAsync(
-      this.__serializeAttributes(serializedComponent, {...options, serializedComponents}),
+      this.__serializeAttributes(serializedComponent, options),
       (attributeCount) =>
         ignoreEmptyComponents && attributeCount <= this.__getMinimumAttributeCount()
           ? undefined
@@ -2006,34 +2113,14 @@ export class Component extends Observable(Object) {
     serializedComponent: PlainObject,
     options: SerializeOptions
   ): PromiseLikeable<number> {
-    let {attributeSelector = true, attributeFilter, target, skipUnchangedAttributes} = options;
-
-    if (skipUnchangedAttributes === undefined) {
-      skipUnchangedAttributes = target === -1 || typeof (this as any).isStorable === 'function';
-    }
-
-    attributeSelector = normalizeAttributeSelector(attributeSelector);
+    let {attributeSelector, attributeFilter} = options;
 
     let attributeCount = 0;
 
     return possiblyAsync(
-      possiblyAsync.forEach(this.getAttributes({setAttributesOnly: true}), (attribute) => {
+      possiblyAsync.forEach(this.getAttributes({attributeSelector}), (attribute) => {
         const attributeName = attribute.getName();
-
-        const subattributeSelector = getFromAttributeSelector(attributeSelector, attributeName);
-
-        if (subattributeSelector === false) {
-          return;
-        }
-
-        if (
-          target !== undefined &&
-          skipUnchangedAttributes &&
-          !isPrimaryIdentifierAttributeInstance(attribute) &&
-          attribute.getValueSource() === target
-        ) {
-          return;
-        }
+        const subattributeSelector = getFromAttributeSelector(attributeSelector!, attributeName);
 
         return possiblyAsync(
           attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
@@ -2043,8 +2130,7 @@ export class Component extends Observable(Object) {
                 attribute.serialize({
                   ...options,
                   attributeSelector: subattributeSelector,
-                  returnComponentReferences: true,
-                  skipUnchangedAttributes
+                  returnComponentReferences: true
                 }),
                 (serializedAttributeValue) => {
                   serializedComponent[attributeName] = serializedAttributeValue;

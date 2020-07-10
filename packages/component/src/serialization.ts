@@ -22,7 +22,6 @@ export type SerializeOptions = SimpleSerializeOptions & {
   includeIsNewMarks?: boolean;
   includeReferencedComponents?: boolean;
   target?: number;
-  skipUnchangedAttributes?: boolean;
 };
 
 export function serialize<Value>(value: Value, options?: SerializeOptions): SerializeResult<Value>;

@@ -6,6 +6,7 @@ import type {
 } from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
+import {SerializeOptions} from '../../serialization';
 import {
   isComponentClassOrInstance,
   isComponentClass,
@@ -74,7 +75,7 @@ export class ComponentValueType extends ValueType {
     }
 
     if (isComponentClassOrInstance(component)) {
-      component._traverseAttributes(iteratee, options);
+      component.__traverseAttributes(iteratee, options);
     }
   }
 
@@ -98,7 +99,7 @@ export class ComponentValueType extends ValueType {
       return {}; // `setAttributesOnly` is true and `component` is undefined
     }
 
-    return component.expandAttributeSelector(normalizedAttributeSelector, options);
+    return component.__expandAttributeSelector(normalizedAttributeSelector, options);
   }
 
   runValidators(value: unknown, attributeSelector?: AttributeSelector) {
@@ -110,6 +111,14 @@ export class ComponentValueType extends ValueType {
     }
 
     return failedValidators;
+  }
+
+  serializeValue(value: unknown, attribute: Attribute, options: SerializeOptions = {}) {
+    if (isComponentClassOrInstance(value)) {
+      return value.__serialize(options);
+    }
+
+    return super.serializeValue(value, attribute, options);
   }
 
   static isComponentValueType(value: any): value is ComponentValueType {

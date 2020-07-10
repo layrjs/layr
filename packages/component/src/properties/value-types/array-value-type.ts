@@ -1,3 +1,4 @@
+import {possiblyAsync} from 'possibly-async';
 import isEmpty from 'lodash/isEmpty';
 
 import {ValueType, ValueTypeOptions} from './value-type';
@@ -81,7 +82,7 @@ export class ArrayValueType extends ValueType {
   ): AttributeSelector {
     const {setAttributesOnly, aggregationMode} = options;
 
-    options = {...options, _isArrayItem: true};
+    options = {...options, _skipUnchangedAttributes: false, _isArrayItem: true};
 
     if (normalizedAttributeSelector === false) {
       return false;
@@ -139,8 +140,14 @@ export class ArrayValueType extends ValueType {
     return failedValidators;
   }
 
-  serializeValue(value: unknown, attribute: Attribute, options: SerializeOptions = {}) {
-    return super.serializeValue(value, attribute, {...options, skipUnchangedAttributes: false});
+  serializeValue(items: unknown, attribute: Attribute, options: SerializeOptions = {}) {
+    if (Array.isArray(items)) {
+      const itemType = this.getItemType();
+
+      return possiblyAsync.map(items, (item) => itemType.serializeValue(item, attribute, options));
+    }
+
+    return super.serializeValue(items, attribute, options);
   }
 
   introspect() {

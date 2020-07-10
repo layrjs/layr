@@ -804,6 +804,28 @@ describe('Component', () => {
         Movie.prototype.expandAttributeSelector({title: true, actors: true}, {depth: 0})
       ).toStrictEqual({title: true, actors: true});
 
+      const movie = Movie.create({}, {isNew: false});
+
+      expect(movie.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
+
+      movie.getAttribute('title').setValue('Interception', {source: -1});
+      movie.getAttribute('duration').setValue(120, {source: -1});
+
+      expect(movie.expandAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
+        title: true,
+        duration: true
+      });
+
+      expect(
+        movie.expandAttributeSelector(true, {setAttributesOnly: true, target: -1})
+      ).toStrictEqual({});
+
+      movie.getAttribute('title').setValue('Interception 2', {source: 0});
+
+      expect(
+        movie.expandAttributeSelector(true, {setAttributesOnly: true, target: -1})
+      ).toStrictEqual({title: true});
+
       // --- With an embedded component ---
 
       class UserDetails extends EmbeddedComponent {
