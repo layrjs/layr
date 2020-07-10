@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "0.5.51",
+  "version": "0.5.52",
   "description": "The base class of all your components",
   "keywords": [
     "liaison",
@@ -31,7 +31,7 @@
     "@liaison/observable": "^0.5.8",
     "core-helpers": "^0.1.26",
     "cuid": "^2.1.8",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "possibly-async": "^0.2.20",
     "simple-cloning": "^0.1.15",
     "simple-forking": "^0.1.11",

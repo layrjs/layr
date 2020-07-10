@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-server",
-  "version": "0.5.25",
+  "version": "0.5.26",
   "description": "Serves your Liaison components",
   "keywords": [
     "liaison",
@@ -28,10 +28,10 @@
   },
   "dependencies": {
     "@deepr/runtime": "^0.4.8",
-    "@liaison/component": "^0.5.45",
+    "@liaison/component": "^0.5.52",
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "possibly-async": "^0.2.20",
     "tslib": "^1.13.0"
   },
