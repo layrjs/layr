@@ -593,7 +593,19 @@ describe('Storable', () => {
             );
           }
 
+          expect(user.getAttribute('id').getValueSource()).toBe(0);
+          expect(user.getAttribute('fullName').getValueSource()).toBe(0);
+          expect(user.getAttribute('tags').getValueSource()).toBe(0);
+          expect(user.getAttribute('picture').getValueSource()).toBe(0);
+          expect(user.picture!.getAttribute('url').getValueSource()).toBe(0);
+
           expect(await user.save()).toBe(user);
+
+          expect(user.getAttribute('id').getValueSource()).toBe(1);
+          expect(user.getAttribute('fullName').getValueSource()).toBe(1);
+          expect(user.getAttribute('tags').getValueSource()).toBe(1);
+          expect(user.getAttribute('picture').getValueSource()).toBe(1);
+          expect(user.picture!.getAttribute('url').getValueSource()).toBe(1);
 
           ForkedUser = User.fork();
           ForkedPicture = ForkedUser.Picture;
@@ -629,6 +641,8 @@ describe('Storable', () => {
             createdOn: {__date: CREATED_ON.toISOString()},
             updatedOn: {__undefined: true}
           });
+
+          // ------
 
           user.fullName = 'User 2 (modified)';
           user.accessLevel = 1;
@@ -688,6 +702,8 @@ describe('Storable', () => {
             updatedOn: {__date: UPDATED_ON.toISOString()}
           });
 
+          // ------
+
           user.location = {country: 'USA'};
           delete user.location.state;
           delete user.location.city;
@@ -732,6 +748,8 @@ describe('Storable', () => {
             updatedOn: {__undefined: true}
           });
 
+          // ------
+
           // Undefined values in object attributes should not be saved
           user.location!.country = undefined;
           user.pastLocations[0].country = undefined;
@@ -748,6 +766,62 @@ describe('Storable', () => {
             pastLocations: [{}]
           });
 
+          // ------
+
+          if (User.hasStore()) {
+            user = await User.fork().get('user2', {fullName: true, accessLevel: true});
+
+            expect(user.serialize()).toStrictEqual({
+              __component: 'User',
+              __new: false,
+              id: 'user2',
+              fullName: 'User 2 (modified)',
+              accessLevel: 1
+            });
+
+            user.accessLevel = 2;
+
+            User.getStore().startTrace();
+
+            expect(await user.save()).toBe(user);
+
+            expect(User.getStore().getTrace()).toStrictEqual([
+              {
+                operation: 'save',
+                params: {
+                  storableType: 'User',
+                  identifierDescriptor: {id: 'user2'},
+                  serializedStorable: {__component: 'User', id: 'user2', accessLevel: 2},
+                  isNew: false
+                },
+                options: {throwIfMissing: true, throwIfExists: false},
+                result: true
+              }
+            ]);
+
+            User.getStore().stopTrace();
+
+            user = await User.fork().get('user2', {fullName: true, accessLevel: true});
+
+            expect(user.serialize()).toStrictEqual({
+              __component: 'User',
+              __new: false,
+              id: 'user2',
+              fullName: 'User 2 (modified)',
+              accessLevel: 2
+            });
+
+            User.getStore().startTrace();
+
+            expect(await user.save()).toBe(user);
+
+            expect(User.getStore().getTrace()).toStrictEqual([]);
+
+            User.getStore().stopTrace();
+          }
+
+          // ------
+
           user = await User.fork().get('user2', {pastPictures: {type: true}});
 
           expect(user.serialize()).toStrictEqual({
@@ -760,8 +834,14 @@ describe('Storable', () => {
           user.pastPictures[0].type = 'JPEG';
 
           await expect(user.save()).rejects.toThrow(
-            "Cannot save an array item that has not been fully loaded (component: 'User.Picture')"
+            "Cannot save an array item that has some unset attributes (component: 'User.Picture')"
           );
+
+          await expect(user.save({pastPictures: {type: true}})).rejects.toThrow(
+            "Cannot save an array item that has some unset attributes (component: 'User.Picture')"
+          );
+
+          // ------
 
           user = User.fork().create({id: 'user3', fullName: 'User 3'}, {isNew: false});
 
@@ -769,6 +849,8 @@ describe('Storable', () => {
           await expect(user.save()).rejects.toThrow(
             "Cannot save a non-new document that is missing from the store (collection: 'User', id: 'user3')"
           );
+
+          // ------
 
           user = new (User.fork())({
             id: 'user1',
@@ -781,6 +863,8 @@ describe('Storable', () => {
           await expect(user.save()).rejects.toThrow(
             "Cannot save a new document that already exists in the store (collection: 'User', id: 'user1')"
           );
+
+          // ------
 
           user = User.fork().create({id: 'user3', fullName: 'User 3'}, {isNew: false});
 
@@ -1823,8 +1907,10 @@ describe('Storable', () => {
 
       expect(hookTracker.get(user, 'beforeSaveHasBeenCalled')).toBe(true);
       expect(hookTracker.get(user, 'afterSaveHasBeenCalled')).toBe(true);
-      expect(hookTracker.get(user.getAttribute('email'), 'beforeSaveHasBeenCalled')).toBe(true);
-      expect(hookTracker.get(user.getAttribute('email'), 'afterSaveHasBeenCalled')).toBe(true);
+      expect(
+        hookTracker.get(user.getAttribute('email'), 'beforeSaveHasBeenCalled')
+      ).toBeUndefined();
+      expect(hookTracker.get(user.getAttribute('email'), 'afterSaveHasBeenCalled')).toBeUndefined();
       expect(hookTracker.get(user.getAttribute('fullName'), 'beforeSaveHasBeenCalled')).toBe(true);
       expect(hookTracker.get(user.getAttribute('fullName'), 'afterSaveHasBeenCalled')).toBe(true);
     });

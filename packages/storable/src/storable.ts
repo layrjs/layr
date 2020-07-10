@@ -54,6 +54,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
   }
 
   class Storable extends Base {
+    ['constructor']: typeof StorableComponent;
+
     // === Store registration ===
 
     static __store: AbstractStore | undefined;
@@ -514,7 +516,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         return undefined;
       }
 
-      const loadedStorable = this.deserialize(serializedStorable) as T;
+      const loadedStorable = this.deserialize(serializedStorable, {source: 1}) as T;
 
       return loadedStorable;
     }
@@ -599,7 +601,15 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     ) {
       const isNew = this.isNew();
 
-      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector);
+      const expandedAttributeSelector = this.expandAttributeSelector(attributeSelector, {
+        setAttributesOnly: true,
+        target: 1,
+        aggregationMode: 'intersection'
+      });
+
+      if (!isNew && Object.keys(expandedAttributeSelector).length < 2) {
+        return this; // OPTIMIZATION: There is nothing to save
+      }
 
       const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
 
@@ -618,8 +628,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       );
 
       await this.beforeSave(nonComputedAttributeSelector);
-
-      this._assertArrayItemsAreFullyLoaded(nonComputedAttributeSelector);
 
       let savedStorable: T | undefined;
 
@@ -652,6 +660,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       attributeSelector: AttributeSelector,
       {throwIfMissing, throwIfExists}: {throwIfMissing: boolean; throwIfExists: boolean}
     ) {
+      this._assertArrayItemsAreFullyLoaded(attributeSelector);
+
       this.validate(attributeSelector);
 
       const store = (this.constructor as typeof StorableComponent).getStore();
@@ -672,15 +682,20 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       }
 
       if (isNew) {
-        this.markAsNotNew();
+        this.markAsNotNew(); // TODO: Mark also embedded components as not new
       }
+
+      this.traverseAttributes(
+        (attribute) => {
+          attribute.setValueSource(1);
+        },
+        {attributeSelector, setAttributesOnly: true}
+      );
 
       return this;
     }
 
     _assertArrayItemsAreFullyLoaded(attributeSelector: AttributeSelector) {
-      // const fullAttributeSelector = this.expandAttributeSelector(true);
-
       traverseAttributeSelector(
         this,
         attributeSelector,
@@ -690,10 +705,13 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
             if (component.constructor.isEmbedded()) {
               if (
-                !attributeSelectorsAreEqual(component.getAttributeSelector(), attributeSelector)
+                !attributeSelectorsAreEqual(
+                  component.expandAttributeSelector(true),
+                  attributeSelector
+                )
               ) {
                 throw new Error(
-                  `Cannot save an array item that has not been fully loaded (${component.describeComponent()})`
+                  `Cannot save an array item that has some unset attributes (${component.describeComponent()})`
                 );
               }
             }
@@ -818,7 +836,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       );
 
       const foundStorables = serializedStorables.map(
-        (serializedStorable) => this.deserializeInstance(serializedStorable) as InstanceType<T>
+        (serializedStorable) =>
+          this.deserializeInstance(serializedStorable, {source: 1}) as InstanceType<T>
       );
 
       return foundStorables;
@@ -881,7 +900,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         if (isComponentClassOrInstance(query)) {
           if (component === query || isPrototypeOf(component, query)) {
             return query.toObject({minimize: true});
-            // return query.serialize({includeComponentTypes: false, includeIsNewMarks: false})!;
           }
 
           throw new Error(
