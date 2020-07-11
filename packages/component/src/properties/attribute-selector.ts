@@ -7,6 +7,7 @@ import {
 } from 'core-helpers';
 import omit from 'lodash/omit';
 import cloneDeep from 'lodash/cloneDeep';
+import isEmpty from 'lodash/isEmpty';
 
 import type {Attribute} from './attribute';
 import {isComponentClassOrInstance} from '../utilities';
@@ -412,6 +413,28 @@ function _traverse(
       _isDeep: true
     });
   }
+}
+
+export function trimAttributeSelector(attributeSelector: AttributeSelector): AttributeSelector {
+  attributeSelector = normalizeAttributeSelector(attributeSelector);
+
+  if (typeof attributeSelector === 'boolean') {
+    return attributeSelector;
+  }
+
+  for (const [name, subattributeSelector] of Object.entries(attributeSelector)) {
+    attributeSelector = setWithinAttributeSelector(
+      attributeSelector,
+      name,
+      trimAttributeSelector(subattributeSelector)
+    );
+  }
+
+  if (isEmpty(attributeSelector)) {
+    return false;
+  }
+
+  return attributeSelector;
 }
 
 export function normalizeAttributeSelector(attributeSelector: any): AttributeSelector {

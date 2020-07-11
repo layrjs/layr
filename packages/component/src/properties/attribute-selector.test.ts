@@ -14,6 +14,7 @@ import {
   iterateOverAttributeSelector,
   pickFromAttributeSelector,
   traverseAttributeSelector,
+  trimAttributeSelector,
   normalizeAttributeSelector
 } from './attribute-selector';
 import {attribute} from '../decorators';
@@ -608,6 +609,23 @@ describe('AttributeSelector', () => {
     expect(() => runTraverse(person, {organization: {city: true}})).toThrow(
       "The attribute 'city' is missing (component: 'Organization')"
     );
+  });
+
+  test('trimAttributeSelector()', () => {
+    expect(trimAttributeSelector(true)).toBe(true);
+    expect(trimAttributeSelector(false)).toBe(false);
+    expect(trimAttributeSelector({})).toBe(false);
+    expect(trimAttributeSelector({title: false})).toBe(false);
+    expect(trimAttributeSelector({director: {}})).toBe(false);
+    expect(trimAttributeSelector({director: {name: false}})).toBe(false);
+
+    expect(trimAttributeSelector({title: true})).toStrictEqual({title: true});
+    expect(trimAttributeSelector({title: true, director: {name: false}})).toStrictEqual({
+      title: true
+    });
+    expect(trimAttributeSelector({title: false, director: {name: true}})).toStrictEqual({
+      director: {name: true}
+    });
   });
 
   test('normalizeAttributeSelector()', () => {
