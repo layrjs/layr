@@ -1205,7 +1205,10 @@ export class Component extends Observable(Object) {
     ) {
       const primaryIdentifierAttribute = this.getPrimaryIdentifierAttribute();
 
-      if (!setAttributesOnly || primaryIdentifierAttribute.isSet()) {
+      const isNotFilteredOut =
+        filter !== undefined ? filter.call(this, primaryIdentifierAttribute) : true;
+
+      if (isNotFilteredOut && (!setAttributesOnly || primaryIdentifierAttribute.isSet())) {
         resolvedAttributeSelector = setWithinAttributeSelector(
           resolvedAttributeSelector,
           primaryIdentifierAttribute.getName(),
