@@ -14,6 +14,7 @@ import {
   mergeAttributeSelectors,
   removeFromAttributeSelector,
   traverseAttributeSelector,
+  trimAttributeSelector,
   normalizeAttributeSelector,
   IdentifierDescriptor,
   IdentifierValue,
@@ -428,49 +429,72 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       attributeSelector: AttributeSelector = true,
       options: {reload?: boolean; throwIfMissing?: boolean; _callerMethodName?: string} = {}
     ) {
+      const {reload = false, throwIfMissing = true, _callerMethodName} = options;
+
       if (this.isNew()) {
         throw new Error(
           `Cannot load a storable component that is marked as new (${this.describeComponent()})`
         );
       }
 
-      const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector);
-
-      const {reload = false, throwIfMissing = true, _callerMethodName} = options;
+      let resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector);
 
       if (!reload) {
-        // TODO
+        const alreadyLoadedAttributeSelector = this.resolveAttributeSelector(
+          resolvedAttributeSelector,
+          {
+            filter: (attribute: Attribute) => attribute.getValueSource() === 1,
+            setAttributesOnly: true,
+            aggregationMode: 'intersection'
+          }
+        );
+
+        resolvedAttributeSelector = removeFromAttributeSelector(
+          resolvedAttributeSelector,
+          alreadyLoadedAttributeSelector
+        );
       }
 
       const computedAttributes = this.getStorableComputedAttributes({
         attributeSelector: resolvedAttributeSelector
       });
-      const nonComputedAttributeSelector = removeFromAttributeSelector(
+
+      let nonComputedAttributeSelector = removeFromAttributeSelector(
         resolvedAttributeSelector,
         createAttributeSelectorFromAttributes(computedAttributes)
       );
 
-      await this.beforeLoad(nonComputedAttributeSelector);
+      nonComputedAttributeSelector = trimAttributeSelector(nonComputedAttributeSelector);
 
       let loadedStorable: T | undefined;
 
-      if ((this.constructor as typeof StorableComponent).hasStore()) {
-        loadedStorable = await this.__loadFromStore(nonComputedAttributeSelector, {throwIfMissing});
-      } else if (this.hasRemoteMethod('load')) {
-        loadedStorable = await this.callRemoteMethod('load', nonComputedAttributeSelector, {
-          reload,
-          throwIfMissing
-        });
-      } else {
-        throw new Error(
-          `To be able to execute the load() method${describeCaller(
-            _callerMethodName
-          )}, a storable component should be registered in a store or have an exposed load() remote method (${this.describeComponent()})`
-        );
-      }
+      if (nonComputedAttributeSelector !== false) {
+        await this.beforeLoad(nonComputedAttributeSelector);
 
-      if (loadedStorable === undefined) {
-        return undefined;
+        if ((this.constructor as typeof StorableComponent).hasStore()) {
+          loadedStorable = await this.__loadFromStore(nonComputedAttributeSelector, {
+            throwIfMissing
+          });
+        } else if (this.hasRemoteMethod('load')) {
+          loadedStorable = await this.callRemoteMethod('load', nonComputedAttributeSelector, {
+            reload,
+            throwIfMissing
+          });
+        } else {
+          throw new Error(
+            `To be able to execute the load() method${describeCaller(
+              _callerMethodName
+            )}, a storable component should be registered in a store or have an exposed load() remote method (${this.describeComponent()})`
+          );
+        }
+
+        if (loadedStorable === undefined) {
+          return undefined;
+        }
+
+        await loadedStorable.afterLoad(nonComputedAttributeSelector);
+      } else {
+        loadedStorable = this; // OPTIMIZATION: There was nothing to load
       }
 
       for (const attribute of loadedStorable.getStorableAttributesWithLoader({
@@ -479,8 +503,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         const value = await attribute.callLoader();
         attribute.setValue(value);
       }
-
-      await loadedStorable.afterLoad(nonComputedAttributeSelector);
 
       await loadedStorable.__populate(attributeSelector, {
         reload,
@@ -601,16 +623,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     ) {
       const isNew = this.isNew();
 
-      const resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
-        setAttributesOnly: true,
-        target: 1,
-        aggregationMode: 'intersection'
-      });
-
-      if (!isNew && Object.keys(resolvedAttributeSelector).length < 2) {
-        return this; // OPTIMIZATION: There is nothing to save
-      }
-
       const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
 
       if (throwIfMissing === true && throwIfExists === true) {
@@ -619,20 +631,45 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         );
       }
 
-      const computedAttributes = this.getStorableComputedAttributes({
-        attributeSelector: resolvedAttributeSelector
+      const computedAttributes = this.getStorableComputedAttributes();
+      const computedAttributeSelector = createAttributeSelectorFromAttributes(computedAttributes);
+
+      let resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
+        setAttributesOnly: true,
+        target: 1,
+        aggregationMode: 'intersection'
       });
-      const nonComputedAttributeSelector = removeFromAttributeSelector(
+
+      resolvedAttributeSelector = removeFromAttributeSelector(
         resolvedAttributeSelector,
-        createAttributeSelectorFromAttributes(computedAttributes)
+        computedAttributeSelector
       );
 
-      await this.beforeSave(nonComputedAttributeSelector);
+      if (!isNew && Object.keys(resolvedAttributeSelector).length < 2) {
+        return this; // OPTIMIZATION: There is nothing to save
+      }
+
+      await this.beforeSave(resolvedAttributeSelector);
+
+      resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
+        setAttributesOnly: true,
+        target: 1,
+        aggregationMode: 'intersection'
+      });
+
+      resolvedAttributeSelector = removeFromAttributeSelector(
+        resolvedAttributeSelector,
+        computedAttributeSelector
+      );
+
+      if (!isNew && Object.keys(resolvedAttributeSelector).length < 2) {
+        return this; // OPTIMIZATION: There is nothing to save
+      }
 
       let savedStorable: T | undefined;
 
       if ((this.constructor as typeof StorableComponent).hasStore()) {
-        savedStorable = await this.__saveToStore(nonComputedAttributeSelector, {
+        savedStorable = await this.__saveToStore(resolvedAttributeSelector, {
           throwIfMissing,
           throwIfExists
         });
@@ -651,7 +688,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         return undefined;
       }
 
-      await this.afterSave(nonComputedAttributeSelector);
+      await this.afterSave(resolvedAttributeSelector);
 
       return savedStorable;
     }

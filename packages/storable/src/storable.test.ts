@@ -521,12 +521,16 @@ describe('Storable', () => {
             updatedOn: {__undefined: true}
           });
 
+          // ------
+
           user = User.fork().create({id: 'user2'}, {isNew: false});
 
           await expect(user.load({})).rejects.toThrow(
             "Cannot load a document that is missing from the store (collection: 'User', id: 'user2'"
           );
           expect(await user.load({}, {throwIfMissing: false})).toBeUndefined();
+
+          // ------
 
           user = User.fork().create({email: '1@user.com'}, {isNew: false});
 
@@ -546,6 +550,182 @@ describe('Storable', () => {
             email: '1@user.com',
             fullName: 'User 1'
           });
+
+          // ------
+
+          if (User.hasStore()) {
+            user = User.fork().create({id: 'user1'}, {isNew: false});
+
+            User.getStore().startTrace();
+
+            expect(await user.load({})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([
+              {
+                operation: 'load',
+                params: {
+                  storableType: 'User',
+                  identifierDescriptor: {
+                    id: 'user1'
+                  }
+                },
+                options: {
+                  attributeSelector: {
+                    id: true
+                  },
+                  throwIfMissing: true
+                },
+                result: {
+                  __component: 'User',
+                  id: 'user1'
+                }
+              }
+            ]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({id: true})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({id: true, email: true})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([
+              {
+                operation: 'load',
+                params: {
+                  storableType: 'User',
+                  identifierDescriptor: {
+                    id: 'user1'
+                  }
+                },
+                options: {
+                  attributeSelector: {
+                    id: true,
+                    email: true
+                  },
+                  throwIfMissing: true
+                },
+                result: {
+                  __component: 'User',
+                  id: 'user1',
+                  email: '1@user.com'
+                }
+              }
+            ]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({id: true, email: true, fullName: true})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([
+              {
+                operation: 'load',
+                params: {
+                  storableType: 'User',
+                  identifierDescriptor: {
+                    id: 'user1'
+                  }
+                },
+                options: {
+                  attributeSelector: {
+                    id: true,
+                    fullName: true
+                  },
+                  throwIfMissing: true
+                },
+                result: {
+                  __component: 'User',
+                  id: 'user1',
+                  fullName: 'User 1'
+                }
+              }
+            ]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({id: true, email: true, fullName: true})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({fullName: true}, {reload: true})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([
+              {
+                operation: 'load',
+                params: {
+                  storableType: 'User',
+                  identifierDescriptor: {
+                    id: 'user1'
+                  }
+                },
+                options: {
+                  attributeSelector: {
+                    id: true,
+                    fullName: true
+                  },
+                  throwIfMissing: true
+                },
+                result: {
+                  __component: 'User',
+                  id: 'user1',
+                  fullName: 'User 1'
+                }
+              }
+            ]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({organization: {}})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([
+              {
+                operation: 'load',
+                params: {
+                  storableType: 'User',
+                  identifierDescriptor: {
+                    id: 'user1'
+                  }
+                },
+                options: {
+                  attributeSelector: {
+                    id: true,
+                    organization: {
+                      id: true
+                    }
+                  },
+                  throwIfMissing: true
+                },
+                result: {
+                  __component: 'User',
+                  id: 'user1',
+                  organization: {
+                    __component: 'Organization',
+                    id: 'org1'
+                  }
+                }
+              }
+            ]);
+
+            User.getStore().stopTrace();
+            User.getStore().startTrace();
+
+            expect(await user.load({organization: {}})).toBe(user);
+            expect(User.getStore().getTrace()).toStrictEqual([]);
+
+            User.getStore().stopTrace();
+          }
+
+          // ------
 
           user = User.fork().create({fullName: 'User 1'}, {isNew: false});
 
