@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-http-server",
-  "version": "0.5.21",
+  "version": "0.5.22",
   "description": "A basic HTTP server for your Liaison components",
   "keywords": [
     "liaison",
@@ -29,9 +29,9 @@
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
-    "@liaison/component": "^0.5.53",
-    "@liaison/component-koa-middleware": "^0.5.21",
-    "@liaison/component-server": "^0.5.27",
+    "@liaison/component": "^0.5.56",
+    "@liaison/component-koa-middleware": "^0.5.22",
+    "@liaison/component-server": "^0.5.28",
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
     "koa": "^2.13.0",
