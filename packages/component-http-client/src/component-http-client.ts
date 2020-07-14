@@ -14,7 +14,7 @@ export class ComponentHTTPClient extends ComponentClient {
   constructor(url: string, options: ComponentHTTPClientOptions = {}) {
     const componentServer = createComponentServer(url);
 
-    super(componentServer, options);
+    super(componentServer, {...options, batchable: true});
   }
 }
 

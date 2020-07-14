@@ -220,6 +220,27 @@ describe('ComponentClient', () => {
         };
       }
 
+      // [movie1.play(), movie2.play()]
+      if (
+        isEqual(
+          {query, components},
+          {
+            query: [
+              {'<=': {__component: 'Movie', id: 'movie1'}, 'play=>': {'()': []}},
+              {'<=': {__component: 'Movie', id: 'movie2'}, 'play=>': {'()': []}}
+            ],
+            components: [{__component: 'typeof Session', token: 'abc123'}]
+          }
+        )
+      ) {
+        return {
+          result: [
+            {__component: 'Movie', id: 'movie1', isPlaying: true},
+            {__component: 'Movie', id: 'movie2', isPlaying: true}
+          ]
+        };
+      }
+
       throw new Error(
         `Received an unknown request (query: ${JSON.stringify(query)}, components: ${JSON.stringify(
           components
@@ -312,7 +333,7 @@ describe('ComponentClient', () => {
     expect(typeof (Movie as any).isStorable).toBe('function');
   });
 
-  test('Invoking methods', async () => {
+  describe('Invoking methods', () => {
     class BaseSession extends Component {
       static token?: string;
     }
@@ -337,46 +358,73 @@ describe('ComponentClient', () => {
       static Movie: typeof BaseMovie;
     }
 
-    const client = new ComponentClient(server, {version: 1, mixins: [Storable]});
+    test('One by one', async () => {
+      const client = new ComponentClient(server, {version: 1, mixins: [Storable]});
 
-    const {Movie, Session} = client.getComponent() as typeof BaseBackend;
+      const {Movie, Session} = client.getComponent() as typeof BaseBackend;
 
-    expect(() => Movie.find()).toThrow('Access denied'); // The token is missing
+      expect(() => Movie.find()).toThrow('Access denied'); // The token is missing
 
-    Session.token = 'abc123';
+      Session.token = 'abc123';
 
-    let movies = Movie.find();
+      let movies = Movie.find();
 
-    expect(movies).toHaveLength(2);
-    expect(movies[0]).toBeInstanceOf(Movie);
-    expect(movies[0].id).toBe('movie1');
-    expect(movies[0].slug).toBe('inception');
-    expect(movies[0].title).toBe('Inception');
-    expect(movies[1]).toBeInstanceOf(Movie);
-    expect(movies[1].id).toBe('movie2');
-    expect(movies[1].slug).toBe('the-matrix');
-    expect(movies[1].title).toBe('The Matrix');
+      expect(movies).toHaveLength(2);
+      expect(movies[0]).toBeInstanceOf(Movie);
+      expect(movies[0].id).toBe('movie1');
+      expect(movies[0].slug).toBe('inception');
+      expect(movies[0].title).toBe('Inception');
+      expect(movies[1]).toBeInstanceOf(Movie);
+      expect(movies[1].id).toBe('movie2');
+      expect(movies[1].slug).toBe('the-matrix');
+      expect(movies[1].title).toBe('The Matrix');
 
-    movies = Movie.find({limit: 1});
+      movies = Movie.find({limit: 1});
 
-    expect(movies).toHaveLength(1);
-    expect(movies[0]).toBeInstanceOf(Movie);
-    expect(movies[0].id).toBe('movie1');
-    expect(movies[0].slug).toBe('inception');
-    expect(movies[0].title).toBe('Inception');
+      expect(movies).toHaveLength(1);
+      expect(movies[0]).toBeInstanceOf(Movie);
+      expect(movies[0].id).toBe('movie1');
+      expect(movies[0].slug).toBe('inception');
+      expect(movies[0].title).toBe('Inception');
 
-    const movie = movies[0];
+      const movie = movies[0];
 
-    movie.play();
+      movie.play();
 
-    expect(movie.isPlaying).toBe(true);
+      expect(movie.isPlaying).toBe(true);
 
-    movie.title = '';
+      movie.title = '';
 
-    expect(movie.validateTitle()).toBe(false);
+      expect(movie.validateTitle()).toBe(false);
 
-    movie.title = 'Inception 2';
+      movie.title = 'Inception 2';
 
-    expect(movie.validateTitle()).toBe(true);
+      expect(movie.validateTitle()).toBe(true);
+    });
+
+    test('In batch mode', async () => {
+      const client = new ComponentClient(server, {version: 1, mixins: [Storable], batchable: true});
+
+      const {Movie, Session} = (await client.getComponent()) as typeof BaseBackend;
+
+      Session.token = 'abc123';
+
+      const movies = await Movie.find();
+
+      expect(movies).toHaveLength(2);
+      expect(movies[0]).toBeInstanceOf(Movie);
+      expect(movies[0].id).toBe('movie1');
+      expect(movies[0].slug).toBe('inception');
+      expect(movies[0].title).toBe('Inception');
+      expect(movies[1]).toBeInstanceOf(Movie);
+      expect(movies[1].id).toBe('movie2');
+      expect(movies[1].slug).toBe('the-matrix');
+      expect(movies[1].title).toBe('The Matrix');
+
+      await Promise.all([movies[0].play(), movies[1].play()]);
+
+      expect(movies[0].isPlaying).toBe(true);
+      expect(movies[1].isPlaying).toBe(true);
+    });
   });
 });

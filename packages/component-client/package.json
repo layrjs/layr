@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-client",
-  "version": "0.5.30",
+  "version": "0.5.34",
   "description": "Consumes Liaison components served by @liaison/component-server",
   "keywords": [
     "liaison",
@@ -32,6 +32,7 @@
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
     "lodash": "^4.17.19",
+    "microbatcher": "^0.1.17",
     "possibly-async": "^0.2.20",
     "tslib": "^1.13.0"
   },
