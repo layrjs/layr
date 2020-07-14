@@ -1,6 +1,6 @@
 {
   "name": "@liaison/abstract-router",
-  "version": "0.5.20",
+  "version": "0.5.21",
   "description": "A base class for implementing Liaison routers",
   "keywords": [
     "liaison",

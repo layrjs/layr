@@ -25,16 +25,12 @@ export type AbstractRouterOptions = {
 };
 
 export abstract class AbstractRouter extends Observable(Object) {
-  constructor(rootComponent?: typeof Component, options: AbstractRouterOptions = {}) {
+  constructor(options: AbstractRouterOptions = {}) {
     super();
 
     const {plugins, ...otherOptions} = options;
 
     assertNoUnknownOptions(otherOptions);
-
-    if (rootComponent !== undefined) {
-      this.registerRootComponent(rootComponent);
-    }
 
     if (plugins !== undefined) {
       this.applyPlugins(plugins);

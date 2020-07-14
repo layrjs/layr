@@ -22,21 +22,12 @@ describe('AbstractRouter', () => {
   }
 
   test('Creation', async () => {
-    class User extends Routable(Component) {}
-
     let router = new MockRouter();
 
     expect(isRouterInstance(router)).toBe(true);
 
-    expect(Array.from(router.getRoutables())).toEqual([]);
-
-    router = new MockRouter(User);
-
-    expect(Array.from(router.getRoutables())).toEqual([User]);
-    expect(User.getRouter()).toBe(router);
-
     // @ts-expect-error
-    expect(() => new MockRouter(User, {unknown: true})).toThrow(
+    expect(() => new MockRouter({unknown: true})).toThrow(
       "Did not expect the option 'unknown' to exist"
     );
   });
@@ -70,14 +61,14 @@ describe('AbstractRouter', () => {
     test('getRoutable() and hasRoutable()', async () => {
       class User extends Routable(Component) {}
 
-      let router = new MockRouter();
+      const router = new MockRouter();
 
       expect(router.hasRoutable('User')).toBe(false);
       expect(() => router.getRoutable('User')).toThrow(
         "The routable component 'User' is not registered in the router"
       );
 
-      router = new MockRouter(User);
+      router.registerRootComponent(User);
 
       expect(router.hasRoutable('User')).toBe(true);
       expect(router.getRoutable('User')).toBe(User);
@@ -157,7 +148,11 @@ describe('AbstractRouter', () => {
         @provide() static Actor = Actor;
       }
 
-      return new MockRouter(Root);
+      const router = new MockRouter();
+
+      router.registerRootComponent(Root);
+
+      return router;
     };
 
     test('findRouteForURL()', async () => {

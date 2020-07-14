@@ -1,4 +1,3 @@
-import type {Component} from '@liaison/component';
 import {AbstractRouter, AbstractRouterOptions, normalizeURL} from '@liaison/abstract-router';
 
 export type MemoryRouterOptions = AbstractRouterOptions & {
@@ -10,10 +9,10 @@ export class MemoryRouter extends AbstractRouter {
   _urls: URL[];
   _index: number;
 
-  constructor(rootComponent?: typeof Component, options: MemoryRouterOptions = {}) {
+  constructor(options: MemoryRouterOptions = {}) {
     const {initialURLs = [], initialIndex = initialURLs.length - 1, ...otherOptions} = options;
 
-    super(rootComponent, otherOptions);
+    super(otherOptions);
 
     this._urls = initialURLs.map(normalizeURL);
     this._index = initialIndex;

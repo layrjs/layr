@@ -7,9 +7,11 @@ import {SyncFunction, AsyncFunction, getTypeOf} from 'core-helpers';
 import {RouterPlugin} from './plugins';
 
 export function useBrowserRouter(rootComponent: typeof Component) {
-  const router = useMemo(() => new BrowserRouter(rootComponent, {plugins: [RouterPlugin()]}), [
-    rootComponent
-  ]);
+  const router = useMemo(() => {
+    const router = new BrowserRouter({plugins: [RouterPlugin()]});
+    router.registerRootComponent(rootComponent);
+    return router;
+  }, [rootComponent]);
 
   const [isReady, setIsReady] = useState(false);
 

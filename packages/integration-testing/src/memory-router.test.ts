@@ -34,7 +34,9 @@ describe('MemoryRouter', () => {
       @provide() static Movie = Movie;
     }
 
-    const router = new MemoryRouter(Root, {initialURLs: ['/', '/movies', '/movies/abc123']});
+    const router = new MemoryRouter({initialURLs: ['/', '/movies', '/movies/abc123']});
+
+    router.registerRootComponent(Root);
 
     router.addObserver(() => {
       currentRouteResult = router.callCurrentRoute();
@@ -52,12 +54,12 @@ describe('MemoryRouter', () => {
 
     expect(() => router.getCurrentURL()).toThrow('The router has no current URL');
 
-    router = new MemoryRouter(undefined, {initialURLs: ['/', '/movies']});
+    router = new MemoryRouter({initialURLs: ['/', '/movies']});
 
     expect(router.getHistoryLength()).toBe(2);
     expect(router.getCurrentURL()).toBe('/movies');
 
-    router = new MemoryRouter(undefined, {initialURLs: ['/', '/movies'], initialIndex: 0});
+    router = new MemoryRouter({initialURLs: ['/', '/movies'], initialIndex: 0});
 
     expect(router.getCurrentURL()).toBe('/');
   });

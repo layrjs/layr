@@ -1,4 +1,3 @@
-import type {Component} from '@liaison/component';
 import {
   AbstractRouter,
   AbstractRouterOptions,
@@ -24,8 +23,8 @@ export type BrowserRouterLinkProps = {
 export type BrowserRouterOptions = AbstractRouterOptions;
 
 export class BrowserRouter extends AbstractRouter {
-  constructor(rootComponent?: typeof Component, options: BrowserRouterOptions = {}) {
-    super(rootComponent, options);
+  constructor(options: BrowserRouterOptions = {}) {
+    super(options);
 
     window.addEventListener('popstate', () => {
       this.callObservers();
