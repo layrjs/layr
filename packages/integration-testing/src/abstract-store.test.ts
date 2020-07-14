@@ -30,20 +30,11 @@ describe('AbstractStore', () => {
   }
 
   test('Creation', async () => {
-    class User extends Storable(Component) {}
-
-    let store = new MockStore();
+    const store = new MockStore();
 
     expect(isStoreInstance(store)).toBe(true);
 
-    expect(Array.from(store.getStorables())).toEqual([]);
-
-    store = new MockStore(User);
-
-    expect(Array.from(store.getStorables())).toEqual([User]);
-    expect(User.getStore()).toBe(store);
-
-    expect(() => new MockStore(User, {unknown: true})).toThrow(
+    expect(() => new MockStore({unknown: true})).toThrow(
       "Did not expect the option 'unknown' to exist"
     );
   });
@@ -74,14 +65,14 @@ describe('AbstractStore', () => {
   test('getStorable() and hasStorable()', async () => {
     class User extends Storable(Component) {}
 
-    let store = new MockStore();
+    const store = new MockStore();
 
     expect(store.hasStorable('User')).toBe(false);
     expect(() => store.getStorable('User')).toThrow(
       "The storable component 'User' is not registered in the store"
     );
 
-    store = new MockStore(User);
+    store.registerRootComponent(User);
 
     expect(store.hasStorable('User')).toBe(true);
     expect(store.getStorable('User')).toBe(User);
@@ -90,7 +81,9 @@ describe('AbstractStore', () => {
   test('getStorableOfType()', async () => {
     class User extends Storable(Component) {}
 
-    let store = new MockStore(User);
+    const store = new MockStore();
+
+    store.registerRootComponent(User);
 
     expect(store.getStorableOfType('typeof User')).toBe(User);
     expect(store.getStorableOfType('User')).toBe(User.prototype);

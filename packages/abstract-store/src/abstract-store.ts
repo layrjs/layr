@@ -85,12 +85,8 @@ export type TraceEntry = {
 };
 
 export abstract class AbstractStore {
-  constructor(rootComponent?: typeof Component, options = {}) {
+  constructor(options = {}) {
     assertNoUnknownOptions(options);
-
-    if (rootComponent !== undefined) {
-      this.registerRootComponent(rootComponent);
-    }
   }
 
   // === Root components ===

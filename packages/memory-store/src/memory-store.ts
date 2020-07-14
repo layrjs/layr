@@ -12,7 +12,7 @@ import {
   Operator,
   SortDescriptor
 } from '@liaison/abstract-store';
-import {Component, NormalizedIdentifierDescriptor} from '@liaison/component';
+import {NormalizedIdentifierDescriptor} from '@liaison/component';
 import pull from 'lodash/pull';
 import get from 'lodash/get';
 import set from 'lodash/set';
@@ -24,13 +24,10 @@ type Collection = Document[];
 type CollectionMap = {[name: string]: Collection};
 
 export class MemoryStore extends AbstractStore {
-  constructor(
-    rootComponent?: typeof Component,
-    options: {initialCollections?: CollectionMap} = {}
-  ) {
+  constructor(options: {initialCollections?: CollectionMap} = {}) {
     const {initialCollections = {}, ...otherOptions} = options;
 
-    super(rootComponent, otherOptions);
+    super(otherOptions);
 
     this._collections = initialCollections;
   }

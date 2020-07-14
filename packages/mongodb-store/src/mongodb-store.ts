@@ -16,7 +16,7 @@ import {
   SortDescriptor,
   SortDirection
 } from '@liaison/abstract-store';
-import {Component, ensureComponentInstance} from '@liaison/component';
+import {ensureComponentInstance} from '@liaison/component';
 import {MongoClient, Db} from 'mongodb';
 import isEmpty from 'lodash/isEmpty';
 import mapKeys from 'lodash/mapKeys';
@@ -33,8 +33,8 @@ const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 export class MongoDBStore extends AbstractStore {
   private _connectionString: string;
 
-  constructor(connectionString: string, rootComponent?: typeof Component, options = {}) {
-    super(rootComponent, options);
+  constructor(connectionString: string, options = {}) {
+    super(options);
 
     this._connectionString = connectionString;
   }

@@ -124,7 +124,9 @@ describe('Storable', () => {
       );
       expect(Organization.hasStore()).toBe(false);
 
-      const store = new MemoryStore(User);
+      const store = new MemoryStore();
+
+      store.registerRootComponent(User);
 
       expect(User.hasStore()).toBe(true);
       expect(User.getStore()).toBe(store);
@@ -146,7 +148,9 @@ describe('Storable', () => {
             @provide() static Organization = Organization;
           }
 
-          new MemoryStore(User, {initialCollections: getInitialCollections()});
+          const store = new MemoryStore({initialCollections: getInitialCollections()});
+
+          store.registerRootComponent(User);
 
           return User;
         });
@@ -177,7 +181,9 @@ describe('Storable', () => {
 
           await seedMongoDB(connectionString);
 
-          store = new MongoDBStore(connectionString, User);
+          store = new MongoDBStore(connectionString);
+
+          store.registerRootComponent(User);
 
           await store.connect();
         });
@@ -249,7 +255,9 @@ describe('Storable', () => {
               @provide() static Organization = Organization;
             }
 
-            new MemoryStore(User, {initialCollections: getInitialCollections()});
+            const store = new MemoryStore({initialCollections: getInitialCollections()});
+
+            store.registerRootComponent(User);
 
             return new ComponentServer(User);
           })();
@@ -1910,7 +1918,9 @@ describe('Storable', () => {
         firstName!: string;
       }
 
-      new MemoryStore(User, {initialCollections: getInitialCollections()});
+      const store = new MemoryStore({initialCollections: getInitialCollections()});
+
+      store.registerRootComponent(User);
 
       return User;
     }
@@ -1988,7 +1998,9 @@ describe('Storable', () => {
         }
       }
 
-      new MemoryStore(User, {initialCollections: getInitialCollections()});
+      const store = new MemoryStore({initialCollections: getInitialCollections()});
+
+      store.registerRootComponent(User);
 
       return User;
     }
@@ -2217,7 +2229,9 @@ describe('Storable', () => {
         }
       }
 
-      new MemoryStore(User, {initialCollections: getInitialCollections()});
+      const store = new MemoryStore({initialCollections: getInitialCollections()});
+
+      store.registerRootComponent(User);
 
       return User;
     }
