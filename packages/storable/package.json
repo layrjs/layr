@@ -39,7 +39,7 @@
     "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@liaison/component-client": "^0.5.30",
+    "@liaison/component-client": "^0.5.34",
     "@liaison/component-server": "^0.5.28",
     "@liaison/memory-store": "^0.5.20",
     "@liaison/mongodb-store": "^0.5.21",
