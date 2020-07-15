@@ -21,19 +21,19 @@ describe('Identifiable component', () => {
     expect(user.username).toBe('hi');
 
     expect(() => new User({id: user.id, email: 'user1@email.com', username: 'user1'})).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'id')"
+      "A component with the same identifier already exists (attribute: 'User.prototype.id')"
     );
 
     expect(() => new User({email: 'hi@hello.com', username: 'user2'})).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'email')"
+      "A component with the same identifier already exists (attribute: 'User.prototype.email')"
     );
 
     expect(() => new User({email: 'user3@email.com', username: 'hi'})).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'username')"
+      "A component with the same identifier already exists (attribute: 'User.prototype.username')"
     );
 
     expect(() => new User()).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'User', attribute: 'email', expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'User.prototype.email', expected type: 'string', received type: 'undefined')"
     );
   });
 
@@ -51,7 +51,7 @@ describe('Identifiable component', () => {
     expect(user.id).toBe('abc123');
 
     expect(() => User.create({id: 'abc123'})).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'id')"
+      "A component with the same identifier already exists (attribute: 'User.prototype.id')"
     );
   });
 
@@ -75,7 +75,7 @@ describe('Identifiable component', () => {
     expect(identifierAttribute.getParent()).toBe(User.prototype);
 
     expect(() => User.prototype.getIdentifierAttribute('name')).toThrow(
-      "A property with the specified name was found, but it is not an identifier attribute (component: 'User', attribute: 'name')"
+      "A property with the specified name was found, but it is not an identifier attribute (attribute: 'User.prototype.name')"
     );
   });
 
@@ -91,7 +91,7 @@ describe('Identifiable component', () => {
     expect(User.prototype.hasIdentifierAttribute('username')).toBe(false);
 
     expect(() => User.prototype.hasIdentifierAttribute('name')).toThrow(
-      "A property with the specified name was found, but it is not an identifier attribute (component: 'User', attribute: 'name')"
+      "A property with the specified name was found, but it is not an identifier attribute (attribute: 'User.prototype.name')"
     );
   });
 
@@ -163,7 +163,7 @@ describe('Identifiable component', () => {
     expect(identifierAttribute.getParent()).toBe(User.prototype);
 
     expect(() => User.prototype.getSecondaryIdentifierAttribute('id')).toThrow(
-      "A property with the specified name was found, but it is not a secondary identifier attribute (component: 'User', attribute: 'id')"
+      "A property with the specified name was found, but it is not a secondary identifier attribute (attribute: 'User.prototype.id')"
     );
   });
 
@@ -178,10 +178,10 @@ describe('Identifiable component', () => {
     expect(User.prototype.hasSecondaryIdentifierAttribute('username')).toBe(false);
 
     expect(() => User.prototype.hasSecondaryIdentifierAttribute('id')).toThrow(
-      "A property with the specified name was found, but it is not a secondary identifier attribute (component: 'User', attribute: 'id')"
+      "A property with the specified name was found, but it is not a secondary identifier attribute (attribute: 'User.prototype.id')"
     );
     expect(() => User.prototype.hasSecondaryIdentifierAttribute('name')).toThrow(
-      "A property with the specified name was found, but it is not a secondary identifier attribute (component: 'User', attribute: 'name')"
+      "A property with the specified name was found, but it is not a secondary identifier attribute (attribute: 'User.prototype.name')"
     );
   });
 
@@ -364,20 +364,20 @@ describe('Identifiable component', () => {
       'An identifier descriptor should be a string, a number, or an object composed of one attribute, but received an object composed of 2 attributes (component: \'User\', received object: {"id":"abc123","email":"hi@hello.com"})'
     );
     expect(() => User.normalizeIdentifierDescriptor(123456)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'User', attribute: 'id', expected type: 'string', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'User.prototype.id', expected type: 'string', received type: 'number')"
     );
     expect(() => User.normalizeIdentifierDescriptor({email: 123456})).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'User', attribute: 'email', expected type: 'string', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'User.prototype.email', expected type: 'string', received type: 'number')"
     );
     expect(() => User.normalizeIdentifierDescriptor({reference: 'abc123'})).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'User', attribute: 'reference', expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'User.prototype.reference', expected type: 'number', received type: 'string')"
     );
     // @ts-expect-error
     expect(() => User.normalizeIdentifierDescriptor({email: undefined})).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'User', attribute: 'email', expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'User.prototype.email', expected type: 'string', received type: 'undefined')"
     );
     expect(() => User.normalizeIdentifierDescriptor({name: 'john'})).toThrow(
-      "A property with the specified name was found, but it is not an identifier attribute (component: 'User', attribute: 'name')"
+      "A property with the specified name was found, but it is not an identifier attribute (attribute: 'User.prototype.name')"
     );
     expect(() => User.normalizeIdentifierDescriptor({country: 'USA'})).toThrow(
       "The identifier attribute 'country' is missing (component: 'User')"

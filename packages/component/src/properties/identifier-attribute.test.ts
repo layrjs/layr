@@ -21,11 +21,11 @@ describe('IdentifierAttribute', () => {
     expect(isNumberValueTypeInstance(idAttribute.getValueType())).toBe(true);
 
     expect(() => new IdentifierAttribute('id', Movie.prototype, {valueType: 'boolean'})).toThrow(
-      "The type of an identifier attribute must be 'string' or 'number' (component: 'Movie', attribute: 'id', specified type: 'boolean')"
+      "The type of an identifier attribute must be 'string' or 'number' (attribute: 'Movie.prototype.id', specified type: 'boolean')"
     );
 
     expect(() => new IdentifierAttribute('id', Movie.prototype, {valueType: 'string?'})).toThrow(
-      "The value of an identifier attribute cannot be optional (component: 'Movie', attribute: 'id', specified type: 'string?')"
+      "The value of an identifier attribute cannot be optional (attribute: 'Movie.prototype.id', specified type: 'string?')"
     );
   });
 });

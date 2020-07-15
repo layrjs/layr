@@ -184,7 +184,9 @@ export class Property {
   }
 
   describe() {
-    return `${this.getParent().describeComponent()}, ${this.describeType()}: '${this.getName()}'`;
+    return `${this.describeType()}: '${this.getParent().describeComponentProperty(
+      this.getName()
+    )}'`;
   }
 }
 

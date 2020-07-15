@@ -417,7 +417,7 @@ describe('Storable', () => {
           );
 
           await expect(User.fork().get({fullName: 'User 1'})).rejects.toThrow(
-            "A property with the specified name was found, but it is not an identifier attribute (component: 'User', attribute: 'fullName')"
+            "A property with the specified name was found, but it is not an identifier attribute (attribute: 'User.prototype.fullName')"
           );
 
           await expect(User.fork().get({name: 'User 1'})).rejects.toThrow(

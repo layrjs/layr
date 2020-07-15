@@ -241,8 +241,7 @@ describe('ComponentServer', () => {
     ).toStrictEqual({
       result: {
         title: {
-          __error:
-            "Cannot get the value of an unset attribute (component: 'Movie', attribute: 'title')"
+          __error: "Cannot get the value of an unset attribute (attribute: 'Movie.prototype.title')"
         }
       },
       components: [{__component: 'typeof Movie', offset: 0}]
@@ -270,7 +269,7 @@ describe('ComponentServer', () => {
       result: {
         rating: {
           __error:
-            "Cannot get the value of an unset attribute (component: 'Movie', attribute: 'rating')"
+            "Cannot get the value of an unset attribute (attribute: 'Movie.prototype.rating')"
         }
       },
       components: [{__component: 'typeof Movie', offset: 0}]

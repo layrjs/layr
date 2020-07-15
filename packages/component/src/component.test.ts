@@ -96,7 +96,7 @@ describe('Component', () => {
       expect(() =>
         Movie.create({title: 'Inception'}, {isNew: false, attributeSelector: {country: true}})
       ).toThrow(
-        "Cannot assign a value of an unexpected type (component: 'Movie', attribute: 'country', expected type: 'string', received type: 'undefined')"
+        "Cannot assign a value of an unexpected type (attribute: 'Movie.prototype.country', expected type: 'string', received type: 'undefined')"
       );
 
       movie = await Movie.create(
@@ -503,7 +503,7 @@ describe('Component', () => {
       expect(attr.getParent()).toBe(Movie);
 
       expect(() => Movie.getAttribute('find')).toThrow(
-        "A property with the specified name was found, but it is not an attribute (component: 'Movie', method: 'find')"
+        "A property with the specified name was found, but it is not an attribute (method: 'Movie.find')"
       );
 
       class Film extends Movie {}
@@ -548,7 +548,7 @@ describe('Component', () => {
       expect(Movie.prototype.hasAttribute('limit')).toBe(false);
 
       expect(() => Movie.hasAttribute('find')).toThrow(
-        "A property with the specified name was found, but it is not an attribute (component: 'Movie', method: 'find')"
+        "A property with the specified name was found, but it is not an attribute (method: 'Movie.find')"
       );
     });
 
@@ -571,7 +571,7 @@ describe('Component', () => {
       expect(attr.getParent()).toBe(Movie);
 
       expect(() => Movie.setAttribute('find')).toThrow(
-        "Cannot change the type of a property (component: 'Movie', method: 'find')"
+        "Cannot change the type of a property (method: 'Movie.find')"
       );
 
       class Film extends Movie {}
@@ -590,7 +590,7 @@ describe('Component', () => {
       expect(attr.getParent()).toBe(Film);
 
       expect(() => Film.setAttribute('find')).toThrow(
-        "Cannot change the type of a property (component: 'Film', method: 'find')"
+        "Cannot change the type of a property (method: 'Film.find')"
       );
     });
 
@@ -1092,7 +1092,7 @@ describe('Component', () => {
       expect(meth.getParent()).toBe(Movie);
 
       expect(() => Movie.getMethod('limit')).toThrow(
-        "A property with the specified name was found, but it is not a method (component: 'Movie', attribute: 'limit')"
+        "A property with the specified name was found, but it is not a method (attribute: 'Movie.limit')"
       );
 
       class Film extends Movie {}
@@ -1137,7 +1137,7 @@ describe('Component', () => {
       expect(Movie.prototype.hasMethod('find')).toBe(false);
 
       expect(() => Movie.hasMethod('limit')).toThrow(
-        "A property with the specified name was found, but it is not a method (component: 'Movie', attribute: 'limit')"
+        "A property with the specified name was found, but it is not a method (attribute: 'Movie.limit')"
       );
     });
 
@@ -1160,7 +1160,7 @@ describe('Component', () => {
       expect(meth.getParent()).toBe(Movie);
 
       expect(() => Movie.setMethod('limit')).toThrow(
-        "Cannot change the type of a property (component: 'Movie', attribute: 'limit')"
+        "Cannot change the type of a property (attribute: 'Movie.limit')"
       );
 
       class Film extends Movie {}
@@ -1179,7 +1179,7 @@ describe('Component', () => {
       expect(meth.getParent()).toBe(Film);
 
       expect(() => Film.setMethod('limit')).toThrow(
-        "Cannot change the type of a property (component: 'Film', attribute: 'limit')"
+        "Cannot change the type of a property (attribute: 'Film.limit')"
       );
     });
 

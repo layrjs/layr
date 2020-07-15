@@ -177,7 +177,7 @@ describe('Decorators', () => {
 
       return MotionPicture;
     }).toThrow(
-      "An attribute cannot have both a getter or setter and an initial value (component: 'MotionPicture', attribute: 'limit')"
+      "An attribute cannot have both a getter or setter and an initial value (attribute: 'MotionPicture.limit')"
     );
 
     expect(() => {
@@ -187,7 +187,7 @@ describe('Decorators', () => {
 
       return MotionPicture;
     }).toThrow(
-      "An attribute cannot have both a getter or setter and a default value (component: 'MotionPicture', attribute: 'title')"
+      "An attribute cannot have both a getter or setter and a default value (attribute: 'MotionPicture.prototype.title')"
     );
   });
 

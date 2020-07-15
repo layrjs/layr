@@ -73,9 +73,9 @@ export class IdentityMap {
 
       if (hasOwnProperty(index, value)) {
         throw new Error(
-          `A component with the same identifier already exists (${index[
-            value
-          ].describeComponent()}, attribute: '${name}')`
+          `A component with the same identifier already exists (${index[value]
+            .getAttribute(name)
+            .describe()})`
         );
       }
 
@@ -108,7 +108,9 @@ export class IdentityMap {
     if (newValue !== undefined) {
       if (hasOwnProperty(index, newValue)) {
         throw new Error(
-          `A component with the same identifier already exists (${component.describeComponent()}, attribute: '${attributeName}')`
+          `A component with the same identifier already exists (${component
+            .getAttribute(attributeName)
+            .describe()})`
         );
       }
 

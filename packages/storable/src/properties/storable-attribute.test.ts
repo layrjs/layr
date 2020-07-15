@@ -56,15 +56,15 @@ describe('StorableAttribute', () => {
     expect(otherStorableAttribute.hasFinder()).toBe(false);
     expect(otherStorableAttribute.isComputed()).toBe(false);
     await expect(otherStorableAttribute.callLoader()).rejects.toThrow(
-      "Cannot call a loader that is missing (component: 'Movie', attribute: 'country')"
+      "Cannot call a loader that is missing (attribute: 'Movie.prototype.country')"
     );
     await expect(otherStorableAttribute.callFinder(1)).rejects.toThrow(
-      "Cannot call a finder that is missing (component: 'Movie', attribute: 'country')"
+      "Cannot call a finder that is missing (attribute: 'Movie.prototype.country')"
     );
 
     expect(otherStorableAttribute.hasHook('beforeLoad')).toBe(false);
     await expect(otherStorableAttribute.callHook('beforeLoad')).rejects.toThrow(
-      "Cannot call a hook that is missing (component: 'Movie', attribute: 'country', hook: 'beforeLoad')"
+      "Cannot call a hook that is missing (attribute: 'Movie.prototype.country', hook: 'beforeLoad')"
     );
   });
 

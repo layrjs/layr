@@ -51,10 +51,10 @@ describe('ValueType', () => {
     expect(() => type.checkValue(true, attribute)).not.toThrow();
     expect(() => type.checkValue(false, attribute)).not.toThrow();
     expect(() => type.checkValue(1, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'boolean', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'boolean', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'boolean', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'boolean', received type: 'undefined')"
     );
 
     type = new BooleanValueType(attribute, {isOptional: true});
@@ -64,7 +64,7 @@ describe('ValueType', () => {
     expect(() => type.checkValue(true, attribute)).not.toThrow();
     expect(() => type.checkValue(false, attribute)).not.toThrow();
     expect(() => type.checkValue(1, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'boolean?', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'boolean?', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
   });
@@ -78,10 +78,10 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(1, attribute)).not.toThrow();
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number', received type: 'undefined')"
     );
 
     type = new NumberValueType(attribute, {isOptional: true});
@@ -90,7 +90,7 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(1, attribute)).not.toThrow();
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number?', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
   });
@@ -104,10 +104,10 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue('a', attribute)).not.toThrow();
     expect(() => type.checkValue(1, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'string', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'string', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'string', received type: 'undefined')"
     );
 
     type = new StringValueType(attribute, {isOptional: true});
@@ -116,7 +116,7 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue('a', attribute)).not.toThrow();
     expect(() => type.checkValue(1, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'string?', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'string?', received type: 'number')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
   });
@@ -135,13 +135,13 @@ describe('ValueType', () => {
     expect(() => type.checkValue({}, attribute)).not.toThrow();
     expect(() => type.checkValue({title: 'Inception'}, attribute)).not.toThrow();
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'object', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'object', received type: 'string')"
     );
     expect(() => type.checkValue(movie, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'object', received type: 'Movie')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'object', received type: 'Movie')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'object', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'object', received type: 'undefined')"
     );
 
     type = new ObjectValueType(attribute, {isOptional: true});
@@ -151,10 +151,10 @@ describe('ValueType', () => {
     expect(() => type.checkValue({}, attribute)).not.toThrow();
     expect(() => type.checkValue({title: 'Inception'}, attribute)).not.toThrow();
     expect(() => type.checkValue(movie, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'object?', received type: 'Movie')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'object?', received type: 'Movie')"
     );
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'object?', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'object?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
   });
@@ -168,10 +168,10 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(new Date(), attribute)).not.toThrow();
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'Date', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'Date', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'Date', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'Date', received type: 'undefined')"
     );
 
     type = new DateValueType(attribute, {isOptional: true});
@@ -180,7 +180,7 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(new Date(), attribute)).not.toThrow();
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'Date?', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'Date?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
   });
@@ -194,10 +194,10 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(/abc/, attribute)).not.toThrow();
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'RegExp', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'RegExp', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'RegExp', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'RegExp', received type: 'undefined')"
     );
 
     type = new RegExpValueType(attribute, {isOptional: true});
@@ -206,7 +206,7 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(/abc/, attribute)).not.toThrow();
     expect(() => type.checkValue('a', attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'RegExp?', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'RegExp?', received type: 'string')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
   });
@@ -223,23 +223,23 @@ describe('ValueType', () => {
     expect(() => type.checkValue([1], attribute)).not.toThrow();
     // @ts-expect-error
     expect(() => type.checkValue(1, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number[]', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number[]', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number', received type: 'string')"
     );
     // @ts-expect-error
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number[]', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number[]', received type: 'undefined')"
     );
     expect(() => type.checkValue([undefined], attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number', received type: 'undefined')"
     );
     expect(() => type.checkValue([1, undefined], attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number', received type: 'undefined')"
     );
     expect(() => type.checkValue([undefined, 1], attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number', received type: 'undefined')"
     );
 
     itemType = new NumberValueType(attribute, {isOptional: true});
@@ -251,10 +251,10 @@ describe('ValueType', () => {
     expect(() => type.checkValue([1], attribute)).not.toThrow();
     // @ts-expect-error
     expect(() => type.checkValue(1, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number?[]?', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number?[]?', received type: 'number')"
     );
     expect(() => type.checkValue(['a'], attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'TestComponent', attribute: 'testAttribute', expected type: 'number?', received type: 'string')"
+      "Cannot assign a value of an unexpected type (attribute: 'TestComponent.prototype.testAttribute', expected type: 'number?', received type: 'string')"
     );
     // @ts-expect-error
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
@@ -288,16 +288,16 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(Movie, attribute)).not.toThrow();
     expect(() => type.checkValue(Actor, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'typeof Movie', received type: 'typeof Actor')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'typeof Movie', received type: 'typeof Actor')"
     );
     expect(() => type.checkValue(movie, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'typeof Movie', received type: 'Movie')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'typeof Movie', received type: 'Movie')"
     );
     expect(() => type.checkValue({}, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'typeof Movie', received type: 'object')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'typeof Movie', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'typeof Movie', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'typeof Movie', received type: 'undefined')"
     );
 
     type = new ComponentValueType('typeof Movie', attribute, {isOptional: true});
@@ -306,13 +306,13 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(Movie, attribute)).not.toThrow();
     expect(() => type.checkValue(Actor, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'typeof Movie?', received type: 'typeof Actor')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'typeof Movie?', received type: 'typeof Actor')"
     );
     expect(() => type.checkValue(movie, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'typeof Movie?', received type: 'Movie')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'typeof Movie?', received type: 'Movie')"
     );
     expect(() => type.checkValue({}, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'typeof Movie?', received type: 'object')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'typeof Movie?', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
 
@@ -326,16 +326,16 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(movie, attribute)).not.toThrow();
     expect(() => type.checkValue(actor, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'Movie', received type: 'Actor')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'Movie', received type: 'Actor')"
     );
     expect(() => type.checkValue(Movie, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'Movie', received type: 'typeof Movie')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'Movie', received type: 'typeof Movie')"
     );
     expect(() => type.checkValue({}, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'Movie', received type: 'object')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'Movie', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'Movie', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'Movie', received type: 'undefined')"
     );
 
     type = new ComponentValueType('Movie', attribute, {isOptional: true});
@@ -344,13 +344,13 @@ describe('ValueType', () => {
 
     expect(() => type.checkValue(movie, attribute)).not.toThrow();
     expect(() => type.checkValue(actor, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'Movie?', received type: 'Actor')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'Movie?', received type: 'Actor')"
     );
     expect(() => type.checkValue(Movie, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'Movie?', received type: 'typeof Movie')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'Movie?', received type: 'typeof Movie')"
     );
     expect(() => type.checkValue({}, attribute)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'App', attribute: 'testAttribute', expected type: 'Movie?', received type: 'object')"
+      "Cannot assign a value of an unexpected type (attribute: 'App.testAttribute', expected type: 'Movie?', received type: 'object')"
     );
     expect(() => type.checkValue(undefined, attribute)).not.toThrow();
   });

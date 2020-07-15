@@ -84,16 +84,16 @@ describe('Factory', () => {
     expect((type as ArrayValueType).getItemType().isOptional()).toBe(true);
 
     expect(() => createValueType('date', attribute)).toThrow(
-      "The specified type is invalid (component: 'TestComponent', attribute: 'testAttribute', type: 'date')"
+      "The specified type is invalid (attribute: 'TestComponent.prototype.testAttribute', type: 'date')"
     );
     expect(() => createValueType('movie', attribute)).toThrow(
-      "The specified type is invalid (component: 'TestComponent', attribute: 'testAttribute', type: 'movie')"
+      "The specified type is invalid (attribute: 'TestComponent.prototype.testAttribute', type: 'movie')"
     );
     expect(() => createValueType('date?', attribute)).toThrow(
-      "The specified type is invalid (component: 'TestComponent', attribute: 'testAttribute', type: 'date?')"
+      "The specified type is invalid (attribute: 'TestComponent.prototype.testAttribute', type: 'date?')"
     );
     expect(() => createValueType('[movie]', attribute)).toThrow(
-      "The specified type is invalid (component: 'TestComponent', attribute: 'testAttribute', type: '[movie]')"
+      "The specified type is invalid (attribute: 'TestComponent.prototype.testAttribute', type: '[movie]')"
     );
   });
 

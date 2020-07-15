@@ -25,7 +25,7 @@ describe('Attribute', () => {
 
     expect(attribute.isSet()).toBe(false);
     expect(() => attribute.getValue()).toThrow(
-      "Cannot get the value of an unset attribute (component: 'Movie', attribute: 'title')"
+      "Cannot get the value of an unset attribute (attribute: 'Movie.prototype.title')"
     );
     expect(attribute.getValue({throwIfUnset: false})).toBeUndefined();
 
@@ -39,10 +39,10 @@ describe('Attribute', () => {
     expect(attribute.isSet()).toBe(false);
 
     expect(() => attribute.setValue(123)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'Movie', attribute: 'title', expected type: 'string', received type: 'number')"
+      "Cannot assign a value of an unexpected type (attribute: 'Movie.prototype.title', expected type: 'string', received type: 'number')"
     );
     expect(() => attribute.setValue(undefined)).toThrow(
-      "Cannot assign a value of an unexpected type (component: 'Movie', attribute: 'title', expected type: 'string', received type: 'undefined')"
+      "Cannot assign a value of an unexpected type (attribute: 'Movie.prototype.title', expected type: 'string', received type: 'undefined')"
     );
   });
 
@@ -94,7 +94,7 @@ describe('Attribute', () => {
           }
         })
     ).toThrow(
-      "An attribute cannot have a setter without a getter (component: 'Movie', attribute: 'title')"
+      "An attribute cannot have a setter without a getter (attribute: 'Movie.prototype.title')"
     );
   });
 
@@ -120,7 +120,7 @@ describe('Attribute', () => {
           }
         })
     ).toThrow(
-      "An attribute cannot have both a getter or setter and an initial value (component: 'Movie', attribute: 'limit')"
+      "An attribute cannot have both a getter or setter and an initial value (attribute: 'Movie.limit')"
     );
   });
 
@@ -159,7 +159,7 @@ describe('Attribute', () => {
           }
         })
     ).toThrow(
-      "An attribute cannot have both a getter or setter and a default value (component: 'Movie', attribute: 'title')"
+      "An attribute cannot have both a getter or setter and a default value (attribute: 'Movie.prototype.title')"
     );
   });
 
@@ -179,7 +179,7 @@ describe('Attribute', () => {
     expect(attribute.isControlled()).toBe(true);
 
     expect(() => attribute.setValue('Inception 2')).toThrow(
-      "Cannot set the value of a controlled attribute (component: 'Movie', attribute: 'title')"
+      "Cannot set the value of a controlled attribute (attribute: 'Movie.prototype.title')"
     );
 
     expect(attribute.getValue()).toBe('Inception');
@@ -194,7 +194,7 @@ describe('Attribute', () => {
     const attribute = new Attribute('title', movie, {valueType: 'string?', validators: [notEmpty]});
 
     expect(() => attribute.runValidators()).toThrow(
-      "Cannot run the validators of an unset attribute (component: 'Movie', attribute: 'title')"
+      "Cannot run the validators of an unset attribute (attribute: 'Movie.prototype.title')"
     );
 
     attribute.setValue('Inception');

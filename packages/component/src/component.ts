@@ -2760,7 +2760,7 @@ export class Component extends Observable(Object) {
   }
 
   describeComponentProperty(name: string) {
-    return `${this.constructor.getComponentPath()}#${name}`;
+    return `${this.constructor.getComponentPath()}.prototype.${name}`;
   }
 }
 

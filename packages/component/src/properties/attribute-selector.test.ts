@@ -412,7 +412,7 @@ describe('AttributeSelector', () => {
       "Cannot pick attributes from a value when the specified attribute selector is 'false'"
     );
     expect(() => pickFromAttributeSelector(person, {organization: {country: true}})).toThrow(
-      "Cannot get the value of an unset attribute (component: 'Organization', attribute: 'country')"
+      "Cannot get the value of an unset attribute (attribute: 'Organization.prototype.country')"
     );
     expect(() => pickFromAttributeSelector(person, {organization: {city: true}})).toThrow(
       "The attribute 'city' is missing (component: 'Organization')"

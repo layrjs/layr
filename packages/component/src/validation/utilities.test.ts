@@ -23,7 +23,7 @@ describe('Utilities', () => {
     validator = validators.notEmpty;
 
     expect(() => normalizeValidator(validator, attribute)).toThrow(
-      "The specified validator is a validator builder that has not been called (component: 'TestComponent', attribute: 'testAttribute')"
+      "The specified validator is a validator builder that has not been called (attribute: 'TestComponent.prototype.testAttribute')"
     );
 
     validator = (value: number) => value > 0;

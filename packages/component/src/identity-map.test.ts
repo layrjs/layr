@@ -43,7 +43,7 @@ describe('Identity map', () => {
     expect(identityMap.getComponent({id: 'abc123'})).toBe(user);
 
     expect(() => identityMap.addComponent(user)).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'id')"
+      "A component with the same identifier already exists (attribute: 'User.prototype.id')"
     );
 
     user.detach();
@@ -89,7 +89,7 @@ describe('Identity map', () => {
         newValue: 'salut@bonjour.com'
       })
     ).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'email')"
+      "A component with the same identifier already exists (attribute: 'User.prototype.email')"
     );
 
     // --- Forking ---
@@ -112,7 +112,7 @@ describe('Identity map', () => {
     expect(forkedIdentityMap.getComponent({email: 'hi@hello.com'})).toBe(forkedUser);
 
     expect(() => forkedIdentityMap.getComponent({email: 'salut@bonjour.com'})).toThrow(
-      "A component with the same identifier already exists (component: 'User', attribute: 'id')"
+      "A component with the same identifier already exists (attribute: 'User.prototype.id')"
     );
   });
 
