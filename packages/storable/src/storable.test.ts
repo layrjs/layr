@@ -1406,11 +1406,8 @@ describe('Storable', () => {
             {__component: 'User', __new: false, id: 'user1'}
           ]);
 
-          // '$equals' should be an alias of '$equal'
-          users = await User.fork().find({accessLevel: {$equals: 0}}, {});
-
-          await expect(User.fork().find({accessLevel: {$equals: /0/}}, {})).rejects.toThrow(
-            "Expected a scalar value of the operator '$equal', but received a value of type 'RegExp' (query: '{\"accessLevel\":{\"$equals\":{}}}')"
+          await expect(User.fork().find({accessLevel: {$equal: /0/}}, {})).rejects.toThrow(
+            "Expected a scalar value of the operator '$equal', but received a value of type 'RegExp' (query: '{\"accessLevel\":{\"$equal\":{}}}')"
           );
 
           expect(serialize(users)).toStrictEqual([
@@ -1465,17 +1462,17 @@ describe('Storable', () => {
             {__component: 'User', __new: false, id: 'user12'}
           ]);
 
-          // - '$any' -
+          // - '$in' -
 
-          users = await User.fork().find({accessLevel: {$any: []}}, {});
-
-          expect(serialize(users)).toStrictEqual([]);
-
-          users = await User.fork().find({accessLevel: {$any: [2, 4, 5]}}, {});
+          users = await User.fork().find({accessLevel: {$in: []}}, {});
 
           expect(serialize(users)).toStrictEqual([]);
 
-          users = await User.fork().find({accessLevel: {$any: [0, 1]}}, {});
+          users = await User.fork().find({accessLevel: {$in: [2, 4, 5]}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
+          users = await User.fork().find({accessLevel: {$in: [0, 1]}}, {});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'User', __new: false, id: 'user1'},
@@ -1793,14 +1790,14 @@ describe('Storable', () => {
             }
           ]);
 
-          // --- With an array of referenced components specified in a query (using '$any') ---
+          // --- With an array of referenced components specified in a query (using '$in') ---
 
           ForkedUser = User.fork();
 
           const organization1 = ForkedUser.Organization.create({id: 'org1'}, {isNew: false});
           const organization2 = ForkedUser.Organization.create({id: 'org2'}, {isNew: false});
 
-          users = await ForkedUser.find({organization: {$any: [organization1, organization2]}}, {});
+          users = await ForkedUser.find({organization: {$in: [organization1, organization2]}}, {});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'User', __new: false, id: 'user1'},

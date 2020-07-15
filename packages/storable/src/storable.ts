@@ -976,7 +976,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
             continue;
           }
 
-          if (name === '$any' || name === '$in') {
+          if (name === '$in') {
             if (!Array.isArray(subquery)) {
               throw new Error(
                 `Expected an array as value of the operator '${name}', but received a value of type '${getTypeOf(
@@ -1067,13 +1067,10 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
           let normalizedQuery = normalizeQueryForAttributeAndType(query, attribute, itemType);
 
-          if (
-            isPlainObject(normalizedQuery) &&
-            ('$includes' in normalizedQuery || '$include' in normalizedQuery)
-          ) {
+          if (isPlainObject(normalizedQuery) && '$includes' in normalizedQuery) {
             // Make '$includes' an alias of '$some'
             normalizedQuery = mapKeys(normalizedQuery, (_value, key) =>
-              key === '$includes' || key === '$include' ? '$some' : key
+              key === '$includes' ? '$some' : key
             );
           }
 
@@ -1082,8 +1079,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
               isPlainObject(normalizedQuery) &&
               ('$some' in normalizedQuery ||
                 '$every' in normalizedQuery ||
-                '$length' in normalizedQuery ||
-                '$size' in normalizedQuery)
+                '$length' in normalizedQuery)
             )
           ) {
             // Make '$some' implicit

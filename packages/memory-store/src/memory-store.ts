@@ -233,7 +233,7 @@ function evaluateExpression(
     return attributeValue <= operand;
   }
 
-  if (operator === '$any') {
+  if (operator === '$in') {
     return operand.includes(attributeValue);
   }
 

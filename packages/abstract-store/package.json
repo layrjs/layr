@@ -1,6 +1,6 @@
 {
   "name": "@liaison/abstract-store",
-  "version": "0.5.22",
+  "version": "0.5.23",
   "description": "A base class for implementing Liaison stores",
   "keywords": [
     "liaison",

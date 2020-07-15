@@ -352,7 +352,7 @@ function handleOperator(
     return ['$lte', value];
   }
 
-  if (operator === '$any') {
+  if (operator === '$in') {
     return ['$in', value];
   }
 

@@ -11,7 +11,7 @@ const basicOperators = new Set<Operator>([
   '$greaterThanOrEqual',
   '$lessThan',
   '$lessThanOrEqual',
-  '$any'
+  '$in'
 ]);
 
 const stringOperators = new Set<Operator>(['$includes', '$startsWith', '$endsWith', '$matches']);
@@ -20,20 +20,7 @@ const arrayOperators = new Set<Operator>(['$some', '$every', '$length']);
 
 const logicalOperators = new Set<Operator>(['$not', '$and', '$or', '$nor']);
 
-const aliases = new Map<Operator, Operator>(
-  Object.entries({
-    $equals: '$equal',
-    $notEquals: '$notEqual',
-    $greaterThanOrEquals: '$greaterThanOrEqual',
-    $lessThanOrEquals: '$lessThanOrEqual',
-    $in: '$any',
-    $include: '$includes',
-    $startWith: '$startsWith',
-    $endWith: '$endsWith',
-    $match: '$matches',
-    $size: '$length'
-  })
-);
+const aliases = new Map<Operator, Operator>(Object.entries({}));
 
 export function looksLikeOperator(string: string): string is Operator {
   return string.startsWith('$');
@@ -78,7 +65,7 @@ function normalizeBasicOperatorForValue(
   value: unknown,
   {query}: {query: Query}
 ): Operator {
-  if (operator === '$any') {
+  if (operator === '$in') {
     if (!Array.isArray(value)) {
       throw new Error(
         `Expected an array as value of the operator '${operator}', but received a value of type '${getTypeOf(
