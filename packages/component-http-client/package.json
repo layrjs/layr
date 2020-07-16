@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-http-client",
-  "version": "0.5.30",
+  "version": "0.5.31",
   "description": "An HTTP client for your Liaison components",
   "keywords": [
     "liaison",
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component-client": "^0.5.35",
+    "@liaison/component-client": "^0.5.36",
     "core-helpers": "^0.1.26",
     "cross-fetch": "^3.0.5",
     "debug": "^4.1.1",

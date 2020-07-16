@@ -1,6 +1,6 @@
 {
   "name": "@liaison/aws-integration",
-  "version": "0.5.25",
+  "version": "0.5.26",
   "description": "AWS integration for Liaison",
   "keywords": [
     "liaison",
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component-server": "^0.5.29",
+    "@liaison/component-server": "^0.5.30",
     "@types/aws-lambda": "^8.10.59",
     "core-helpers": "^0.1.26",
     "lodash": "^4.17.19",
