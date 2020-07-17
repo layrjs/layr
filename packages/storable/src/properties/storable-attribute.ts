@@ -80,6 +80,12 @@ export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(
       super.setOptions(otherOptions);
     }
 
+    // === 'isControlled' mark
+
+    isControlled() {
+      return super.isControlled() || this.isComputed();
+    }
+
     // === Loader ===
 
     _loader: StorableAttributeLoader | undefined;
@@ -104,6 +110,10 @@ export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(
       }
 
       return await loader.call(this.getParent());
+    }
+
+    isComputed() {
+      return this.hasLoader() || this.hasFinder();
     }
 
     // === Hooks ===
@@ -147,10 +157,6 @@ export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(
     }
 
     // === Utilities ===
-
-    isComputed() {
-      return super.isComputed() || this.hasLoader();
-    }
 
     static isStorableAttribute(value: any): value is StorableAttribute {
       return isStorableAttributeInstance(value);

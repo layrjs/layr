@@ -50,10 +50,6 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
 
     // === Utilities ===
 
-    isComputed() {
-      return this.hasFinder();
-    }
-
     static isStorableProperty(value: any): value is StorableProperty {
       return isStorablePropertyInstance(value);
     }

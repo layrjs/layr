@@ -1,6 +1,6 @@
 {
   "name": "@liaison/storable",
-  "version": "0.5.82",
+  "version": "0.5.83",
   "description": "A mixin providing persistence capabilities to Liaison components",
   "keywords": [
     "liaison",

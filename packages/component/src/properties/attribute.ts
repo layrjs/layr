@@ -189,7 +189,9 @@ export class Attribute extends Observable(Property) {
     }
 
     if (this.isControlled() && source !== 1) {
-      throw new Error(`Cannot set the value of a controlled attribute (${this.describe()})`);
+      throw new Error(
+        `Cannot set the value of a controlled attribute when the source is not 1 (${this.describe()}, source: ${source})`
+      );
     }
 
     this.checkValue(value);

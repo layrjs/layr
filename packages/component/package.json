@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "0.5.57",
+  "version": "0.5.58",
   "description": "The base class of all your components",
   "keywords": [
     "liaison",

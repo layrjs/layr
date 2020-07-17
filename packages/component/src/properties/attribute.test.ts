@@ -179,7 +179,7 @@ describe('Attribute', () => {
     expect(attribute.isControlled()).toBe(true);
 
     expect(() => attribute.setValue('Inception 2')).toThrow(
-      "Cannot set the value of a controlled attribute (attribute: 'Movie.prototype.title')"
+      "Cannot set the value of a controlled attribute when the source is not 1 (attribute: 'Movie.prototype.title', source: 0)"
     );
 
     expect(attribute.getValue()).toBe('Inception');

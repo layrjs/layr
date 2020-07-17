@@ -501,7 +501,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         attributeSelector: resolvedAttributeSelector
       })) {
         const value = await attribute.callLoader();
-        attribute.setValue(value);
+        attribute.setValue(value, {source: 1});
       }
 
       await loadedStorable.__populate(attributeSelector, {
