@@ -1,4 +1,3 @@
 {
-  "include": ["./website"],
   "packages": ["./packages/*"]
 }
