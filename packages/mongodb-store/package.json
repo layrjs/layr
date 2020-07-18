@@ -1,6 +1,6 @@
 {
   "name": "@liaison/mongodb-store",
-  "version": "0.5.26",
+  "version": "0.5.27",
   "description": "A Liaison store for MongoDB",
   "keywords": [
     "liaison",
@@ -28,8 +28,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-store": "^0.5.23",
-    "@liaison/component": "^0.5.57",
+    "@liaison/abstract-store": "^0.5.24",
+    "@liaison/component": "^0.5.58",
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
     "lodash": "^4.17.19",

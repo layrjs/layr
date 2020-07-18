@@ -1,6 +1,6 @@
 {
   "name": "@liaison/with-roles",
-  "version": "0.5.27",
+  "version": "0.5.28",
   "description": "Simple role system for Liaison",
   "keywords": [
     "liaison",
@@ -31,7 +31,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^0.5.57",
+    "@liaison/component": "^0.5.58",
     "core-helpers": "^0.1.26",
     "possibly-async": "^0.2.20",
     "tslib": "^1.13.0"
