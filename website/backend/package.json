@@ -1,23 +1,39 @@
 {
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cross-fetch": "^3.0.4",
-    "jsonwebtoken": "^8.5.1",
-    "@liaison/liaison": "^0.1.3",
-    "@liaison/liaison-website-shared": "^0.1.0",
-    "@liaison/mongodb-store": "^0.1.0",
-    "lodash": "^4.17.15",
-    "ow": "^0.13.2",
-    "rss": "^1.2.2",
-    "slugify": "^1.3.5"
+  "name": "liaison-website-backend",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc --outDir ./build",
+    "deploy": "npm run build && simple-deployment",
+    "start": "nodemon --watch ./src --exec ts-node ./src/http-server.ts"
   },
-  "@managed": {
-    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
-    "properties": [
-      "dependencies",
-      "peerDependencies",
-      "optionalDependencies",
-      "devDependencies"
-    ]
+  "dependencies": {
+    "@liaison/aws-integration": "^0.5.7",
+    "@liaison/component": "^0.5.58",
+    "@liaison/component-server": "^0.5.5",
+    "@liaison/mongodb-store": "^0.5.4",
+    "@liaison/storable": "^0.5.83",
+    "@liaison/with-roles": "^0.5.27",
+    "bcryptjs": "^2.4.3",
+    "cross-fetch": "^3.0.5",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.19",
+    "rss": "^1.2.2",
+    "slugify": "^1.4.4",
+    "tslib": "^1.13.0"
+  },
+  "devDependencies": {
+    "@liaison/component-http-server": "^0.5.5",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/lodash": "^4.14.157",
+    "@types/node": "^14.0.13",
+    "@types/rss": "0.0.28",
+    "nodemon": "^2.0.4",
+    "simple-deployment": "^0.1.31",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
   }
 }

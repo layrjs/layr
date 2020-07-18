@@ -1,28 +1,51 @@
 {
-  "dependencies": {
-    "date-fns": "^2.7.0",
-    "dompurify": "^2.0.0",
-    "@emotion/core": "^10.0.22",
-    "emotion-normalize": "^10.1.0",
-    "emotion-theming": "^10.0.19",
-    "facepaint": "^1.2.1",
-    "highlight.js": "^9.16.2",
-    "@liaison/layer-http-client": "^0.1.0",
-    "@liaison/liaison": "^0.1.3",
-    "@liaison/liaison-website-shared": "^0.1.0",
-    "@liaison/react-integration": "^0.1.0",
-    "marked": "^0.7.0",
-    "material-design-palette": "^0.0.4",
-    "@react-hook/window-size": "^1.0.8",
-    "react-metatags-hook": "^1.1.1"
+  "name": "liaison-website-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "deploy": "npm run build && simple-deployment",
+    "start": "webpack-dev-server --mode=development"
   },
-  "@managed": {
-    "warning": "This file contains properties managed by a Resource. You should not modify them directly or use a command such as `npm install <name>`.",
-    "properties": [
-      "dependencies",
-      "peerDependencies",
-      "optionalDependencies",
-      "devDependencies"
-    ]
+  "dependencies": {
+    "@emotion/core": "^10.0.28",
+    "@liaison/component": "^0.5.58",
+    "@liaison/component-http-client": "^0.5.7",
+    "@liaison/react-integration": "^0.5.3",
+    "@liaison/routable": "^0.5.4",
+    "@liaison/storable": "^0.5.83",
+    "@react-hook/window-size": "^3.0.6",
+    "date-fns": "^2.15.0",
+    "dompurify": "^2.0.12",
+    "emotion-normalize": "^10.1.0",
+    "emotion-theming": "^10.0.27",
+    "facepaint": "^1.2.1",
+    "highlight.js": "^10.1.1",
+    "marked": "^1.1.1",
+    "material-design-palette": "^0.0.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-metatags-hook": "^1.3.0",
+    "tslib": "^1.13.0"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^2.0.2",
+    "@types/facepaint": "^1.2.1",
+    "@types/marked": "^1.1.0",
+    "@types/react": "^16.9.36",
+    "@types/react-dom": "^16.9.8",
+    "clean-webpack-plugin": "^3.0.0",
+    "file-loader": "^6.0.0",
+    "html-loader": "^1.1.0",
+    "html-webpack-plugin": "^4.2.0",
+    "simple-deployment": "^0.1.31",
+    "terser-webpack-plugin": "^3.0.5",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.5",
+    "webpack": "^5.0.0-beta.17",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
   }
 }

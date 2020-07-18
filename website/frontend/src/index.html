@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-54535670-6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-54535670-6');
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <%= htmlWebpackPlugin.tags.headTags %>
+  </head>
+  <body>
+    <noscript><p>Sorry, this site requires JavaScript to be enabled.</p></noscript>
+    <script>
+      // npx browserslist-useragent-regexp "Chrome 51, Firefox 54, Safari 11, iOS 11" --allowHigherVersions
+      const supportedBrowsers = /((CPU[ +]OS|iPhone[ +]OS|CPU[ +]iPhone|CPU IPhone OS)[ +]+(11[_\.]0|11[_\.]([1-9]|\d{2,})|11[_\.]2|11[_\.]([3-9]|\d{2,})|(1[2-9]|[2-9]\d|\d{3,})[_\.]\d+)(?:[_\.]\d+)?)|(CFNetwork\/8.* Darwin\/17\.0\.\d+)|(CFNetwork\/8.* Darwin\/17\.2\.\d+)|(CFNetwork\/8.* Darwin\/17\.3\.\d+)|(CFNetwork\/8.* Darwin\/17\.\d+)|(HeadlessChrome((?:\/51\.0\.\d+)?|(?:\/51\.([1-9]|\d{2,})\.\d+)?|(?:\/(5[2-9]|[6-9]\d|\d{3,})\.\d+\.\d+)?))|((Chromium|Chrome)\/(51\.0|51\.([1-9]|\d{2,})|(5[2-9]|[6-9]\d|\d{3,})\.\d+)(?:\.\d+)?)|(Version\/(11\.0|11\.([1-9]|\d{2,})|(1[2-9]|[2-9]\d|\d{3,})\.\d+)(?:\.\d+)?.*Safari\/)|(Firefox\/(54\.0|54\.([1-9]|\d{2,})|(5[5-9]|[6-9]\d|\d{3,})\.\d+)\.\d+)|(Firefox\/(54\.0|54\.([1-9]|\d{2,})|(5[5-9]|[6-9]\d|\d{3,})\.\d+)(pre|[ab]\d+[a-z]*)?)/;
+      window.IS_SUPPORTED_BROWSER =
+        supportedBrowsers.test(navigator.userAgent) || /Googlebot/.test(navigator.userAgent);
+      if (!window.IS_SUPPORTED_BROWSER) {
+        document.write(
+          '<p>Sorry, this site requires a recent version of Chrome, Firefox, or Safari.</p>'
+        );
+      }
+    </script>
+    <div id="root"></div>
+    <%= htmlWebpackPlugin.tags.bodyTags %>
+  </body>
+</html>

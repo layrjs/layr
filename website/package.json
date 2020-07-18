@@ -1,0 +1,19 @@
+{
+  "name": "liaison-website",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "scripts": {
+    "deploy": "(cd ./backend && npm run deploy) && (cd ./frontend && npm run deploy)",
+    "postinstall": "(cd ./frontend && npm install) && (cd ./backend && npm install)",
+    "start": "concurrently --names=frontend,backend,database --prefix-colors=green,blue,gray --kill-others \"(cd ./frontend && npm run start)\" \"(cd ./backend && npm run start)\" \"(cd ./database && node ./start.js)\"",
+    "update": "(cd ./backend && npm update) && (cd ./frontend && npm update)"
+  },
+  "prettier": "@mvila/prettierrc",
+  "devDependencies": {
+    "@mvila/prettierrc": "^1.0.0",
+    "concurrently": "^5.2.0",
+    "prettier": "^2.0.5"
+  }
+}
