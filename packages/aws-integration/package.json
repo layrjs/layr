@@ -1,6 +1,6 @@
 {
   "name": "@liaison/aws-integration",
-  "version": "0.5.27",
+  "version": "0.5.28",
   "description": "AWS integration for Liaison",
   "keywords": [
     "liaison",

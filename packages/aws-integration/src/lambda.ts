@@ -1,14 +1,34 @@
 import type {ComponentServer} from '@liaison/component-server';
 import {assertIsComponentServerInstance} from '@liaison/component-server';
-import {APIGatewayProxyHandlerV2} from 'aws-lambda';
+import type {APIGatewayProxyEventV2, Context, APIGatewayProxyStructuredResultV2} from 'aws-lambda';
 
-export function createAWSLambdaHandlerForComponentServer(componentServer: ComponentServer) {
+type CustomRoute = {
+  path: string;
+  handler: (
+    event: APIGatewayProxyEventV2,
+    context: Context
+  ) => Promise<APIGatewayProxyStructuredResultV2>;
+};
+
+export function createAWSLambdaHandlerForComponentServer(
+  componentServer: ComponentServer,
+  {customRoutes = []}: {customRoutes?: CustomRoute[]} = {}
+) {
   assertIsComponentServerInstance(componentServer);
 
-  const handler: APIGatewayProxyHandlerV2<object> = async function handler(event, context) {
+  const handler = async (
+    event: APIGatewayProxyEventV2,
+    context: Context
+  ): Promise<APIGatewayProxyStructuredResultV2> => {
     context.callbackWaitsForEmptyEventLoop = false;
 
     const path = event.rawPath;
+
+    for (const customRoute of customRoutes) {
+      if (customRoute.path === path) {
+        return await customRoute.handler(event, context);
+      }
+    }
 
     if (path !== '/') {
       return {statusCode: 404, body: 'Not Found'};
@@ -17,7 +37,7 @@ export function createAWSLambdaHandlerForComponentServer(componentServer: Compon
     const method = event.requestContext.http.method.toUpperCase();
 
     if (method === 'GET') {
-      return await componentServer.receive({query: {'introspect=>': {'()': []}}});
+      return await handleRequest({query: {'introspect=>': {'()': []}}});
     }
 
     if (method === 'POST') {
@@ -27,7 +47,7 @@ export function createAWSLambdaHandlerForComponentServer(componentServer: Compon
         return {statusCode: 400, body: 'Bad Request'};
       }
 
-      let request;
+      let request: any;
 
       try {
         request = JSON.parse(body);
@@ -35,7 +55,7 @@ export function createAWSLambdaHandlerForComponentServer(componentServer: Compon
         return {statusCode: 400, body: 'Bad Request'};
       }
 
-      return await componentServer.receive(request);
+      return await handleRequest(request);
     }
 
     if (method === 'OPTIONS') {
@@ -43,6 +63,16 @@ export function createAWSLambdaHandlerForComponentServer(componentServer: Compon
     }
 
     return {statusCode: 405, body: 'Method Not Allowed'};
+  };
+
+  const handleRequest = async (request: any): Promise<APIGatewayProxyStructuredResultV2> => {
+    const response = await componentServer.receive(request);
+
+    return {
+      statusCode: 200,
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify(response)
+    };
   };
 
   return handler;
