@@ -10,12 +10,6 @@ import {UI} from './ui';
 // @ts-ignore
 import liaisonLogo from '../assets/liaison-logo-dark-mode-20191111.immutable.svg';
 
-const backendURL = process.env.BACKEND_URL;
-
-if (!backendURL) {
-  throw new Error(`'BACKEND_URL' environment variable is missing`);
-}
-
 export class Common extends Component {
   @consume() static Home: typeof Home;
   @consume() static Blog: typeof Blog;
@@ -33,7 +27,6 @@ export class Common extends Component {
     const {UI} = this;
 
     this.useTitle(title);
-    this.useRSSLink();
 
     return (
       <div>
@@ -270,21 +263,5 @@ export class Common extends Component {
     }
 
     useMetaTags({title}, [title]);
-  }
-
-  static useRSSLink() {
-    useMetaTags(
-      {
-        links: [
-          {
-            rel: 'alternate',
-            type: 'application/rss+xml',
-            title: 'Liaison Blog Feed',
-            href: `${backendURL}/blog/feed`
-          }
-        ]
-      },
-      []
-    );
   }
 }

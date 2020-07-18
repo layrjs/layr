@@ -58,7 +58,7 @@ export class Article extends WithAuthor(Entity) {
     );
   }
 
-  // time curl -v -X POST -H "Content-Type: application/json" -d '{"query": {"Article=>": {"getRSSFeed=>result": {"()": []}}}, "source": "frontend"}' http://localhost:18888
+  // time curl -v -X POST -H "Content-Type: application/json" -d '{"query": {"<=": {"__component": "typeof Article"}, "getRSSFeed=>": {"()": []}}}' http://localhost:18888
   @expose({call: 'anyone'}) @method() static async getRSSFeed() {
     const articles = await this.find(
       {},

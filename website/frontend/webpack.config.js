@@ -7,6 +7,12 @@ const path = require('path');
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
 
+  const backendURL = process.env.BACKEND_URL;
+
+  if (!backendURL) {
+    throw new Error(`'BACKEND_URL' environment variable is missing`);
+  }
+
   let port;
 
   if (!isProduction) {
@@ -56,8 +62,9 @@ module.exports = (env, argv) => {
     plugins: [
       new CleanWebpackPlugin(),
       new HtmlWebPackPlugin({
-        template: './src/index.html',
+        template: './src/index.ejs',
         favicon: './src/assets/liaison-favicon-20191111.immutable.png',
+        templateParameters: {rssFeedURL: `${backendURL}/blog/feed`},
         inject: false
       }),
       new webpack.EnvironmentPlugin(['BACKEND_URL'])

@@ -20,7 +20,6 @@ export class Home extends Routable(Component) {
     const theme = UI.useTheme();
 
     Common.useTitle('A love story between the frontend and the backend');
-    Common.useRSSLink();
 
     UI.useAnchor();
 
