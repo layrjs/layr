@@ -250,17 +250,22 @@ export class ComponentClient {
     const attributeFilter = function (this: typeof Component | Component, attribute: Attribute) {
       // Exclude properties that cannot be set in the remote components
 
-      const remoteComponent = this.getRemoteComponent()!;
+      const remoteComponent = this.getRemoteComponent();
+
+      if (remoteComponent === undefined) {
+        return false;
+      }
+
       const attributeName = attribute.getName();
       const remoteAttribute = remoteComponent.hasAttribute(attributeName)
         ? remoteComponent.getAttribute(attributeName)
         : undefined;
 
-      if (remoteAttribute !== undefined) {
-        return remoteAttribute.operationIsAllowed('set') as boolean;
+      if (remoteAttribute === undefined) {
+        return false;
       }
 
-      return false;
+      return remoteAttribute.operationIsAllowed('set') as boolean;
     };
 
     const serializedQuery: PlainObject = serialize(query, {

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-client",
-  "version": "0.5.39",
+  "version": "0.5.40",
   "description": "Consumes Liaison components served by @liaison/component-server",
   "keywords": [
     "liaison",
