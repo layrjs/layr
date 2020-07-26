@@ -9,8 +9,8 @@ declare global {
   interface Function {
     matchURL: (url: string | URL) => PlainObject | undefined;
     generateURL: (params?: PlainObject) => string;
-    navigate: (params?: PlainObject) => void;
-    redirect: (params?: PlainObject) => void;
+    navigate: (params?: PlainObject) => Promise<void>;
+    redirect: (params?: PlainObject) => Promise<void>;
     reload: (params?: PlainObject) => void;
     isActive: (params?: PlainObject) => boolean;
   }
@@ -201,9 +201,10 @@ export abstract class AbstractRouter extends Observable(Object) {
   navigate(url: string | URL) {
     const normalizedURL = normalizeURL(url);
 
-    this._navigate(normalizedURL);
-
-    this.callObservers();
+    return defer(() => {
+      this._navigate(normalizedURL);
+      this.callObservers();
+    });
   }
 
   abstract _navigate(url: URL): void;
@@ -211,9 +212,10 @@ export abstract class AbstractRouter extends Observable(Object) {
   redirect(url: string | URL) {
     const normalizedURL = normalizeURL(url);
 
-    this._redirect(normalizedURL);
-
-    this.callObservers();
+    return defer(() => {
+      this._redirect(normalizedURL);
+      this.callObservers();
+    });
   }
 
   abstract _redirect(url: URL): void;
@@ -227,19 +229,20 @@ export abstract class AbstractRouter extends Observable(Object) {
   abstract _reload(url: URL | undefined): void;
 
   go(delta: number) {
-    this._go(delta);
-
-    this.callObservers();
+    return defer(() => {
+      this._go(delta);
+      this.callObservers();
+    });
   }
 
   abstract _go(delta: number): void;
 
   goBack() {
-    this.go(-1);
+    return this.go(-1);
   }
 
   goForward() {
-    this.go(1);
+    return this.go(1);
   }
 
   getHistoryLength() {
@@ -249,6 +252,12 @@ export abstract class AbstractRouter extends Observable(Object) {
   abstract _getHistoryLength(): number;
 
   Link!: (props: any) => any;
+
+  _onChange() {
+    setTimeout(() => {
+      this.callObservers();
+    }, 0);
+  }
 
   // === Customization ===
 
@@ -275,4 +284,19 @@ export abstract class AbstractRouter extends Observable(Object) {
   static isRouter(value: any): value is AbstractRouter {
     return isRouterInstance(value);
   }
+}
+
+function defer(func: Function) {
+  return new Promise<void>((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        func();
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
+      resolve();
+    }, 0);
+  });
 }

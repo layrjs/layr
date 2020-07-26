@@ -88,14 +88,14 @@ describe('MemoryRouter', () => {
     expect(currentRouteResult).toBe('Movie #abc123');
     expect(router.getHistoryLength()).toBe(3);
 
-    router.navigate('/movies/abc123/about');
+    await router.navigate('/movies/abc123/about');
 
     expect(currentRouteResult).toBe('About movie #abc123');
     expect(router.getHistoryLength()).toBe(4);
 
-    router.go(-3); // We should be at the first entry of the history
+    await router.go(-3); // We should be at the first entry of the history
 
-    router.navigate('/movies/abc123');
+    await router.navigate('/movies/abc123');
 
     expect(currentRouteResult).toBe('Movie #abc123');
     expect(router.getHistoryLength()).toBe(2);
@@ -107,14 +107,14 @@ describe('MemoryRouter', () => {
     expect(currentRouteResult).toBe('Movie #abc123');
     expect(router.getHistoryLength()).toBe(3);
 
-    router.redirect('/movies/def456');
+    await router.redirect('/movies/def456');
 
     expect(currentRouteResult).toBe('Movie #def456');
     expect(router.getHistoryLength()).toBe(3);
 
     router.go(-2); // We should be at the first entry of the history
 
-    router.redirect('/movies/abc123');
+    await router.redirect('/movies/abc123');
 
     expect(currentRouteResult).toBe('Movie #abc123');
     expect(router.getHistoryLength()).toBe(1);
@@ -125,37 +125,37 @@ describe('MemoryRouter', () => {
 
     expect(currentRouteResult).toBe('Movie #abc123');
 
-    router.go(-1);
+    await router.go(-1);
 
     expect(currentRouteResult).toBe('Movies');
 
-    router.go(-1);
+    await router.go(-1);
 
     expect(currentRouteResult).toBe('Home');
 
-    router.go(2);
+    await router.go(2);
 
     expect(currentRouteResult).toBe('Movie #abc123');
 
-    expect(() => router.go(1)).toThrow(
+    await expect(router.go(1)).rejects.toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
     expect(currentRouteResult).toBe('Movie #abc123');
 
-    expect(() => router.go(2)).toThrow(
+    await expect(router.go(2)).rejects.toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
     expect(currentRouteResult).toBe('Movie #abc123');
 
-    expect(() => router.go(-3)).toThrow(
+    await expect(router.go(-3)).rejects.toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
     expect(currentRouteResult).toBe('Movie #abc123');
 
-    expect(() => router.go(-4)).toThrow(
+    await expect(router.go(-4)).rejects.toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
   });
@@ -165,15 +165,15 @@ describe('MemoryRouter', () => {
 
     expect(currentRouteResult).toBe('Movie #abc123');
 
-    router.goBack();
+    await router.goBack();
 
     expect(currentRouteResult).toBe('Movies');
 
-    router.goBack();
+    await router.goBack();
 
     expect(currentRouteResult).toBe('Home');
 
-    expect(() => router.goBack()).toThrow(
+    await expect(router.goBack()).rejects.toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
@@ -183,19 +183,19 @@ describe('MemoryRouter', () => {
   test('goForward()', async () => {
     const router = getRouter();
 
-    router.go(-2);
+    await router.go(-2);
 
     expect(currentRouteResult).toBe('Home');
 
-    router.goForward();
+    await router.goForward();
 
     expect(currentRouteResult).toBe('Movies');
 
-    router.goForward();
+    await router.goForward();
 
     expect(currentRouteResult).toBe('Movie #abc123');
 
-    expect(() => router.goForward()).toThrow(
+    await expect(router.goForward()).rejects.toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 

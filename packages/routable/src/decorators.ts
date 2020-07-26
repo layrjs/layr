@@ -40,11 +40,11 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       router: AbstractRouter
     ) {
       defineMethod(method, 'navigate', function (this: Function, params?: any) {
-        router.navigate(this.generateURL(params));
+        return router.navigate(this.generateURL(params));
       });
 
       defineMethod(method, 'redirect', function (this: Function, params?: any) {
-        router.redirect(this.generateURL(params));
+        return router.redirect(this.generateURL(params));
       });
 
       defineMethod(method, 'reload', function (this: Function, params?: any) {
