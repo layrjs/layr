@@ -1,0 +1,27 @@
+{
+  "books": [
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "chapters": [
+        {
+          "title": "Hello, World!",
+          "slug": "hello-world",
+          "file": "getting-started/hello-world.md"
+        }
+      ]
+    },
+    {
+      "title": "Reference",
+      "slug": "reference",
+      "chapters": [
+        {
+          "title": "Component",
+          "slug": "component",
+          "file": "reference/component.md",
+          "source": "../packages/component/src/component.ts"
+        }
+      ]
+    }
+  ]
+}

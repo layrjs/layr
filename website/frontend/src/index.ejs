@@ -20,6 +20,21 @@
       title="Liaison Blog Feed"
       href="<%= rssFeedURL %>"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* This rule is defined here to avoid an Emotion warning */
+      h1:first-child,
+      h2:first-child,
+      h3:first-child,
+      h4:first-child,
+      h5:first-child,
+      h6:first-child {
+        margin-top: 0 !important;
+      }
+    </style>
     <%= htmlWebpackPlugin.tags.headTags %>
   </head>
   <body>

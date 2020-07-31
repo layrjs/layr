@@ -4,9 +4,9 @@ import {view, useAsyncCall} from '@liaison/react-integration';
 import {useMemo} from 'react';
 import {jsx} from '@emotion/core';
 
-import {Article} from './article';
-import {Common} from './common';
-import {UI} from './ui';
+import type {Article} from './article';
+import type {Common} from './common';
+import type {UI} from './ui';
 
 export class Blog extends Routable(Component) {
   ['constructor']!: typeof Blog;
@@ -52,7 +52,6 @@ export class Blog extends Routable(Component) {
           {
             title: true,
             description: true,
-            body: true,
             slug: true,
             author: {fullName: true, url: true},
             createdAt: true

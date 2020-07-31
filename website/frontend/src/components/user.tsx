@@ -5,9 +5,9 @@ import {useState} from 'react';
 import {jsx} from '@emotion/core';
 
 import type {User as BackendUser} from '../../../backend/src/components/user';
-import {Session} from './session';
-import {Home} from './home';
-import {Common} from './common';
+import type {Session} from './session';
+import type {Home} from './home';
+import type {Common} from './common';
 
 export const User = (Base: typeof BackendUser) => {
   class User extends Routable(Base) {

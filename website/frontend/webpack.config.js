@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 module.exports = (env, argv) => {
@@ -41,7 +42,14 @@ module.exports = (env, argv) => {
         {
           test: /\.tsx?$/,
           include: path.join(__dirname, 'src'),
-          loader: 'ts-loader'
+          use: [
+            {
+              loader: 'ts-loader',
+              options: {
+                transpileOnly: !isProduction
+              }
+            }
+          ]
         },
         {
           test: /\.(png|jpe?g|gif|svg)$/i,
@@ -67,7 +75,10 @@ module.exports = (env, argv) => {
         templateParameters: {rssFeedURL: `${backendURL}/blog/feed`},
         inject: false
       }),
-      new webpack.EnvironmentPlugin(['BACKEND_URL'])
+      new webpack.EnvironmentPlugin(['BACKEND_URL']),
+      new CopyPlugin({
+        patterns: [{from: '../../docs/build', to: 'docs'}]
+      })
     ],
     ...(isProduction
       ? {

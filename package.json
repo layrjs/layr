@@ -7,10 +7,14 @@
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "repository": "https://github.com/liaisonjs/liaison",
+  "scripts": {
+    "build:doc": "simple-doc ./docs ./docs/build"
+  },
   "prettier": "@mvila/prettierrc",
   "devDependencies": {
-    "lerna": "^3.20.2",
     "@mvila/prettierrc": "^1.0.0",
+    "@mvila/simple-doc": "^0.1.66",
+    "lerna": "^3.20.2",
     "prettier": "^2.0.5"
   }
 }

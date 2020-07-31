@@ -6,10 +6,10 @@ import {jsx} from '@emotion/core';
 import {format} from 'date-fns';
 
 import type {Article as BackendArticle} from '../../../backend/src/components/article';
-import {Home} from './home';
-import {Blog} from './blog';
-import {Common} from './common';
-import {UI} from './ui';
+import type {Home} from './home';
+import type {Blog} from './blog';
+import type {Common} from './common';
+import type {UI} from './ui';
 
 export const Article = (Base: typeof BackendArticle) => {
   class Article extends Routable(Base) {

@@ -3,9 +3,9 @@ import {Routable, route} from '@liaison/routable';
 import {view} from '@liaison/react-integration';
 import {jsx} from '@emotion/core';
 
-import {Newsletter} from './newsletter';
-import {Common} from './common';
-import {UI} from './ui';
+import type {Newsletter} from './newsletter';
+import type {Common} from './common';
+import type {UI} from './ui';
 // @ts-ignore
 import heroImage from '../assets/f-plus-b-equals-love-20191111.immutable.svg';
 
@@ -76,7 +76,7 @@ export class Home extends Routable(Component) {
         <div css={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
           <div
             css={UI.responsive({
-              fontSize: ['3rem', '2rem'],
+              fontSize: ['3rem', , '2rem'],
               lineHeight: theme.small.lineHeight,
               textAlign: 'center'
             })}
@@ -86,7 +86,7 @@ export class Home extends Routable(Component) {
           <div
             css={UI.responsive({
               marginTop: '.75rem',
-              fontSize: ['1.5rem', '1.25rem'],
+              fontSize: ['1.5rem', , '1.25rem'],
               color: theme.muted.textColor,
               textAlign: 'center'
             })}

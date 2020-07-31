@@ -4,14 +4,16 @@ import {jsx, css} from '@emotion/core';
 import {Fragment, useMemo} from 'react';
 import useMetaTags from 'react-metatags-hook';
 
-import {Home} from './home';
-import {Blog} from './blog';
-import {UI} from './ui';
+import type {Home} from './home';
+import type {Docs} from './docs';
+import type {Blog} from './blog';
+import type {UI} from './ui';
 // @ts-ignore
 import liaisonLogo from '../assets/liaison-logo-dark-mode-20191111.immutable.svg';
 
 export class Common extends Component {
   @consume() static Home: typeof Home;
+  @consume() static Docs: typeof Docs;
   @consume() static Blog: typeof Blog;
   @consume() static UI: typeof UI;
 
@@ -49,12 +51,16 @@ export class Common extends Component {
   }
 
   @view() static Header() {
-    const {Home, Blog, UI} = this;
+    const {Home, Docs, Blog, UI} = this;
 
     const theme = UI.useTheme();
 
     const menuStyle = css({...UI.styles.unstyledList, ...UI.styles.noMargins});
-    const menuItemStyle = css({...UI.styles.inlineBlock, marginLeft: '1.3rem'});
+    const menuItemStyle = css({
+      ...UI.styles.inlineBlock,
+      ...UI.styles.noMargins,
+      marginLeft: '1.3rem'
+    });
 
     return (
       <header
@@ -75,20 +81,22 @@ export class Common extends Component {
 
         <div css={{flexGrow: 1}} />
 
-        <ul css={menuStyle}>
-          <li css={menuItemStyle}>
-            <a href="https://github.com/liaisonjs/liaison">Docs</a>
-          </li>
-          <li css={menuItemStyle}>
-            <Blog.Main.Link>Blog</Blog.Main.Link>
-          </li>
-        </ul>
+        <nav>
+          <ul css={menuStyle}>
+            <li css={menuItemStyle}>
+              <Docs.Main.Link>Docs</Docs.Main.Link>
+            </li>
+            <li css={menuItemStyle}>
+              <Blog.Main.Link>Blog</Blog.Main.Link>
+            </li>
+          </ul>
+        </nav>
       </header>
     );
   }
 
   @view() static Footer() {
-    const {Blog, UI} = this;
+    const {Docs, Blog, UI} = this;
 
     const theme = UI.useTheme();
 
@@ -101,7 +109,7 @@ export class Common extends Component {
         <div css={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           <ul css={menuStyle}>
             <li css={menuItemStyle}>
-              <a href="https://github.com/liaisonjs/liaison">Docs</a>
+              <Docs.Main.Link>Docs</Docs.Main.Link>
             </li>
             <li css={menuItemStyle}>
               <Blog.Main.Link>Blog</Blog.Main.Link>
@@ -240,7 +248,7 @@ export class Common extends Component {
   }
 
   @view() static Delayed({
-    duration = 400,
+    duration = 750,
     children
   }: {
     duration?: number;

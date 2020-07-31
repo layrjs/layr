@@ -12,12 +12,12 @@ import marked from 'marked';
 // @ts-ignore
 import highlightJS from 'highlight.js/lib/core';
 // @ts-ignore
-import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
 // @ts-ignore
 import json from 'highlight.js/lib/languages/json';
 import DOMPurify from 'dompurify';
 
-highlightJS.registerLanguage('javascript', javascript);
+highlightJS.registerLanguage('typescript', typescript);
 highlightJS.registerLanguage('json', json);
 
 export class UI extends Component {
@@ -146,7 +146,7 @@ export class UI extends Component {
           boxSizing: 'inherit'
         },
         'body': {
-          fontFamily: 'system-ui, sans-serif',
+          fontFamily: "'Open Sans', sans-serif",
           lineHeight: theme.lineHeight,
           color: theme.textColor,
           backgroundColor: theme.backgroundColor
@@ -156,18 +156,17 @@ export class UI extends Component {
           marginBottom: '1rem'
         },
         'h1, h2, h3, h4, h5, h6': {
-          marginTop: '1.25rem',
-          marginBottom: '1.25rem',
-          fontWeight: '500',
+          marginBottom: '1rem',
+          fontWeight: '600',
           lineHeight: theme.small.lineHeight,
           color: theme.highlighted.textColor
         },
-        'h1': {fontSize: '2.488rem'},
-        'h2': {fontSize: '2.074rem'},
-        'h3': {fontSize: '1.728rem'},
-        'h4': {fontSize: '1.44rem'},
-        'h5': {fontSize: '1.2rem'},
-        'h6': {fontSize: '1rem'},
+        'h1': {marginTop: '3.052rem', fontSize: '3.052rem'},
+        'h2': {marginTop: '2.441rem', fontSize: '2.441rem'},
+        'h3': {marginTop: '1.953rem', fontSize: '1.953rem'},
+        'h4': {marginTop: '1.563rem', fontSize: '1.563rem'},
+        'h5': {marginTop: '1.25rem', fontSize: '1.25rem'},
+        'h6': {marginTop: '1rem', fontSize: '1rem'},
         'hr': {
           marginTop: '1.5rem',
           marginBottom: '1.5rem',
@@ -180,6 +179,9 @@ export class UI extends Component {
         },
         'ol ol, ul ul, ol ul, ul ol': {
           marginBottom: 0
+        },
+        'li': {
+          marginTop: '.5rem'
         },
         'a': {
           color: theme.link.primaryColor,
@@ -213,7 +215,7 @@ export class UI extends Component {
           border: `${theme.borderWidth} solid ${theme.borderColor}`
         },
         'table th': {
-          fontWeight: '500'
+          fontWeight: '600'
         },
         'blockquote': {
           margin: '1.5rem 0',
@@ -230,25 +232,58 @@ export class UI extends Component {
           width: '100%',
           marginTop: '1rem',
           marginBottom: '1rem',
-          padding: '.25rem .5rem',
+          padding: '.4rem .65rem .5rem .65rem',
           fontSize: '.85rem',
           color: theme.highlighted.textColor,
-          backgroundColor: theme.highlighted.backgroundColor
+          backgroundColor: theme.highlighted.backgroundColor,
+          borderRadius: 3
         },
         'code': {
           padding: '.15rem .15rem',
-          fontSize: '.85rem',
+          fontSize: '90%',
+          wordBreak: 'break-word',
+          overflowWrap: 'anywhere',
           color: theme.highlighted.textColor,
-          backgroundColor: theme.highlighted.backgroundColor
+          backgroundColor: theme.highlighted.backgroundColor,
+          borderRadius: 3
         },
         'pre code': {
           display: 'table-cell !important',
           overflowX: 'auto',
           padding: 0,
           fontSize: 'inherit',
+          wordBreak: 'normal',
+          overflowWrap: 'normal',
           color: 'inherit',
           backgroundColor: 'transparent',
           borderRadius: 0
+        },
+        '.badge': {
+          display: 'inline-block',
+          color: theme.highlighted.textColor,
+          backgroundColor: theme.highlighted.backgroundColor,
+          padding: '.25rem .4rem .3rem .4rem',
+          fontSize: '.7rem',
+          fontWeight: 600,
+          letterSpacing: 0.3,
+          textTransform: 'uppercase',
+          lineHeight: 1,
+          textAlign: 'center',
+          whiteSpace: 'nowrap',
+          verticalAlign: 'baseline',
+          borderRadius: '.25rem'
+        },
+        '.badge-primary': {
+          color: theme.textOnPrimaryColor,
+          backgroundColor: theme.primaryColor
+        },
+        '.badge-secondary': {
+          color: theme.textOnSecondaryColor,
+          backgroundColor: theme.secondaryColor
+        },
+        '.badge-tertiary': {
+          color: theme.textOnTertiaryColor,
+          backgroundColor: theme.tertiaryColor
         },
         '.hljs-comment, .hljs-quote': {
           color: theme.muted.textColor,
@@ -311,7 +346,11 @@ export class UI extends Component {
 
   static get responsive() {
     if (!this._responsive) {
-      this._responsive = facepaint(['@media(max-width: 600px)']);
+      this._responsive = facepaint([
+        '@media(max-width: 991px)',
+        '@media(max-width: 767px)',
+        '@media(max-width: 479px)'
+      ]);
     }
     return this._responsive;
   }
@@ -494,6 +533,85 @@ export class UI extends Component {
     return <input css={css} {...props} />;
   }
 
+  @view() static Select({
+    small = false,
+    large = false,
+    ...props
+  }: React.SelectHTMLAttributes<HTMLSelectElement> & {
+    small?: boolean;
+    large?: boolean;
+  }) {
+    const theme = this.useTheme();
+
+    let paddingLeft;
+    let paddingRight;
+    let yPadding;
+    let fontSize;
+    let borderRadius;
+    let backgroundPosition;
+    if (small) {
+      paddingLeft = theme.input.small.xPadding;
+      paddingRight = '20px';
+      yPadding = theme.input.small.yPadding;
+      fontSize = theme.input.small.fontSize;
+      borderRadius = theme.input.small.borderRadius;
+      backgroundPosition = 'right 6px center';
+    } else if (large) {
+      paddingLeft = theme.input.large.xPadding;
+      paddingRight = '24px';
+      yPadding = theme.input.large.yPadding;
+      fontSize = theme.input.large.fontSize;
+      borderRadius = theme.input.large.borderRadius;
+      backgroundPosition = 'right 8px center';
+    } else {
+      paddingLeft = theme.input.xPadding;
+      paddingRight = '24px';
+      yPadding = theme.input.yPadding;
+      fontSize = theme.input.fontSize;
+      borderRadius = theme.input.borderRadius;
+      backgroundPosition = 'right 8px center';
+    }
+
+    let css: any = {
+      'paddingTop': yPadding,
+      paddingRight,
+      'paddingBottom': yPadding,
+      paddingLeft,
+      fontSize,
+      'lineHeight': theme.input.lineHeight,
+      'color': theme.input.textColor,
+      'backgroundColor': theme.input.backgroundColor,
+      'borderWidth': theme.input.borderWidth,
+      'borderStyle': 'solid',
+      'borderColor': theme.input.borderColor,
+      borderRadius,
+      'outline': 'none',
+      'boxShadow': 'none',
+      'transition': 'border-color ease-in-out .15s',
+      'verticalAlign': 'middle',
+      'backgroundImage':
+        "url(\"data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23888' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E\")",
+      'backgroundRepeat': 'no-repeat',
+      backgroundPosition,
+      'backgroundSize': '8px 10px',
+      'MozAppearance': 'none',
+      'WebkitAppearance': 'none',
+      ':focus': {
+        borderColor: theme.input.highlighted.borderColor
+      }
+    };
+
+    if (props.disabled) {
+      css = {
+        ...css,
+        cursor: 'not-allowed',
+        opacity: 0.5
+      };
+    }
+
+    return <select css={css} {...props} />;
+  }
+
   static useAnchor() {
     useEffect(() => {
       const hash = window.location.hash;
@@ -518,14 +636,39 @@ export class UI extends Component {
     return <div css={{minHeight: height}} {...props} />;
   }
 
-  @view() static Markdown({children}: {children: string}) {
-    const html = DOMPurify.sanitize(
-      marked(children, {
-        highlight: (code, language) => {
-          return highlightJS.highlight(language, code).value;
+  @view() static Markdown({languageFilter, children}: {languageFilter?: string; children: string}) {
+    let html = marked(children, {
+      highlight: (code, language) => {
+        if (
+          languageFilter !== undefined &&
+          (language === 'js' || language === 'ts') &&
+          language !== languageFilter
+        ) {
+          return '';
         }
-      })
-    );
+
+        if (language === '') {
+          language = 'ts'; // Use TS as default
+        }
+
+        if (language === 'js') {
+          language = 'ts'; // Always highlight JS as TS
+        }
+
+        return highlightJS.highlight(language, code).value;
+      }
+    });
+
+    if (languageFilter !== undefined) {
+      // Finish removing the filtered out languages
+      html = html.replace(/<pre><code class="language-\w+"><\/code><\/pre>\n/g, '');
+    }
+
+    html = DOMPurify.sanitize(html, {ADD_TAGS: ['badge']});
+
+    html = html.replace(/<badge(?: type="(\w+)")?>([\w ]+)<\/badge>/g, (_, type, name) => {
+      return `<span class='badge${type !== undefined ? ` badge-${type}` : ''}'>${name}</span>`;
+    });
 
     return <div dangerouslySetInnerHTML={{__html: html}} />;
   }

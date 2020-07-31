@@ -5,6 +5,7 @@ import {ComponentHTTPClient} from '@liaison/component-http-client';
 import type {Backend} from '../../../backend/src/components/backend';
 import {Root} from './root';
 import {Home} from './home';
+import {Docs} from './docs';
 import {Session} from './session';
 import {User} from './user';
 import {Blog} from './blog';
@@ -21,6 +22,7 @@ export const getFrontend = async ({backendURL}: {backendURL: string}) => {
   class Frontend extends BackendProxy {
     @provide() static Root = Root;
     @provide() static Home = Home;
+    @provide() static Docs = Docs;
     @provide() static Session = Session(BackendProxy.Session);
     @provide() static User = User(BackendProxy.User);
     @provide() static Blog = Blog;

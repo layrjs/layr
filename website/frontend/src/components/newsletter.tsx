@@ -4,8 +4,8 @@ import {view, useAsyncCallback} from '@liaison/react-integration';
 import {jsx} from '@emotion/core';
 
 import type {Newsletter as BackendNewsletter} from '../../../backend/src/components/newsletter';
-import {Common} from './common';
-import {UI} from './ui';
+import type {Common} from './common';
+import type {UI} from './ui';
 
 export const Newsletter = (Base: typeof BackendNewsletter) => {
   class Newsletter extends Base {
@@ -39,7 +39,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
           <div css={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
             <div
               css={UI.responsive({
-                fontSize: ['2rem', '1.5rem'],
+                fontSize: ['2rem', , '1.5rem'],
                 lineHeight: theme.small.lineHeight,
                 textAlign: 'center'
               })}
@@ -49,7 +49,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
             <div
               css={UI.responsive({
                 marginTop: '.75rem',
-                fontSize: ['1.25rem', '1rem'],
+                fontSize: ['1.25rem', , '1rem'],
                 color: theme.muted.textColor,
                 textAlign: 'center'
               })}
@@ -85,9 +85,9 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
                   placeholder="Your email address"
                   large
                   css={UI.responsive({
-                    width: [300, '100%'],
-                    marginRight: ['0.75rem', 0],
-                    marginBottom: [0, '0.75rem']
+                    width: [300, , '100%'],
+                    marginRight: ['0.75rem', , 0],
+                    marginBottom: [0, , '0.75rem']
                   })}
                 />
                 <UI.Button
@@ -95,7 +95,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
                   disabled={isSubscribingUp}
                   secondary
                   large
-                  css={UI.responsive({width: ['auto', '100%']})}
+                  css={UI.responsive({width: ['auto', , '100%']})}
                 >
                   I'm in!
                 </UI.Button>
