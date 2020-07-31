@@ -117,7 +117,7 @@ export type IntrospectedComponent = {
 type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | undefined>;
 
 /**
- * The base class of all your components
+ * The base class of all your components.
  */
 export class Component extends Observable(Object) {
   ['constructor']: typeof Component;
@@ -127,7 +127,11 @@ export class Component extends Observable(Object) {
   /**
    * Creates an instance of a component class.
    *
-   * @param object An optional object specifying the initial value of the instance attributes.
+   * @param [object] An optional object specifying the initial value of the instance attributes.
+   *
+   * @returns The component that was created.
+   *
+   * @category Creation
    */
   constructor(object: PlainObject = {}) {
     super();
@@ -156,13 +160,16 @@ export class Component extends Observable(Object) {
   /**
    * Creates an instance of a component class.
    *
-   * @param object An optional object specifying the initial value of the instance attributes.
-   * @param options.isNew Whether the instance should be marked as new or not (default: `true`).
-   * @param options.source The source of the created instance (default: `0`).
-   * @param options.attributeSelector An `AttributeSelector` specifying the attributes to be set (default: `true` which means that all the attributes will be set).
-   * @param options.attributeFilter A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param options.initialize Whether to call the `initialize` instance method or not (default: `true`).
+   * @param [object] An optional object specifying the initial value of the instance attributes.
+   * @param [options.isNew] Whether the instance should be marked as new or not (default: `true`).
+   * @param [options.source] The source of the created instance (default: `0`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be set (default: `true` which means that all the attributes will be set).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.initialize] Whether to call the `initialize` instance method or not (default: `true`).
+   *
    * @returns An instance of the component class (possibly a promise if `options.attributeFilter` is an async function or `options.initialize` is `true` and the class has an async `initialize` instance method).
+   *
+   * @category Creation
    */
   static create<T extends typeof Component>(
     this: T,
@@ -263,11 +270,15 @@ export class Component extends Observable(Object) {
 
   /**
    * A (possibly async) method that is called automatically when a component class is deserialized. You can override this method in your component subclasses to implement your initialization logic.
+   *
+   * @category Initialization
    */
   static initialize() {}
 
   /**
    * A (possibly async) method that is called automatically when a component instance is created or deserialized. You can override this method in your component subclasses to implement your initialization logic.
+   *
+   * @category Initialization
    */
   initialize() {}
 
@@ -281,6 +292,8 @@ export class Component extends Observable(Object) {
    * Returns the name of a component.
    *
    * @returns The name of a component.
+   *
+   * @category Naming
    */
   static getComponentName() {
     const name = this.name;
@@ -294,6 +307,10 @@ export class Component extends Observable(Object) {
 
   /**
    * Sets the name of a component. As the name of a component is usually inferred from the name of its class, this method should not be used so often.
+   *
+   * @param name The name you wish for the component.
+   *
+   * @category Naming
    */
   static setComponentName(name: string) {
     assertIsComponentName(name);
@@ -307,6 +324,8 @@ export class Component extends Observable(Object) {
    * For example, if a `Backend` component provides a `Movie` component, this method will return `'Backend.Movie'` when called on the `Movie` component.
    *
    * @returns A string representing the path of a component.
+   *
+   * @category Naming
    */
   static getComponentPath() {
     let path: string[] = [];
@@ -343,6 +362,8 @@ export class Component extends Observable(Object) {
    * For example, with a component class named `'Movie'`, this method will return `'typeof Movie'`.
    *
    * @returns A string representing the type of a component class.
+   *
+   * @category Typing
    */
   static getComponentType() {
     return getComponentClassTypeFromComponentName(this.getComponentName());
@@ -352,21 +373,27 @@ export class Component extends Observable(Object) {
    * Returns the type of a component instance. A component instance type is equivalent to the component class name.
    *
    * For example, with a component class named `'Movie'`, this method will return `'Movie'` when called on a `Movie` instance.
+   *
+   * @returns A string representing the type of a component instance.
+   *
+   * @category Typing
    */
   getComponentType() {
     return getComponentInstanceTypeFromComponentName(this.constructor.getComponentName());
   }
 
-  // === isNew mark ===
+  // === isNew Mark ===
 
   __isNew: boolean | undefined;
 
   /**
    * Returns whether a component instance is marked as new or not.
    *
-   * @alias `isNew`
+   * @alias isNew
    *
    * @returns A boolean.
+   *
+   * @category isNew Mark
    */
   getIsNewMark() {
     return this.__isNew === true;
@@ -376,6 +403,8 @@ export class Component extends Observable(Object) {
    * Sets whether a component instance is marked as new or not.
    *
    * @param isNew A boolean specifying if the component instance should be marked as new or not.
+   *
+   * @category isNew Mark
    */
   setIsNewMark(isNew: boolean, {source}: {source?: number} = {}) {
     Object.defineProperty(this, '__isNew', {value: isNew, configurable: true});
@@ -386,6 +415,8 @@ export class Component extends Observable(Object) {
    * Returns whether a component instance is marked as new or not.
    *
    * @returns A boolean.
+   *
+   * @category isNew Mark
    */
   isNew() {
     return this.getIsNewMark();
@@ -393,6 +424,8 @@ export class Component extends Observable(Object) {
 
   /**
    * Marks a component instance as new.
+   *
+   * @category isNew Mark
    */
   markAsNew({source}: {source?: number} = {}) {
     this.setIsNewMark(true, {source});
@@ -400,12 +433,12 @@ export class Component extends Observable(Object) {
 
   /**
    * Marks a component instance as not new.
+   *
+   * @category isNew Mark
    */
   markAsNotNew({source}: {source?: number} = {}) {
     this.setIsNewMark(false, {source});
   }
-
-  // === isNew mark source ===
 
   __isNewSource: number | undefined;
 
@@ -455,6 +488,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the property to get.
    *
    * @returns A `Property` instance.
+   *
+   * @category Properties
    */
   static get getProperty() {
     return this.prototype.getProperty;
@@ -466,6 +501,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the property to get.
    *
    * @returns A `Property` instance.
+   *
+   * @category Properties
    */
   getProperty(name: string, options: {autoFork?: boolean} = {}) {
     const {autoFork = true} = options;
@@ -485,6 +522,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the property to check.
    *
    * @returns A boolean.
+   *
+   * @category Properties
    */
   static get hasProperty() {
     return this.prototype.hasProperty;
@@ -496,6 +535,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the property to check.
    *
    * @returns A boolean.
+   *
+   * @category Properties
    */
   hasProperty(name: string) {
     return this.__getProperty(name, {autoFork: false}) !== undefined;
@@ -529,9 +570,11 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to define.
    * @param PropertyClass The class of the property (e.g., `Attribute`, `Method`) to use.
-   * @param propertyOptions The options to be passed to the `PropertyClass` constructor.
+   * @param [propertyOptions] The options to be passed to the `PropertyClass` constructor.
    *
    * @returns The property that was created.
+   *
+   * @category Properties
    */
   static get setProperty() {
     return this.prototype.setProperty;
@@ -542,9 +585,11 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to define.
    * @param PropertyClass The class of the property (e.g., `Attribute`, `Method`) to use.
-   * @param propertyOptions The options to be passed to the `PropertyClass` constructor.
+   * @param [propertyOptions] The options to be passed to the `PropertyClass` constructor.
    *
    * @returns The property that was created.
+   *
+   * @category Properties
    */
   setProperty<T extends typeof Property>(
     name: string,
@@ -589,6 +634,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the property to remove.
    *
    * @returns A boolean.
+   *
+   * @category Properties
    */
   static get deleteProperty() {
     return this.prototype.deleteProperty;
@@ -600,6 +647,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the property to remove.
    *
    * @returns A boolean.
+   *
+   * @category Properties
    */
   deleteProperty(name: string) {
     const properties = this.__getProperties();
@@ -616,13 +665,15 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the properties of a component.
    *
-   * @param options.filter A function used to filter the properties to be returned. The function is invoked for each property with a `Property` instance as first argument.
-   * @param options.attributesOnly A boolean specifying whether only attribute properties should be returned (default: `false`).
-   * @param options.setAttributesOnly A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param options.attributeSelector An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
-   * @param options.methodsOnly A boolean specifying whether only method properties should be returned (default: `false`).
+   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a `Property` instance as first argument.
+   * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
+   * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
    * @returns A `Property` instance iterator.
+   *
+   * @category Properties
    */
   static get getProperties() {
     return this.prototype.getProperties;
@@ -631,13 +682,15 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the properties of a component.
    *
-   * @param options.filter A function used to filter the properties to be returned. The function is invoked for each property with a `Property` instance as first argument.
-   * @param options.attributesOnly A boolean specifying whether only attribute properties should be returned (default: `false`).
-   * @param options.setAttributesOnly A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param options.attributeSelector An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
-   * @param options.methodsOnly A boolean specifying whether only method properties should be returned (default: `false`).
+   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a `Property` instance as first argument.
+   * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
+   * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
    * @returns A `Property` instance iterator.
+   *
+   * @category Properties
    */
   getProperties<PropertyType extends Property = Property>(
     options: {
@@ -684,6 +737,8 @@ export class Component extends Observable(Object) {
    * Returns the name of all the properties of a component.
    *
    * @returns An array of the property names.
+   *
+   * @category Properties
    */
   static get getPropertyNames() {
     return this.prototype.getPropertyNames;
@@ -693,6 +748,8 @@ export class Component extends Observable(Object) {
    * Returns the name of all the properties of a component.
    *
    * @returns An array of the property names.
+   *
+   * @category Properties
    */
   getPropertyNames() {
     const names = [];
@@ -760,7 +817,7 @@ export class Component extends Observable(Object) {
     return undefined;
   }
 
-  // === Attributes ===
+  // === Attribute Properties ===
 
   __constructorSourceCode?: string; // Used by @attribute() decorator
 
@@ -770,6 +827,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the attribute to get.
    *
    * @returns An `Attribute` instance.
+   *
+   * @category Attribute Properties
    */
   static get getAttribute() {
     return this.prototype.getAttribute;
@@ -781,6 +840,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the attribute to get.
    *
    * @returns An `Attribute` instance.
+   *
+   * @category Attribute Properties
    */
   getAttribute(name: string, options: {autoFork?: boolean} = {}) {
     const {autoFork = true} = options;
@@ -800,6 +861,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the attribute to check.
    *
    * @returns A boolean.
+   *
+   * @category Attribute Properties
    */
   static get hasAttribute() {
     return this.prototype.hasAttribute;
@@ -811,6 +874,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the attribute to check.
    *
    * @returns A boolean.
+   *
+   * @category Attribute Properties
    */
   hasAttribute(name: string) {
     return this.__getAttribute(name, {autoFork: false}) !== undefined;
@@ -842,9 +907,11 @@ export class Component extends Observable(Object) {
    * Defines an attribute in a component. Typically, instead of using this method, you would rather use the `@attribute()` decorator.
    *
    * @param name The name of the attribute to define.
-   * @param attributeOptions The options to be passed to the `Attribute` constructor.
+   * @param [attributeOptions] The options to be passed to the `Attribute` constructor.
    *
    * @returns The `Attribute` that was created.
+   *
+   * @category Attribute Properties
    */
   static get setAttribute() {
     return this.prototype.setAttribute;
@@ -854,9 +921,11 @@ export class Component extends Observable(Object) {
    * Defines an attribute in a component. Typically, instead of using this method, you would rather use the `@attribute()` decorator.
    *
    * @param name The name of the attribute to define.
-   * @param attributeOptions The options to be passed to the `Attribute` constructor.
+   * @param [attributeOptions] The options to be passed to the `Attribute` constructor.
    *
    * @returns The `Attribute` that was created.
+   *
+   * @category Attribute Properties
    */
   setAttribute(name: string, attributeOptions: AttributeOptions = {}) {
     return this.setProperty(name, Attribute, attributeOptions);
@@ -865,11 +934,13 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the attributes of a component.
    *
-   * @param options.filter A function used to filter the attributes to be returned. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param options.setAttributesOnly A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param options.attributeSelector An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
    *
    * @returns An `Attribute` instance iterator.
+   *
+   * @category Attribute Properties
    */
   static get getAttributes() {
     return this.prototype.getAttributes;
@@ -878,11 +949,13 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the attributes of a component.
    *
-   * @param options.filter A function used to filter the attributes to be returned. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param options.setAttributesOnly A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param options.attributeSelector An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
    *
    * @returns An `Attribute` instance iterator.
+   *
+   * @category Attribute Properties
    */
   getAttributes<AttributeType extends Attribute = Attribute>(
     options: {
@@ -967,6 +1040,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the identifier attribute to get.
    *
    * @returns An `IdentifierAttribute` instance.
+   *
+   * @category Attribute Properties
    */
   getIdentifierAttribute(name: string, options: {autoFork?: boolean} = {}) {
     const {autoFork = true} = options;
@@ -988,6 +1063,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the identifier attribute to check.
    *
    * @returns A boolean.
+   *
+   * @category Attribute Properties
    */
   hasIdentifierAttribute(name: string) {
     return this.__getIdentifierAttribute(name, {autoFork: false}) !== undefined;
@@ -1015,6 +1092,8 @@ export class Component extends Observable(Object) {
    * Gets the primary identifier attribute of a component.
    *
    * @returns A `PrimaryIdentifierAttribute` instance.
+   *
+   * @category Attribute Properties
    */
   getPrimaryIdentifierAttribute(options: {autoFork?: boolean} = {}) {
     const {autoFork = true} = options;
@@ -1034,6 +1113,8 @@ export class Component extends Observable(Object) {
    * Returns whether a component as a primary identifier attribute.
    *
    * @returns A boolean.
+   *
+   * @category Attribute Properties
    */
   hasPrimaryIdentifierAttribute() {
     return this.__getPrimaryIdentifierAttribute({autoFork: false}) !== undefined;
@@ -1055,9 +1136,11 @@ export class Component extends Observable(Object) {
    * Defines the primary identifier attribute of a component. Typically, instead of using this method, you would rather use the `@primaryIdentifier()` decorator.
    *
    * @param name The name of the primary identifier attribute to define.
-   * @param attributeOptions The options to be passed to the `PrimaryIdentifierAttribute` constructor.
+   * @param [attributeOptions] The options to be passed to the `PrimaryIdentifierAttribute` constructor.
    *
    * @returns The `PrimaryIdentifierAttribute` that was created.
+   *
+   * @category Attribute Properties
    */
   setPrimaryIdentifierAttribute(name: string, attributeOptions: AttributeOptions = {}) {
     return this.setProperty(name, PrimaryIdentifierAttribute, attributeOptions);
@@ -1069,6 +1152,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the secondary identifier attribute to get.
    *
    * @returns A `SecondaryIdentifierAttribute` instance.
+   *
+   * @category Attribute Properties
    */
   getSecondaryIdentifierAttribute(name: string, options: {autoFork?: boolean} = {}) {
     const {autoFork = true} = options;
@@ -1090,6 +1175,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the secondary identifier attribute to check.
    *
    * @returns A boolean.
+   *
+   * @category Attribute Properties
    */
   hasSecondaryIdentifierAttribute(name: string) {
     return this.__getSecondaryIdentifierAttribute(name, {autoFork: false}) !== undefined;
@@ -1117,11 +1204,12 @@ export class Component extends Observable(Object) {
    * Defines a secondary identifier attribute in a component. Typically, instead of using this method, you would rather use the `@secondaryIdentifier()` decorator.
    *
    * @param name The name of the secondary identifier attribute to define.
-   * @param attributeOptions The options to be passed to the `SecondaryIdentifierAttribute` constructor.
+   * @param [attributeOptions] The options to be passed to the `SecondaryIdentifierAttribute` constructor.
    *
    * @returns The `SecondaryIdentifierAttribute` that was created.
+   *
+   * @category Attribute Properties
    */
-
   setSecondaryIdentifierAttribute(name: string, attributeOptions: AttributeOptions = {}) {
     return this.setProperty(name, SecondaryIdentifierAttribute, attributeOptions);
   }
@@ -1129,11 +1217,13 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the identifier attributes of a component.
    *
-   * @param options.filter A function used to filter the identifier attributes to be returned. The function is invoked for each identifier attribute with an `IdentifierAttribute` instance as first argument.
-   * @param options.setAttributesOnly A boolean specifying whether only set identifier attributes should be returned (default: `false`).
-   * @param options.attributeSelector An `AttributeSelector` specifying the identifier attributes to be returned (default: `true` which means that all identifier attributes should be returned).
+   * @param [options.filter] A function used to filter the identifier attributes to be returned. The function is invoked for each identifier attribute with an `IdentifierAttribute` instance as first argument.
+   * @param [options.setAttributesOnly] A boolean specifying whether only set identifier attributes should be returned (default: `false`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the identifier attributes to be returned (default: `true` which means that all identifier attributes should be returned).
    *
    * @returns An `IdentifierAttribute` instance iterator.
+   *
+   * @category Attribute Properties
    */
   getIdentifierAttributes(
     options: {
@@ -1171,11 +1261,13 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the secondary identifier attributes of a component.
    *
-   * @param options.filter A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a `SecondaryIdentifierAttribute` instance as first argument.
-   * @param options.setAttributesOnly A boolean specifying whether only set secondary identifier attributes should be returned (default: `false`).
-   * @param options.attributeSelector An `AttributeSelector` specifying the secondary identifier attributes to be returned (default: `true` which means that all secondary identifier attributes should be returned).
+   * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a `SecondaryIdentifierAttribute` instance as first argument.
+   * @param [options.setAttributesOnly] A boolean specifying whether only set secondary identifier attributes should be returned (default: `false`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the secondary identifier attributes to be returned (default: `true` which means that all secondary identifier attributes should be returned).
    *
    * @returns A `SecondaryIdentifierAttribute` instance iterator.
+   *
+   * @category Attribute Properties
    */
   getSecondaryIdentifierAttributes(
     options: {
@@ -1214,6 +1306,8 @@ export class Component extends Observable(Object) {
    * Returns an object composed of all the set identifiers of a component. The shape of the returned object is `{[identifierName]: identifierValue}`. If the component doesn't have any set identifiers, returns `undefined`.
    *
    * @returns An object composed of all the set identifiers of a component.
+   *
+   * @category Attribute Properties
    */
   getIdentifiers() {
     const identifiers = this.__getIdentifiers();
@@ -1231,6 +1325,8 @@ export class Component extends Observable(Object) {
    * Returns whether a component has a set identifier or not.
    *
    * @returns A boolean.
+   *
+   * @category Attribute Properties
    */
   hasIdentifiers() {
     return this.__getIdentifiers() !== undefined;
@@ -1260,6 +1356,8 @@ export class Component extends Observable(Object) {
    * Generates a unique identifier using the [cuid](https://github.com/ericelliott/cuid) library.
    *
    * @returns The generated identifier.
+   *
+   * @category Attribute Properties
    */
   static generateId() {
     return cuid();
@@ -1288,7 +1386,7 @@ export class Component extends Observable(Object) {
     return this.hasPrimaryIdentifierAttribute() ? 1 : 0;
   }
 
-  // === Identifier descriptor ===
+  // === Identifier Descriptor ===
 
   /**
    * Returns the `IdentifierDescriptor` of a component.
@@ -1298,6 +1396,8 @@ export class Component extends Observable(Object) {
    * If there is no set identifier in the component, an error is thrown.
    *
    * @returns A plain object representing the `IdentifierDescriptor` of a component.
+   *
+   * @category Identifier Descriptor
    */
   getIdentifierDescriptor() {
     const identifierDescriptor = this.__getIdentifierDescriptor();
@@ -1315,6 +1415,8 @@ export class Component extends Observable(Object) {
    * Returns whether a component can provide an `IdentifierDescriptor` (using the `getIdentifierDescriptor()` method) or not.
    *
    * @returns A boolean.
+   *
+   * @category Identifier Descriptor
    */
   hasIdentifierDescriptor() {
     return this.__getIdentifierDescriptor() !== undefined;
@@ -1388,7 +1490,7 @@ export class Component extends Observable(Object) {
     return `${name}: ${valueString}`;
   }
 
-  // === Identity map ===
+  // === Identity Mapping ===
 
   static __identityMap: IdentityMap;
 
@@ -1396,6 +1498,8 @@ export class Component extends Observable(Object) {
    * Gets the `IdentityMap` of a component.
    *
    * @returns An `IdentityMap` instance.
+   *
+   * @category Identity Mapping
    */
   static getIdentityMap() {
     if (this.__identityMap === undefined) {
@@ -1405,6 +1509,136 @@ export class Component extends Observable(Object) {
     }
 
     return this.__identityMap;
+  }
+
+  static __isAttached: boolean;
+
+  /**
+   * Attaches the current component class to its `IdentityMap`. By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
+   *
+   * @returns The current component class.
+   *
+   * @category Identity Mapping
+   */
+  static attach<T extends typeof Component>(this: T) {
+    Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
+
+    return this;
+  }
+
+  /**
+   * Detaches the current component class from its `IdentityMap`.
+   *
+   * @returns The current component class.
+   *
+   * @category Identity Mapping
+   */
+  static detach<T extends typeof Component>(this: T) {
+    Object.defineProperty(this, '__isAttached', {value: false, configurable: true});
+
+    return this;
+  }
+
+  /**
+   * Returns whether the current component class is attached to its `IdentityMap`.
+   *
+   * @returns A boolean.
+   *
+   * @category Identity Mapping
+   */
+  static isAttached() {
+    let currentComponent = this;
+
+    while (true) {
+      const isAttached = currentComponent.__isAttached;
+
+      if (isAttached !== undefined) {
+        return isAttached;
+      }
+
+      const componentProvider = currentComponent.getComponentProvider();
+
+      if (componentProvider === currentComponent) {
+        return true;
+      }
+
+      currentComponent = componentProvider;
+    }
+  }
+
+  /**
+   * Returns whether the current component class is detached from its `IdentityMap`.
+   *
+   * @returns A boolean.
+   *
+   * @category Identity Mapping
+   */
+  static isDetached() {
+    return !this.isAttached();
+  }
+
+  __isAttached?: boolean;
+
+  /**
+   * Attaches the current component instance to its `IdentityMap`. By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
+   *
+   * @returns The current component instance.
+   *
+   * @category Identity Mapping
+   */
+  attach() {
+    Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
+
+    if (this.hasPrimaryIdentifierAttribute()) {
+      const identityMap = this.constructor.getIdentityMap();
+      identityMap.addComponent(this);
+    }
+
+    return this;
+  }
+
+  /**
+   * Detaches the current component instance from its `IdentityMap`.
+   *
+   * @returns The current component instance.
+   *
+   * @category Identity Mapping
+   */
+  detach() {
+    if (this.hasPrimaryIdentifierAttribute()) {
+      const identityMap = this.constructor.getIdentityMap();
+      identityMap.removeComponent(this);
+    }
+
+    Object.defineProperty(this, '__isAttached', {value: false, configurable: true});
+
+    return this;
+  }
+
+  /**
+   * Returns whether the current component instance is attached to its `IdentityMap`.
+   *
+   * @returns A boolean.
+   *
+   * @category Identity Mapping
+   */
+  isAttached() {
+    if (this.__isAttached !== undefined) {
+      return this.__isAttached;
+    }
+
+    return this.constructor.isAttached();
+  }
+
+  /**
+   * Returns whether the current component instance is detached from its `IdentityMap`.
+   *
+   * @returns A boolean.
+   *
+   * @category Identity Mapping
+   */
+  isDetached() {
+    return !this.isAttached();
   }
 
   // === Attribute selectors ===
@@ -1559,7 +1793,9 @@ export class Component extends Observable(Object) {
   /**
    * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the `runValidators()` method.
    *
-   * @param attributeSelector An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   *
+   * @category Validation
    */
   static get validate() {
     return this.prototype.validate;
@@ -1568,7 +1804,9 @@ export class Component extends Observable(Object) {
   /**
    * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the `runValidators()` method.
    *
-   * @param attributeSelector An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   *
+   * @category Validation
    */
   validate(attributeSelector: AttributeSelector = true) {
     const failedValidators = this.runValidators(attributeSelector);
@@ -1596,9 +1834,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param attributeSelector An `AttributeSelector` specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
+   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
    *
    * @returns A boolean.
+   *
+   * @category Validation
    */
   static get isValid() {
     return this.prototype.isValid;
@@ -1607,9 +1847,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param attributeSelector An `AttributeSelector` specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
+   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
    *
    * @returns A boolean.
+   *
+   * @category Validation
    */
   isValid(attributeSelector: AttributeSelector = true) {
     const failedValidators = this.runValidators(attributeSelector);
@@ -1620,9 +1862,11 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of a component.
    *
-   * @param attributeSelector An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   *
+   * @category Validation
    */
   static get runValidators() {
     return this.prototype.runValidators;
@@ -1631,9 +1875,11 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of a component.
    *
-   * @param attributeSelector An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   *
+   * @category Validation
    */
   runValidators(attributeSelector: AttributeSelector = true) {
     attributeSelector = this.resolveAttributeSelector(attributeSelector);
@@ -1659,7 +1905,7 @@ export class Component extends Observable(Object) {
     return failedValidators;
   }
 
-  // === Methods ===
+  // === Method Properties ===
 
   /**
    * Gets a method of a component.
@@ -1667,6 +1913,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the method to get.
    *
    * @returns A `Method` instance.
+   *
+   * @category Method Properties
    */
   static get getMethod() {
     return this.prototype.getMethod;
@@ -1678,6 +1926,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the method to get.
    *
    * @returns A `Method` instance.
+   *
+   * @category Method Properties
    */
   getMethod(name: string, options: {autoFork?: boolean} = {}) {
     const {autoFork = true} = options;
@@ -1697,6 +1947,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the method to check.
    *
    * @returns A boolean.
+   *
+   * @category Method Properties
    */
   static get hasMethod() {
     return this.prototype.hasMethod;
@@ -1708,6 +1960,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the method to check.
    *
    * @returns A boolean.
+   *
+   * @category Method Properties
    */
   hasMethod(name: string) {
     return this.__getMethod(name, {autoFork: false}) !== undefined;
@@ -1739,9 +1993,11 @@ export class Component extends Observable(Object) {
    * Defines a method in a component. Typically, instead of using this method, you would rather use the `@method()` decorator.
    *
    * @param name The name of the method to define.
-   * @param methodOptions The options to be passed to the `Method` constructor.
+   * @param [methodOptions] The options to be passed to the `Method` constructor.
    *
    * @returns The `Method` that was created.
+   *
+   * @category Method Properties
    */
   static get setMethod() {
     return this.prototype.setMethod;
@@ -1751,9 +2007,11 @@ export class Component extends Observable(Object) {
    * Defines a method in a component. Typically, instead of using this method, you would rather use the `@method()` decorator.
    *
    * @param name The name of the method to define.
-   * @param methodOptions The options to be passed to the `Method` constructor.
+   * @param [methodOptions] The options to be passed to the `Method` constructor.
    *
    * @returns The `Method` that was created.
+   *
+   * @category Method Properties
    */
   setMethod(name: string, methodOptions: MethodOptions = {}) {
     return this.setProperty(name, Method, methodOptions);
@@ -1762,9 +2020,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the methods of a component.
    *
-   * @param options.filter A function used to filter the methods to be returned. The function is invoked for each method with a `Method` instance as first argument.
+   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a `Method` instance as first argument.
    *
    * @returns A `Method` instance iterator.
+   *
+   * @category Method Properties
    */
   static get getMethods() {
     return this.prototype.getMethods;
@@ -1773,9 +2033,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the methods of a component.
    *
-   * @param options.filter A function used to filter the methods to be returned. The function is invoked for each method with a `Method` instance as first argument.
+   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a `Method` instance as first argument.
    *
    * @returns A `Method` instance iterator.
+   *
+   * @category Method Properties
    */
   getMethods(options: {filter?: PropertyFilterSync; autoFork?: boolean} = {}) {
     const {filter, autoFork = true} = options;
@@ -1783,7 +2045,7 @@ export class Component extends Observable(Object) {
     return this.getProperties<Method>({filter, autoFork, methodsOnly: true});
   }
 
-  // === Dependency management ===
+  // === Dependency Management ===
 
   // --- Component getters ---
 
@@ -1793,6 +2055,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the component class to get.
    *
    * @returns A component class.
+   *
+   * @category Dependency Management
    */
   static getComponent(name: string) {
     const component = this.__getComponent(name);
@@ -1812,6 +2076,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the component class to check.
    *
    * @returns A boolean.
+   *
+   * @category Dependency Management
    */
   static hasComponent(name: string) {
     return this.__getComponent(name) !== undefined;
@@ -1845,6 +2111,8 @@ export class Component extends Observable(Object) {
    * @param type The type of the component class or prototype to get.
    *
    * @returns A component class or prototype.
+   *
+   * @category Dependency Management
    */
   static getComponentOfType(type: string) {
     const component = this.__getComponentOfType(type);
@@ -1864,6 +2132,8 @@ export class Component extends Observable(Object) {
    * @param type The type of the component class or prototype to check.
    *
    * @returns A boolean.
+   *
+   * @category Dependency Management
    */
   static hasComponentOfType(type: string) {
     return this.__getComponentOfType(type) !== undefined;
@@ -1893,6 +2163,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the provided component to get.
    *
    * @returns A component class.
+   *
+   * @category Dependency Management
    */
   static getProvidedComponent(name: string) {
     assertIsComponentName(name);
@@ -1924,11 +2196,15 @@ export class Component extends Observable(Object) {
    * @param component The component class to provide.
    *
    * @example
+   * ```
    * class Backend extends Component {}
    * class Movie extends Component {}
    * Backend.provideComponent(Movie);
    *
    * Backend.Movie; // => `Movie` class
+   * ```
+   *
+   * @category Dependency Management
    */
   static provideComponent(component: typeof Component) {
     assertIsComponentClass(component);
@@ -1990,10 +2266,12 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator allowing to iterate over the components provided by the current component.
    *
-   * @param options.filter A function used to filter the provided components to be returned. The function is invoked for each provided component with the provided component as first argument.
-   * @param options.deep A boolean specifying whether the method should get the provided components recursively (i.e., get the provided components of the provided components). Default: `false`.
+   * @param [options.filter] A function used to filter the provided components to be returned. The function is invoked for each provided component with the provided component as first argument.
+   * @param [options.deep] A boolean specifying whether the method should get the provided components recursively (i.e., get the provided components of the provided components). Default: `false`.
    *
-   * @returns A provided component iterator.
+   * @returns A component iterator.
+   *
+   * @category Dependency Management
    */
   static getProvidedComponents(
     options: {deep?: boolean; filter?: (providedComponent: typeof Component) => boolean} = {}
@@ -2032,12 +2310,16 @@ export class Component extends Observable(Object) {
    * @returns A component provider.
    *
    * @example
+   * ```
    * class Backend extends Component {}
    * class Movie extends Component {}
    * Backend.provideComponent(Movie);
    *
    * Movie.getComponentProvider(); // => `Backend` class
    * Backend.getComponentProvider(); // => `Backend` class
+   * ```
+   *
+   * @category Dependency Management
    */
   static getComponentProvider() {
     const componentName = this.getComponentName();
@@ -2095,6 +2377,8 @@ export class Component extends Observable(Object) {
    * @param name The name of the consumed component to get.
    *
    * @returns A component class.
+   *
+   * @category Dependency Management
    */
   static getConsumedComponent(name: string) {
     assertIsComponentName(name);
@@ -2122,12 +2406,16 @@ export class Component extends Observable(Object) {
    * @param name The name of the component to consume.
    *
    * @example
+   * ```
    * class Backend extends Component {}
    * class Movie extends Component {}
    * Backend.provideComponent(Movie);
    * Movie.consumeComponent('Backend');
    *
    * Movie.Backend; // => `Backend` class
+   * ```
+   *
+   * @category Dependency Management
    */
   static consumeComponent(name: string) {
     assertIsComponentName(name);
@@ -2159,9 +2447,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator allowing to iterate over the components consumed by the current component.
    *
-   * @param options.filter A function used to filter the consumed components to be returned. The function is invoked for each consumed component with the consumed component as first argument.
+   * @param [options.filter] A function used to filter the consumed components to be returned. The function is invoked for each consumed component with the consumed component as first argument.
    *
-   * @returns A consumed component iterator.
+   * @returns A component iterator.
+   *
+   * @category Dependency Management
    */
   static getConsumedComponents(
     options: {filter?: (consumedComponent: typeof Component) => boolean} = {}
@@ -2211,6 +2501,8 @@ export class Component extends Observable(Object) {
    * Clones a component instance. A new componentAll primitive attributes are copied, and embedded components are cloned recursively. Currently, identifiable components (i.e., components having an identifier attribute) cannot be cloned, but this might change in the future.
    *
    * @returns A clone of the component.
+   *
+   * @category Cloning
    */
   clone<
     T extends Component,
@@ -2250,9 +2542,13 @@ export class Component extends Observable(Object) {
    * @returns The component class fork.
    *
    * @example
+   * ```
    * class Movie extends Component {}
    *
    * Movie.fork() // => A fork of the `Movie` class
+   * ```
+   *
+   * @category Forking
    */
   static fork<T extends typeof Component>(this: T, options: ForkOptions = {}): T {
     const {componentProvider = this.__getComponentProvider()} = options;
@@ -2277,11 +2573,15 @@ export class Component extends Observable(Object) {
    * @returns The component instance fork.
    *
    * @example
+   * ```
    * class Movie extends Component {}
    * const movie = new Movie();
    *
    * movie.fork() // => A fork of `movie`
    * movie.fork().constructor.isForkOf(Movie) // => true
+   * ```
+   *
+   * @category Forking
    */
   fork<T extends Component>(this: T, options: ForkOptions = {}) {
     let {componentClass} = options;
@@ -2316,6 +2616,8 @@ export class Component extends Observable(Object) {
    * Returns whether the current component class is a fork of another component class.
    *
    * @returns A boolean.
+   *
+   * @category Forking
    */
   static isForkOf(component: typeof Component) {
     assertIsComponentClass(component);
@@ -2327,6 +2629,8 @@ export class Component extends Observable(Object) {
    * Returns whether the current component instance is a fork of another component instance.
    *
    * @returns A boolean.
+   *
+   * @category Forking
    */
   isForkOf(component: Component) {
     assertIsComponentInstance(component);
@@ -2348,10 +2652,14 @@ export class Component extends Observable(Object) {
    * @returns The ghost of the current component class.
    *
    * @example
+   * ```
    * class Movie extends Component {}
    *
    * Movie.getGhost() // => A fork of the `Movie` class
    * Movie.getGhost() // => The same fork of the `Movie` class
+   * ```
+   *
+   * @category Forking
    */
   static getGhost<T extends typeof Component>(this: T) {
     let ghost = this.__ghost;
@@ -2376,7 +2684,8 @@ export class Component extends Observable(Object) {
    *
    * @returns The ghost of the current component instance.
    *
-   * @example
+   * @example <caption>JavaScript:</caption>
+   * ```js
    * class Movie extends Component {
    *   ﹫primaryIdentifier() id;
    * }
@@ -2385,6 +2694,21 @@ export class Component extends Observable(Object) {
    *
    * movie.getGhost() // => A fork of `movie`
    * movie.getGhost() // => The same fork of `movie`
+   * ```
+   *
+   * @example <caption>TypeScript:</caption>
+   * ```ts
+   * class Movie extends Component {
+   *   ﹫primaryIdentifier() id!: string;
+   * }
+   *
+   * const movie = new Movie();
+   *
+   * movie.getGhost() // => A fork of `movie`
+   * movie.getGhost() // => The same fork of `movie`
+   * ```
+   *
+   * @category Forking
    */
   getGhost<T extends Component>(this: T): T {
     const identifiers = this.getIdentifiers();
@@ -2408,6 +2732,8 @@ export class Component extends Observable(Object) {
    * @param forkedComponent The component class fork to merge.
    *
    * @returns The current component class.
+   *
+   * @category Merging
    */
   static merge<T extends typeof Component>(
     this: T,
@@ -2431,6 +2757,8 @@ export class Component extends Observable(Object) {
    * @param forkedComponent The component instance fork to merge.
    *
    * @returns The current component instance.
+   *
+   * @category Merging
    */
   merge(forkedComponent: Component, options: MergeOptions = {}) {
     assertIsComponentInstance(forkedComponent);
@@ -2471,132 +2799,18 @@ export class Component extends Observable(Object) {
     }
   }
 
-  // === Attachment ===
-
-  static __isAttached: boolean;
-
-  /**
-   * Attaches the current component class to its `IdentityMap`. By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
-   *
-   * @returns The current component class.
-   */
-  static attach<T extends typeof Component>(this: T) {
-    Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
-
-    return this;
-  }
-
-  /**
-   * Detaches the current component class from its `IdentityMap`.
-   *
-   * @returns The current component class.
-   */
-  static detach<T extends typeof Component>(this: T) {
-    Object.defineProperty(this, '__isAttached', {value: false, configurable: true});
-
-    return this;
-  }
-
-  /**
-   * Returns whether the current component class is attached to its `IdentityMap`.
-   *
-   * @returns A boolean.
-   */
-  static isAttached() {
-    let currentComponent = this;
-
-    while (true) {
-      const isAttached = currentComponent.__isAttached;
-
-      if (isAttached !== undefined) {
-        return isAttached;
-      }
-
-      const componentProvider = currentComponent.getComponentProvider();
-
-      if (componentProvider === currentComponent) {
-        return true;
-      }
-
-      currentComponent = componentProvider;
-    }
-  }
-
-  /**
-   * Returns whether the current component class is detached from its `IdentityMap`.
-   *
-   * @returns A boolean.
-   */
-  static isDetached() {
-    return !this.isAttached();
-  }
-
-  __isAttached?: boolean;
-
-  /**
-   * Attaches the current component instance to its `IdentityMap`. By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
-   *
-   * @returns The current component instance.
-   */
-  attach() {
-    Object.defineProperty(this, '__isAttached', {value: true, configurable: true});
-
-    if (this.hasPrimaryIdentifierAttribute()) {
-      const identityMap = this.constructor.getIdentityMap();
-      identityMap.addComponent(this);
-    }
-
-    return this;
-  }
-
-  /**
-   * Detaches the current component instance from its `IdentityMap`.
-   *
-   * @returns The current component instance.
-   */
-  detach() {
-    if (this.hasPrimaryIdentifierAttribute()) {
-      const identityMap = this.constructor.getIdentityMap();
-      identityMap.removeComponent(this);
-    }
-
-    Object.defineProperty(this, '__isAttached', {value: false, configurable: true});
-
-    return this;
-  }
-
-  /**
-   * Returns whether the current component instance is attached to its `IdentityMap`.
-   *
-   * @returns A boolean.
-   */
-  isAttached() {
-    if (this.__isAttached !== undefined) {
-      return this.__isAttached;
-    }
-
-    return this.constructor.isAttached();
-  }
-
-  /**
-   * Returns whether the current component instance is detached from its `IdentityMap`.
-   *
-   * @returns A boolean.
-   */
-  isDetached() {
-    return !this.isAttached();
-  }
-
   // === Serialization ===
 
   /**
    * Serializes the current component class to a plain object.
    *
-   * @param options.attributeSelector An `AttributeSelector` specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
-   * @param options.attributeFilter A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param target The target of the serialization (default: `undefined`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.target] The target of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component class.
+   *
+   * @category Serialization
    */
   static serialize(options: SerializeOptions = {}) {
     const {
@@ -2675,11 +2889,13 @@ export class Component extends Observable(Object) {
   /**
    * Serializes the current component instance to a plain object.
    *
-   * @param options.attributeSelector An `AttributeSelector` specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
-   * @param options.attributeFilter A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param target The target of the serialization (default: `undefined`).
+   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.target] The target of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component instance.
+   *
+   * @category Serialization
    */
   serialize(options: SerializeOptions = {}) {
     const {
@@ -2814,16 +3030,16 @@ export class Component extends Observable(Object) {
     );
   }
 
-  // === Deserialization ===
-
   /**
    * Deserializes the current component class from the specified plain object. Since the component classes are unique, they are deserialized "in place".
    *
-   * @param object The plain object to deserialize from.
-   * @param options.attributeFilter A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param source The source of the deserialization (default: `0`).
+   * @param [object] The plain object to deserialize from.
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.source] The source of the deserialization (default: `0`).
    *
    * @returns The current component class.
+   *
+   * @category Serialization
    */
   static deserialize<T extends typeof Component>(
     this: T,
@@ -2855,11 +3071,13 @@ export class Component extends Observable(Object) {
   /**
    * Deserializes the specified plain object to an instance of the current component class.
    *
-   * @param object The plain object to deserialize from.
-   * @param options.attributeFilter A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param source The source of the deserialization (default: `0`).
+   * @param [object] The plain object to deserialize from.
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.source] The source of the deserialization (default: `0`).
    *
    * @returns The deserialized component instance.
+   *
+   * @category Serialization
    */
   static deserializeInstance<T extends typeof Component>(
     this: T,
