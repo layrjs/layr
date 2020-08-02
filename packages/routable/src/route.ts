@@ -91,15 +91,24 @@ export class Route {
   }
 
   generateURL(params?: object) {
-    let url = this._compiler(params);
+    let url = this.generatePath(params);
 
-    const query = pick(params, this._queryParamNames);
-    const queryString = stringifyQuery(query);
+    const queryString = this.generateQueryString(params);
 
     if (queryString !== '') {
       url += `?${queryString}`;
     }
     return url;
+  }
+
+  generatePath(params?: object) {
+    return this._compiler(params);
+  }
+
+  generateQueryString(params?: object) {
+    const query = pick(params, this._queryParamNames);
+
+    return stringifyQuery(query);
   }
 
   static isRoute(value: any): value is Route {

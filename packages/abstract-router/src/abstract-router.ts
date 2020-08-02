@@ -9,6 +9,8 @@ declare global {
   interface Function {
     matchURL: (url: URL | string) => PlainObject | undefined;
     generateURL: (params?: PlainObject) => string;
+    generatePath: (params?: PlainObject) => string;
+    generateQueryString: (params?: PlainObject) => string;
     navigate: (params?: PlainObject, query?: PlainObject) => Promise<void>;
     redirect: (params?: PlainObject, query?: PlainObject) => Promise<void>;
     reload: (params?: PlainObject, query?: PlainObject) => void;
@@ -180,8 +182,26 @@ export abstract class AbstractRouter extends Observable(Object) {
     return this.getParamsFromURL(this._getCurrentURL());
   }
 
+  getCurrentPath() {
+    return this._getCurrentURL().pathname;
+  }
+
   getCurrentQuery<T extends object = object>() {
     return parseQuery<T>(this._getCurrentURL().search);
+  }
+
+  getCurrentHash() {
+    let hash = this._getCurrentURL().hash;
+
+    if (hash.startsWith('#')) {
+      hash = hash.slice(1);
+    }
+
+    if (hash === '') {
+      return undefined;
+    }
+
+    return hash;
   }
 
   callCurrentRoute(options: {fallback?: Function} = {}) {

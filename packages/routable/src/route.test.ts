@@ -111,4 +111,18 @@ describe('Route', () => {
     );
     expect(route.generateURL({id: 'abc123', unknownParam: 'abc'})).toBe('/movies/abc123');
   });
+
+  test('generatePath()', async () => {
+    const route = new Route('Main', '/movies/:id\\?:language');
+
+    expect(route.generatePath({id: 'abc123'})).toBe('/movies/abc123');
+    expect(route.generatePath({id: 'abc123', language: 'fr'})).toBe('/movies/abc123');
+  });
+
+  test('generateQueryString()', async () => {
+    const route = new Route('Main', '/movies/:id\\?:language');
+
+    expect(route.generateQueryString({id: 'abc123'})).toBe('');
+    expect(route.generateQueryString({id: 'abc123', language: 'fr'})).toBe('language=fr');
+  });
 });

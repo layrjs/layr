@@ -35,7 +35,7 @@ describe('MemoryRouter', () => {
     }
 
     const router = new MemoryRouter({
-      initialURLs: ['/', '/movies', '/movies/abc123?showDetails=true']
+      initialURLs: ['/', '/movies', '/movies/abc123?showDetails=true#main']
     });
 
     router.registerRootComponent(Root);
@@ -69,7 +69,7 @@ describe('MemoryRouter', () => {
   test('getCurrentURL()', async () => {
     const router = getRouter();
 
-    expect(router.getCurrentURL()).toBe('/movies/abc123?showDetails=true');
+    expect(router.getCurrentURL()).toBe('/movies/abc123?showDetails=true#main');
   });
 
   test('getCurrentParams()', async () => {
@@ -78,10 +78,34 @@ describe('MemoryRouter', () => {
     expect(router.getCurrentParams()).toEqual({id: 'abc123'});
   });
 
+  test('getCurrentPath()', async () => {
+    const router = getRouter();
+
+    expect(router.getCurrentPath()).toBe('/movies/abc123');
+
+    await router.goBack();
+
+    expect(router.getCurrentPath()).toBe('/movies');
+  });
+
   test('getCurrentQuery()', async () => {
     const router = getRouter();
 
     expect(router.getCurrentQuery()).toEqual({showDetails: 'true'});
+
+    await router.goBack();
+
+    expect(router.getCurrentQuery()).toEqual({});
+  });
+
+  test('getCurrentHash()', async () => {
+    const router = getRouter();
+
+    expect(router.getCurrentHash()).toBe('main');
+
+    await router.goBack();
+
+    expect(router.getCurrentHash()).toBeUndefined();
   });
 
   test('callCurrentRoute()', async () => {

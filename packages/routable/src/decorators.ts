@@ -1,4 +1,4 @@
-import {AbstractRouter, normalizeURL} from '@liaison/abstract-router';
+import {AbstractRouter} from '@liaison/abstract-router';
 
 import type {RoutableComponent} from './routable';
 import type {RouteOptions, RoutePattern} from './route';
@@ -31,6 +31,14 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
         return route.generateURL(params);
       });
 
+      defineMethod(method, 'generatePath', function (params?: any) {
+        return route.generatePath(params);
+      });
+
+      defineMethod(method, 'generateQueryString', function (params?: any) {
+        return route.generateQueryString(params);
+      });
+
       Object.defineProperty(method, '__isDecorated', {value: true});
     };
 
@@ -52,8 +60,8 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       });
 
       defineMethod(method, 'isActive', function (this: Function, params?: any) {
-        const routePath = normalizeURL(this.generateURL(params)).pathname;
-        const currentPath = normalizeURL(router.getCurrentURL()).pathname;
+        const currentPath = router.getCurrentPath();
+        const routePath = this.generatePath(params);
 
         return routePath === currentPath;
       });

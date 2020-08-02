@@ -23,7 +23,7 @@ export function RouterPlugin() {
           [to]
         );
 
-        const currentPath = normalizeURL(router.getCurrentURL()).pathname;
+        const currentPath = router.getCurrentPath();
         const linkPath = normalizeURL(to).pathname;
         const isActive = linkPath === currentPath;
 
