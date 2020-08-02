@@ -102,7 +102,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       return (this as any)[name](params);
     }
 
-    static findRouteForURL(url: string | URL) {
+    static findRouteByURL(url: URL | string) {
       const normalizedURL = normalizeURL(url);
 
       const routes = this.__getRoutes();
@@ -118,8 +118,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       return undefined;
     }
 
-    static callRouteForURL(url: string | URL) {
-      const result = this.findRouteForURL(url);
+    static callRouteByURL(url: URL | string) {
+      const result = this.findRouteByURL(url);
 
       if (result === undefined) {
         throw new Error(

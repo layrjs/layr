@@ -1,6 +1,6 @@
-import {normalizeURL} from '@liaison/abstract-router';
-import {Path} from 'path-parser';
-import {PlainObject} from 'core-helpers';
+import {normalizeURL, parseQuery, stringifyQuery} from '@liaison/abstract-router';
+import {match, compile, MatchFunction, PathFunction} from 'path-to-regexp';
+import pick from 'lodash/pick';
 
 import {isRouteInstance} from './utilities';
 
@@ -13,20 +13,52 @@ export type RouteOptions = {
 export class Route {
   _name: string;
   _pattern: RoutePattern;
-  _parsedPattern: Path;
   _aliases: RoutePattern[];
-  _parsedAliases: Path[];
+  _matchers: MatchFunction[];
+  _queryParamNames: string[];
+  _compiler: PathFunction;
 
   constructor(name: string, pattern: RoutePattern, options: RouteOptions = {}) {
     const {aliases = []} = options;
 
     this._name = name;
-
     this._pattern = pattern;
-    this._parsedPattern = new Path(pattern, {urlParamsEncoding: 'none'});
-
     this._aliases = aliases;
-    this._parsedAliases = aliases.map((alias) => new Path(alias, {urlParamsEncoding: 'none'}));
+
+    this._matchers = [];
+    this._queryParamNames = [];
+
+    for (const pathAndQueryPattern of [pattern, ...aliases]) {
+      const [pathPattern, queryPattern] = pathAndQueryPattern.split('\\?');
+
+      this._matchers.push(match(pathPattern));
+
+      if (queryPattern !== undefined) {
+        const queryParams = queryPattern.split('&');
+
+        for (const queryParam of queryParams) {
+          if (queryParam === '') {
+            continue;
+          }
+
+          if (!queryParam.startsWith(':')) {
+            throw new Error(
+              `A route query param should start with a colon (route name: '${name}', route pattern: '${pattern}')`
+            );
+          }
+
+          const queryParamName = queryParam.slice(1);
+
+          if (!this._queryParamNames.includes(queryParamName)) {
+            this._queryParamNames.push(queryParamName);
+          }
+        }
+      }
+    }
+
+    const [pathPattern] = pattern.split('\\?');
+
+    this._compiler = compile(pathPattern);
   }
 
   getName() {
@@ -41,51 +73,32 @@ export class Route {
     return this._aliases;
   }
 
-  matchURL(url: string | URL) {
-    const normalizedURL = normalizeURL(url);
+  matchURL(url: URL | string) {
+    const {pathname: path, search: queryString} = normalizeURL(url);
 
-    const {pathname, search} = normalizedURL;
-    const path = pathname + search;
+    for (const matcher of this._matchers) {
+      const result = matcher(path);
 
-    const parsedPattern = this._parsedPattern;
+      if (result !== false) {
+        let query = parseQuery(queryString);
+        query = pick(query, this._queryParamNames);
 
-    const result = parsedPattern.test(path);
-
-    if (result !== null) {
-      return result;
-    }
-
-    const parsedAliases = this._parsedAliases;
-
-    for (const parsedAlias of parsedAliases) {
-      const result = parsedAlias.test(path);
-
-      if (result !== null) {
-        return result;
+        return {...result.params, ...query};
       }
     }
 
     return undefined;
   }
 
-  generateURL(params?: any) {
-    const parsedPattern = this._parsedPattern;
+  generateURL(params?: object) {
+    let url = this._compiler(params);
 
-    // Since 'path-parser' ignore non-enumerable properties,
-    // let's generate a plain object
+    const query = pick(params, this._queryParamNames);
+    const queryString = stringifyQuery(query);
 
-    const plainParams: PlainObject = {};
-
-    for (const name of parsedPattern.params) {
-      const value = params?.[name];
-
-      if (value !== undefined) {
-        plainParams[name] = value;
-      }
+    if (queryString !== '') {
+      url += `?${queryString}`;
     }
-
-    const url = parsedPattern.build(plainParams);
-
     return url;
   }
 

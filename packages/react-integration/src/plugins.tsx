@@ -1,3 +1,4 @@
+import {normalizeURL} from '@liaison/abstract-router';
 import {BrowserRouter, BrowserRouterLinkProps} from '@liaison/browser-router';
 import React, {useMemo, useCallback} from 'react';
 
@@ -22,7 +23,9 @@ export function RouterPlugin() {
           [to]
         );
 
-        const isActive = router._getCurrentURL().pathname === to;
+        const currentPath = normalizeURL(router.getCurrentURL()).pathname;
+        const linkPath = normalizeURL(to).pathname;
+        const isActive = linkPath === currentPath;
 
         const {actualClassName, actualStyle} = useMemo(() => {
           let actualClassName = className;

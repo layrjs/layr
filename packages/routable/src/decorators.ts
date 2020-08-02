@@ -23,7 +23,7 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
     const route = target.setRoute(name, pattern, options);
 
     const decorate = function (this: typeof RoutableComponent, method: Function) {
-      defineMethod(method, 'matchURL', function (url: string | URL) {
+      defineMethod(method, 'matchURL', function (url: URL | string) {
         return route.matchURL(url);
       });
 
@@ -52,7 +52,10 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       });
 
       defineMethod(method, 'isActive', function (this: Function, params?: any) {
-        return normalizeURL(router.getCurrentURL()).pathname === this.generateURL(params);
+        const routePath = normalizeURL(this.generateURL(params)).pathname;
+        const currentPath = normalizeURL(router.getCurrentURL()).pathname;
+
+        return routePath === currentPath;
       });
 
       router.applyCustomRouteDecorators(this, method);

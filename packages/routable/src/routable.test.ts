@@ -61,24 +61,24 @@ describe('Routable', () => {
     );
   });
 
-  test('findRouteForURL()', async () => {
+  test('findRouteByURL()', async () => {
     class Movie extends Routable(Component) {}
 
     const mainRoute = Movie.setRoute('Main', '/movies/:id');
     const aboutRoute = Movie.setRoute('About', '/movies/:id/about');
 
-    expect(Movie.findRouteForURL('/movies/abc123')).toEqual({
+    expect(Movie.findRouteByURL('/movies/abc123')).toEqual({
       route: mainRoute,
       params: {id: 'abc123'}
     });
-    expect(Movie.findRouteForURL('/movies/abc123/about')).toEqual({
+    expect(Movie.findRouteByURL('/movies/abc123/about')).toEqual({
       route: aboutRoute,
       params: {id: 'abc123'}
     });
-    expect(Movie.findRouteForURL('/films/abc123')).toBeUndefined();
+    expect(Movie.findRouteByURL('/films/abc123')).toBeUndefined();
   });
 
-  test('callRouteForURL()', async () => {
+  test('callRouteByURL()', async () => {
     class Movie extends Routable(Component) {
       static Main({id}: {id: string}) {
         return `Movie #${id}`;
@@ -87,9 +87,9 @@ describe('Routable', () => {
 
     Movie.setRoute('Main', '/movies/:id');
 
-    expect(Movie.callRouteForURL('/movies/abc123')).toBe('Movie #abc123');
+    expect(Movie.callRouteByURL('/movies/abc123')).toBe('Movie #abc123');
 
-    expect(() => Movie.callRouteForURL('/movies/abc123/about')).toThrow(
+    expect(() => Movie.callRouteByURL('/movies/abc123/about')).toThrow(
       "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/abc123/about')"
     );
   });

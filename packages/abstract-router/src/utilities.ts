@@ -1,5 +1,7 @@
-import type {AbstractRouter} from './abstract-router';
+import qs from 'qs';
 import {getTypeOf} from 'core-helpers';
+
+import type {AbstractRouter} from './abstract-router';
 
 const LIAISON_PROTOCOL = 'liaison:';
 
@@ -41,4 +43,16 @@ export function stringifyURL(url: URL) {
   }
 
   return urlString;
+}
+
+export function parseQuery<T extends object = object>(queryString: string) {
+  if (queryString.startsWith('?')) {
+    queryString = queryString.slice(1);
+  }
+
+  return qs.parse(queryString) as T;
+}
+
+export function stringifyQuery(query: object | undefined) {
+  return qs.stringify(query);
 }

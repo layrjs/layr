@@ -13,7 +13,7 @@ export declare class RoutableLike {
 
   static __setRouter: (router: AbstractRouter) => void;
 
-  static findRouteForURL: (url: string | URL) => {route: any; params: PlainObject} | undefined;
+  static findRouteByURL: (url: URL | string) => {route: any; params: PlainObject} | undefined;
 
   static __callRoute: (route: any, params: any) => any;
 }

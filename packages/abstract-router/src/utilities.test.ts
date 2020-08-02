@@ -1,4 +1,4 @@
-import {normalizeURL, stringifyURL} from './utilities';
+import {normalizeURL, stringifyURL, parseQuery, stringifyQuery} from './utilities';
 
 describe('Utilities', () => {
   test('normalizeURL() and stringifyURL()', async () => {
@@ -19,6 +19,22 @@ describe('Utilities', () => {
 
     expect(() => normalizeURL('https://?')).toThrow(
       "The specified URL is invalid (URL: 'https://?')"
+    );
+  });
+
+  test('parseQuery() and stringifyQuery()', async () => {
+    expect(parseQuery('')).toEqual({});
+    expect(parseQuery('?')).toEqual({});
+    expect(parseQuery('category=drama&sortBy=title')).toEqual({category: 'drama', sortBy: 'title'});
+    expect(parseQuery('?category=drama&sortBy=title')).toEqual({
+      category: 'drama',
+      sortBy: 'title'
+    });
+
+    expect(stringifyQuery(undefined)).toEqual('');
+    expect(stringifyQuery({})).toEqual('');
+    expect(stringifyQuery({category: 'drama', sortBy: 'title'})).toEqual(
+      'category=drama&sortBy=title'
     );
   });
 });

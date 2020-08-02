@@ -3,15 +3,15 @@ import {Observable} from '@liaison/observable';
 import {PlainObject, assertNoUnknownOptions} from 'core-helpers';
 
 import {RoutableLike, isRoutableLikeClass, assertIsRoutableLikeClass} from './routable-like';
-import {isRouterInstance, normalizeURL, stringifyURL} from './utilities';
+import {isRouterInstance, normalizeURL, stringifyURL, parseQuery} from './utilities';
 
 declare global {
   interface Function {
-    matchURL: (url: string | URL) => PlainObject | undefined;
+    matchURL: (url: URL | string) => PlainObject | undefined;
     generateURL: (params?: PlainObject) => string;
-    navigate: (params?: PlainObject) => Promise<void>;
-    redirect: (params?: PlainObject) => Promise<void>;
-    reload: (params?: PlainObject) => void;
+    navigate: (params?: PlainObject, query?: PlainObject) => Promise<void>;
+    redirect: (params?: PlainObject, query?: PlainObject) => Promise<void>;
+    reload: (params?: PlainObject, query?: PlainObject) => void;
     isActive: (params?: PlainObject) => boolean;
   }
 }
@@ -128,11 +128,9 @@ export abstract class AbstractRouter extends Observable(Object) {
 
   // === Routes ===
 
-  findRouteForURL(url: string | URL) {
-    const normalizedURL = normalizeURL(url);
-
+  findRouteByURL(url: URL | string) {
     for (const routable of this.getRoutables()) {
-      const result = routable.findRouteForURL(normalizedURL);
+      const result = routable.findRouteByURL(url);
 
       if (result !== undefined) {
         return {routable, ...result};
@@ -142,10 +140,8 @@ export abstract class AbstractRouter extends Observable(Object) {
     return undefined;
   }
 
-  getParamsForURL(url: string | URL) {
-    const normalizedURL = normalizeURL(url);
-
-    const result = this.findRouteForURL(normalizedURL);
+  getParamsFromURL(url: URL | string) {
+    const result = this.findRouteByURL(url);
 
     if (result === undefined) {
       throw new Error(`Couldn't find a route matching the specified URL (URL: '${url}')`);
@@ -154,12 +150,10 @@ export abstract class AbstractRouter extends Observable(Object) {
     return result.params;
   }
 
-  callRouteForURL(url: string | URL, options: {fallback?: Function} = {}) {
-    const normalizedURL = normalizeURL(url);
-
+  callRouteByURL(url: URL | string, options: {fallback?: Function} = {}) {
     const {fallback} = options;
 
-    const result = this.findRouteForURL(normalizedURL);
+    const result = this.findRouteByURL(url);
 
     if (result !== undefined) {
       const {routable, route, params} = result;
@@ -183,9 +177,11 @@ export abstract class AbstractRouter extends Observable(Object) {
   abstract _getCurrentURL(): URL;
 
   getCurrentParams() {
-    const url = this._getCurrentURL();
+    return this.getParamsFromURL(this._getCurrentURL());
+  }
 
-    return this.getParamsForURL(url);
+  getCurrentQuery<T extends object = object>() {
+    return parseQuery<T>(this._getCurrentURL().search);
   }
 
   callCurrentRoute(options: {fallback?: Function} = {}) {
@@ -193,7 +189,7 @@ export abstract class AbstractRouter extends Observable(Object) {
 
     const url = this._getCurrentURL();
 
-    return this.callRouteForURL(url, {fallback});
+    return this.callRouteByURL(url, {fallback});
   }
 
   // === Navigation ===
