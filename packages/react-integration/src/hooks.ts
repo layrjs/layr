@@ -26,11 +26,26 @@ export function useBrowserRouter(rootComponent: typeof Component) {
     return function () {
       router.removeObserver(forceUpdate);
     };
-  }, []);
+  }, [router]);
 
+  useNavigationEventTracker(router);
   useHashNavigationFix(router);
 
   return [router, isReady] as const;
+}
+
+function useNavigationEventTracker(router: BrowserRouter) {
+  useEffect(() => {
+    const handleEvent = (event: Event) => {
+      router.navigate((event as CustomEvent).detail.url);
+    };
+
+    document.body.addEventListener('liaisonRouterNavigate', handleEvent);
+
+    return function () {
+      document.body.removeEventListener('liaisonRouterNavigate', handleEvent);
+    };
+  }, [router]);
 }
 
 function useHashNavigationFix(router: BrowserRouter) {
@@ -65,14 +80,18 @@ function useHashNavigationFix(router: BrowserRouter) {
     };
   }, []);
 
+  let pathAndHash = router.getCurrentPath();
   const hash = router.getCurrentHash();
 
   if (hash !== undefined) {
-    const pathAndHash = `${router.getCurrentPath()}#${hash}`;
+    pathAndHash += `#${hash}`;
+  }
 
-    if (pathAndHash !== previousPathAndHash.current) {
+  if (pathAndHash !== previousPathAndHash.current) {
+    previousPathAndHash.current = pathAndHash;
+
+    if (hash !== undefined) {
       expectedHash.current = hash;
-      previousPathAndHash.current = pathAndHash;
     }
   }
 }
