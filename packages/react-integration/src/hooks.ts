@@ -3,6 +3,7 @@ import {ObservableType, isObservable} from '@liaison/observable';
 import {BrowserRouter} from '@liaison/browser-router';
 import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {SyncFunction, AsyncFunction, getTypeOf} from 'core-helpers';
+import debounce from 'lodash/debounce';
 
 import {RouterPlugin} from './plugins';
 
@@ -27,7 +28,53 @@ export function useBrowserRouter(rootComponent: typeof Component) {
     };
   }, []);
 
+  useHashNavigationFix(router);
+
   return [router, isReady] as const;
+}
+
+function useHashNavigationFix(router: BrowserRouter) {
+  const expectedHash = useRef<string | undefined>(undefined);
+  const previousPathAndHash = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    const mutationObserver = new MutationObserver(
+      debounce(() => {
+        if (expectedHash.current === undefined) {
+          return;
+        }
+
+        const element = document.getElementById(expectedHash.current);
+
+        if (element !== null) {
+          element.scrollIntoView({block: 'start', behavior: 'smooth'});
+          expectedHash.current = undefined;
+        }
+      }, 50)
+    );
+
+    mutationObserver.observe(document.body, {
+      attributes: true,
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
+
+    return function () {
+      mutationObserver.disconnect();
+    };
+  }, []);
+
+  const hash = router.getCurrentHash();
+
+  if (hash !== undefined) {
+    const pathAndHash = `${router.getCurrentPath()}#${hash}`;
+
+    if (pathAndHash !== previousPathAndHash.current) {
+      expectedHash.current = hash;
+      previousPathAndHash.current = pathAndHash;
+    }
+  }
 }
 
 export function useObserve(observable: ObservableType) {
