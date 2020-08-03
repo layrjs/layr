@@ -8,15 +8,17 @@ import {isRouterInstance, normalizeURL, stringifyURL, parseQuery} from './utilit
 declare global {
   interface Function {
     matchURL: (url: URL | string) => PlainObject | undefined;
-    generateURL: (params?: PlainObject) => string;
+    generateURL: (params?: PlainObject, options?: URLOptions) => string;
     generatePath: (params?: PlainObject) => string;
     generateQueryString: (params?: PlainObject) => string;
-    navigate: (params?: PlainObject, query?: PlainObject) => Promise<void>;
-    redirect: (params?: PlainObject, query?: PlainObject) => Promise<void>;
-    reload: (params?: PlainObject, query?: PlainObject) => void;
+    navigate: (params?: PlainObject, options?: URLOptions) => Promise<void>;
+    redirect: (params?: PlainObject, options?: URLOptions) => Promise<void>;
+    reload: (params?: PlainObject, options?: URLOptions) => void;
     isActive: (params?: PlainObject) => boolean;
   }
 }
+
+export type URLOptions = {hash?: string};
 
 type RouterPlugin = (router: AbstractRouter) => void;
 

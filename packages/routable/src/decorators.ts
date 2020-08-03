@@ -1,4 +1,4 @@
-import {AbstractRouter} from '@liaison/abstract-router';
+import {AbstractRouter, URLOptions} from '@liaison/abstract-router';
 
 import type {RoutableComponent} from './routable';
 import type {RouteOptions, RoutePattern} from './route';
@@ -27,8 +27,8 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
         return route.matchURL(url);
       });
 
-      defineMethod(method, 'generateURL', function (params?: any) {
-        return route.generateURL(params);
+      defineMethod(method, 'generateURL', function (params?: any, options?: URLOptions) {
+        return route.generateURL(params, options);
       });
 
       defineMethod(method, 'generatePath', function (params?: any) {
@@ -47,16 +47,24 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       method: Function,
       router: AbstractRouter
     ) {
-      defineMethod(method, 'navigate', function (this: Function, params?: any) {
-        return router.navigate(this.generateURL(params));
+      defineMethod(method, 'navigate', function (
+        this: Function,
+        params?: any,
+        options?: URLOptions
+      ) {
+        return router.navigate(this.generateURL(params, options));
       });
 
-      defineMethod(method, 'redirect', function (this: Function, params?: any) {
-        return router.redirect(this.generateURL(params));
+      defineMethod(method, 'redirect', function (
+        this: Function,
+        params?: any,
+        options?: URLOptions
+      ) {
+        return router.redirect(this.generateURL(params, options));
       });
 
-      defineMethod(method, 'reload', function (this: Function, params?: any) {
-        router.reload(this.generateURL(params));
+      defineMethod(method, 'reload', function (this: Function, params?: any, options?: URLOptions) {
+        router.reload(this.generateURL(params, options));
       });
 
       defineMethod(method, 'isActive', function (this: Function, params?: any) {

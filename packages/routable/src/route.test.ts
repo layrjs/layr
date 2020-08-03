@@ -110,6 +110,12 @@ describe('Route', () => {
       '/movies/abc123?language=fr&showDetails=true'
     );
     expect(route.generateURL({id: 'abc123', unknownParam: 'abc'})).toBe('/movies/abc123');
+
+    // --- Using the 'hash' option ---
+
+    route = new Route('Main', '/movies/:id');
+
+    expect(route.generateURL({id: 'abc123'}, {hash: 'main'})).toBe('/movies/abc123#main');
   });
 
   test('generatePath()', async () => {

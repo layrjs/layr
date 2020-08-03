@@ -1,4 +1,4 @@
-import {normalizeURL, parseQuery, stringifyQuery} from '@liaison/abstract-router';
+import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@liaison/abstract-router';
 import {match, compile, MatchFunction, PathFunction} from 'path-to-regexp';
 import pick from 'lodash/pick';
 
@@ -90,7 +90,7 @@ export class Route {
     return undefined;
   }
 
-  generateURL(params?: object) {
+  generateURL(params?: object, options?: URLOptions) {
     let url = this.generatePath(params);
 
     const queryString = this.generateQueryString(params);
@@ -98,6 +98,11 @@ export class Route {
     if (queryString !== '') {
       url += `?${queryString}`;
     }
+
+    if (options?.hash) {
+      url += `#${options.hash}`;
+    }
+
     return url;
   }
 

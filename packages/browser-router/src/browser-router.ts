@@ -8,7 +8,7 @@ import {PlainObject} from 'core-helpers';
 
 declare global {
   interface Function {
-    Link: (props: {params?: PlainObject} & PlainObject) => any;
+    Link: (props: {params?: PlainObject; hash?: string} & PlainObject) => any;
   }
 }
 

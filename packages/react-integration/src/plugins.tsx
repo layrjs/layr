@@ -59,8 +59,8 @@ export function RouterPlugin() {
     });
 
     router.addCustomRouteDecorator(function (method) {
-      method.Link = function ({params, ...props}) {
-        const to = method.generateURL(params);
+      method.Link = function ({params, hash, ...props}) {
+        const to = method.generateURL(params, {hash});
 
         return router.Link({to, ...props});
       };
