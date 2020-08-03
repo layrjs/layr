@@ -13,8 +13,8 @@
   "prettier": "@mvila/prettierrc",
   "devDependencies": {
     "@mvila/prettierrc": "^1.0.0",
-    "@mvila/simple-doc": "^0.1.66",
-    "lerna": "^3.20.2",
+    "@mvila/simple-doc": "^0.1.69",
+    "lerna": "^3.22.1",
     "prettier": "^2.0.5"
   }
 }

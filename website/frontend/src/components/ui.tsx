@@ -1,6 +1,7 @@
 import {Component} from '@liaison/component';
 import {useEffect} from 'react';
 import {view} from '@liaison/react-integration';
+import {isInternalURL} from '@liaison/browser-router';
 import {jsx, Global} from '@emotion/core';
 import {ThemeProvider, useTheme} from 'emotion-theming';
 import normalize from 'emotion-normalize';
@@ -639,12 +640,18 @@ export class UI extends Component {
   @view() static Markdown({languageFilter, children}: {languageFilter?: string; children: string}) {
     let html = marked(children, {
       highlight: (code, language) => {
-        if (
-          languageFilter !== undefined &&
-          (language === 'js' || language === 'ts') &&
-          language !== languageFilter
-        ) {
-          return '';
+        if (languageFilter !== undefined) {
+          const matches = code.match(/^\/\/ (\w+)\n\n/);
+
+          if (matches !== null) {
+            const languageSpecifier = matches[1].toLocaleLowerCase();
+
+            if (languageSpecifier !== languageFilter) {
+              return ''; // The code must be filtered out
+            }
+
+            code = code.slice(matches[0].length); // Remove the language specifier from the code
+          }
         }
 
         if (language === '') {
@@ -661,14 +668,41 @@ export class UI extends Component {
 
     if (languageFilter !== undefined) {
       // Finish removing the filtered out languages
-      html = html.replace(/<pre><code class="language-\w+"><\/code><\/pre>\n/g, '');
+      html = html.replace(/<pre><code( class="language-\w+")?><\/code><\/pre>\n/g, '');
     }
 
     html = DOMPurify.sanitize(html, {ADD_TAGS: ['badge']});
 
+    // Handle badge tag
     html = html.replace(/<badge(?: type="(\w+)")?>([\w ]+)<\/badge>/g, (_, type, name) => {
       return `<span class='badge${type !== undefined ? ` badge-${type}` : ''}'>${name}</span>`;
     });
+
+    // Handle custom header id
+    // Replace: <h4 id="creation-creation">Creation {#creation}</h4>
+    // With: <h4 id="creation">Creation</h4>
+    html = html.replace(
+      /<h\d id="([\w-]+)">.+\{\#([\w-]+)\}<\/h\d>/g,
+      (match, currentId, newId) => {
+        match = match.replace(` id="${currentId}">`, ` id="${newId}">`);
+        match = match.replace(` {#${newId}}<`, `<`);
+        return match;
+      }
+    );
+
+    // Handle link clicks
+    // Replace: <a href="target">text</a>
+    // With: <a href="target" onclick="...">text</a>
+    html = html.replace(/<a href="([^"]+)">.*<\/a>/g, (match, url) => {
+      if (isInternalURL(url)) {
+        const onClick = `document.body.dispatchEvent(new CustomEvent('liaisonRouterNavigate', {detail: {url: '${url}'}})); return false;`;
+        match = match.replace(`<a href="${url}">`, `<a href="${url}" onclick="${onClick}">`);
+      }
+
+      return match;
+    });
+
+    // console.log(html);
 
     return <div dangerouslySetInnerHTML={{__html: html}} />;
   }

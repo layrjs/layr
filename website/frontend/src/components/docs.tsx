@@ -3,14 +3,19 @@ import {Routable, route} from '@liaison/routable';
 import {Fragment, useCallback} from 'react';
 import {view, useAsyncMemo, useAsyncCall} from '@liaison/react-integration';
 import {jsx, css} from '@emotion/core';
+import isEqual from 'lodash/isEqual';
 
 import type {Common} from './common';
 import type {UI} from './ui';
 
+const VERSIONS = [{name: '1', value: 'v1'}];
+const LANGUAGES = [
+  {name: 'JavaScript', value: 'js'},
+  {name: 'TypeScript', value: 'ts'}
+];
+
 const BASE_URL = '/docs';
 const INDEX_PATH = 'index.json';
-const DEFAULT_VERSION = '1';
-const DEFAULT_LANGUAGE = 'js';
 
 type Contents = {books: Book[]};
 
@@ -21,7 +26,7 @@ type Chapter = {
   slug: string;
   file: string;
   content: string;
-  path: string;
+  path: string[];
   nextChapter?: Chapter;
 };
 
@@ -41,14 +46,16 @@ export class Docs extends Routable(Component) {
     );
   }
 
-  @route('/docs/*path?:version&:language') @view() static MainWithParams({
-    path,
+  @route('/docs/:version?/:path*\\?:language')
+  @view()
+  static Main({
+    path = [],
     version,
     language
   }: {
-    path: string;
-    version: string;
-    language: string;
+    path?: string[];
+    version?: string;
+    language?: string;
   }) {
     const {Common, UI} = this;
 
@@ -65,13 +72,26 @@ export class Docs extends Routable(Component) {
     }
 
     const resolvedPath = this.resolvePath(path);
+    const resolvedVersion = this.resolveVersion(version);
+    const resolvedLanguage = this.resolveLanguage(language);
 
-    if (resolvedPath === undefined) {
+    if (
+      resolvedPath === undefined ||
+      resolvedVersion === undefined ||
+      resolvedLanguage === undefined
+    ) {
       return <Common.RouteNotFound />;
     }
 
-    if (path !== resolvedPath) {
-      this.MainWithParams.redirect({path: resolvedPath, version, language});
+    const resolvedParams = {
+      path: resolvedPath,
+      version: resolvedVersion,
+      language: resolvedLanguage
+    };
+
+    if (!isEqual({path, version, language}, resolvedParams)) {
+      const hash = this.getRouter().getCurrentHash();
+      this.Main.redirect(resolvedParams, {hash});
       return null;
     }
 
@@ -90,10 +110,6 @@ export class Docs extends Routable(Component) {
         </div>
       </this.Layout>
     );
-  }
-
-  @route('/docs') static Main() {
-    this.MainWithParams.redirect({path: '', version: DEFAULT_VERSION, language: DEFAULT_LANGUAGE});
   }
 
   @view() static Contents() {
@@ -128,12 +144,12 @@ export class Docs extends Routable(Component) {
               <ul css={chapterMenuStyle}>
                 {book.chapters.map((chapter) => (
                   <li key={chapter.slug} css={chapterMenuItemStyle}>
-                    <this.MainWithParams.Link
+                    <this.Main.Link
                       params={{path: chapter.path, version, language}}
                       activeStyle={{color: theme.highlighted.textColor}}
                     >
                       {chapter.title}
-                    </this.MainWithParams.Link>
+                    </this.Main.Link>
                   </li>
                 ))}
               </ul>
@@ -151,12 +167,15 @@ export class Docs extends Routable(Component) {
     const theme = UI.useTheme();
 
     const {path, version, language} = router.getCurrentParams();
+    const hash = router.getCurrentHash();
 
     const changeLanguage = useCallback(
       (event: React.ChangeEvent<HTMLSelectElement>) => {
-        this.MainWithParams.redirect({path, version, language: event.target.value});
+        const language = event.target.value;
+        window.localStorage.setItem('language', language);
+        this.Main.redirect({path, version, language}, {hash});
       },
-      [path, version]
+      [path.join('/'), version, hash]
     );
 
     const labelStyle = css({
@@ -172,7 +191,11 @@ export class Docs extends Routable(Component) {
             Version
           </label>
           <UI.Select id="version-selector" small>
-            <option value="1">1</option>
+            {VERSIONS.map(({name, value}) => (
+              <option key={value} value={value}>
+                {name}
+              </option>
+            ))}
           </UI.Select>
         </div>
 
@@ -181,8 +204,11 @@ export class Docs extends Routable(Component) {
             Language
           </label>
           <UI.Select id="version-selector" small value={language} onChange={changeLanguage}>
-            <option value="js">JavaScript</option>
-            <option value="ts">TypeScript</option>
+            {LANGUAGES.map(({name, value}) => (
+              <option key={value} value={value}>
+                {name}
+              </option>
+            ))}
           </UI.Select>
         </div>
       </div>
@@ -199,7 +225,7 @@ export class Docs extends Routable(Component) {
 
     const [chapter, isLoading, loadingError, retryLoading] = useAsyncMemo(async () => {
       return await this.getChapter(path);
-    }, [path]);
+    }, [path.join('/')]);
 
     if (isLoading) {
       return <Common.LoadingSpinner />;
@@ -220,12 +246,12 @@ export class Docs extends Routable(Component) {
             <hr />
             <div>
               <span style={{color: theme.muted.textColor}}>Next:</span>{' '}
-              <this.MainWithParams.Link
+              <this.Main.Link
                 params={{path: nextChapter.path, version, language}}
                 activeStyle={{color: theme.highlighted.textColor}}
               >
                 {nextChapter.title} →
-              </this.MainWithParams.Link>
+              </this.Main.Link>
             </div>
           </div>
         )}
@@ -249,7 +275,7 @@ export class Docs extends Routable(Component) {
           let previousChapter: Chapter | undefined;
 
           for (const chapter of book.chapters) {
-            chapter.path = `${book.slug}/${chapter.slug}`;
+            chapter.path = [book.slug, chapter.slug];
 
             if (previousChapter !== undefined) {
               previousChapter.nextChapter = chapter;
@@ -271,21 +297,21 @@ export class Docs extends Routable(Component) {
     return this._contents;
   }
 
-  static async getChapter(path: string) {
+  static async getChapter(path: string[]) {
     const contents = this.getContents();
 
-    let [bookSlug, chapterSlug] = path.split('/');
+    let [bookSlug, chapterSlug] = path;
 
     const book = contents.books.find((book) => book.slug === bookSlug);
 
     if (book === undefined) {
-      throw new Error(`Book not found (path: '${path}')`);
+      throw new Error(`Book not found (path: '${path.join('/')}')`);
     }
 
     const chapter = book.chapters.find((chapter) => chapter.slug === chapterSlug);
 
     if (chapter === undefined) {
-      throw new Error(`Chapter not found (path: '${path}')`);
+      throw new Error(`Chapter not found (path: '${path.join('/')}')`);
     }
 
     if (chapter.content === undefined) {
@@ -308,14 +334,14 @@ export class Docs extends Routable(Component) {
     return chapter;
   }
 
-  static resolvePath(path: string) {
+  static resolvePath(path: string[]) {
     const contents = this.getContents();
 
-    if (path === '') {
-      path = contents.books[0].slug;
-    }
+    let [bookSlug, chapterSlug, ...otherSlugs] = path;
 
-    let [bookSlug, chapterSlug, ...otherSlugs] = path.split('/');
+    if (bookSlug === undefined || bookSlug === '') {
+      bookSlug = contents.books[0].slug;
+    }
 
     const book = contents.books.find((book) => book.slug === bookSlug);
 
@@ -337,6 +363,30 @@ export class Docs extends Routable(Component) {
       return undefined;
     }
 
-    return `${book.slug}/${chapter.slug}`;
+    return [book.slug, chapter.slug];
+  }
+
+  static resolveVersion(version: string | undefined) {
+    if (version === undefined) {
+      version = VERSIONS[0].value;
+    }
+
+    if (VERSIONS.find(({value}) => value === version) === undefined) {
+      return undefined;
+    }
+
+    return version;
+  }
+
+  static resolveLanguage(language: string | undefined) {
+    if (language === undefined) {
+      language = window.localStorage.getItem('language') || LANGUAGES[0].value;
+    }
+
+    if (LANGUAGES.find(({value}) => value === language) === undefined) {
+      return undefined;
+    }
+
+    return language;
   }
 }
