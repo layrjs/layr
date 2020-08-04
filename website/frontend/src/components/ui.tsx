@@ -259,6 +259,9 @@ export class UI extends Component {
           backgroundColor: 'transparent',
           borderRadius: 0
         },
+        'a code': {
+          color: theme.link.primaryColor
+        },
         '.badge': {
           display: 'inline-block',
           color: theme.highlighted.textColor,
@@ -285,6 +288,81 @@ export class UI extends Component {
         '.badge-tertiary': {
           color: theme.textOnTertiaryColor,
           backgroundColor: theme.tertiaryColor
+        },
+        '.badge-outline': {
+          color: theme.muted.textColor,
+          backgroundColor: 'inherit',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: theme.muted.textColor
+        },
+        '.badge-primary-outline': {
+          color: theme.highlighted.primaryColor,
+          backgroundColor: 'inherit',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: theme.highlighted.primaryColor
+        },
+        '.badge-secondary-outline': {
+          color: theme.highlighted.secondaryColor,
+          backgroundColor: 'inherit',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: theme.highlighted.secondaryColor
+        },
+        '.badge-tertiary-outline': {
+          color: theme.tertiaryColor,
+          backgroundColor: 'inherit',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: theme.tertiaryColor
+        },
+        'h1 .anchor': {
+          display: 'none'
+        },
+        'h1:hover .anchor': {
+          display: 'inline'
+        },
+        'h2 .anchor': {
+          display: 'none'
+        },
+        'h2:hover .anchor': {
+          display: 'inline'
+        },
+        'h3 .anchor': {
+          display: 'none'
+        },
+        'h3:hover .anchor': {
+          display: 'inline'
+        },
+        'h4 .anchor': {
+          display: 'none'
+        },
+        'h4:hover .anchor': {
+          display: 'inline'
+        },
+        'h5 .anchor': {
+          display: 'none'
+        },
+        'h5:hover .anchor': {
+          display: 'inline'
+        },
+        'h6 .anchor': {
+          display: 'none'
+        },
+        'h6:hover .anchor': {
+          display: 'inline'
+        },
+        '.anchor': {
+          float: 'left',
+          width: 20,
+          marginLeft: -20,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' width='16' height='16' aria-hidden='true'%3E%3Cpath fill='%23888' d='M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z'%3E%3C/path%3E%3C/svg%3E")`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right 4px center'
+        },
+        '.anchor:hover': {
+          textDecoration: 'none'
         },
         '.hljs-comment, .hljs-quote': {
           color: theme.muted.textColor,
@@ -674,7 +752,7 @@ export class UI extends Component {
     html = DOMPurify.sanitize(html, {ADD_TAGS: ['badge']});
 
     // Handle badge tag
-    html = html.replace(/<badge(?: type="(\w+)")?>([\w ]+)<\/badge>/g, (_, type, name) => {
+    html = html.replace(/<badge(?: type="([\w-]+)")?>([\w ]+)<\/badge>/g, (_, type, name) => {
       return `<span class='badge${type !== undefined ? ` badge-${type}` : ''}'>${name}</span>`;
     });
 
@@ -690,10 +768,20 @@ export class UI extends Component {
       }
     );
 
+    html = html.replace(/<h\d id="([\w-]+)">/g, (match, id) => {
+      match += `<a href="#${id}" class="anchor" aria-hidden="true">&nbsp;</a>`;
+      return match;
+    });
+
+    if (process.env.NODE_ENV === 'development') {
+      const localURL = new URL(window.location.href).origin;
+      html = html.replace(/https:\/\/liaison.dev/g, localURL);
+    }
+
     // Handle link clicks
     // Replace: <a href="target">text</a>
     // With: <a href="target" onclick="...">text</a>
-    html = html.replace(/<a href="([^"]+)">.*<\/a>/g, (match, url) => {
+    html = html.replace(/<a href="([^"]+)">.*?<\/a>/g, (match, url) => {
       if (isInternalURL(url)) {
         const onClick = `document.body.dispatchEvent(new CustomEvent('liaisonRouterNavigate', {detail: {url: '${url}'}})); return false;`;
         match = match.replace(`<a href="${url}">`, `<a href="${url}" onclick="${onClick}">`);
@@ -701,8 +789,6 @@ export class UI extends Component {
 
       return match;
     });
-
-    // console.log(html);
 
     return <div dangerouslySetInnerHTML={{__html: html}} />;
   }

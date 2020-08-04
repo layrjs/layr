@@ -98,7 +98,7 @@ export class Docs extends Routable(Component) {
     return (
       <this.Layout>
         <div css={UI.responsive({display: 'flex', flexWrap: ['nowrap', , 'wrap-reverse']})}>
-          <div css={UI.responsive({width: ['200px', , '100%'], paddingRight: [15, , 0]})}>
+          <div css={UI.responsive({width: ['250px', , '100%'], paddingRight: [20, , 0]})}>
             <this.Contents />
           </div>
 
