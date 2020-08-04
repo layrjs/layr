@@ -3,14 +3,41 @@ import compact from 'lodash/compact';
 
 import type {Component, ComponentMixin} from './component';
 
+/**
+ * Returns whether the specified value is a component class.
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isComponentClass(value: any): value is typeof Component {
   return typeof value?.isComponent === 'function';
 }
 
+/**
+ * Returns whether the specified value is a component instance.
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isComponentInstance(value: any): value is Component {
   return typeof value?.constructor?.isComponent === 'function';
 }
 
+/**
+ * Returns whether the specified value is a component class or instance.
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isComponentClassOrInstance(value: any): value is typeof Component | Component {
   return (
     typeof value?.isComponent === 'function' ||
@@ -18,6 +45,13 @@ export function isComponentClassOrInstance(value: any): value is typeof Componen
   );
 }
 
+/**
+ * Throws an error if the specified value is not a component class.
+ *
+ * @param value A value of any type.
+ *
+ * @category Utilities
+ */
 export function assertIsComponentClass(value: any): asserts value is typeof Component {
   if (!isComponentClass(value)) {
     throw new Error(
@@ -26,6 +60,13 @@ export function assertIsComponentClass(value: any): asserts value is typeof Comp
   }
 }
 
+/**
+ * Throws an error if the specified value is not a component instance.
+ *
+ * @param value A value of any type.
+ *
+ * @category Utilities
+ */
 export function assertIsComponentInstance(value: any): asserts value is Component {
   if (!isComponentInstance(value)) {
     throw new Error(
@@ -34,6 +75,13 @@ export function assertIsComponentInstance(value: any): asserts value is Componen
   }
 }
 
+/**
+ * Throws an error if the specified value is not a component class or instance.
+ *
+ * @param value A value of any type.
+ *
+ * @category Utilities
+ */
 export function assertIsComponentClassOrInstance(
   value: any
 ): asserts value is typeof Component | Component {
@@ -44,6 +92,22 @@ export function assertIsComponentClassOrInstance(
   }
 }
 
+/**
+ * Ensures that the specified component is a class. If you specify a component instance (or prototype), the class of the component is returned. If you specify a component class, it is returned as is.
+ *
+ * @param component A component class or instance.
+ *
+ * @returns A component class.
+ *
+ * @example
+ * ```
+ * ensureComponentClass(movie) => Movie
+ * ensureComponentClass(Movie.prototype) => Movie
+ * ensureComponentClass(Movie) => Movie
+ * ```
+ *
+ * @category Utilities
+ */
 export function ensureComponentClass(component: any) {
   if (isComponentClass(component)) {
     return component;
@@ -58,6 +122,22 @@ export function ensureComponentClass(component: any) {
   );
 }
 
+/**
+ * Ensures that the specified component is an instance (or prototype). If you specify a component class, the component prototype is returned. If you specify a component instance (or prototype), it is returned as is.
+ *
+ * @param component A component class or instance.
+ *
+ * @returns A component instance (or prototype).
+ *
+ * @example
+ * ```
+ * ensureComponentInstance(Movie) => Movie.prototype
+ * ensureComponentClass(Movie.prototype) => Movie.prototype
+ * ensureComponentClass(movie) => movie
+ * ```
+ *
+ * @category Utilities
+ */
 export function ensureComponentInstance(component: any) {
   if (isComponentClass(component)) {
     return component.prototype;
@@ -74,10 +154,36 @@ export function ensureComponentInstance(component: any) {
 
 const COMPONENT_NAME_PATTERN = /^[A-Z][A-Za-z0-9_]*$/;
 
+/**
+ * Returns whether the specified string is a valid component name. The rule is the same as for typical JavaScript class names.
+ *
+ * @param name The string to check.
+ *
+ * @returns A boolean.
+ *
+ * @example
+ * ```
+ * isComponentName('Movie') => true
+ * isComponentName('Movie123') => true
+ * isComponentName('Awesome_Movie') => true
+ * isComponentName('123Movie') => false
+ * isComponentName('Awesome-Movie') => false
+ * isComponentName('movie') => false
+ * ```
+ *
+ * @category Utilities
+ */
 export function isComponentName(name: string) {
   return COMPONENT_NAME_PATTERN.test(name);
 }
 
+/**
+ * Throws an error if the specified string is not a valid component name.
+ *
+ * @param name The string to check.
+ *
+ * @category Utilities
+ */
 export function assertIsComponentName(name: string) {
   if (name === '') {
     throw new Error('A component name cannot be empty');
@@ -88,12 +194,40 @@ export function assertIsComponentName(name: string) {
   }
 }
 
+/**
+ * Transforms a component class type into a component name.
+ *
+ * @param name A string representing a component class type.
+ *
+ * @returns A component name.
+ *
+ * @example
+ * ```
+ * getComponentNameFromComponentClassType('typeof Movie') => 'Movie'
+ * ```
+ *
+ * @category Utilities
+ */
 export function getComponentNameFromComponentClassType(type: string) {
   assertIsComponentType(type, {allowInstances: false});
 
   return type.slice('typeof '.length);
 }
 
+/**
+ * Transforms a component instance type into a component name.
+ *
+ * @param name A string representing a component instance type.
+ *
+ * @returns A component name.
+ *
+ * @example
+ * ```
+ * getComponentNameFromComponentInstanceType('Movie') => 'Movie'
+ * ```
+ *
+ * @category Utilities
+ */
 export function getComponentNameFromComponentInstanceType(type: string) {
   assertIsComponentType(type, {allowClasses: false});
 
@@ -103,6 +237,27 @@ export function getComponentNameFromComponentInstanceType(type: string) {
 const COMPONENT_CLASS_TYPE_PATTERN = /^typeof [A-Z][A-Za-z0-9_]*$/;
 const COMPONENT_INSTANCE_TYPE_PATTERN = /^[A-Z][A-Za-z0-9_]*$/;
 
+/**
+ * Returns whether the specified string is a valid component type.
+ *
+ * @param name The string to check.
+ * @param [options.allowClasses] A boolean specifying whether component class types are allowed (default: `true`).
+ * @param [options.allowInstances] A boolean specifying whether component instance types are allowed (default: `true`).
+ *
+ * @returns A boolean.
+ *
+ * @example
+ * ```
+ * isComponentType('typeof Movie') => true
+ * isComponentType('Movie') => true
+ * isComponentType('typeof Awesome-Movie') => false
+ * isComponentType('movie') => false
+ * isComponentType('typeof Movie', {allowClasses: false}) => false
+ * isComponentType('Movie', {allowInstances: false}) => false
+ * ```
+ *
+ * @category Utilities
+ */
 export function isComponentType(type: string, {allowClasses = true, allowInstances = true} = {}) {
   if (allowClasses && COMPONENT_CLASS_TYPE_PATTERN.test(type)) {
     return 'componentClassType';
@@ -115,6 +270,15 @@ export function isComponentType(type: string, {allowClasses = true, allowInstanc
   return false;
 }
 
+/**
+ * Throws an error if the specified string is not a valid component type.
+ *
+ * @param name The string to check.
+ * @param [options.allowClasses] A boolean specifying whether component class types are allowed (default: `true`).
+ * @param [options.allowInstances] A boolean specifying whether component instance types are allowed (default: `true`).
+ *
+ * @category Utilities
+ */
 export function assertIsComponentType(
   type: string,
   {allowClasses = true, allowInstances = true} = {}
@@ -132,12 +296,40 @@ export function assertIsComponentType(
   return isComponentTypeResult;
 }
 
+/**
+ * Transforms a component name into a component class type.
+ *
+ * @param name A component name.
+ *
+ * @returns A component class type.
+ *
+ * @example
+ * ```
+ * getComponentClassTypeFromComponentName('Movie') => 'typeof Movie'
+ * ```
+ *
+ * @category Utilities
+ */
 export function getComponentClassTypeFromComponentName(name: string) {
   assertIsComponentName(name);
 
   return `typeof ${name}`;
 }
 
+/**
+ * Transforms a component name into a component instance type.
+ *
+ * @param name A component name.
+ *
+ * @returns A component instance type.
+ *
+ * @example
+ * ```
+ * getComponentInstanceTypeFromComponentName('Movie') => 'Movie'
+ * ```
+ *
+ * @category Utilities
+ */
 export function getComponentInstanceTypeFromComponentName(name: string) {
   assertIsComponentName(name);
 
