@@ -19,6 +19,61 @@ import {
 
 type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
 
+/**
+ * Decorates an attribute of a component so it can be type checked at runtime, validated, serialized, etc.
+ *
+ * @param [valueType] The type of values that can be stored in the attribute (default: `'any'`).
+ * @param [options] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component, attribute, validators} from '﹫liaison/component';
+ *
+ * const {maxLength} = validators;
+ *
+ * class Movie extends Component {
+ *   // Class optional 'string' attribute
+ *   ﹫attribute('string?') static customName;
+ *
+ *   // Instance required 'string' attribute
+ *   ﹫attribute('string') title;
+ *
+ *   // Instance optional 'string' attribute with a validator
+ *   ﹫attribute('string?', {validators: [maxLength(100)]}) summary;
+ *
+ *   // Instance required array of 'Actor' attribute with a default value
+ *   ﹫attribute('Actor[]') actors = [];
+ * }
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import {Component, attribute, validators} from '﹫liaison/component';
+ *
+ * const {maxLength} = validators;
+ *
+ * class Movie extends Component {
+ *   // Class optional 'string' attribute
+ *   ﹫attribute('string?') static customName?: string;
+ *
+ *   // Instance required 'string' attribute
+ *   ﹫attribute('string') title!: string;
+ *
+ *   // Instance optional 'string' attribute with a validator
+ *   ﹫attribute('string?', {validators: [maxLength(100)]}) summary?: string;
+ *
+ *   // Instance required array of 'Actor' attribute with a default value
+ *   ﹫attribute('Actor[]') actors: Actor[] = [];
+ * }
+ * ```
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function attribute(
   valueType?: string,
   options?: AttributeDecoratorOptions
@@ -36,6 +91,49 @@ export function attribute(
   );
 }
 
+/**
+ * Decorates an attribute of a component as a [primary identifier attribute](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
+ *
+ * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
+ * @param [options] The options to be passed to the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) constructor.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component, primaryIdentifier} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   // Auto-generated 'string' primary identifier attribute
+ *   ﹫primaryIdentifier('string') id;
+ * }
+
+ * class Film extends Component {
+ *   // Custom 'number' primary identifier attribute
+ *   ﹫primaryIdentifier('number', {default() { return Math.random(); }}) id;
+ * }
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import {Component, primaryIdentifier} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   // Auto-generated 'string' primary identifier attribute
+ *   ﹫primaryIdentifier('string') id!: string;
+ * }
+
+ * class Film extends Component {
+ *   // Custom 'number' primary identifier attribute
+ *   ﹫primaryIdentifier('number', {default() { return Math.random(); }}) id!: number;
+ * }
+ * ```
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function primaryIdentifier(
   valueType?: string,
   options?: AttributeDecoratorOptions
@@ -53,6 +151,45 @@ export function primaryIdentifier(
   );
 }
 
+/**
+ * Decorates an attribute of a component as a [secondary identifier attribute](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+ *
+ * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
+ * @param [options] The options to be passed to the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) constructor.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component, secondaryIdentifier} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   // 'string' secondary identifier attribute
+ *   ﹫secondaryIdentifier('string') slug;
+ *
+ *   // 'number' secondary identifier attribute
+ *   ﹫secondaryIdentifier('number') reference;
+ * }
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import {Component, secondaryIdentifier} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   // 'string' secondary identifier attribute
+ *   ﹫secondaryIdentifier('string') slug!: string;
+ *
+ *   // 'number' secondary identifier attribute
+ *   ﹫secondaryIdentifier('number') reference!: number;
+ * }
+ * ```
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function secondaryIdentifier(
   valueType?: string,
   options?: AttributeDecoratorOptions
@@ -158,6 +295,31 @@ function getAttributeInitializer(
   return getAttributeInitializerFromConstructorSourceCode(constructorSourceCode, attributeName);
 }
 
+/**
+ * Decorates a method of a component so it can be exposed and called remotely.
+ *
+ * @param [options] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
+ *
+ * @example
+ * ```
+ * import {Component, method} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   // Class method
+ *   ﹫method() static getConfig() {
+ *     // ...
+ *   }
+ *
+ *   // Instance method
+ *   ﹫method() play() {
+ *     // ...
+ *   }
+ * }
+ * ```
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function method(options: MethodOptions = {}) {
   return createMethodDecorator(new Map([[isComponentClassOrInstance, Method]]), 'method', options);
 }
@@ -215,6 +377,78 @@ type ClassExposure = {
   [name: string]: PropertyExposure | {[name: string]: PropertyExposure};
 };
 
+/**
+ * Exposes some attributes or methods of a component so they can be consumed remotely.
+ *
+ * This decorator is usually placed before a component attribute or method, but it can also be placed before a component class. When placed before a component class, you can expose several attributes or methods at once, and even better, you can expose attributes or methods that are defined in a parent class.
+ *
+ * @param exposure An object specifying which operations should be exposed. When the decorator is placed before a component attribute or method, the shape of the object is `{[operationName]: permission}`. When the decorator is placed before a component class, the shape of the object is `{[propertyName]: {[operationName]: permission}}}, prototype: {[propertyName]: {[operationName]: permission}}}}`.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component, expose, attribute, method} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   // Class attribute exposing the 'get' operation only
+ *   ﹫expose({get: true}) ﹫attribute('string?') static customName;
+ *
+ *   // Instance attribute exposing the 'get' and 'set' operations
+ *   ﹫expose({get: true, set: true}) ﹫attribute('string') title;
+ *
+ *   // Class method exposure
+ *   ﹫expose({call: true}) ﹫method() static getConfig() {
+ *     // ...
+ *   }
+ *
+ *   // Instance method exposure
+ *   ﹫expose({call: true}) ﹫method() play() {
+ *     // ...
+ *   }
+ * }
+ *
+ * // Exposing some class and instance methods that are defined in a parent class
+ * ﹫expose({find: {call: true}, prototype: {load: {call: true}}})
+ * class Actor extends Storable(Component) {
+ *   // ...
+ * }
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import {Component, expose, attribute, method} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   // Class attribute exposing the 'get' operation only
+ *   ﹫expose({get: true}) ﹫attribute('string?') static customName?: string;
+ *
+ *   // Instance attribute exposing the 'get' and 'set' operations
+ *   ﹫expose({get: true, set: true}) ﹫attribute('string') title!: string;
+ *
+ *   // Class method exposure
+ *   ﹫expose({call: true}) ﹫method() static getConfig() {
+ *     // ...
+ *   }
+ *
+ *   // Instance method exposure
+ *   ﹫expose({call: true}) ﹫method() play() {
+ *     // ...
+ *   }
+ * }
+ *
+ * // Exposing some class and instance methods that are defined in a parent class
+ * ﹫expose({find: {call: true}, prototype: {load: {call: true}}})
+ * class Actor extends Storable(Component) {
+ *   // ...
+ * }
+ * ```
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function expose(exposure: ClassExposure): (target: typeof Component | Component) => void;
 export function expose(
   exposure: PropertyExposure
@@ -271,6 +505,54 @@ export function expose(exposure: ClassExposure | PropertyExposure = {}) {
   };
 }
 
+/**
+ * Provides a component so it can be easily accessed from the current component or from any component that is "consuming" it using the [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorator.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component, provide, consume} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫consume() static Actor;
+ * }
+ *
+ * class Actor extends Component {}
+ *
+ * class Backend extends Component {
+ *   ﹫provide() static Movie = Movie;
+ *   ﹫provide() static Actor = Actor;
+ * }
+ *
+ * // Since `Actor` is provided by `Backend`, it can be accessed from `Movie`
+ * Movie.Actor; // => Actor
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import {Component, provide, consume} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫consume() static Actor: typeof Actor;
+ * }
+ *
+ * class Actor extends Component {}
+ *
+ * class Backend extends Component {
+ *   ﹫provide() static Movie = Movie;
+ *   ﹫provide() static Actor = Actor;
+ * }
+ *
+ * // Since `Actor` is provided by `Backend`, it can be accessed from `Movie`
+ * Movie.Actor; // => Actor
+ * ```
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function provide() {
   return function (target: typeof Component, name: string, descriptor?: PropertyDescriptor) {
     if (!isComponentClass(target)) {
@@ -297,6 +579,16 @@ export function provide() {
   };
 }
 
+/**
+ * Consumes a component provided by the provider (or recursively, any provider's provider) of the current component so it can be easily accessed using a component accessor.
+ *
+ * **Example:**
+ *
+ * See [@provide()'s example](https://liaison.dev/docs/v1/reference/component#provide-decorator).
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function consume() {
   return function (target: typeof Component, name: string, descriptor?: PropertyDescriptor) {
     if (!isComponentClass(target)) {

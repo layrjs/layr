@@ -117,7 +117,51 @@ export type IntrospectedComponent = {
 type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | undefined>;
 
 /**
- * The base class of all your components.
+ * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) and [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorators.
+ *
+ * #### Usage
+ *
+ * Just extend the `Component` class to define a component with some attributes and methods that are specific to your application.
+ *
+ * For example, a `Movie` component with a `title` attribute and a `play()` method could be defined as follows:
+ *
+ * ```
+ * // JS
+ *
+ * import {Component} from '@liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫attribute('string') title;
+ *
+ *   ﹫method() play() {
+ *     console.log(`Playing '${this.title}...'`);
+ *   }
+ * }
+ * ```
+ *
+ * ```
+ * // TS
+ *
+ * import {Component} from '@liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫attribute('string') title!: string;
+ *
+ *   ﹫method() play() {
+ *     console.log(`Playing '${this.title}...'`);
+ *   }
+ * }
+ * ```
+ *
+ * The [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) and [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorators allows you to get the full power of Liaison, such as attribute type checking at runtime and remote method invocation.
+ *
+ * Once you have defined a component, you can use it as any JS/TS class :
+ *
+ * ```
+ * const movie = new Movie({title: 'Inception'});
+ *
+ * movie.play(); // => 'Playing Inception...'
+ * ```
  */
 export class Component extends Observable(Object) {
   ['constructor']: typeof Component;
@@ -127,9 +171,16 @@ export class Component extends Observable(Object) {
   /**
    * Creates an instance of a component class.
    *
-   * @param [object] An optional object specifying the initial value of the instance attributes.
+   * @param [object] An optional object specifying the value of the component attributes.
    *
-   * @returns The component that was created.
+   * @returns The component instance that was created.
+   *
+   * @example
+   * ```
+   * const movie = new Movie({title: 'Inception'});
+   *
+   * movie.title // => 'Inception'
+   * ```
    *
    * @category Creation
    */
@@ -160,16 +211,24 @@ export class Component extends Observable(Object) {
   /**
    * Creates an instance of a component class.
    *
-   * @param [object] An optional object specifying the initial value of the instance attributes.
+   * @param [object] An optional object specifying the value of the component attributes.
    * @param [options.isNew] Whether the instance should be marked as new or not (default: `true`).
    * @param [options.source] The source of the created instance (default: `0`).
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be set (default: `true` which means that all the attributes will be set).
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param [options.initialize] Whether to call the `initialize` instance method or not (default: `true`).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be set (default: `true` which means that all the attributes will be set).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+   * @param [options.initialize] Whether to call the [`initialize`](https://liaison.dev/docs/v1/reference/component#initialize-instance-method) instance method or not (default: `true`).
    *
-   * @returns An instance of the component class (possibly a promise if `options.attributeFilter` is an async function or `options.initialize` is `true` and the class has an async `initialize` instance method).
+   * @returns An instance of the component class (possibly a promise if `options.attributeFilter` is an async function or `options.initialize` is `true` and the class has an async [`initialize`](https://liaison.dev/docs/v1/reference/component#initialize-instance-method) instance method).
+   *
+   * @example
+   * ```
+   * let movie = Movie.create({title: 'Inception'});
+   *
+   * movie.title // => 'Inception'
+   * ```
    *
    * @category Creation
+   * @possiblyasync
    */
   static create<T extends typeof Component>(
     this: T,
@@ -272,6 +331,7 @@ export class Component extends Observable(Object) {
    * A (possibly async) method that is called automatically when a component class is deserialized. You can override this method in your component subclasses to implement your initialization logic.
    *
    * @category Initialization
+   * @possiblyasync
    */
   static initialize() {}
 
@@ -279,6 +339,7 @@ export class Component extends Observable(Object) {
    * A (possibly async) method that is called automatically when a component instance is created or deserialized. You can override this method in your component subclasses to implement your initialization logic.
    *
    * @category Initialization
+   * @possiblyasync
    */
   initialize() {}
 
@@ -289,9 +350,14 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns the name of a component.
+   * Returns the name of a component, which is usually the name of the corresponding class.
    *
    * @returns The name of a component.
+   *
+   * @example
+   * ```
+   * Movie.getComponentName(); // => 'Movie'
+   * ```
    *
    * @category Naming
    */
@@ -310,6 +376,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name you wish for the component.
    *
+   * @example
+   * ```
+   * Movie.getComponentName(); // => 'Movie'
+   * Movie.setComponentName('Film');
+   * Movie.getComponentName(); // => 'Film'
+   * ```
+   *
    * @category Naming
    */
   static setComponentName(name: string) {
@@ -324,6 +397,19 @@ export class Component extends Observable(Object) {
    * For example, if a `Backend` component provides a `Movie` component, this method will return `'Backend.Movie'` when called on the `Movie` component.
    *
    * @returns A string representing the path of a component.
+   *
+   * @example
+   * ```
+   * class Movie extends Component {}
+   *
+   * Movie.getComponentPath(); // => 'Movie'
+   *
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   * }
+   *
+   * Movie.getComponentPath(); // => 'Backend.Movie'
+   * ```
    *
    * @category Naming
    */
@@ -363,6 +449,11 @@ export class Component extends Observable(Object) {
    *
    * @returns A string representing the type of a component class.
    *
+   * @example
+   * ```
+   * Movie.getComponentType(); // => 'typeof Movie'
+   * ```
+   *
    * @category Typing
    */
   static getComponentType() {
@@ -375,6 +466,12 @@ export class Component extends Observable(Object) {
    * For example, with a component class named `'Movie'`, this method will return `'Movie'` when called on a `Movie` instance.
    *
    * @returns A string representing the type of a component instance.
+   *
+   * @example
+   * ```
+   * movie.getComponentType(); // => 'Movie'
+   * Movie.prototype.getComponentType(); // => 'Movie'
+   * ```
    *
    * @category Typing
    */
@@ -393,6 +490,15 @@ export class Component extends Observable(Object) {
    *
    * @returns A boolean.
    *
+   * @example
+   * ```
+   * let movie = new Movie();
+   * movie.getIsNewMark(); // => true
+   *
+   * movie = Movie.deserializeInstance();
+   * movie.getIsNewMark(); // => false
+   * ```
+   *
    * @category isNew Mark
    */
   getIsNewMark() {
@@ -403,6 +509,14 @@ export class Component extends Observable(Object) {
    * Sets whether a component instance is marked as new or not.
    *
    * @param isNew A boolean specifying if the component instance should be marked as new or not.
+   *
+   * @example
+   * ```
+   * const movie = new Movie();
+   * movie.getIsNewMark(); // => true
+   * movie.setIsNewMark(false);
+   * movie.getIsNewMark(); // => false
+   * ```
    *
    * @category isNew Mark
    */
@@ -416,6 +530,15 @@ export class Component extends Observable(Object) {
    *
    * @returns A boolean.
    *
+   * @example
+   * ```
+   * let movie = new Movie();
+   * movie.isNew(); // => true
+   *
+   * movie = Movie.deserializeInstance();
+   * movie.isNew(); // => false
+   * ```
+   *
    * @category isNew Mark
    */
   isNew() {
@@ -425,6 +548,8 @@ export class Component extends Observable(Object) {
   /**
    * Marks a component instance as new.
    *
+   * This method is a shortcut for `setIsNewMark(true)`.
+   *
    * @category isNew Mark
    */
   markAsNew({source}: {source?: number} = {}) {
@@ -433,6 +558,8 @@ export class Component extends Observable(Object) {
 
   /**
    * Marks a component instance as not new.
+   *
+   * This method is a shortcut for `setIsNewMark(false)`.
    *
    * @category isNew Mark
    */
@@ -452,6 +579,13 @@ export class Component extends Observable(Object) {
 
   // === Embeddability ===
 
+  /**
+   * Returns whether a component is an [`EmbeddedComponent`](https://liaison.dev/docs/v1/reference/embedded-component).
+   *
+   * @returns A boolean.
+   *
+   * @category Embeddability
+   */
   static isEmbedded() {
     return false;
   }
@@ -487,7 +621,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to get.
    *
-   * @returns A `Property` instance.
+   * @returns An instance of a [`Property`](https://liaison.dev/docs/v1/reference/property) (or a subclass of [`Property`](https://liaison.dev/docs/v1/reference/property) such as [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method), etc.).
+   *
+   * @example
+   * ```
+   * movie.getProperty('title'); // => 'title' attribute property
+   * movie.getProperty('play'); // => 'play()' method property
+   * ```
    *
    * @category Properties
    */
@@ -500,7 +640,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to get.
    *
-   * @returns A `Property` instance.
+   * @returns An instance of a [`Property`](https://liaison.dev/docs/v1/reference/property) (or a subclass of [`Property`](https://liaison.dev/docs/v1/reference/property) such as [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method), etc.).
+   *
+   * @example
+   * ```
+   * movie.getProperty('title'); // => 'title' attribute property
+   * movie.getProperty('play'); // => 'play()' method property
+   * ```
    *
    * @category Properties
    */
@@ -517,11 +663,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified property.
+   * Returns whether a component has the specified property.
    *
    * @param name The name of the property to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasProperty('title'); // => true
+   * movie.hasProperty('play'); // => true
+   * movie.hasProperty('name'); // => false
+   * ```
    *
    * @category Properties
    */
@@ -530,11 +683,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified property.
+   * Returns whether a component has the specified property.
    *
    * @param name The name of the property to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasProperty('title'); // => true
+   * movie.hasProperty('play'); // => true
+   * movie.hasProperty('name'); // => false
+   * ```
    *
    * @category Properties
    */
@@ -566,13 +726,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a property in a component. Typically, instead of using this method, you would rather use a decorator such as `@attribute` or `@method`.
+   * Defines a property in a component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator).
    *
    * @param name The name of the property to define.
-   * @param PropertyClass The class of the property (e.g., `Attribute`, `Method`) to use.
+   * @param PropertyClass The class of the property (e.g., [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method)) to use.
    * @param [propertyOptions] The options to be passed to the `PropertyClass` constructor.
    *
    * @returns The property that was created.
+   *
+   * @example
+   * ```
+   * Movie.prototype.setProperty('title', Attribute, {valueType: 'string'});
+   * ```
    *
    * @category Properties
    */
@@ -581,13 +746,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a property in a component. Typically, instead of using this method, you would rather use a decorator such as `@attribute` or `@method`.
+   * Defines a property in a component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator).
    *
    * @param name The name of the property to define.
-   * @param PropertyClass The class of the property (e.g., `Attribute`, `Method`) to use.
+   * @param PropertyClass The class of the property (e.g., [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method)) to use.
    * @param [propertyOptions] The options to be passed to the `PropertyClass` constructor.
    *
    * @returns The property that was created.
+   *
+   * @example
+   * ```
+   * Movie.prototype.setProperty('title', Attribute, {valueType: 'string'});
+   * ```
    *
    * @category Properties
    */
@@ -665,13 +835,24 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the properties of a component.
    *
-   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a `Property` instance as first argument.
+   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://liaison.dev/docs/v1/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
    * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
-   * @returns A `Property` instance iterator.
+   * @returns A [`Property`](https://liaison.dev/docs/v1/reference/property) instance iterator.
+   *
+   * @example
+   * ```
+   * for (const property of movie.getProperties()) {
+   *   console.log(property.getName());
+   * }
+   *
+   * // Should output:
+   * // title
+   * // play
+   * ```
    *
    * @category Properties
    */
@@ -682,13 +863,24 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the properties of a component.
    *
-   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a `Property` instance as first argument.
+   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://liaison.dev/docs/v1/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
    * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
-   * @returns A `Property` instance iterator.
+   * @returns A [`Property`](https://liaison.dev/docs/v1/reference/property) instance iterator.
+   *
+   * @example
+   * ```
+   * for (const property of movie.getProperties()) {
+   *   console.log(property.getName());
+   * }
+   *
+   * // Should output:
+   * // title
+   * // play
+   * ```
    *
    * @category Properties
    */
@@ -738,6 +930,11 @@ export class Component extends Observable(Object) {
    *
    * @returns An array of the property names.
    *
+   * @example
+   * ```
+   * movie.getPropertyNames(); // => ['title', 'play']
+   * ```
+   *
    * @category Properties
    */
   static get getPropertyNames() {
@@ -748,6 +945,11 @@ export class Component extends Observable(Object) {
    * Returns the name of all the properties of a component.
    *
    * @returns An array of the property names.
+   *
+   * @example
+   * ```
+   * movie.getPropertyNames(); // => ['title', 'play']
+   * ```
    *
    * @category Properties
    */
@@ -826,7 +1028,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the attribute to get.
    *
-   * @returns An `Attribute` instance.
+   * @returns An instance of [`Attribute`](https://liaison.dev/docs/v1/reference/attribute).
+   *
+   * @example
+   * ```
+   * movie.getAttribute('title'); // => 'title' attribute property
+   * movie.getAttribute('play'); // => Error ('play' is a method)
+   * ```
    *
    * @category Attribute Properties
    */
@@ -839,7 +1047,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the attribute to get.
    *
-   * @returns An `Attribute` instance.
+   * @returns An instance of [`Attribute`](https://liaison.dev/docs/v1/reference/attribute).
+   *
+   * @example
+   * ```
+   * movie.getAttribute('title'); // => 'title' attribute property
+   * movie.getAttribute('play'); // => Error ('play' is a method)
+   * ```
    *
    * @category Attribute Properties
    */
@@ -856,11 +1070,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified attribute.
+   * Returns whether a component has the specified attribute.
    *
    * @param name The name of the attribute to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasAttribute('title'); // => true
+   * movie.hasAttribute('name'); // => false
+   * movie.hasAttribute('play'); // => Error ('play' is a method)
+   * ```
    *
    * @category Attribute Properties
    */
@@ -869,11 +1090,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified attribute.
+   * Returns whether a component has the specified attribute.
    *
    * @param name The name of the attribute to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasAttribute('title'); // => true
+   * movie.hasAttribute('name'); // => false
+   * movie.hasAttribute('play'); // => Error ('play' is a method)
+   * ```
    *
    * @category Attribute Properties
    */
@@ -904,12 +1132,17 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines an attribute in a component. Typically, instead of using this method, you would rather use the `@attribute()` decorator.
+   * Defines an attribute in a component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
-   * @param [attributeOptions] The options to be passed to the `Attribute` constructor.
+   * @param [attributeOptions] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
    *
-   * @returns The `Attribute` that was created.
+   * @returns The [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) that was created.
+   *
+   * @example
+   * ```
+   * Movie.prototype.setAttribute('title', {valueType: 'string'});
+   * ```
    *
    * @category Attribute Properties
    */
@@ -918,12 +1151,17 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines an attribute in a component. Typically, instead of using this method, you would rather use the `@attribute()` decorator.
+   * Defines an attribute in a component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
-   * @param [attributeOptions] The options to be passed to the `Attribute` constructor.
+   * @param [attributeOptions] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
    *
-   * @returns The `Attribute` that was created.
+   * @returns The [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) that was created.
+   *
+   * @example
+   * ```
+   * Movie.prototype.setAttribute('title', {valueType: 'string'});
+   * ```
    *
    * @category Attribute Properties
    */
@@ -934,11 +1172,21 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the attributes of a component.
    *
-   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
    *
-   * @returns An `Attribute` instance iterator.
+   * @returns An [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance iterator.
+   *
+   * @example
+   * ```
+   * for (const attr of movie.getAttributes()) {
+   *   console.log(attr.getName());
+   * }
+   *
+   * // Should output:
+   * // title
+   * ```
    *
    * @category Attribute Properties
    */
@@ -949,11 +1197,21 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the attributes of a component.
    *
-   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
    *
-   * @returns An `Attribute` instance iterator.
+   * @returns An [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance iterator.
+   *
+   * @example
+   * ```
+   * for (const attr of movie.getAttributes()) {
+   *   console.log(attr.getName());
+   * }
+   *
+   * // Should output:
+   * // title
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1039,7 +1297,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the identifier attribute to get.
    *
-   * @returns An `IdentifierAttribute` instance.
+   * @returns An instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) or [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+   *
+   * @example
+   * ```
+   * movie.getIdentifierAttribute('id'); // => 'id' primary identifier attribute
+   * movie.getIdentifierAttribute('slug'); // => 'slug' secondary identifier attribute
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1058,11 +1322,19 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified identifier attribute.
+   * Returns whether a component has the specified identifier attribute.
    *
    * @param name The name of the identifier attribute to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasIdentifierAttribute('id'); // => true
+   * movie.hasIdentifierAttribute('slug'); // => true
+   * movie.hasIdentifierAttribute('name'); // => false (the property 'name' doesn't exist)
+   * movie.hasIdentifierAttribute('title'); // => Error ('title' is not an identifier attribute)
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1091,7 +1363,12 @@ export class Component extends Observable(Object) {
   /**
    * Gets the primary identifier attribute of a component.
    *
-   * @returns A `PrimaryIdentifierAttribute` instance.
+   * @returns An instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
+   *
+   * @example
+   * ```
+   * movie.getPrimaryIdentifierAttribute(); // => 'id' primary identifier attribute
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1114,6 +1391,11 @@ export class Component extends Observable(Object) {
    *
    * @returns A boolean.
    *
+   * @example
+   * ```
+   * movie.hasPrimaryIdentifierAttribute(); // => true
+   * ```
+   *
    * @category Attribute Properties
    */
   hasPrimaryIdentifierAttribute() {
@@ -1133,12 +1415,22 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines the primary identifier attribute of a component. Typically, instead of using this method, you would rather use the `@primaryIdentifier()` decorator.
+   * Defines the primary identifier attribute of a component. Typically, instead of using this method, you would rather use the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
    *
    * @param name The name of the primary identifier attribute to define.
-   * @param [attributeOptions] The options to be passed to the `PrimaryIdentifierAttribute` constructor.
+   * @param [attributeOptions] The options to be passed to the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) constructor.
    *
-   * @returns The `PrimaryIdentifierAttribute` that was created.
+   * @returns The [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) that was created.
+   *
+   * @example
+   * ```
+   * User.prototype.setPrimaryIdentifierAttribute('id', {
+   *   valueType: 'number',
+   *   default() {
+   *     return Math.random();
+   *   }
+   * });
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1151,7 +1443,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the secondary identifier attribute to get.
    *
-   * @returns A `SecondaryIdentifierAttribute` instance.
+   * @returns A [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) instance.
+   *
+   * @example
+   * ```
+   * movie.getSecondaryIdentifierAttribute('slug'); // => 'slug' secondary identifier attribute
+   * movie.getSecondaryIdentifierAttribute('id'); // => Error ('id' is not a secondary identifier attribute)
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1170,11 +1468,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified secondary identifier attribute.
+   * Returns whether a component has the specified secondary identifier attribute.
    *
    * @param name The name of the secondary identifier attribute to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasSecondaryIdentifierAttribute('slug'); // => true
+   * movie.hasSecondaryIdentifierAttribute('name'); // => false (the property 'name' doesn't exist)
+   * movie.hasSecondaryIdentifierAttribute('id'); // => Error ('id' is not a secondary identifier attribute)
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1201,12 +1506,17 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a secondary identifier attribute in a component. Typically, instead of using this method, you would rather use the `@secondaryIdentifier()` decorator.
+   * Defines a secondary identifier attribute in a component. Typically, instead of using this method, you would rather use the [`@secondaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#secondary-identifier-decorator) decorator.
    *
    * @param name The name of the secondary identifier attribute to define.
-   * @param [attributeOptions] The options to be passed to the `SecondaryIdentifierAttribute` constructor.
+   * @param [attributeOptions] The options to be passed to the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) constructor.
    *
-   * @returns The `SecondaryIdentifierAttribute` that was created.
+   * @returns The [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) that was created.
+   *
+   * @example
+   * ```
+   * User.prototype.setSecondaryIdentifierAttribute('slug', {valueType: 'string'});
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1219,9 +1529,20 @@ export class Component extends Observable(Object) {
    *
    * @param [options.filter] A function used to filter the identifier attributes to be returned. The function is invoked for each identifier attribute with an `IdentifierAttribute` instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set identifier attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the identifier attributes to be returned (default: `true` which means that all identifier attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the identifier attributes to be returned (default: `true` which means that all identifier attributes should be returned).
    *
-   * @returns An `IdentifierAttribute` instance iterator.
+   * @returns An iterator of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) or [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+   *
+   * @example
+   * ```
+   * for (const attr of movie.getIdentifierAttributes()) {
+   *   console.log(attr.getName());
+   * }
+   *
+   * // Should output:
+   * // id
+   * // slug
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1261,11 +1582,21 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the secondary identifier attributes of a component.
    *
-   * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a `SecondaryIdentifierAttribute` instance as first argument.
+   * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set secondary identifier attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the secondary identifier attributes to be returned (default: `true` which means that all secondary identifier attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the secondary identifier attributes to be returned (default: `true` which means that all secondary identifier attributes should be returned).
    *
-   * @returns A `SecondaryIdentifierAttribute` instance iterator.
+   * @returns A [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) instance iterator.
+   *
+   * @example
+   * ```
+   * for (const attr of movie.getSecondaryIdentifierAttributes()) {
+   *   console.log(attr.getName());
+   * }
+   *
+   * // Should output:
+   * // slug
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1307,6 +1638,11 @@ export class Component extends Observable(Object) {
    *
    * @returns An object composed of all the set identifiers of a component.
    *
+   * @example
+   * ```
+   * movie.getIdentifiers(); // => {id: 'abc123', slug: 'inception'}
+   * ```
+   *
    * @category Attribute Properties
    */
   getIdentifiers() {
@@ -1325,6 +1661,11 @@ export class Component extends Observable(Object) {
    * Returns whether a component has a set identifier or not.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasIdentifiers(); // => true
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1356,6 +1697,11 @@ export class Component extends Observable(Object) {
    * Generates a unique identifier using the [cuid](https://github.com/ericelliott/cuid) library.
    *
    * @returns The generated identifier.
+   *
+   * @example
+   * ```
+   * Movie.generateId(); // => 'ck41vli1z00013h5xx1esffyn'
+   * ```
    *
    * @category Attribute Properties
    */
@@ -1397,6 +1743,11 @@ export class Component extends Observable(Object) {
    *
    * @returns A plain object representing the `IdentifierDescriptor` of a component.
    *
+   * @example
+   * ```
+   * movie.getIdentifierDescriptor(); // => {id: 'abc123'}
+   * ```
+   *
    * @category Identifier Descriptor
    */
   getIdentifierDescriptor() {
@@ -1412,9 +1763,14 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component can provide an `IdentifierDescriptor` (using the `getIdentifierDescriptor()` method) or not.
+   * Returns whether a component can provide an `IdentifierDescriptor` (using the [`getIdentifierDescriptor()`](https://liaison.dev/docs/v1/reference/component#get-identifier-descriptor-instance-method) method) or not.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasIdentifierDescriptor(); // => true
+   * ```
    *
    * @category Identifier Descriptor
    */
@@ -1495,9 +1851,9 @@ export class Component extends Observable(Object) {
   static __identityMap: IdentityMap;
 
   /**
-   * Gets the `IdentityMap` of a component.
+   * Gets the [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) of a component.
    *
-   * @returns An `IdentityMap` instance.
+   * @returns An [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) instance.
    *
    * @category Identity Mapping
    */
@@ -1514,7 +1870,7 @@ export class Component extends Observable(Object) {
   static __isAttached: boolean;
 
   /**
-   * Attaches the current component class to its `IdentityMap`. By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
+   * Attaches the current component class to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map). By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
    *
    * @returns The current component class.
    *
@@ -1527,7 +1883,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Detaches the current component class from its `IdentityMap`.
+   * Detaches the current component class from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns The current component class.
    *
@@ -1540,7 +1896,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component class is attached to its `IdentityMap`.
+   * Returns whether the current component class is attached to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1567,7 +1923,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component class is detached from its `IdentityMap`.
+   * Returns whether the current component class is detached from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1580,7 +1936,7 @@ export class Component extends Observable(Object) {
   __isAttached?: boolean;
 
   /**
-   * Attaches the current component instance to its `IdentityMap`. By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
+   * Attaches the current component instance to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map). By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
    *
    * @returns The current component instance.
    *
@@ -1598,7 +1954,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Detaches the current component instance from its `IdentityMap`.
+   * Detaches the current component instance from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns The current component instance.
    *
@@ -1616,7 +1972,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component instance is attached to its `IdentityMap`.
+   * Returns whether the current component instance is attached to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1631,7 +1987,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component instance is detached from its `IdentityMap`.
+   * Returns whether the current component instance is detached from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1791,9 +2147,9 @@ export class Component extends Observable(Object) {
   // === Validation ===
 
   /**
-   * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the `runValidators()` method.
+   * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
-   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
    * @category Validation
    */
@@ -1802,9 +2158,9 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the `runValidators()` method.
+   * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
-   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
    * @category Validation
    */
@@ -1834,7 +2190,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
    *
    * @returns A boolean.
    *
@@ -1847,7 +2203,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
    *
    * @returns A boolean.
    *
@@ -1862,7 +2218,7 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of a component.
    *
-   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
@@ -1875,7 +2231,7 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of a component.
    *
-   * @param [attributeSelector] An `AttributeSelector` specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
@@ -1912,7 +2268,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the method to get.
    *
-   * @returns A `Method` instance.
+   * @returns A [`Method`](https://liaison.dev/docs/v1/reference/method) instance.
+   *
+   * @example
+   * ```
+   * movie.getMethod('play'); // => 'play' method property
+   * movie.getMethod('title'); // => Error ('title' is an attribute property)
+   * ```
    *
    * @category Method Properties
    */
@@ -1925,7 +2287,13 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the method to get.
    *
-   * @returns A `Method` instance.
+   * @returns A [`Method`](https://liaison.dev/docs/v1/reference/method) instance.
+   *
+   * @example
+   * ```
+   * movie.getMethod('play'); // => 'play' method property
+   * movie.getMethod('title'); // => Error ('title' is an attribute property)
+   * ```
    *
    * @category Method Properties
    */
@@ -1942,11 +2310,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified method.
+   * Returns whether a component has the specified method.
    *
    * @param name The name of the method to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasMethod('play'); // => true
+   * movie.hasMethod('destroy'); // => false
+   * movie.hasMethod('title'); // => Error ('title' is an attribute property)
+   * ```
    *
    * @category Method Properties
    */
@@ -1955,11 +2330,18 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as the specified method.
+   * Returns whether a component has the specified method.
    *
    * @param name The name of the method to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * movie.hasMethod('play'); // => true
+   * movie.hasMethod('destroy'); // => false
+   * movie.hasMethod('title'); // => Error ('title' is an attribute property)
+   * ```
    *
    * @category Method Properties
    */
@@ -1990,12 +2372,17 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a method in a component. Typically, instead of using this method, you would rather use the `@method()` decorator.
+   * Defines a method in a component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
-   * @param [methodOptions] The options to be passed to the `Method` constructor.
+   * @param [methodOptions] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
    *
-   * @returns The `Method` that was created.
+   * @returns The [`Method`](https://liaison.dev/docs/v1/reference/method) that was created.
+   *
+   * @example
+   * ```
+   * Movie.prototype.setMethod('play');
+   * ```
    *
    * @category Method Properties
    */
@@ -2004,12 +2391,17 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a method in a component. Typically, instead of using this method, you would rather use the `@method()` decorator.
+   * Defines a method in a component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
-   * @param [methodOptions] The options to be passed to the `Method` constructor.
+   * @param [methodOptions] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
    *
-   * @returns The `Method` that was created.
+   * @returns The [`Method`](https://liaison.dev/docs/v1/reference/method) that was created.
+   *
+   * @example
+   * ```
+   * Movie.prototype.setMethod('play');
+   * ```
    *
    * @category Method Properties
    */
@@ -2020,9 +2412,19 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the methods of a component.
    *
-   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a `Method` instance as first argument.
+   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://liaison.dev/docs/v1/reference/method) instance as first argument.
    *
-   * @returns A `Method` instance iterator.
+   * @returns A [`Method`](https://liaison.dev/docs/v1/reference/method) instance iterator.
+   *
+   * @example
+   * ```
+   * for (const meth of movie.getMethods()) {
+   *   console.log(meth.getName());
+   * }
+   *
+   * // Should output:
+   * // play
+   * ```
    *
    * @category Method Properties
    */
@@ -2033,9 +2435,19 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the methods of a component.
    *
-   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a `Method` instance as first argument.
+   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://liaison.dev/docs/v1/reference/method) instance as first argument.
    *
-   * @returns A `Method` instance iterator.
+   * @returns A [`Method`](https://liaison.dev/docs/v1/reference/method) instance iterator.
+   *
+   * @example
+   * ```
+   * for (const meth of movie.getMethods()) {
+   *   console.log(meth.getName());
+   * }
+   *
+   * // Should output:
+   * // play
+   * ```
    *
    * @category Method Properties
    */
@@ -2055,6 +2467,16 @@ export class Component extends Observable(Object) {
    * @param name The name of the component class to get.
    *
    * @returns A component class.
+   *
+   * @example
+   * ```
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   * }
+   *
+   * Backend.getComponent('Movie'); // => Movie
+   * Backend.getComponent('Backend'); // => Backend
+   * ```
    *
    * @category Dependency Management
    */
@@ -2076,6 +2498,17 @@ export class Component extends Observable(Object) {
    * @param name The name of the component class to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   * }
+   *
+   * Backend.hasComponent('Movie'); // => true
+   * Backend.hasComponent('Backend'); // => true
+   * Backend.hasComponent('Film'); // => false
+   * ```
    *
    * @category Dependency Management
    */
@@ -2112,6 +2545,18 @@ export class Component extends Observable(Object) {
    *
    * @returns A component class or prototype.
    *
+   * @example
+   * ```
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   * }
+   *
+   * Backend.getComponentOfType('typeof Movie'); // => Movie
+   * Backend.getComponentOfType('Movie'); // => Movie.prototype
+   * Backend.getComponentOfType('typeof Backend'); // => Backend
+   * Backend.getComponentOfType('Backend'); // => Backend.prototype
+   * ```
+   *
    * @category Dependency Management
    */
   static getComponentOfType(type: string) {
@@ -2132,6 +2577,20 @@ export class Component extends Observable(Object) {
    * @param type The type of the component class or prototype to check.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   * }
+   *
+   * Backend.hasComponentOfType('typeof Movie'); // => true
+   * Backend.hasComponentOfType('Movie'); // => true
+   * Backend.hasComponentOfType('typeof Backend'); // => true
+   * Backend.hasComponentOfType('Backend'); // => true
+   * Backend.hasComponentOfType('typeof Film'); // => false
+   * Backend.hasComponentOfType('Film'); // => false
+   * ```
    *
    * @category Dependency Management
    */
@@ -2164,6 +2623,15 @@ export class Component extends Observable(Object) {
    *
    * @returns A component class.
    *
+   * @example
+   * ```
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   * }
+   *
+   * Backend.getProvidedComponent('Movie'); // => Movie
+   * ```
+   *
    * @category Dependency Management
    */
   static getProvidedComponent(name: string) {
@@ -2187,11 +2655,11 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Specifies that the current component is providing another component so it can be easily accessed from the current component or from any component that is "consuming" it using the `consumeComponent()` method or the `@consume()` decorator.
+   * Specifies that the current component is providing another component so it can be easily accessed from the current component or from any component that is "consuming" it using the [`consumeComponent()`](https://liaison.dev/docs/v1/reference/component#consume-component-class-method) method or the [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorator.
    *
    * The provided component can later be accessed using a component accessor that was automatically set on the component provider.
    *
-   * Typically, instead of using this method, you would rather use the `@provide()` decorator.
+   * Typically, instead of using this method, you would rather use the [`@provide()`]((https://liaison.dev/docs/v1/reference/component#provide-decorator)) decorator.
    *
    * @param component The component class to provide.
    *
@@ -2372,11 +2840,53 @@ export class Component extends Observable(Object) {
   // --- Component consumption ---
 
   /**
-   * Gets a component that is consumed by the current component. An error is thrown if there is no consumed component with the specified name.
+   * Gets a component that is consumed by the current component. An error is thrown if there is no consumed component with the specified name. Typically, instead of using this method, you would rather use the component accessor that has been automatically set for you.
    *
    * @param name The name of the consumed component to get.
    *
    * @returns A component class.
+   *
+   * @example
+   * ```
+   * // JS
+   *
+   * class Movie extends Component {
+   *   ﹫consume() static Actor;
+   * }
+   *
+   * class Actor extends Component {}
+   *
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   *   ﹫provide() static Actor = Actor;
+   * }
+   *
+   * Movie.getConsumedComponent('Actor'); // => Actor
+   *
+   * // Typically, you would rather use the component accessor:
+   * Movie.Actor; // => Actor
+   * ```
+   *
+   * @example
+   * ```
+   * // TS
+   *
+   * class Movie extends Component {
+   *   ﹫consume() static Actor: typeof Actor;
+   * }
+   *
+   * class Actor extends Component {}
+   *
+   * class Backend extends Component {
+   *   ﹫provide() static Movie = Movie;
+   *   ﹫provide() static Actor = Actor;
+   * }
+   *
+   * Movie.getConsumedComponent('Actor'); // => Actor
+   *
+   * // Typically, you would rather use the component accessor:
+   * Movie.Actor; // => Actor
+   * ```
    *
    * @category Dependency Management
    */
@@ -2401,7 +2911,7 @@ export class Component extends Observable(Object) {
   /**
    * Specifies that the current component is consuming another component so it can be easily accessed using a component accessor.
    *
-   * Typically, instead of using this method, you would rather use the `@consume()` decorator.
+   * Typically, instead of using this method, you would rather use the [`@consume()`]((https://liaison.dev/docs/v1/reference/component#consume-decorator)) decorator.
    *
    * @param name The name of the component to consume.
    *
@@ -2498,11 +3008,23 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Clones a component instance. A new componentAll primitive attributes are copied, and embedded components are cloned recursively. Currently, identifiable components (i.e., components having an identifier attribute) cannot be cloned, but this might change in the future.
+   * Clones a component instance. All primitive attributes are copied, and embedded components are cloned recursively. Currently, identifiable components (i.e., components having an identifier attribute) cannot be cloned, but this might change in the future.
    *
    * @returns A clone of the component.
    *
+   * @example
+   * ```
+   * movie.title = 'Inception';
+   *
+   * const movieClone = movie.clone();
+   * movieClone.title = 'Inception 2';
+   *
+   * movieClone.title; // => 'Inception 2'
+   * movie.title; // => 'Inception'
+   * ```
+   *
    * @category Cloning
+   * @possiblyasync
    */
   clone<
     T extends Component,
@@ -2545,7 +3067,7 @@ export class Component extends Observable(Object) {
    * ```
    * class Movie extends Component {}
    *
-   * Movie.fork() // => A fork of the `Movie` class
+   * Movie.fork(); // => A fork of the `Movie` class
    * ```
    *
    * @category Forking
@@ -2577,8 +3099,8 @@ export class Component extends Observable(Object) {
    * class Movie extends Component {}
    * const movie = new Movie();
    *
-   * movie.fork() // => A fork of `movie`
-   * movie.fork().constructor.isForkOf(Movie) // => true
+   * movie.fork(); // => A fork of `movie`
+   * movie.fork().constructor.isForkOf(Movie); // => true
    * ```
    *
    * @category Forking
@@ -2617,6 +3139,15 @@ export class Component extends Observable(Object) {
    *
    * @returns A boolean.
    *
+   * @example
+   * ```
+   * class Movie extends Component {}
+   * const MovieFork = Movie.fork();
+   *
+   * MovieFork.isForkOf(Movie); // => true
+   * Movie.isForkOf(MovieFork); // => false
+   * ```
+   *
    * @category Forking
    */
   static isForkOf(component: typeof Component) {
@@ -2629,6 +3160,16 @@ export class Component extends Observable(Object) {
    * Returns whether the current component instance is a fork of another component instance.
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * class Movie extends Component {}
+   * const movie = new Movie();
+   * const movieFork = movie.fork();
+   *
+   * movieFork.isForkOf(movie); // => true
+   * movie.isForkOf(movieFork); // => false
+   * ```
    *
    * @category Forking
    */
@@ -2684,8 +3225,10 @@ export class Component extends Observable(Object) {
    *
    * @returns The ghost of the current component instance.
    *
-   * @example <caption>JavaScript:</caption>
-   * ```js
+   * @example
+   * ```
+   * // JS
+   *
    * class Movie extends Component {
    *   ﹫primaryIdentifier() id;
    * }
@@ -2696,8 +3239,10 @@ export class Component extends Observable(Object) {
    * movie.getGhost() // => The same fork of `movie`
    * ```
    *
-   * @example <caption>TypeScript:</caption>
-   * ```ts
+   * @example
+   * ```
+   * // TS
+   *
    * class Movie extends Component {
    *   ﹫primaryIdentifier() id!: string;
    * }
@@ -2733,6 +3278,20 @@ export class Component extends Observable(Object) {
    *
    * @returns The current component class.
    *
+   * @example
+   * ```
+   * class Movie extends Component {
+   *   ﹫attribute('string') static customName = 'Movie';
+   * }
+   *
+   * const MovieFork = Movie.fork();
+   * MovieFork.customName = 'Film';
+   *
+   * Movie.customName; // => 'Movie'
+   * Movie.merge(MovieFork);
+   * Movie.customName; // => 'Film'
+   * ```
+   *
    * @category Merging
    */
   static merge<T extends typeof Component>(
@@ -2757,6 +3316,17 @@ export class Component extends Observable(Object) {
    * @param forkedComponent The component instance fork to merge.
    *
    * @returns The current component instance.
+   *
+   * @example
+   * ```
+   * const movie = new Movie({title: 'Inception'});
+   * const movieFork = movie.fork();
+   * movieFork.title = 'Inception 2';
+   *
+   * movie.title; // => 'Inception'
+   * movie.merge(movieFork);
+   * movie.title; // => 'Inception 2'
+   * ```
    *
    * @category Merging
    */
@@ -2804,13 +3374,23 @@ export class Component extends Observable(Object) {
   /**
    * Serializes the current component class to a plain object.
    *
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.target] The target of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component class.
    *
+   * @example
+   * ```
+   * class Movie extends Component {
+   *   ﹫attribute('string') static customName = 'Film';
+   * }
+   *
+   * Movie.serialize(); // => {__component: 'typeof Movie', customName: 'Film'}
+   * ```
+   *
    * @category Serialization
+   * @possiblyasync
    */
   static serialize(options: SerializeOptions = {}) {
     const {
@@ -2889,13 +3469,21 @@ export class Component extends Observable(Object) {
   /**
    * Serializes the current component instance to a plain object.
    *
-   * @param [options.attributeSelector] An `AttributeSelector` specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.target] The target of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component instance.
    *
+   * @example
+   * ```
+   * const movie = new Movie({title: 'Inception'});
+   *
+   * movie.serialize(); // => {__component: 'Movie', title: 'Inception'}
+   * ```
+   *
    * @category Serialization
+   * @possiblyasync
    */
   serialize(options: SerializeOptions = {}) {
     const {
@@ -3031,15 +3619,27 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Deserializes the current component class from the specified plain object. Since the component classes are unique, they are deserialized "in place".
+   * Deserializes the current component class from the specified plain object. Since component classes are unique, they are deserialized "in place".
    *
    * @param [object] The plain object to deserialize from.
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param [options.source] The source of the deserialization (default: `0`).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+   * @param [options.source] The source of the serialization (default: `0`).
    *
    * @returns The current component class.
    *
-   * @category Serialization
+   * @example
+   * ```
+   * class Movie extends Component {
+   *   ﹫attribute('string') static customName = 'Movie';
+   * }
+   *
+   * Movie.customName; // => 'Movie'
+   * Movie.deserialize({customName: 'Film'});
+   * Movie.customName; // => 'Film'
+   * ```
+   *
+   * @category Deserialization
+   * @possiblyasync
    */
   static deserialize<T extends typeof Component>(
     this: T,
@@ -3072,12 +3672,19 @@ export class Component extends Observable(Object) {
    * Deserializes the specified plain object to an instance of the current component class.
    *
    * @param [object] The plain object to deserialize from.
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an `Attribute` instance as first argument.
-   * @param [options.source] The source of the deserialization (default: `0`).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+   * @param [options.source] The source of the serialization (default: `0`).
    *
    * @returns The deserialized component instance.
    *
-   * @category Serialization
+   * @example
+   * ```
+   * const movie = Movie.deserializeInstance({title: 'Inception'});
+   * movie.title; // => 'Inception'
+   * ```
+   *
+   * @category Deserialization
+   * @possiblyasync
    */
   static deserializeInstance<T extends typeof Component>(
     this: T,

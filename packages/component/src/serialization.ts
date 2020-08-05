@@ -24,6 +24,38 @@ export type SerializeOptions = SimpleSerializeOptions & {
   target?: number;
 };
 
+/**
+ * Serializes any type of values including objects, arrays, dates, and components (using Component's `serialize()` [class method](https://liaison.dev/docs/v1/reference/component#serialize-class-method) and [instance method](https://liaison.dev/docs/v1/reference/component#serialize-instance-method)).
+ *
+ * @param value A value of any type.
+ * @param [options.attributeFilter] A (possibly async) function used to filter the component attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+ * @param [options.target] The target of the serialization (default: `undefined`).
+ *
+ * @returns The serialized value.
+ *
+ * @example
+ * ```
+ * import {serialize} from '﹫liaison/component';
+ *
+ * const data = {
+ *   createdOn: new Date(),
+ *   updatedOn: undefined,
+ *   movie: new Movie({title: 'Inception'})
+ * };
+ *
+ * console.log(serialize(data));
+ *
+ * // Should output something like:
+ * // {
+ * //   createdOn: {__date: "2020-07-18T23:43:33.778Z"},
+ * //   updatedOn: {__undefined: true},
+ * //   movie: {__component: 'Movie', title: 'Inception'}
+ * // }
+ * ```
+ *
+ * @category Serialization
+ * @possiblyasync
+ */
 export function serialize<Value>(value: Value, options?: SerializeOptions): SerializeResult<Value>;
 export function serialize(value: any, options: SerializeOptions = {}) {
   const {

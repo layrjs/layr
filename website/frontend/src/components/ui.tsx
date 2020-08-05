@@ -390,10 +390,10 @@ export class UI extends Component {
           color: theme.textColor
         },
         '.hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-type, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-number': {
-          color: theme.textColor
+          color: theme.tertiaryColor
         },
         '.hljs-symbol, .hljs-bullet, .hljs-link, .hljs-meta, .hljs-selector-id': {
-          color: theme.tertiaryColor
+          color: theme.primaryColor
         },
         '.hljs-emphasis': {
           fontStyle: 'italic'

@@ -19,7 +19,22 @@
           "title": "Component",
           "slug": "component",
           "file": "reference/component.md",
-          "source": "../packages/component/src/component.ts"
+          "source": [
+            "../packages/component/src/component.ts",
+            "../packages/component/src/cloning.ts",
+            "../packages/component/src/forking.ts",
+            "../packages/component/src/merging.ts",
+            "../packages/component/src/serialization.ts",
+            "../packages/component/src/deserialization.ts",
+            "../packages/component/src/decorators.ts",
+            "../packages/component/src/utilities.ts"
+          ]
+        },
+        {
+          "title": "EmbeddedComponent",
+          "slug": "embedded-component",
+          "file": "reference/embedded-component.md",
+          "source": "../packages/component/src/embedded-component.ts"
         }
       ]
     }

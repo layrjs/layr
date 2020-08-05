@@ -18,6 +18,77 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
   source?: number;
 };
 
+/**
+ * Deserializes any type of serialized values including objects, arrays, dates, and components (using [`Component.deserialize()`](https://liaison.dev/docs/v1/reference/component#deserialize-class-method) and [`Component.deserializeInstance()`](https://liaison.dev/docs/v1/reference/component#deserialize-instance-class-method)).
+ *
+ * @param value A serialized value.
+ * @param [options.componentGetter] A function used to get the component classes from the component types encountered in the serialized value. The function is invoked with a string representing a component type and should return a component class or prototype.
+ * @param [options.attributeFilter] A (possibly async) function used to filter the component attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+ * @param [options.source] The source of the serialization (default: `0`).
+ *
+ * @returns The deserialized value.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component, deserialize} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫attribute('string') title;
+ * }
+ *
+ * const serializedData = {
+ *   createdOn: {__date: "2020-07-18T23:43:33.778Z"},
+ *   updatedOn: {__undefined: true},
+ *   movie: {__component: 'Movie', title: 'Inception'}
+ * };
+ *
+ * const data = deserialize(serializedData, {
+ *   componentGetter(type) {
+ *     if (type === 'Movie') {
+ *       return Movie;
+ *     }
+ *   }
+ * });
+ *
+ * data.createdOn; // => A Date instance
+ * data.updatedOn; // => undefined
+ * data.movie; // => A Movie instance
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import {Component, deserialize} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫attribute('string') title!: string;
+ * }
+ *
+ * const serializedData = {
+ *   createdOn: {__date: "2020-07-18T23:43:33.778Z"},
+ *   updatedOn: {__undefined: true},
+ *   movie: {__component: 'Movie', title: 'Inception'}
+ * };
+ *
+ * const data = deserialize(serializedData, {
+ *   componentGetter(type: string) {
+ *     if (type === 'Movie') {
+ *       return Movie;
+ *     }
+ *   }
+ * });
+ *
+ * data.createdOn; // => A Date instance
+ * data.updatedOn; // => undefined
+ * data.movie; // => A Movie instance
+ * ```
+ *
+ * @category Deserialization
+ * @possiblyasync
+ */
 export function deserialize<Value>(
   value: Value,
   options?: DeserializeOptions
