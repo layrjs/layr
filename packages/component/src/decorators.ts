@@ -382,7 +382,7 @@ type ClassExposure = {
  *
  * This decorator is usually placed before a component attribute or method, but it can also be placed before a component class. When placed before a component class, you can expose several attributes or methods at once, and even better, you can expose attributes or methods that are defined in a parent class.
  *
- * @param exposure An object specifying which operations should be exposed. When the decorator is placed before a component attribute or method, the shape of the object is `{[operationName]: permission}`. When the decorator is placed before a component class, the shape of the object is `{[propertyName]: {[operationName]: permission}}}, prototype: {[propertyName]: {[operationName]: permission}}}}`.
+ * @param exposure An object specifying which operations should be exposed. When the decorator is placed before a component attribute or method, the object is of type [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type). When the decorator is placed before a component class, the shape of the object is `{[propertyName]: PropertyExposure, prototype: {[propertyName]: PropertyExposure}}`.
  *
  * @example
  * ```

@@ -274,7 +274,7 @@ export class UI extends Component {
           lineHeight: 1,
           textAlign: 'center',
           whiteSpace: 'nowrap',
-          verticalAlign: 'baseline',
+          verticalAlign: 'middle',
           borderRadius: '.25rem'
         },
         '.badge-primary': {

@@ -117,6 +117,8 @@ export type IntrospectedComponent = {
 type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | undefined>;
 
 /**
+ * *Inherits from [`Observable`](https://liaison.dev/docs/v1/reference/observable).*
+ *
  * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) and [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorators.
  *
  * #### Usage
@@ -177,6 +179,29 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
+   * // JS
+   *
+   * import {Component, attribute} from '﹫liaison/component';
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string') title;
+   * }
+   *
+   * const movie = new Movie({title: 'Inception'});
+   *
+   * movie.title // => 'Inception'
+   * ```
+   *
+   * @example
+   * ```
+   * // TS
+   *
+   * import {Component, attribute} from '﹫liaison/component';
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string') title!: string;
+   * }
+   *
    * const movie = new Movie({title: 'Inception'});
    *
    * movie.title // => 'Inception'
@@ -328,7 +353,7 @@ export class Component extends Observable(Object) {
   // === Initialization ===
 
   /**
-   * A (possibly async) method that is called automatically when a component class is deserialized. You can override this method in your component subclasses to implement your initialization logic.
+   * A (possibly async) method that is called automatically when the component class is deserialized. You can override this method in your component subclasses to implement your initialization logic.
    *
    * @category Initialization
    * @possiblyasync
@@ -336,7 +361,7 @@ export class Component extends Observable(Object) {
   static initialize() {}
 
   /**
-   * A (possibly async) method that is called automatically when a component instance is created or deserialized. You can override this method in your component subclasses to implement your initialization logic.
+   * A (possibly async) method that is called automatically when the component instance is created or deserialized. You can override this method in your component subclasses to implement your initialization logic.
    *
    * @category Initialization
    * @possiblyasync
@@ -350,9 +375,9 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns the name of a component, which is usually the name of the corresponding class.
+   * Returns the name of the component, which is usually the name of the corresponding class.
    *
-   * @returns The name of a component.
+   * @returns A string.
    *
    * @example
    * ```
@@ -372,7 +397,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Sets the name of a component. As the name of a component is usually inferred from the name of its class, this method should not be used so often.
+   * Sets the name of the component. As the name of a component is usually inferred from the name of its class, this method should not be used so often.
    *
    * @param name The name you wish for the component.
    *
@@ -392,11 +417,11 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns the path of a component starting from its root component.
+   * Returns the path of the component starting from its root component.
    *
    * For example, if a `Backend` component provides a `Movie` component, this method will return `'Backend.Movie'` when called on the `Movie` component.
    *
-   * @returns A string representing the path of a component.
+   * @returns A string.
    *
    * @example
    * ```
@@ -443,11 +468,11 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns the type of a component class. A component class type is composed of the component class name prefixed with the string `'typeof '`.
+   * Returns the type of the component class. A component class type is composed of the component class name prefixed with the string `'typeof '`.
    *
    * For example, with a component class named `'Movie'`, this method will return `'typeof Movie'`.
    *
-   * @returns A string representing the type of a component class.
+   * @returns A string.
    *
    * @example
    * ```
@@ -461,11 +486,11 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns the type of a component instance. A component instance type is equivalent to the component class name.
+   * Returns the type of the component instance. A component instance type is equivalent to the component class name.
    *
    * For example, with a component class named `'Movie'`, this method will return `'Movie'` when called on a `Movie` instance.
    *
-   * @returns A string representing the type of a component instance.
+   * @returns A string.
    *
    * @example
    * ```
@@ -484,7 +509,7 @@ export class Component extends Observable(Object) {
   __isNew: boolean | undefined;
 
   /**
-   * Returns whether a component instance is marked as new or not.
+   * Returns whether the component instance is marked as new or not.
    *
    * @alias isNew
    *
@@ -506,7 +531,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Sets whether a component instance is marked as new or not.
+   * Sets whether the component instance is marked as new or not.
    *
    * @param isNew A boolean specifying if the component instance should be marked as new or not.
    *
@@ -526,7 +551,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component instance is marked as new or not.
+   * Returns whether the component instance is marked as new or not.
    *
    * @returns A boolean.
    *
@@ -546,7 +571,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Marks a component instance as new.
+   * Marks the component instance as new.
    *
    * This method is a shortcut for `setIsNewMark(true)`.
    *
@@ -557,7 +582,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Marks a component instance as not new.
+   * Marks the component instance as not new.
    *
    * This method is a shortcut for `setIsNewMark(false)`.
    *
@@ -580,7 +605,7 @@ export class Component extends Observable(Object) {
   // === Embeddability ===
 
   /**
-   * Returns whether a component is an [`EmbeddedComponent`](https://liaison.dev/docs/v1/reference/embedded-component).
+   * Returns whether the component is an [`EmbeddedComponent`](https://liaison.dev/docs/v1/reference/embedded-component).
    *
    * @returns A boolean.
    *
@@ -617,7 +642,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Gets a property of a component.
+   * Gets a property of the component.
    *
    * @param name The name of the property to get.
    *
@@ -636,7 +661,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Gets a property of a component.
+   * Gets a property of the component.
    *
    * @param name The name of the property to get.
    *
@@ -663,7 +688,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified property.
+   * Returns whether the component has the specified property.
    *
    * @param name The name of the property to check.
    *
@@ -683,7 +708,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified property.
+   * Returns whether the component has the specified property.
    *
    * @param name The name of the property to check.
    *
@@ -726,7 +751,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a property in a component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator).
+   * Defines a property in the component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator).
    *
    * @param name The name of the property to define.
    * @param PropertyClass The class of the property (e.g., [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method)) to use.
@@ -746,7 +771,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a property in a component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator).
+   * Defines a property in the component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator).
    *
    * @param name The name of the property to define.
    * @param PropertyClass The class of the property (e.g., [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method)) to use.
@@ -799,7 +824,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Removes a property from a component. If the specified property doesn't exist, nothing happens.
+   * Removes a property from the component. If the specified property doesn't exist, nothing happens.
    *
    * @param name The name of the property to remove.
    *
@@ -812,7 +837,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Removes a property from a component. If the specified property doesn't exist, nothing happens.
+   * Removes a property from the component. If the specified property doesn't exist, nothing happens.
    *
    * @param name The name of the property to remove.
    *
@@ -833,7 +858,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the properties of a component.
+   * Returns an iterator providing the properties of the component.
    *
    * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://liaison.dev/docs/v1/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
@@ -861,7 +886,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the properties of a component.
+   * Returns an iterator providing the properties of the component.
    *
    * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://liaison.dev/docs/v1/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
@@ -926,7 +951,7 @@ export class Component extends Observable(Object) {
   __properties?: {[name: string]: Property};
 
   /**
-   * Returns the name of all the properties of a component.
+   * Returns the name of all the properties of the component.
    *
    * @returns An array of the property names.
    *
@@ -942,7 +967,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns the name of all the properties of a component.
+   * Returns the name of all the properties of the component.
    *
    * @returns An array of the property names.
    *
@@ -1024,7 +1049,7 @@ export class Component extends Observable(Object) {
   __constructorSourceCode?: string; // Used by @attribute() decorator
 
   /**
-   * Gets an attribute of a component.
+   * Gets an attribute of the component.
    *
    * @param name The name of the attribute to get.
    *
@@ -1043,7 +1068,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Gets an attribute of a component.
+   * Gets an attribute of the component.
    *
    * @param name The name of the attribute to get.
    *
@@ -1070,7 +1095,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified attribute.
+   * Returns whether the component has the specified attribute.
    *
    * @param name The name of the attribute to check.
    *
@@ -1090,7 +1115,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified attribute.
+   * Returns whether the component has the specified attribute.
    *
    * @param name The name of the attribute to check.
    *
@@ -1132,7 +1157,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines an attribute in a component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+   * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
    * @param [attributeOptions] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
@@ -1151,7 +1176,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines an attribute in a component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+   * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
    * @param [attributeOptions] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
@@ -1170,7 +1195,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the attributes of a component.
+   * Returns an iterator providing the attributes of the component.
    *
    * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
@@ -1195,7 +1220,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the attributes of a component.
+   * Returns an iterator providing the attributes of the component.
    *
    * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
@@ -1293,7 +1318,7 @@ export class Component extends Observable(Object) {
   // === Identifier attributes ===
 
   /**
-   * Gets an identifier attribute of a component.
+   * Gets an identifier attribute of the component.
    *
    * @param name The name of the identifier attribute to get.
    *
@@ -1322,7 +1347,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified identifier attribute.
+   * Returns whether the component has the specified identifier attribute.
    *
    * @param name The name of the identifier attribute to check.
    *
@@ -1361,7 +1386,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Gets the primary identifier attribute of a component.
+   * Gets the primary identifier attribute of the component.
    *
    * @returns An instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
    *
@@ -1387,7 +1412,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component as a primary identifier attribute.
+   * Returns whether the component as a primary identifier attribute.
    *
    * @returns A boolean.
    *
@@ -1415,7 +1440,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines the primary identifier attribute of a component. Typically, instead of using this method, you would rather use the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
+   * Defines the primary identifier attribute of the component. Typically, instead of using this method, you would rather use the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
    *
    * @param name The name of the primary identifier attribute to define.
    * @param [attributeOptions] The options to be passed to the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) constructor.
@@ -1439,7 +1464,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Gets a secondary identifier attribute of a component.
+   * Gets a secondary identifier attribute of the component.
    *
    * @param name The name of the secondary identifier attribute to get.
    *
@@ -1468,7 +1493,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified secondary identifier attribute.
+   * Returns whether the component has the specified secondary identifier attribute.
    *
    * @param name The name of the secondary identifier attribute to check.
    *
@@ -1506,7 +1531,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a secondary identifier attribute in a component. Typically, instead of using this method, you would rather use the [`@secondaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#secondary-identifier-decorator) decorator.
+   * Defines a secondary identifier attribute in the component. Typically, instead of using this method, you would rather use the [`@secondaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#secondary-identifier-decorator) decorator.
    *
    * @param name The name of the secondary identifier attribute to define.
    * @param [attributeOptions] The options to be passed to the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) constructor.
@@ -1525,7 +1550,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the identifier attributes of a component.
+   * Returns an iterator providing the identifier attributes of the component.
    *
    * @param [options.filter] A function used to filter the identifier attributes to be returned. The function is invoked for each identifier attribute with an `IdentifierAttribute` instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set identifier attributes should be returned (default: `false`).
@@ -1580,7 +1605,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the secondary identifier attributes of a component.
+   * Returns an iterator providing the secondary identifier attributes of the component.
    *
    * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set secondary identifier attributes should be returned (default: `false`).
@@ -1634,9 +1659,9 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an object composed of all the set identifiers of a component. The shape of the returned object is `{[identifierName]: identifierValue}`. If the component doesn't have any set identifiers, returns `undefined`.
+   * Returns an object composed of all the set identifiers of the component. The shape of the returned object is `{[identifierName]: identifierValue}`. If the component doesn't have any set identifiers, returns `undefined`.
    *
-   * @returns An object composed of all the set identifiers of a component.
+   * @returns An object.
    *
    * @example
    * ```
@@ -1658,7 +1683,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has a set identifier or not.
+   * Returns whether the component has a set identifier or not.
    *
    * @returns A boolean.
    *
@@ -1735,13 +1760,13 @@ export class Component extends Observable(Object) {
   // === Identifier Descriptor ===
 
   /**
-   * Returns the `IdentifierDescriptor` of a component.
+   * Returns the `IdentifierDescriptor` of the component.
    *
    * An `IdentifierDescriptor` is a plain object composed of one pair of name/value corresponding to the name and value of the first identifier attribute encountered in a component. Usually it is the primary identifier, but if the latter is not set, it can be a secondary identifier.
    *
    * If there is no set identifier in the component, an error is thrown.
    *
-   * @returns A plain object representing the `IdentifierDescriptor` of a component.
+   * @returns An object.
    *
    * @example
    * ```
@@ -1763,7 +1788,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component can provide an `IdentifierDescriptor` (using the [`getIdentifierDescriptor()`](https://liaison.dev/docs/v1/reference/component#get-identifier-descriptor-instance-method) method) or not.
+   * Returns whether the component can provide an `IdentifierDescriptor` (using the [`getIdentifierDescriptor()`](https://liaison.dev/docs/v1/reference/component#get-identifier-descriptor-instance-method) method) or not.
    *
    * @returns A boolean.
    *
@@ -1851,7 +1876,7 @@ export class Component extends Observable(Object) {
   static __identityMap: IdentityMap;
 
   /**
-   * Gets the [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) of a component.
+   * Gets the [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) of the component.
    *
    * @returns An [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) instance.
    *
@@ -1870,9 +1895,9 @@ export class Component extends Observable(Object) {
   static __isAttached: boolean;
 
   /**
-   * Attaches the current component class to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map). By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
+   * Attaches the component class to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map). By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
    *
-   * @returns The current component class.
+   * @returns The component class.
    *
    * @category Identity Mapping
    */
@@ -1883,9 +1908,9 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Detaches the current component class from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
+   * Detaches the component class from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
-   * @returns The current component class.
+   * @returns The component class.
    *
    * @category Identity Mapping
    */
@@ -1896,7 +1921,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component class is attached to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
+   * Returns whether the component class is attached to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1923,7 +1948,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component class is detached from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
+   * Returns whether the component class is detached from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1936,9 +1961,9 @@ export class Component extends Observable(Object) {
   __isAttached?: boolean;
 
   /**
-   * Attaches the current component instance to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map). By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
+   * Attaches the component instance to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map). By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
    *
-   * @returns The current component instance.
+   * @returns The component instance.
    *
    * @category Identity Mapping
    */
@@ -1954,9 +1979,9 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Detaches the current component instance from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
+   * Detaches the component instance from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
-   * @returns The current component instance.
+   * @returns The component instance.
    *
    * @category Identity Mapping
    */
@@ -1972,7 +1997,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component instance is attached to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
+   * Returns whether the component instance is attached to its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1987,7 +2012,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component instance is detached from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
+   * Returns whether the component instance is detached from its [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -2147,7 +2172,7 @@ export class Component extends Observable(Object) {
   // === Validation ===
 
   /**
-   * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
+   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
@@ -2158,7 +2183,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Validates the attributes of a component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
+   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
@@ -2216,7 +2241,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Runs the validators for all the set attributes of a component.
+   * Runs the validators for all the set attributes of the component.
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
@@ -2229,7 +2254,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Runs the validators for all the set attributes of a component.
+   * Runs the validators for all the set attributes of the component.
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
@@ -2264,7 +2289,7 @@ export class Component extends Observable(Object) {
   // === Method Properties ===
 
   /**
-   * Gets a method of a component.
+   * Gets a method of the component.
    *
    * @param name The name of the method to get.
    *
@@ -2283,7 +2308,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Gets a method of a component.
+   * Gets a method of the component.
    *
    * @param name The name of the method to get.
    *
@@ -2310,7 +2335,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified method.
+   * Returns whether the component has the specified method.
    *
    * @param name The name of the method to check.
    *
@@ -2330,7 +2355,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether a component has the specified method.
+   * Returns whether the component has the specified method.
    *
    * @param name The name of the method to check.
    *
@@ -2372,7 +2397,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a method in a component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
+   * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
    * @param [methodOptions] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
@@ -2391,7 +2416,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a method in a component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
+   * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
    * @param [methodOptions] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
@@ -2410,7 +2435,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the methods of a component.
+   * Returns an iterator providing the methods of the component.
    *
    * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://liaison.dev/docs/v1/reference/method) instance as first argument.
    *
@@ -2433,7 +2458,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an iterator providing the methods of a component.
+   * Returns an iterator providing the methods of the component.
    *
    * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://liaison.dev/docs/v1/reference/method) instance as first argument.
    *
@@ -2773,7 +2798,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns the provider of a component. If a component has no component provider, returns the current component.
+   * Returns the provider of the component. If there is no component provider, returns the current component.
    *
    * @returns A component provider.
    *
@@ -3008,7 +3033,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Clones a component instance. All primitive attributes are copied, and embedded components are cloned recursively. Currently, identifiable components (i.e., components having an identifier attribute) cannot be cloned, but this might change in the future.
+   * Clones the component instance. All primitive attributes are copied, and embedded components are cloned recursively. Currently, identifiable components (i.e., components having an identifier attribute) cannot be cloned, but this might change in the future.
    *
    * @returns A clone of the component.
    *
@@ -3059,7 +3084,7 @@ export class Component extends Observable(Object) {
   // === Forking ===
 
   /**
-   * Creates a fork of the current component class.
+   * Creates a fork of the component class.
    *
    * @returns The component class fork.
    *
@@ -3090,7 +3115,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Creates a fork of the current component instance. Note that the constructor of the resulting component will be a fork of the current component class.
+   * Creates a fork of the component instance. Note that the constructor of the resulting component will be a fork of the component class.
    *
    * @returns The component instance fork.
    *
@@ -3135,7 +3160,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component class is a fork of another component class.
+   * Returns whether the component class is a fork of another component class.
    *
    * @returns A boolean.
    *
@@ -3157,7 +3182,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the current component instance is a fork of another component instance.
+   * Returns whether the component instance is a fork of another component instance.
    *
    * @returns A boolean.
    *
@@ -3188,9 +3213,9 @@ export class Component extends Observable(Object) {
   static __ghost: typeof Component;
 
   /**
-   * Gets the ghost of the current component class. A ghost is like a fork, but it is unique. The first time you call this method, a fork is created, and then, all the successive calls return the same fork.
+   * Gets the ghost of the component class. A ghost is like a fork, but it is unique. The first time you call this method, a fork is created, and then, all the successive calls return the same fork.
    *
-   * @returns The ghost of the current component class.
+   * @returns The ghost of the component class.
    *
    * @example
    * ```
@@ -3221,9 +3246,9 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Gets the ghost of the current component instance. A ghost is like a fork, but it is unique. The first time you call this method, a fork is created, and then, all the successive calls return the same fork. Only identifiable components (i.e., components having an identifier attribute) can be "ghosted".
+   * Gets the ghost of the component instance. A ghost is like a fork, but it is unique. The first time you call this method, a fork is created, and then, all the successive calls return the same fork. Only identifiable components (i.e., components having an identifier attribute) can be "ghosted".
    *
-   * @returns The ghost of the current component instance.
+   * @returns The ghost of the component instance.
    *
    * @example
    * ```
@@ -3372,7 +3397,7 @@ export class Component extends Observable(Object) {
   // === Serialization ===
 
   /**
-   * Serializes the current component class to a plain object.
+   * Serializes the component class to a plain object.
    *
    * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
@@ -3467,7 +3492,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Serializes the current component instance to a plain object.
+   * Serializes the component instance to a plain object.
    *
    * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
@@ -3619,13 +3644,13 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Deserializes the current component class from the specified plain object. Since component classes are unique, they are deserialized "in place".
+   * Deserializes the component class from the specified plain object. Since component classes are unique, they are deserialized "in place".
    *
    * @param [object] The plain object to deserialize from.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.source] The source of the serialization (default: `0`).
    *
-   * @returns The current component class.
+   * @returns The component class.
    *
    * @example
    * ```
@@ -3669,7 +3694,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Deserializes the specified plain object to an instance of the current component class.
+   * Deserializes the specified plain object to an instance of the component class.
    *
    * @param [object] The plain object to deserialize from.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.

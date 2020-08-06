@@ -36,10 +36,36 @@ export type UnintrospectedProperty = {
 
 export type UnintrospectedExposure = Partial<Record<PropertyOperation, true>>;
 
+/**
+ * A base class from which classes such as [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) or [`Method`](https://liaison.dev/docs/v1/reference/method) are constructed. Unless you build a custom property class, you probably won't have to use this class directly.
+ */
 export class Property {
   _name: string;
   _parent: typeof Component | Component;
 
+  /**
+   * Creates an instance of [`Property`](https://liaison.dev/docs/v1/reference/property).
+   *
+   * @param name The name of the property.
+   * @param parent The component class, prototype, or instance that owns the property.
+   * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the property should be exposed to remote access.
+   *
+   * @returns The [`Property`](https://liaison.dev/docs/v1/reference/property) instance that was created.
+   *
+   * @example
+   * ```
+   * import {Component, Property} from '﹫liaison/component';
+   *
+   * class Movie extends Component {}
+   *
+   * const titleProperty = new Property('title', Movie.prototype);
+   *
+   * titleProperty.getName(); // => 'title'
+   * titleProperty.getParent(); // => Movie.prototype
+   * ```
+   *
+   * @category Creation
+   */
   constructor(name: string, parent: typeof Component | Component, options: PropertyOptions = {}) {
     assertIsString(name);
     assertIsComponentClassOrInstance(parent);
@@ -54,10 +80,34 @@ export class Property {
 
   _initialize() {}
 
+  /**
+   * Returns the name of the property.
+   *
+   * @returns A string.
+   *
+   * @example
+   * ```
+   * titleProperty.getName(); // => 'title'
+   * ```
+   *
+   * @category Basic Methods
+   */
   getName() {
     return this._name;
   }
 
+  /**
+   * Returns the parent of the property.
+   *
+   * @returns A component class, prototype, or instance.
+   *
+   * @example
+   * ```
+   * titleProperty.getParent(); // => Movie.prototype
+   * ```
+   *
+   * @category Basic Methods
+   */
   getParent() {
     return this._parent;
   }
@@ -78,10 +128,34 @@ export class Property {
 
   _exposure?: PropertyExposure;
 
+  /**
+   * Returns an object specifying how the property is exposed to remote access.
+   *
+   * @returns A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object.
+   *
+   * @example
+   * ```
+   * titleProperty.getExposure(); // => {get: true, set: true}
+   * ```
+   *
+   * @category Exposure
+   */
   getExposure() {
     return this._exposure;
   }
 
+  /**
+   * Sets how the property is exposed to remote access.
+   *
+   * @param [exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object.
+   *
+   * @example
+   * ```
+   * titleProperty.setExposure({get: true, set: true});
+   * ```
+   *
+   * @category Exposure
+   */
   setExposure(exposure = {}) {
     this._exposure = this._normalizeExposure(exposure);
   }
@@ -112,6 +186,22 @@ export class Property {
     return normalizedExposure as PropertyExposure | undefined;
   }
 
+  /**
+   * Returns whether an operation is allowed on the property.
+   *
+   * @param operation A string representing an operation. Currently supported operations are 'get', 'set', and 'call'.
+   *
+   * @returns A boolean.
+   *
+   * @example
+   * ```
+   * titleProperty.operationIsAllowed('get'); // => true
+   * titleProperty.operationIsAllowed('call'); // => false
+   * ```
+   *
+   * @category Exposure
+   * @possiblyasync
+   */
   operationIsAllowed(operation: PropertyOperation) {
     const setting = this._exposure?.[operation];
 
@@ -124,6 +214,27 @@ export class Property {
       (resolvedSetting) => resolvedSetting === true
     );
   }
+
+  /**
+   * @typedef PropertyExposure
+   *
+   * A `PropertyExposure` is a plain object specifying how a property is exposed to remote access.
+   *
+   * The shape of the object is `{[operation]: permission}` where:
+   *
+   * - `operation` is a string representing the different types of operations (`'get'` and `'set'` for attributes, and `'call'` for methods).
+   * - `permission` is a boolean (or a string or array of strings if the [`WithRoles`](https://liaison.dev/docs/v1/reference/with-roles) mixin is used) specifying whether the operation is allowed or not.
+   *
+   * @example
+   * ```
+   * {get: true, set: true}
+   * {get: 'anyone', set: ['author', 'admin']}
+   * {call: true}
+   * {call: 'admin'}
+   * ```
+   *
+   * @category Exposure
+   */
 
   // === Forking ===
 

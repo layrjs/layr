@@ -35,6 +35,12 @@
           "slug": "embedded-component",
           "file": "reference/embedded-component.md",
           "source": "../packages/component/src/embedded-component.ts"
+        },
+        {
+          "title": "Property",
+          "slug": "property",
+          "file": "reference/property.md",
+          "source": "../packages/component/src/properties/property.ts"
         }
       ]
     }
