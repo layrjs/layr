@@ -1,4 +1,4 @@
-import {AbstractRouter, URLOptions} from '@liaison/abstract-router';
+import {AbstractRouter, URLOptions, NavigationOptions} from '@liaison/abstract-router';
 
 import type {RoutableComponent} from './routable';
 import type {RouteOptions, RoutePattern} from './route';
@@ -50,17 +50,17 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       defineMethod(method, 'navigate', function (
         this: Function,
         params?: any,
-        options?: URLOptions
+        options?: URLOptions & NavigationOptions
       ) {
-        return router.navigate(this.generateURL(params, options));
+        return router.navigate(this.generateURL(params, options), options);
       });
 
       defineMethod(method, 'redirect', function (
         this: Function,
         params?: any,
-        options?: URLOptions
+        options?: URLOptions & NavigationOptions
       ) {
-        return router.redirect(this.generateURL(params, options));
+        return router.redirect(this.generateURL(params, options), options);
       });
 
       defineMethod(method, 'reload', function (this: Function, params?: any, options?: URLOptions) {

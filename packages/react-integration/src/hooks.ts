@@ -3,7 +3,6 @@ import {ObservableType, isObservable} from '@liaison/observable';
 import {BrowserRouter} from '@liaison/browser-router';
 import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {SyncFunction, AsyncFunction, getTypeOf} from 'core-helpers';
-import debounce from 'lodash/debounce';
 
 import {RouterPlugin} from './plugins';
 
@@ -25,75 +24,11 @@ export function useBrowserRouter(rootComponent: typeof Component) {
 
     return function () {
       router.removeObserver(forceUpdate);
+      router.unmount();
     };
   }, [router]);
-
-  useNavigationEventTracker(router);
-  useHashNavigationFix(router);
 
   return [router, isReady] as const;
-}
-
-function useNavigationEventTracker(router: BrowserRouter) {
-  useEffect(() => {
-    const handleEvent = (event: Event) => {
-      router.navigate((event as CustomEvent).detail.url);
-    };
-
-    document.body.addEventListener('liaisonRouterNavigate', handleEvent);
-
-    return function () {
-      document.body.removeEventListener('liaisonRouterNavigate', handleEvent);
-    };
-  }, [router]);
-}
-
-function useHashNavigationFix(router: BrowserRouter) {
-  const expectedHash = useRef<string | undefined>(undefined);
-  const previousPathAndHash = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    const mutationObserver = new MutationObserver(
-      debounce(() => {
-        if (expectedHash.current === undefined) {
-          return;
-        }
-
-        const element = document.getElementById(expectedHash.current);
-
-        if (element !== null) {
-          element.scrollIntoView({block: 'start', behavior: 'smooth'});
-          expectedHash.current = undefined;
-        }
-      }, 50)
-    );
-
-    mutationObserver.observe(document.body, {
-      attributes: true,
-      characterData: true,
-      childList: true,
-      subtree: true
-    });
-
-    return function () {
-      mutationObserver.disconnect();
-    };
-  }, []);
-
-  let pathAndHash = router.getCurrentPath();
-  const hash = router.getCurrentHash();
-
-  if (hash !== undefined) {
-    pathAndHash += `#${hash}`;
-  }
-
-  if (pathAndHash !== previousPathAndHash.current) {
-    previousPathAndHash.current = pathAndHash;
-
-    if (hash !== undefined) {
-      expectedHash.current = hash;
-    }
-  }
 }
 
 export function useObserve(observable: ObservableType) {
