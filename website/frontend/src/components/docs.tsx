@@ -91,8 +91,7 @@ export class Docs extends Routable(Component) {
 
     if (!isEqual({path, version, language}, resolvedParams)) {
       const hash = this.getRouter().getCurrentHash();
-      this.Main.redirect(resolvedParams, {hash});
-      return null;
+      this.Main.redirect(resolvedParams, {hash, silent: true});
     }
 
     return (

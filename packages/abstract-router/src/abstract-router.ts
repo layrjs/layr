@@ -11,14 +11,22 @@ declare global {
     generateURL: (params?: PlainObject, options?: URLOptions) => string;
     generatePath: (params?: PlainObject) => string;
     generateQueryString: (params?: PlainObject) => string;
-    navigate: (params?: PlainObject, options?: URLOptions) => Promise<void>;
-    redirect: (params?: PlainObject, options?: URLOptions) => Promise<void>;
+    navigate: (
+      params?: PlainObject,
+      options?: URLOptions & NavigationOptions
+    ) => Promise<void> | undefined;
+    redirect: (
+      params?: PlainObject,
+      options?: URLOptions & NavigationOptions
+    ) => Promise<void> | undefined;
     reload: (params?: PlainObject, options?: URLOptions) => void;
     isActive: (params?: PlainObject) => boolean;
   }
 }
 
 export type URLOptions = {hash?: string};
+
+export type NavigationOptions = {silent?: boolean; defer?: boolean};
 
 type RouterPlugin = (router: AbstractRouter) => void;
 
@@ -39,6 +47,16 @@ export abstract class AbstractRouter extends Observable(Object) {
     if (plugins !== undefined) {
       this.applyPlugins(plugins);
     }
+
+    this.mount();
+  }
+
+  mount() {
+    // Override this method to implement custom mount logic
+  }
+
+  unmount() {
+    // Override this method to implement custom unmount logic
   }
 
   // === Root components ===
@@ -216,22 +234,32 @@ export abstract class AbstractRouter extends Observable(Object) {
 
   // === Navigation ===
 
-  navigate(url: string | URL) {
-    const normalizedURL = normalizeURL(url);
+  navigate(url: string | URL, options: NavigationOptions = {}) {
+    const {silent = false, defer = false} = options;
 
-    return defer(() => {
-      this._navigate(normalizedURL);
+    this._navigate(normalizeURL(url));
+
+    if (silent) {
+      return;
+    }
+
+    return possiblyDeferred(defer, () => {
       this.callObservers();
     });
   }
 
   abstract _navigate(url: URL): void;
 
-  redirect(url: string | URL) {
-    const normalizedURL = normalizeURL(url);
+  redirect(url: string | URL, options: NavigationOptions = {}) {
+    const {silent = false, defer = false} = options;
 
-    return defer(() => {
-      this._redirect(normalizedURL);
+    this._redirect(normalizeURL(url));
+
+    if (silent) {
+      return;
+    }
+
+    return possiblyDeferred(defer, () => {
       this.callObservers();
     });
   }
@@ -246,21 +274,28 @@ export abstract class AbstractRouter extends Observable(Object) {
 
   abstract _reload(url: URL | undefined): void;
 
-  go(delta: number) {
-    return defer(() => {
-      this._go(delta);
+  go(delta: number, options: NavigationOptions = {}) {
+    const {silent = false, defer = false} = options;
+
+    this._go(delta);
+
+    if (silent) {
+      return;
+    }
+
+    return possiblyDeferred(defer, () => {
       this.callObservers();
     });
   }
 
   abstract _go(delta: number): void;
 
-  goBack() {
-    return this.go(-1);
+  goBack(options: NavigationOptions = {}) {
+    return this.go(-1, options);
   }
 
-  goForward() {
-    return this.go(1);
+  goForward(options: NavigationOptions = {}) {
+    return this.go(1, options);
   }
 
   getHistoryLength() {
@@ -270,12 +305,6 @@ export abstract class AbstractRouter extends Observable(Object) {
   abstract _getHistoryLength(): number;
 
   Link!: (props: any) => any;
-
-  _onChange() {
-    setTimeout(() => {
-      this.callObservers();
-    }, 0);
-  }
 
   // === Customization ===
 
@@ -304,7 +333,12 @@ export abstract class AbstractRouter extends Observable(Object) {
   }
 }
 
-function defer(func: Function) {
+function possiblyDeferred(defer: boolean, func: Function) {
+  if (!defer) {
+    func();
+    return;
+  }
+
   return new Promise<void>((resolve, reject) => {
     setTimeout(() => {
       try {
