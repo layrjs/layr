@@ -47,6 +47,12 @@
           "slug": "attribute",
           "file": "reference/attribute.md",
           "source": "../packages/component/src/properties/attribute.ts"
+        },
+        {
+          "title": "Method",
+          "slug": "method",
+          "file": "reference/method.md",
+          "source": "../packages/component/src/properties/method.ts"
         }
       ]
     }
