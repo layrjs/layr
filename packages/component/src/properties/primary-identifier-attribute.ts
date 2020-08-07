@@ -1,7 +1,7 @@
 import {hasOwnProperty} from 'core-helpers';
 
 import type {Component} from '../component';
-import {AttributeOptions} from './attribute';
+import type {AttributeOptions} from './attribute';
 import {IdentifierAttribute, IdentifierValue} from './identifier-attribute';
 import {isComponentInstance, ensureComponentClass} from '../utilities';
 
@@ -9,6 +9,12 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * *Inherits from [`IdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute).*
  *
  * A `PrimaryIdentifierAttribute` is a special kind of attribute that uniquely identify a [Component](https://liaison.dev/docs/v1/reference/component) instance.
+ *
+ * A `Component` can have only one `PrimaryIdentifierAttribute`. To define a `Component` with more than one identifier, you can add some [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) in addition to the `PrimaryIdentifierAttribute`.
+ *
+ * Another characteristic of a `PrimaryIdentifierAttribute` is that its value is immutable (i.e., once set it cannot change). This ensures a stable identity of the components across the different layers of an application (e.g., frontend, backend, and database).
+ *
+ * #### Usage
  *
  * Typically, you create a `PrimaryIdentifierAttribute` and associate it to a component prototype using the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
  *
@@ -70,12 +76,12 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * new Movie({id: 'abc123', title: 'Inception 2'}); // => Error
  * ```
  *
- * By default, a `PrimaryIdentifierAttribute` value is of type `'string'`, but you can also define `'number'` primary identifier attributes:
+ * `PrimaryIdentifierAttribute` values are usually of type `'string'` (the default), but you can also have values of type `'number'`:
  *
  * ```
  * // JS
  *
- * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ * import {Component, primaryIdentifier} from '﹫liaison/component';
  *
  * class Movie extends Component {
  *   // An auto-generated 'number' primary identifier attribute
@@ -86,7 +92,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * ```
  * // TS
  *
- * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ * import {Component, primaryIdentifier} from '﹫liaison/component';
  *
  * class Movie extends Component {
  *   // An auto-generated 'number' primary identifier attribute

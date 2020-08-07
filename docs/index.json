@@ -61,6 +61,12 @@
           "source": "../packages/component/src/properties/primary-identifier-attribute.ts"
         },
         {
+          "title": "SecondaryIdentifierAttribute",
+          "slug": "secondary-identifier-attribute",
+          "file": "reference/secondary-identifier-attribute.md",
+          "source": "../packages/component/src/properties/secondary-identifier-attribute.ts"
+        },
+        {
           "title": "Method",
           "slug": "method",
           "file": "reference/method.md",

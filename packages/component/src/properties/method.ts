@@ -10,6 +10,8 @@ export type MethodOptions = PropertyOptions;
  *
  * A `Method` represents a method of a [Component](https://liaison.dev/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript method, but brings the ability to be exposed to remote calls.
  *
+ * #### Usage
+ *
  * Typically, you define a `Method` using the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
  *
  * For example, here is how you would define a `Movie` class with some methods:
@@ -30,7 +32,7 @@ export type MethodOptions = PropertyOptions;
  * }
  * ```
  *
- * Then you can call the methods like you would normally do with regular JavaScript:
+ * Then you can call a method like you would normally do with regular JavaScript:
  *
  * ```
  * Movie.getConfig();
@@ -39,7 +41,7 @@ export type MethodOptions = PropertyOptions;
  * movie.play();
  * ```
  *
- * So far, you may wonder what is the point of defining some methods this way. By itself the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator, except for creating a `Method` instance under the hood, doesn't provide much benefit.
+ * So far, you may wonder what is the point of defining methods this way. By itself the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator, except for creating a `Method` instance under the hood, doesn't provide much benefit.
  *
  * The trick is that since you have a `Method`, you also have a [`Property`](https://liaison.dev/docs/v1/reference/property) (because `Method` inherits from `Property`), and properties can be exposed to remote access thanks to the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator.
  *
@@ -61,7 +63,7 @@ export type MethodOptions = PropertyOptions;
  * }
  * ```
  *
- * Now that you have some exposed methods, you can call them remotely like you would do locally:
+ * Now that you have some exposed methods, you can call them remotely in the same way you would do locally:
  *
  * ```
  * Movie.getConfig(); // Executed remotely

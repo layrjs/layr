@@ -60,6 +60,8 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
  *
  * An `Attribute` represents an attribute of a [Component](https://liaison.dev/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as type checking at runtime, validation, or serialization.
  *
+ * #### Usage
+ *
  * Typically, you create an `Attribute` and associate it to a component using the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
  *
  * For example, here is how you would define a `Movie` class with some attributes:
@@ -533,7 +535,7 @@ export class Attribute extends Observable(Property) {
   }
 
   /**
-   * Evaluate the default value of the attribute. If the default value is a function, the function is called (with the attribute's parent as the `this` context), and the result is returned. Otherwise, the default value is returned as is.
+   * Evaluate the default value of the attribute. If the default value is a function, the function is called (with the attribute's parent as `this` context), and the result is returned. Otherwise, the default value is returned as is.
    *
    * @returns A value of any type.
    *
