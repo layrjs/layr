@@ -23,7 +23,7 @@ type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
  * Decorates an attribute of a component so it can be type checked at runtime, validated, serialized, etc.
  *
  * @param [valueType] The type of values that can be stored in the attribute (default: `'any'`).
- * @param [options] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
+ * @param [options] The options to create the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#constructor).
  *
  * @example
  * ```
@@ -34,16 +34,16 @@ type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
  * const {maxLength} = validators;
  *
  * class Movie extends Component {
- *   // Class optional 'string' attribute
+ *   // Optional 'string' class attribute
  *   ﹫attribute('string?') static customName;
  *
- *   // Instance required 'string' attribute
+ *   // Required 'string' instance attribute
  *   ﹫attribute('string') title;
  *
- *   // Instance optional 'string' attribute with a validator
+ *   // Optional 'string' instance attribute with a validator
  *   ﹫attribute('string?', {validators: [maxLength(100)]}) summary;
  *
- *   // Instance required array of 'Actor' attribute with a default value
+ *   // Required array of 'Actor' instance attribute with a default value
  *   ﹫attribute('Actor[]') actors = [];
  * }
  * ```
@@ -57,16 +57,16 @@ type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
  * const {maxLength} = validators;
  *
  * class Movie extends Component {
- *   // Class optional 'string' attribute
+ *   // Optional 'string' class attribute
  *   ﹫attribute('string?') static customName?: string;
  *
- *   // Instance required 'string' attribute
+ *   // Required 'string' instance attribute
  *   ﹫attribute('string') title!: string;
  *
- *   // Instance optional 'string' attribute with a validator
+ *   // Optional 'string' instance attribute with a validator
  *   ﹫attribute('string?', {validators: [maxLength(100)]}) summary?: string;
  *
- *   // Instance required array of 'Actor' attribute with a default value
+ *   // Required array of 'Actor' instance attribute with a default value
  *   ﹫attribute('Actor[]') actors: Actor[] = [];
  * }
  * ```
@@ -95,7 +95,7 @@ export function attribute(
  * Decorates an attribute of a component as a [primary identifier attribute](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
  *
  * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
- * @param [options] The options to be passed to the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) constructor.
+ * @param [options] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
  *
  * @example
  * ```
@@ -155,7 +155,7 @@ export function primaryIdentifier(
  * Decorates an attribute of a component as a [secondary identifier attribute](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
  *
  * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
- * @param [options] The options to be passed to the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) constructor.
+ * @param [options] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
  *
  * @example
  * ```
@@ -298,7 +298,7 @@ function getAttributeInitializer(
 /**
  * Decorates a method of a component so it can be exposed and called remotely.
  *
- * @param [options] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
+ * @param [options] The options to create the [`Method`](https://liaison.dev/docs/v1/reference/method#constructor).
  *
  * @example
  * ```

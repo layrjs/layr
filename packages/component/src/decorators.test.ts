@@ -23,7 +23,7 @@ describe('Decorators', () => {
       @attribute() static limit = 100;
       @attribute() static token?: string;
 
-      @attribute() title = '';
+      @attribute() title? = '';
       @attribute() country?: string;
     }
 

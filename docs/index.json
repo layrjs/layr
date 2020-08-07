@@ -41,6 +41,12 @@
           "slug": "property",
           "file": "reference/property.md",
           "source": "../packages/component/src/properties/property.ts"
+        },
+        {
+          "title": "Attribute",
+          "slug": "attribute",
+          "file": "reference/attribute.md",
+          "source": "../packages/component/src/properties/attribute.ts"
         }
       ]
     }

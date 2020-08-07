@@ -238,7 +238,7 @@ export class Component extends Observable(Object) {
    *
    * @param [object] An optional object specifying the value of the component attributes.
    * @param [options.isNew] Whether the instance should be marked as new or not (default: `true`).
-   * @param [options.source] The source of the created instance (default: `0`).
+   * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the created instance (default: `0`).
    * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be set (default: `true` which means that all the attributes will be set).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.initialize] Whether to call the [`initialize`](https://liaison.dev/docs/v1/reference/component#initialize-instance-method) instance method or not (default: `true`).
@@ -755,7 +755,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to define.
    * @param PropertyClass The class of the property (e.g., [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method)) to use.
-   * @param [propertyOptions] The options to be passed to the `PropertyClass` constructor.
+   * @param [propertyOptions] The options to create the `PropertyClass`.
    *
    * @returns The property that was created.
    *
@@ -775,7 +775,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to define.
    * @param PropertyClass The class of the property (e.g., [`Attribute`](https://liaison.dev/docs/v1/reference/attribute), [`Method`](https://liaison.dev/docs/v1/reference/method)) to use.
-   * @param [propertyOptions] The options to be passed to the `PropertyClass` constructor.
+   * @param [propertyOptions] The options to create the `PropertyClass`.
    *
    * @returns The property that was created.
    *
@@ -1160,7 +1160,7 @@ export class Component extends Observable(Object) {
    * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
-   * @param [attributeOptions] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
+   * @param [attributeOptions] The options to create the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#constructor).
    *
    * @returns The [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) that was created.
    *
@@ -1179,7 +1179,7 @@ export class Component extends Observable(Object) {
    * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
-   * @param [attributeOptions] The options to be passed to the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) constructor.
+   * @param [attributeOptions] The options to create the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#constructor).
    *
    * @returns The [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) that was created.
    *
@@ -1443,7 +1443,7 @@ export class Component extends Observable(Object) {
    * Defines the primary identifier attribute of the component. Typically, instead of using this method, you would rather use the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
    *
    * @param name The name of the primary identifier attribute to define.
-   * @param [attributeOptions] The options to be passed to the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) constructor.
+   * @param [attributeOptions] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
    *
    * @returns The [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) that was created.
    *
@@ -1534,7 +1534,7 @@ export class Component extends Observable(Object) {
    * Defines a secondary identifier attribute in the component. Typically, instead of using this method, you would rather use the [`@secondaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#secondary-identifier-decorator) decorator.
    *
    * @param name The name of the secondary identifier attribute to define.
-   * @param [attributeOptions] The options to be passed to the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) constructor.
+   * @param [attributeOptions] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
    *
    * @returns The [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) that was created.
    *
@@ -2172,9 +2172,49 @@ export class Component extends Observable(Object) {
   // === Validation ===
 
   /**
-   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
+   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   *
+   * @example
+   * ```
+   * // JS
+   *
+   * import {Component, attribute, validators} from '﹫liaison/component';
+   *
+   * const {notEmpty} = validators;
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string', {validators: [notEmpty()]}) title;
+   * }
+   *
+   * const movie = new Movie({title: 'Inception'});
+   *
+   * movie.title; // => 'Inception'
+   * movie.validate(); // All good!
+   * movie.title = '';
+   * movie.validate(); // Error {failedValidators: [{validator: ..., path: 'title'}]}
+   * ```
+   *
+   * @example
+   * ```
+   * // TS
+   *
+   * import {Component, attribute, validators} from '﹫liaison/component';
+   *
+   * const {notEmpty} = validators;
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string', {validators: [notEmpty()]}) title!: string;
+   * }
+   *
+   * const movie = new Movie({title: 'Inception'});
+   *
+   * movie.title; // => 'Inception'
+   * movie.validate(); // All good!
+   * movie.title = '';
+   * movie.validate(); // Error {failedValidators: [{validator: ..., path: 'title'}]}
+   * ```
    *
    * @category Validation
    */
@@ -2183,9 +2223,49 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JS `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
+   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   *
+   * @example
+   * ```
+   * // JS
+   *
+   * import {Component, attribute, validators} from '﹫liaison/component';
+   *
+   * const {notEmpty} = validators;
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string', {validators: [notEmpty()]}) title;
+   * }
+   *
+   * const movie = new Movie({title: 'Inception'});
+   *
+   * movie.title; // => 'Inception'
+   * movie.validate(); // All good!
+   * movie.title = '';
+   * movie.validate(); // Error {failedValidators: [{validator: ..., path: 'title'}]}
+   * ```
+   *
+   * @example
+   * ```
+   * // TS
+   *
+   * import {Component, attribute, validators} from '﹫liaison/component';
+   *
+   * const {notEmpty} = validators;
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string', {validators: [notEmpty()]}) title!: string;
+   * }
+   *
+   * const movie = new Movie({title: 'Inception'});
+   *
+   * movie.title; // => 'Inception'
+   * movie.validate(); // All good!
+   * movie.title = '';
+   * movie.validate(); // Error {failedValidators: [{validator: ..., path: 'title'}]}
+   * ```
    *
    * @category Validation
    */
@@ -2219,6 +2299,16 @@ export class Component extends Observable(Object) {
    *
    * @returns A boolean.
    *
+   * @example
+   * ```
+   * // See the `movie` definition in the `validate()` example
+   *
+   * movie.title; // => 'Inception'
+   * movie.isValid(); // => true
+   * movie.title = '';
+   * movie.isValid(); // => false
+   * ```
+   *
    * @category Validation
    */
   static get isValid() {
@@ -2231,6 +2321,16 @@ export class Component extends Observable(Object) {
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
    *
    * @returns A boolean.
+   *
+   * @example
+   * ```
+   * // See the `movie` definition in the `validate()` example
+   *
+   * movie.title; // => 'Inception'
+   * movie.isValid(); // => true
+   * movie.title = '';
+   * movie.isValid(); // => false
+   * ```
    *
    * @category Validation
    */
@@ -2247,6 +2347,16 @@ export class Component extends Observable(Object) {
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
+   * @example
+   * ```
+   * // See the `movie` definition in the `validate()` example
+   *
+   * movie.title; // => 'Inception'
+   * movie.runValidators(); // => []
+   * movie.title = '';
+   * movie.runValidators(); // => [{validator: ..., path: 'title'}]
+   * ```
+   *
    * @category Validation
    */
   static get runValidators() {
@@ -2259,6 +2369,16 @@ export class Component extends Observable(Object) {
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   *
+   * @example
+   * ```
+   * // See the `movie` definition in the `validate()` example
+   *
+   * movie.title; // => 'Inception'
+   * movie.runValidators(); // => []
+   * movie.title = '';
+   * movie.runValidators(); // => [{validator: ..., path: 'title'}]
+   * ```
    *
    * @category Validation
    */
@@ -2400,7 +2520,7 @@ export class Component extends Observable(Object) {
    * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
-   * @param [methodOptions] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
+   * @param [methodOptions] The options to create the [`Method`](https://liaison.dev/docs/v1/reference/method#constructor).
    *
    * @returns The [`Method`](https://liaison.dev/docs/v1/reference/method) that was created.
    *
@@ -2419,7 +2539,7 @@ export class Component extends Observable(Object) {
    * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
-   * @param [methodOptions] The options to be passed to the [`Method`](https://liaison.dev/docs/v1/reference/method) constructor.
+   * @param [methodOptions] The options to create the [`Method`](https://liaison.dev/docs/v1/reference/method#constructor).
    *
    * @returns The [`Method`](https://liaison.dev/docs/v1/reference/method) that was created.
    *
@@ -3401,7 +3521,7 @@ export class Component extends Observable(Object) {
    *
    * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.target] The target of the serialization (default: `undefined`).
+   * @param [options.target] A number specifying the [target](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component class.
    *
@@ -3496,7 +3616,7 @@ export class Component extends Observable(Object) {
    *
    * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.target] The target of the serialization (default: `undefined`).
+   * @param [options.target] A number specifying the [target](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component instance.
    *
@@ -3648,7 +3768,7 @@ export class Component extends Observable(Object) {
    *
    * @param [object] The plain object to deserialize from.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.source] The source of the serialization (default: `0`).
+   * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
    *
    * @returns The component class.
    *
@@ -3698,7 +3818,7 @@ export class Component extends Observable(Object) {
    *
    * @param [object] The plain object to deserialize from.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.source] The source of the serialization (default: `0`).
+   * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
    *
    * @returns The deserialized component instance.
    *
