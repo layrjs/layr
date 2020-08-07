@@ -49,6 +49,18 @@
           "source": "../packages/component/src/properties/attribute.ts"
         },
         {
+          "title": "IdentifierAttribute",
+          "slug": "identifier-attribute",
+          "file": "reference/identifier-attribute.md",
+          "source": "../packages/component/src/properties/identifier-attribute.ts"
+        },
+        {
+          "title": "PrimaryIdentifierAttribute",
+          "slug": "primary-identifier-attribute",
+          "file": "reference/primary-identifier-attribute.md",
+          "source": "../packages/component/src/properties/primary-identifier-attribute.ts"
+        },
+        {
           "title": "Method",
           "slug": "method",
           "file": "reference/method.md",

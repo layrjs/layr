@@ -92,10 +92,10 @@ export function attribute(
 }
 
 /**
- * Decorates an attribute of a component as a [primary identifier attribute](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
+ * Decorates an attribute of a component as a [primary identifier attribute](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
  *
  * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
- * @param [options] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
+ * @param [options] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
  *
  * @example
  * ```
@@ -152,10 +152,10 @@ export function primaryIdentifier(
 }
 
 /**
- * Decorates an attribute of a component as a [secondary identifier attribute](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+ * Decorates an attribute of a component as a [secondary identifier attribute](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
  *
  * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
- * @param [options] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+ * @param [options] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
  *
  * @example
  * ```

@@ -141,9 +141,9 @@ export class Attribute extends Observable(Property) {
    *
    * @param name The name of the attribute.
    * @param parent The component class, prototype, or instance that owns the attribute.
-   * @param [options.valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type) the attribute can store.
+   * @param [options.valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type) the attribute can store (default: `'any'`).
    * @param [options.value] The initial value of a class attribute.
-   * @param [options.defaultValue] The default value (or a function returning the default value) of an instance attribute.
+   * @param [options.default] The default value (or a function returning the default value) of an instance attribute.
    * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validation) for the value of the attribute.
    * @param [options.items.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validation) for the items of an array attribute.
    * @param [options.getter] A getter function for getting the value of the attribute. Plays the same role as a regular [JavaScript getter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get).

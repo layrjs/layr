@@ -6,6 +6,11 @@ import {isComponentInstance} from '../utilities';
 
 export type IdentifierValue = string | number;
 
+/**
+ * *Inherits from [`Attribute`](https://liaison.dev/docs/v1/reference/attribute).*
+ *
+ * A base class from which [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) and [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) are constructed. Unless you build a custom identifier attribute class, you probably won't have to use this class directly.
+ */
 export class IdentifierAttribute extends Attribute {
   constructor(name: string, parent: Component, options: AttributeOptions = {}) {
     if (!isComponentInstance(parent)) {
@@ -86,10 +91,28 @@ export class IdentifierAttribute extends Attribute {
   }
 }
 
+/**
+ * Returns whether the specified value is an `IdentifierAttribute` class.
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isIdentifierAttributeClass(value: any): value is typeof IdentifierAttribute {
   return typeof value?.isIdentifierAttribute === 'function';
 }
 
+/**
+ * Returns whether the specified value is an `IdentifierAttribute` instance.
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isIdentifierAttributeInstance(value: any): value is IdentifierAttribute {
   return isIdentifierAttributeClass(value?.constructor) === true;
 }

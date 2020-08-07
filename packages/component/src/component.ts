@@ -1322,7 +1322,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the identifier attribute to get.
    *
-   * @returns An instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) or [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+   * @returns An instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) or [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
    *
    * @example
    * ```
@@ -1388,7 +1388,7 @@ export class Component extends Observable(Object) {
   /**
    * Gets the primary identifier attribute of the component.
    *
-   * @returns An instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
+   * @returns An instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
    *
    * @example
    * ```
@@ -1443,9 +1443,9 @@ export class Component extends Observable(Object) {
    * Defines the primary identifier attribute of the component. Typically, instead of using this method, you would rather use the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
    *
    * @param name The name of the primary identifier attribute to define.
-   * @param [attributeOptions] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class).
+   * @param [attributeOptions] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
    *
-   * @returns The [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) that was created.
+   * @returns The [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) that was created.
    *
    * @example
    * ```
@@ -1468,7 +1468,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the secondary identifier attribute to get.
    *
-   * @returns A [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) instance.
+   * @returns A [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) instance.
    *
    * @example
    * ```
@@ -1534,9 +1534,9 @@ export class Component extends Observable(Object) {
    * Defines a secondary identifier attribute in the component. Typically, instead of using this method, you would rather use the [`@secondaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#secondary-identifier-decorator) decorator.
    *
    * @param name The name of the secondary identifier attribute to define.
-   * @param [attributeOptions] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+   * @param [attributeOptions] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
    *
-   * @returns The [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) that was created.
+   * @returns The [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) that was created.
    *
    * @example
    * ```
@@ -1556,7 +1556,7 @@ export class Component extends Observable(Object) {
    * @param [options.setAttributesOnly] A boolean specifying whether only set identifier attributes should be returned (default: `false`).
    * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the identifier attributes to be returned (default: `true` which means that all identifier attributes should be returned).
    *
-   * @returns An iterator of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#primary-identifier-attribute-class) or [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class).
+   * @returns An iterator of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) or [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
    *
    * @example
    * ```
@@ -1607,11 +1607,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the secondary identifier attributes of the component.
    *
-   * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) instance as first argument.
+   * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set secondary identifier attributes should be returned (default: `false`).
    * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the secondary identifier attributes to be returned (default: `true` which means that all secondary identifier attributes should be returned).
    *
-   * @returns A [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute#secondary-identifier-attribute-class) instance iterator.
+   * @returns A [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) instance iterator.
    *
    * @example
    * ```
