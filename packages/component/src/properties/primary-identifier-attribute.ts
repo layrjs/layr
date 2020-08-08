@@ -106,7 +106,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
    *
    * @param name The name of the attribute.
    * @param parent The component prototype that owns the attribute.
-   * @param [options.valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type) the attribute can store (default: `'string'`). Only `'string'` and `'number'` are supported for the identifier attributes.
+   * @param [options.valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
    * @param [options.default] A function returning the default value of the attribute (default when `valueType` is `'string'`: `function () { return this.constructor.generateId() }`).
    * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validation) for the value of the attribute.
    * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.

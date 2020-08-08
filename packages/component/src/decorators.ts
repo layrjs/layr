@@ -22,7 +22,7 @@ type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
 /**
  * Decorates an attribute of a component so it can be type checked at runtime, validated, serialized, etc.
  *
- * @param [valueType] The type of values that can be stored in the attribute (default: `'any'`).
+ * @param [valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type#supported-types) that can be stored in the attribute (default: `'any'`).
  * @param [options] The options to create the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#constructor).
  *
  * @example
@@ -94,7 +94,7 @@ export function attribute(
 /**
  * Decorates an attribute of a component as a [primary identifier attribute](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
  *
- * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
+ * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
  * @param [options] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
  *
  * @example
@@ -154,7 +154,7 @@ export function primaryIdentifier(
 /**
  * Decorates an attribute of a component as a [secondary identifier attribute](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
  *
- * @param [valueType] The type of values that can be stored in the attribute (default: `'string'`).
+ * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
  * @param [options] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
  *
  * @example

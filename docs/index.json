@@ -67,6 +67,12 @@
           "source": "../packages/component/src/properties/secondary-identifier-attribute.ts"
         },
         {
+          "title": "ValueType",
+          "slug": "value-type",
+          "file": "reference/value-type.md",
+          "source": "../packages/component/src/properties/value-types/value-type.ts"
+        },
+        {
           "title": "Method",
           "slug": "method",
           "file": "reference/method.md",
