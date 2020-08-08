@@ -73,6 +73,12 @@
           "source": "../packages/component/src/properties/value-types/value-type.ts"
         },
         {
+          "title": "Validator",
+          "slug": "validator",
+          "file": "reference/validator.md",
+          "source": "../packages/component/src/validation/validator.ts"
+        },
+        {
           "title": "Method",
           "slug": "method",
           "file": "reference/method.md",

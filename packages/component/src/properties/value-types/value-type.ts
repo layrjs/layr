@@ -32,7 +32,7 @@ export type ValueTypeOptions = {
  *
  * #### Usage
  *
- * You shouldn't have to create a `ValueType` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) or [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator)), you can specify a string representing a type of value, and a `ValueType` will be automatically created for you.
+ * You shouldn't have to create a `ValueType` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator)), you can specify a string representing a type of value, and a `ValueType` will be automatically created for you.
  *
  * **Example:**
  *
@@ -89,21 +89,23 @@ export type ValueTypeOptions = {
  * In case you want to access the `ValueType` instances that were created under the hood, you can do the following:
  *
  * ```
- * let valueType = Movie.prototype.getAttribute('title').getValueType();
+ * const movie = new Movie({ ... });
+ *
+ * let valueType = movie.getAttribute('title').getValueType();
  * valueType.toString(); // => 'string'
  *
- * valueType = Movie.prototype.getAttribute('reference').getValueType();
+ * valueType = movie.getAttribute('reference').getValueType();
  * valueType.toString(); // => 'number'
  * valueType.getValidators(); // => [integerValidator, greaterThanValidator]
  *
- * valueType = Movie.prototype.getAttribute('summary').getValueType();
+ * valueType = movie.getAttribute('summary').getValueType();
  * valueType.toString(); // => 'string?'
  * valueType.isOptional(); // => true
  *
- * valueType = Movie.prototype.getAttribute('director').getValueType();
+ * valueType = movie.getAttribute('director').getValueType();
  * valueType.toString(); // => 'Director'
  *
- * valueType = Movie.prototype.getAttribute('actors').getValueType();
+ * valueType = movie.getAttribute('actors').getValueType();
  * valueType.toString(); // => 'Actor[]'
  * const itemValueType = valueType.getItemType(); // => A ValueType representing the type of the items inside the array
  * itemValueType.toString(); // => Actor
@@ -189,13 +191,11 @@ export class ValueType {
    *
    * @example
    * ```
-   * let valueType = Movie.prototype.getAttribute('title').getValueType();
-   * valueType.isOptional(); // => false
-   * movie.title = undefined; // Error
-   *
-   * valueType = Movie.prototype.getAttribute('summary').getValueType();
-   * valueType.isOptional(); // => true
+   * movie.getAttribute('summary').getValueType().isOptional(); // => true
    * movie.summary = undefined; // Okay
+   *
+   * movie.getAttribute('title').getValueType().isOptional(); // => false
+   * movie.title = undefined; // Error
    * ```
    *
    * @category Methods
@@ -211,8 +211,8 @@ export class ValueType {
    *
    * @example
    * ```
-   * const valueType = Movie.prototype.getAttribute('reference').getValueType();
-   * valueType.getValidators(); // => [integerValidator, greaterThanValidator]
+   * movie.getAttribute('reference').getValueType().getValidators();
+   * // => [integerValidator, greaterThanValidator]
    * ```
    *
    * @category Methods
@@ -222,20 +222,30 @@ export class ValueType {
   }
 
   /**
+   * @instancemethod getItemType
+   *
+   * In case the value type is an array, returns the value type of the items it contains.
+   *
+   * @returns A [ValueType](https://liaison.dev/docs/v1/reference/value-type).
+   *
+   * @example
+   * ```
+   * movie.getAttribute('actors').getValueType().getItemType().toString(); // => 'Actor'
+   * ```
+   *
+   * @category Methods
+   */
+
+  /**
    * Returns a string representation of the value type.
    *
    * @returns A string.
    *
    * @example
    * ```
-   * let valueType = Movie.prototype.getAttribute('title').getValueType();
-   * valueType.toString(); // => 'string'
-   *
-   * valueType = Movie.prototype.getAttribute('summary').getValueType();
-   * valueType.toString(); // => 'string?'
-   *
-   * valueType = Movie.prototype.getAttribute('actors').getValueType();
-   * valueType.toString(); // => 'Actor[]'
+   * movie.getAttribute('title').getValueType().toString(); // => 'string'
+   * movie.getAttribute('summary').getValueType().toString(); // => 'string?'
+   * movie.getAttribute('actors').getValueType().toString(); // => 'Actor[]'
    * ```
    *
    * @category Methods

@@ -91,7 +91,7 @@ export class SecondaryIdentifierAttribute extends IdentifierAttribute {
    * @param parent The component prototype that owns the attribute.
    * @param [options.valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
    * @param [options.default] A function returning the default value of the attribute.
-   * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validation) for the value of the attribute.
+   * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validator) for the value of the attribute.
    * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
    *
    * @returns The [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) instance that was created.

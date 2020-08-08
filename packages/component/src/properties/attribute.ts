@@ -146,8 +146,8 @@ export class Attribute extends Observable(Property) {
    * @param [options.valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type#supported-types) the attribute can store (default: `'any'`).
    * @param [options.value] The initial value of a class attribute.
    * @param [options.default] The default value (or a function returning the default value) of an instance attribute.
-   * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validation) for the value of the attribute.
-   * @param [options.items.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validation) for the items of an array attribute.
+   * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validator) for the value of the attribute.
+   * @param [options.items.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validator) for the items of an array attribute.
    * @param [options.getter] A getter function for getting the value of the attribute. Plays the same role as a regular [JavaScript getter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get).
    * @param [options.setter] A setter function for setting the value of the attribute. Plays the same role as a regular [JavaScript setter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set).
    * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
@@ -729,7 +729,7 @@ export class Attribute extends Observable(Property) {
    *
    * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true` which means that all the component's attributes will be validated).
    *
-   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://liaison.dev/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
    * @example
    * ```

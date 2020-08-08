@@ -2345,7 +2345,7 @@ export class Component extends Observable(Object) {
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
-   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://liaison.dev/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
    * @example
    * ```
@@ -2368,7 +2368,7 @@ export class Component extends Observable(Object) {
    *
    * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
    *
-   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a `Validator` instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://liaison.dev/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
    * @example
    * ```

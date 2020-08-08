@@ -1,13 +1,9 @@
 import {Validator, ValidatorFunction} from './validator';
 
 const validatorFunctions: {[name: string]: ValidatorFunction} = {
-  // Any values
-
-  anyOf: (value, array) => array.includes(value),
-
-  noneOf: (value, array) => !array.includes(value),
-
   // Numbers
+
+  integer: (value) => Number.isInteger(value),
 
   positive: (value) => value >= 0,
 
@@ -23,8 +19,6 @@ const validatorFunctions: {[name: string]: ValidatorFunction} = {
 
   range: (value, [min, max]) => value >= min && value <= max,
 
-  integer: (value) => Number.isInteger(value),
-
   // Strings and arrays
 
   notEmpty: (value) => value.length > 0,
@@ -38,7 +32,13 @@ const validatorFunctions: {[name: string]: ValidatorFunction} = {
 
   // Strings
 
-  match: (value, pattern) => pattern.test(value)
+  match: (value, pattern) => pattern.test(value),
+
+  // Any values
+
+  anyOf: (value, array) => array.includes(value),
+
+  noneOf: (value, array) => !array.includes(value)
 };
 
 export type ValidatorBuilder = (...args: any[]) => Validator;
