@@ -14,6 +14,64 @@ import {isComponentClassOrInstance} from '../utilities';
 
 export type AttributeSelector = boolean | PlainObject;
 
+/**
+ * @typedef AttributeSelector
+ *
+ * An `AttributeSelector` allows you to select some attributes of a component.
+ *
+ * The simplest `AttributeSelector` is `true`, which means that all the attributes are selected.
+
+ * Another possible `AttributeSelector` is `false`, which means that no attributes are selected.
+ *
+ * To select some specific attributes, you can use a plain object where:
+ *
+ * * The keys are the name of the attributes you want to select.
+ * * The values are a boolean or a nested object to select some attributes of a nested component.
+ *
+ * **Examples:**
+ *
+ * ```
+ * // Selects all the attributes
+ * true
+ *
+ * // Excludes all the attributes
+ * false
+ *
+ * // Selects `title`
+ * {title: true}
+ *
+ * // Selects also `title` (`summary` is not selected)
+ * {title: true, summary: false}
+ *
+ * // Selects `title` and `summary`
+ * {title: true, summary: true}
+ *
+ * // Selects `title`, `movieDetails.duration`, and `movieDetails.aspectRatio`
+ * {
+ *   title: true,
+ *   movieDetails: {
+ *     duration: true,
+ *     aspectRatio: true
+ *   }
+ * }
+ * ```
+ */
+
+/**
+ * Creates an `AttributeSelector` from the specified names.
+ *
+ * @param names An array of strings.
+ *
+ * @returns An `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * createAttributeSelectorFromNames(['title', 'summary']);
+ * // => {title: true, summary: true}
+ * ```
+ *
+ * @category Functions
+ */
 export function createAttributeSelectorFromNames(names: string[]) {
   const attributeSelector: AttributeSelector = {};
 
@@ -24,6 +82,21 @@ export function createAttributeSelectorFromNames(names: string[]) {
   return attributeSelector;
 }
 
+/**
+ * Creates an `AttributeSelector` from an attribute iterator.
+ *
+ * @param attributes An [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) iterator.
+ *
+ * @returns An `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * createAttributeSelectorFromAttributes(Movie.prototype.getAttributes());
+ * // => {title: true, summary: true, movieDetails: true}
+ * ```
+ *
+ * @category Functions
+ */
 export function createAttributeSelectorFromAttributes(attributes: Iterable<Attribute>) {
   const attributeSelector: AttributeSelector = {};
 
@@ -34,6 +107,34 @@ export function createAttributeSelectorFromAttributes(attributes: Iterable<Attri
   return attributeSelector;
 }
 
+/**
+ * Gets an entry of an `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ * @param name The name of the entry to get.
+ *
+ * @returns An `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * getFromAttributeSelector(true, 'title');
+ * // => true
+ *
+ * getFromAttributeSelector(false, 'title');
+ * // => false
+ *
+ * getFromAttributeSelector({title: true}, 'title');
+ * // => true
+ *
+ * getFromAttributeSelector({title: true}, 'summary');
+ * // => false
+ *
+ * getFromAttributeSelector({movieDetails: {duration: true}}, 'movieDetails');
+ * // => {duration: true}
+ * ```
+ *
+ * @category Functions
+ */
 export function getFromAttributeSelector(
   attributeSelector: AttributeSelector,
   name: string
@@ -47,6 +148,32 @@ export function getFromAttributeSelector(
   return normalizeAttributeSelector(attributeSelector[name]);
 }
 
+/**
+ * Returns an `AttributeSelector` where an entry of the specified `AttributeSelector` is set with another `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ * @param name The name of the entry to set.
+ * @param subattributeSelector Another `AttributeSelector`.
+ *
+ * @returns A new `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * setWithinAttributeSelector({title: true}, 'summary', true);
+ * // => {title: true, summary: true}
+ *
+ * setWithinAttributeSelector({title: true}, 'summary', false);
+ * // => {title: true}
+ *
+ * setWithinAttributeSelector({title: true, summary: true}, 'summary', false);
+ * // => {title: true}
+ *
+ * setWithinAttributeSelector({title: true}, 'movieDetails', {duration: true});
+ * // => {title: true, movieDetails: {duration: true}}
+ * ```
+ *
+ * @category Functions
+ */
 export function setWithinAttributeSelector(
   attributeSelector: AttributeSelector,
   name: string,
@@ -67,10 +194,53 @@ export function setWithinAttributeSelector(
   return {...attributeSelector, [name]: subattributeSelector};
 }
 
+/**
+ * Clones an `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ *
+ * @returns A new `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * cloneAttributeSelector(true);
+ * // => true
+ *
+ * cloneAttributeSelector(false);
+ * // => false
+ *
+ * cloneAttributeSelector({title: true, movieDetails: {duration: true});
+ * // => {title: true, movieDetails: {duration: true}
+ * ```
+ *
+ * @category Functions
+ */
 export function cloneAttributeSelector(attributeSelector: AttributeSelector) {
   return cloneDeep(attributeSelector);
 }
 
+/**
+ * Returns whether an `AttributeSelector` is equal to another `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ * @param otherAttributeSelector Another `AttributeSelector`.
+ *
+ * @returns A boolean.
+ *
+ * @example
+ * ```
+ * attributeSelectorsAreEqual({title: true}, {title: true});
+ * // => true
+ *
+ * attributeSelectorsAreEqual({title: true, summary: false}, {title: true});
+ * // => true
+ *
+ * attributeSelectorsAreEqual({title: true}, {summary: true});
+ * // => false
+ * ```
+ *
+ * @category Functions
+ */
 export function attributeSelectorsAreEqual(
   attributeSelector: AttributeSelector,
   otherAttributeSelector: AttributeSelector
@@ -82,6 +252,28 @@ export function attributeSelectorsAreEqual(
   );
 }
 
+/**
+ * Returns whether an `AttributeSelector` includes another `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ * @param otherAttributeSelector Another `AttributeSelector`.
+ *
+ * @returns A boolean.
+ *
+ * @example
+ * ```
+ * attributeSelectorIncludes({title: true}, {title: true});
+ * // => true
+ *
+ * attributeSelectorIncludes({title: true, summary: true}, {title: true});
+ * // => true
+ *
+ * attributeSelectorIncludes({title: true}, {summary: true});
+ * // => false
+ * ```
+ *
+ * @category Functions
+ */
 export function attributeSelectorIncludes(
   attributeSelector: AttributeSelector,
   otherAttributeSelector: AttributeSelector
@@ -112,6 +304,28 @@ export function attributeSelectorIncludes(
   return true;
 }
 
+/**
+ * Returns an `AttributeSelector` which is the result of merging an `AttributeSelector` with another `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ * @param otherAttributeSelector Another `AttributeSelector`.
+ *
+ * @returns A new `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * mergeAttributeSelectors({title: true}, {title: true});
+ * // => {title: true}
+ *
+ * mergeAttributeSelectors({title: true}, {summary: true});
+ * // => {title: true, summary: true}
+ *
+ * mergeAttributeSelectors({title: true, summary: true}, {summary: false});
+ * // => {title: true}
+ * ```
+ *
+ * @category Functions
+ */
 export function mergeAttributeSelectors(
   attributeSelector: AttributeSelector,
   otherAttributeSelector: AttributeSelector
@@ -148,6 +362,25 @@ export function mergeAttributeSelectors(
   return attributeSelector;
 }
 
+/**
+ * Returns an `AttributeSelector` which is the result of the intersection of an `AttributeSelector` with another `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ * @param otherAttributeSelector Another `AttributeSelector`.
+ *
+ * @returns A new `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * intersectAttributeSelectors({title: true, summary: true}, {title: true});
+ * // => {title: true}
+ *
+ * intersectAttributeSelectors({title: true}, {summary: true});
+ * // => {}
+ * ```
+ *
+ * @category Functions
+ */
 export function intersectAttributeSelectors(
   attributeSelector: AttributeSelector,
   otherAttributeSelector: AttributeSelector
@@ -182,6 +415,25 @@ export function intersectAttributeSelectors(
   return intersectedAttributeSelector;
 }
 
+/**
+ * Returns an `AttributeSelector` which is the result of removing an `AttributeSelector` from another `AttributeSelector`.
+ *
+ * @param attributeSelector An `AttributeSelector`.
+ * @param otherAttributeSelector Another `AttributeSelector`.
+ *
+ * @returns A new `AttributeSelector`.
+ *
+ * @example
+ * ```
+ * removeFromAttributeSelector({title: true, summary: true}, {summary: true});
+ * // => {title: true}
+ *
+ * removeFromAttributeSelector({title: true}, {title: true});
+ * // => {}
+ * ```
+ *
+ * @category Functions
+ */
 export function removeFromAttributeSelector(
   attributeSelector: AttributeSelector,
   otherAttributeSelector: AttributeSelector

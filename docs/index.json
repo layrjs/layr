@@ -49,6 +49,12 @@
           "source": "../packages/component/src/properties/attribute.ts"
         },
         {
+          "title": "AttributeSelector",
+          "slug": "attribute-selector",
+          "file": "reference/attribute-selector.md",
+          "source": "../packages/component/src/properties/attribute-selector.ts"
+        },
+        {
           "title": "IdentifierAttribute",
           "slug": "identifier-attribute",
           "file": "reference/identifier-attribute.md",

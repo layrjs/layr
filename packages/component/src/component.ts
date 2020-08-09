@@ -3766,7 +3766,7 @@ export class Component extends Observable(Object) {
   // === Deserialization ===
 
   /**
-   * Recreate a component instance from the result of its serialization.
+   * Recreates a component instance from the result of its serialization.
    *
    * @param [object] A plain object representing a serialized component.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
