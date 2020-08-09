@@ -132,11 +132,7 @@ export class ComponentClient {
   _sendOne(query: PlainObject, options: {componentGetter?: ComponentGetter}): any {
     const {serializedQuery, serializedComponents} = this._serializeQuery(query);
 
-    debug(
-      `Sending query to remote components (query: %o, components: %o)`,
-      serializedQuery,
-      serializedComponents
-    );
+    debugRequest({serializedQuery, serializedComponents});
 
     return possiblyAsync(
       this._componentServer.receive({
@@ -145,11 +141,7 @@ export class ComponentClient {
         version: this._version
       }),
       ({result: serializedResult, components: serializedComponents}) => {
-        debug(
-          `Query sent to remote components (result: %o, components: %o)`,
-          serializedResult,
-          serializedComponents
-        );
+        debugResponse({serializedResult, serializedComponents});
 
         const {componentGetter} = options;
 
@@ -194,11 +186,7 @@ export class ComponentClient {
 
     const {serializedQuery, serializedComponents} = this._serializeQuery(queries);
 
-    debug(
-      `Sending queries to remote components (queries: %o, components: %o)`,
-      serializedQuery,
-      serializedComponents
-    );
+    debugRequests({serializedQuery, serializedComponents});
 
     const serializedResponse = await this._componentServer.receive({
       query: serializedQuery,
@@ -206,11 +194,10 @@ export class ComponentClient {
       version: this._version
     });
 
-    debug(
-      `Queries sent to remote components (results: %o, components: %o)`,
-      serializedResponse.result,
-      serializedResponse.components
-    );
+    debugResponses({
+      serializedResult: serializedResponse.result,
+      serializedComponents: serializedResponse.components
+    });
 
     const errorHandler = function (error: Error) {
       throw error;
@@ -318,4 +305,76 @@ export class ComponentClient {
   static isComponentClient(value: any): value is ComponentClient {
     return isComponentClientInstance(value);
   }
+}
+
+function debugRequest({
+  serializedQuery,
+  serializedComponents
+}: {
+  serializedQuery: PlainObject;
+  serializedComponents: PlainObject[] | undefined;
+}) {
+  let message = 'Sending query: %o';
+  const values = [serializedQuery];
+
+  if (serializedComponents !== undefined) {
+    message += ' (components: %o)';
+    values.push(serializedComponents);
+  }
+
+  debug(message, ...values);
+}
+
+function debugResponse({
+  serializedResult,
+  serializedComponents
+}: {
+  serializedResult: unknown;
+  serializedComponents: PlainObject[] | undefined;
+}) {
+  let message = 'Result received: %o';
+  const values = [serializedResult];
+
+  if (serializedComponents !== undefined) {
+    message += ' (components: %o)';
+    values.push(serializedComponents);
+  }
+
+  debug(message, ...values);
+}
+
+function debugRequests({
+  serializedQuery,
+  serializedComponents
+}: {
+  serializedQuery: PlainObject;
+  serializedComponents: PlainObject[] | undefined;
+}) {
+  let message = 'Sending queries: %o';
+  const values = [serializedQuery];
+
+  if (serializedComponents !== undefined) {
+    message += ' (components: %o)';
+    values.push(serializedComponents);
+  }
+
+  debug(message, ...values);
+}
+
+function debugResponses({
+  serializedResult,
+  serializedComponents
+}: {
+  serializedResult: unknown;
+  serializedComponents: PlainObject[] | undefined;
+}) {
+  let message = 'Results received: %o';
+  const values = [serializedResult];
+
+  if (serializedComponents !== undefined) {
+    message += ' (components: %o)';
+    values.push(serializedComponents);
+  }
+
+  debug(message, ...values);
 }

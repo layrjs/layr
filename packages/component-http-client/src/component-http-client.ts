@@ -1,12 +1,6 @@
 import {ComponentClient, ComponentClientOptions} from '@liaison/component-client';
 import fetch from 'cross-fetch';
 import type {PlainObject} from 'core-helpers';
-import debugModule from 'debug';
-
-const debug = debugModule('liaison:component-http-client');
-
-// To display the debug log, set this environment:
-// DEBUG=liaison:component-http-client DEBUG_DEPTH=10
 
 export type ComponentHTTPClientOptions = ComponentClientOptions;
 
@@ -23,8 +17,6 @@ function createComponentServer(url: string) {
     async receive(request: {query: PlainObject; components?: PlainObject[]; version?: number}) {
       const {query, components, version} = request;
 
-      debug(`Sending query to remote components (url: %o, request: %o)`, url, {query, components});
-
       const json = {query, components, version};
 
       const fetchResponse = await fetch(url, {
@@ -34,8 +26,6 @@ function createComponentServer(url: string) {
       });
 
       const response = await fetchResponse.json();
-
-      debug(`Query sent to remote components (url: %o, response: %o)`, url, response);
 
       if (fetchResponse.status !== 200) {
         const {
