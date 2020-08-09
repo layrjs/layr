@@ -520,7 +520,7 @@ export class Component extends Observable(Object) {
    * let movie = new Movie();
    * movie.getIsNewMark(); // => true
    *
-   * movie = Movie.deserializeInstance();
+   * movie = Movie.recreate();
    * movie.getIsNewMark(); // => false
    * ```
    *
@@ -560,7 +560,7 @@ export class Component extends Observable(Object) {
    * let movie = new Movie();
    * movie.isNew(); // => true
    *
-   * movie = Movie.deserializeInstance();
+   * movie = Movie.recreate();
    * movie.isNew(); // => false
    * ```
    *
@@ -3763,75 +3763,27 @@ export class Component extends Observable(Object) {
     );
   }
 
+  // === Deserialization ===
+
   /**
-   * Deserializes the component class from the specified plain object. Since component classes are unique, they are deserialized "in place".
+   * Recreate a component instance from the result of its serialization.
    *
-   * @param [object] The plain object to deserialize from.
+   * @param [object] A plain object representing a serialized component.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
    *
-   * @returns The component class.
+   * @returns A component instance.
    *
    * @example
    * ```
-   * class Movie extends Component {
-   *   ﹫attribute('string') static customName = 'Movie';
-   * }
-   *
-   * Movie.customName; // => 'Movie'
-   * Movie.deserialize({customName: 'Film'});
-   * Movie.customName; // => 'Film'
-   * ```
-   *
-   * @category Deserialization
-   * @possiblyasync
-   */
-  static deserialize<T extends typeof Component>(
-    this: T,
-    object: PlainObject = {},
-    options: DeserializeOptions = {}
-  ): T | PromiseLike<T> {
-    const {__component: componentType, ...attributes} = object;
-    const {deserializedComponents} = options;
-
-    if (componentType !== undefined) {
-      const expectedComponentType = this.getComponentType();
-
-      if (componentType !== expectedComponentType) {
-        throw new Error(
-          `An unexpected component type was encountered while deserializing an object (encountered type: '${componentType}', expected type: '${expectedComponentType}')`
-        );
-      }
-    }
-
-    if (deserializedComponents !== undefined) {
-      deserializedComponents.add(this);
-    }
-
-    return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
-      possiblyAsync(this.initialize(), () => this)
-    );
-  }
-
-  /**
-   * Deserializes the specified plain object to an instance of the component class.
-   *
-   * @param [object] The plain object to deserialize from.
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
-   *
-   * @returns The deserialized component instance.
-   *
-   * @example
-   * ```
-   * const movie = Movie.deserializeInstance({title: 'Inception'});
+   * const movie = Movie.recreate({title: 'Inception'});
    * movie.title; // => 'Inception'
    * ```
    *
    * @category Deserialization
    * @possiblyasync
    */
-  static deserializeInstance<T extends typeof Component>(
+  static recreate<T extends typeof Component>(
     this: T,
     object: PlainObject = {},
     options: DeserializeOptions = {}
@@ -3890,7 +3842,81 @@ export class Component extends Observable(Object) {
     );
   }
 
-  // TODO: Consider removing this method
+  /**
+   * Deserializes the component class from the specified plain object. The deserialization operates "in place", which means that the current component class attributes are mutated.
+   *
+   * @param [object] The plain object to deserialize from.
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+   * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
+   *
+   * @returns The component class.
+   *
+   * @example
+   * ```
+   * class Movie extends Component {
+   *   ﹫attribute('string') static customName = 'Movie';
+   * }
+   *
+   * Movie.customName; // => 'Movie'
+   * Movie.deserialize({customName: 'Film'});
+   * Movie.customName; // => 'Film'
+   * ```
+   *
+   * @category Deserialization
+   * @possiblyasync
+   */
+  static deserialize<T extends typeof Component>(
+    this: T,
+    object: PlainObject = {},
+    options: DeserializeOptions = {}
+  ): T | PromiseLike<T> {
+    const {__component: componentType, ...attributes} = object;
+    const {deserializedComponents} = options;
+
+    if (componentType !== undefined) {
+      const expectedComponentType = this.getComponentType();
+
+      if (componentType !== expectedComponentType) {
+        throw new Error(
+          `An unexpected component type was encountered while deserializing an object (encountered type: '${componentType}', expected type: '${expectedComponentType}')`
+        );
+      }
+    }
+
+    if (deserializedComponents !== undefined) {
+      deserializedComponents.add(this);
+    }
+
+    return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
+      possiblyAsync(this.initialize(), () => this)
+    );
+  }
+
+  /**
+   * Deserializes the component instance from the specified plain object. The deserialization operates "in place", which means that the current component instance attributes are mutated.
+   *
+   * @param [object] The plain object to deserialize from.
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+   * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
+   *
+   * @returns The current component instance.
+   *
+   * @example
+   * ```
+   * class Movie extends Component {
+   *   ﹫attribute('string') title = '';
+   * }
+   *
+   * const movie = new Movie();
+   *
+   * movie.title; // => ''
+   * movie.deserialize({title: 'Inception'});
+   * movie.title; // => 'Inception'
+   * ```
+   *
+   * @category Deserialization
+   * @possiblyasync
+   */
   deserialize<T extends Component>(
     this: T,
     object: PlainObject = {},

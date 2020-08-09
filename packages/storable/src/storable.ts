@@ -873,8 +873,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       );
 
       const foundStorables = serializedStorables.map(
-        (serializedStorable) =>
-          this.deserializeInstance(serializedStorable, {source: 1}) as InstanceType<T>
+        (serializedStorable) => this.recreate(serializedStorable, {source: 1}) as InstanceType<T>
       );
 
       return foundStorables;

@@ -150,7 +150,7 @@ describe('Component', () => {
 
       expect(movie.isInitialized).toBe(true);
 
-      movie = Movie.deserializeInstance() as Movie;
+      movie = Movie.recreate() as Movie;
 
       expect(movie.isInitialized).toBe(true);
 
@@ -195,7 +195,7 @@ describe('Component', () => {
 
       expect(movie.isInitialized).toBe(true);
 
-      movie = await Movie.deserializeInstance();
+      movie = await Movie.recreate();
 
       expect(movie.isInitialized).toBe(true);
 

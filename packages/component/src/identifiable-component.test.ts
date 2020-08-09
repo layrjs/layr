@@ -553,7 +553,7 @@ describe('Identifiable component', () => {
 
     // --- With a serialized referenced identifiable component ---
 
-    const deserializedArticle = ForkedArticle.deserializeInstance({
+    const deserializedArticle = ForkedArticle.recreate({
       id: 'xyz789',
       title: 'Hello 2',
       author: {__component: 'User', __new: false, id: 'abc123'}

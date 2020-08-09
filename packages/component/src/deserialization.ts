@@ -19,7 +19,7 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
 };
 
 /**
- * Deserializes any type of serialized values including objects, arrays, dates, and components (using [`Component.deserialize()`](https://liaison.dev/docs/v1/reference/component#deserialize-class-method) and [`Component.deserializeInstance()`](https://liaison.dev/docs/v1/reference/component#deserialize-instance-class-method)).
+ * Deserializes any type of serialized values including objects, arrays, dates, and components (using [`Component.recreate()`](https://liaison.dev/docs/v1/reference/component#recreate-class-method) and [`Component.deserialize()`](https://liaison.dev/docs/v1/reference/component#deserialize-class-method)).
  *
  * @param value A serialized value.
  * @param [options.componentGetter] A function used to get the component classes from the component types encountered in the serialized value. The function is invoked with a string representing a component type and should return a component class or prototype.
@@ -128,7 +128,7 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
       return component.deserialize(attributes, options);
     }
 
-    return (component.constructor as typeof Component).deserializeInstance(attributes, options);
+    return (component.constructor as typeof Component).recreate(attributes, options);
   };
 
   let functionDeserializer: DeserializeOptions['functionDeserializer'];
