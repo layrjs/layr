@@ -108,11 +108,7 @@ export class ComponentServer {
       return error;
     };
 
-    debug(
-      `Receiving query from component client (query: %o, components: %o)`,
-      serializedQuery,
-      serializedComponents
-    );
+    debugRequest({serializedQuery, serializedComponents});
 
     return possiblyAsync(
       this._deserializeRequest(
@@ -129,11 +125,7 @@ export class ComponentServer {
                 {attributeFilter: getFilter}
               ),
               ({serializedResult, serializedComponents}) => {
-                debug(
-                  `Query received from component client (result: %o, components: %o)`,
-                  serializedResult,
-                  serializedComponents
-                );
+                debugResponse({serializedResult, serializedComponents});
 
                 return {
                   ...(serializedResult !== undefined && {result: serializedResult}),
@@ -293,4 +285,40 @@ export function ensureComponentServer(
   }
 
   return new ComponentServer(componentOrComponentServer, options);
+}
+
+function debugRequest({
+  serializedQuery,
+  serializedComponents
+}: {
+  serializedQuery: PlainObject;
+  serializedComponents: PlainObject[] | undefined;
+}) {
+  let message = 'Receiving query: %o';
+  const values = [serializedQuery];
+
+  if (serializedComponents !== undefined) {
+    message += ' (components: %o)';
+    values.push(serializedComponents);
+  }
+
+  debug(message, ...values);
+}
+
+function debugResponse({
+  serializedResult,
+  serializedComponents
+}: {
+  serializedResult: unknown;
+  serializedComponents: PlainObject[] | undefined;
+}) {
+  let message = 'Returning result: %o';
+  const values = [serializedResult];
+
+  if (serializedComponents !== undefined) {
+    message += ' (components: %o)';
+    values.push(serializedComponents);
+  }
+
+  debug(message, ...values);
 }
