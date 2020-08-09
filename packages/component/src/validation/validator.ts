@@ -16,7 +16,7 @@ export type IntrospectedValidator = {
 };
 
 /**
- * A class that is used internally to handle the validation of the component attributes.
+ * A class to handle the validation of the component attributes.
  *
  * #### Usage
  *

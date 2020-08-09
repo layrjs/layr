@@ -27,6 +27,7 @@ describe('Identity map', () => {
     identityMap.addComponent(user);
 
     expect(identityMap.getComponent({id: 'abc123'})).toBe(user);
+    expect(identityMap.getComponent('abc123')).toBe(user);
     expect(identityMap.getComponent({id: 'xyz456'})).toBeUndefined();
   });
 

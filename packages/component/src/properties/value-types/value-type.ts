@@ -28,7 +28,7 @@ export type ValueTypeOptions = {
 };
 
 /**
- * A base class that is used internally to handle the various types of values supported by Liaison.
+ * A class to handle the various types of values supported by Liaison.
  *
  * #### Usage
  *

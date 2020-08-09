@@ -4,6 +4,57 @@ import type {Component} from './component';
 
 type IdentifierValue = string | number;
 
+/**
+ * A class to manage the instances of the [`Component`](https://liaison.dev/docs/v1/reference/component) classes that are identifiable.
+ *
+ * A component class is identifiable when its prototype has a [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
+ *
+ * When a component class is identifiable, the `IdentityMap` ensures that there can only be one component instance with a specific identifier. So if you try to create two components with the same identifer, you will get an error.
+ *
+ * #### Usage
+ *
+ * You shouldn't have to create an `IdentityMap` by yourself. Identity maps are created automatically for each [`Component`](https://liaison.dev/docs/v1/reference/component) class that are identifiable.
+ *
+ * **Example:**
+ *
+ * Here is a `Movie` component with an `id` primary identifier attribute:
+ *
+ * ```
+ * // JS
+ *
+ * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫primaryIdentifier() id;
+ *   ﹫attribute('string') title;
+ * }
+ * ```
+ *
+ * ```
+ * // TS
+ *
+ * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ *
+ * class Movie extends Component {
+ *   ﹫primaryIdentifier() id!: string;
+ *   ﹫attribute('string') title!: string;
+ * }
+ * ```
+ *
+ * To get the `IdentityMap` of the `Movie` component, simply do:
+ *
+ * ```
+ * const identityMap = Movie.getIdentityMap();
+ * ```
+ *
+ * Currently, the `IdentifyMap` provides only one public method — [`getComponent()`](https://liaison.dev/docs/v1/reference/identity-map#get-component-instance-method) — that allows to retrieve a component instance from its identifier:
+ *
+ * ```
+ * const movie = new Movie({id: 'abc123', title: 'Inception'});
+ *
+ * identityMap.getComponent('abc123'); // => movie
+ * ```
+ */
 export class IdentityMap {
   _parent: typeof Component;
 
@@ -23,8 +74,63 @@ export class IdentityMap {
 
   // === Entities ===
 
-  getComponent(identifiers: PlainObject = {}) {
+  /**
+   * Gets a component instance from one of its identifiers. If there are no components corresponding to the specified identifiers, returns `undefined`.
+   *
+   * @param identifiers A plain object specifying some identifiers. The shape of the object should be `{[identifierName]: identifierValue}`. Alternatively, you can specify a string or a number representing the value of the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) of the component you want to get.
+   *
+   * @returns A [`Component`](https://liaison.dev/docs/v1/reference/component) instance or `undefined`.
+   *
+   * @example
+   * ```
+   * // JS
+   *
+   * import {Component, primaryIdentifier, secondaryIdentifier} from '﹫liaison/component';
+   *
+   * class Movie extends Component {
+   *   ﹫primaryIdentifier() id;
+   *   ﹫secondaryIdentifier() slug;
+   * }
+   *
+   * const movie = new Movie({id: 'abc123', slug: 'inception'});
+   *
+   * Movie.getIdentityMap().getComponent('abc123'); // => movie
+   * Movie.getIdentityMap().getComponent({id: 'abc123'}); // => movie
+   * Movie.getIdentityMap().getComponent({slug: 'inception'}); // => movie
+   * Movie.getIdentityMap().getComponent('xyx456'); // => undefined
+   * ```
+   *
+   * @example
+   * ```
+   * // TS
+   *
+   * import {Component, primaryIdentifier, secondaryIdentifier} from '﹫liaison/component';
+   *
+   * class Movie extends Component {
+   *   ﹫primaryIdentifier() id!: string;
+   *   ﹫secondaryIdentifier() slug!: string;
+   * }
+   *
+   * const movie = new Movie({id: 'abc123', slug: 'inception'});
+   *
+   * Movie.getIdentityMap().getComponent('abc123'); // => movie
+   * Movie.getIdentityMap().getComponent({id: 'abc123'}); // => movie
+   * Movie.getIdentityMap().getComponent({slug: 'inception'}); // => movie
+   * Movie.getIdentityMap().getComponent('xyx456'); // => undefined
+   * ```
+   *
+   * @category Methods
+   */
+  getComponent(identifiers: PlainObject | string | number = {}) {
     const parent = this.getParent();
+
+    let normalizedIdentifiers: PlainObject;
+
+    if (typeof identifiers === 'string' || typeof identifiers === 'number') {
+      normalizedIdentifiers = parent.normalizeIdentifierDescriptor(identifiers);
+    } else {
+      normalizedIdentifiers = identifiers;
+    }
 
     if (parent.isDetached()) {
       return undefined;
@@ -32,7 +138,7 @@ export class IdentityMap {
 
     for (const identifierAttribute of parent.prototype.getIdentifierAttributes()) {
       const name = identifierAttribute.getName();
-      const value: IdentifierValue | undefined = identifiers[name];
+      const value: IdentifierValue | undefined = normalizedIdentifiers[name];
 
       if (value === undefined) {
         continue;

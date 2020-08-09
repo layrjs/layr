@@ -14,6 +14,8 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  *
  * Another characteristic of a `PrimaryIdentifierAttribute` is that its value is immutable (i.e., once set it cannot change). This ensures a stable identity of the components across the different layers of an application (e.g., frontend, backend, and database).
  *
+ * When a `Component` has a `PrimaryIdentifierAttribute`, its instances are managed by an [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) ensuring that there can only be one instance with a specific identifier.
+ *
  * #### Usage
  *
  * Typically, you create a `PrimaryIdentifierAttribute` and associate it to a component prototype using the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
@@ -68,7 +70,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * movie.title; // => 'Inception'
  * ```
  *
- * When a component has a primary identifier attribute, all the instances of the component are managed by an [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) ensuring that there is only one instance with a specific identifier.
+ * As mentioned previously, when a component has a primary identifier attribute, all its instances are managed by an [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) ensuring that there is only one instance with a specific identifier.
  *
  * So, since we previously created a `Movie` with `'abc123'` as primary identifier, we cannot create another `Movie` with the same primary identifier:
  *

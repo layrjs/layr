@@ -67,6 +67,12 @@
           "source": "../packages/component/src/properties/secondary-identifier-attribute.ts"
         },
         {
+          "title": "IdentityMap",
+          "slug": "identity-map",
+          "file": "reference/identity-map.md",
+          "source": "../packages/component/src/identity-map.ts"
+        },
+        {
           "title": "ValueType",
           "slug": "value-type",
           "file": "reference/value-type.md",
