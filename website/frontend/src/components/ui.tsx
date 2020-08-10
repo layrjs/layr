@@ -16,10 +16,13 @@ import highlightJS from 'highlight.js/lib/core';
 import typescript from 'highlight.js/lib/languages/typescript';
 // @ts-ignore
 import json from 'highlight.js/lib/languages/json';
+// @ts-ignore
+import bash from 'highlight.js/lib/languages/bash';
 import DOMPurify from 'dompurify';
 
 highlightJS.registerLanguage('typescript', typescript);
 highlightJS.registerLanguage('json', json);
+highlightJS.registerLanguage('bash', bash);
 
 export class UI extends Component {
   @view() static Root({children}: {children: React.ReactNode}) {
