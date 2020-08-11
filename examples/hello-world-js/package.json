@@ -1,0 +1,24 @@
+{
+  "name": "hello-world-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Manuel Vila",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/node": "^7.10.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@babel/preset-env": "^7.11.0"
+  },
+  "dependencies": {
+    "@liaison/component": "^0.5.71",
+    "@liaison/component-http-client": "^0.5.40",
+    "@liaison/component-http-server": "^0.5.31"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@liaison/component": "^0.5.71",
+    "@liaison/component-http-client": "^0.5.40",
+    "@liaison/component-http-server": "^0.5.31"
+  },
+  "devDependencies": {
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  }
+}
