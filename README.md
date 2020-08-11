@@ -8,19 +8,19 @@
 
 ## Overview
 
-This section still has to be written. In the meantime, please head over to this [introductory article](https://www.freecodecamp.org/news/full-stack-unified-architecture/).
+This section still has to be written.
+
+In the meantime, please head over to this [introductory article](https://www.freecodecamp.org/news/full-stack-unified-architecture/).
+
+You can also take a look at [the blog](https://liaison.dev/blog).
 
 ## Demo
 
 Check out this [RealWorld example](https://github.com/liaisonjs/react-liaison-realworld-example-app) implemented with Liaison.
 
-## Guide
+## Documentation
 
-This section still has to be written.
-
-## Reference
-
-This section still has to be written.
+Head over [here](https://liaison.dev/docs) to get the (work-in-progress) documentation.
 
 ## License
 
