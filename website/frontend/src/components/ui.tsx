@@ -750,6 +750,14 @@ export class UI extends Component {
     if (languageFilter !== undefined) {
       // Finish removing the filtered out languages
       html = html.replace(/<pre><code( class="language-\w+")?><\/code><\/pre>\n/g, '');
+
+      // Handle the '<if language>' tags
+      html = html.replace(
+        /<!-- <if language="(\w+)"> -->([^]*?)<!-- <\/if> -->/g,
+        (_, language, content) => {
+          return language === languageFilter ? content : '';
+        }
+      );
     }
 
     html = DOMPurify.sanitize(html, {ADD_TAGS: ['badge']});
