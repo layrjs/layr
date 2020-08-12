@@ -62,7 +62,7 @@ Finally, configure TypeScript by creating a `tsconfig.json` file with the follow
   "compilerOptions": {
     "target": "ES2018",
     "module": "CommonJS",
-    "lib": ["ES2018"],
+    "lib": ["ES2018", "DOM"],
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "node",
@@ -82,10 +82,10 @@ Finally, configure TypeScript by creating a `tsconfig.json` file with the follow
 
 Our full-stack "Hello, World!" will be composed of two parts:
 
-- A backend for implementing the "business logic".
-- A frontend for implementing the "user interface".
+- A backend in charge of the data model and business logic.
+- A frontend in charge of the user interface.
 
-Sure, such an architecture is silly for a simple "Hello, World!", but it serves our purpose, which is to illustrate the fundamental concepts of Liaison.
+Sure, such an architecture sounds silly for a simple "Hello, World!". But it serves our purpose, which is to illustrate the core concepts of Liaison.
 
 So let's start by implementing the backend.
 
@@ -95,12 +95,12 @@ First, install the Liaison's packages we're going to use:
 npm install @liaison/component @liaison/component-http-server
 ```
 
-You've installed:
+We've installed:
 
-- `@liaison/component`: Provides the [`Component`](https://liaison.dev/docs/v1/reference/component) class, which can be conceptualized as the basic JavaScript [`Object`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) class, but with super powers.
-- `@liaison/component-http-server`: Provides the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) class, which allows to serve a `Component` class over HTTP.
+- `@liaison/component` that provides the [`Component`](https://liaison.dev/docs/v1/reference/component) class, which can be conceptualized as the basic JavaScript [`Object`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) class, but with superpowers.
+- `@liaison/component-http-server` that provides the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) class, which allows us to serve a `Component` class over HTTP.
 
-Now, let's write some actual code. With your favorite code editor, create a file named <!-- <if language="js"> -->`backend.js`<!-- </if> --><!-- <if language="ts"> -->`backend.ts`<!-- </if> --> in a `src` directory, and write the following code:
+Now, let's write some actual code. With your favorite code editor, create a file named <!-- <if language="js"> -->`backend.js`<!-- </if> --><!-- <if language="ts"> -->`backend.ts`<!-- </if> --> in an `src` directory, and write the following code:
 
 ```js
 import {Component, attribute, method, expose} from '@liaison/component';
@@ -119,7 +119,7 @@ const server = new ComponentHTTPServer(Greeter, {port: 3210});
 server.start();
 ```
 
-Oh my! All that code just for a simple "Hello, World!"? Sure, it sounds an overkill, but we've actually implemented a full-grade backend with a data model, some business logic, and an HTTP server exposing the whole thing.
+Oh my! All that code just for a simple "Hello, World!"? Sure, it sounds overkill, but we've actually implemented a full-grade backend with a data model, some business logic, and an HTTP server exposing the whole thing.
 
 Let's decompose the code to understand what we've accomplished.
 
@@ -137,7 +137,7 @@ Both properties are exposed to remote access thanks to the [`@expose()`](https:/
 
 > Note that you don't need to prefix all your attributes and methods with a decorator. Typically, you only use a decorator when you want to take profit of a Liaison feature.
 
-After the class definition, a [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) is created, and then started with `server.start()`.
+After the class definition, a [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) is created and then started with [`server.start()`](https://liaison.dev/docs/v1/reference/component-http-server#start-instance-method).
 
 This is it! Our backend is completed and ready to be executed with:
 
@@ -155,7 +155,7 @@ npx ts-node ./src/backend.ts
 
 If nothing happens on the screen, it's all good. The server is running and waiting for requests.
 
-> Note: If you wish to display a log of what's going on in the server, your can set some environment variables before starting the backend:
+> Note: If you wish to display a log of what's going on in the server, you can set some environment variables before starting the backend:
 >
 > ```sh
 > // JS
@@ -219,7 +219,7 @@ That wasn't too difficult, was it? Well, actually, with these few lines of code,
 
 First, a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) that was created in the backend.
 
-Then, the `getComponent()` method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we are getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class are available from the frontend (with their types, validators, default values, etc.), and all the backend's exposed methods are callable from the frontend.
+Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we are getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their types, validators, default values, etc.), and all the backend's exposed methods are callable from the frontend.
 
 <!-- <if language="ts"> -->
 
@@ -309,4 +309,4 @@ If you run the frontend again, you should now get the following output:
 HELLO, STEVE!
 ```
 
-With Liaison, you get what we like to call a "cross-layer class inheritance" ability that allows you to dramatically simplify the development of a full-stack application. Instead of seeing the frontend and the backend as two separated worlds, you can see them as one unified world. Naturally, they remain _physically_ separated. They run in two different execution environments, and that is useful. But _logically_, they are one thing, and that changes the game completely.
+Liaison brings what we like to call a "cross-layer class inheritance" ability. Instead of seeing the frontend and the backend as two separate worlds, you can see them as one unified world. Naturally, they remain _physically_ separated. They run in two different execution environments. But _logically_, they are one thing, and that changes the game completely.
