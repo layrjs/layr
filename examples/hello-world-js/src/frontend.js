@@ -1,11 +1,9 @@
 import {ComponentHTTPClient} from '@liaison/component-http-client';
 
-import type {Greeter as GreeterType} from './backend';
-
 (async () => {
   const client = new ComponentHTTPClient('http://localhost:3210');
 
-  const BackendGreeter = (await client.getComponent()) as typeof GreeterType;
+  const BackendGreeter = await client.getComponent();
 
   class Greeter extends BackendGreeter {
     async hello() {
