@@ -95,6 +95,18 @@
           "slug": "method",
           "file": "reference/method.md",
           "source": "../packages/component/src/properties/method.ts"
+        },
+        {
+          "title": "ComponentClient",
+          "slug": "component-client",
+          "file": "reference/component-client.md",
+          "source": "../packages/component-client/src/component-client.ts"
+        },
+        {
+          "title": "ComponentServer",
+          "slug": "component-server",
+          "file": "reference/component-server.md",
+          "source": "../packages/component-server/src/component-server.ts"
         }
       ]
     }

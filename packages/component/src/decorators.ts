@@ -582,9 +582,7 @@ export function provide() {
 /**
  * Consumes a component provided by the provider (or recursively, any provider's provider) of the current component so it can be easily accessed using a component accessor.
  *
- * **Example:**
- *
- * See [@provide()'s example](https://liaison.dev/docs/v1/reference/component#provide-decorator).
+ * @examplelink See [`@provide()`'s example](https://liaison.dev/docs/v1/reference/component#provide-decorator).
  *
  * @category Decorators
  * @decorator

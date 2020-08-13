@@ -33,12 +33,65 @@ export type ComponentClientOptions = {
   batchable?: boolean;
 };
 
+/**
+ * A base class allowing to access a [`Component`](https://liaison.dev/docs/v1/reference/component) that is served by a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
+ *
+ * Typically, instead of using this class, you would use a subclass such as [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client).
+ */
 export class ComponentClient {
   _componentServer: ComponentServerLike;
   _version: number | undefined;
   _mixins: ComponentMixin[] | undefined;
   _sendBatcher: Microbatcher<SendInvocation> | undefined;
 
+  /**
+   * Creates a component client.
+   *
+   * @param componentServer The [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) to connect to.
+   * @param [options.version] A number representing the expected version of the component server (default: `undefined`). If a version is specified, and the component server has a different version, an error is thrown when a request is sent. The thrown error is a JavaScript `Error` instance with a `code` attribute set to `'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'`.
+   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://liaison.dev/docs/v1/reference/storable)) that will be used to construct the components exposed by the component server (default: `[]`).
+   * @param [options.batchable] A boolean specifying whether the requests sent to the component server should be automatically batched (default: `false`).
+   *
+   * @returns A `ComponentClient` instance.
+   *
+   * @example
+   * ```
+   * // JS
+   *
+   * import {Component, attribute} from '﹫liaison/component';
+   * import {ComponentClient} from '﹫liaison/component-client';
+   * import {ComponentServer} from '﹫liaison/component-server';
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string') title;
+   * }
+   *
+   * const server = new ComponentServer(Movie);
+   * const client = new ComponentClient(server);
+   *
+   * const RemoteMovie = client.getComponent();
+   * ```
+   *
+   * @example
+   * ```
+   * // TS
+   *
+   * import {Component, attribute} from '﹫liaison/component';
+   * import {ComponentClient} from '﹫liaison/component-client';
+   * import {ComponentServer} from '﹫liaison/component-server';
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string') title!: string;
+   * }
+   *
+   * const server = new ComponentServer(Movie);
+   * const client = new ComponentClient(server);
+   *
+   * const RemoteMovie = client.getComponent() as typeof Movie;
+   * ```
+   *
+   * @category Creation
+   */
   constructor(componentServer: ComponentServerLike, options: ComponentClientOptions = {}) {
     const {version, mixins, batchable = false} = options;
 
@@ -65,6 +118,16 @@ export class ComponentClient {
 
   _component!: typeof Component;
 
+  /**
+   * Gets the component that is served by the component server.
+   *
+   * @returns A [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+   *
+   * @examplelink See [`constructor`'s example](https://liaison.dev/docs/v1/reference/component-client#constructor).
+   *
+   * @category Getting the served component
+   * @possiblyasync
+   */
   getComponent() {
     if (this._component === undefined) {
       return possiblyAsync(this._createComponent(), (component) => {

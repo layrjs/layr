@@ -35,12 +35,29 @@ export type ComponentServerOptions = {
   version?: number;
 };
 
+/**
+ * A base class allowing to serve a [`Component`](https://liaison.dev/docs/v1/reference/component) so it can be accessed by a [`ComponentClient`](https://liaison.dev/docs/v1/reference/component-client).
+ *
+ * Typically, instead of using this class, you would use a class such as [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server), or a middleware such as [`component-koa-middleware`](https://liaison.dev/docs/v1/reference/component-koa-middleware).
+ */
 export class ComponentServer {
   _component: typeof Component;
   _introspectedComponent: IntrospectedComponent;
   _name: string | undefined;
   _version: number | undefined;
 
+  /**
+   * Creates a component server.
+   *
+   * @param component The [`Component`](https://liaison.dev/docs/v1/reference/component) class to serve.
+   * @param [options.version] A number representing the version of the created component server (default: `undefined`).
+   *
+   * @returns A `ComponentServer` instance.
+   *
+   * @examplelink See [`ComponentClient`'s example](https://liaison.dev/docs/v1/reference/component-client#constructor).
+   *
+   * @category Creation
+   */
   constructor(component: typeof Component, options: ComponentServerOptions = {}) {
     const {name, version} = options;
 
