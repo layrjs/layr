@@ -107,6 +107,18 @@
           "slug": "component-server",
           "file": "reference/component-server.md",
           "source": "../packages/component-server/src/component-server.ts"
+        },
+        {
+          "title": "ComponentHTTPClient",
+          "slug": "component-http-client",
+          "file": "reference/component-http-client.md",
+          "source": "../packages/component-http-client/src/component-http-client.ts"
+        },
+        {
+          "title": "ComponentHTTPServer",
+          "slug": "component-http-server",
+          "file": "reference/component-http-server.md",
+          "source": "../packages/component-http-server/src/component-http-server.ts"
         }
       ]
     }

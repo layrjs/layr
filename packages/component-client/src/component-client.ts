@@ -34,7 +34,7 @@ export type ComponentClientOptions = {
 };
 
 /**
- * A base class allowing to access a [`Component`](https://liaison.dev/docs/v1/reference/component) that is served by a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
+ * A base class allowing to access a root [`Component`](https://liaison.dev/docs/v1/reference/component) that is served by a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
  *
  * Typically, instead of using this class, you would use a subclass such as [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client).
  */
@@ -48,9 +48,8 @@ export class ComponentClient {
    * Creates a component client.
    *
    * @param componentServer The [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) to connect to.
-   * @param [options.version] A number representing the expected version of the component server (default: `undefined`). If a version is specified, and the component server has a different version, an error is thrown when a request is sent. The thrown error is a JavaScript `Error` instance with a `code` attribute set to `'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'`.
-   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://liaison.dev/docs/v1/reference/storable)) that will be used to construct the components exposed by the component server (default: `[]`).
-   * @param [options.batchable] A boolean specifying whether the requests sent to the component server should be automatically batched (default: `false`).
+   * @param [options.version] A number specifying the expected version of the component server (default: `undefined`). If a version is specified, an error is thrown when a request is sent and the component server has a different version. The thrown error is a JavaScript `Error` instance with a `code` attribute set to `'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'`.
+   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://liaison.dev/docs/v1/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
    *
    * @returns A `ComponentClient` instance.
    *
@@ -58,12 +57,12 @@ export class ComponentClient {
    * ```
    * // JS
    *
-   * import {Component, attribute} from '﹫liaison/component';
+   * import {Component, attribute, expose} from '﹫liaison/component';
    * import {ComponentClient} from '﹫liaison/component-client';
    * import {ComponentServer} from '﹫liaison/component-server';
    *
    * class Movie extends Component {
-   *   ﹫attribute('string') title;
+   *   ﹫expose({get: true, set: true}) ﹫attribute('string') title;
    * }
    *
    * const server = new ComponentServer(Movie);
@@ -76,12 +75,12 @@ export class ComponentClient {
    * ```
    * // TS
    *
-   * import {Component, attribute} from '﹫liaison/component';
+   * import {Component, attribute, expose} from '﹫liaison/component';
    * import {ComponentClient} from '﹫liaison/component-client';
    * import {ComponentServer} from '﹫liaison/component-server';
    *
    * class Movie extends Component {
-   *   ﹫attribute('string') title!: string;
+   *   ﹫expose({get: true, set: true}) ﹫attribute('string') title!: string;
    * }
    *
    * const server = new ComponentServer(Movie);
