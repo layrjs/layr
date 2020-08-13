@@ -85,7 +85,7 @@ Our full-stack "Hello, World!" will be composed of two parts:
 - A backend in charge of the data model and business logic.
 - A frontend in charge of the user interface.
 
-Sure, such an architecture sounds silly for a simple "Hello, World!". But it serves our purpose, which is to illustrate the core concepts of Liaison.
+Sure, such an architecture sounds silly for a simple "Hello, World!". But it serves our purpose, which is to introduce the core concepts of Liaison.
 
 So let's start by implementing the backend.
 
