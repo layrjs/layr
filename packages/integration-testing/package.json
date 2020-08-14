@@ -26,6 +26,7 @@
     "@liaison/abstract-store": "^0.5.28",
     "@liaison/component": "^0.5.71",
     "@liaison/component-client": "^0.5.42",
+    "@liaison/component-express-middleware": "^0.5.3",
     "@liaison/component-http-client": "^0.5.37",
     "@liaison/component-http-server": "^0.5.29",
     "@liaison/component-koa-middleware": "^0.5.29",
@@ -33,6 +34,7 @@
     "@liaison/memory-router": "^0.5.37",
     "@liaison/routable": "^0.5.53",
     "@liaison/storable": "^0.5.104",
+    "express": "^4.17.1",
     "koa": "^2.13.0",
     "koa-mount": "^4.0.0",
     "tslib": "^1.13.0"

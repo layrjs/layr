@@ -20,7 +20,7 @@ export type ComponentHTTPServerOptions = {port?: number} & ServeComponentOptions
 /**
  * A class allowing to serve a root [`Component`](https://liaison.dev/docs/v1/reference/component) so it can be accessed by a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client).
  *
- * This class provides a basic HTTP server providing one endpoint to serve your root component. If you wish to build an HTTP server providing multiple endpoints, you can use a middleware such as [`component-koa-middleware`](https://liaison.dev/docs/v1/reference/component-koa-middleware), or implement the necessary plumbing to integrate a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) in your custom HTTP server.
+ * This class provides a basic HTTP server providing one endpoint to serve your root component. If you wish to build an HTTP server providing multiple endpoints, you can use a middleware such as [`component-express-middleware`](https://liaison.dev/docs/v1/reference/component-express-middleware), or implement the necessary plumbing to integrate a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) in your custom HTTP server.
  *
  * #### Usage
  *

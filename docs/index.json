@@ -121,6 +121,12 @@
           "source": "../packages/component-http-server/src/component-http-server.ts"
         },
         {
+          "title": "component-express-middleware",
+          "slug": "component-express-middleware",
+          "file": "reference/component-express-middleware.md",
+          "source": "../packages/component-express-middleware/src/component-express-middleware.ts"
+        },
+        {
           "title": "component-koa-middleware",
           "slug": "component-koa-middleware",
           "file": "reference/component-koa-middleware.md",

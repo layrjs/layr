@@ -7,7 +7,7 @@ export type ComponentHTTPClientOptions = ComponentClientOptions;
 /**
  * *Inherits from [`ComponentClient`](https://liaison.dev/docs/v1/reference/component-client).*
  *
- * A class allowing to access a root [`Component`](https://liaison.dev/docs/v1/reference/component) that is served by a [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server), a middleware such as [`component-koa-middleware`](https://liaison.dev/docs/v1/reference/component-koa-middleware), or any HTTP server exposing a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
+ * A class allowing to access a root [`Component`](https://liaison.dev/docs/v1/reference/component) that is served by a [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server), a middleware such as [`component-express-middleware`](https://liaison.dev/docs/v1/reference/component-express-middleware), or any HTTP server exposing a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
  *
  * #### Usage
  *

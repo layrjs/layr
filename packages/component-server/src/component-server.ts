@@ -38,7 +38,7 @@ export type ComponentServerOptions = {
 /**
  * A base class allowing to serve a root [`Component`](https://liaison.dev/docs/v1/reference/component) so it can be accessed by a [`ComponentClient`](https://liaison.dev/docs/v1/reference/component-client).
  *
- * Typically, instead of using this class, you would use a class such as [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server), or a middleware such as [`component-koa-middleware`](https://liaison.dev/docs/v1/reference/component-koa-middleware).
+ * Typically, instead of using this class, you would use a class such as [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server), or a middleware such as [`component-express-middleware`](https://liaison.dev/docs/v1/reference/component-express-middleware).
  */
 export class ComponentServer {
   _component: typeof Component;

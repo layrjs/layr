@@ -129,7 +129,12 @@ export class Docs extends Routable(Component) {
       ...UI.styles.noMargins,
       marginLeft: 15
     });
-    const chapterMenuItemStyle = css({marginTop: 0});
+    const chapterMenuItemStyle = css({
+      marginTop: 0,
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    });
 
     return (
       <nav>

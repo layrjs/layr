@@ -1,20 +1,19 @@
-import Koa from 'koa';
-import mount from 'koa-mount';
+import express from 'express';
 import type {Server} from 'http';
-import {serveComponent} from '@liaison/component-koa-middleware';
+import {serveComponent} from '@liaison/component-express-middleware';
 import {ComponentHTTPClient} from '@liaison/component-http-client';
 
 import {Counter as BackendCounter} from './counter.fixture';
 
-const SERVER_PORT = 5555;
+const SERVER_PORT = 6666;
 
-describe('Koa middleware', () => {
+describe('Express middleware', () => {
   let server: Server | undefined;
 
   beforeAll(() => {
-    const app = new Koa();
+    const app = express();
 
-    app.use(mount('/api', serveComponent(BackendCounter)));
+    app.use('/api', serveComponent(BackendCounter));
 
     return new Promise((resolve) => {
       server = app.listen(SERVER_PORT, resolve);
