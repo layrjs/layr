@@ -20,9 +20,19 @@
  *
  * const app = new Koa();
  *
+ * // Serve the `Movie` component at the root ('/')
  * app.use(serveComponent(Movie));
  *
  * app.listen(3210);
+ * ```
+ *
+ * If you want to serve your component at a specific URL, you can use [`koa-mount`](https://github.com/koajs/mount):
+ *
+ * ```
+ * import mount from 'koa-mount';
+ *
+ * // Serve the `Movie` component at a specific URL ('/api')
+ * app.use(mount('/api', serveComponent(Movie)));
  * ```
  */
 
