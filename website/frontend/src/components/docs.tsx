@@ -246,7 +246,7 @@ export class Docs extends Routable(Component) {
         <UI.Markdown languageFilter={language}>{chapter.content}</UI.Markdown>
 
         {nextChapter && (
-          <div>
+          <div css={{marginBottom: 15}}>
             <hr />
             <div>
               <span style={{color: theme.muted.textColor}}>Next:</span>{' '}

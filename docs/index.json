@@ -8,6 +8,16 @@
           "title": "Hello, World!",
           "slug": "hello-world",
           "file": "getting-started/hello-world.md"
+        },
+        {
+          "title": "Storing Data",
+          "slug": "data-storage",
+          "file": "getting-started/data-storage.md"
+        },
+        {
+          "title": "Building a Web App",
+          "slug": "web-app",
+          "file": "getting-started/web-app.md"
         }
       ]
     },

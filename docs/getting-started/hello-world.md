@@ -4,7 +4,7 @@ Let's start our journey into Liaison by implementing the mandatory ["Hello, Worl
 
 > Liaison supports both [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) and [TypeScript](https://www.typescriptlang.org/). To select your language of choice, use the drop-down menu on the left.
 
-#### Setting Up Your Development Environment
+#### Creating the Project
 
 First, from your terminal, create a directory for your project, and navigate into it:
 
@@ -18,6 +18,8 @@ Then, initialize your project with:
 ```sh
 npm init -y
 ```
+
+#### Setting Up Your Development Environment
 
 <!-- <if language="js"> -->
 
@@ -98,7 +100,7 @@ npm install @liaison/component @liaison/component-http-server
 We've installed:
 
 - `@liaison/component` that provides the [`Component`](https://liaison.dev/docs/v1/reference/component) class, which can be conceptualized as the basic JavaScript [`Object`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) class, but with superpowers.
-- `@liaison/component-http-server` that provides the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) class, which allows us to serve a `Component` class over HTTP.
+- `@liaison/component-http-server` that provides the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) class, which allows to serve a `Component` class over HTTP.
 
 Now, let's write some actual code. With your favorite code editor, create a file named <!-- <if language="js"> -->`backend.js`<!-- </if> --><!-- <if language="ts"> -->`backend.ts`<!-- </if> --> in an `src` directory, and write the following code:
 

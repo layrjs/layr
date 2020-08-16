@@ -1,6 +1,7 @@
 {
   "name": "hello-world",
   "version": "1.0.0",
+  "description": "An \"Hello, World!\" program to introduce the core concepts of Liaison.",
   "private": true,
   "dependencies": {
     "@liaison/component": "^0.5.71",
