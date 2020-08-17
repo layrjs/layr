@@ -13,7 +13,7 @@ const {notEmpty, maxLength} = validators;
   }
 })
 export class Message extends Storable(Component) {
-  @expose({get: true, set: true}) @primaryIdentifier() id;
+  @expose({get: true, set: true}) @primaryIdentifier() id!: string;
 
   @expose({get: true, set: true})
   @attribute('string', {validators: [notEmpty(), maxLength(300)]})

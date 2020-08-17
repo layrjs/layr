@@ -155,9 +155,9 @@ npx babel-node ./src/backend.js
 npx ts-node ./src/backend.ts
 ```
 
-If nothing happens on the screen, it's all good. The server is running and waiting for requests.
+If nothing happens on the screen, it's all good. The backend is running and waiting for requests.
 
-> Note: If you wish to display a log of what's going on in the server, you can set some environment variables before starting the backend:
+> Note: If you wish to display a log of what's going on in the backend, you can set some environment variables before starting it:
 >
 > ```sh
 > // JS

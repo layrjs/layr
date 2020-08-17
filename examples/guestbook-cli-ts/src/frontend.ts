@@ -1,12 +1,14 @@
 import {ComponentHTTPClient} from '@liaison/component-http-client';
 import {Storable} from '@liaison/storable';
 
+import type {Message as MessageType} from './backend';
+
 (async () => {
   const client = new ComponentHTTPClient('http://localhost:3210', {
     mixins: [Storable]
   });
 
-  const Message = await client.getComponent();
+  const Message = (await client.getComponent()) as typeof MessageType;
 
   const text = process.argv[2];
 
@@ -16,7 +18,7 @@ import {Storable} from '@liaison/storable';
     showMessages();
   }
 
-  async function addMessage(text) {
+  async function addMessage(text: string) {
     const message = new Message({text});
     await message.save();
     console.log(`Message successfully added`);

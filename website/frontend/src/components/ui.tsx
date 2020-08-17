@@ -50,7 +50,7 @@ export class UI extends Component {
         tertiaryColor: this.colors.limeA700,
         textOnTertiaryColor: this.colors.black,
         fontSize: '16px',
-        lineHeight: 1.5,
+        lineHeight: 1.6,
         borderColor: this.colors.blueGrey500,
         borderWidth: '1px',
         borderRadius: '.25rem',
@@ -72,7 +72,7 @@ export class UI extends Component {
         },
         small: {
           fontSize: '80%',
-          lineHeight: 1.25,
+          lineHeight: 1.3,
           borderRadius: '.2rem'
         },
         large: {
@@ -234,8 +234,8 @@ export class UI extends Component {
           display: 'table',
           tableLayout: 'fixed',
           width: '100%',
-          marginTop: '1rem',
-          marginBottom: '1rem',
+          marginTop: '1.1rem',
+          marginBottom: '1.1rem',
           padding: '.4rem .65rem .5rem .65rem',
           fontSize: '.85rem',
           color: theme.highlighted.textColor,

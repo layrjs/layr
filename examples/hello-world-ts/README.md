@@ -2,4 +2,4 @@
 
 An "Hello, World!" program to introduce the core concepts of Liaison.
 
-See the [corresponding guide](https://liaison.dev/docs/v1/getting-started/hello-world?language=ts).
+See the [corresponding guide](https://liaison.dev/docs/v1/introduction/hello-world?language=ts).
