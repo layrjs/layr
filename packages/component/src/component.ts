@@ -239,7 +239,7 @@ export class Component extends Observable(Object) {
    * @param [object] An optional object specifying the value of the component attributes.
    * @param [options.isNew] Whether the instance should be marked as new or not (default: `true`).
    * @param [options.source] A number specifying the [source](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the created instance (default: `0`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be set (default: `true` which means that all the attributes will be set).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be set (default: `true`, which means that all the attributes will be set).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.initialize] Whether to call the [`initialize`](https://liaison.dev/docs/v1/reference/component#initialize-instance-method) instance method or not (default: `true`).
    *
@@ -863,7 +863,7 @@ export class Component extends Observable(Object) {
    * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://liaison.dev/docs/v1/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
    * @returns A [`Property`](https://liaison.dev/docs/v1/reference/property) instance iterator.
@@ -891,7 +891,7 @@ export class Component extends Observable(Object) {
    * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://liaison.dev/docs/v1/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
    * @returns A [`Property`](https://liaison.dev/docs/v1/reference/property) instance iterator.
@@ -1199,7 +1199,7 @@ export class Component extends Observable(Object) {
    *
    * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    *
    * @returns An [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance iterator.
    *
@@ -1224,7 +1224,7 @@ export class Component extends Observable(Object) {
    *
    * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true` which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    *
    * @returns An [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance iterator.
    *
@@ -1554,7 +1554,7 @@ export class Component extends Observable(Object) {
    *
    * @param [options.filter] A function used to filter the identifier attributes to be returned. The function is invoked for each identifier attribute with an `IdentifierAttribute` instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set identifier attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the identifier attributes to be returned (default: `true` which means that all identifier attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the identifier attributes to be returned (default: `true`, which means that all identifier attributes should be returned).
    *
    * @returns An iterator of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) or [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
    *
@@ -1609,7 +1609,7 @@ export class Component extends Observable(Object) {
    *
    * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set secondary identifier attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the secondary identifier attributes to be returned (default: `true` which means that all secondary identifier attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the secondary identifier attributes to be returned (default: `true`, which means that all secondary identifier attributes should be returned).
    *
    * @returns A [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) instance iterator.
    *
@@ -2174,7 +2174,7 @@ export class Component extends Observable(Object) {
   /**
    * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
    * @example
    * ```
@@ -2225,7 +2225,7 @@ export class Component extends Observable(Object) {
   /**
    * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/component#run-validators-dual-method) method.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
    * @example
    * ```
@@ -2295,7 +2295,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true`, which means that all the attributes will be checked).
    *
    * @returns A boolean.
    *
@@ -2318,7 +2318,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true` which means that all the attributes will be checked).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true`, which means that all the attributes will be checked).
    *
    * @returns A boolean.
    *
@@ -2343,7 +2343,7 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of the component.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://liaison.dev/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
@@ -2366,7 +2366,7 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of the component.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true` which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://liaison.dev/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
@@ -3519,7 +3519,7 @@ export class Component extends Observable(Object) {
   /**
    * Serializes the component class to a plain object.
    *
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true`, which means that all the attributes will be serialized).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.target] A number specifying the [target](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `undefined`).
    *
@@ -3614,7 +3614,7 @@ export class Component extends Observable(Object) {
   /**
    * Serializes the component instance to a plain object.
    *
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true` which means that all the attributes will be serialized).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true`, which means that all the attributes will be serialized).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
    * @param [options.target] A number specifying the [target](https://liaison.dev/docs/v1/reference/attribute#value-source-type) of the serialization (default: `undefined`).
    *

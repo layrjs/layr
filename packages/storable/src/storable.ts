@@ -41,6 +41,104 @@ import {
 } from './properties';
 import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utilities';
 
+/**
+ * Extends a [`Component`](https://liaison.dev/docs/v1/reference/component) class with some storage capabilities.
+ *
+ * #### Usage
+ *
+ * The `Storable()` mixin can be used both in the backend and the frontend.
+ *
+ * ##### Backend Usage
+ *
+ * Call `Storable()` with a [`Component`](https://liaison.dev/docs/v1/reference/component) class to construct a [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class that you can extend with your data model and business logic. Then, register this class into a store such as [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) by using the [`registerStorable()`](https://liaison.dev/docs/v1/reference/mongodb-store#register-storable-instance-method) method (or [`registerRootComponent()`](https://liaison.dev/docs/v1/reference/mongodb-store#register-root-component-instance-method) to register several components at once).
+ *
+ * **Example:**
+ *
+ * ```js
+ * // JS
+ *
+ * import {Component} from '@liaison/component';
+ * import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
+ * import {MongoDBStore} from '@liaison/mongodb-store';
+ *
+ * export class Movie extends Storable(Component) {
+ *   @primaryIdentifier() id;
+ *
+ *   @attribute() title = '';
+ * }
+ *
+ * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
+ *
+ * store.registerStorable(Movie);
+ * ```
+ *
+ * ```ts
+ * // TS
+ *
+ * import {Component} from '@liaison/component';
+ * import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
+ * import {MongoDBStore} from '@liaison/mongodb-store';
+ *
+ * export class Movie extends Storable(Component) {
+ *   @primaryIdentifier() id!: string;
+ *
+ *   @attribute() title = '';
+ * }
+ *
+ * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
+ *
+ * store.registerStorable(Movie);
+ * ```
+ *
+ * Once you have a storable component registered into a store, you can use any method provided by the `Storable()` mixin to interact with the database:
+ *
+ * ```
+ * const movie = new Movie({id: 'abc123', title: 'Inception'});
+ *
+ * // Save the movie to the database
+ * await movie.save();
+ *
+ * // Retrieve the movie from the database
+ * await Movie.get('abc123'); // => movie
+ * ```
+ *
+ * ##### Frontend Usage
+ *
+ * Typically, you construct a storable component in the frontend by "inheriting" a storable component exposed by the backend. To accomplish that, you create a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client), and then call the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-client#get-component-instance-method) method to construct your frontend component.
+ *
+ * **Example:**
+ *
+ * ```
+ * import {ComponentHTTPClient} from '@liaison/component-http-client';
+ * import {Storable} from '@liaison/storable';
+ *
+ * (async () => {
+ *   const client = new ComponentHTTPClient('https://...', {
+ *     mixins: [Storable]
+ *   });
+ *
+ *   const Movie = await client.getComponent();
+ * })();
+ * ```
+ *
+ * > Note that you have to pass the `Storable` mixin when you create a `ComponentHTTPClient` that is consuming a storable component.
+ *
+ * Once you have a storable component in the frontend, you can use any method that is exposed by the backend. For example, if the `Movie`'s [`save()`](https://liaison.dev/docs/v1/reference/storable#save-instance-method) method is exposed by the backend, you can call it from the frontend to add a new movie into the database:
+ *
+ * ```
+ * const movie = new Movie({title: 'Inception 2'});
+ *
+ * await movie.save();
+ * ```
+ *
+ * See the ["Storing Data"](https://liaison.dev/docs/v1/introduction/data-storage) guide for a comprehensive example using the `Storable()` mixin.
+ *
+ * ### StorableComponent <badge type="primary">class</badge> {#storable-component-class}
+ *
+ * A `StorableComponent` class is constructed by calling the `Storable()` mixin ([see above](https://liaison.dev/docs/v1/reference/storable#storable-mixin)).
+ *
+ * @mixin
+ */
 export function Storable<T extends Constructor<typeof Component>>(Base: T) {
   if (!isComponentClass(Base)) {
     throw new Error(
@@ -61,6 +159,18 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
     static __store: AbstractStore | undefined;
 
+    /**
+     * Returns the store in which the storable component is registered. If the storable component is not registered in a store, an error is thrown.
+     *
+     * @returns A [`Store`](https://liaison.dev/docs/v1/reference/store) instance.
+     *
+     * @example
+     * ```
+     * Movie.getStore(); // => store
+     * ```
+     *
+     * @category Store Registration
+     */
     static getStore() {
       const store = this.__store;
 
@@ -73,6 +183,18 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return store;
     }
 
+    /**
+     * Returns whether the storable component is registered in a store.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Movie.hasStore(); // => true
+     * ```
+     *
+     * @category Store Registration
+     */
     static hasStore() {
       return this.__store !== undefined;
     }
@@ -331,6 +453,41 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
     // === Operations ===
 
+    /**
+     * Retrieves a storable component instance (and possibly, some of its related components) from the store.
+     *
+     * > This method uses the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method under the hood to load the component's attributes. So if you want to expose the [`get()`](https://liaison.dev/docs/v1/reference/storable#get-class-method) method to the frontend, you will typically have to expose the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method as well.
+     *
+     * @param identifier A plain object specifying the identifier of the component you want to retrieve. The shape of the object should be `{[identifierName]: identifierValue}`. Alternatively, you can specify a string or a number representing the value of a [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
+     * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be loaded (default: `true`, which means that all the attributes will be loaded).
+     * @param [options.reload] A boolean specifying whether a component that has already been loaded should be loaded again from the store (default: `false`). Most of the time you will leave this option off to take advantage of the cache.
+     * @param [options.throwIfMissing] A boolean specifying whether an error should be thrown if there is no component matching the specified `identifier` in the store (default: `true`).
+     *
+     * @returns A [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) instance.
+     *
+     * @example
+     * ```
+     * // Fully retrieve a movie by its primary identifier
+     * await Movie.get({id: 'abc123'});
+
+     * // Same as above, but in a shorter manner
+     * await Movie.get('abc123');
+     *
+     * // Fully retrieve a movie by its secondary identifier
+     * await Movie.get({slug: 'inception'});
+     *
+     * // Partially retrieve a movie by its primary identifier
+     * await Movie.get({id: 'abc123'}, {title: true, rating: true});
+     *
+     * // Partially retrieve a movie, and fully retrieve its related director component
+     * await Movie.get({id: 'abc123'}, {title: true, director: true});
+     *
+     * // Partially retrieve a movie, and partially retrieve its related director component
+     * await Movie.get({id: 'abc123'}, {title: true, director: {fullName: true}});
+     * ```
+     *
+     * @category Storage Operations
+     */
     static async get<T extends typeof StorableComponent>(
       this: T,
       identifierDescriptor: IdentifierDescriptor,
@@ -402,6 +559,28 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       });
     }
 
+    /**
+     * Returns whether a storable component instance exists in the store.
+     *
+     * @param identifier A plain object specifying the identifier of the component you want to search. The shape of the object should be `{[identifierName]: identifierValue}`. Alternatively, you can specify a string or a number representing the value of a [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
+     * @param [options.reload] A boolean specifying whether a component that has already been loaded should be searched again from the store (default: `false`). Most of the time you will leave this option off to take advantage of the cache.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * // Check if there is a movie with a certain primary identifier
+     * await Movie.has({id: 'abc123'}); // => true
+     *
+     * // Same as above, but in a shorter manner
+     * await Movie.has('abc123'); // => true
+     *
+     * // Check if there is a movie with a certain secondary identifier
+     * await Movie.has({slug: 'inception'}); // => true
+     * ```
+     *
+     * @category Storage Operations
+     */
     static async has(identifierDescriptor: IdentifierDescriptor, options: {reload?: boolean} = {}) {
       const {reload = false} = options;
 
@@ -414,6 +593,44 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return storable !== undefined;
     }
 
+    /**
+     * Loads some attributes of the current storable component instance (and possibly, some of its related components) from the store.
+     *
+     * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be loaded (default: `true`, which means that all the attributes will be loaded).
+     * @param [options.reload] A boolean specifying whether a component that has already been loaded should be loaded again from the store (default: `false`). Most of the time you will leave this option off to take advantage of the cache.
+     * @param [options.throwIfMissing] A boolean specifying whether an error should be thrown if there is no matching component in the store (default: `true`).
+     *
+     * @returns The current [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) instance.
+     *
+     * @example
+     * ```
+     * // Retrieve a movie with the 'title' attribute only
+     * const movie = await Movie.get('abc123', {title: true});
+     *
+     * // Load a few more movie's attributes
+     * await movie.load({tags: true, rating: true});
+     *
+     * // Load some attributes of the movie's director
+     * // (which can be a related component)
+     * await movie.load({director: {fullName: true}});
+     *
+     * // Since the movie's rating has already been loaded,
+     * // it will not be loaded again from the store
+     * await movie.load({rating: true});
+     *
+     * // Change the movie's rating
+     * movie.rating = 8.5;
+     *
+     * // Since the movie's rating has been modified,
+     * // it will be loaded again from the store
+     * await movie.load({rating: true});
+     *
+     * // Force reloading the movie's rating
+     * await movie.load({rating: true}, {reload: true});
+     * ```
+     *
+     * @category Storage Operations
+     */
     async load<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector | undefined,
@@ -593,29 +810,48 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       }
     }
 
-    async reload<T extends StorableComponent>(
+    /**
+     * Saves the current storable component instance to the store. If the component is new, it will be added to the store with all its attributes. Otherwise, only the attributes that have been modified will be saved to the store.
+     *
+     * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be saved (default: `true`, which means that all the modified attributes will be saved).
+     * @param [options.throwIfMissing] A boolean specifying whether an error should be thrown if the current component is not new and there is no existing component with the same identifier in the store (default: `true` if the component is not new).
+     * @param [options.throwIfExists] A boolean specifying whether an error should be thrown if the current component is new and there is an existing component with the same identifier in the store (default: `true` if the component is new).
+     *
+     * @returns The current [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) instance.
+     *
+     * @example
+     * ```
+     * // Retrieve a movie with a few attributes
+     * const movie = await Movie.get('abc123', {title: true, rating: true});
+     *
+     * // Change the movie's rating
+     * movie.rating = 8;
+     *
+     * // Save the new movie's rating to the store
+     * await movie.save();
+     *
+     * // Since the movie's rating has not been changed since the previous save(),
+     * // it will not be saved again
+     * await movie.save();
+     * ```
+     *
+     * @category Storage Operations
+     */
+    async save<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector | undefined,
-      options: {throwIfMissing: false}
+      options: {throwIfMissing: false; throwIfExists?: boolean}
     ): Promise<T | undefined>;
-    async reload<T extends StorableComponent>(
+    async save<T extends StorableComponent>(
+      this: T,
+      attributeSelector: AttributeSelector | undefined,
+      options: {throwIfMissing?: boolean; throwIfExists: false}
+    ): Promise<T | undefined>;
+    async save<T extends StorableComponent>(
       this: T,
       attributeSelector?: AttributeSelector,
-      options?: {throwIfMissing?: boolean}
+      options?: {throwIfMissing?: boolean; throwIfExists?: boolean}
     ): Promise<T>;
-    async reload(
-      attributeSelector: AttributeSelector = true,
-      options: {throwIfMissing?: boolean} = {}
-    ) {
-      const {throwIfMissing = true} = options;
-
-      return await this.load(attributeSelector, {
-        reload: true,
-        throwIfMissing,
-        _callerMethodName: 'reload'
-      });
-    }
-
     @method() async save<T extends StorableComponent>(
       this: T,
       attributeSelector: AttributeSelector = true,
@@ -758,6 +994,32 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       );
     }
 
+    /**
+     * Removes the current storable component instance from the store.
+     *
+     * @param [options.throwIfMissing] A boolean specifying whether an error should be thrown if there is no matching component in the store (default: `true`).
+     *
+     * @returns The current [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) instance.
+     *
+     * @example
+     * ```
+     * // Retrieve a movie
+     * const movie = await Movie.get('abc123');
+     *
+     * // Remove the movie
+     * await movie.delete();
+     * ```
+     *
+     * @category Storage Operations
+     */
+    async delete<T extends StorableComponent>(
+      this: T,
+      options: {throwIfMissing: false}
+    ): Promise<T | undefined>;
+    async delete<T extends StorableComponent>(
+      this: T,
+      options?: {throwIfMissing?: boolean}
+    ): Promise<T>;
     @method() async delete<T extends StorableComponent>(
       this: T,
       options: {throwIfMissing?: boolean} = {}
@@ -817,6 +1079,47 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return this;
     }
 
+    /**
+     * Finds some storable component instances matching the specified query in the store, and load all or some of their attributes (and possibly, load some of their related components as well).
+     *
+     * > This method uses the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method under the hood to load the components' attributes. So if you want to expose the [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method to the frontend, you will typically have to expose the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method as well.
+     *
+     * @param [query] A [`Query`](https://liaison.dev/docs/v1/reference/query) object specifying the criteria to be used when selecting the components from the store (default: `{}`, which means that any component can be selected).
+     * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be loaded (default: `true`, which means that all the attributes will be loaded).
+     * @param [options.sort] A plain object specifying how the found components should be sorted (default: `undefined`). The shape of the object should be `{[name]: direction}` where `name` is the name of an attribute, and `direction` is the string `'asc'` or `'desc'` representing the sort direction (ascending or descending).
+     * @param [options.skip] A number specifying how many components should be skipped from the found components (default: `0`).
+     * @param [options.limit] A number specifying the maximum number of components that should be returned (default: `undefined`).
+     * @param [options.reload] A boolean specifying whether a component that has already been loaded should be loaded again from the store (default: `false`). Most of the time you will leave this option off to take advantage of the cache.
+     *
+     * @returns An array of [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) instances.
+     *
+     * @example
+     * ```
+     * // Find all the movies
+     * await Movie.find();
+     *
+     * // Find the Japanese movies
+     * await Movie.find({country: 'Japan'});
+     *
+     * // Find the Japanese drama movies
+     * await Movie.find({country: 'Japan', genre: 'drama'});
+     *
+     * // Find the Tarantino's movies
+     * const tarantino = await Director.get({slug: 'quentin-tarantino'})
+     * await Movie.find({director: tarantino});
+     *
+     * // Find the movies released after 2010
+     * await Movie.find({year: {$greaterThan: 2010}});
+     *
+     * // Find the top 30 movies
+     * await Movie.find({}, true, {sort: {rating: 'desc'}, limit: 30});
+     *
+     * // Find the next top 30 movies
+     * await Movie.find({}, true, {sort: {rating: 'desc'}, skip: 30, limit: 30});
+     * ```
+     *
+     * @category Storage Operations
+     */
     @method() static async find<T extends typeof StorableComponent>(
       this: T,
       query: Query = {},
@@ -879,6 +1182,34 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return foundStorables;
     }
 
+    /**
+     * Counts the number of storable component instances matching the specified query in the store.
+     *
+     * @param [query] A [`Query`](https://liaison.dev/docs/v1/reference/query) object specifying the criteria to be used when selecting the components from the store (default: `{}`, which means that any component can be selected, and therefore the total number of components available in the store will be returned).
+     *
+     * @returns A number.
+     *
+     * @example
+     * ```
+     * // Count the total number of movies
+     * await Movie.count();
+     *
+     * // Count the number of Japanese movies
+     * await Movie.count({country: 'Japan'});
+     *
+     * // Count the number of Japanese drama movies
+     * await Movie.count({country: 'Japan', genre: 'drama'});
+     *
+     * // Count the number of Tarantino's movies
+     * const tarantino = await Director.get({slug: 'quentin-tarantino'})
+     * await Movie.count({director: tarantino});
+     *
+     * // Count the number of movies released after 2010
+     * await Movie.count({year: {$greaterThan: 2010}});
+     * ```
+     *
+     * @category Storage Operations
+     */
     @method() static async count(query: Query = {}) {
       query = await this.__callStorablePropertyFindersForQuery(query);
       query = this.__normalizeQuery(query, {loose: !this.hasStore()});

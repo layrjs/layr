@@ -36,7 +36,7 @@ npm install @liaison/component @liaison/component-http-server \
 
 In addition to `@liaison/component` and `@liaison/component-http-server` that we [already encountered](https://liaison.dev/docs/v1/introduction/hello-world#implementing-the-backend), we've installed:
 
-- `@liaison/storable` that provides the [`Storable`](https://liaison.dev/docs/v1/reference/storable) mixin, which allows to extend a [`Component`](https://liaison.dev/docs/v1/reference/component) class with some storage capabilities.
+- `@liaison/storable` that provides the [`Storable()`](https://liaison.dev/docs/v1/reference/storable) mixin, which allows to extend a [`Component`](https://liaison.dev/docs/v1/reference/component) class with some storage capabilities.
 - `@liaison/memory-store` that provides the [`MemoryStore`](https://liaison.dev/docs/v1/reference/memory-store) class, which is a minimal database storing data in memory. Obviously, for a real application you'd like to store your data in a more permanent manner, and for that you can use the [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) class which stores your data in a [MongoDB](https://www.mongodb.com/) database.
 
 Now, create a file named <!-- <if language="js"> -->`backend.js`<!-- </if> --><!-- <if language="ts"> -->`backend.ts`<!-- </if> --> in an `src` directory, and write the following code:
@@ -129,7 +129,7 @@ All the attributes are exposed to the frontend as follows:
 - The `text` attribute can be get and set from the frontend as well.
 - The `createdAt` attribute can be get from the frontend, but it cannot be set. Since we cannot trust the clock of a frontend, we leave this attribute get its default value (`new Date()`) from the backend.
 
-Just before the `Message` component definition, the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator is used to expose some methods that are provided by the [`Storable`](https://liaison.dev/docs/v1/reference/storable) mixin:
+Just before the `Message` component definition, the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator is used to expose some methods that are provided by the [`Storable()`](https://liaison.dev/docs/v1/reference/storable) mixin:
 
 - [`Message.find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) is exposed so the frontend can get a list of the guestbook's messages.
 - [`Message.prototype.load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) is exposed so the frontend can load a particular message.
@@ -249,7 +249,7 @@ import type {Message as MessageType} from './backend';
 })();
 ```
 
-If you've followed the ["Hello, World!"](https://liaison.dev/docs/v1/introduction/hello-world) guide, you should be familiar with the beginning of the code which creates a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) and then calls the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-client#get-component-instance-method) method to construct the `Message` component. The only difference is that, since the `Message` component is using the [`Storable`](https://liaison.dev/docs/v1/reference/storable) mixin, we have to pass this mixin to the `ComponentHTTPClient` constructor.
+If you've followed the ["Hello, World!"](https://liaison.dev/docs/v1/introduction/hello-world) guide, you should be familiar with the beginning of the code which creates a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) and then calls the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-client#get-component-instance-method) method to construct the `Message` component. The only difference is that, since the `Message` component is using the [`Storable()`](https://liaison.dev/docs/v1/reference/storable) mixin, we have to pass this mixin to the `ComponentHTTPClient` constructor.
 
 The rest of the code should be pretty self-explanatory, but let's dive into it anyway so we can better understand some particularities of Liaison.
 
@@ -263,7 +263,7 @@ Just before a component is actually saved, all its validators are automatically 
 
 The `showMessages()` function calls the [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method with three parameters:
 
-- The first parameter (`{}`) specifies the query to be used when searching the messages in the database. In the present case, an empty object is specified, so all the messages can be potentially returned.
+- The first parameter (`{}`) specifies the query to be used when searching the messages in the database. In the present case, an empty object is specified, so any message can be returned.
 - The second parameter (`{text: true, createdAt: true}`) specifies which attributes should be returned. Instead of an object describing the attributes to return, we could have specified `true` to return all the attributes of the `Message` component, but it is good practice to specify some attributes explicitly so we avoid data over-fetching when new attributes are added to a component.
 - The third parameter (`{sort: {createdAt: 'desc'}, limit: 30}`) specifies some options to sort the messages by reverse-chronological order and limit the number of messages to 30.
 

@@ -632,7 +632,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Validates the value of the attribute. If the value doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/attribute#run-validators-instance-method) method.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true` which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
    * @example
    * ```
@@ -702,7 +702,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Returns whether the value of the attribute is valid.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true` which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
    * @returns A boolean.
    *
@@ -727,7 +727,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Runs the validators with the value of the attribute.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true` which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
    * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://liaison.dev/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
