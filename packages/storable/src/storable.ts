@@ -994,7 +994,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Removes the current storable component instance from the store.
+     * Deletes the current storable component instance from the store.
      *
      * @param [options.throwIfMissing] A boolean specifying whether an error should be thrown if there is no matching component in the store (default: `true`).
      *
@@ -1005,7 +1005,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
      * // Retrieve a movie
      * const movie = await Movie.get('abc123');
      *
-     * // Remove the movie
+     * // Delete the movie
      * await movie.delete();
      * ```
      *
@@ -1426,10 +1426,92 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
     // === Hooks ===
 
+    /**
+     * A method that you can override to execute some custom logic just before the current storable component instance is loaded from the store.
+     *
+     * This method is automatically called when the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method), [`get()`](https://liaison.dev/docs/v1/reference/storable#get-class-method), or [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method is called, and there are some attributes to load. If all the attributes have already been loaded by a previous operation, unless the `reload` option is used, this method is not called.
+     *
+     * @param attributeSelector An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) indicating the attributes that will be loaded.
+     *
+     * @example
+     * ```
+     * // JS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async beforeLoad(attributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.beforeLoad(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @example
+     * ```
+     * // TS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async beforeLoad(attributeSelector: AttributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.beforeLoad(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @category Hooks
+     */
     async beforeLoad(attributeSelector: AttributeSelector) {
       await this.__callStorableAttributeHooks('beforeLoad', {attributeSelector});
     }
 
+    /**
+     * A method that you can override to execute some custom logic just after the current storable component instance has been loaded from the store.
+     *
+     * This method is automatically called when the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method), [`get()`](https://liaison.dev/docs/v1/reference/storable#get-class-method), or [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method is called, and there were some attributes to load. If all the attributes have already been loaded by a previous operation, unless the `reload` option is used, this method is not called.
+     *
+     * @param attributeSelector An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) indicating the attributes that were loaded.
+     *
+     * @example
+     * ```
+     * // JS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async afterLoad(attributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.afterLoad(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @example
+     * ```
+     * // TS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async afterLoad(attributeSelector: AttributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.afterLoad(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @category Hooks
+     */
     async afterLoad(attributeSelector: AttributeSelector) {
       await this.__callStorableAttributeHooks('afterLoad', {
         attributeSelector,
@@ -1437,6 +1519,47 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       });
     }
 
+    /**
+     * A method that you can override to execute some custom logic just before the current storable component instance is saved to the store.
+     *
+     * This method is automatically called when the [`save()`](https://liaison.dev/docs/v1/reference/storable#save-instance-method) method is called, and there are some modified attributes to save. If no attributes were modified, this method is not called.
+     *
+     * @param attributeSelector An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) indicating the attributes that will be saved.
+     *
+     * @example
+     * ```
+     * // JS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async beforeSave(attributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.beforeSave(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @example
+     * ```
+     * // TS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async beforeSave(attributeSelector: AttributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.beforeSave(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @category Hooks
+     */
     async beforeSave(attributeSelector: AttributeSelector) {
       await this.__callStorableAttributeHooks('beforeSave', {
         attributeSelector,
@@ -1444,6 +1567,47 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       });
     }
 
+    /**
+     * A method that you can override to execute some custom logic just after the current storable component instance has been saved to the store.
+     *
+     * This method is automatically called when the [`save()`](https://liaison.dev/docs/v1/reference/storable#save-instance-method) method is called, and there were some modified attributes to save. If no attributes were modified, this method is not called.
+     *
+     * @param attributeSelector An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) indicating the attributes that were saved.
+     *
+     * @example
+     * ```
+     * // JS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async afterSave(attributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.afterSave(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @example
+     * ```
+     * // TS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async afterSave(attributeSelector: AttributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.afterSave(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @category Hooks
+     */
     async afterSave(attributeSelector: AttributeSelector) {
       await this.__callStorableAttributeHooks('afterSave', {
         attributeSelector,
@@ -1451,6 +1615,47 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       });
     }
 
+    /**
+     * A method that you can override to execute some custom logic just before the current storable component instance is deleted from the store.
+     *
+     * This method is automatically called when the [`delete()`](https://liaison.dev/docs/v1/reference/storable#delete-instance-method) method is called.
+     *
+     * @param attributeSelector An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) indicating the attributes that will be deleted.
+     *
+     * @example
+     * ```
+     * // JS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async beforeDelete(attributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.beforeDelete(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @example
+     * ```
+     * // TS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async beforeDelete(attributeSelector: AttributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.beforeDelete(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @category Hooks
+     */
     async beforeDelete(attributeSelector: AttributeSelector) {
       await this.__callStorableAttributeHooks('beforeDelete', {
         attributeSelector,
@@ -1458,6 +1663,47 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       });
     }
 
+    /**
+     * A method that you can override to execute some custom logic just after the current storable component instance has been deleted from the store.
+     *
+     * This method is automatically called when the [`delete()`](https://liaison.dev/docs/v1/reference/storable#delete-instance-method) method is called.
+     *
+     * @param attributeSelector An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) indicating the attributes that were deleted.
+     *
+     * @example
+     * ```
+     * // JS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async afterDelete(attributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.afterDelete(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @example
+     * ```
+     * // TS
+     *
+     * class Movie extends Storable(Component) {
+     *   // ...
+     *
+     *   async afterDelete(attributeSelector: AttributeSelector) {
+     *     // Don't forget to call the parent method
+     *     await super.afterDelete(attributeSelector);
+     *
+     *     // Implement your custom logic here
+     *   }
+     * }
+     * ```
+     *
+     * @category Hooks
+     */
     async afterDelete(attributeSelector: AttributeSelector) {
       await this.__callStorableAttributeHooks('afterDelete', {
         attributeSelector,
