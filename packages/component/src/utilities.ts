@@ -132,8 +132,8 @@ export function ensureComponentClass(component: any) {
  * @example
  * ```
  * ensureComponentInstance(Movie) => Movie.prototype
- * ensureComponentClass(Movie.prototype) => Movie.prototype
- * ensureComponentClass(movie) => movie
+ * ensureComponentInstance(Movie.prototype) => Movie.prototype
+ * ensureComponentInstance(movie) => movie
  * ```
  *
  * @category Utilities

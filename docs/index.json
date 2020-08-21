@@ -156,7 +156,10 @@
           "title": "Storable()",
           "slug": "storable",
           "file": "reference/storable.md",
-          "source": "../packages/storable/src/storable.ts"
+          "source": [
+            "../packages/storable/src/storable.ts",
+            "../packages/storable/src/utilities.ts"
+          ]
         },
         {
           "title": "Query",
