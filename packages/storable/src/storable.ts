@@ -454,7 +454,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     // === Operations ===
 
     /**
-     * Retrieves a storable component instance (and possibly, some of its related components) from the store.
+     * Retrieves a storable component instance (and possibly, some of its referenced components) from the store.
      *
      * > This method uses the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method under the hood to load the component's attributes. So if you want to expose the [`get()`](https://liaison.dev/docs/v1/reference/storable#get-class-method) method to the frontend, you will typically have to expose the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method as well.
      *
@@ -470,7 +470,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
      * // Fully retrieve a movie by its primary identifier
      * await Movie.get({id: 'abc123'});
 
-     * // Same as above, but in a shorter manner
+     * // Same as above, but in a short manner
      * await Movie.get('abc123');
      *
      * // Fully retrieve a movie by its secondary identifier
@@ -479,10 +479,10 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
      * // Partially retrieve a movie by its primary identifier
      * await Movie.get({id: 'abc123'}, {title: true, rating: true});
      *
-     * // Partially retrieve a movie, and fully retrieve its related director component
+     * // Partially retrieve a movie, and fully retrieve its referenced director component
      * await Movie.get({id: 'abc123'}, {title: true, director: true});
      *
-     * // Partially retrieve a movie, and partially retrieve its related director component
+     * // Partially retrieve a movie, and partially retrieve its referenced director component
      * await Movie.get({id: 'abc123'}, {title: true, director: {fullName: true}});
      * ```
      *
@@ -572,7 +572,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
      * // Check if there is a movie with a certain primary identifier
      * await Movie.has({id: 'abc123'}); // => true
      *
-     * // Same as above, but in a shorter manner
+     * // Same as above, but in a short manner
      * await Movie.has('abc123'); // => true
      *
      * // Check if there is a movie with a certain secondary identifier
@@ -594,7 +594,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Loads some attributes of the current storable component instance (and possibly, some of its related components) from the store.
+     * Loads some attributes of the current storable component instance (and possibly, some of its referenced components) from the store.
      *
      * @param [attributeSelector] An [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the attributes to be loaded (default: `true`, which means that all the attributes will be loaded).
      * @param [options.reload] A boolean specifying whether a component that has already been loaded should be loaded again from the store (default: `false`). Most of the time you will leave this option off to take advantage of the cache.
@@ -611,7 +611,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
      * await movie.load({tags: true, rating: true});
      *
      * // Load some attributes of the movie's director
-     * // (which can be a related component)
      * await movie.load({director: {fullName: true}});
      *
      * // Since the movie's rating has already been loaded,
@@ -1080,7 +1079,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Finds some storable component instances matching the specified query in the store, and load all or some of their attributes (and possibly, load some of their related components as well).
+     * Finds some storable component instances matching the specified query in the store, and load all or some of their attributes (and possibly, load some of their referenced components as well).
      *
      * > This method uses the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method under the hood to load the components' attributes. So if you want to expose the [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method to the frontend, you will typically have to expose the [`load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) method as well.
      *
@@ -1105,7 +1104,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
      * await Movie.find({country: 'Japan', genre: 'drama'});
      *
      * // Find the Tarantino's movies
-     * const tarantino = await Director.get({slug: 'quentin-tarantino'})
+     * const tarantino = await Director.get({slug: 'quentin-tarantino'});
      * await Movie.find({director: tarantino});
      *
      * // Find the movies released after 2010
