@@ -155,14 +155,98 @@ type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | un
  * }
  * ```
  *
- * The [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) and [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorators allows you to get the full power of Liaison, such as attribute type checking at runtime and remote method invocation.
+ * The [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) and [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorators allows you to get the full power of Liaison, such as attribute type checking, or remote method invocation.
  *
- * Once you have defined a component, you can use it as any JS/TS class :
+ * Once you have defined a component, you can use it as any JavaScript class:
  *
  * ```
  * const movie = new Movie({title: 'Inception'});
  *
  * movie.play(); // => 'Playing Inception...'
+ * ```
+ *
+ * #### Nesting Components
+ *
+ * Components can be nested either by embedding or by referencing.
+ *
+ * ##### Embedding Components
+ *
+ * Use the [`EmbeddedComponent`](https://liaison.dev/docs/v1/reference/embedded-component) class to embed a component into another component. An embedded component is strongly attached to the parent component that owns it, and it cannot "live" by itself like a regular component.
+ *
+ * Here are some characteristics of an embedded component:
+ *
+ * - An embedded component has one parent only, and therefore cannot be embedded in more than one component.
+ * - When the parent of an embedded component is [validated](https://liaison.dev/docs/v1/reference/validator), the embedded component is validated as well.
+ * - When the parent of an embedded component is loaded, saved, or deleted (using a [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storage-operations) method), the embedded component is loaded, saved, or deleted as well.
+ *
+ * See the [`EmbeddedComponent`](https://liaison.dev/docs/v1/reference/embedded-component) class for an example of use.
+ *
+ * ##### Referencing Components
+ *
+ * Any non-embedded component can be referenced by another component. Contrary to an embedded component, a referenced component is an independent entity that can "live" by itself. So a referenced component behaves like a regular JavaScript object that is referenced by another object.
+ *
+ * Here are some characteristics of a referenced component:
+ *
+ * - A referenced component can be referenced by any number of components.
+ * - When a component holding a reference to another component is [validated](https://liaison.dev/docs/v1/reference/validator), the referenced component is considered as an independent entity, and is therefore not automatically validated.
+ * - When a component holding a reference to another component is loaded, saved, or deleted (using a [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storage-operations) method), the referenced component can be loaded in the same operation, but it has to be saved or deleted independently.
+ *
+ * For example, let's say we have a `Director` component defined as follows:
+ *
+ * ```
+ * // JS
+ *
+ * class Director extends Component {
+ *   ﹫attribute('string') fullName;
+ * }
+ * ```
+ *
+ * ```
+ * // TS
+ *
+ * class Director extends Component {
+ *   ﹫attribute('string') fullName!: string;
+ * }
+ * ```
+ *
+ * Next, we can add an attribute to the `Movie` component to store a reference to a `Director`:
+ *
+ * ```
+ * // JS
+ *
+ * class Movie extends Component {
+ *   ﹫provide() static Director = Director;
+ *
+ *   // ...
+ *
+ *   ﹫attribute('Director') director;
+ * }
+ * ```
+ *
+ * ```
+ * // TS
+ *
+ * class Movie extends Component {
+ *   ﹫provide() static Director = Director;
+ *
+ *   // ...
+ *
+ *   ﹫attribute('Director') director!: Director;
+ * }
+ * ```
+ *
+ * > Note that to be able to specify the `'Director'` type for the `director` attribute, you first have to provide the `Director` component to the `Movie` component by using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator.
+ *
+ *  Then, to create a `Movie` with a `Director`, we can do something like:
+ *
+ * ```
+ * const movie = new Movie({
+ *   title: 'Inception',
+ *   director: new Movie.Director({fullName: 'Christopher Nolan'})
+ * });
+ *
+ * movie.title; // => 'Inception'
+ * movie.director.fullName; // => 'Christopher Nolan'
  * ```
  */
 export class Component extends Observable(Object) {

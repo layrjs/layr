@@ -7,6 +7,8 @@ import {Component} from './component';
  *
  * The `EmbeddedComponent` class inherits from the [`Component`](https://liaison.dev/docs/v1/reference/component) class, so you can define and consume an embedded component in the same way you would do with any component.
  *
+ * However, since an embedded component is owned by its parent component, it doesn't behave like a regular component. Head over [here](https://liaison.dev/docs/v1/reference/component#nesting-components) for a broader explanation.
+ *
  * #### Usage
  *
  * Just extend the `EmbeddedComponent` class to define a component that has the ability to be embedded.
@@ -75,7 +77,7 @@ import {Component} from './component';
  * }
  * ```
  *
- * Note that you have to make the `MovieDetails` component accessible from the `Movie` component by using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator. This way, the `MovieDetails` component can be later referred by its name when you define the `details` attribute using the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+ * > Note that you have to make the `MovieDetails` component accessible from the `Movie` component by using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator. This way, the `MovieDetails` component can be later referred by its name when you define the `details` attribute using the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
  *
  * Finally, the `Movie` component can be instantiated like this:
  *

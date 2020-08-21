@@ -58,7 +58,7 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
 /**
  * *Inherits from [`Property`](https://liaison.dev/docs/v1/reference/property) and [`Observable`](https://liaison.dev/docs/v1/reference/observable).*
  *
- * An `Attribute` represents an attribute of a [Component](https://liaison.dev/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as type checking at runtime, validation, or serialization.
+ * An `Attribute` represents an attribute of a [Component](https://liaison.dev/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as runtime type checking, validation, or serialization.
  *
  * #### Usage
  *
@@ -120,7 +120,7 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
  * And you can take profit of some extra features:
  *
  * ```
- * // Type checking at runtime
+ * // Runtime type checking
  * movie.title = 123; // Error
  * movie.title = undefined; // Error
  *
