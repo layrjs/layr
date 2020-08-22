@@ -48,109 +48,127 @@
             "../packages/component/src/deserialization.ts",
             "../packages/component/src/decorators.ts",
             "../packages/component/src/utilities.ts"
-          ]
+          ],
+          "category": "Basics"
         },
         {
           "title": "EmbeddedComponent",
           "slug": "embedded-component",
           "file": "reference/embedded-component.md",
-          "source": "../packages/component/src/embedded-component.ts"
+          "source": "../packages/component/src/embedded-component.ts",
+          "category": "Basics"
         },
         {
           "title": "Property",
           "slug": "property",
           "file": "reference/property.md",
-          "source": "../packages/component/src/properties/property.ts"
+          "source": "../packages/component/src/properties/property.ts",
+          "category": "Basics"
         },
         {
           "title": "Attribute",
           "slug": "attribute",
           "file": "reference/attribute.md",
-          "source": "../packages/component/src/properties/attribute.ts"
-        },
-        {
-          "title": "AttributeSelector",
-          "slug": "attribute-selector",
-          "file": "reference/attribute-selector.md",
-          "source": "../packages/component/src/properties/attribute-selector.ts"
+          "source": "../packages/component/src/properties/attribute.ts",
+          "category": "Basics"
         },
         {
           "title": "IdentifierAttribute",
           "slug": "identifier-attribute",
           "file": "reference/identifier-attribute.md",
-          "source": "../packages/component/src/properties/identifier-attribute.ts"
+          "source": "../packages/component/src/properties/identifier-attribute.ts",
+          "category": "Basics"
         },
         {
           "title": "PrimaryIdentifierAttribute",
           "slug": "primary-identifier-attribute",
           "file": "reference/primary-identifier-attribute.md",
-          "source": "../packages/component/src/properties/primary-identifier-attribute.ts"
+          "source": "../packages/component/src/properties/primary-identifier-attribute.ts",
+          "category": "Basics"
         },
         {
           "title": "SecondaryIdentifierAttribute",
           "slug": "secondary-identifier-attribute",
           "file": "reference/secondary-identifier-attribute.md",
-          "source": "../packages/component/src/properties/secondary-identifier-attribute.ts"
-        },
-        {
-          "title": "IdentityMap",
-          "slug": "identity-map",
-          "file": "reference/identity-map.md",
-          "source": "../packages/component/src/identity-map.ts"
-        },
-        {
-          "title": "ValueType",
-          "slug": "value-type",
-          "file": "reference/value-type.md",
-          "source": "../packages/component/src/properties/value-types/value-type.ts"
-        },
-        {
-          "title": "Validator",
-          "slug": "validator",
-          "file": "reference/validator.md",
-          "source": "../packages/component/src/validation/validator.ts"
+          "source": "../packages/component/src/properties/secondary-identifier-attribute.ts",
+          "category": "Basics"
         },
         {
           "title": "Method",
           "slug": "method",
           "file": "reference/method.md",
-          "source": "../packages/component/src/properties/method.ts"
+          "source": "../packages/component/src/properties/method.ts",
+          "category": "Basics"
+        },
+        {
+          "title": "ValueType",
+          "slug": "value-type",
+          "file": "reference/value-type.md",
+          "source": "../packages/component/src/properties/value-types/value-type.ts",
+          "category": "Basics"
+        },
+        {
+          "title": "Validator",
+          "slug": "validator",
+          "file": "reference/validator.md",
+          "source": "../packages/component/src/validation/validator.ts",
+          "category": "Basics"
+        },
+        {
+          "title": "AttributeSelector",
+          "slug": "attribute-selector",
+          "file": "reference/attribute-selector.md",
+          "source": "../packages/component/src/properties/attribute-selector.ts",
+          "category": "Basics"
+        },
+        {
+          "title": "IdentityMap",
+          "slug": "identity-map",
+          "file": "reference/identity-map.md",
+          "source": "../packages/component/src/identity-map.ts",
+          "category": "Basics"
         },
         {
           "title": "ComponentClient",
           "slug": "component-client",
           "file": "reference/component-client.md",
-          "source": "../packages/component-client/src/component-client.ts"
+          "source": "../packages/component-client/src/component-client.ts",
+          "category": "Communication"
         },
         {
           "title": "ComponentServer",
           "slug": "component-server",
           "file": "reference/component-server.md",
-          "source": "../packages/component-server/src/component-server.ts"
+          "source": "../packages/component-server/src/component-server.ts",
+          "category": "Communication"
         },
         {
           "title": "ComponentHTTPClient",
           "slug": "component-http-client",
           "file": "reference/component-http-client.md",
-          "source": "../packages/component-http-client/src/component-http-client.ts"
+          "source": "../packages/component-http-client/src/component-http-client.ts",
+          "category": "Communication"
         },
         {
           "title": "ComponentHTTPServer",
           "slug": "component-http-server",
           "file": "reference/component-http-server.md",
-          "source": "../packages/component-http-server/src/component-http-server.ts"
+          "source": "../packages/component-http-server/src/component-http-server.ts",
+          "category": "Communication"
         },
         {
           "title": "component-express-middleware",
           "slug": "component-express-middleware",
           "file": "reference/component-express-middleware.md",
-          "source": "../packages/component-express-middleware/src/component-express-middleware.ts"
+          "source": "../packages/component-express-middleware/src/component-express-middleware.ts",
+          "category": "Communication"
         },
         {
           "title": "component-koa-middleware",
           "slug": "component-koa-middleware",
           "file": "reference/component-koa-middleware.md",
-          "source": "../packages/component-koa-middleware/src/component-koa-middleware.ts"
+          "source": "../packages/component-koa-middleware/src/component-koa-middleware.ts",
+          "category": "Communication"
         },
         {
           "title": "Storable()",
@@ -159,13 +177,15 @@
           "source": [
             "../packages/storable/src/storable.ts",
             "../packages/storable/src/utilities.ts"
-          ]
+          ],
+          "category": "Storability"
         },
         {
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",
-          "source": "../packages/abstract-store/src/query.ts"
+          "source": "../packages/abstract-store/src/query.ts",
+          "category": "Storability"
         }
       ]
     }

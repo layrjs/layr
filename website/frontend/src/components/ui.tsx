@@ -71,7 +71,7 @@ export class UI extends Component {
           borderColor: this.colors.blueGrey500
         },
         small: {
-          fontSize: '80%',
+          fontSize: '85%',
           lineHeight: 1.3,
           borderRadius: '.2rem'
         },

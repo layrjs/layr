@@ -26,8 +26,14 @@ type Chapter = {
   slug: string;
   file: string;
   content: string;
+  category: string | undefined;
   path: string[];
   nextChapter?: Chapter;
+};
+
+type Category = {
+  name: string | undefined;
+  chapters: Chapter[];
 };
 
 export class Docs extends Routable(Component) {
@@ -122,18 +128,34 @@ export class Docs extends Routable(Component) {
     const contents = this.getContents();
 
     const bookMenuStyle = css({...UI.styles.unstyledList, ...UI.styles.noMargins});
-    const bookMenuItemStyle = css({marginTop: 15});
-    const bookMenuItemTitleStyle = css({color: theme.muted.textColor, fontWeight: 600});
+    const bookMenuItemStyle = css({marginTop: '1rem'});
+    const bookMenuItemTitleStyle = css({
+      marginBottom: '-.25rem',
+      fontSize: '1.25rem',
+      fontWeight: 600,
+      color: theme.muted.textColor
+    });
+
+    const categoryMenuStyle = css({...UI.styles.unstyledList, ...UI.styles.noMargins});
+    const categoryMenuItemStyle = css({marginTop: '.75rem'});
+    const categoryMenuItemTitleStyle = css({
+      fontSize: theme.small.fontSize,
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      letterSpacing: 1
+    });
+
     const chapterMenuStyle = css({
       ...UI.styles.unstyledList,
       ...UI.styles.noMargins,
-      marginLeft: 15
+      marginTop: '.2rem'
     });
     const chapterMenuItemStyle = css({
       marginTop: 0,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
-      textOverflow: 'ellipsis'
+      textOverflow: 'ellipsis',
+      color: theme.link.primaryColor // Fixes the color of the ellipsis
     });
 
     return (
@@ -142,23 +164,40 @@ export class Docs extends Routable(Component) {
           <this.Options />
         </div>
         <ul css={bookMenuStyle}>
-          {contents.books.map((book) => (
-            <li key={book.slug} css={bookMenuItemStyle}>
-              <span css={bookMenuItemTitleStyle}>{book.title}</span>
-              <ul css={chapterMenuStyle}>
-                {book.chapters.map((chapter) => (
-                  <li key={chapter.slug} css={chapterMenuItemStyle}>
-                    <this.Main.Link
-                      params={{path: chapter.path, version, language}}
-                      activeStyle={{color: theme.highlighted.textColor}}
-                    >
-                      {chapter.title}
-                    </this.Main.Link>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
+          {contents.books.map((book) => {
+            const categories = getBookCategories(book);
+
+            return (
+              <li key={book.slug} css={bookMenuItemStyle}>
+                <div css={bookMenuItemTitleStyle}>{book.title}</div>
+                <ul css={categoryMenuStyle}>
+                  {categories.map((category) => {
+                    return (
+                      <li key={category.name || 'uncategorized'} css={categoryMenuItemStyle}>
+                        {category.name && (
+                          <div css={categoryMenuItemTitleStyle}>{category.name}</div>
+                        )}
+                        <ul css={chapterMenuStyle}>
+                          {category.chapters.map((chapter) => {
+                            return (
+                              <li key={chapter.slug} css={chapterMenuItemStyle}>
+                                <this.Main.Link
+                                  params={{path: chapter.path, version, language}}
+                                  activeStyle={{color: theme.link.highlighted.primaryColor}}
+                                >
+                                  {chapter.title}
+                                </this.Main.Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     );
@@ -393,4 +432,18 @@ export class Docs extends Routable(Component) {
 
     return language;
   }
+}
+
+function getBookCategories(book: Book) {
+  const categories: Category[] = [];
+
+  for (const chapter of book.chapters) {
+    if (categories.length === 0 || categories[categories.length - 1].name !== chapter.category) {
+      categories.push({name: chapter.category, chapters: []});
+    }
+
+    categories[categories.length - 1].chapters.push(chapter);
+  }
+
+  return categories;
 }
