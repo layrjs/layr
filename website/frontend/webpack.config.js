@@ -83,6 +83,7 @@ module.exports = (env, argv) => {
     ...(isProduction
       ? {
           optimization: {
+            // minimize: false
             minimizer: [new TerserPlugin({terserOptions: {keep_classnames: true}})]
           }
         }
