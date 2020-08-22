@@ -17,7 +17,13 @@ export class Root extends Component {
       return null;
     }
 
-    const content = router.callCurrentRoute({fallback: this.Common.RouteNotFound});
+    const content = router.callCurrentRoute({
+      fallback: () => (
+        <this.Common.Layout>
+          <this.Common.RouteNotFound />
+        </this.Common.Layout>
+      )
+    });
 
     return <this.UI.Root>{content}</this.UI.Root>;
   }

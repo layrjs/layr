@@ -10,6 +10,8 @@ import type {Blog} from './blog';
 import type {UI} from './ui';
 // @ts-ignore
 import liaisonLogo from '../assets/liaison-logo-dark-mode-20191111.immutable.svg';
+// @ts-ignore
+import brokenHeart from '../assets/broken-heart-20200822.immutable.svg';
 
 export class Common extends Component {
   @consume() static Home: typeof Home;
@@ -159,7 +161,20 @@ export class Common extends Component {
   }
 
   @view() static RouteNotFound() {
-    return <div>Sorry, there is nothing here.</div>;
+    return (
+      <div
+        css={{
+          width: '100%',
+          padding: '6rem 15px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}
+      >
+        <img src={brokenHeart} alt="Liaison" css={{width: 150}} />
+        <div css={{marginTop: '2rem'}}>Sorry, there is nothing here.</div>
+      </div>
+    );
   }
 
   @view() static LoadingSpinner() {

@@ -1,6 +1,6 @@
 import {Component, consume} from '@liaison/component';
 import {Routable, route} from '@liaison/routable';
-import {Fragment, useCallback} from 'react';
+import React, {Fragment, useCallback} from 'react';
 import {view, useAsyncMemo, useAsyncCall} from '@liaison/react-integration';
 import {jsx, css} from '@emotion/core';
 import isEqual from 'lodash/isEqual';
@@ -81,23 +81,25 @@ export class Docs extends Routable(Component) {
     const resolvedVersion = this.resolveVersion(version);
     const resolvedLanguage = this.resolveLanguage(language);
 
-    if (
-      resolvedPath === undefined ||
-      resolvedVersion === undefined ||
-      resolvedLanguage === undefined
-    ) {
-      return <Common.RouteNotFound />;
+    if (resolvedVersion === undefined || resolvedLanguage === undefined) {
+      return (
+        <this.Layout>
+          <Common.RouteNotFound />
+        </this.Layout>
+      );
     }
 
-    const resolvedParams = {
-      path: resolvedPath,
-      version: resolvedVersion,
-      language: resolvedLanguage
-    };
+    if (resolvedPath !== undefined) {
+      const resolvedParams = {
+        path: resolvedPath,
+        version: resolvedVersion,
+        language: resolvedLanguage
+      };
 
-    if (!isEqual({path, version, language}, resolvedParams)) {
-      const hash = this.getRouter().getCurrentHash();
-      this.Main.redirect(resolvedParams, {hash, silent: true});
+      if (!isEqual({path, version, language}, resolvedParams)) {
+        const hash = this.getRouter().getCurrentHash();
+        this.Main.redirect(resolvedParams, {hash, silent: true});
+      }
     }
 
     return (
@@ -107,11 +109,17 @@ export class Docs extends Routable(Component) {
             <this.Contents />
           </div>
 
-          <hr css={UI.responsive({display: ['none', , 'block'], width: '100%'})} />
+          {resolvedPath !== undefined ? (
+            <React.Fragment>
+              <hr css={UI.responsive({display: ['none', , 'block'], width: '100%'})} />
 
-          <div css={{flexGrow: 1, flexBasis: 640}}>
-            <this.Chapter />
-          </div>
+              <div css={{flexGrow: 1, flexBasis: 640}}>
+                <this.Chapter />
+              </div>
+            </React.Fragment>
+          ) : (
+            <Common.RouteNotFound />
+          )}
         </div>
       </this.Layout>
     );

@@ -31,7 +31,7 @@ export const Article = (Base: typeof BackendArticle) => {
       slug: string;
       children: (article: Article) => JSX.Element;
     }) {
-      const {Common} = this;
+      const {Blog, Common} = this;
 
       const [article, isLoading, loadingError, retryLoading] = useAsyncMemo(async () => {
         try {
@@ -57,7 +57,15 @@ export const Article = (Base: typeof BackendArticle) => {
       }
 
       if (loadingError) {
-        return <Common.ErrorMessage error={loadingError} onRetry={retryLoading} />;
+        return (
+          <Blog.Layout>
+            {loadingError.code === 'COMPONENT_IS_MISSING_FROM_STORE' ? (
+              <Common.RouteNotFound />
+            ) : (
+              <Common.ErrorMessage error={loadingError} onRetry={retryLoading} />
+            )}
+          </Blog.Layout>
+        );
       }
 
       return children(article!);
