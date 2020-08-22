@@ -35,12 +35,12 @@ export class Common extends Component {
         <UI.FullHeight css={{display: 'flex', flexDirection: 'column'}}>
           <this.Header />
           <div
-            css={{
+            css={UI.responsive({
               flexGrow: 1,
               display: 'flex',
-              padding: '1.5rem',
+              padding: ['1.5rem', , '1.5rem 15px'],
               justifyContent: 'center'
-            }}
+            })}
           >
             <div css={{flexBasis: width}}>{children}</div>
           </div>
@@ -64,13 +64,13 @@ export class Common extends Component {
 
     return (
       <header
-        css={{
+        css={UI.responsive({
           ...UI.styles.centeredPage,
           width: '100%',
           display: 'flex',
           alignItems: 'flex-end',
-          padding: '1.5rem 1.5rem 0 1.5rem'
-        }}
+          padding: ['1.5rem 1.5rem 0 1.5rem', , '1.5rem 15px 0 15px']
+        })}
       >
         <Home.Main.Link>
           <img src={liaisonLogo} alt="Liaison" css={{width: 80}} />
