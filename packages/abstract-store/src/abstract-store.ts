@@ -249,10 +249,13 @@ export abstract class AbstractStore {
         return undefined;
       }
 
-      throw new Error(
-        `Cannot load a document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
-          storable
-        ).describeIdentifierDescriptor(identifierDescriptor)})`
+      throw Object.assign(
+        new Error(
+          `Cannot load a component that is missing from the store (${storable.describeComponent()}, ${ensureComponentClass(
+            storable
+          ).describeIdentifierDescriptor(identifierDescriptor)})`
+        ),
+        {code: 'COMPONENT_IS_MISSING_FROM_STORE', expose: true}
       );
     });
   }
@@ -304,18 +307,24 @@ export abstract class AbstractStore {
 
       if (!wasSaved) {
         if (throwIfMissing) {
-          throw new Error(
-            `Cannot save a non-new document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
-              storable
-            ).describeIdentifierDescriptor(identifierDescriptor)})`
+          throw Object.assign(
+            new Error(
+              `Cannot save a non-new component that is missing from the store (${storable.describeComponent()}, ${ensureComponentClass(
+                storable
+              ).describeIdentifierDescriptor(identifierDescriptor)})`
+            ),
+            {code: 'COMPONENT_IS_MISSING_FROM_STORE', expose: true}
           );
         }
 
         if (throwIfExists) {
-          throw new Error(
-            `Cannot save a new document that already exists in the store (collection: '${collectionName}', ${ensureComponentClass(
-              storable
-            ).describeIdentifierDescriptor(identifierDescriptor)})`
+          throw Object.assign(
+            new Error(
+              `Cannot save a new component that already exists in the store (${storable.describeComponent()}, ${ensureComponentClass(
+                storable
+              ).describeIdentifierDescriptor(identifierDescriptor)})`
+            ),
+            {code: 'COMPONENT_ALREADY_EXISTS_IN_STORE', expose: true}
           );
         }
       }
@@ -344,10 +353,13 @@ export abstract class AbstractStore {
 
       if (!wasDeleted) {
         if (throwIfMissing) {
-          throw new Error(
-            `Cannot delete a document that is missing from the store (collection: '${collectionName}', ${ensureComponentClass(
-              storable
-            ).describeIdentifierDescriptor(identifierDescriptor)})`
+          throw Object.assign(
+            new Error(
+              `Cannot delete a component that is missing from the store (${storable.describeComponent()}, ${ensureComponentClass(
+                storable
+              ).describeIdentifierDescriptor(identifierDescriptor)})`
+            ),
+            {code: 'COMPONENT_IS_MISSING_FROM_STORE', expose: true}
           );
         }
       }

@@ -375,7 +375,7 @@ describe('Storable', () => {
           expect(user.serialize()).toStrictEqual({__component: 'User', __new: false, id: 'user1'});
 
           await expect(User.fork().get({id: 'user2'})).rejects.toThrow(
-            "Cannot load a document that is missing from the store (collection: 'User', id: 'user2')"
+            "Cannot load a component that is missing from the store (component: 'User', id: 'user2')"
           );
 
           expect(
@@ -399,7 +399,7 @@ describe('Storable', () => {
           });
 
           await expect(User.fork().get({email: '2@user.com'})).rejects.toThrow(
-            "Cannot load a document that is missing from the store (collection: 'User', email: '2@user.com')"
+            "Cannot load a component that is missing from the store (component: 'User', email: '2@user.com')"
           );
 
           user = await User.fork().get({reference: 1}, {fullName: true});
@@ -413,7 +413,7 @@ describe('Storable', () => {
           });
 
           await expect(User.fork().get({reference: 2})).rejects.toThrow(
-            "Cannot load a document that is missing from the store (collection: 'User', reference: 2)"
+            "Cannot load a component that is missing from the store (component: 'User', reference: 2)"
           );
 
           await expect(User.fork().get({fullName: 'User 1'})).rejects.toThrow(
@@ -534,7 +534,7 @@ describe('Storable', () => {
           user = User.fork().create({id: 'user2'}, {isNew: false});
 
           await expect(user.load({})).rejects.toThrow(
-            "Cannot load a document that is missing from the store (collection: 'User', id: 'user2'"
+            "Cannot load a component that is missing from the store (component: 'User', id: 'user2'"
           );
           expect(await user.load({}, {throwIfMissing: false})).toBeUndefined();
 
@@ -1035,7 +1035,7 @@ describe('Storable', () => {
 
           expect(await user.save(true, {throwIfMissing: false})).toBe(undefined);
           await expect(user.save()).rejects.toThrow(
-            "Cannot save a non-new document that is missing from the store (collection: 'User', id: 'user3')"
+            "Cannot save a non-new component that is missing from the store (component: 'User', id: 'user3')"
           );
 
           // ------
@@ -1049,7 +1049,7 @@ describe('Storable', () => {
 
           expect(await user.save(true, {throwIfExists: false})).toBe(undefined);
           await expect(user.save()).rejects.toThrow(
-            "Cannot save a new document that already exists in the store (collection: 'User', id: 'user1')"
+            "Cannot save a new component that already exists in the store (component: 'User', id: 'user1')"
           );
 
           // ------
@@ -1077,7 +1077,7 @@ describe('Storable', () => {
           expect(await user.delete()).toBe(user);
 
           await expect(user.delete()).rejects.toThrow(
-            "Cannot delete a document that is missing from the store (collection: 'User', id: 'user1'"
+            "Cannot delete a component that is missing from the store (component: 'User', id: 'user1'"
           );
 
           expect(await user.delete({throwIfMissing: false})).toBeUndefined();

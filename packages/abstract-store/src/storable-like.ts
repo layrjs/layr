@@ -10,6 +10,8 @@ export declare class StorableLike {
 
   static describeComponent: () => string;
 
+  describeComponent: () => string;
+
   static getStore: () => AbstractStore;
 
   static hasStore: () => boolean;
