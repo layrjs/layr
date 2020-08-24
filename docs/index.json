@@ -181,6 +181,20 @@
           "category": "Storability"
         },
         {
+          "title": "StorableProperty",
+          "slug": "storable-property",
+          "file": "reference/storable-property.md",
+          "source": ["../packages/storable/src/properties/storable-property.ts"],
+          "category": "Storability"
+        },
+        {
+          "title": "StorableAttribute",
+          "slug": "storable-attribute",
+          "file": "reference/storable-attribute.md",
+          "source": ["../packages/storable/src/properties/storable-attribute.ts"],
+          "category": "Storability"
+        },
+        {
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",

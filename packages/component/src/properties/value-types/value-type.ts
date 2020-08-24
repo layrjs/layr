@@ -222,7 +222,7 @@ export class ValueType {
   }
 
   /**
-   * @instancemethod getItemType
+   * @method getItemType
    *
    * In case the value type is an array, returns the value type of the items it contains.
    *
