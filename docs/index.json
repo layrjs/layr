@@ -213,6 +213,13 @@
           "category": "Storability"
         },
         {
+          "title": "StorableMethod",
+          "slug": "storable-method",
+          "file": "reference/storable-method.md",
+          "source": ["../packages/storable/src/properties/storable-method.ts"],
+          "category": "Storability"
+        },
+        {
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",
