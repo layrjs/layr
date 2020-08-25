@@ -1,6 +1,6 @@
 {
   "name": "@liaison/browser-router",
-  "version": "0.5.50",
+  "version": "0.5.52",
   "description": "A Liaison router for the browser",
   "keywords": [
     "liaison",
@@ -26,15 +26,15 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-router": "^0.5.38",
+    "@liaison/abstract-router": "^0.5.40",
     "core-helpers": "^0.1.26",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.20",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.23",
     "@mvila/tsconfig": "^1.0.4",
-    "@types/lodash": "^4.14.159",
-    "@types/react": "^16.9.45"
+    "@types/lodash": "^4.14.160",
+    "@types/react": "^16.9.47"
   }
 }

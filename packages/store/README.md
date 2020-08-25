@@ -1,11 +1,11 @@
-# @liaison/abstract-store
+# @liaison/store
 
 A base class for implementing Liaison stores.
 
 ## Installation
 
 ```
-npm install @liaison/abstract-store
+npm install @liaison/store
 ```
 
 ## License

@@ -1,5 +1,5 @@
 import {Component, Property, PropertyOptions} from '@liaison/component';
-import {Query} from '@liaison/abstract-store';
+import {Query} from '@liaison/store';
 import {PromiseLikeable, Constructor} from 'core-helpers';
 
 import {assertIsStorableClassOrInstance} from '../utilities';

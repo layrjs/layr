@@ -1,6 +1,6 @@
 {
   "name": "@liaison/mongodb-store",
-  "version": "0.5.34",
+  "version": "0.5.38",
   "description": "A Liaison store for MongoDB",
   "keywords": [
     "liaison",
@@ -28,8 +28,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-store": "^0.5.30",
-    "@liaison/component": "^0.5.72",
+    "@liaison/component": "^0.5.74",
+    "@liaison/store": "^0.5.33",
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
     "lodash": "^4.17.20",
@@ -40,7 +40,7 @@
     "@mvila/dev-tools": "^1.0.23",
     "@mvila/tsconfig": "^1.0.4",
     "@types/debug": "^4.1.5",
-    "@types/lodash": "^4.14.159",
+    "@types/lodash": "^4.14.160",
     "@types/mongodb": "^3.5.26"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/abstract-router",
-  "version": "0.5.38",
+  "version": "0.5.40",
   "description": "A base class for implementing Liaison routers",
   "keywords": [
     "liaison",
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^0.5.71",
+    "@liaison/component": "^0.5.74",
     "@liaison/observable": "^0.5.8",
     "core-helpers": "^0.1.26",
     "qs": "^6.9.4",

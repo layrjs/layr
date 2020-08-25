@@ -1,9 +1,9 @@
 import {Component, provide} from '@liaison/component';
 import {Storable} from '@liaison/storable';
-import {AbstractStore, isStoreInstance} from '@liaison/abstract-store';
+import {Store, isStoreInstance} from '@liaison/store';
 
-describe('AbstractStore', () => {
-  class MockStore extends AbstractStore {
+describe('Store', () => {
+  class MockStore extends Store {
     async createDocument() {
       return false;
     }

@@ -1,5 +1,5 @@
 import {
-  AbstractStore,
+  Store,
   CreateDocumentParams,
   ReadDocumentParams,
   UpdateDocumentParams,
@@ -11,7 +11,7 @@ import {
   Path,
   Operator,
   SortDescriptor
-} from '@liaison/abstract-store';
+} from '@liaison/store';
 import {NormalizedIdentifierDescriptor} from '@liaison/component';
 import pull from 'lodash/pull';
 import get from 'lodash/get';
@@ -23,7 +23,7 @@ type Collection = Document[];
 
 type CollectionMap = {[name: string]: Collection};
 
-export class MemoryStore extends AbstractStore {
+export class MemoryStore extends Store {
   constructor(options: {initialCollections?: CollectionMap} = {}) {
     const {initialCollections = {}, ...otherOptions} = options;
 

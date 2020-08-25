@@ -1,7 +1,7 @@
 import type {IdentifierDescriptor} from '@liaison/component';
 import {getTypeOf} from 'core-helpers';
 
-import type {AbstractStore} from './abstract-store';
+import type {Store} from './store';
 
 export declare class StorableLike {
   static getComponentName: () => string;
@@ -12,11 +12,11 @@ export declare class StorableLike {
 
   describeComponent: () => string;
 
-  static getStore: () => AbstractStore;
+  static getStore: () => Store;
 
   static hasStore: () => boolean;
 
-  static __setStore: (store: AbstractStore) => void;
+  static __setStore: (store: Store) => void;
 }
 
 export function isStorableLikeClass(value: any): value is typeof StorableLike {

@@ -84,7 +84,7 @@ export type TraceEntry = {
   error?: any;
 };
 
-export abstract class AbstractStore {
+export abstract class Store {
   constructor(options = {}) {
     assertNoUnknownOptions(options);
   }
@@ -658,7 +658,7 @@ export abstract class AbstractStore {
 
   // === Utilities ===
 
-  static isStore(value: any): value is AbstractStore {
+  static isStore(value: any): value is Store {
     return isStoreInstance(value);
   }
 }

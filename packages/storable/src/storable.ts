@@ -21,7 +21,7 @@ import {
   method,
   serialize
 } from '@liaison/component';
-import type {AbstractStore, Query, SortDescriptor} from '@liaison/abstract-store';
+import type {Store, Query, SortDescriptor} from '@liaison/store';
 import {hasOwnProperty, isPrototypeOf, isPlainObject, getTypeOf, Constructor} from 'core-helpers';
 import mapKeys from 'lodash/mapKeys';
 
@@ -157,7 +157,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
     // === Store registration ===
 
-    static __store: AbstractStore | undefined;
+    static __store: Store | undefined;
 
     /**
      * Returns the store in which the storable component is registered. If the storable component is not registered in a store, an error is thrown.
@@ -199,7 +199,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return this.__store !== undefined;
     }
 
-    static __setStore(store: AbstractStore) {
+    static __setStore(store: Store) {
       Object.defineProperty(this, '__store', {value: store});
     }
 

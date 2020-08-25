@@ -1,5 +1,5 @@
 import {
-  AbstractStore,
+  Store,
   StorableLike,
   CreateDocumentParams,
   ReadDocumentParams,
@@ -15,7 +15,7 @@ import {
   Operand,
   SortDescriptor,
   SortDirection
-} from '@liaison/abstract-store';
+} from '@liaison/store';
 import {ensureComponentInstance} from '@liaison/component';
 import {MongoClient, Db} from 'mongodb';
 import isEmpty from 'lodash/isEmpty';
@@ -30,7 +30,7 @@ const debug = debugModule('liaison:mongodb-store');
 
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 
-export class MongoDBStore extends AbstractStore {
+export class MongoDBStore extends Store {
   private _connectionString: string;
 
   constructor(connectionString: string, options = {}) {

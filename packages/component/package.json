@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "0.5.72",
+  "version": "0.5.74",
   "description": "The base class of all your components",
   "keywords": [
     "liaison",
@@ -31,7 +31,7 @@
     "@liaison/observable": "^0.5.8",
     "core-helpers": "^0.1.26",
     "cuid": "^2.1.8",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.20",
     "possibly-async": "^0.2.20",
     "simple-cloning": "^0.1.15",
     "simple-forking": "^0.1.11",
@@ -42,7 +42,7 @@
     "@mvila/dev-tools": "^1.0.23",
     "@mvila/tsconfig": "^1.0.4",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.159",
+    "@types/lodash": "^4.14.160",
     "sleep-promise": "^8.0.1"
   }
 }

@@ -224,7 +224,7 @@
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",
-          "source": "../packages/abstract-store/src/query.ts",
+          "source": "../packages/store/src/query.ts",
           "category": "Storability"
         }
       ]
