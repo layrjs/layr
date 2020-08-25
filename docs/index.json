@@ -176,6 +176,7 @@
           "file": "reference/storable.md",
           "source": [
             "../packages/storable/src/storable.ts",
+            "../packages/storable/src/decorators.ts",
             "../packages/storable/src/utilities.ts"
           ],
           "category": "Storability"

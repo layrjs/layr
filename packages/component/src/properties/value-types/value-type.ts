@@ -125,7 +125,7 @@ export type ValueTypeOptions = {
  *
  * ##### Arrays
  *
- * To specify an array type, add `'[]'` after any other types:
+ * To specify an array type, add `'[]'` after any other type:
  *
  * * `'number[]'`: An array of numbers.
  * * `'string[]'`: An array of strings.

@@ -173,6 +173,20 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
   class extends StorablePropertyMixin(Base) {
     _storableMethodBrand!: void;
 
+    /**
+     * @constructor
+     *
+     * Creates a storable method. Typically, instead of using this constructor, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/storable#method-decorator) decorator.
+     *
+     * @param name The name of the method.
+     * @param parent The [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class, prototype, or instance that owns the method.
+     * @param [options] An object specifying any option supported by the constructor of [`Method`](https://liaison.dev/docs/v1/reference/method#constructor) and [`StorableProperty`](https://liaison.dev/docs/v1/reference/storable-property#constructor).
+     *
+     * @returns The [`StorableMethod`](https://liaison.dev/docs/v1/reference/storable-method) instance that was created.
+     *
+     * @category Creation
+     */
+
     static isStorableMethod(value: any): value is StorableMethod {
       return isStorableMethodInstance(value);
     }

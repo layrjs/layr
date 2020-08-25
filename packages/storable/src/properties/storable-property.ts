@@ -25,7 +25,7 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
      * Creates a storable property.
      *
      * @param name The name of the property.
-     * @param parent The [storable component](https://liaison.dev/docs/v1/reference /storable#storable-component-class) class, prototype, or instance that owns the property.
+     * @param parent The [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class, prototype, or instance that owns the property.
      * @param [options.finder] A function specifying a [`Finder`](https://liaison.dev/docs/v1/reference/storable-property#finder-type) for the property.
      * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the property should be exposed to remote access.
      *

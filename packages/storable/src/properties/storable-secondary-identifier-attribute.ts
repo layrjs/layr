@@ -52,4 +52,18 @@ export class StorableSecondaryIdentifierAttribute extends StorableAttributeMixin
   SecondaryIdentifierAttribute
 ) {
   _storableSecondaryIdentifierAttributeBrand!: void;
+
+  /**
+   * @constructor
+   *
+   * Creates a storable secondary identifier attribute. Typically, instead of using this constructor, you would rather use the [`@secondaryIdentifier()`](https://liaison.dev/docs/v1/reference/storable#secondary-identifier-decorator) decorator.
+   *
+   * @param name The name of the attribute.
+   * @param parent The [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) prototype that owns the attribute.
+   * @param [options] An object specifying any option supported by the constructor of [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute#constructor) and [`StorableAttribute`](https://liaison.dev/docs/v1/reference/storable-attribute#constructor).
+   *
+   * @returns The [`StorableSecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/storable-secondary-identifier-attribute) instance that was created.
+   *
+   * @category Creation
+   */
 }

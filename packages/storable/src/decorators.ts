@@ -24,6 +24,17 @@ import {isStorableClassOrInstance, isStorableInstance} from './utilities';
 
 type StorableAttributeDecoratorOptions = Omit<StorableAttributeOptions, 'value' | 'default'>;
 
+/**
+ * Decorates an attribute of a storable component so it can be combined with a [`Loader`](https://liaison.dev/docs/v1/reference/storable-attribute#loader-type), a [`Finder`](https://liaison.dev/docs/v1/reference/storable-property#finder-type), or any kind of [`Hook`](https://liaison.dev/docs/v1/reference/storable-attribute#hook-type).
+ *
+ * @param [valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type#supported-types) that can be stored in the attribute (default: `'any'`).
+ * @param [options] The options to create the [`StorableAttribute`](https://liaison.dev/docs/v1/reference/storable-attribute#constructor).
+ *
+ * @examplelink See an example of use in the [`StorableAttribute`](https://liaison.dev/docs/v1/reference/storable-attribute) class.
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function attribute(
   valueType?: string,
   options?: StorableAttributeDecoratorOptions
@@ -44,6 +55,15 @@ export function attribute(
   );
 }
 
+/**
+ * Decorates an attribute of a component as a [storable primary identifier attribute](https://liaison.dev/docs/v1/reference/storable-primary-identifier-attribute).
+ *
+ * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
+ * @param [options] The options to create the [`StorablePrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/storable-primary-identifier-attribute#constructor).
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function primaryIdentifier(
   valueType?: string,
   options?: StorableAttributeDecoratorOptions
@@ -64,6 +84,15 @@ export function primaryIdentifier(
   );
 }
 
+/**
+ * Decorates an attribute of a component as a [storable secondary identifier attribute](https://liaison.dev/docs/v1/reference/storable-secondary-identifier-attribute).
+ *
+ * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
+ * @param [options] The options to create the [`StorableSecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/storable-secondary-identifier-attribute#constructor).
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function secondaryIdentifier(
   valueType?: string,
   options?: StorableAttributeDecoratorOptions
@@ -84,6 +113,16 @@ export function secondaryIdentifier(
   );
 }
 
+/**
+ * Decorates a method of a storable component so it can be combined with a [`Finder`](https://liaison.dev/docs/v1/reference/storable-property#finder-type).
+ *
+ * @param [options] The options to create the [`StorableMethod`](https://liaison.dev/docs/v1/reference/storable-method#constructor).
+ *
+ * @examplelink See an example of use in the [`StorableMethod`](https://liaison.dev/docs/v1/reference/storable-method) class.
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function method(options: StorableMethodOptions = {}) {
   return createMethodDecorator(
     new Map([
@@ -95,6 +134,16 @@ export function method(options: StorableMethodOptions = {}) {
   );
 }
 
+/**
+ * Decorates a storable attribute with a [`Loader`](https://liaison.dev/docs/v1/reference/storable-attribute#loader-type).
+ *
+ * @param loader A function representing the [`Loader`](https://liaison.dev/docs/v1/reference/storable-attribute#loader-type) of the storable attribute.
+ *
+ * @examplelink See an example of use in the [`StorableAttribute`](https://liaison.dev/docs/v1/reference/storable-attribute) class.
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function loader(loader: StorableAttributeLoader) {
   return function (target: typeof StorableComponent | StorableComponent, name: string) {
     if (!isStorableClassOrInstance(target)) {
@@ -116,6 +165,16 @@ export function loader(loader: StorableAttributeLoader) {
   };
 }
 
+/**
+ * Decorates a storable attribute or method with a [`Finder`](https://liaison.dev/docs/v1/reference/storable-property#finder-type).
+ *
+ * @param finder A function representing the [`Finder`](https://liaison.dev/docs/v1/reference/storable-property#finder-type) of the storable attribute or method.
+ *
+ * @examplelink See an example of use in the [`StorableAttribute`](https://liaison.dev/docs/v1/reference/storable-attribute) and [`StorableMethod`](https://liaison.dev/docs/v1/reference/storable-method) classes.
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function finder(finder: StorablePropertyFinder) {
   return function (target: StorableComponent, name: string) {
     if (!isStorableInstance(target)) {
