@@ -195,6 +195,24 @@
           "category": "Storability"
         },
         {
+          "title": "StorablePrimaryIdentifierAttribute",
+          "slug": "storable-primary-identifier-attribute",
+          "file": "reference/storable-primary-identifier-attribute.md",
+          "source": [
+            "../packages/storable/src/properties/storable-primary-identifier-attribute.ts"
+          ],
+          "category": "Storability"
+        },
+        {
+          "title": "StorableSecondaryIdentifierAttribute",
+          "slug": "storable-secondary-identifier-attribute",
+          "file": "reference/storable-secondary-identifier-attribute.md",
+          "source": [
+            "../packages/storable/src/properties/storable-secondary-identifier-attribute.ts"
+          ],
+          "category": "Storability"
+        },
+        {
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",
