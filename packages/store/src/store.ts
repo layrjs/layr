@@ -84,6 +84,9 @@ export type TraceEntry = {
   error?: any;
 };
 
+/**
+ * An abstract class from which classes such as [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) or [`MemoryStore`](https://liaison.dev/docs/v1/reference/memory-store) are constructed. Unless you build a custom store, you probably won't have to use this class directly.
+ */
 export abstract class Store {
   constructor(options = {}) {
     assertNoUnknownOptions(options);
@@ -93,6 +96,33 @@ export abstract class Store {
 
   _rootComponents = new Set<typeof Component>();
 
+  /**
+   * Registers all the [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class) that are provided (directly or recursively) by the specified root component.
+   *
+   * @param rootComponent A [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+   *
+   * @example
+   * ```
+   * class User extends Storable(Component) {
+   *   // ...
+   * }
+   *
+   * class Movie extends Storable(Component) {
+   *   // ...
+   * }
+   *
+   * class Backend extends Component {
+   *   ﹫provide() static User = User;
+   *   ﹫provide() static Movie = Movie;
+   * }
+   *
+   * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
+   *
+   * store.registerRootComponent(Backend); // User and Movie will be registered
+   * ```
+   *
+   * @category Component Registration
+   */
   registerRootComponent(rootComponent: typeof Component) {
     assertIsComponentClass(rootComponent);
 
@@ -120,6 +150,13 @@ export abstract class Store {
     }
   }
 
+  /**
+   * Gets all the root components that are registered into the store.
+   *
+   * @returns An iterator of [`Component`](https://liaison.dev/docs/v1/reference/component) classes.
+   *
+   * @category Component Registration
+   */
   getRootComponents() {
     return this._rootComponents.values();
   }
@@ -128,6 +165,24 @@ export abstract class Store {
 
   _storables = new Map<string, typeof StorableLike>();
 
+  /**
+   * Gets a [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) that is registered into the store. An error is thrown if there is no storable component with the specified name.
+   *
+   * @param name The name of the storable component to get.
+   *
+   * @returns A [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class.
+   *
+   * @example
+   * ```
+   * // See the definition of `store` in the `registerRootComponent()` example
+   *
+   * store.getStorable('Movie'); // => Movie class
+   * store.getStorable('User'); // => User class
+   * store.getStorable('Film'); // => Error
+   * ```
+   *
+   * @category Component Registration
+   */
   getStorable(name: string) {
     const storable = this._getStorable(name);
 
@@ -138,6 +193,24 @@ export abstract class Store {
     throw new Error(`The storable component '${name}' is not registered in the store`);
   }
 
+  /**
+   * Returns whether a [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) is registered into the store.
+   *
+   * @param name The name of the storable component to check.
+   *
+   * @returns A boolean.
+   *
+   * @example
+   * ```
+   * // See the definition of `store` in the `registerRootComponent()` example
+   *
+   * store.hasStorable('Movie'); // => true
+   * store.hasStorable('User'); // => true
+   * store.hasStorable('Film'); // => false
+   * ```
+   *
+   * @category Component Registration
+   */
   hasStorable(name: string) {
     return this._getStorable(name) !== undefined;
   }
@@ -172,6 +245,25 @@ export abstract class Store {
     return isComponentClassType ? component : component.prototype;
   }
 
+  /**
+   * Registers a specific [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) into the store. Typically, instead of using this method, you would rather use the [`registerRootComponent()`](https://liaison.dev/docs/v1/reference/store#register-root-component-instance-method) method to register multiple storable components at once.
+   *
+   * @param storable The [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class to register.
+   *
+   * @example
+   * ```
+   * class Movie extends Storable(Component) {
+   *   // ...
+   * }
+   *
+   * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
+   *
+   * store.registerStorable(Movie);
+   *
+   * ```
+   *
+   * @category Component Registration
+   */
   registerStorable(storable: typeof StorableLike) {
     assertIsStorableLikeClass(storable);
 
@@ -200,6 +292,13 @@ export abstract class Store {
     this._storables.set(storableName, storable);
   }
 
+  /**
+   * Gets all the [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class) that are registered into the store.
+   *
+   * @returns An iterator of [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) classes.
+   *
+   * @category Component Registration
+   */
   getStorables() {
     return this._storables.values();
   }
