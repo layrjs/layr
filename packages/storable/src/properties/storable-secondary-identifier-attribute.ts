@@ -66,4 +66,28 @@ export class StorableSecondaryIdentifierAttribute extends StorableAttributeMixin
    *
    * @category Creation
    */
+
+  // === Property Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+   *
+   * @category Property Methods
+   */
+
+  // === Attribute Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#value-type) class.
+   *
+   * @category Attribute Methods
+   */
+
+  // === Observability ===
+
+  /**
+   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   *
+   * @category Observability
+   */
 }

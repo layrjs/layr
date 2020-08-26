@@ -104,7 +104,7 @@ import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utili
  *
  * ##### Frontend Usage
  *
- * Typically, you construct a storable component in the frontend by "inheriting" a storable component exposed by the backend. To accomplish that, you create a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client), and then call the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-client#get-component-instance-method) method to construct your frontend component.
+ * Typically, you construct a storable component in the frontend by "inheriting" a storable component exposed by the backend. To accomplish that, you create a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client), and then call the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method to construct your frontend component.
  *
  * **Example:**
  *
@@ -135,6 +135,8 @@ import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utili
  *
  * ### StorableComponent <badge type="primary">class</badge> {#storable-component-class}
  *
+ * *Inherits from [`Component`](https://liaison.dev/docs/v1/reference/component).*
+ *
  * A `StorableComponent` class is constructed by calling the `Storable()` mixin ([see above](https://liaison.dev/docs/v1/reference/storable#storable-mixin)).
  *
  * @mixin
@@ -154,6 +156,14 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
   class Storable extends Base {
     ['constructor']: typeof StorableComponent;
+
+    // === Component Methods ===
+
+    /**
+     * See the methods that are inherited from the [`Component`](https://liaison.dev/docs/v1/reference/component#creation) class.
+     *
+     * @category Component Methods
+     */
 
     // === Store registration ===
 
@@ -1710,6 +1720,14 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         setAttributesOnly: true
       });
     }
+
+    // === Observability ===
+
+    /**
+     * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+     *
+     * @category Observability
+     */
 
     // === Utilities ===
 

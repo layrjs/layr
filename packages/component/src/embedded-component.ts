@@ -92,6 +92,22 @@ import {Component} from './component';
  * ```
  */
 export class EmbeddedComponent extends Component {
+  // === Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Component`](https://liaison.dev/docs/v1/reference/component#creation) class.
+   *
+   * @category Methods
+   */
+
+  // === Observability ===
+
+  /**
+   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   *
+   * @category Observability
+   */
+
   /**
    * Always returns `true`.
    *

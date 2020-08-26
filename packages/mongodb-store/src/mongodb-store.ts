@@ -138,6 +138,8 @@ export class MongoDBStore extends Store {
     this._connectionString = connectionString;
   }
 
+  // === Component Registration ===
+
   /**
    * See the methods that are inherited from the [`Store`](https://liaison.dev/docs/v1/reference/store#component-registration) class.
    *

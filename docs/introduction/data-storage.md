@@ -249,7 +249,7 @@ import type {Message as MessageType} from './backend';
 })();
 ```
 
-If you've followed the ["Hello, World!"](https://liaison.dev/docs/v1/introduction/hello-world) guide, you should be familiar with the beginning of the code which creates a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) and then calls the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-client#get-component-instance-method) method to construct the `Message` component. The only difference is that, since the `Message` component is using the [`Storable()`](https://liaison.dev/docs/v1/reference/storable) mixin, we have to pass this mixin to the `ComponentHTTPClient` constructor.
+If you've followed the ["Hello, World!"](https://liaison.dev/docs/v1/introduction/hello-world) guide, you should be familiar with the beginning of the code which creates a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) and then calls the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method to construct the `Message` component. The only difference is that, since the `Message` component is using the [`Storable()`](https://liaison.dev/docs/v1/reference/storable) mixin, we have to pass this mixin to the `ComponentHTTPClient` constructor.
 
 The rest of the code should be pretty self-explanatory, but let's dive into it anyway so we can better understand some particularities of Liaison.
 

@@ -103,6 +103,16 @@ export class Method extends Property {
     super(name, parent, options);
   }
 
+  // === Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+   *
+   * @category Methods
+   */
+
+  // === Utilities ===
+
   static isMethod(value: any): value is Method {
     return isMethodInstance(value);
   }

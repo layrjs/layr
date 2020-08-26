@@ -221,7 +221,7 @@ That wasn't too difficult, was it? Well, actually, with these few lines of code,
 
 First, a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) that was created in the backend.
 
-Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we are getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their types, validators, default values, etc.), and all the backend's exposed methods are callable from the frontend.
+Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we are getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their types, validators, default values, etc.), and all the backend's exposed methods are callable from the frontend.
 
 <!-- <if language="ts"> -->
 

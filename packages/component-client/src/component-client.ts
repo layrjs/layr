@@ -124,7 +124,7 @@ export class ComponentClient {
    *
    * @examplelink See [`constructor`'s example](https://liaison.dev/docs/v1/reference/component-client#constructor).
    *
-   * @category Getting the served component
+   * @category Getting the Served Component
    * @possiblyasync
    */
   getComponent() {

@@ -44,6 +44,14 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
       super.setOptions(otherOptions);
     }
 
+    // === Property Methods ===
+
+    /**
+     * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+     *
+     * @category Property Methods
+     */
+
     // === Finder ===
 
     _finder: StorablePropertyFinder | undefined;

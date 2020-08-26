@@ -396,6 +396,22 @@ export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(
       return super.isControlled() || this.isComputed();
     }
 
+    // === Property Methods ===
+
+    /**
+     * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+     *
+     * @category Property Methods
+     */
+
+    // === Attribute Methods ===
+
+    /**
+     * See the methods that are inherited from the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#value-type) class.
+     *
+     * @category Attribute Methods
+     */
+
     // === Loader ===
 
     _loader: StorableAttributeLoader | undefined;
@@ -455,6 +471,14 @@ export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(
      * See an example of use in the ["Computed Attributes"](https://liaison.dev/docs/v1/reference/storable-attribute#computed-attributes) section above.
      *
      * @category Loader
+     */
+
+    // === Finder ===
+
+    /**
+     * See the methods that are inherited from the [`StorableProperty`](https://liaison.dev/docs/v1/reference/storable-property#finder) class.
+     *
+     * @category Finder
      */
 
     isComputed() {
@@ -539,6 +563,14 @@ export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(
      * See an example of use in the ["Hooks"](https://liaison.dev/docs/v1/reference/storable-attribute#hooks) section above.
      *
      * @category Hooks
+     */
+
+    // === Observability ===
+
+    /**
+     * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+     *
+     * @category Observability
      */
 
     // === Utilities ===

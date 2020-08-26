@@ -187,6 +187,24 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
      * @category Creation
      */
 
+    // === Property Methods ===
+
+    /**
+     * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+     *
+     * @category Property Methods
+     */
+
+    // === Finder ===
+
+    /**
+     * See the methods that are inherited from the [`StorableProperty`](https://liaison.dev/docs/v1/reference/storable-property#finder) class.
+     *
+     * @category Finder
+     */
+
+    // === Utilities ===
+
     static isStorableMethod(value: any): value is StorableMethod {
       return isStorableMethodInstance(value);
     }

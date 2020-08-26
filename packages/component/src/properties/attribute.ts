@@ -56,7 +56,7 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
 };
 
 /**
- * *Inherits from [`Property`](https://liaison.dev/docs/v1/reference/property) and [`Observable`](https://liaison.dev/docs/v1/reference/observable).*
+ * *Inherits from [`Property`](https://liaison.dev/docs/v1/reference/property) and [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class).*
  *
  * An `Attribute` represents an attribute of a [Component](https://liaison.dev/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as runtime type checking, validation, or serialization.
  *
@@ -240,6 +240,14 @@ export class Attribute extends Observable(Property) {
       this._default = defaultValue;
     }
   }
+
+  // === Property Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+   *
+   * @category Property Methods
+   */
 
   // === Value type ===
 
@@ -752,6 +760,14 @@ export class Attribute extends Observable(Property) {
 
     return failedValidators;
   }
+
+  // === Observability ===
+
+  /**
+   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   *
+   * @category Observability
+   */
 
   // === Introspection ===
 

@@ -117,7 +117,7 @@ export type IntrospectedComponent = {
 type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | undefined>;
 
 /**
- * *Inherits from [`Observable`](https://liaison.dev/docs/v1/reference/observable).*
+ * *Inherits from [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class).*
  *
  * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) and [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorators.
  *
@@ -685,6 +685,14 @@ export class Component extends Observable(Object) {
   setIsNewMarkSource(source = 0) {
     Object.defineProperty(this, '__isNewSource', {value: source, configurable: true});
   }
+
+  // === Observability ===
+
+  /**
+   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   *
+   * @category Observability
+   */
 
   // === Embeddability ===
 

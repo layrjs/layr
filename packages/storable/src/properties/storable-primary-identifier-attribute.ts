@@ -62,4 +62,20 @@ export class StorablePrimaryIdentifierAttribute extends StorableAttributeMixin(
    *
    * @category Creation
    */
+
+  // === Property Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+   *
+   * @category Property Methods
+   */
+
+  // === Attribute Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#value-type) class.
+   *
+   * @category Attribute Methods
+   */
 }

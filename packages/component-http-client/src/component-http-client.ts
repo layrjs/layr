@@ -11,7 +11,7 @@ export type ComponentHTTPClientOptions = ComponentClientOptions;
  *
  * #### Usage
  *
- * Create an instance of `ComponentHTTPClient` by specifying the URL of the component server, and use the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-client#get-component-instance-method) method to get the served component.
+ * Create an instance of `ComponentHTTPClient` by specifying the URL of the component server, and use the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method to get the served component.
  *
  * For example, to access a `Movie` component that is served by a component server, you could do the following:
  *
@@ -112,6 +112,19 @@ export class ComponentHTTPClient extends ComponentClient {
 
     super(componentServer, {...options, batchable: true});
   }
+
+  /**
+   * @method getComponent
+   *
+   * Gets the component that is served by the component server.
+   *
+   * @returns A [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+   *
+   * @examplelink See an [example of use](https://liaison.dev/docs/v1/reference/component-http-client#usage) above.
+   *
+   * @category Getting the Served Component
+   * @async
+   */
 }
 
 function createComponentServer(url: string) {
