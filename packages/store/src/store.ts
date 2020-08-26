@@ -103,6 +103,10 @@ export abstract class Store {
    *
    * @example
    * ```
+   * import {Component} from '﹫liaison/component';
+   * import {Storable} from '﹫liaison/storable';
+   * import {MongoDBStore} from '﹫liaison/mongodb-store';
+   *
    * class User extends Storable(Component) {
    *   // ...
    * }

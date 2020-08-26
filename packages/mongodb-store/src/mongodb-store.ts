@@ -30,19 +30,138 @@ const debug = debugModule('liaison:mongodb-store');
 
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 
+/**
+ * *Inherits from [`Store`](https://liaison.dev/docs/v1/reference/store).*
+ *
+ * A [`Store`](https://liaison.dev/docs/v1/reference/store) that uses a [MongoDB](https://www.mongodb.com/) database to persist its registered [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class).
+ *
+ * #### Usage
+ *
+ * Create a `MongoDBStore` instance, register some [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class) into it, and then use any [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class)'s method to load, save, delete, or find components from the store.
+ *
+ * For example, let's build a simple `Backend` that provides a `Movie` component.
+ *
+ * First, let's define the components that we are going to use:
+ *
+ * ```
+ * // JS
+ *
+ * import {Component} from '﹫liaison/component';
+ * import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
+ *
+ * class Movie extends Storable(Component) {
+ *   @primaryIdentifier() id;
+ *
+ *   @attribute() title = '';
+ * }
+ *
+ * class Backend extends Component {
+ *   ﹫provide() static Movie = Movie;
+ * }
+ * ```
+ *
+ * ```
+ * // TS
+ *
+ * import {Component} from '﹫liaison/component';
+ * import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
+ *
+ * class Movie extends Storable(Component) {
+ *   @primaryIdentifier() id!: string;
+ *
+ *   @attribute() title = '';
+ * }
+ *
+ * class Backend extends Component {
+ *   ﹫provide() static Movie = Movie;
+ * }
+ * ```
+ *
+ * Next, let's create a `MongoDBStore` instance, and let's register the `Backend` component as the root component of the store:
+ *
+ * ```
+ * import {MongoDBStore} from '﹫liaison/mongodb-store';
+ *
+ * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
+ *
+ * store.registerRootComponent(Backend);
+ * ```
+ *
+ * Finally, we can interact with the store by calling some [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) methods:
+ *
+ * ```
+ * let movie = new Movie({id: 'abc123', title: 'Inception'});
+ *
+ * // Save the movie to the store
+ * await movie.save();
+ *
+ * // Get the movie from the store
+ * movie = await Movie.get('abc123');
+ * movie.title; // => 'Inception'
+ *
+ * // Modify the movie, and save it to the store
+ * movie.title = 'Inception 2';
+ * await movie.save();
+ *
+ * // Find the movies that have a title starting with 'Inception'
+ * const movies = await Movie.find({title: {$startsWith: 'Inception'}});
+ * movies.length; // => 1 (one movie found)
+ * movies[0].title; // => 'Inception 2'
+ * movies[0] === movie; // true (thanks to the identity mapping)
+ *
+ * // Delete the movie from the store
+ * await movie.delete();
+ * ```
+ */
 export class MongoDBStore extends Store {
   private _connectionString: string;
 
+  /**
+   * @constructor
+   *
+   * Creates a [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store).
+   *
+   * @param connectionString The [connection string](https://docs.mongodb.com/manual/reference/connection-string/) of the MongoDB database to use.
+   *
+   * @returns The [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) instance that was created.
+   *
+   * @example
+   * ```
+   * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
+   * ```
+   *
+   * @category Creation
+   */
   constructor(connectionString: string, options = {}) {
     super(options);
 
     this._connectionString = connectionString;
   }
 
+  /**
+   * See the methods that are inherited from the [`Store`](https://liaison.dev/docs/v1/reference/store#component-registration) class.
+   *
+   * @category Component Registration
+   */
+
+  // === Connection ===
+
+  /**
+   * Initiates a connection to the MongoDB database.
+   *
+   * Since this method is called automatically when you interact with the store through any of the [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) methods, you shouldn't have to call it manually.
+   *
+   * @category Connection
+   */
   async connect() {
     await this._connectClient();
   }
 
+  /**
+   * Closes the connection to the MongoDB database. Unless you are building a tool that uses a store for an ephemeral duration, you shouldn't have to call this method.
+   *
+   * @category Connection
+   */
   async disconnect() {
     await this._disconnectClient();
   }

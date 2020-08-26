@@ -233,6 +233,13 @@
           "file": "reference/store.md",
           "source": "../packages/store/src/store.ts",
           "category": "Storability"
+        },
+        {
+          "title": "MongoDBStore",
+          "slug": "mongodb-store",
+          "file": "reference/mongodb-store.md",
+          "source": "../packages/mongodb-store/src/mongodb-store.ts",
+          "category": "Storability"
         }
       ]
     }
