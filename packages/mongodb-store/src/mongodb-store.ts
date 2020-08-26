@@ -153,7 +153,7 @@ export class MongoDBStore extends Store {
    *
    * Since this method is called automatically when you interact with the store through any of the [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) methods, you shouldn't have to call it manually.
    *
-   * @category Connection
+   * @category Managing the Connection With MongoDB
    */
   async connect() {
     await this._connectClient();
@@ -162,7 +162,7 @@ export class MongoDBStore extends Store {
   /**
    * Closes the connection to the MongoDB database. Unless you are building a tool that uses a store for an ephemeral duration, you shouldn't have to call this method.
    *
-   * @category Connection
+   * @category Managing the Connection With MongoDB
    */
   async disconnect() {
     await this._disconnectClient();

@@ -240,6 +240,13 @@
           "file": "reference/mongodb-store.md",
           "source": "../packages/mongodb-store/src/mongodb-store.ts",
           "category": "Storability"
+        },
+        {
+          "title": "MemoryStore",
+          "slug": "memory-store",
+          "file": "reference/memory-store.md",
+          "source": "../packages/memory-store/src/memory-store.ts",
+          "category": "Storability"
         }
       ]
     }
