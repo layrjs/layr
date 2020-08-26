@@ -36,8 +36,6 @@ type CollectionMap = {[name: string]: Collection};
  */
 export class MemoryStore extends Store {
   /**
-   * @constructor
-   *
    * Creates a [`MemoryStore`](https://liaison.dev/docs/v1/reference/memory-store).
    *
    * @param [options.initialCollections] A plain object specifying the initial data that should be populated into the store. The shape of the objet should be `{[collectionName]: documents}` where `collectionName` is the name of a [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class, and `documents` is an array of serialized storable component instances.
