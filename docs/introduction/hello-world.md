@@ -1,6 +1,6 @@
 ### Hello, World!
 
-Let's start our journey into Liaison by implementing the mandatory ["Hello, World!"](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) program, and let's make it object-oriented, and full-stack!
+Let's start our journey into Liaison by implementing the mandatory ["Hello, World!"](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) program, and let's make it object-oriented and full-stack!
 
 > Liaison supports both [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) and [TypeScript](https://www.typescriptlang.org/). To select your language of choice, use the drop-down menu on the left.
 
@@ -221,7 +221,7 @@ That wasn't too difficult, was it? Well, actually, with these few lines of code,
 
 First, a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) that was created in the backend.
 
-Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we are getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their types, validators, default values, etc.), and all the backend's exposed methods are callable from the frontend.
+Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we are getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their [types](https://liaison.dev/docs/v1/reference/value-type), [validators](https://liaison.dev/docs/v1/reference/validator), default values, etc.), and all the backend's exposed methods are callable from the frontend.
 
 <!-- <if language="ts"> -->
 
@@ -311,4 +311,4 @@ If you run the frontend again, you should now get the following output:
 HELLO, STEVE!
 ```
 
-Liaison brings what we like to call a "cross-layer class inheritance" ability. Instead of seeing the frontend and the backend as two separate worlds, you can see them as one unified world. Naturally, they remain _physically_ separated. They run in two different execution environments. But _logically_, they are one thing, and that changes the game completely.
+Liaison brings what we like to call a "cross-layer class inheritance" ability. Instead of seeing the frontend and the backend as two separate worlds, you can see them as one unified world. Naturally, the frontend and the backend remain _physically_ separated. They run in two different execution environments. But _logically_, they are one thing, and that changes the game completely.
