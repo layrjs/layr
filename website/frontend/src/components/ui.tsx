@@ -17,11 +17,14 @@ import typescript from 'highlight.js/lib/languages/typescript';
 // @ts-ignore
 import json from 'highlight.js/lib/languages/json';
 // @ts-ignore
+import xml from 'highlight.js/lib/languages/xml';
+// @ts-ignore
 import bash from 'highlight.js/lib/languages/bash';
 import DOMPurify from 'dompurify';
 
 highlightJS.registerLanguage('typescript', typescript);
 highlightJS.registerLanguage('json', json);
+highlightJS.registerLanguage('html', xml);
 highlightJS.registerLanguage('bash', bash);
 
 export class UI extends Component {
@@ -380,6 +383,12 @@ export class UI extends Component {
         '.hljs-section, .hljs-name, .hljs-selector-tag, .hljs-deletion, .hljs-subst': {
           color: theme.textColor
         },
+        '.hljs-tag': {
+          color: theme.primaryColor
+        },
+        '.hljs-tag .hljs-name': {
+          color: theme.primaryColor
+        },
         '.hljs-literal': {
           color: theme.tertiaryColor
         },
@@ -392,7 +401,10 @@ export class UI extends Component {
         '.hljs-class .hljs-title': {
           color: theme.textColor
         },
-        '.hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-type, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-number': {
+        '.hljs-attr': {
+          color: theme.secondaryColor
+        },
+        '.hljs-variable, .hljs-template-variable, .hljs-type, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-number': {
           color: theme.tertiaryColor
         },
         '.hljs-symbol, .hljs-bullet, .hljs-link, .hljs-meta, .hljs-selector-id': {
