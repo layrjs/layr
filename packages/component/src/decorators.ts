@@ -20,7 +20,7 @@ import {
 type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
 
 /**
- * Decorates an attribute of a component so it can be type checked at runtime, validated, serialized, etc.
+ * Decorates an attribute of a component so it can be type checked at runtime, validated, serialized, observed, etc.
  *
  * @param [valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type#supported-types) that can be stored in the attribute (default: `'any'`).
  * @param [options] The options to create the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#constructor).

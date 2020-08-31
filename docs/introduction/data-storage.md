@@ -1,6 +1,6 @@
 ### Storing Data
 
-In the [previous guide](https://liaison.dev/docs/v1/introduction/hello-world), we saw how to implement a minimal application with a backend and a frontend. Now let's add another layer to the stack — a database.
+In the [previous guide](https://liaison.dev/docs/v1/introduction/hello-world), we saw how to implement a minimal application with a frontend and a backend. Now let's add another layer to the stack — a database.
 
 This time we're going to build a simple "Guestbook" application, which allows to store some messages in a database and retrieve them for display on the screen.
 

@@ -311,4 +311,4 @@ If you run the frontend again, you should now get the following output:
 HELLO, STEVE!
 ```
 
-Liaison brings what we like to call a "cross-layer class inheritance" ability. Instead of seeing the frontend and the backend as two separate worlds, you can see them as one unified world. Naturally, the frontend and the backend remain _physically_ separated. They run in two different execution environments. But _logically_, they are one thing, and that changes the game completely.
+Liaison brings what we like to call a "cross-layer component inheritance" ability. Instead of seeing the frontend and the backend as two separate worlds, you can see them as one unified world. Naturally, the frontend and the backend remain _physically_ separated. They run in two different execution environments. But _logically_, they are one thing, and that changes the game completely.
