@@ -2,7 +2,7 @@ import type {Component} from '@liaison/component';
 import {ObservableType, isObservable} from '@liaison/observable';
 import {BrowserRouter} from '@liaison/browser-router';
 import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
-import {SyncFunction, AsyncFunction, getTypeOf} from 'core-helpers';
+import {AsyncFunction, getTypeOf} from 'core-helpers';
 
 import {RouterPlugin} from './plugins';
 
@@ -83,7 +83,7 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
       }
     },
     [...deps]
-  ) as SyncFunction<Args, void>;
+  );
 
   return [trackedCallback, state.isExecuting === true, state.error, state.result] as const;
 }
