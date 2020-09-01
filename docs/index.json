@@ -247,6 +247,17 @@
           "file": "reference/memory-store.md",
           "source": "../packages/memory-store/src/memory-store.ts",
           "category": "Storability"
+        },
+        {
+          "title": "react-integration",
+          "slug": "react-integration",
+          "file": "reference/react-integration.md",
+          "source": [
+            "../packages/react-integration/src/index.ts",
+            "../packages/react-integration/src/decorators.tsx",
+            "../packages/react-integration/src/hooks.ts"
+          ],
+          "category": "Integrations"
         }
       ]
     }

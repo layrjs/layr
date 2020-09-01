@@ -199,7 +199,7 @@ npm install react react-dom @liaison/react-integration
 npm install --save-dev @types/react @types/react-dom
 ```
 
-Note that in addition to React, we've also installed [`@liaison/react-integration`](https://liaison.dev/docs/v1/reference/react-integration) which simplifies the use of React in a Liaison application.
+Note that in addition to React, we've also installed [`@liaison/react-integration`](https://liaison.dev/docs/v1/reference/react-integration) to simplify the use of React inside Liaison components.
 
 Next, create an `index.html` file in the `src` directory, and write the following content:
 
@@ -546,7 +546,7 @@ The `Message` component is composed (besides the attributes and the methods that
 
 Both views are just methods that return some [React elements](https://reactjs.org/docs/rendering-elements.html) and they are prefixed with the [`@view()`](https://liaison.dev/docs/v1/reference/react-integration#view-decorator) decorator that essentially does two things:
 
-- First, it binds a view's method to a specific component, so when the method is executed by React (through a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
+- First, it binds a view's method to a specific component, so when the method is executed by React (via, for example, a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
 - Second, it observes the attributes of the bound component, so when the value of an attribute changes, the view is automatically re-rendered.
 
 The `View()` method is quite self-explanatory. It just wraps some message's attributes in a few HTML elements.
@@ -594,3 +594,36 @@ We've built a simple web app with a frontend, a backend, and a database. And tha
 - To build the frontend, we didn't have to bother with a state manager.
 
 If you are a seasoned React developer or a functional programming advocate, you might be a little surprised by the way the frontend was implemented. But please don't judge too quickly, give Liaison a try, and hopefully, you'll see how your projects could be dramatically simplified with the object-oriented approach that Liaison is enabling.
+
+```js
+import {Component} from '@liaison/component';
+import React from 'react';
+import {view, useAsyncMemo} from '@liaison/react-integration';
+
+class Article extends Component {
+  @view() static List() {
+    const [articles, isLoading, loadingError, retryLoading] = useAsyncMemo(
+      async () => {
+        return await this.find();
+      }
+    );
+
+    if (isLoading) {
+      return <div>Loading the articles...</div>;
+    }
+
+    if (loadingError) {
+      return (
+        <div>
+          An error occurred while loading the articles.
+          <button onClick={retryLoading}>Retry</button>
+        </div>
+      );
+    }
+
+    return articles.map((article) => (
+      <div key={article.id}>{article.title}</div>
+    ));
+  }
+}
+```
