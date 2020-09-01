@@ -526,14 +526,14 @@ Submit a message, and you should now see something like this:
 	<img src="https://liaison-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-2.png" alt="Screenshot of the guestbook app with one message" style="width: 100%; margin-top: .5rem">
 </p>
 
-Just to make sure that your message was persisted into the backend, refresh the browser, and you should see that your message is indeed still there.
+Just to make sure that your message is stored into the backend, refresh the browser, and you should see that your message is indeed still there.
 
 #### Making Sense of the Frontend
 
 The frontend is made of two components:
 
 - `Message` inherits from the backend's `Message` component thanks to the cross-layer component inheritance ability.
-- `Guestbook` defines a [`Component`](https://liaison.dev/docs/v1/reference/component) that is unique to the frontend.
+- `Guestbook` defines a new [`Component`](https://liaison.dev/docs/v1/reference/component).
 
 ##### `Message` Component
 
@@ -546,12 +546,12 @@ The `Message` component is composed (besides the attributes and the methods that
 
 Both views are just methods that return some [React elements](https://reactjs.org/docs/rendering-elements.html) and they are prefixed with the [`@view()`](https://liaison.dev/docs/v1/reference/react-integration#view-decorator) decorator that essentially does two things:
 
-- First, it binds a view's method to a specific component, so when the method is executed by React (via, for example, a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
+- First, it binds a "view method" to a specific component, so when the method is executed by React (via, for example, a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
 - Second, it observes the attributes of the bound component, so when the value of an attribute changes, the view is automatically re-rendered.
 
-The `View()` method is quite self-explanatory. It just wraps some message's attributes in a few HTML elements.
+The `View()` method is quite self-explanatory. It just wraps some message's attributes in some HTML elements.
 
-The `Editor()` method returns a `form` element and implements a bit of logic so the user can interact with it. The [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, although not specific to Liaison, is provided by the [`@liaison/react-integration`](https://liaison.dev/docs/v1/reference/react-integration) package. This hook is a handy way to track the execution of an async function, and in our case, it is used to track the form submission. So when the form is being submitted, the "Submit" button is disabled, and if the submission fails, an error is displayed. The rest of the method is just regular React code.
+The `Editor()` method returns a `form` element and implements a bit of logic so the user can interact with it. The [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, although not specific to Liaison, is provided by the [`@liaison/react-integration`](https://liaison.dev/docs/v1/reference/react-integration) package. This hook is a handy way to track the execution of an asynchronous function, and in our case, it is used to track the form submission. So when the form is being submitted, the "Submit" button is disabled, and if the submission fails, an error is displayed. The rest of the method is just regular React code.
 
 ##### `Guestbook` Component
 
@@ -575,7 +575,7 @@ Note that the `userMessage` attribute has a default value which is a new instanc
 
 Then comes the `View()` method that is pretty straightforward. It's like a React function component, except that it is a method executed with a Liaison component (a `Guestbook` instance) as `this` context.
 
-Just like the [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, the [`useAsyncCall()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-call-react-hook) hook allows us to track the execution of an async function, but the function is automatically called when the view is rendered for the first time. In the present case, the function loads some `Message` instances from the backend by using the [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method in the same way as in the previous [CLI frontend](https://liaison.dev/docs/v1/introduction/data-storage#implementing-the-frontend).
+Just like the [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, the [`useAsyncCall()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-call-react-hook) hook allows us to track the execution of an asynchronous function, but the function is automatically called when the view is rendered for the first time. In the present case, the function loads some `Message` instances from the backend by using the [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method in the same way as in the previous [CLI frontend](https://liaison.dev/docs/v1/introduction/data-storage#implementing-the-frontend).
 
 The `addMessage()` function is defined through the [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook and it is later passed to the Message's `Editor()` view so the `userMessage` can be saved when the user clicks the "Submit" button.
 
@@ -594,36 +594,3 @@ We've built a simple web app with a frontend, a backend, and a database. And tha
 - To build the frontend, we didn't have to bother with a state manager.
 
 If you are a seasoned React developer or a functional programming advocate, you might be a little surprised by the way the frontend was implemented. But please don't judge too quickly, give Liaison a try, and hopefully, you'll see how your projects could be dramatically simplified with the object-oriented approach that Liaison is enabling.
-
-```js
-import {Component} from '@liaison/component';
-import React from 'react';
-import {view, useAsyncMemo} from '@liaison/react-integration';
-
-class Article extends Component {
-  @view() static List() {
-    const [articles, isLoading, loadingError, retryLoading] = useAsyncMemo(
-      async () => {
-        return await this.find();
-      }
-    );
-
-    if (isLoading) {
-      return <div>Loading the articles...</div>;
-    }
-
-    if (loadingError) {
-      return (
-        <div>
-          An error occurred while loading the articles.
-          <button onClick={retryLoading}>Retry</button>
-        </div>
-      );
-    }
-
-    return articles.map((article) => (
-      <div key={article.id}>{article.title}</div>
-    ));
-  }
-}
-```

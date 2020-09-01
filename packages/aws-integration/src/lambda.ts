@@ -10,6 +10,34 @@ type CustomRoute = {
   ) => Promise<APIGatewayProxyStructuredResultV2>;
 };
 
+/**
+ * Creates an [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html) for the specified [component server](https://liaison.dev/docs/v1/reference/component-server).
+ *
+ * The created handler can be hosted in [AWS Lambda](https://aws.amazon.com/lambda/) and consumed by [AWS API Gateway](https://aws.amazon.com/api-gateway/) through an [HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html).
+ *
+ * @param componentServer A [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) instance.
+ *
+ * @returns An [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html).
+ *
+ * @example
+ * ```
+ * import {Component, attribute, expose} from '﹫liaison/component';
+ * import {ComponentServer} from '﹫liaison/component-server';
+ * import {createAWSLambdaHandlerForComponentServer} from '@liaison/aws-integration';
+ *
+ * class Movie extends Component {
+ *   ﹫expose({get: true, set: true}) ﹫attribute('string') title = '';
+ * }
+ *
+ * const server = new ComponentServer(Movie);
+ *
+ * const handler = createAWSLambdaHandlerForComponentServer(server);
+ *
+ * export {handler};
+ * ```
+ *
+ * @category Functions
+ */
 export function createAWSLambdaHandlerForComponentServer(
   componentServer: ComponentServer,
   {customRoutes = []}: {customRoutes?: CustomRoute[]} = {}

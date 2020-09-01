@@ -249,6 +249,16 @@
           "category": "Storability"
         },
         {
+          "title": "aws-integration",
+          "slug": "aws-integration",
+          "file": "reference/aws-integration.md",
+          "source": [
+            "../packages/aws-integration/src/index.ts",
+            "../packages/aws-integration/src/lambda.ts"
+          ],
+          "category": "Integrations"
+        },
+        {
           "title": "react-integration",
           "slug": "react-integration",
           "file": "reference/react-integration.md",
