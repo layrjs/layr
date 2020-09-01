@@ -25,7 +25,7 @@ if (!backendURL) {
 
     await Frontend.Session.loadUser();
 
-    content = <Frontend.Root.Main />;
+    content = <Frontend.Root />;
   } catch (err) {
     console.error(err);
 
