@@ -1,0 +1,28 @@
+{
+  "name": "guestbook-web-with-routes",
+  "version": "1.0.0",
+  "description": "A simple web app showing how to build a web frontend using routes with Liaison",
+  "private": true,
+  "dependencies": {
+    "@liaison/component": "^0.5.71",
+    "@liaison/component-http-client": "^0.5.40",
+    "@liaison/component-http-server": "^0.5.31",
+    "@liaison/memory-store": "^0.5.30",
+    "@liaison/react-integration": "^0.5.59",
+    "@liaison/routable": "^0.5.55",
+    "@liaison/storable": "^0.5.104",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.36",
+    "@types/react-dom": "^16.9.8",
+    "html-webpack-plugin": "^4.3.0",
+    "ts-loader": "^7.0.5",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  }
+}
