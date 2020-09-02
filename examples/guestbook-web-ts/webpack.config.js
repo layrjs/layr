@@ -6,6 +6,11 @@ module.exports = (env, argv) => {
   return {
     // The entry point of the app is './src/frontend.tsx'
     entry: './src/frontend.tsx',
+    output: {
+      // Specify '/' as the base path for all the assets
+      // This is required for a single-page application
+      publicPath: '/'
+    },
     module: {
       rules: [
         {
@@ -25,6 +30,11 @@ module.exports = (env, argv) => {
       })
     ],
     // Generate source maps to make debugging easier
-    devtool: 'eval-cheap-module-source-map'
+    devtool: 'eval-cheap-module-source-map',
+    devServer: {
+      // Fallback to 'index.html' in case of 404 responses
+      // This is required for a single-page application
+      historyApiFallback: true
+    }
   };
 };
