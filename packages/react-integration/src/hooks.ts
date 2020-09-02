@@ -132,11 +132,12 @@ export function useObserve(observable: ObservableType) {
 /**
  * Allows you to define an asynchronous callback and keep track of its execution.
  *
- * Plays the same role as the React built-in [`useCallback()`](https://reactjs.org/docs/hooks-reference.html#usecallback) hook but for asynchronous callbacks.
+ * Plays the same role as the React built-in [`useCallback()`](https://reactjs.org/docs/hooks-reference.html#usecallback) hook but works with asynchronous callbacks.
  *
- * @param asyncCallback The asynchronous callback you want to track.
+ * @param asyncCallback An asynchronous callback.
+ * @param dependencies An array of values on which the asynchronous callback depends (default: `[]`).
  *
- * @returns An array of the shape `[trackedCallback, isExecuting, error, result]` where `trackedCallback` is a function that you can call to execute the callback, `isExecuting` is a boolean indicating whether the callback is being executed, `error` is the error thrown by the callback in case of failed execution, and `result` is the value returned by the callback in case of succeeded execution.
+ * @returns An array of the shape `[trackedCallback, isExecuting, error, result]` where `trackedCallback` is a function that you can call to execute the asynchronous callback, `isExecuting` is a boolean indicating whether the asynchronous callback is being executed, `error` is the error thrown by the asynchronous callback in case of failed execution, and `result` is the value returned by the asynchronous callback in case of succeeded execution.
  *
  * @example
  * ```
@@ -164,8 +165,8 @@ export function useObserve(observable: ObservableType) {
  * @reacthook
  */
 export function useAsyncCallback<Args extends any[] = any[], Result = any>(
-  callback: AsyncFunction<Args, Result>,
-  deps: DependencyList
+  asyncCallback: AsyncFunction<Args, Result>,
+  deps: DependencyList = []
 ) {
   const [state, setState] = useState<{isExecuting?: boolean; error?: any; result?: Result}>({});
 
@@ -176,7 +177,7 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
       setState({isExecuting: true});
 
       try {
-        const result = await callback(...args);
+        const result = await asyncCallback(...args);
 
         if (isMounted()) {
           setState({result});
@@ -198,23 +199,25 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
 }
 
 /**
- * Allows you to get the result of an asynchronous function and keep track of its execution.
+ * Memoizes the result of an asynchronous function execution and provides a "recompute function" that you can call to recompute the memoized result.
  *
- * The function is executed once when the React component is rendered for the first time.
+ * The asynchronous function is executed one time when the React component is rendered for the first time, and each time a dependency is changed or the "recompute function" is called.
  *
- * Plays the same role as the React built-in [`useMemo()`](https://reactjs.org/docs/hooks-reference.html#usememo) hook but for asynchronous function.
+ * Plays the same role as the React built-in [`useMemo()`](https://reactjs.org/docs/hooks-reference.html#usememo) hook but works with asynchronous functions and allows to recompute the memoized result.
  *
- * @param asyncFunction The asynchronous function you want to track and memoize.
+ * @param asyncFunc An asynchronous function to compute the memoized result.
+ * @param dependencies An array of values on which the memoized result depends (default: `[]`, which means that the memoized result will be recomputed only when the "recompute function" is called).
  *
- * @returns An array of the shape `[result, isExecuting, error, retry]` where `result` is the value returned by the function in case of succeeded execution, `isExecuting` is a boolean indicating whether the function is being executed, `error` is the error thrown by the function in case of failed execution, and `retry` is a function that you can call to retry the execution.
+ * @returns An array of the shape `[memoizedResult, isExecuting, error, recompute]` where `memoizedResult` is the result returned by the asynchronous function in case of succeeded execution, `isExecuting` is a boolean indicating whether the asynchronous function is being executed, `error` is the error thrown by the asynchronous function in case of failed execution, and `recompute` is a function that you can call to recompute the memoized result.
  *
  * @example
  * ```
  * import {Component} from '﹫liaison/component';
+ * import {Storable} from '﹫liaison/storable';
  * import React from 'react';
  * import {view, useAsyncMemo} from '﹫liaison/react-integration';
  *
- * class Article extends Component {
+ * class Article extends Storable(Component) {
  *   // ...
  *
  *   ﹫view() static List() {
@@ -247,21 +250,21 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
  * @category Hooks
  * @reacthook
  */
-export function useAsyncMemo<Result>(func: () => Promise<Result>, deps: DependencyList) {
+export function useAsyncMemo<Result>(asyncFunc: () => Promise<Result>, deps: DependencyList = []) {
   const [state, setState] = useState<{
     result?: Result;
     isExecuting?: boolean;
     error?: any;
   }>({isExecuting: true});
 
-  const [retryCount, setRetryCount] = useState(0);
+  const [recomputeCount, setRecomputeCount] = useState(0);
 
   const isMounted = useIsMounted();
 
   useEffect(() => {
     setState({isExecuting: true});
 
-    func().then(
+    asyncFunc().then(
       (result) => {
         if (isMounted()) {
           setState({result});
@@ -277,45 +280,105 @@ export function useAsyncMemo<Result>(func: () => Promise<Result>, deps: Dependen
         throw error;
       }
     );
-  }, [...deps, retryCount]);
+  }, [...deps, recomputeCount]);
 
-  const retry = useCallback(() => {
-    setRetryCount((retryCount) => retryCount + 1);
+  const recompute = useCallback(() => {
+    setRecomputeCount((recomputeCount) => recomputeCount + 1);
   }, []);
 
-  return [state.result, state.isExecuting === true, state.error, retry] as const;
+  return [state.result, state.isExecuting === true, state.error, recompute] as const;
 }
 
 /**
- * Allows you to call an asynchronous function and keep track of its execution.
+ * Memoizes the result of a function execution and provides a "recompute function" that you can call to recompute the memoized result.
  *
- * The function is executed once when the React component is rendered for the first time.
+ * The function is executed one time when the React component is rendered for the first time, and each time a dependency is changed or the "recompute function" is called.
  *
- * @param asyncFunction The asynchronous function you want to call and track.
+ * Plays the same role as the React built-in [`useMemo()`](https://reactjs.org/docs/hooks-reference.html#usememo) hook but with the extra ability to recompute the memoized result.
  *
- * @returns An array of the shape `[isExecuting, error, retry]` where `isExecuting` is a boolean indicating whether the function is being executed, `error` is the error thrown by the function in case of failed execution, and `retry` is a function that you can call to retry the execution.
+ * @param func A function to compute the memoized result.
+ * @param dependencies An array of values on which the memoized result depends (default: `[]`, which means that the memoized result will be recomputed only when the "recompute function" is called).
+ *
+ * @returns An array of the shape `[memoizedResult, recompute]` where `memoizedResult` is the result of the function execution, and `recompute` is a function that you can call to recompute the memoized result.
  *
  * @example
  * ```
- * // JS
+ * import {Component, provide} from '﹫liaison/component';
+ * import {Storable} from '﹫liaison/storable';
+ * import React, {useCallback} from 'react';
+ * import {view, useRecomputableMemo} from '﹫liaison/react-integration';
  *
- * import {Component, provide, attribute} from '﹫liaison/component';
- * import React from 'react';
- * import {view, useAsyncCall} from '﹫liaison/react-integration';
- *
- * class Article extends Component {
+ * class Article extends Storable(Component) {
  *   // ...
  * }
  *
  * class Blog extends Component {
  *   ﹫provide() static Article = Article;
  *
- *   ﹫attribute('Article[]?') loadedArticles;
+ *   ﹫view() static ArticleCreator() {
+ *     const [article, resetArticle] = useRecomputableMemo(() => new Article());
  *
- *   ﹫view() View() {
+ *     const createArticle = useCallback(async () => {
+ *       await article.save();
+ *       resetArticle();
+ *     }, [article]);
+ *
+ *     return (
+ *       <div>
+ *         <article.CreateForm onSubmit={createArticle} />
+ *       </div>
+ *     );
+ *   }
+ * }
+ * ```
+ *
+ * @category Hooks
+ * @reacthook
+ */
+export function useRecomputableMemo<Result>(func: () => Result, deps: DependencyList = []) {
+  const [recomputeCount, setRecomputeCount] = useState(0);
+
+  const result = useMemo(func, [...deps, recomputeCount]);
+
+  const recompute = useCallback(() => {
+    setRecomputeCount((recomputeCount) => recomputeCount + 1);
+  }, []);
+
+  return [result, recompute] as const;
+}
+
+/**
+ * Allows you to call an asynchronous function and keep track of its execution.
+ *
+ * The function is executed one time when the React component is rendered for the first time, and each time a dependency is changed or the "recall function" is called.
+ *
+ * @param asyncFunc The asynchronous function to call.
+ * @param dependencies An array of values on which the asynchronous function depends (default: `[]`, which means that the asynchronous will be recalled only when the "recall function" is called).
+ *
+ * @returns An array of the shape `[isExecuting, error, recall]` where `isExecuting` is a boolean indicating whether the asynchronous function is being executed, `error` is the error thrown by the asynchronous function in case of failed execution, and `recall` is a function that you can call to recall the asynchronous function.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component, provide, attribute} from '﹫liaison/component';
+ * import {Storable} from '﹫liaison/storable';
+ * import React from 'react';
+ * import {view, useAsyncCall} from '﹫liaison/react-integration';
+ *
+ * class Article extends Storable(Component) {
+ *   // ...
+ * }
+ *
+ * class Blog extends Component {
+ *   ﹫provide() static Article = Article;
+ *
+ *   ﹫attribute('Article[]?') static loadedArticles;
+ *
+ *   ﹫view() static View() {
  *     const [isLoading, loadingError, retryLoading] = useAsyncCall(
  *       async () => {
- *         this.loadedArticles = await this.find();
+ *         this.loadedArticles = await this.Article.find();
  *       }
  *     );
  *
@@ -344,22 +407,23 @@ export function useAsyncMemo<Result>(func: () => Promise<Result>, deps: Dependen
  * // TS
  *
  * import {Component, provide, attribute} from '﹫liaison/component';
+ * import {Storable} from '﹫liaison/storable';
  * import React from 'react';
  * import {view, useAsyncCall} from '﹫liaison/react-integration';
  *
- * class Article extends Component {
+ * class Article extends Storable(Component) {
  *   // ...
  * }
  *
  * class Blog extends Component {
  *   ﹫provide() static Article = Article;
  *
- *   ﹫attribute('Article[]?') loadedArticles?: Article[];
+ *   ﹫attribute('Article[]?') static loadedArticles?: Article[];
  *
- *   ﹫view() View() {
+ *   ﹫view() static View() {
  *     const [isLoading, loadingError, retryLoading] = useAsyncCall(
  *       async () => {
- *         this.loadedArticles = await this.find();
+ *         this.loadedArticles = await this.Article.find();
  *       }
  *     );
  *
@@ -386,10 +450,10 @@ export function useAsyncMemo<Result>(func: () => Promise<Result>, deps: Dependen
  * @category Hooks
  * @reacthook
  */
-export function useAsyncCall(func: () => Promise<void>, deps: DependencyList) {
-  const [, isExecuting, error, retry] = useAsyncMemo(func, deps);
+export function useAsyncCall(asyncFunc: () => Promise<void>, deps: DependencyList = []) {
+  const [, isExecuting, error, recall] = useAsyncMemo(asyncFunc, deps);
 
-  return [isExecuting, error, retry] as const;
+  return [isExecuting, error, recall] as const;
 }
 
 export function useIsMounted() {
