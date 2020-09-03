@@ -6,6 +6,8 @@ This time we're going to build a simple "Guestbook" application, which allows to
 
 As with the ["Hello, World!"](https://liaison.dev/docs/v1/introduction/hello-world) application, we will implement a CLI frontend to make things easier. You'll see in the [next guide](https://liaison.dev/docs/v1/introduction/web-app) how to implement a web frontend.
 
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-cli-js)<!-- </if> --><!-- <if language="ts"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-cli-ts)<!-- </if> -->.
+
 #### Creating the Project
 
 First, from your terminal, create a directory for your project, and navigate into it:
@@ -20,6 +22,8 @@ Then, initialize your project with:
 ```sh
 npm init -y
 ```
+
+> Note that in a real application, we'd create different packages for the frontend part and the backend part of a full-stack project. But to keep this guide as simple as possible, we're going to put everything in a single package. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of application that is organized into multiple packages.
 
 #### Setting Up Your Development Environment
 

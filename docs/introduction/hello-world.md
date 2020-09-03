@@ -4,6 +4,8 @@ Let's start our journey into Liaison by implementing the mandatory ["Hello, Worl
 
 > Liaison supports both [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) and [TypeScript](https://www.typescriptlang.org/). To select your language of choice, use the drop-down menu on the left.
 
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/hello-world-js)<!-- </if> --><!-- <if language="ts"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/hello-world-ts)<!-- </if> -->.
+
 #### Creating the Project
 
 First, from your terminal, create a directory for your project, and navigate into it:
@@ -18,6 +20,8 @@ Then, initialize your project with:
 ```sh
 npm init -y
 ```
+
+> Note that in a real application, we'd create different packages for the frontend part and the backend part of a full-stack project. But to keep this guide as simple as possible, we're going to put everything in a single package. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of application that is organized into multiple packages.
 
 #### Setting Up Your Development Environment
 
@@ -157,7 +161,7 @@ npx ts-node ./src/backend.ts
 
 If nothing happens on the screen, it's all good. The backend is running and waiting for requests.
 
-> Note: If you wish to display a log of what's going on in the backend, you can set some environment variables before starting it:
+> If you want to display a log of what's going on in the backend, you can set some environment variables before starting it:
 >
 > ```sh
 > // JS
@@ -221,11 +225,11 @@ That wasn't too difficult, was it? Well, actually, with these few lines of code,
 
 First, a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) that was created in the backend.
 
-Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we are getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their [types](https://liaison.dev/docs/v1/reference/value-type), [validators](https://liaison.dev/docs/v1/reference/validator), default values, etc.), and all the backend's exposed methods are callable from the frontend.
+Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we're getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their [types](https://liaison.dev/docs/v1/reference/value-type), [validators](https://liaison.dev/docs/v1/reference/validator), default values, etc.), and all the backend's exposed methods are callable from the frontend.
 
 <!-- <if language="ts"> -->
 
-Since we are using TypeScript, we want to make the frontend's `Greeter` class fully aware of its type. We could have repeated the class definition in the frontend, but a better way is to import the backend's `Greeter` class type, and cast the frontend's `Greeter` class to this same type (using the `as typeof GreeterType` expression). Note that only the type is imported from the backend (thanks to the `import type` statement), so the implementation remains totally unknown for the frontend.
+Since we're using TypeScript, we want to make the frontend's `Greeter` class fully aware of its type. We could have repeated the class definition in the frontend, but a better way is to import the backend's `Greeter` class type, and cast the frontend's `Greeter` class to this same type (using the `as typeof GreeterType` expression). Note that only the type is imported from the backend (thanks to the `import type` statement), so the implementation remains totally unknown for the frontend.
 
 <!-- </if> -->
 

@@ -254,6 +254,12 @@ export class UI extends Component {
           backgroundColor: theme.highlighted.backgroundColor,
           borderRadius: 3
         },
+        'h1 code, h2 code, h3 code, h4 code, h5 code, h6 code': {
+          fontSize: '100%'
+        },
+        'a code': {
+          color: theme.link.primaryColor
+        },
         'pre code': {
           display: 'table-cell !important',
           overflowX: 'auto',
@@ -265,8 +271,8 @@ export class UI extends Component {
           backgroundColor: 'transparent',
           borderRadius: 0
         },
-        'a code': {
-          color: theme.link.primaryColor
+        'pre + h5': {
+          marginTop: '1.6rem'
         },
         '.badge': {
           display: 'inline-block',

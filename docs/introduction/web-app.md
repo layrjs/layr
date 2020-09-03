@@ -2,6 +2,8 @@
 
 In the [previous guide](https://liaison.dev/docs/v1/introduction/data-storage), we saw how to implement a simple "Guestbook" application with a CLI frontend, a backend, and a database. Now we're going to improve the user experience by replacing the CLI frontend with a web frontend.
 
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-web-js)<!-- </if> --><!-- <if language="ts"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-web-ts)<!-- </if> -->.
+
 #### Bootstrapping the Project
 
 Since we're going to use the same backend as before, you can duplicate the [previous project](https://liaison.dev/docs/v1/introduction/data-storage) or simply modify it in place.
@@ -103,6 +105,11 @@ module.exports = (env, argv) => {
   return {
     // The entry point of the app is './src/frontend.js'
     entry: './src/frontend.js',
+    output: {
+      // Specify '/' as the base path for all the assets
+      // This is required for a single-page application
+      publicPath: '/'
+    },
     module: {
       rules: [
         {
@@ -122,7 +129,12 @@ module.exports = (env, argv) => {
       })
     ],
     // Generate source maps to make debugging easier
-    devtool: 'eval-cheap-module-source-map'
+    devtool: 'eval-cheap-module-source-map',
+    devServer: {
+      // Fallback to 'index.html' in case of 404 responses
+      // This is required for a single-page application
+      historyApiFallback: true
+    }
   };
 };
 ```
@@ -138,6 +150,11 @@ module.exports = (env, argv) => {
   return {
     // The entry point of the app is './src/frontend.tsx'
     entry: './src/frontend.tsx',
+    output: {
+      // Specify '/' as the base path for all the assets
+      // This is required for a single-page application
+      publicPath: '/'
+    },
     module: {
       rules: [
         {
@@ -157,7 +174,12 @@ module.exports = (env, argv) => {
       })
     ],
     // Generate source maps to make debugging easier
-    devtool: 'eval-cheap-module-source-map'
+    devtool: 'eval-cheap-module-source-map',
+    devServer: {
+      // Fallback to 'index.html' in case of 404 responses
+      // This is required for a single-page application
+      historyApiFallback: true
+    }
   };
 };
 ```
@@ -241,12 +263,17 @@ Rename the `src/frontend.ts` file to `src/frontend.tsx` and modify its content a
 ```js
 // JS
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import ReactDOM from 'react-dom';
 import {Component, attribute, provide} from '@liaison/component';
 import {Storable} from '@liaison/storable';
 import {ComponentHTTPClient} from '@liaison/component-http-client';
-import {view, useAsyncCall, useAsyncCallback} from '@liaison/react-integration';
+import {
+  view,
+  useAsyncCall,
+  useAsyncCallback,
+  useRecomputableMemo
+} from '@liaison/react-integration';
 
 async function main() {
   const client = new ComponentHTTPClient('http://localhost:3210', {
@@ -256,23 +283,22 @@ async function main() {
   const BackendMessage = await client.getComponent();
 
   class Message extends BackendMessage {
-    @view() View() {
+    @view() Viewer() {
       return (
-        <p>
+        <div>
           <small>{this.createdAt.toLocaleString()}</small>
           <br />
           <strong>{this.text}</strong>
-        </p>
+        </div>
       );
     }
 
-    @view() Editor({onSubmit}) {
+    @view() Form({onSubmit}) {
       const [handleSubmit, isSubmitting, submitError] = useAsyncCallback(
         async (event) => {
           event.preventDefault();
           await onSubmit();
-        },
-        []
+        }
       );
 
       return (
@@ -307,31 +333,34 @@ async function main() {
   class Guestbook extends Component {
     @provide() static Message = Message;
 
-    @attribute('Message[]?') existingMessages;
-    @attribute('Message') userMessage = new this.constructor.Message();
+    @attribute('Message[]') static existingMessages = [];
 
-    @view() View() {
-      const {Message} = this.constructor;
+    @view() static Home() {
+      return (
+        <div style={{maxWidth: '700px', margin: '40px auto'}}>
+          <h1>Guestbook</h1>
+          <this.MessageList />
+          <this.MessageCreator />
+        </div>
+      );
+    }
 
-      const [isLoading] = useAsyncCall(async () => {
+    @view() static MessageList() {
+      const {Message} = this;
+
+      const [isLoading, loadingError] = useAsyncCall(async () => {
         this.existingMessages = await Message.find(
           {},
           {text: true, createdAt: true},
           {sort: {createdAt: 'desc'}, limit: 30}
         );
-      }, []);
-
-      const [addMessage] = useAsyncCallback(async () => {
-        await this.userMessage.save();
-        this.existingMessages = [this.userMessage, ...this.existingMessages];
-        this.userMessage = new Message();
-      }, []);
+      });
 
       if (isLoading) {
         return null;
       }
 
-      if (this.existingMessages === undefined) {
+      if (loadingError) {
         return (
           <p style={{color: 'red'}}>
             Sorry, an error occurred while loading the guestbook’s messages.
@@ -340,30 +369,44 @@ async function main() {
       }
 
       return (
-        <div style={{maxWidth: '700px', margin: '40px auto'}}>
-          <h1>Guestbook</h1>
-
+        <div>
           <h2>All Messages</h2>
-
           {this.existingMessages.length > 0 ? (
             this.existingMessages.map((message) => (
-              <message.View key={message.id} />
+              <div key={message.id} style={{marginTop: '15px'}}>
+                <message.Viewer />
+              </div>
             ))
           ) : (
             <p>No messages yet.</p>
           )}
+        </div>
+      );
+    }
 
+    @view() static MessageCreator() {
+      const {Message} = this;
+
+      const [createdMessage, resetCreatedMessage] = useRecomputableMemo(
+        () => new Message()
+      );
+
+      const saveMessage = useCallback(async () => {
+        await createdMessage.save();
+        this.existingMessages = [createdMessage, ...this.existingMessages];
+        resetCreatedMessage();
+      }, [createdMessage]);
+
+      return (
+        <div>
           <h2>Add a Message</h2>
-
-          <this.userMessage.Editor onSubmit={addMessage} />
+          <createdMessage.Form onSubmit={saveMessage} />
         </div>
       );
     }
   }
 
-  const guestbook = new Guestbook();
-
-  ReactDOM.render(<guestbook.View />, document.getElementById('root'));
+  ReactDOM.render(<Guestbook.Home />, document.getElementById('root'));
 }
 
 main().catch((error) => console.error(error));
@@ -372,12 +415,17 @@ main().catch((error) => console.error(error));
 ```ts
 // TS
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import ReactDOM from 'react-dom';
 import {Component, attribute, provide} from '@liaison/component';
 import {Storable} from '@liaison/storable';
 import {ComponentHTTPClient} from '@liaison/component-http-client';
-import {view, useAsyncCall, useAsyncCallback} from '@liaison/react-integration';
+import {
+  view,
+  useAsyncCall,
+  useAsyncCallback,
+  useRecomputableMemo
+} from '@liaison/react-integration';
 
 import type {Message as MessageType} from './backend';
 
@@ -389,23 +437,22 @@ async function main() {
   const BackendMessage = (await client.getComponent()) as typeof MessageType;
 
   class Message extends BackendMessage {
-    @view() View() {
+    @view() Viewer() {
       return (
-        <p>
+        <div>
           <small>{this.createdAt.toLocaleString()}</small>
           <br />
           <strong>{this.text}</strong>
-        </p>
+        </div>
       );
     }
 
-    @view() Editor({onSubmit}: {onSubmit: () => Promise<void>}) {
+    @view() Form({onSubmit}: {onSubmit: () => Promise<void>}) {
       const [handleSubmit, isSubmitting, submitError] = useAsyncCallback(
         async (event) => {
           event.preventDefault();
           await onSubmit();
-        },
-        []
+        }
       );
 
       return (
@@ -438,35 +485,36 @@ async function main() {
   }
 
   class Guestbook extends Component {
-    ['constructor']!: typeof Guestbook;
-
     @provide() static Message = Message;
 
-    @attribute('Message[]?') existingMessages?: Message[];
-    @attribute('Message') userMessage = new this.constructor.Message();
+    @attribute('Message[]') static existingMessages: Message[] = [];
 
-    @view() View() {
-      const {Message} = this.constructor;
+    @view() static Home() {
+      return (
+        <div style={{maxWidth: '700px', margin: '40px auto'}}>
+          <h1>Guestbook</h1>
+          <this.MessageList />
+          <this.MessageCreator />
+        </div>
+      );
+    }
 
-      const [isLoading] = useAsyncCall(async () => {
+    @view() static MessageList() {
+      const {Message} = this;
+
+      const [isLoading, loadingError] = useAsyncCall(async () => {
         this.existingMessages = await Message.find(
           {},
           {text: true, createdAt: true},
           {sort: {createdAt: 'desc'}, limit: 30}
         );
-      }, []);
-
-      const [addMessage] = useAsyncCallback(async () => {
-        await this.userMessage.save();
-        this.existingMessages = [this.userMessage, ...this.existingMessages!];
-        this.userMessage = new Message();
-      }, []);
+      });
 
       if (isLoading) {
         return null;
       }
 
-      if (this.existingMessages === undefined) {
+      if (loadingError) {
         return (
           <p style={{color: 'red'}}>
             Sorry, an error occurred while loading the guestbook’s messages.
@@ -475,36 +523,52 @@ async function main() {
       }
 
       return (
-        <div style={{maxWidth: '700px', margin: '40px auto'}}>
-          <h1>Guestbook</h1>
-
+        <div>
           <h2>All Messages</h2>
-
           {this.existingMessages.length > 0 ? (
             this.existingMessages.map((message) => (
-              <message.View key={message.id} />
+              <div key={message.id} style={{marginTop: '15px'}}>
+                <message.Viewer />
+              </div>
             ))
           ) : (
             <p>No messages yet.</p>
           )}
+        </div>
+      );
+    }
 
+    @view() static MessageCreator() {
+      const {Message} = this;
+
+      const [createdMessage, resetCreatedMessage] = useRecomputableMemo(
+        () => new Message()
+      );
+
+      const saveMessage = useCallback(async () => {
+        await createdMessage.save();
+        this.existingMessages = [createdMessage, ...this.existingMessages];
+        resetCreatedMessage();
+      }, [createdMessage]);
+
+      return (
+        <div>
           <h2>Add a Message</h2>
-
-          <this.userMessage.Editor onSubmit={addMessage} />
+          <createdMessage.Form onSubmit={saveMessage} />
         </div>
       );
     }
   }
 
-  const guestbook = new Guestbook();
-
-  ReactDOM.render(<guestbook.View />, document.getElementById('root'));
+  ReactDOM.render(<Guestbook.Home />, document.getElementById('root'));
 }
 
 main().catch((error) => console.error(error));
 ```
 
-There is a significant amount of code, but if you know a bit of React, it should be pretty easy to read. Compared to the previous [CLI frontend](https://liaison.dev/docs/v1/introduction/data-storage#implementing-the-frontend), we've introduced a few new Liaison concepts though, so we are going to explore them. But before that, let's start the frontend so you can see how it looks like.
+> Note that in a real application, we'd spread the code into multiple files. For example, we'd have one file for each class, and one more file for the `main()` function. But to keep this guide simple, we've put everything in a single file. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of codebase that is organized into multiple files.
+
+There is a bunch of code, but if you know a bit of React, it should be pretty easy to read. Compared to the previous [CLI frontend](https://liaison.dev/docs/v1/introduction/data-storage#implementing-the-frontend), we've introduced a few new Liaison concepts, and we're going to explore them. But before that, let's start the frontend so you can see how it looks like.
 
 #### Starting the Frontend
 
@@ -539,51 +603,55 @@ The frontend is made of two components:
 
 Liaison embraces the object-oriented approach in all aspects of an application and allows you to organize your code in a way that is as cohesive as possible. Traditionally, domain models and UI views are completely separated, but we think that [another way is possible](https://liaison.dev/blog/articles/Do-We-Really-Need-to-Separate-the-Model-from-the-UI-9wogqr). So, the "Liaison way" is to co-locate a model and its views in the same place — a Liaison [`Component`](https://liaison.dev/docs/v1/reference/component).
 
-The `Message` component is composed (besides the attributes and the methods that are inherited from the backend) of two views:
+The `Message` component is composed (besides the attributes and methods that are inherited from the backend) of two views:
 
-- `View()` represents a simple view to display a message.
-- `Editor()` represents a simple form to edit and submit a message.
+- `Viewer()` represents a view to display a message.
+- `Form()` represents a form to edit a message.
 
 Both views are just methods that return some [React elements](https://reactjs.org/docs/rendering-elements.html) and they are prefixed with the [`@view()`](https://liaison.dev/docs/v1/reference/react-integration#view-decorator) decorator that essentially does two things:
 
 - First, it binds a "view method" to a specific component, so when the method is executed by React (via, for example, a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
 - Second, it observes the attributes of the bound component, so when the value of an attribute changes, the view is automatically re-rendered.
 
-The `View()` method is quite self-explanatory. It just wraps some message's attributes in some HTML elements.
+###### `Viewer()` View
 
-The `Editor()` method returns a `form` element and implements a bit of logic so the user can interact with it. The [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, although not specific to Liaison, is provided by the [`@liaison/react-integration`](https://liaison.dev/docs/v1/reference/react-integration) package. This hook is a handy way to track the execution of an asynchronous function, and in our case, it is used to track the form submission. So when the form is being submitted, the "Submit" button is disabled, and if the submission fails, an error is displayed. The rest of the method is just regular React code.
+The `Viewer()` view is quite self-explanatory. It just wraps some message's attributes in some HTML elements.
+
+###### `Form()` View
+
+The `Form()` view returns a `form` element and implements a bit of logic so the user can interact with to form.
+
+We use the [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, which is a handy way to track the execution of an asynchronous function. In our case, it is used to track the form submission. So when the form is being submitted, the "Submit" button is disabled, and if the submission fails, an error is displayed.
+
+The rest of the method is just regular React code.
 
 ##### `Guestbook` Component
 
-The `Guestbook` component is the core of the application. It contains an attribute (`existingMessages`) to keep track of the displayed messages, and it has a second attribute (`userMessage`) to hold a message that the user can edit and submit. Also, the `Guestbook` component provides a view (simply named `View()`) to display the whole application.
+The `Guestbook` component is the core of the application. It contains an attribute (`existingMessages`) to keep track of the displayed messages, and it provides a couple of views (`Home()`, `MessageList()`, and `MessageCreator()`) to display the whole application.
 
-<!-- <if language="js"> -->
+At the very beginning of the class, the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator is used to make the `Guestbook` component aware of the `Message` component. Doing so allows us to specify the `'Message'` type as a parameter of the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator to define the `existingMessages` attribute.
 
-At the very beginning of the `Guestbook` class, the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator is used to make the `Guestbook` component aware of the `Message` component. Doing so allows us to specify the `'Message'` type when we define the `existingMessages` and `userMessage` attributes with the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+Another benefit of using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator is that we can access the `Message` component through `this.Message` from any `Guestbook`'s class method (or through `this.constructor.Message` from any instance method), and doing so brings a lot of advantages. First, it is a good practice to reduce the direct references to an external component as much as possible. Second, accessing a component through a reference that is managed by the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator enables some unique Liaison's features such as [component forking](https://liaison.dev/docs/v1/reference/component?language=js#forking).
 
-<!-- </if> -->
+###### `Home()` View
 
-<!-- <if language="ts"> -->
+The `Home()` view is pretty straightforward. It just renders other views (`MessageList()` and `MessageCreator()`) in a minimal layout.
 
-At the very beginning of the `Guestbook` class, we use a little TypeScript trick so the `Guestbook` class type can be accessed through the `constructor` attribute of any `Guestbook` instance.
+###### `MessageList()` View
 
-Then, the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator is used to make the `Guestbook` component aware of the `Message` component. Doing so allows us to specify the `'Message'` type when we define the `existingMessages` and `userMessage` attributes with the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+The `MessageList()` view is in charge of loading some messages from the backend and rendering them.
 
-<!-- </if> -->
+We use the [`useAsyncCall()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-call-react-hook) hook to track the loading of the messages. When the messages are being loaded, we returns `null`, and if the loading fails we renders an error message. Otherwise, we we render the loaded messages using their `Viewer()` view.
 
-Note that the `userMessage` attribute has a default value which is a new instance of `Message`, and to create this instance, we invoke `new this.constructor.Message()` instead of just `new Message()`. The former is a bit more verbose but it brings a lot of benefits. First, it is a good practice to reduce the direct references to an external component as much as possible. Second, when we access a component through a reference that is managed by the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator, we can take advantage of some advanced Liaison's features such as [component forking](https://liaison.dev/docs/v1/reference/component?language=js#forking).
+###### `MessageCreator()` View
 
-Then comes the `View()` method that is pretty straightforward. It's like a React function component, except that it is a method executed with a Liaison component (a `Guestbook` instance) as `this` context.
+The `createdMessage` variable is initialized using the [`useRecomputableMemo()`](https://liaison.dev/docs/v1/reference/react-integration#use-recomputable-memo-react-hook) hook, which plays the same role as the React [useMemo()](https://reactjs.org/docs/hooks-reference.html#usememo) hook, but in addition to a memoized value, we get a function that we can call anytime to recompute the memoized value.
 
-Just like the [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, the [`useAsyncCall()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-call-react-hook) hook allows us to track the execution of an asynchronous function, but the function is automatically called when the view is rendered for the first time. In the present case, the function loads some `Message` instances from the backend by using the [`find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) method in the same way as in the previous [CLI frontend](https://liaison.dev/docs/v1/introduction/data-storage#implementing-the-frontend).
+The `saveMessage()` callback is simply defined using the React [useCallback()](https://reactjs.org/docs/hooks-reference.html#usecallback) hook, and it is later passed to the `createdMessage`'s `Form()` view so the message can be saved when the user clicks the "Submit" button.
 
-The `addMessage()` function is defined through the [`useAsyncCallback()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-callback-react-hook) hook and it is later passed to the Message's `Editor()` view so the `userMessage` can be saved when the user clicks the "Submit" button.
+Once the `createdMessage` is saved, we add it to the `existingMessages` so it can be instantly displayed with all other messages.
 
-> Note that since we don't track the execution of the `addMessage()` function, the React's built-in [`useCallback()`](https://reactjs.org/docs/hooks-reference.html#usecallback) hook could be used as well.
-
-Once the `userMessage` is saved, we add it to the `existingMessages` so it can be instantly displayed with all other messages. Then, we set the `userMessage` to a new `Message` instance so the user can write another message if he wants.
-
-Finally, an instance of `Guestbook` is created, and `<guestbook.View() />` is mounted into the DOM with [`ReactDOM.render()`](https://reactjs.org/docs/react-dom.html#render).
+Lastly, we reset the `createdMessage` by calling `resetCreatedMessage()`.
 
 #### Wrapping Up
 
