@@ -1,9 +1,4 @@
-import {
-  AbstractRouter,
-  AbstractRouterOptions,
-  normalizeURL,
-  stringifyURL
-} from '@liaison/abstract-router';
+import {Router, RouterOptions, normalizeURL, stringifyURL} from '@liaison/router';
 import {PlainObject} from 'core-helpers';
 import debounce from 'lodash/debounce';
 
@@ -21,9 +16,9 @@ export type BrowserRouterLinkProps = {
   activeStyle?: React.CSSProperties;
 };
 
-export type BrowserRouterOptions = AbstractRouterOptions;
+export type BrowserRouterOptions = RouterOptions;
 
-export class BrowserRouter extends AbstractRouter {
+export class BrowserRouter extends Router {
   constructor(options: BrowserRouterOptions = {}) {
     super(options);
   }

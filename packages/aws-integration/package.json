@@ -1,6 +1,6 @@
 {
   "name": "@liaison/aws-integration",
-  "version": "0.5.34",
+  "version": "0.5.36",
   "description": "AWS integration for Liaison",
   "keywords": [
     "liaison",
@@ -28,8 +28,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component-server": "^0.5.40",
-    "@types/aws-lambda": "^8.10.61",
+    "@liaison/component-server": "^0.5.41",
+    "@types/aws-lambda": "^8.10.62",
     "core-helpers": "^0.1.26",
     "lodash": "^4.17.20",
     "tslib": "^1.13.0"
@@ -37,6 +37,6 @@
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.23",
     "@mvila/tsconfig": "^1.0.4",
-    "@types/lodash": "^4.14.160"
+    "@types/lodash": "^4.14.161"
   }
 }

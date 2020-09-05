@@ -1,17 +1,17 @@
 import {PlainObject, getTypeOf} from 'core-helpers';
 
-import type {AbstractRouter} from './abstract-router';
+import type {Router} from './router';
 
 export declare class RoutableLike {
   static getComponentName: () => string;
 
   static describeComponent: () => string;
 
-  static getRouter: () => AbstractRouter;
+  static getRouter: () => Router;
 
   static hasRouter: () => boolean;
 
-  static __setRouter: (router: AbstractRouter) => void;
+  static __setRouter: (router: Router) => void;
 
   static findRouteByURL: (url: URL | string) => {route: any; params: PlainObject} | undefined;
 

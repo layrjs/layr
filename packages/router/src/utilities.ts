@@ -1,15 +1,15 @@
 import qs from 'qs';
 import {getTypeOf} from 'core-helpers';
 
-import type {AbstractRouter} from './abstract-router';
+import type {Router} from './router';
 
 const LIAISON_PROTOCOL = 'liaison:';
 
-export function isRouterClass(value: any): value is typeof AbstractRouter {
+export function isRouterClass(value: any): value is typeof Router {
   return typeof value?.isRouter === 'function';
 }
 
-export function isRouterInstance(value: any): value is AbstractRouter {
+export function isRouterInstance(value: any): value is Router {
   return typeof value?.constructor?.isRouter === 'function';
 }
 

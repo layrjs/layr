@@ -1,10 +1,9 @@
-import {normalizeURL} from '@liaison/abstract-router';
-import {AbstractRouter} from '@liaison/abstract-router';
+import {Router, normalizeURL} from '@liaison/router';
 import {BrowserRouterLinkProps} from '@liaison/browser-router';
 import React, {useMemo, useCallback} from 'react';
 
 export function RouterPlugin() {
-  return function (router: AbstractRouter) {
+  return function (router: Router) {
     Object.assign(router, {
       Link(props: BrowserRouterLinkProps) {
         const {to, className, activeClassName, style, activeStyle, ...otherProps} = props;

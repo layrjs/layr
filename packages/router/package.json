@@ -1,6 +1,6 @@
 {
-  "name": "@liaison/abstract-router",
-  "version": "0.5.40",
+  "name": "@liaison/router",
+  "version": "0.5.42",
   "description": "A base class for implementing Liaison routers",
   "keywords": [
     "liaison",
@@ -10,7 +10,7 @@
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/abstract-router",
+  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/router",
   "files": [
     "dist"
   ],
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^0.5.74",
+    "@liaison/component": "^0.5.75",
     "@liaison/observable": "^0.5.8",
     "core-helpers": "^0.1.26",
     "qs": "^6.9.4",

@@ -1,11 +1,11 @@
-# @liaison/abstract-router
+# @liaison/router
 
 A base class for implementing Liaison routers.
 
 ## Installation
 
 ```
-npm install @liaison/abstract-router
+npm install @liaison/router
 ```
 
 ## License

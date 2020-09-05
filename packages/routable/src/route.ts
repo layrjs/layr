@@ -1,4 +1,4 @@
-import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@liaison/abstract-router';
+import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@liaison/router';
 import {match, compile, MatchFunction, PathFunction} from 'path-to-regexp';
 import pick from 'lodash/pick';
 

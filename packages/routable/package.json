@@ -1,6 +1,6 @@
 {
   "name": "@liaison/routable",
-  "version": "0.5.55",
+  "version": "0.5.57",
   "description": "Makes the methods of your Liaison components callable by URL",
   "keywords": [
     "liaison",
@@ -30,8 +30,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/abstract-router": "^0.5.40",
-    "@liaison/component": "^0.5.74",
+    "@liaison/component": "^0.5.75",
+    "@liaison/router": "^0.5.42",
     "core-helpers": "^0.1.26",
     "debug": "^4.1.1",
     "lodash": "^4.17.20",
@@ -43,6 +43,6 @@
     "@mvila/tsconfig": "^1.0.4",
     "@types/debug": "^4.1.5",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.160"
+    "@types/lodash": "^4.14.161"
   }
 }

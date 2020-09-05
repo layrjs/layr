@@ -1,4 +1,4 @@
-import {AbstractRouter, URLOptions, NavigationOptions} from '@liaison/abstract-router';
+import {Router, URLOptions, NavigationOptions} from '@liaison/router';
 
 import type {RoutableComponent} from './routable';
 import type {RouteOptions, RoutePattern} from './route';
@@ -45,7 +45,7 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
     const decorateWithRouter = function (
       this: typeof RoutableComponent,
       method: Function,
-      router: AbstractRouter
+      router: Router
     ) {
       defineMethod(method, 'navigate', function (
         this: Function,

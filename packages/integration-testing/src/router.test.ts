@@ -1,9 +1,9 @@
 import {Component, provide} from '@liaison/component';
 import {Routable, route} from '@liaison/routable';
-import {AbstractRouter, isRouterInstance} from '@liaison/abstract-router';
+import {Router, isRouterInstance} from '@liaison/router';
 
-describe('AbstractRouter', () => {
-  class MockRouter extends AbstractRouter {
+describe('Router', () => {
+  class MockRouter extends Router {
     _getCurrentURL() {
       return new URL('http://localhost/');
     }

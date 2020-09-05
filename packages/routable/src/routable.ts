@@ -1,5 +1,5 @@
 import {Component, isComponentClass} from '@liaison/component';
-import {AbstractRouter, normalizeURL} from '@liaison/abstract-router';
+import {Router, normalizeURL} from '@liaison/router';
 import {hasOwnProperty, getTypeOf, Constructor} from 'core-helpers';
 import debugModule from 'debug';
 
@@ -26,7 +26,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
   class Routable extends Base {
     // === Router registration ===
 
-    static __router: AbstractRouter | undefined;
+    static __router: Router | undefined;
 
     static getRouter() {
       const router = this.__router;
@@ -52,7 +52,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       return (this.constructor as typeof RoutableComponent).hasRouter();
     }
 
-    static __setRouter(router: AbstractRouter) {
+    static __setRouter(router: Router) {
       Object.defineProperty(this, '__router', {value: router});
     }
 

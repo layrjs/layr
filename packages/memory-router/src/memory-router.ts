@@ -1,11 +1,11 @@
-import {AbstractRouter, AbstractRouterOptions, normalizeURL} from '@liaison/abstract-router';
+import {Router, RouterOptions, normalizeURL} from '@liaison/router';
 
-export type MemoryRouterOptions = AbstractRouterOptions & {
+export type MemoryRouterOptions = RouterOptions & {
   initialURLs?: string[];
   initialIndex?: number;
 };
 
-export class MemoryRouter extends AbstractRouter {
+export class MemoryRouter extends Router {
   _urls: URL[];
   _index: number;
 

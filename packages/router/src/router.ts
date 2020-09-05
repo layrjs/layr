@@ -28,16 +28,16 @@ export type URLOptions = {hash?: string};
 
 export type NavigationOptions = {silent?: boolean; defer?: boolean};
 
-type RouterPlugin = (router: AbstractRouter) => void;
+type RouterPlugin = (router: Router) => void;
 
 type CustomRouteDecorator = (method: Function) => void;
 
-export type AbstractRouterOptions = {
+export type RouterOptions = {
   plugins?: RouterPlugin[];
 };
 
-export abstract class AbstractRouter extends Observable(Object) {
-  constructor(options: AbstractRouterOptions = {}) {
+export abstract class Router extends Observable(Object) {
+  constructor(options: RouterOptions = {}) {
     super();
 
     const {plugins, ...otherOptions} = options;
@@ -328,7 +328,7 @@ export abstract class AbstractRouter extends Observable(Object) {
 
   // === Utilities ===
 
-  static isRouter(value: any): value is AbstractRouter {
+  static isRouter(value: any): value is Router {
     return isRouterInstance(value);
   }
 }

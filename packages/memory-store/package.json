@@ -1,6 +1,6 @@
 {
   "name": "@liaison/memory-store",
-  "version": "0.5.36",
+  "version": "0.5.38",
   "description": "A Liaison store using memory (useful for testing)",
   "keywords": [
     "liaison",
@@ -26,8 +26,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^0.5.74",
-    "@liaison/store": "^0.5.33",
+    "@liaison/component": "^0.5.75",
+    "@liaison/store": "^0.5.35",
     "core-helpers": "^0.1.26",
     "lodash": "^4.17.20",
     "sort-on": "^4.1.0",
@@ -36,6 +36,6 @@
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.23",
     "@mvila/tsconfig": "^1.0.4",
-    "@types/lodash": "^4.14.160"
+    "@types/lodash": "^4.14.161"
   }
 }
