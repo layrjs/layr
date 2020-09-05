@@ -4,7 +4,7 @@ In the [previous guide](https://liaison.dev/docs/v1/introduction/data-storage), 
 
 > TLDR: The completed project is available in the <!-- <if language="js"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-web-js)<!-- </if> --><!-- <if language="ts"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-web-ts)<!-- </if> -->.
 
-#### Bootstrapping the Project
+#### Preparing the Project
 
 Since we're going to use the same backend as before, you can duplicate the [previous project](https://liaison.dev/docs/v1/introduction/data-storage) or simply modify it in place.
 
@@ -566,7 +566,7 @@ async function main() {
 main().catch((error) => console.error(error));
 ```
 
-> Note that in a real application, we'd spread the code into multiple files. For example, we'd have one file for each class, and one more file for the `main()` function. But to keep this guide simple, we've put everything in a single file. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of codebase that is organized into multiple files.
+> Note that in a real application, we'd spread the code into multiple files. For example, we'd have one file for each class and one more file for the `main()` function. But to keep this guide simple, we've put everything in a single file. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of a codebase that is organized into multiple files.
 
 There is a bunch of code, but if you know a bit of React, it should be pretty easy to read. Compared to the previous [CLI frontend](https://liaison.dev/docs/v1/introduction/data-storage#implementing-the-frontend), we've introduced a few new Liaison concepts, and we're going to explore them. But before that, let's start the frontend so you can see how it looks like.
 
@@ -641,9 +641,11 @@ The `Home()` view is pretty straightforward. It just renders other views (`Messa
 
 The `MessageList()` view is in charge of loading some messages from the backend and rendering them.
 
-We use the [`useAsyncCall()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-call-react-hook) hook to track the loading of the messages. When the messages are being loaded, we returns `null`, and if the loading fails we renders an error message. Otherwise, we we render the loaded messages using their `Viewer()` view.
+We use the [`useAsyncCall()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-call-react-hook) hook to track the loading of the messages. When the messages are being loaded, we return `null`, and if the loading fails we render an error message. Otherwise, we render the loaded messages using their `Viewer()` view.
 
 ###### `MessageCreator()` View
+
+The `MessageCreator()` view allows the user to create a new message and save it into the backend.
 
 The `createdMessage` variable is initialized using the [`useRecomputableMemo()`](https://liaison.dev/docs/v1/reference/react-integration#use-recomputable-memo-react-hook) hook, which plays the same role as the React [useMemo()](https://reactjs.org/docs/hooks-reference.html#usememo) hook, but in addition to a memoized value, we get a function that we can call anytime to recompute the memoized value.
 
