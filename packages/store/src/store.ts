@@ -263,7 +263,6 @@ export abstract class Store {
    * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
    *
    * store.registerStorable(Movie);
-   *
    * ```
    *
    * @category Component Registration

@@ -179,21 +179,21 @@
             "../packages/storable/src/decorators.ts",
             "../packages/storable/src/utilities.ts"
           ],
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "StorableProperty",
           "slug": "storable-property",
           "file": "reference/storable-property.md",
           "source": ["../packages/storable/src/properties/storable-property.ts"],
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "StorableAttribute",
           "slug": "storable-attribute",
           "file": "reference/storable-attribute.md",
           "source": ["../packages/storable/src/properties/storable-attribute.ts"],
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "StorablePrimaryIdentifierAttribute",
@@ -202,7 +202,7 @@
           "source": [
             "../packages/storable/src/properties/storable-primary-identifier-attribute.ts"
           ],
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "StorableSecondaryIdentifierAttribute",
@@ -211,42 +211,49 @@
           "source": [
             "../packages/storable/src/properties/storable-secondary-identifier-attribute.ts"
           ],
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "StorableMethod",
           "slug": "storable-method",
           "file": "reference/storable-method.md",
           "source": ["../packages/storable/src/properties/storable-method.ts"],
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",
           "source": "../packages/store/src/query.ts",
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "Store",
           "slug": "store",
           "file": "reference/store.md",
           "source": "../packages/store/src/store.ts",
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "MongoDBStore",
           "slug": "mongodb-store",
           "file": "reference/mongodb-store.md",
           "source": "../packages/mongodb-store/src/mongodb-store.ts",
-          "category": "Storability"
+          "category": "Storage"
         },
         {
           "title": "MemoryStore",
           "slug": "memory-store",
           "file": "reference/memory-store.md",
           "source": "../packages/memory-store/src/memory-store.ts",
-          "category": "Storability"
+          "category": "Storage"
+        },
+        {
+          "title": "Router",
+          "slug": "router",
+          "file": "reference/router.md",
+          "source": "../packages/router/src/router.ts",
+          "category": "Routing"
         },
         {
           "title": "aws-integration",
