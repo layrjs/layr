@@ -94,13 +94,13 @@ export class BrowserRouter extends Router {
   }
 
   _fixScrollPosition() {
+    window.scrollTo(0, 0);
+
     const hash = this.getCurrentHash();
 
     if (hash !== undefined) {
       this._expectedHash = hash;
       this._scrollToHash();
-    } else {
-      window.scrollTo(0, 0);
     }
   }
 

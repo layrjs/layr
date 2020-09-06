@@ -1,6 +1,6 @@
 {
   "name": "@liaison/react-integration",
-  "version": "0.5.64",
+  "version": "0.5.65",
   "description": "React integration for Liaison",
   "keywords": [
     "liaison",
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/browser-router": "^0.5.54",
+    "@liaison/browser-router": "^0.5.55",
     "@liaison/component": "^0.5.75",
     "@liaison/observable": "^0.5.8",
     "@liaison/router": "^0.5.42",
