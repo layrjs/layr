@@ -5,10 +5,28 @@ import type {Router} from './router';
 
 const LIAISON_PROTOCOL = 'liaison:';
 
+/**
+ * Returns whether the specified value is a routable component class.
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isRouterClass(value: any): value is typeof Router {
   return typeof value?.isRouter === 'function';
 }
 
+/**
+ * Returns whether the specified value is a routable component instance.
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isRouterInstance(value: any): value is Router {
   return typeof value?.constructor?.isRouter === 'function';
 }

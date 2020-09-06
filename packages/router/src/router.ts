@@ -697,6 +697,14 @@ export abstract class Router extends Observable(Object) {
 
   Link!: (props: any) => any;
 
+  // === Observability ===
+
+  /**
+   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   *
+   * @category Observability
+   */
+
   // === Customization ===
 
   applyPlugins(plugins: RouterPlugin[]) {

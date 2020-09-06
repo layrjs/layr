@@ -252,7 +252,7 @@
           "title": "Router",
           "slug": "router",
           "file": "reference/router.md",
-          "source": "../packages/router/src/router.ts",
+          "source": ["../packages/router/src/router.ts", "../packages/router/src/utilities.ts"],
           "category": "Routing"
         },
         {
