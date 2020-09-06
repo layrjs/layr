@@ -50,7 +50,7 @@ import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utili
  *
  * ##### Backend Usage
  *
- * Call `Storable()` with a [`Component`](https://liaison.dev/docs/v1/reference/component) class to construct a [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class that you can extend with your data model and business logic. Then, register this class into a store such as [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) by using the [`registerStorable()`](https://liaison.dev/docs/v1/reference/mongodb-store#register-storable-instance-method) method (or [`registerRootComponent()`](https://liaison.dev/docs/v1/reference/mongodb-store#register-root-component-instance-method) to register several components at once).
+ * Call `Storable()` with a [`Component`](https://liaison.dev/docs/v1/reference/component) class to construct a [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class that you can extend with your data model and business logic. Then, register this class into a store such as [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) by using the [`registerStorable()`](https://liaison.dev/docs/v1/reference/store#register-storable-instance-method) method (or [`registerRootComponent()`](https://liaison.dev/docs/v1/reference/store#register-root-component-instance-method) to register several components at once).
  *
  * **Example:**
  *

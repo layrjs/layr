@@ -6,7 +6,7 @@ import type {Router} from './router';
 const LIAISON_PROTOCOL = 'liaison:';
 
 /**
- * Returns whether the specified value is a routable component class.
+ * Returns whether the specified value is a router class.
  *
  * @param value A value of any type.
  *
@@ -19,7 +19,7 @@ export function isRouterClass(value: any): value is typeof Router {
 }
 
 /**
- * Returns whether the specified value is a routable component instance.
+ * Returns whether the specified value is a router instance.
  *
  * @param value A value of any type.
  *

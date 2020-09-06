@@ -249,6 +249,16 @@
           "category": "Storage"
         },
         {
+          "title": "Routable()",
+          "slug": "routable",
+          "file": "reference/routable.md",
+          "source": [
+            "../packages/routable/src/routable.ts",
+            "../packages/routable/src/utilities.ts"
+          ],
+          "category": "Routing"
+        },
+        {
           "title": "Router",
           "slug": "router",
           "file": "reference/router.md",
