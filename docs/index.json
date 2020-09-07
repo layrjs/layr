@@ -273,6 +273,13 @@
           "category": "Routing"
         },
         {
+          "title": "BrowserRouter",
+          "slug": "browser-router",
+          "file": "reference/browser-router.md",
+          "source": "../packages/browser-router/src/browser-router.ts",
+          "category": "Routing"
+        },
+        {
           "title": "MemoryRouter",
           "slug": "memory-router",
           "file": "reference/memory-router.md",
