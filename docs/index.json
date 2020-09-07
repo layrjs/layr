@@ -259,6 +259,13 @@
           "category": "Routing"
         },
         {
+          "title": "Route",
+          "slug": "route",
+          "file": "reference/route.md",
+          "source": "../packages/routable/src/route.ts",
+          "category": "Routing"
+        },
+        {
           "title": "Router",
           "slug": "router",
           "file": "reference/router.md",

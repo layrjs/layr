@@ -32,7 +32,7 @@ type CollectionMap = {[name: string]: Collection};
  *
  * Create a `MemoryStore` instance, register some [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class) into it, and then use any [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class)'s method to load, save, delete, or find components from the store.
  *
- * See an example use in the [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) class.
+ * See an example of use in the [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) class.
  */
 export class MemoryStore extends Store {
   /**

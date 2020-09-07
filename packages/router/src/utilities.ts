@@ -38,7 +38,7 @@ export function normalizeURL(url: URL | string) {
 
   if (typeof url !== 'string') {
     throw new Error(
-      `Expected a string or an URL instance, but received a value of type '${getTypeOf(url)}'`
+      `Expected a string or a URL instance, but received a value of type '${getTypeOf(url)}'`
     );
   }
 
@@ -51,7 +51,7 @@ export function normalizeURL(url: URL | string) {
 
 export function stringifyURL(url: URL) {
   if (!(url instanceof URL)) {
-    throw new Error(`Expected an URL instance, but received a value of type '${getTypeOf(url)}'`);
+    throw new Error(`Expected a URL instance, but received a value of type '${getTypeOf(url)}'`);
   }
 
   let urlString = url.toString();

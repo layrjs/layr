@@ -450,7 +450,7 @@ export abstract class Router extends Observable(Object) {
   }
 
   /**
-   * Returns the current hash (i.e., the fragment identifier) of the current URL. If the current URL doesn't contain a hash, returns `undefined`.
+   * Returns the hash (i.e., the [fragment identifier](https://en.wikipedia.org/wiki/URI_fragment)) contained in the current URL. If the current URL doesn't contain a hash, returns `undefined`.
    *
    * @returns A string or `undefined`.
    *

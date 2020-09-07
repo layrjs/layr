@@ -47,7 +47,7 @@ const debug = debugModule('liaison:routable');
  *
  * Once you have a routable component, you can use any method provided by the `Routable()` mixin.
  *
- * For example, to call the `upvote()` method by an URL, you can use the [`callRouteByURL()`](https://liaison.dev/docs/v1/reference/routable#call-route-by-url-static-method) method:
+ * For example, to call the `upvote()` method by a URL, you can use the [`callRouteByURL()`](https://liaison.dev/docs/v1/reference/routable#call-route-by-url-static-method) method:
  *
  * ```
  * await Article.callRouteByURL('/articles/abc123/upvote');
@@ -238,7 +238,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      * Sets a route in the storable component.
      *
      * @param name The name of the route.
-     * @param pattern A string specifying the URL pattern associated with the route.
+     * @param pattern A string specifying the [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) associated with the route.
      * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://liaison.dev/docs/v1/reference/route#constructor) when the route is created.
      *
      * @returns The [Route](https://liaison.dev/docs/v1/reference/route) instance that was created.

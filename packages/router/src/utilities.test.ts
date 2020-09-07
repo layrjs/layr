@@ -14,7 +14,7 @@ describe('Utilities', () => {
 
     // @ts-expect-error
     expect(() => normalizeURL(123)).toThrow(
-      "Expected a string or an URL instance, but received a value of type 'number'"
+      "Expected a string or a URL instance, but received a value of type 'number'"
     );
 
     expect(() => normalizeURL('https://?')).toThrow(

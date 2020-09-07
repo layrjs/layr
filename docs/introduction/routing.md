@@ -244,9 +244,7 @@ Then, add the following view inside the `Guestbook` component:
 
 Besides some React code, we've used some new Liaison's features that deserve an explanation.
 
-Liaison uses the excellent [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) module to handle the URL patterns, so any pattern that is supported by `path-to-regexp` is supported by Liaison as well.
-
-The `MessageEditor()` view is associated to the `'/messages/:id'` URL pattern, where the `:id` part represents a parameter specifying the `id` of a message. So, for example, if the user navigates to `'/messages/abc123'`, the `MessageEditor()` method will be called with the following parameter: `{id: 'abc123'}`.
+The `MessageEditor()` view is associated to the `'/messages/:id'` [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type), where the `:id` part represents a parameter specifying the `id` of a message. So, for example, if the user navigates to `'/messages/abc123'`, the `MessageEditor()` method will be called with the following parameter: `{id: 'abc123'}`.
 
 We use the [`useAsyncMemo()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-memo-react-hook) hook to track the loading of the message. Right after the message was loaded (`existingMessage`) with the `StorableComponent`'s [`get()`](https://liaison.dev/docs/v1/reference/storable#get-class-method) method, we fork it (`editedMessage`) by using the Component's [`fork()`](https://liaison.dev/docs/v1/reference/component#fork-instance-method) method. Component forking is a unique feature of Liaison. In a nutshell, forking is like copying, except that it is extremely fast and memory efficient.
 
