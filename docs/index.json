@@ -273,6 +273,13 @@
           "category": "Routing"
         },
         {
+          "title": "MemoryRouter",
+          "slug": "memory-router",
+          "file": "reference/memory-router.md",
+          "source": "../packages/memory-router/src/memory-router.ts",
+          "category": "Routing"
+        },
+        {
           "title": "aws-integration",
           "slug": "aws-integration",
           "file": "reference/aws-integration.md",

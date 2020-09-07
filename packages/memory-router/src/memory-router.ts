@@ -5,10 +5,31 @@ export type MemoryRouterOptions = RouterOptions & {
   initialIndex?: number;
 };
 
+/**
+ * *Inherits from [`Router`](https://liaison.dev/docs/v1/reference/router).*
+ *
+ * A [`Router`](https://liaison.dev/docs/v1/reference/router) that keeps the navigation history in memory. Useful in tests and non-browser environments like [React Native](https://reactnative.dev/).
+ *
+ * #### Usage
+ *
+ * Create a `MemoryRouter` instance and register some [routable components](https://liaison.dev/docs/v1/reference/routable#routable-component-class) into it.
+ *
+ * See an example of use in the [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) class.
+ */
 export class MemoryRouter extends Router {
   _urls: URL[];
   _index: number;
 
+  /**
+   * Creates a [`MemoryRouter`](https://liaison.dev/docs/v1/reference/memory-router).
+   *
+   * @param [options.initialURLs] An array of URLs to populate the initial navigation history (default: `[]`).
+   * @param [options.initialIndex] A number specifying the current entry's index in the navigation history (default: the index of the last entry in the navigation history).
+   *
+   * @returns The [`MemoryRouter`](https://liaison.dev/docs/v1/reference/memory-router) instance that was created.
+   *
+   * @category Creation
+   */
   constructor(options: MemoryRouterOptions = {}) {
     const {initialURLs = [], initialIndex = initialURLs.length - 1, ...otherOptions} = options;
 
@@ -18,6 +39,30 @@ export class MemoryRouter extends Router {
     this._index = initialIndex;
   }
 
+  // === Component Registration ===
+
+  /**
+   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#component-registration) class.
+   *
+   * @category Component Registration
+   */
+
+  // === Routes ===
+
+  /**
+   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#routes) class.
+   *
+   * @category Routes
+   */
+
+  // === Current Location ===
+
+  /**
+   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#current-location) class.
+   *
+   * @category Current Location
+   */
+
   _getCurrentURL() {
     if (this._index === -1) {
       throw new Error('The router has no current URL');
@@ -25,6 +70,14 @@ export class MemoryRouter extends Router {
 
     return this._urls[this._index];
   }
+
+  // === Navigation ===
+
+  /**
+   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#navigation) class.
+   *
+   * @category Navigation
+   */
 
   _navigate(url: URL) {
     this._urls.splice(this._index + 1);
@@ -60,4 +113,12 @@ export class MemoryRouter extends Router {
   _getHistoryLength() {
     return this._urls.length;
   }
+
+  // === Observability ===
+
+  /**
+   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   *
+   * @category Observability
+   */
 }
