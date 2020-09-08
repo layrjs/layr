@@ -201,6 +201,40 @@ export class BrowserRouter extends Router {
     return window.history.length;
   }
 
+  /**
+   * Renders a link that is managed by the router.
+   *
+   * This method is only available when you create your router by using the [`useBrowserRouter()`](https://liaison.dev/docs/v1/reference/react-integration#use-browser-router-react-hook) React hook.
+   *
+   * Note that instead of using this method, you can use the handy `Link()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   *
+   * @param props.to A string representing the target URL of the link.
+   * @param props.className A [`className`](https://reactjs.org/docs/dom-elements.html#classname) attribute to apply to the rendered link.
+   * @param props.activeClassName An additional [`className`](https://reactjs.org/docs/dom-elements.html#classname) attribute to apply to the rendered link when the URL of the current router's route is the same as the target URL of the link.
+   * @param props.style A [`style`](https://reactjs.org/docs/dom-elements.html#style) attribute to apply to the rendered link.
+   * @param props.activeStyle An additional [`style`](https://reactjs.org/docs/dom-elements.html#style) attribute to apply to the rendered link when the URL of the current router's route is the same as the target URL of the link.
+   *
+   * @returns An `<a>` React element.
+   *
+   * @example
+   * ```
+   * class Frontend extends Routable(Component) {
+   *    ﹫route('/') @view static Home() {
+   *      const router = this.getRouter();
+   *      return <router.Link to="/about-us">About Us</router.Link>;
+   *
+   *      // Same as above, but in a more idiomatic way:
+   *      return <this.AboutUs.Link>About Us</this.AboutUs.Link>;
+   *    }
+   *
+   *    ﹫route('/about-us') @view static AboutUs() {
+   *      return <div>Here is everything about us.<div>;
+   *    }
+   * }
+   * ```
+   *
+   * @category Link Rendering
+   */
   Link!: (props: BrowserRouterLinkProps) => any;
 
   // === Observability ===

@@ -528,6 +528,8 @@ export abstract class Router extends Observable(Object) {
    *
    * The observers of the router are automatically called.
    *
+   * Note that instead of using this method, you can use the handy `navigate()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
    * @param [options.defer] A boolean specifying whether the calling of the router's observers should be deferred to the next tick (default: `false`).
@@ -535,6 +537,9 @@ export abstract class Router extends Observable(Object) {
    * @example
    * ```
    * router.navigate('/movies/inception');
+   *
+   * // Same as above, but in a more idiomatic way:
+   * Movie.Viewer.navigate({slug: 'inception});
    * ```
    *
    * @category Navigation
@@ -563,6 +568,8 @@ export abstract class Router extends Observable(Object) {
    *
    * The observers of the router are automatically called.
    *
+   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
    * @param [options.defer] A boolean specifying whether the calling of the router's observers should be deferred to the next tick (default: `false`).
@@ -570,6 +577,9 @@ export abstract class Router extends Observable(Object) {
    * @example
    * ```
    * router.redirect('/sign-in');
+   *
+   * // Same as above, but in a more idiomatic way:
+   * Session.SignIn.redirect();
    * ```
    *
    * @category Navigation
@@ -594,11 +604,16 @@ export abstract class Router extends Observable(Object) {
   /**
    * Reloads the execution environment with the specified URL.
    *
+   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    *
    * @example
    * ```
    * router.reload('/');
+   *
+   * // Same as above, but in a more idiomatic way:
+   * Frontend.Home.reload();
    * ```
    *
    * @category Navigation

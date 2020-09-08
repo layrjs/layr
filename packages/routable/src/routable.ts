@@ -47,7 +47,7 @@ const debug = debugModule('liaison:routable');
  *
  * Once you have a routable component, you can use any method provided by the `Routable()` mixin.
  *
- * For example, to call the `upvote()` method by a URL, you can use the [`callRouteByURL()`](https://liaison.dev/docs/v1/reference/routable#call-route-by-url-static-method) method:
+ * For example, to call the `upvote()` method by a URL, you can use the [`callRouteByURL()`](https://liaison.dev/docs/v1/reference/routable#call-route-by-url-class-method) method:
  *
  * ```
  * await Article.callRouteByURL('/articles/abc123/upvote');

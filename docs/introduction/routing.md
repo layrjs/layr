@@ -45,7 +45,7 @@ class Guestbook extends Routable(Component) {
 }
 ```
 
-Now that the `Guestbook` component is routable, we can use the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator to associate a URL to any of its static methods.
+Now that the `Guestbook` component is routable, we can use the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator to associate a URL to any of its class methods.
 
 Change the `Home()` method as follows:
 
@@ -60,7 +60,7 @@ Change the `Home()` method as follows:
 }
 ```
 
-Voilà! Our `Home()` method (which is also a view) is now associated to the `'/'` URL, and it can be called with the Routable's [`callRouteByURL()`](https://liaison.dev/docs/v1/reference/routable#call-route-by-url-static-method) method:
+Voilà! Our `Home()` method (which is also a view) is now associated to the `'/'` URL, and it can be called with the Routable's [`callRouteByURL()`](https://liaison.dev/docs/v1/reference/routable#call-route-by-url-class-method) method:
 
 ```js
 Guestbook.callRouteByURL('/'); // => Some React elements
@@ -82,7 +82,7 @@ First, let's import the [`useBrowserRouter()`](https://liaison.dev/docs/v1/refer
 import {useBrowserRouter} from '@liaison/react-integration';
 ```
 
-Then, let's implement a new `Guestbook`'s view that will be in charge of creating a [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) (using [`useBrowserRouter()`](https://liaison.dev/docs/v1/reference/react-integration#use-browser-router-react-hook)), calling the current route (with [`callCurrentRoute()`](https://liaison.dev/docs/v1/reference/router#call-current-route-instance-method)), and rendering the result (`content`) inside a minimal layout:
+Then, let's implement a new `Guestbook`'s view that will be in charge of creating a [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) (with [`useBrowserRouter()`](https://liaison.dev/docs/v1/reference/react-integration#use-browser-router-react-hook)), calling the current route (with [`callCurrentRoute()`](https://liaison.dev/docs/v1/reference/router#call-current-route-instance-method)), and rendering the result (`content`) inside a minimal layout:
 
 ```js
 @view() static Root() {
@@ -246,7 +246,7 @@ Besides some React code, we've used some new Liaison's features that deserve an 
 
 The `MessageEditor()` view is associated to the `'/messages/:id'` [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type), where the `:id` part represents a parameter specifying the `id` of a message. So, for example, if the user navigates to `'/messages/abc123'`, the `MessageEditor()` method will be called with the following parameter: `{id: 'abc123'}`.
 
-We use the [`useAsyncMemo()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-memo-react-hook) hook to track the loading of the message. Right after the message was loaded (`existingMessage`) with the `StorableComponent`'s [`get()`](https://liaison.dev/docs/v1/reference/storable#get-class-method) method, we fork it (`editedMessage`) by using the Component's [`fork()`](https://liaison.dev/docs/v1/reference/component#fork-instance-method) method. Component forking is a unique feature of Liaison. In a nutshell, forking is like copying, except that it is extremely fast and memory efficient.
+We use the [`useAsyncMemo()`](https://liaison.dev/docs/v1/reference/react-integration#use-async-memo-react-hook) hook to track the loading of the message. Right after the message was loaded (`existingMessage`) with the `StorableComponent`'s [`get()`](https://liaison.dev/docs/v1/reference/storable#get-class-method) method, we fork it (`editedMessage`) by using the Component's [`fork()`](https://liaison.dev/docs/v1/reference/component#fork-instance-method) method. Component forking is a unique feature of Liaison, and, in a nutshell, it is like copying, except that it is extremely fast and memory efficient.
 
 To explain why we need to fork the loaded message, we need to talk a bit about how Liaison is managing the instances of a component. When a component instance has a [primary identifier](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) (e.g., an `id` attribute), it is managed by an [identity map](https://liaison.dev/docs/v1/reference/identity-map) that ensures that in the whole application there can only be one component instance with a specific identifier.
 
@@ -265,7 +265,7 @@ The `saveMessage()` callback does three things:
 
 1. It [saves](https://liaison.dev/docs/v1/reference/storable#save-instance-method) the message fork (`editedMessage`) to the backend.
 2. It [merges](https://liaison.dev/docs/v1/reference/component#merge-instance-method) the message fork (`editedMessage`) into the original message (`existingMessage`) so the changes made by the user can be reflected in the `MessageList()` view.
-3. It [navigates](https://liaison.dev/docs/v1/reference/route#navigate-instance-method) to the Guestbook's `Home` view.
+3. It [navigates](https://liaison.dev/docs/v1/reference/router#navigate-instance-method) to the Guestbook's `Home` view.
 
 The rest of the `MessageEditor()` view is just regular React code.
 
@@ -281,9 +281,9 @@ In the `MessageList()` view, add the following lines right after the `<message.V
 </div>
 ```
 
-What's going on there? `MessageEditor()` being both a view (thanks to the the [`@view()`](https://liaison.dev/docs/v1/reference/react-integration#view-decorator) decorator) and a route (thanks to the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator), we're automatically getting an handy `Link()` React component that we can use to display a link (rendered as an `<a>` HTML tag) so the user can navigate to the `MessageEditor()` view.
+What's going on there? `MessageEditor()` being both a view (thanks to the the [`@view()`](https://liaison.dev/docs/v1/reference/react-integration#view-decorator) decorator) and a route (thanks to the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator), we're automatically getting an handy [`Link()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) shortcut function that we can use to display a link (rendered as an `<a>` HTML tag) so the user can navigate to the `MessageEditor()` view.
 
-How does the `MessageEditor()` view know which message to edit? The current `message` being specified in the `params` attribute of the `Link()` React component, the `MessageEditor()` view is executed with the `message` as first parameter.
+How does the `MessageEditor()` view know which message to edit? The current `message` being specified in the `params` attribute of the [`Link()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) shortcut function, the `MessageEditor()` view is executed with the `message` as first parameter.
 
 #### Testing the Application
 

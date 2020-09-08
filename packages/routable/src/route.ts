@@ -13,7 +13,7 @@ export type RouteOptions = {
  *
  * A route is composed of:
  *
- * - A name matching a static method of the [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class) that contains the route.
+ * - A name matching a class method of the [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class) that contains the route.
  * - The canonical [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) of the route.
  * - Some [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) aliases.
  *
