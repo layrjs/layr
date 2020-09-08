@@ -27,6 +27,8 @@ export type BrowserRouterOptions = RouterOptions;
  *
  * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserRouter` in your application is to use the [`useBrowserRouter()`](https://liaison.dev/docs/v1/reference/react-integration#use-browser-router-react-hook) hook that is provided by the `@liaison/react-integration` package.
  *
+ * > See the ["Bringing Some Routes"](https://liaison.dev/docs/v1/introduction/routing) guide for a comprehensive example using the `useBrowserRouter()` hook.
+ *
  * Otherwise, you can create a `BrowserRouter` instance manually, register some [routable components](https://liaison.dev/docs/v1/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
  *
  * **Example:**
@@ -37,12 +39,12 @@ export type BrowserRouterOptions = RouterOptions;
  * import {BrowserRouter} from '@liaison/browser-router';
  *
  * class Frontend extends Routable(Component) {
- *   ﹫route('/') Home() {
+ *   ﹫route('/') static Home() {
  *     // Return the content of the home page...
  *     return 'Home Page';
  *   }
  *
- *   ﹫route('/about') About() {
+ *   ﹫route('/about') static About() {
  *     // Return the content of the about page...
  *     return 'About Page';
  *   }

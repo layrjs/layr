@@ -254,6 +254,7 @@
           "file": "reference/routable.md",
           "source": [
             "../packages/routable/src/routable.ts",
+            "../packages/routable/src/decorators.ts",
             "../packages/routable/src/utilities.ts"
           ],
           "category": "Routing"
