@@ -1,18 +1,21 @@
-import {Layer} from '@liaison/liaison';
+import {ComponentClient} from '@liaison/component-client';
 
-import {Counter as BaseCounter} from './shared';
-import {backendLayer} from './backend';
+import {server} from './backend';
 
-class Counter extends BaseCounter {
-  async increment() {
-    await super.increment(); // Backend's `increment()` method is invoked
-    console.log(this.value); // Additional code is executed in the frontend
+// We create a client that is connected to the backend's server
+const client = new ComponentClient(server);
+
+// We get the backend's Counter component
+const BackendCounter = client.getComponent();
+
+// We extends the backend's Counter component so we can override the increment() method
+class Counter extends BackendCounter {
+  increment() {
+    super.increment(); // The backend's `increment()` method is invoked
+    console.log(this.value); // Some additional code is executed in the frontend
   }
 }
 
-// We register the frontend class into a layer which is a child of the backend
-const frontendLayer = new Layer({Counter}, {parent: backendLayer});
-
-// Lastly, we consume it
-const counter = new frontendLayer.Counter();
+// Lastly, we consume the Counter
+const counter = new Counter();
 counter.increment();

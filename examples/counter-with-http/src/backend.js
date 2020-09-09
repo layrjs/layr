@@ -1,5 +1,5 @@
 import {Component, primaryIdentifier, attribute, method, expose} from '@liaison/component';
-import {ComponentServer} from '@liaison/component-server';
+import {ComponentHTTPServer} from '@liaison/component-http-server';
 
 class Counter extends Component {
   // We need a primary identifier so a Counter instance
@@ -16,5 +16,6 @@ class Counter extends Component {
   }
 }
 
-// We serve the Counter through a ComponentServer
-export const server = new ComponentServer(Counter);
+// We serve the Counter through a ComponentHTTPServer
+const server = new ComponentHTTPServer(Counter, {port: 3210});
+server.start();

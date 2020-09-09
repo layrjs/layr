@@ -1,12 +1,12 @@
 {
-  "name": "counter",
+  "name": "counter-with-http",
   "version": "1.0.0",
   "description": "A simple example to introduce the core concepts of Liaison",
   "private": true,
   "dependencies": {
     "@liaison/component": "^0.5.71",
-    "@liaison/component-client": "^0.5.49",
-    "@liaison/component-server": "^0.5.41"
+    "@liaison/component-http-client": "^0.5.45",
+    "@liaison/component-http-server": "^0.5.35"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",
