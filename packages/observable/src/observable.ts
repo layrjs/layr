@@ -13,6 +13,99 @@ export type ObserverFunction = (...args: any[]) => void;
 
 export type ObserverPayload = {[key: string]: unknown};
 
+/**
+ * Brings observability to any class.
+ *
+ * This mixin is used to construct several Liaison's classes such as [`Component`](https://liaison.dev/docs/v1/reference/component) or [`Attribute`](https://liaison.dev/docs/v1/reference/attribute). So, in most cases, you'll have the capabilities provided by this mixin without having to call it.
+ *
+ * #### Usage
+ *
+ * Call the `Observable()` mixin with any class to construct an [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class. Then, you can add some observers by using the [`addObserver()`](https://liaison.dev/docs/v1/reference/observable#add-observer-dual-method) method, and trigger their execution anytime by using the [`callObservers()`](https://liaison.dev/docs/v1/reference/observable#call-observers-dual-method) method.
+ *
+ * For example, let's define a `Movie` class using the `Observable()` mixin:
+ *
+ * ```
+ * // JS
+ *
+ * import {Observable} from '@liaison/observable';
+ *
+ * class Movie extends Observable(Object) {
+ *   get title() {
+ *     return this._title;
+ *   }
+ *
+ *   set title(title) {
+ *     this._title = title;
+ *     this.callObservers();
+ *   }
+ * }
+ * ```
+ *
+ * ```
+ * // TS
+ *
+ * import {Observable} from '@liaison/observable';
+ *
+ * class Movie extends Observable(Object) {
+ *   _title?: string;
+ *
+ *   get title() {
+ *     return this._title;
+ *   }
+ *
+ *   set title(title: string) {
+ *     this._title = title;
+ *     this.callObservers();
+ *   }
+ * }
+ * ```
+ *
+ * Next, we can create a `Movie` instance, and observe it:
+ *
+ * ```
+ * const movie = new Movie();
+ *
+ * movie.addObserver(() => {
+ *   console.log('The movie's title has changed');
+ * })
+ * ```
+ *
+ * And now, every time we change the title of `movie`, its observer will be automatically executed:
+ *
+ * ```
+ * movie.title = 'Inception';
+ *
+ * // Should display:
+ * // 'The movie's title has changed'
+ * ```
+ *
+ * > Note that the same result could have been achieved by using a Liaison [`Component`](https://liaison.dev/docs/v1/reference/component):
+ * >
+ * > ```
+ * > // JS
+ * >
+ * > import {Component, attribute} from '@liaison/component';
+ * >
+ * > class Movie extends Component {
+ * >   @attribute('string?') title;
+ * > }
+ * > ```
+ * >
+ * > ```
+ * > // TS
+ * >
+ * > import {Component, attribute} from '@liaison/component';
+ * >
+ * > class Movie extends Component {
+ * >   @attribute('string?') title?: string;
+ * > }
+ * > ```
+ *
+ * ### Observable <badge type="primary">class</badge> {#observable-class}
+ *
+ * An `Observable` class is constructed by calling the `Observable()` mixin ([see above](https://liaison.dev/docs/v1/reference/observable#observable-mixin)).
+ * @mixin
+ */
 export function Observable<T extends Constructor>(Base: T) {
   if (!isClass(Base)) {
     throw new Error(
@@ -25,26 +118,188 @@ export function Observable<T extends Constructor>(Base: T) {
   }
 
   const Observable = class extends Base {
+    /**
+     * Adds an observer to the current class or instance.
+     *
+     * @param observer A function that will be automatically executed when the [`callObservers()`](https://liaison.dev/docs/v1/reference/observable#call-observers-dual-method) method is called. Alternatively, you can specify an observable for which the observers should be executed, and doing so, you can connect an observable to another observable.
+     *
+     * @example
+     * ```
+     * Movie.addObserver(() => {
+     *   // A `Movie` class observer
+     * });
+     *
+     * const movie = new Movie();
+     *
+     * movie.addObserver(() => {
+     *   // A `Movie` instance observer
+     * });
+     *
+     * const actor = new Actor();
+     *
+     * // Connect `actor` to `movie` so that when `callObservers()` is called on `actor`,
+     * // then `callObservers()` is automatically called on `movie`
+     * actor.addObserver(movie);
+     * ```
+     *
+     * @category Methods
+     */
     static get addObserver() {
       return this.prototype.addObserver;
     }
 
+    /**
+     * Adds an observer to the current class or instance.
+     *
+     * @param observer A function that will be automatically executed when the [`callObservers()`](https://liaison.dev/docs/v1/reference/observable#call-observers-dual-method) method is called. Alternatively, you can specify an observable for which the observers should be executed, and doing so, you can connect an observable to another observable.
+     *
+     * @example
+     * ```
+     * Movie.addObserver(() => {
+     *   // A `Movie` class observer
+     * });
+     *
+     * const movie = new Movie();
+     *
+     * movie.addObserver(() => {
+     *   // A `Movie` instance observer
+     * });
+     *
+     * const actor = new Actor();
+     *
+     * // Connect `actor` to `movie` so that when `callObservers()` is called on `actor`,
+     * // then `callObservers()` is automatically called on `movie`
+     * actor.addObserver(movie);
+     * ```
+     *
+     * @category Methods
+     */
     addObserver(observer: Observer) {
       this.__getObservers().add(observer);
     }
 
+    /**
+     * Removes an observer from the current class or instance.
+     *
+     * @param observer A function or a connected observable.
+     *
+     * @example
+     * ```
+     * const observer = () => {
+     *   // ...
+     * }
+     *
+     * // Add `observer` to the `Movie` class
+     * Movie.addObserver(observer);
+     *
+     * // Remove `observer` from to the `Movie` class
+     * Movie.removeObserver(observer);
+     *
+     * const movie = new Movie();
+     * const actor = new Actor();
+     *
+     * // Connect `actor` to `movie`
+     * actor.addObserver(movie);
+     *
+     * // Remove the connection between `actor` and `movie`
+     * actor.removeObserver(movie);
+     * ```
+     *
+     * @category Methods
+     */
     static get removeObserver() {
       return this.prototype.removeObserver;
     }
 
+    /**
+     * Removes an observer from the current class or instance.
+     *
+     * @param observer A function or a connected observable.
+     *
+     * @example
+     * ```
+     * const observer = () => {
+     *   // ...
+     * }
+     *
+     * // Add `observer` to the `Movie` class
+     * Movie.addObserver(observer);
+     *
+     * // Remove `observer` from to the `Movie` class
+     * Movie.removeObserver(observer);
+     *
+     * const movie = new Movie();
+     * const actor = new Actor();
+     *
+     * // Connect `actor` to `movie`
+     * actor.addObserver(movie);
+     *
+     * // Remove the connection between `actor` and `movie`
+     * actor.removeObserver(movie);
+     * ```
+     *
+     * @category Methods
+     */
     removeObserver(observer: Observer) {
       this.__getObservers().remove(observer);
     }
 
+    /**
+     * Calls the observers of the current class or instance.
+     *
+     * @param [payload] An optional object to pass to the observers when they are executed.
+     *
+     * @example
+     * ```
+     * const movie = new Movie();
+     *
+     * movie.addObserver((payload) => {
+     *   console.log('Observer called with:', payload);
+     * });
+     *
+     * movie.callObservers();
+     *
+     * // Should display:
+     * // 'Observer called with: undefined'
+     *
+     * movie.callObservers({changes: ['title']});
+     *
+     * // Should display:
+     * // 'Observer called with: {changes: ['title']}'
+     * ```
+     *
+     * @category Methods
+     */
     static get callObservers() {
       return this.prototype.callObservers;
     }
 
+    /**
+     * Calls the observers of the current class or instance.
+     *
+     * @param [payload] An optional object to pass to the observers when they are executed.
+     *
+     * @example
+     * ```
+     * const movie = new Movie();
+     *
+     * movie.addObserver((payload) => {
+     *   console.log('Observer called with:', payload);
+     * });
+     *
+     * movie.callObservers();
+     *
+     * // Should display:
+     * // 'Observer called with: undefined'
+     *
+     * movie.callObservers({changes: ['title']});
+     *
+     * // Should display:
+     * // 'Observer called with: {changes: ['title']}'
+     * ```
+     *
+     * @category Methods
+     */
     callObservers(payload?: ObserverPayload) {
       this.__getObservers().call(payload);
     }
@@ -77,6 +332,48 @@ export function Observable<T extends Constructor>(Base: T) {
   return Observable;
 }
 
+/**
+ * Returns an observable from an existing object or array.
+ *
+ * The returned observable is observed deeply. So, for example, if an object contains a nested object, modifying the nested object will trigger the execution of the parent's observers.
+ *
+ * The returned observable provides the same methods as an [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) instance:
+ *
+ * - [`addObserver()`](https://liaison.dev/docs/v1/reference/observable#add-observer-dual-method)
+ * - [`removeObserver()`](https://liaison.dev/docs/v1/reference/observable#remove-observer-dual-method)
+ * - [`callObservers()`](https://liaison.dev/docs/v1/reference/observable#call-observers-dual-method)
+ *
+ * @param target A JavaScript plain object or array that you want to observe.
+ *
+ * @returns An observable objet or array.
+ *
+ * @example
+ * ```
+ * import {createObservable} from '@liaison/observable';
+ *
+ * // Create an observable `movie`
+ * const movie = createObservable({
+ *   title: 'Inception',
+ *   genres: ['drama'],
+ *   details: {duration: 120}
+ * });
+ *
+ * // Add an observer
+ * movie.addObserver(() => {
+ *   // ...
+ * });
+ *
+ * // Then, any of the following changes on `movie` will call the observer:
+ * movie.title = 'Inception 2';
+ * delete movie.title;
+ * movie.year = 2010;
+ * movie.genres.push('action');
+ * movie.genres[1] = 'sci-fi';
+ * movie.details.duration = 125;
+ * ```
+ *
+ * @category Bringing Observability to an Object or an Array
+ */
 export function createObservable<T extends object>(target: T) {
   if (!canBeObserved(target)) {
     throw new Error(
@@ -282,6 +579,15 @@ export class ObserverSet {
   }
 }
 
+/**
+ * Returns whether the specified value is observable. When a value is observable, you can use any the following methods on it: [`addObserver()`](https://liaison.dev/docs/v1/reference/observable#add-observer-dual-method), [`removeObserver()`](https://liaison.dev/docs/v1/reference/observable#remove-observer-dual-method), and [`callObservers()`](https://liaison.dev/docs/v1/reference/observable#call-observers-dual-method).
+ *
+ * @param value A value of any type.
+ *
+ * @returns A boolean.
+ *
+ * @category Utilities
+ */
 export function isObservable(value: any): value is ObservableType {
   return typeof value?.isObservable === 'function';
 }

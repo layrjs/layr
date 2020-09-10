@@ -339,6 +339,8 @@ export class Attribute extends Observable(Property) {
   /**
    * Sets the value of the attribute. If the type of the value doesn't match the expected type, an error is thrown.
    *
+   * When the attribute's value changes, the observers of the attribute are automatically executed, and the observers of the parent component are executed as well.
+   *
    * @param value The value to be set.
    * @param [options.source] A number specifying the [source of the value](https://liaison.dev/docs/v1/reference/attribute#value-source-type) (default: `0`).
    *

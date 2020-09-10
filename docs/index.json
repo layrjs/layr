@@ -307,6 +307,13 @@
             "../packages/react-integration/src/hooks.ts"
           ],
           "category": "Integrations"
+        },
+        {
+          "title": "Observable()",
+          "slug": "observable",
+          "file": "reference/observable.md",
+          "source": "../packages/observable/src/observable.ts",
+          "category": "Utilities"
         }
       ]
     }
