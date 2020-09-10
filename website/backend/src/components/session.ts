@@ -8,8 +8,8 @@ import {
   validators
 } from '@liaison/component';
 
-import {User} from './user';
-import {JWT} from './jwt';
+import type {User} from './user';
+import type {JWT} from './jwt';
 
 const TOKEN_DURATION = 31536000000; // 1 year
 

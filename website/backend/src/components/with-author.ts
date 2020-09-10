@@ -2,7 +2,7 @@ import {expose} from '@liaison/component';
 import {attribute} from '@liaison/storable';
 import {role} from '@liaison/with-roles';
 
-import {Entity} from './entity';
+import type {Entity} from './entity';
 
 export const WithAuthor = (Base: typeof Entity) => {
   class WithAuthor extends Base {

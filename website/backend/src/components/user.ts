@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import compact from 'lodash/compact';
 
 import {Entity} from './entity';
-import {JWT} from './jwt';
+import type {JWT} from './jwt';
 
 const BCRYPT_SALT_ROUNDS = 5;
 const INVITE_TOKEN_DURATION = 604800000; // 1 week

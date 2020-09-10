@@ -2,7 +2,7 @@ import {Component, consume, expose, AttributeSelector} from '@liaison/component'
 import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
 import {WithRoles, role} from '@liaison/with-roles';
 
-import {Session} from './session';
+import type {Session} from './session';
 
 export class Entity extends WithRoles(Storable(Component)) {
   @consume() static Session: typeof Session;
