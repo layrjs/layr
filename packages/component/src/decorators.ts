@@ -237,7 +237,10 @@ export function createAttributeDecorator(
     }
 
     if (isComponentClass(target)) {
-      const value = (target as any)[name];
+      const value =
+        !target.hasAttribute(name) || target.getAttribute(name).isSet()
+          ? (target as any)[name]
+          : undefined;
       attributeOptions = {value, ...attributeOptions};
     } else {
       const initializer = getAttributeInitializer(target, name, descriptor);
