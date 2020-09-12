@@ -1,5 +1,0 @@
-### Handling Permissions
-
-```js
-// TODO
-```

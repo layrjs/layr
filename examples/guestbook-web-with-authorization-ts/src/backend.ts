@@ -1,10 +1,20 @@
-import {Component, provide, consume, expose, validators} from '@liaison/component';
+import {Component, provide, expose, validators} from '@liaison/component';
 import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
 import {WithRoles, role} from '@liaison/with-roles';
 import {MemoryStore} from '@liaison/memory-store';
 import {ComponentHTTPServer} from '@liaison/component-http-server';
 
 const {notEmpty, maxLength} = validators;
+
+export class Session extends Component {
+  @expose({set: true})
+  @attribute('string?')
+  static secret?: string;
+
+  static isAdmin() {
+    return this.secret === process.env.ADMIN_SECRET;
+  }
+}
 
 @expose({
   find: {call: true},
@@ -14,7 +24,7 @@ const {notEmpty, maxLength} = validators;
   }
 })
 export class Message extends WithRoles(Storable(Component)) {
-  @consume() static Session: typeof Session;
+  @provide() static Session = Session;
 
   @expose({get: true, set: true}) @primaryIdentifier() id!: string;
 
@@ -33,25 +43,10 @@ export class Message extends WithRoles(Storable(Component)) {
   }
 }
 
-export class Session extends Component {
-  @expose({get: true, set: true})
-  @attribute('string?')
-  static secret?: string;
-
-  static isAdmin() {
-    return this.secret === process.env.ADMIN_SECRET;
-  }
-}
-
-export class Backend extends Component {
-  @provide() static Message = Message;
-  @provide() static Session = Session;
-}
-
 const store = new MemoryStore();
 
-store.registerRootComponent(Backend);
+store.registerStorable(Message);
 
-const server = new ComponentHTTPServer(Backend, {port: 3210});
+const server = new ComponentHTTPServer(Message, {port: 3210});
 
 server.start();

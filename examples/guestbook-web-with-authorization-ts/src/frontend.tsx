@@ -1,6 +1,6 @@
 import React, {useCallback} from 'react';
 import ReactDOM from 'react-dom';
-import {Component, provide, consume, attribute} from '@liaison/component';
+import {Component, provide, attribute} from '@liaison/component';
 import {Storable} from '@liaison/storable';
 import {Routable, route} from '@liaison/routable';
 import {ComponentHTTPClient} from '@liaison/component-http-client';
@@ -13,16 +13,27 @@ import {
   useRecomputableMemo
 } from '@liaison/react-integration';
 
-import type {Backend as BackendType} from './backend';
+import type {Message as MessageType} from './backend';
 
 async function main() {
   const client = new ComponentHTTPClient('http://localhost:3210', {
     mixins: [Storable]
   });
 
-  const Backend = (await client.getComponent()) as typeof BackendType;
+  const BackendMessage = (await client.getComponent()) as typeof MessageType;
 
-  class Message extends Backend.Message {
+  class Session extends BackendMessage.Session {
+    @attribute('string?', {
+      getter() {
+        return window.localStorage.getItem('secret') || undefined;
+      }
+    })
+    static secret?: string;
+  }
+
+  class Message extends BackendMessage {
+    @provide() static Session = Session;
+
     @view() Viewer() {
       return (
         <div>
@@ -66,18 +77,8 @@ async function main() {
     }
   }
 
-  class Session extends Backend.Session {
-    @attribute('string?', {
-      getter() {
-        return window.localStorage.getItem('secret') || undefined;
-      }
-    })
-    static secret?: string;
-  }
-
   class Guestbook extends Routable(Component) {
-    @consume() static Message: typeof Message;
-    @consume() static Session: typeof Session;
+    @provide() static Message = Message;
 
     @attribute('Message[]') static existingMessages: Message[] = [];
 
@@ -108,7 +109,7 @@ async function main() {
     }
 
     @view() static MessageList() {
-      const {Message, Session} = this;
+      const {Message} = this;
 
       const [isLoading, loadingError] = useAsyncCall(async () => {
         this.existingMessages = await Message.find(
@@ -137,7 +138,7 @@ async function main() {
             this.existingMessages.map((message) => (
               <div key={message.id} style={{marginTop: '15px'}}>
                 <message.Viewer />
-                {Session.secret && (
+                {Message.Session.secret && (
                   <div style={{marginTop: '5px'}}>
                     <this.MessageEditor.Link params={message}>Edit</this.MessageEditor.Link>
                   </div>
@@ -206,13 +207,7 @@ async function main() {
     }
   }
 
-  class Frontend extends Backend {
-    @provide() static Guestbook = Guestbook;
-    @provide() static Message = Message;
-    @provide() static Session = Session;
-  }
-
-  ReactDOM.render(<Frontend.Guestbook.Root />, document.getElementById('root'));
+  ReactDOM.render(<Guestbook.Root />, document.getElementById('root'));
 }
 
 main().catch((error) => console.error(error));

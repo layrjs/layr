@@ -1,7 +1,7 @@
 {
-  "name": "guestbook-web-with-permissions",
+  "name": "guestbook-web-with-authorization",
   "version": "1.0.0",
-  "description": "A simple web app showing how to build a web frontend using permissions with Liaison",
+  "description": "A simple web app showing how to build a web frontend with authorization with Liaison",
   "private": true,
   "dependencies": {
     "@liaison/component": "^0.5.71",

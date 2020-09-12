@@ -572,7 +572,7 @@ There is a bunch of code, but if you know a bit of React, it should be pretty ea
 
 #### Starting the Frontend
 
-Start the frontend by invoking the following command:
+Start the frontend in another terminal by invoking the following command:
 
 ```sh
 npx webpack-dev-server

@@ -25,9 +25,9 @@
           "file": "introduction/routing.md"
         },
         {
-          "title": "Handling Permissions",
-          "slug": "permissions",
-          "file": "introduction/permissions.md"
+          "title": "Handling Authorization",
+          "slug": "authorization",
+          "file": "introduction/authorization.md"
         }
       ]
     },

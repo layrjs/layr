@@ -137,7 +137,7 @@ Just before the `Message` component definition, the [`@expose()`](https://liaiso
 
 - [`Message.find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) is exposed so the frontend can get a list of the guestbook's messages.
 - [`Message.prototype.load()`](https://liaison.dev/docs/v1/reference/storable#load-instance-method) is exposed so the frontend can load a particular message.
-- [`Message.prototype.save()`](https://liaison.dev/docs/v1/reference/storable#save-instance-method) is exposed so the frontend can add a new message. Note that this method also allows the frontend to update any existing message, and that's probably not what we want. But let's leave that for later when we [handle permissions](https://liaison.dev/docs/v1/introduction/permissions).
+- [`Message.prototype.save()`](https://liaison.dev/docs/v1/reference/storable#save-instance-method) is exposed so the frontend can add a new message. Note that this method also allows the frontend to update any existing message, and that's probably not what we want. But let's leave that for later when we [handle authorization](https://liaison.dev/docs/v1/introduction/authorization).
 
 Once the `Message` component is defined, a [`MemoryStore`](https://liaison.dev/docs/v1/reference/memory-store) is created, and the component is registered into it with the [`registerStorable()`](https://liaison.dev/docs/v1/reference/store#register-storable-instance-method) method.
 
@@ -273,7 +273,7 @@ The `showMessages()` function calls the [`find()`](https://liaison.dev/docs/v1/r
 
 Just like the `save()` method, the `find()` method is exposed by the backend, so it can be remotely executed to retrieve the messages from the database. Note that the `load()` method has to be exposed as well because it is called by the `find()` method under the hood so the `text` and `createdAt` attributes can be loaded. Otherwise, only the primary identifier attribute (`id`) would be accessible.
 
-Let's start the frontend to make sure everything is working properly. While keeping the backend running, invoke the following command to add a message in our guestbook:
+Let's start the frontend to make sure everything is working properly. While keeping the backend running, invoke the following command in another terminal to add a message in our guestbook:
 
 ```sh
 // JS

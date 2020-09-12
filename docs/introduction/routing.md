@@ -137,7 +137,7 @@ npx babel-node ./src/backend.js
 npx ts-node ./src/backend.ts
 ```
 
-Next, start the frontend:
+Next, start the frontend in another terminal:
 
 ```sh
 npx webpack-dev-server
@@ -303,4 +303,4 @@ Modify a message, click the "Submit" button, and you should be back at the home 
 
 #### Wrapping Up
 
-We've added a new page to our "Guestbook" application so the user can edit a message, and along the way, we've discovered how to implement routing by using a [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) and some [routes](https://liaison.dev/docs/v1/reference/route). Also, we got a glimpse of some of the most powerful features of Liaison — [component forking](https://liaison.dev/docs/v1/reference/component#forking) and [identity mapping](https://liaison.dev/docs/v1/reference/identity-map).
+You've added a new page to our "Guestbook" application so the user can edit a message, and along the way, you've discovered how to implement routing by using a [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) and some [routes](https://liaison.dev/docs/v1/reference/route). Also, you got a glimpse of some of the most powerful features of Liaison — [component forking](https://liaison.dev/docs/v1/reference/component#forking) and [identity mapping](https://liaison.dev/docs/v1/reference/identity-map).
