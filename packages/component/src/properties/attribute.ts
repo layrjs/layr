@@ -62,7 +62,7 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
  *
  * #### Usage
  *
- * Typically, you create an `Attribute` and associate it to a component using the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+ * Typically, you create an `Attribute` and associate it to a component by using the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
  *
  * For example, here is how you would define a `Movie` class with some attributes:
  *

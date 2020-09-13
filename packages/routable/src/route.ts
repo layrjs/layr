@@ -9,7 +9,7 @@ export type RouteOptions = {
 };
 
 /**
- * A `Route` represents a route in a [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class).
+ * Represents a route in a [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class).
  *
  * A route is composed of:
  *
@@ -19,7 +19,7 @@ export type RouteOptions = {
  *
  * #### Usage
  *
- * Typically, you create a `Route` and associate it to a routable component using the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+ * Typically, you create a `Route` and associate it to a routable component by using the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
  *
  * See an example of use in the [`Routable()`](https://liaison.dev/docs/v1/reference/routable#usage) mixin.
  */
@@ -262,7 +262,7 @@ export class Route {
 }
 
 /**
- * Returns whether the specified value is a route class.
+ * Returns whether the specified value is a [`Route`](https://liaison.dev/docs/v1/reference/route) class.
  *
  * @param value A value of any type.
  *
@@ -275,7 +275,7 @@ export function isRouteClass(value: any): value is typeof Route {
 }
 
 /**
- * Returns whether the specified value is a route instance.
+ * Returns whether the specified value is a [`Route`](https://liaison.dev/docs/v1/reference/route) instance.
  *
  * @param value A value of any type.
  *

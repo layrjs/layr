@@ -299,6 +299,13 @@
           "category": "Authorization"
         },
         {
+          "title": "Role",
+          "slug": "role",
+          "file": "reference/role.md",
+          "source": "../packages/with-roles/src/role.ts",
+          "category": "Authorization"
+        },
+        {
           "title": "aws-integration",
           "slug": "aws-integration",
           "file": "reference/aws-integration.md",

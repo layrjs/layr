@@ -96,7 +96,7 @@ First, install the `@liaison/with-roles` package:
 npm install @liaison/with-roles
 ```
 
-Next, add the following line at the beginning of the <!-- <if language="js"> -->`src/backend.js`<!-- </if> --><!-- <if language="ts"> -->`src/backend.ts`<!-- </if> --> file to import the [`WithRoles()`](https://liaison.dev/docs/v1/reference/with-roles) mixin and the [`@role()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator:
+Next, add the following line at the beginning of the <!-- <if language="js"> -->`src/backend.js`<!-- </if> --><!-- <if language="ts"> -->`src/backend.ts`<!-- </if> --> file to import the [`WithRoles()`](https://liaison.dev/docs/v1/reference/with-roles) mixin and the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator:
 
 ```js
 import {WithRoles, role} from '@liaison/with-roles';
