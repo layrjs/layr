@@ -2,7 +2,7 @@ import {Component} from '@liaison/component';
 
 import {WithRoles} from './with-roles';
 import {role} from './decorators';
-import {isRoleInstance} from './utilities';
+import {isRoleInstance} from './role';
 
 describe('Decorators', () => {
   test('@role()', async () => {

@@ -1,13 +1,15 @@
 import {possiblyAsync} from 'possibly-async';
-import {isPrototypeOf, assertIsString, assertIsFunction, PromiseLikeable} from 'core-helpers';
+import {
+  isPrototypeOf,
+  assertIsString,
+  assertIsFunction,
+  PromiseLikeable,
+  getTypeOf
+} from 'core-helpers';
 import {inspect} from 'util';
 
 import type {ComponentWithRoles} from './with-roles';
-import {
-  assertIsComponentWithRolesClassOrInstance,
-  isRoleInstance,
-  assertIsRoleInstance
-} from './utilities';
+import {assertIsComponentWithRolesClassOrInstance} from './utilities';
 
 export type RoleResolver = () => PromiseLikeable<boolean | undefined>;
 
@@ -77,5 +79,15 @@ export class Role {
 
   [inspect.custom]() {
     return {name: this._name, resolver: this._resolver};
+  }
+}
+
+export function isRoleInstance(value: any): value is Role {
+  return typeof value?.constructor?.isRole === 'function';
+}
+
+export function assertIsRoleInstance(value: any): asserts value is Role {
+  if (!isRoleInstance(value)) {
+    throw new Error(`Expected a role instance, but received a value of type '${getTypeOf(value)}'`);
   }
 }

@@ -187,7 +187,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     // === Routes ===
 
     /**
-     * Gets the route that has the specified name. If there is no route with the specified name, an error is thrown.
+     * Gets a route. If there is no route with the specified name, an error is thrown.
      *
      * @param name The name of the route to get.
      *
@@ -236,6 +236,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
     /**
      * Sets a route in the storable component.
+     *
+     * Typically, instead of using this method, you would rather use the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
      *
      * @param name The name of the route.
      * @param pattern A string specifying the [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) associated with the route.

@@ -9,6 +9,52 @@ import {hasOwnProperty, getTypeOf, Constructor, PromiseLikeable} from 'core-help
 
 import {Role, RoleResolver} from './role';
 
+/**
+ * Extends a [`Component`](https://liaison.dev/docs/v1/reference/component) class with the ability to handle [roles](https://liaison.dev/docs/v1/reference/role).
+ *
+ * #### Usage
+ *
+ * Call `WithRoles()` with a [`Component`](https://liaison.dev/docs/v1/reference/component) class to construct a [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class. Next, use the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator to define some [roles](https://liaison.dev/docs/v1/reference/role). Lastly, use the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator to authorize some attributes or methods according to these roles.
+ *
+ * **Example:**
+ *
+ * ```
+ * import {Component, attribute, method, expose} from '@liaison/component';
+ * import {WithRoles, role} from '@liaison/with-roles';
+ *
+ * class Article extends WithRoles(Component) {
+ *   ﹫role('admin') static adminRoleResolver() {
+ *     // Return `true` if the user is an administrator
+ *
+ *     // ...
+ *   }
+ *
+ *   // Only readable by an administrator
+ *   ﹫expose({get: 'admin'}) ﹫attribute('number') viewCount = 0;
+ *
+ *   // Only callable by an administrator
+ *   ﹫expose({call: 'admin'}) ﹫method() unpublish() {
+ *     // ...
+ *   }
+ * }
+ * ```
+ *
+ * Once you have a [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class), you can use any method provided by the `WithRoles()` mixin. For example, you can use the [`resolveRole()`](https://liaison.dev/docs/v1/reference/with-roles#resolve-role-dual-method) method to determine if the user has a specific role:
+ *
+ * ```
+ * Article.resolveRole('admin'); // `true` or `false` depending on the current user
+ * ```
+ *
+ * See the ["Handling Authorization"](https://liaison.dev/docs/v1/introduction/authorization) guide for a comprehensive example using the `WithRoles()` mixin.
+ *
+ * ### ComponentWithRoles <badge type="primary">class</badge> {#component-with-roles-class}
+ *
+ * *Inherits from [`Component`](https://liaison.dev/docs/v1/reference/component).*
+ *
+ * A `ComponentWithRoles` class is constructed by calling the `WithRoles()` mixin ([see above](https://liaison.dev/docs/v1/reference/with-roles#with-roles-mixin)).
+ *
+ * @mixin
+ */
 export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
   if (!isComponentClass(Base)) {
     throw new Error(
@@ -81,10 +127,48 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
 
     // === Roles ===
 
+    /**
+     * Gets a role. If there is no role with the specified name, an error is thrown.
+     *
+     * @param name The name of the role to get.
+     * @param [options.fallbackToClass] A boolean specifying whether the role should be get from the component class if there is no role with the specified name in the component prototype or instance (default: `false`).
+     *
+     * @returns A [Role](https://liaison.dev/docs/v1/reference/role) instance.
+     *
+     * @example
+     * ```
+     * Article.getRole('admin'); // => 'admin' role
+     *
+     * const article = new Article();
+     * article.getRole('admin'); // Error
+     * article.getRole('admin', {fallbackToClass: true}); // => 'admin' role
+     * ```
+     *
+     * @category Roles
+     */
     static get getRole() {
       return this.prototype.getRole;
     }
 
+    /**
+     * Gets a role. If there is no role with the specified name, an error is thrown.
+     *
+     * @param name The name of the role to get.
+     * @param [options.fallbackToClass] A boolean specifying whether the role should be get from the component class if there is no role with the specified name in the component prototype or instance (default: `false`).
+     *
+     * @returns A [Role](https://liaison.dev/docs/v1/reference/role) instance.
+     *
+     * @example
+     * ```
+     * Article.getRole('admin'); // => 'admin' role
+     *
+     * const article = new Article();
+     * article.getRole('admin'); // Error
+     * article.getRole('admin', {fallbackToClass: true}); // => 'admin' role
+     * ```
+     *
+     * @category Roles
+     */
     getRole(name: string, options: {fallbackToClass?: boolean} = {}) {
       const {fallbackToClass = false} = options;
 
@@ -97,10 +181,48 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
       return role;
     }
 
+    /**
+     * Returns whether the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) has a role with the specified name.
+     *
+     * @param name The name of the role to check.
+     * @param [options.fallbackToClass] A boolean specifying whether the component class should be considered if there is no role with the specified name in the component prototype or instance (default: `false`).
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Article.hasRole('admin'); // => true
+     *
+     * const article = new Article();
+     * article.hasRole('admin'); // => false
+     * article.hasRole('admin', {fallbackToClass: true}); // => true
+     * ```
+     *
+     * @category Roles
+     */
     static get hasRole() {
       return this.prototype.hasRole;
     }
 
+    /**
+     * Returns whether the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) has a role with the specified name.
+     *
+     * @param name The name of the role to check.
+     * @param [options.fallbackToClass] A boolean specifying whether the component class should be considered if there is no role with the specified name in the component prototype or instance (default: `false`).
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Article.hasRole('admin'); // => true
+     *
+     * const article = new Article();
+     * article.hasRole('admin'); // => false
+     * article.hasRole('admin', {fallbackToClass: true}); // => true
+     * ```
+     *
+     * @category Roles
+     */
     hasRole(name: string, options: {fallbackToClass?: boolean} = {}) {
       const {fallbackToClass = false} = options;
 
@@ -132,10 +254,52 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
       return undefined;
     }
 
+    /**
+     * Sets a role in the current [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+     *
+     * Typically, instead of using this method, you would rather use the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator.
+     *
+     * @param name The name of the role.
+     * @param resolver A function that should return a boolean indicating whether a user has the corresponding role. The function can be asynchronous and is called with the current class or instance as `this` context.
+     *
+     * @returns The [Role](https://liaison.dev/docs/v1/reference/role) instance that was created.
+     *
+     * @example
+     * ```
+     * Article.setRole('admin', function () {
+     *  // Return `true` if the user is an administrator
+     *
+     *  // ...
+     * });
+     * ```
+     *
+     * @category Roles
+     */
     static get setRole() {
       return this.prototype.setRole;
     }
 
+    /**
+     * Sets a role in the current [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+     *
+     * Typically, instead of using this method, you would rather use the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator.
+     *
+     * @param name The name of the role.
+     * @param resolver A function that should return a boolean indicating whether a user has the corresponding role. The function can be asynchronous and is called with the current class or instance as `this` context.
+     *
+     * @returns The [Role](https://liaison.dev/docs/v1/reference/role) instance that was created.
+     *
+     * @example
+     * ```
+     * Article.setRole('admin', function () {
+     *  // Return `true` if the user is an administrator
+     *
+     *  // ...
+     * });
+     * ```
+     *
+     * @category Roles
+     */
     setRole(name: string, resolver: RoleResolver): Role {
       const roles = this.__getRoles();
 
@@ -146,10 +310,42 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
       return role;
     }
 
+    /**
+     * Resolves a role by calling the role's resolver method. If there is no role with the specified name in the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype, an error is thrown.
+     *
+     * Once a role has been resolved, the result is cached, so the role's resolver method is called only one time.
+     *
+     * @param name The name of the role to resolve.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Article.resolveRole('admin'); // `true` or `false` depending on the current user
+     * ```
+     *
+     * @category Roles
+     */
     static get resolveRole() {
       return this.prototype.resolveRole;
     }
 
+    /**
+     * Resolves a role by calling the role's resolver method. If there is no role with the specified name in the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype, an error is thrown.
+     *
+     * Once a role has been resolved, the result is cached, so the role's resolver method is called only one time.
+     *
+     * @param name The name of the role to resolve.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Article.resolveRole('admin'); // `true` or `false` depending on the current user
+     * ```
+     *
+     * @category Roles
+     */
     resolveRole(name: string) {
       return this.getRole(name, {fallbackToClass: true}).resolve();
     }

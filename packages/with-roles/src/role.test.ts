@@ -1,8 +1,7 @@
 import {Component} from '@liaison/component';
 
 import {WithRoles} from './with-roles';
-import {Role} from './role';
-import {isRoleInstance} from './utilities';
+import {Role, isRoleInstance} from './role';
 
 describe('Role', () => {
   test('new Role()', async () => {

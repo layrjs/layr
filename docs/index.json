@@ -288,6 +288,17 @@
           "category": "Routing"
         },
         {
+          "title": "WithRoles()",
+          "slug": "with-roles",
+          "file": "reference/with-roles.md",
+          "source": [
+            "../packages/with-roles/src/with-roles.ts",
+            "../packages/with-roles/src/decorators.ts",
+            "../packages/with-roles/src/utilities.ts"
+          ],
+          "category": "Authorization"
+        },
+        {
           "title": "aws-integration",
           "slug": "aws-integration",
           "file": "reference/aws-integration.md",
