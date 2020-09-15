@@ -32,7 +32,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: '1.5rem'
+            padding: '2rem'
           }}
           {...props}
         >
@@ -55,7 +55,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
               })}
             >
               {!isSubscribed
-                ? 'Know when Liaison is ready for production, and everything else.'
+                ? 'Know when a new major version is released, and everything else.'
                 : "We'll keep you updated."}
             </div>
 
@@ -70,7 +70,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
                   flexWrap: 'wrap',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginTop: '1.25rem',
+                  marginTop: '1.75rem',
                   marginBottom: '.5rem'
                 }}
               >
@@ -93,11 +93,11 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
                 <UI.Button
                   type="submit"
                   disabled={isSubscribingUp}
-                  secondary
+                  primary
                   large
                   css={UI.responsive({width: ['auto', , '100%']})}
                 >
-                  I'm in!
+                  Subscribe
                 </UI.Button>
               </form>
             )}

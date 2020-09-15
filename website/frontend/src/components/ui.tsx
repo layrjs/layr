@@ -116,7 +116,7 @@ export class UI extends Component {
           yPadding: '.5rem',
           highlighted: {
             ...rootTheme.highlighted,
-            borderColor: rootTheme.secondaryColor
+            borderColor: rootTheme.primaryColor
           },
           small: {
             ...rootTheme.small,

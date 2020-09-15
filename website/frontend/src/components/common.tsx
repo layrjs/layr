@@ -1,7 +1,7 @@
 import {Component, consume} from '@liaison/component';
 import {view, useDelay} from '@liaison/react-integration';
 import {jsx, css} from '@emotion/core';
-import {Fragment, useMemo} from 'react';
+import {Fragment, useMemo, useState} from 'react';
 import useMetaTags from 'react-metatags-hook';
 
 import type {Home} from './home';
@@ -12,6 +12,8 @@ import type {UI} from './ui';
 import liaisonLogo from '../assets/liaison-logo-dark-mode-20191111.immutable.svg';
 // @ts-ignore
 import brokenHeart from '../assets/broken-heart-20200822.immutable.svg';
+// @ts-ignore
+import love from '../assets/f-plus-b-equals-love-20191111.immutable.svg';
 
 export class Common extends Component {
   @consume() static Home: typeof Home;
@@ -57,12 +59,8 @@ export class Common extends Component {
 
     const theme = UI.useTheme();
 
-    const menuStyle = css({...UI.styles.unstyledList, ...UI.styles.noMargins});
-    const menuItemStyle = css({
-      ...UI.styles.inlineBlock,
-      ...UI.styles.noMargins,
-      marginLeft: '1.3rem'
-    });
+    const menuStyle = {...UI.styles.unstyledList, ...UI.styles.noMargins};
+    const menuItemStyle = {...UI.styles.inlineBlock, ...UI.styles.noMargins, marginLeft: '1.3rem'};
 
     return (
       <header
@@ -91,6 +89,15 @@ export class Common extends Component {
             <li css={menuItemStyle}>
               <Blog.Main.Link>Blog</Blog.Main.Link>
             </li>
+            <li css={UI.responsive({...menuItemStyle, display: ['inline-block', , , 'none']})}>
+              <a
+                href="https://github.com/liaisonjs/liaison"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+            </li>
           </ul>
         </nav>
       </header>
@@ -100,14 +107,12 @@ export class Common extends Component {
   @view() static Footer() {
     const {Docs, Blog, UI} = this;
 
-    const theme = UI.useTheme();
-
     const menuStyle = css({...UI.styles.unstyledList, ...UI.styles.noMargins});
     const menuItemStyle = css({marginBottom: '.5rem'});
     const columnGapStyle = css({width: '6rem'});
 
     return (
-      <footer css={{padding: '3rem 0', backgroundColor: UI.colors.blueGrey800}}>
+      <footer css={{padding: '3rem 0 2rem 0', backgroundColor: UI.colors.blueGrey800}}>
         <div css={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           <ul css={menuStyle}>
             <li css={menuItemStyle}>
@@ -125,7 +130,13 @@ export class Common extends Component {
           <div css={columnGapStyle}>&nbsp;</div>
           <ul css={menuStyle}>
             <li css={menuItemStyle}>
-              <a href="https://github.com/liaisonjs/liaison">GitHub</a>
+              <a
+                href="https://github.com/liaisonjs/liaison"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </li>
             <li css={menuItemStyle}>
               <a href="https://twitter.com/liaisonjs" target="_blank" rel="noopener noreferrer">
@@ -143,20 +154,50 @@ export class Common extends Component {
             </li>
           </ul>
         </div>
-        <div css={{marginTop: '3rem', textAlign: 'center'}}>
-          <small css={{color: theme.muted.textColor}}>
-            Opensourced by{' '}
-            <a
-              href="https://1place.io/"
-              target="_blank"
-              rel="noopener noreferrer"
-              css={{'color': theme.textColor, ':hover': {color: theme.highlighted.textColor}}}
-            >
-              1Place Inc.
-            </a>
-          </small>
-        </div>
+
+        <this.FrontendPlusBackendEqualsLove />
       </footer>
+    );
+  }
+
+  @view() static FrontendPlusBackendEqualsLove() {
+    const {UI} = this;
+
+    const theme = UI.useTheme();
+
+    const [textMode, setTextMode] = useState(false);
+
+    return (
+      <div
+        onClick={() => {
+          setTextMode(!textMode);
+        }}
+        css={{
+          marginTop: '3rem',
+          height: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer'
+        }}
+      >
+        {!textMode ? (
+          <img
+            src={love}
+            alt="Frontend + Backend = Love"
+            title="Frontend + Backend = Love"
+            css={{width: 80}}
+          />
+        ) : (
+          <div css={{}}>
+            <small style={{color: theme.primaryColor}}>Frontend</small>
+            <small style={{color: theme.muted.textColor}}> + </small>
+            <small style={{color: theme.secondaryColor}}>Backend</small>
+            <small style={{color: theme.muted.textColor}}> = </small>
+            <small style={{color: theme.tertiaryColor}}>Love</small>
+          </div>
+        )}
+      </div>
     );
   }
 
