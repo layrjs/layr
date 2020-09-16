@@ -11,7 +11,7 @@ import type {UI} from './ui';
 // @ts-ignore
 import objectOriented from '../assets/object-oriented-20200915.immutable.svg';
 // @ts-ignore
-import unifiedStack from '../assets/unified-stack-20200915.immutable.svg';
+import fullStack from '../assets/full-stack-20200916.immutable.svg';
 // @ts-ignore
 import webApp from '../assets/web-app-20200915.immutable.svg';
 // @ts-ignore
@@ -31,7 +31,7 @@ import mvilaProfile from '../assets/manuel-vila-profile-20200915.immutable.jpg';
 
 const HERO_IMAGES = [
   {image: objectOriented, alt: '#ObjectOriented'},
-  {image: unifiedStack, alt: '#UnifiedStack'},
+  {image: fullStack, alt: '#FullStack'},
   {image: webApp, alt: '#WebApp'},
   {image: noREST, alt: '#NoREST'},
   {image: noGraphQL, alt: '#NoGraphQL'},
@@ -44,54 +44,50 @@ const HERO_IMAGES = [
 const HERO_IMAGE_DURATION = 1000;
 
 const INTRODUCTION_MESSAGE = `
-Hi everyone! 👋
+Hi, everyone! 👋
 
 Let's talk about web app development.
 
-It used to be simple. We were implementing everything in the backend with some PHP code or Ruby on Rails, and with a bit of JavaScript running in the frontend, we were done.
+It used to be simple. We implemented everything in the backend with some PHP code or Ruby on Rails and then, with a bit of JavaScript running in the frontend, we were done.
 
-But times have changed. Modern web apps require rich user interfaces that cannot be rendered in the backend anymore.
+But times have changed. Modern web apps require rich user interfaces that can no longer be rendered in the backend.
 
-So from a bit of JavaScript running in the frontend, we switched to a lot of JavaScript using a single-page application model and a bunch of libraries.
+So, from a bit of JavaScript running in the frontend, we switched to a lot of JavaScript using a single-page application model and a bunch of libraries.
 
-There's nothing wrong with that. It's actually quite an elegant architecture:
+There's nothing wrong with this. It's actually quite an elegant architecture:
 
 - The frontend is in charge of the user interface.
 - The backend takes care of the data model and the business logic.
 
-The problem lies in the middle. Now that we have two rich execution environments, we need to make sure they communicate effectively. So we implement a web API (REST, GraphQL, etc.), and [everything gets complicated](/blog/articles/Simplify-Full-Stack-Development-with-a-Unified-Architecture-187fr1).
+The problem, however, lies in the middle. Now that we have two rich execution environments, we need to make sure that they communicate effectively. So, we implement a web API (REST, GraphQL, etc.), and [everything gets complicated](/blog/articles/Simplify-Full-Stack-Development-with-a-Unified-Architecture-187fr1).
 
 Conceptually, it's like we're building two applications instead of one.
 
-The data model gets duplicated, and the overall complexity is such that the developers get duplicated as well.
+The data model gets duplicated, and the overall complexity is such that the developers become duplicated as well.
 
-In the beginning, there was no distinction between frontend, backend, or full-stack developers. There were only web developers.
+If you're a frontend or backend developer, you can only do half the job, and you waste a lot of time communicating with the person in charge of the other half.
 
-If you're lucky enough to be a full-stack developer, you can still approach a web app as a whole, but there's a lot you have to deal with, and it doesn't scale very well.
+If you're a full-stack developer, you can implement a feature from start to finish in a much more efficient and satisfying way. But, given the sophistication of the stack, there's a lot you have to deal with, and it doesn't scale very well.
 
-Ideally, a developer should be able to implement a feature from start to finish. First, it's much more efficient, and second, it's much more satisfying for the developer.
+Ideally, we should all be full-stack developers just like we were in the beginning. But we need to dramatically simplify the stack to make this possible.
 
-But unfortunately, this is becoming increasingly rare.
+So, how to simplify the stack?
 
-It's time to rethink the way we build full-stack applications.
+Sure, the frontend and the backend need to be *physically* separated. But it doesn't mean that they have to be *logically* separated.
 
-Sure, the frontend and the backend need to be *physically* separated, but it doesn't mean that they have to be *logically* separated.
+With the right abstractions in place, an application can run in two different execution environments, even as it remains a single thing from the developer's point of view.
 
-With the right abstractions in place, an application can run in two different execution environments, but from the developer's point of view, it can remain a single thing.
-
-This is precisely what Liaison offers. It reunites the frontend and the backend. There is no need to build a web API anymore, and that changes the game completely.
+This is precisely what Liaison offers — a reuniting of the frontend and the backend. There is no need to build a web API anymore, the data model can be shared across the stack, and that changes the game completely.
 
 Some might argue that mastering both the frontend and the backend is not that easy.
 
-The frontend is not only UI rendering, it's also state management, routing, etc.
+The frontend is not only UI rendering, but it's also state management, routing, etc.
 
-The backend is not only data modeling and business logic, it's also data storage, authorization, etc.
+The backend is not only data modeling and business logic, but it's also data storage, authorization, etc.
 
-Fair enough, it's not that easy. But here also, Liaison has a lot to offer.
+Fair enough, it's not that easy. But here, Liaison also has [a lot to offer](/docs).
 
-So everyone can be a ~full-stack~ web developer again.
-
-Find out more by reading the [documentation](/docs).
+So, hopefully, everyone can be a full-stack developer again.
 
 Happy coding! 🧑‍💻
 `;
