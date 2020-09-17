@@ -77,7 +77,9 @@ Sure, the frontend and the backend need to be *physically* separated. But it doe
 
 With the right abstractions in place, an application can run in two different execution environments, even as it remains a single thing from the developer's point of view.
 
-This is precisely what Liaison offers — a reuniting of the frontend and the backend. There is no need to build a web API anymore, the data model can be shared across the stack, and that changes the game completely.
+This is precisely what Liaison offers — a reuniting of the frontend and the backend.
+
+The data model can be shared across the stack, and there is no need to build a web API anymore.
 
 Some might argue that mastering both the frontend and the backend is not that easy.
 

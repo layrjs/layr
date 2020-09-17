@@ -5,6 +5,11 @@
       "slug": "introduction",
       "chapters": [
         {
+          "title": "Introduction",
+          "slug": "introduction",
+          "file": "introduction/introduction.md"
+        },
+        {
           "title": "Hello, World!",
           "slug": "hello-world",
           "file": "introduction/hello-world.md"

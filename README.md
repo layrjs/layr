@@ -28,8 +28,8 @@ Contributions are welcome. Before contributing please read the
 [code of conduct](https://github.com/liaisonjs/liaison/blob/master/CODE_OF_CONDUCT.md) and
 [search the issue tracker](https://github.com/liaisonjs/liaison/issues) to find out if your issue
 has already been discussed before. To contribute,
-[fork](https://help.github.com/articles/fork-a-repo/) this repository, commit your changes,
-and [send a pull request](https://help.github.com/articles/about-pull-requests/).
+[fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo/) this repository, commit your changes,
+and [send a pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
 
 ## License
 

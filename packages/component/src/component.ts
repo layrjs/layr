@@ -119,7 +119,7 @@ type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | un
 /**
  * *Inherits from [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class).*
  *
- * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) and [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorators.
+ * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other by using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) and [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorators.
  *
  * #### Usage
  *
