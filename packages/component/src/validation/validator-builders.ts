@@ -1,4 +1,4 @@
-import {Validator, ValidatorFunction} from './validator';
+import {Validator, ValidatorFunction, required} from './validator';
 
 const validatorFunctions: {[name: string]: ValidatorFunction} = {
   // Numbers
@@ -35,6 +35,8 @@ const validatorFunctions: {[name: string]: ValidatorFunction} = {
   match: (value, pattern) => pattern.test(value),
 
   // Any values
+
+  required,
 
   anyOf: (value, array) => array.includes(value),
 

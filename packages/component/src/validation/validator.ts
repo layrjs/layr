@@ -122,6 +122,12 @@ export type IntrospectedValidator = {
  * * `maxLength(value)`: Ensures that an array doesn't exceed the specified number of items.
  * * `rangeLength([min, max])`: Ensures that the length of an array is in the specified inclusive range.
  *
+ * ##### Any Type
+ *
+ * The following validator builder can be used to validate any type of values:
+ *
+ * * `required()`: Ensures that a value is not undefined.
+ *
  * ##### Custom Failed Validation Message
  *
  * You can pass an additional parameter to all the built-in validators builder to customize the message of the error that is thrown in case of failed validation.
@@ -303,7 +309,7 @@ export function isSerializedValidator(object: object) {
   return object !== undefined && hasOwnProperty(object, '__validator');
 }
 
-function required(value: any) {
+export function required(value: any) {
   return value !== undefined;
 }
 

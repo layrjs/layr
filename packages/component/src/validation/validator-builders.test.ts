@@ -45,6 +45,9 @@ describe('Validator builders', () => {
   });
 
   test('Running built-in validators', async () => {
+    expect(validators.required().run(1)).toBe(true);
+    expect(validators.required().run(undefined)).toBe(false);
+
     expect(validators.anyOf([1, 2, 3]).run(1)).toBe(true);
     expect(validators.anyOf([1, 2, 3]).run(5)).toBe(false);
 
