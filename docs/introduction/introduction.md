@@ -8,9 +8,9 @@ Separating the frontend and the backend is a good thing, but the problem is that
 
 Liaison removes the need of building a web API and [reunites](https://liaison.dev/blog/articles/Simplify-Full-Stack-Development-with-a-Unified-Architecture-187fr1) the frontend and the backend in a way that you can experience them as a single entity.
 
-Also, Liaison offers an [ORM](https://liaison.dev/docs/v1/reference/storable) to make data storage as easy as possible.
+On the frontend side, Liaison gives you [routing capabilities](https://liaison.dev/docs/v1/reference/routable) and [object observability](https://liaison.dev/docs/v1/reference/observable) so that in most cases you don't need to add an external router or a state manager.
 
-Lastly, on the frontend side, Liaison gives you [routing capabilities](https://liaison.dev/docs/v1/reference/routable) and [object observability](https://liaison.dev/docs/v1/reference/observable) so that in most cases you don't need to add an external router or a state manager.
+Last but not least, Liaison offers an [ORM](https://liaison.dev/docs/v1/reference/storable) to make data storage as easy as possible.
 
 #### Core Features
 
