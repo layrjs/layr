@@ -10,12 +10,12 @@
     "start": "nodemon --watch ./src --exec ts-node ./src/http-server.ts"
   },
   "dependencies": {
-    "@liaison/aws-integration": "^0.5.36",
-    "@liaison/component": "^0.5.75",
-    "@liaison/component-server": "^0.5.41",
-    "@liaison/mongodb-store": "^0.5.40",
-    "@liaison/storable": "^0.5.116",
-    "@liaison/with-roles": "^0.5.47",
+    "@liaison/aws-integration": "^1.0.0",
+    "@liaison/component": "^1.0.0",
+    "@liaison/component-server": "^1.0.0",
+    "@liaison/mongodb-store": "^1.0.0",
+    "@liaison/storable": "^1.0.0",
+    "@liaison/with-roles": "^1.0.0",
     "bcryptjs": "^2.4.3",
     "cross-fetch": "^3.0.5",
     "jsonwebtoken": "^8.5.1",
@@ -25,7 +25,7 @@
     "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@liaison/component-http-server": "^0.5.35",
+    "@liaison/component-http-server": "^1.0.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/lodash": "^4.14.161",

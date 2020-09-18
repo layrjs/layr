@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "0.5.77",
+  "version": "1.0.0",
   "description": "The base class of all your components",
   "keywords": [
     "liaison",
@@ -28,18 +28,18 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/observable": "^0.5.8",
-    "core-helpers": "^0.1.26",
+    "@liaison/observable": "^1.0.0",
+    "core-helpers": "^1.0.1",
     "cuid": "^2.1.8",
     "lodash": "^4.17.20",
-    "possibly-async": "^0.2.20",
-    "simple-cloning": "^0.1.15",
-    "simple-forking": "^0.1.11",
-    "simple-serialization": "^0.2.15",
+    "possibly-async": "^1.0.1",
+    "simple-cloning": "^1.0.1",
+    "simple-forking": "^1.0.1",
+    "simple-serialization": "^1.0.1",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/dev-tools": "^1.0.24",
     "@mvila/tsconfig": "^1.0.4",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.161",

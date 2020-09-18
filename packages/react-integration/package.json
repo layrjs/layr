@@ -1,6 +1,6 @@
 {
   "name": "@liaison/react-integration",
-  "version": "0.5.65",
+  "version": "1.0.0",
   "description": "React integration for Liaison",
   "keywords": [
     "liaison",
@@ -28,11 +28,11 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/browser-router": "^0.5.55",
-    "@liaison/component": "^0.5.75",
-    "@liaison/observable": "^0.5.8",
-    "@liaison/router": "^0.5.42",
-    "core-helpers": "^0.1.26",
+    "@liaison/browser-router": "^1.0.2",
+    "@liaison/component": "^1.0.0",
+    "@liaison/observable": "^1.0.0",
+    "@liaison/router": "^1.0.0",
+    "core-helpers": "^1.0.1",
     "lodash": "^4.17.20",
     "tslib": "^1.13.0"
   },
@@ -40,7 +40,7 @@
     "react": "^16.13.1"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/dev-tools": "^1.0.24",
     "@mvila/tsconfig": "^1.0.4",
     "@types/lodash": "^4.14.161",
     "@types/react": "^16.9.49"

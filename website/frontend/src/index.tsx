@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import {jsx} from '@emotion/core';
 
-import {getFrontend} from './components/frontend';
+import {getApplication} from './components/application';
 
 const backendURL = process.env.BACKEND_URL;
 
@@ -17,15 +17,15 @@ if (!backendURL) {
   let content;
 
   try {
-    const Frontend = await getFrontend({backendURL});
+    const Application = await getApplication({backendURL});
 
     if (process.env.NODE_ENV !== 'production') {
-      (window as any).Frontend = Frontend; // For debugging
+      (window as any).Application = Application; // For debugging
     }
 
-    await Frontend.Session.loadUser();
+    await Application.Session.loadUser();
 
-    content = <Frontend.Root />;
+    content = <Application.Root />;
   } catch (err) {
     console.error(err);
 

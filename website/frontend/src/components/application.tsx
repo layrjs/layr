@@ -4,7 +4,7 @@ import {ComponentHTTPClient} from '@liaison/component-http-client';
 import {jsx} from '@emotion/core';
 import {view, useBrowserRouter} from '@liaison/react-integration';
 
-import type {Backend} from '../../../backend/src/components/backend';
+import type {Application as BackendApplication} from '../../../backend/src/components/application';
 import {Home} from './home';
 import {Docs} from './docs';
 import {Session} from './session';
@@ -15,19 +15,19 @@ import {Newsletter} from './newsletter';
 import {Common} from './common';
 import {UI} from './ui';
 
-export const getFrontend = async ({backendURL}: {backendURL: string}) => {
+export const getApplication = async ({backendURL}: {backendURL: string}) => {
   const client = new ComponentHTTPClient(backendURL, {mixins: [Storable]});
 
-  const BackendProxy = (await client.getComponent()) as typeof Backend;
+  const BackendApplicationProxy = (await client.getComponent()) as typeof BackendApplication;
 
-  class Frontend extends BackendProxy {
+  class Application extends BackendApplicationProxy {
     @provide() static Home = Home;
     @provide() static Docs = Docs;
-    @provide() static Session = Session(BackendProxy.Session);
-    @provide() static User = User(BackendProxy.User);
+    @provide() static Session = Session(BackendApplicationProxy.Session);
+    @provide() static User = User(BackendApplicationProxy.User);
     @provide() static Blog = Blog;
-    @provide() static Article = Article(BackendProxy.Article);
-    @provide() static Newsletter = Newsletter(BackendProxy.Newsletter);
+    @provide() static Article = Article(BackendApplicationProxy.Article);
+    @provide() static Newsletter = Newsletter(BackendApplicationProxy.Newsletter);
     @provide() static Common = Common;
     @provide() static UI = UI;
 
@@ -52,5 +52,5 @@ export const getFrontend = async ({backendURL}: {backendURL: string}) => {
     }
   }
 
-  return Frontend;
+  return Application;
 };

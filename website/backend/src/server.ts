@@ -1,7 +1,7 @@
 import {ComponentServer} from '@liaison/component-server';
 import {MongoDBStore} from '@liaison/mongodb-store';
 
-import {Backend} from './components/backend';
+import {Application} from './components/application';
 
 const connectionString = process.env.MONGODB_STORE_CONNECTION_STRING;
 
@@ -10,6 +10,6 @@ if (!connectionString) {
 }
 
 const store = new MongoDBStore(connectionString);
-store.registerRootComponent(Backend);
+store.registerRootComponent(Application);
 
-export const server = new ComponentServer(Backend);
+export const server = new ComponentServer(Application);

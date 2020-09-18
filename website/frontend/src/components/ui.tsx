@@ -8,7 +8,7 @@ import normalize from 'emotion-normalize';
 import facepaint from 'facepaint';
 // @ts-ignore
 import * as MaterialDesignPalette from 'material-design-palette';
-// import {useWindowHeight} from '@react-hook/window-size';
+import {useWindowHeight} from '@react-hook/window-size';
 import marked from 'marked';
 // @ts-ignore
 import highlightJS from 'highlight.js/lib/core';
@@ -731,13 +731,9 @@ export class UI extends Component {
   }
 
   @view() static FullHeight({...props}) {
-    // TODO
+    const height = useWindowHeight({initialHeight: 600});
 
-    // const height = useWindowHeight({initialHeight: 600});
-
-    // return <div css={{minHeight: height}} {...props} />;
-
-    return <div css={{minHeight: '100vh'}} {...props} />;
+    return <div css={{minHeight: height}} {...props} />;
   }
 
   @view() static Markdown({languageFilter, children}: {languageFilter?: string; children: string}) {

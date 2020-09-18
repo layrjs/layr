@@ -76,7 +76,7 @@ export class Common extends Component {
           <img src={liaisonLogo} alt="Liaison" css={{width: 80}} />
         </Home.Main.Link>
         <div css={{marginLeft: '0.6rem'}}>
-          <small css={{color: theme.muted.textColor, letterSpacing: '0.04rem'}}>alpha</small>
+          <small css={{color: theme.muted.textColor, letterSpacing: '0.04rem'}}>v1</small>
         </div>
 
         <div css={{flexGrow: 1}} />

@@ -1,5 +1,4 @@
-import {Route} from './route';
-import {isRouteInstance} from './utilities';
+import {Route, isRouteInstance} from './route';
 
 describe('Route', () => {
   test('new Route()', async () => {

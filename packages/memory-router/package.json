@@ -1,6 +1,6 @@
 {
   "name": "@liaison/memory-router",
-  "version": "0.5.41",
+  "version": "1.0.0",
   "description": "A simple router for Liaison that works without a browser",
   "keywords": [
     "liaison",
@@ -26,11 +26,11 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/router": "^0.5.42",
+    "@liaison/router": "^1.0.0",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/dev-tools": "^1.0.24",
     "@mvila/tsconfig": "^1.0.4"
   }
 }

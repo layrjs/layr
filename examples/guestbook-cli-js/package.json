@@ -4,11 +4,11 @@
   "description": "A simple CLI app to introduce data storage with Liaison",
   "private": true,
   "dependencies": {
-    "@liaison/component": "^0.5.71",
-    "@liaison/component-http-client": "^0.5.40",
-    "@liaison/component-http-server": "^0.5.31",
-    "@liaison/memory-store": "^0.5.30",
-    "@liaison/storable": "^0.5.104"
+    "@liaison/component": "^1.0.0",
+    "@liaison/component-http-client": "^1.0.0",
+    "@liaison/component-http-server": "^1.0.0",
+    "@liaison/memory-store": "^1.0.0",
+    "@liaison/storable": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",

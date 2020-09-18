@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-client",
-  "version": "0.5.49",
+  "version": "1.0.0",
   "description": "Consumes Liaison components served by @liaison/component-server",
   "keywords": [
     "liaison",
@@ -27,17 +27,17 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^0.5.75",
-    "@liaison/component-server": "^0.5.41",
-    "core-helpers": "^0.1.26",
+    "@liaison/component": "1.0.0",
+    "@liaison/component-server": "^1.0.0",
+    "core-helpers": "^1.0.1",
     "debug": "^4.1.1",
     "lodash": "^4.17.20",
-    "microbatcher": "^0.1.17",
-    "possibly-async": "^0.2.20",
+    "microbatcher": "^1.0.0",
+    "possibly-async": "^1.0.1",
     "tslib": "^1.13.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.23",
+    "@mvila/dev-tools": "^1.0.24",
     "@mvila/tsconfig": "^1.0.4",
     "@types/debug": "^4.1.5",
     "@types/jest": "^25.2.3",

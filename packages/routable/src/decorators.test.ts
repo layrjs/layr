@@ -2,7 +2,7 @@ import {Component} from '@liaison/component';
 
 import {Routable} from './routable';
 import {route} from './decorators';
-import {isRouteInstance} from './utilities';
+import {isRouteInstance} from './route';
 
 describe('Decorators', () => {
   test('@route()', async () => {
