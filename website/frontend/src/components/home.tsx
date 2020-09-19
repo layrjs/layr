@@ -15,17 +15,17 @@ import fullStack from '../assets/full-stack-20200916.immutable.svg';
 // @ts-ignore
 import webApp from '../assets/web-app-20200915.immutable.svg';
 // @ts-ignore
-import noREST from '../assets/no-rest-20200915.immutable.svg';
+import noWebAPI from '../assets/no-web-api-20200919.immutable.svg';
 // @ts-ignore
-import noGraphQL from '../assets/no-graphql-20200915.immutable.svg';
+import lowLevel from '../assets/low-level-20200919.immutable.svg';
 // @ts-ignore
-import noFramework from '../assets/no-framework-20200915.immutable.svg';
+import unopinionated from '../assets/unopinionated-20200919.immutable.svg';
 // @ts-ignore
 import javascript from '../assets/javascript-20200915.immutable.svg';
 // @ts-ignore
 import typescript from '../assets/typescript-20200915.immutable.svg';
 // @ts-ignore
-import openSource from '../assets/open-source-20200915.immutable.svg';
+import crossLayer from '../assets/cross-layer-20200919.immutable.svg';
 // @ts-ignore
 import mvilaProfile from '../assets/manuel-vila-profile-20200915.immutable.jpg';
 
@@ -33,12 +33,12 @@ const HERO_IMAGES = [
   {image: objectOriented, alt: '#ObjectOriented'},
   {image: fullStack, alt: '#FullStack'},
   {image: webApp, alt: '#WebApp'},
-  {image: noREST, alt: '#NoREST'},
-  {image: noGraphQL, alt: '#NoGraphQL'},
-  {image: noFramework, alt: '#NoFramework'},
+  {image: noWebAPI, alt: '#NoWebAPI'},
+  {image: lowLevel, alt: '#LowLevel'},
+  {image: unopinionated, alt: '#Unopinionated'},
   {image: javascript, alt: '#JavaScript'},
   {image: typescript, alt: '#TypeScript'},
-  {image: openSource, alt: '#OpenSource'}
+  {image: crossLayer, alt: '#CrossLayer'}
 ];
 
 const HERO_IMAGE_DURATION = 1000;
