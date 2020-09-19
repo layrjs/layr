@@ -309,23 +309,7 @@ export function isSerializedValidator(object: object) {
   return object !== undefined && hasOwnProperty(object, '__validator');
 }
 
-export function required(value: any) {
-  return value !== undefined;
-}
-
-export const requiredValidator = new Validator(required);
-
-export function runValidators(
-  validators: Validator[],
-  value: any,
-  options: {isOptional?: boolean} = {}
-) {
-  const {isOptional = false} = options;
-
-  if (value === undefined) {
-    return isOptional ? [] : [requiredValidator];
-  }
-
+export function runValidators(validators: Validator[], value: any) {
   const failedValidators: Validator[] = [];
 
   for (const validator of validators) {

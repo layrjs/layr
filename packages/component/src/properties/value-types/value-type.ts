@@ -293,9 +293,7 @@ export class ValueType {
   }
 
   runValidators(value: unknown, _attributeSelector?: AttributeSelector) {
-    const failedValidators = runValidators(this.getValidators(), value, {
-      isOptional: this.isOptional()
-    });
+    const failedValidators = runValidators(this.getValidators(), value);
 
     const failedValidatorsWithPath = failedValidators.map((failedValidator) => ({
       validator: failedValidator,

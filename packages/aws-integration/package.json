@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component-server": "^1.0.0",
+    "@liaison/component-server": "^1.0.1",
     "@types/aws-lambda": "^8.10.62",
     "core-helpers": "^1.0.1",
     "lodash": "^4.17.20",

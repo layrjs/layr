@@ -27,8 +27,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.0",
-    "@liaison/component-server": "^1.0.0",
+    "@liaison/component": "^1.0.1",
+    "@liaison/component-server": "^1.0.1",
     "co-body": "^6.0.0",
     "core-helpers": "^1.0.1",
     "http-errors": "^1.8.0",

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Consumes Liaison components served by @liaison/component-server",
   "keywords": [
     "liaison",
@@ -27,8 +27,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "1.0.0",
-    "@liaison/component-server": "^1.0.0",
+    "@liaison/component": "^1.0.1",
+    "@liaison/component-server": "^1.0.1",
     "core-helpers": "^1.0.1",
     "debug": "^4.1.1",
     "lodash": "^4.17.20",

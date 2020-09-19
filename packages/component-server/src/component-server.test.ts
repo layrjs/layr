@@ -90,7 +90,9 @@ describe('ComponentServer', () => {
                     validators: [
                       {
                         name: 'notEmpty',
-                        function: {__function: '(value) => value.length > 0'},
+                        function: {
+                          __function: '(value) => value !== undefined && value.length > 0'
+                        },
                         message: 'The validator `notEmpty()` failed'
                       }
                     ],

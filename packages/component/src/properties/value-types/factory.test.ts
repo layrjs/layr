@@ -1,7 +1,7 @@
 import {Component} from '../../component';
 import {Attribute} from '../attribute';
 import {createValueType} from './factory';
-import {validators, requiredValidator} from '../../validation';
+import {validators} from '../../validation';
 import {isAnyValueTypeInstance} from './any-value-type';
 import {isNumberValueTypeInstance} from './number-value-type';
 import {isStringValueTypeInstance} from './string-value-type';
@@ -100,27 +100,11 @@ describe('Factory', () => {
   test('Validation', async () => {
     const notEmpty = validators.notEmpty();
 
-    let type = createValueType('string', attribute);
-
-    expect(type.runValidators('Inception')).toEqual([]);
-    expect(type.runValidators(undefined)).toEqual([{validator: requiredValidator, path: ''}]);
-
-    type = createValueType('string?', attribute);
-
-    expect(type.runValidators('Inception')).toEqual([]);
-    expect(type.runValidators(undefined)).toEqual([]);
-
-    type = createValueType('string', attribute, {validators: [notEmpty]});
+    let type = createValueType('string', attribute, {validators: [notEmpty]});
 
     expect(type.runValidators('Inception')).toEqual([]);
     expect(type.runValidators('')).toEqual([{validator: notEmpty, path: ''}]);
-    expect(type.runValidators(undefined)).toEqual([{validator: requiredValidator, path: ''}]);
-
-    type = createValueType('string?', attribute, {validators: [notEmpty]});
-
-    expect(type.runValidators('Inception')).toEqual([]);
-    expect(type.runValidators('')).toEqual([{validator: notEmpty, path: ''}]);
-    expect(type.runValidators(undefined)).toEqual([]);
+    expect(type.runValidators(undefined)).toEqual([{validator: notEmpty, path: ''}]);
 
     type = createValueType('string[]', attribute, {
       validators: [notEmpty],
@@ -129,10 +113,10 @@ describe('Factory', () => {
 
     expect(type.runValidators(['Inception'])).toEqual([]);
     expect(type.runValidators([])).toEqual([{validator: notEmpty, path: ''}]);
+    expect(type.runValidators(undefined)).toEqual([{validator: notEmpty, path: ''}]);
     expect(type.runValidators(['Inception', ''])).toEqual([{validator: notEmpty, path: '[1]'}]);
-    expect(type.runValidators(undefined)).toEqual([{validator: requiredValidator, path: ''}]);
     expect(type.runValidators(['Inception', undefined])).toEqual([
-      {validator: requiredValidator, path: '[1]'}
+      {validator: notEmpty, path: '[1]'}
     ]);
 
     type = createValueType('string[][]', attribute, {items: {items: {validators: [notEmpty]}}});

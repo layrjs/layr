@@ -26,7 +26,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/router": "^1.0.0",
+    "@liaison/router": "^1.0.1",
     "core-helpers": "^1.0.1",
     "lodash": "^4.17.20",
     "tslib": "^1.13.0"

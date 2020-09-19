@@ -1,42 +1,42 @@
-import {Validator, ValidatorFunction, required} from './validator';
+import {Validator, ValidatorFunction} from './validator';
 
 const validatorFunctions: {[name: string]: ValidatorFunction} = {
   // Numbers
 
-  integer: (value) => Number.isInteger(value),
+  integer: (value) => value !== undefined && Number.isInteger(value),
 
-  positive: (value) => value >= 0,
+  positive: (value) => value !== undefined && value >= 0,
 
-  negative: (value) => value < 0,
+  negative: (value) => value !== undefined && value < 0,
 
-  lessThan: (value, number) => value < number,
+  lessThan: (value, number) => value !== undefined && value < number,
 
-  lessThanOrEqual: (value, number) => value <= number,
+  lessThanOrEqual: (value, number) => value !== undefined && value <= number,
 
-  greaterThan: (value, number) => value > number,
+  greaterThan: (value, number) => value !== undefined && value > number,
 
-  greaterThanOrEqual: (value, number) => value >= number,
+  greaterThanOrEqual: (value, number) => value !== undefined && value >= number,
 
-  range: (value, [min, max]) => value >= min && value <= max,
+  range: (value, [min, max]) => value !== undefined && value >= min && value <= max,
 
   // Strings and arrays
 
-  notEmpty: (value) => value.length > 0,
+  notEmpty: (value) => value !== undefined && value.length > 0,
 
-  minLength: (value, minLength) => value.length >= minLength,
+  minLength: (value, minLength) => value !== undefined && value.length >= minLength,
 
-  maxLength: (value, maxLength) => value.length <= maxLength,
+  maxLength: (value, maxLength) => value !== undefined && value.length <= maxLength,
 
   rangeLength: (value, [minLength, maxLength]) =>
-    value.length >= minLength && value.length <= maxLength,
+    value !== undefined && value.length >= minLength && value.length <= maxLength,
 
   // Strings
 
-  match: (value, pattern) => pattern.test(value),
+  match: (value, pattern) => value !== undefined && pattern.test(value),
 
   // Any values
 
-  required,
+  required: (value) => value !== undefined,
 
   anyOf: (value, array) => array.includes(value),
 

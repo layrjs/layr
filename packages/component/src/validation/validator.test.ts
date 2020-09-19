@@ -1,4 +1,4 @@
-import {Validator, isValidatorInstance, runValidators, requiredValidator} from './validator';
+import {Validator, isValidatorInstance, runValidators} from './validator';
 
 describe('Validator', () => {
   test('Creation', async () => {
@@ -58,9 +58,6 @@ describe('Validator', () => {
 
     expect(runValidators([validator], 7)).toEqual([]);
     expect(runValidators([validator], 3)).toEqual([validator]);
-
-    expect(runValidators([validator], undefined)).toEqual([requiredValidator]);
-    expect(runValidators([validator], undefined, {isOptional: true})).toEqual([]);
   });
 
   test('Introspection', async () => {

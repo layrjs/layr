@@ -213,9 +213,11 @@ describe('Attribute', () => {
 
     attribute.setValue(undefined);
 
-    expect(() => attribute.validate()).not.toThrow();
-    expect(attribute.isValid()).toBe(true);
-    expect(attribute.runValidators()).toEqual([]);
+    expect(() => attribute.validate()).toThrow(
+      "The following error(s) occurred while validating the attribute 'title': The validator `notEmpty()` failed (path: '')"
+    );
+    expect(attribute.isValid()).toBe(false);
+    expect(attribute.runValidators()).toEqual([{validator: notEmpty, path: ''}]);
   });
 
   test('Observability', async () => {

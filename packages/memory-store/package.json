@@ -26,8 +26,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.0",
-    "@liaison/store": "^1.0.0",
+    "@liaison/component": "^1.0.1",
+    "@liaison/store": "^1.0.1",
     "core-helpers": "^1.0.1",
     "lodash": "^4.17.20",
     "sort-on": "^4.1.0",
