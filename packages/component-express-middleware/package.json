@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-express-middleware",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An Express middleware for your Liaison components",
   "keywords": [
     "liaison",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@liaison/component": "^1.0.1",
-    "@liaison/component-server": "^1.0.1",
+    "@liaison/component-server": "^1.0.2",
     "co-body": "^6.0.0",
     "core-helpers": "^1.0.1",
     "http-errors": "^1.8.0",

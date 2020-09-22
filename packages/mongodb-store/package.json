@@ -1,6 +1,6 @@
 {
   "name": "@liaison/mongodb-store",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Liaison store for MongoDB",
   "keywords": [
     "liaison",
@@ -31,7 +31,7 @@
     "@liaison/component": "^1.0.1",
     "@liaison/store": "^1.0.1",
     "core-helpers": "^1.0.1",
-    "debug": "^4.1.1",
+    "debug": "^4.2.0",
     "lodash": "^4.17.20",
     "mongodb": "^3.6.2",
     "tslib": "^1.13.0"
