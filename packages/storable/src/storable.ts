@@ -933,7 +933,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         return undefined;
       }
 
-      await this.afterSave(resolvedAttributeSelector);
+      await savedStorable.afterSave(resolvedAttributeSelector);
 
       return savedStorable;
     }
@@ -1066,7 +1066,9 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         return undefined;
       }
 
-      await this.afterDelete(nonComputedAttributeSelector);
+      await deletedStorable.afterDelete(nonComputedAttributeSelector);
+
+      deletedStorable.setIsDeletedMark(true);
 
       // TODO: deletedStorable.detach();
 
@@ -1432,6 +1434,46 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       };
 
       return normalizeQueryForComponent(query, this.prototype);
+    }
+
+    // === isDeleted Mark ===
+
+    __isDeleted: boolean | undefined;
+
+    /**
+     * Returns whether the component instance is marked as deleted or not.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * movie.getIsDeletedMark(); // => false
+     * await movie.delete();
+     * movie.getIsDeletedMark(); // => true
+     * ```
+     *
+     * @category isDeleted Mark
+     */
+    getIsDeletedMark() {
+      return this.__isDeleted === true;
+    }
+
+    /**
+     * Sets whether the component instance is marked as deleted or not.
+     *
+     * @param isDeleted A boolean specifying if the component instance should be marked as deleted or not.
+     *
+     * @example
+     * ```
+     * movie.getIsDeletedMark(); // => false
+     * movie.setIsDeletedMark(true);
+     * movie.getIsDeletedMark(); // => true
+     * ```
+     *
+     * @category isDeleted Mark
+     */
+    setIsDeletedMark(isDeleted: boolean) {
+      Object.defineProperty(this, '__isDeleted', {value: isDeleted, configurable: true});
     }
 
     // === Hooks ===

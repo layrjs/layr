@@ -1074,7 +1074,9 @@ describe('Storable', () => {
             );
           }
 
+          expect(user.getIsDeletedMark()).toBe(false);
           expect(await user.delete()).toBe(user);
+          expect(user.getIsDeletedMark()).toBe(true);
 
           await expect(user.delete()).rejects.toThrow(
             "Cannot delete a component that is missing from the store (component: 'User', id: 'user1'"
