@@ -1296,6 +1296,16 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         const normalizedQuery: Query = {};
 
         for (const [name, subquery] of Object.entries<Query>(query)) {
+          if (name === '$some' || name === '$every') {
+            normalizedQuery[name] = normalizeQueryForComponent(subquery, component);
+            continue;
+          }
+
+          if (name === '$length') {
+            normalizedQuery[name] = subquery;
+            continue;
+          }
+
           if (name === '$not') {
             normalizedQuery[name] = normalizeQueryForComponent(subquery, component);
             continue;

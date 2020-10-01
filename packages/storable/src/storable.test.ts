@@ -1753,6 +1753,49 @@ describe('Storable', () => {
             {__component: 'User', __new: false, id: 'user11'}
           ]);
 
+          // --- With an array of embedded components ---
+
+          // - '$some' -
+
+          users = await User.fork().find({pastPictures: {type: 'JPEG'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'}
+          ]);
+
+          users = await User.fork().find({pastPictures: {type: 'PNG'}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user11'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
+
+          // - '$length' -
+
+          users = await User.fork().find({pastPictures: {$length: 0}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user13'}
+          ]);
+
+          users = await User.fork().find({pastPictures: {$length: 1}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user11'}
+          ]);
+
+          users = await User.fork().find({pastPictures: {$length: 2}}, {});
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', __new: false, id: 'user1'},
+            {__component: 'User', __new: false, id: 'user12'}
+          ]);
+
+          users = await User.fork().find({pastPictures: {$length: 3}}, {});
+
+          expect(serialize(users)).toStrictEqual([]);
+
           // --- With a component specified as query ---
 
           let ForkedUser = User.fork();
