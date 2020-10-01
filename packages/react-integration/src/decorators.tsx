@@ -38,7 +38,9 @@ import {useObserve} from './hooks';
  * @category Decorators
  * @decorator
  */
-export function view() {
+export function view(options: {observe?: boolean} = {}) {
+  const {observe = true} = options;
+
   return function (
     target: typeof Component | Component,
     name: string,
@@ -75,7 +77,9 @@ export function view() {
               return <BoundReactComponent {...props} />;
             }
 
-            useObserve(this);
+            if (observe) {
+              useObserve(this);
+            }
 
             return ReactComponent.call(this, props, context);
           };
