@@ -241,6 +241,34 @@ export class IdentityMap {
     }
   }
 
+  getComponents() {
+    const identityMap = this;
+
+    return {
+      *[Symbol.iterator]() {
+        const yieldedComponents = new Set<Component>();
+
+        const indexes = identityMap._getIndexes();
+
+        for (const name in indexes) {
+          const index = identityMap._getIndex(name);
+
+          for (const value in index) {
+            const component = identityMap.getComponent({[name]: value});
+
+            if (component === undefined || yieldedComponents.has(component)) {
+              continue;
+            }
+
+            yield component;
+
+            yieldedComponents.add(component);
+          }
+        }
+      }
+    };
+  }
+
   // === Indexes ===
 
   _getIndex(name: string) {

@@ -143,4 +143,22 @@ describe('Identity map', () => {
       "Cannot remove a detached component from the identity map (component: 'User')"
     );
   });
+
+  test('getComponents()', async () => {
+    class User extends Component {
+      @primaryIdentifier() id!: string;
+    }
+
+    const identityMap = new IdentityMap(User);
+
+    const user1 = new User({id: 'abc123'});
+    identityMap.addComponent(user1);
+
+    expect(Array.from(identityMap.getComponents())).toEqual([user1]);
+
+    const user2 = new User({id: 'xyz456'});
+    identityMap.addComponent(user2);
+
+    expect(Array.from(identityMap.getComponents())).toEqual([user1, user2]);
+  });
 });
