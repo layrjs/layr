@@ -34,9 +34,19 @@ export function getAttributeInitializerFromConstructorSourceCode(
   const index = attributeMatch.index! + attributeMatch[0].length;
   const endIndex = getIndexAfterTerminator(constructorSourceCode, [';', ',', '}'], index);
 
-  const initializerSourceCode = constructorSourceCode.slice(index, endIndex);
+  const initializerSourceCode = 'return ' + constructorSourceCode.slice(index, endIndex - 1);
 
-  const initializer = new Function(`return ${initializerSourceCode}`);
+  let initializer: Function;
+
+  try {
+    initializer = new Function(initializerSourceCode);
+  } catch (error) {
+    console.error(
+      `An error occurred while getting the attribute initializer from a constructor source code (failed to create a function from \`${initializerSourceCode}\`)`
+    );
+    throw error;
+  }
+
   Object.defineProperty(initializer, 'name', {
     value: `${attributeName}Initializer`,
     configurable: true
