@@ -12,8 +12,8 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
     @consume() static Common: typeof Common;
     @consume() static UI: typeof UI;
 
-    @view() static Subscription({...props}) {
-      const {UI, Common} = this;
+    @view() static Subscription() {
+      const {Common, UI} = this;
 
       const [email, setEmail] = useState('');
       const [isSubscribed, setIsSubscribed] = useState(false);
@@ -23,88 +23,60 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
         setIsSubscribed(true);
       }, [email]);
 
-      const theme = UI.useTheme();
-
       return (
-        <div
-          id="newsletter"
-          css={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '2rem'
-          }}
-          {...props}
+        <Common.Feature
+          title={!isSubscribed ? 'Stay Updated' : 'Thank You!'}
+          description={
+            !isSubscribed
+              ? "Keep up on all that's happening with Liaison!"
+              : "We'll keep you updated."
+          }
         >
-          <div css={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-            <div
-              css={UI.responsive({
-                fontSize: ['2rem', , '1.5rem'],
-                lineHeight: theme.small.lineHeight,
-                textAlign: 'center'
-              })}
+          {!isSubscribed && (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSubscribe();
+              }}
+              css={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: '1.75rem',
+                marginBottom: '.5rem'
+              }}
             >
-              {!isSubscribed ? 'Stay updated' : 'Thank you!'}
-            </div>
-            <div
-              css={UI.responsive({
-                marginTop: '.75rem',
-                fontSize: ['1.25rem', , '1rem'],
-                color: theme.muted.textColor,
-                textAlign: 'center'
-              })}
-            >
-              {!isSubscribed
-                ? 'Know when a new major version is released, and everything else.'
-                : "We'll keep you updated."}
-            </div>
-
-            {!isSubscribed && (
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  handleSubscribe();
+              <UI.Input
+                type="email"
+                onChange={(event) => {
+                  setEmail(event.target.value);
                 }}
-                css={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginTop: '1.75rem',
-                  marginBottom: '.5rem'
-                }}
+                value={email}
+                disabled={isSubscribingUp}
+                required
+                placeholder="Your email address"
+                large
+                css={UI.responsive({
+                  width: [300, , '100%'],
+                  marginRight: ['0.75rem', , 0],
+                  marginBottom: [0, , '0.75rem']
+                })}
+              />
+              <UI.Button
+                type="submit"
+                disabled={isSubscribingUp}
+                primary
+                large
+                css={UI.responsive({width: ['auto', , '100%']})}
               >
-                <UI.Input
-                  type="email"
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                  }}
-                  value={email}
-                  disabled={isSubscribingUp}
-                  required
-                  placeholder="Your email address"
-                  large
-                  css={UI.responsive({
-                    width: [300, , '100%'],
-                    marginRight: ['0.75rem', , 0],
-                    marginBottom: [0, , '0.75rem']
-                  })}
-                />
-                <UI.Button
-                  type="submit"
-                  disabled={isSubscribingUp}
-                  primary
-                  large
-                  css={UI.responsive({width: ['auto', , '100%']})}
-                >
-                  Subscribe
-                </UI.Button>
-              </form>
-            )}
+                Subscribe
+              </UI.Button>
+            </form>
+          )}
 
-            {subscribeError && <Common.ErrorMessage error={subscribeError} />}
-          </div>
-        </div>
+          {subscribeError && <Common.ErrorMessage error={subscribeError} />}
+        </Common.Feature>
       );
     }
   }

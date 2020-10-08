@@ -25,7 +25,7 @@ import type {PlainObject} from 'core-helpers';
  * await Movie.find({country: 'Japan'});
  *
  * // Find the unreleased movies
- * await Movie.find({releaseDate: undefined});
+ * await Movie.find({year: undefined});
  * ```
  *
  * ##### Multiple Attributes Query
@@ -62,7 +62,7 @@ import type {PlainObject} from 'core-helpers';
  * await Movie.find({country: {$notEqual: 'Japan'}});
 
  * // Find the released movies
- * await Movie.find({releaseDate: {$notEqual: undefined}});
+ * await Movie.find({year: {$notEqual: undefined}});
  * ```
  *
  * ##### `$greaterThan`

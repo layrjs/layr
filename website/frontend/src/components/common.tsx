@@ -160,6 +160,52 @@ export class Common extends Component {
     );
   }
 
+  @view() static Feature({
+    title,
+    description,
+    children
+  }: {
+    title: string;
+    description: string;
+    children: React.ReactNode;
+  }) {
+    const {UI} = this;
+
+    const theme = UI.useTheme();
+
+    return (
+      <div
+        css={UI.responsive({
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: ['3rem 1.5rem', , '3rem 15px']
+        })}
+      >
+        <div css={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+          <h3
+            css={UI.responsive({
+              fontSize: [, , '1.563rem'],
+              textAlign: 'center'
+            })}
+          >
+            {title}
+          </h3>
+          <div
+            css={UI.responsive({
+              fontSize: ['1.25rem', , '1rem'],
+              color: theme.muted.textColor,
+              textAlign: 'center'
+            })}
+          >
+            <UI.InlineMarkdown>{description}</UI.InlineMarkdown>
+          </div>
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   @view() static FrontendPlusBackendEqualsLove() {
     const {UI} = this;
 
@@ -282,7 +328,7 @@ export class Common extends Component {
     const theme = UI.useTheme();
 
     return (
-      <div css={{...UI.styles.minimumLineHeight, alignSelf: 'center', padding: '1.5rem 0'}}>
+      <div css={{...UI.styles.minimumLineHeight, alignSelf: 'center', marginBottom: '1.75rem'}}>
         <a
           href={`#${id}`}
           onClick={(event) => {

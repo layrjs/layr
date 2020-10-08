@@ -1,6 +1,5 @@
 import {Component, consume} from '@liaison/component';
 import {Routable, route} from '@liaison/routable';
-import {useState, useEffect} from 'react';
 import {jsx} from '@emotion/core';
 import {view} from '@liaison/react-integration';
 
@@ -9,89 +8,153 @@ import type {Newsletter} from './newsletter';
 import type {Common} from './common';
 import type {UI} from './ui';
 // @ts-ignore
-import objectOriented from '../assets/object-oriented-20200915.immutable.svg';
-// @ts-ignore
-import fullStack from '../assets/full-stack-20200916.immutable.svg';
-// @ts-ignore
-import webApp from '../assets/web-app-20200915.immutable.svg';
-// @ts-ignore
-import noWebAPI from '../assets/no-web-api-20200919.immutable.svg';
-// @ts-ignore
-import lowLevel from '../assets/low-level-20200919.immutable.svg';
-// @ts-ignore
-import unopinionated from '../assets/unopinionated-20200919.immutable.svg';
-// @ts-ignore
-import javascript from '../assets/javascript-20200915.immutable.svg';
-// @ts-ignore
-import typescript from '../assets/typescript-20200915.immutable.svg';
-// @ts-ignore
-import crossLayer from '../assets/cross-layer-20200919.immutable.svg';
-// @ts-ignore
-import mvilaProfile from '../assets/manuel-vila-profile-20200915.immutable.jpg';
+import typicalVsUnified from '../assets/typical-stack-vs-unified-stack-20201007.immutable.png';
 
-const HERO_IMAGES = [
-  {image: objectOriented, alt: '#ObjectOriented'},
-  {image: fullStack, alt: '#FullStack'},
-  {image: webApp, alt: '#WebApp'},
-  {image: noWebAPI, alt: '#NoWebAPI'},
-  {image: lowLevel, alt: '#LowLevel'},
-  {image: unopinionated, alt: '#Unopinionated'},
-  {image: javascript, alt: '#JavaScript'},
-  {image: typescript, alt: '#TypeScript'},
-  {image: crossLayer, alt: '#CrossLayer'}
-];
+const NO_WEB_API_BACKEND_EXAMPLE = `
+\`\`\`
+import {Component, attribute, method, expose} from '@liaison/component';
+import {ComponentHTTPServer} from '@liaison/component-http-server';
 
-const HERO_IMAGE_DURATION = 1000;
+class Greeter extends Component {
+  @expose({set: true}) @attribute() name = 'World';
 
-const INTRODUCTION_MESSAGE = `
-Hi, everyone! 👋
+  @expose({call: true}) @method() async hello() {
+    return \`Hello, \${this.name}!\`;
+  }
+}
 
-Let's talk about web app development.
+const server = new ComponentHTTPServer(Greeter, {port: 3210});
 
-It used to be simple. We implemented everything in the backend with some PHP code or Ruby on Rails and then, with a bit of JavaScript running in the frontend, we were done.
+server.start();
+\`\`\`
+`;
 
-But times have changed. Modern web apps require rich user interfaces that can no longer be rendered in the backend.
+const NO_WEB_API_FRONTEND_EXAMPLE = `
+\`\`\`
+import {ComponentHTTPClient} from '@liaison/component-http-client';
 
-So, from a bit of JavaScript running in the frontend, we switched to a lot of JavaScript using a single-page application model and a bunch of libraries.
+const client = new ComponentHTTPClient('http://localhost:3210');
 
-There's nothing wrong with this. It's actually quite an elegant architecture:
+const BackendGreeter = await client.getComponent();
 
-- The frontend is in charge of the user interface.
-- The backend takes care of the data model and the business logic.
+class Greeter extends BackendGreeter {
+  async hello() {
+    return (await super.hello()).toUpperCase();
+  }
+}
 
-The problem, however, lies in the middle. Now that we have two rich execution environments, we need to make sure that they communicate effectively. So, we implement a web API (REST, GraphQL, etc.), and [everything gets complicated](/blog/articles/Simplify-Full-Stack-Development-with-a-Unified-Architecture-187fr1).
+const greeter = new Greeter({name: 'Steve'});
 
-Conceptually, it's like we're building two applications instead of one.
+console.log(await greeter.hello());
+\`\`\`
+`;
 
-The data model gets duplicated, and the overall complexity is such that the developers become duplicated as well.
+const ORM_DATA_MODELING_EXAMPLE = `
+\`\`\`
+import {Component} from '@liaison/component';
+import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
 
-If you're a frontend or backend developer, you can only do half the job, and you waste a lot of time communicating with the person in charge of the other half.
+class Movie extends Storable(Component) {
+  @primaryIdentifier() id;
+  @attribute() title;
+  @attribute() country;
+  @attribute() year;
+}
+\`\`\`
+`;
 
-If you're a full-stack developer, you can implement a feature from start to finish in a much more efficient and satisfying way. But, given the sophistication of the stack, there's a lot you have to deal with, and it doesn't scale very well.
+const ORM_STORE_REGISTRATION_EXAMPLE = `
+\`\`\`
+import {MongoDBStore} from '@liaison/mongodb-store';
 
-Ideally, we should all be full-stack developers just like we were in the beginning. But we need to dramatically simplify the stack to make this possible.
+const store = new MongoDBStore('mongodb://user:pass@host:port/db');
 
-So, how to simplify the stack?
+store.registerStorable(Movie);
+\`\`\`
+`;
 
-Sure, the frontend and the backend need to be *physically* separated. But it doesn't mean that they have to be *logically* separated.
+const ORM_STORE_CRUD_OPERATIONS_EXAMPLE = `
+\`\`\`
+// Create
+const movie = new Movie({
+  id: 'abc123',
+  title: 'Inception',
+  country: 'USA',
+  year: 2010
+});
+await movie.save();
 
-With the right abstractions in place, an application can run in two different execution environments, even as it remains a single thing from the developer's point of view.
+// Read
+const movie = await Movie.get('abc123');
 
-This is precisely what Liaison offers — a reuniting of the frontend and the backend.
+// Update
+movie.title = 'Inception 2';
+await movie.save();
 
-The data model can be shared across the stack, and there is no need to build a web API anymore.
+// Delete
+await movie.delete();
+\`\`\`
+`;
 
-Some might argue that mastering both the frontend and the backend is not that easy.
+const ORM_STORE_FINDING_DATA_EXAMPLE = `
+\`\`\`
+// Find the movies starting with an 'I'
+const movies = await Movie.find({title: {$startsWith: 'I'}});
 
-The frontend is not only UI rendering, but it's also state management, routing, etc.
+// Find the movies released after 2010
+const movies = await Movie.find({year: {$greaterThan: 2010}});
 
-The backend is not only data modeling and business logic, but it's also data storage, authorization, etc.
+// Find the Japanese movies released in 2010
+const movies = await Movie.find({country: 'Japan', year: 2010});
+\`\`\`
+`;
 
-Fair enough, it's not that easy. But here, Liaison also has [a lot to offer](/docs).
+const USER_INTERFACE_ROUTES_EXAMPLE = `
+\`\`\`
+import {Component} from '@liaison/component';
+import {Routable, route} from '@liaison/routable';
 
-So, hopefully, everyone can be a full-stack developer again.
+class Movie extends Routable(Component) {
+  @route('/movies') static List() {
+    // Display all the movies...
+  }
 
-Happy coding! 🧑‍💻
+  @route('/movies/:id') static Item({id}) {
+    // Display a specific movie...
+  }
+}
+\`\`\`
+`;
+
+const USER_INTERFACE_VIEWS_EXAMPLE = `
+\`\`\`
+import {Component, attribute} from '@liaison/component';
+import React from 'react';
+import {view} from '@liaison/react-integration';
+
+class Movie extends Component {
+  @attribute() title;
+  @attribute() year;
+  @attribute() country;
+
+  @view() Home() {
+    return (
+      <div>
+        <this.Heading />
+        <this.Details />
+      </div>
+    );
+  }
+
+  @view() Heading() {
+    return <h3>{this.title} ({this.year})</h3>;
+  }
+
+  @view() Details() {
+    return <div>Country: {this.country}</div>;
+  }
+}
+\`\`\`
 `;
 
 export class Home extends Routable(Component) {
@@ -102,8 +165,6 @@ export class Home extends Routable(Component) {
 
   @route('/') @view() static Main() {
     const {Newsletter, Common, UI} = this;
-
-    const theme = UI.useTheme();
 
     Common.useTitle('A love story between the frontend and the backend');
 
@@ -116,157 +177,171 @@ export class Home extends Routable(Component) {
         >
           <Common.Header />
           <this.Hero css={{flexGrow: 1}} />
-          <Common.Scroller id="introduction" />
+          <Common.Scroller id="features" />
         </UI.FullHeight>
 
-        <div
-          id="introduction"
-          css={UI.responsive({
-            padding: ['5rem 1.5rem 5.5rem 1.5rem', , '2.5rem 15px 3rem 15px'],
-            borderBottom: `${theme.borderWidth} solid ${theme.borderColor}`
-          })}
-        >
-          <this.Introduction />
+        <div id="features" css={{maxWidth: 850, margin: '0 auto'}}>
+          <this.NoWebAPI />
+          <hr css={{margin: 0}} />
+          <this.ORM />
+          <hr css={{margin: 0}} />
+          <this.UserInterface />
+          <hr css={{margin: 0}} />
+          <this.DeveloperExperience />
+          <hr css={{margin: 0}} />
+          <Newsletter.Subscription />
         </div>
 
-        <UI.FullHeight
-          css={{
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
-          <div css={{flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-            <div css={{flexBasis: 850, display: 'flex', flexDirection: 'column'}}>
-              <this.GettingStarted css={{flexGrow: 1}} />
-              <Newsletter.Subscription
-                css={{
-                  flexGrow: 1,
-                  borderTop: `${theme.borderWidth} solid ${theme.borderColor}`
-                }}
-              />
-            </div>
-          </div>
-          <Common.Footer />
-        </UI.FullHeight>
+        <Common.Footer />
       </div>
     );
   }
 
   @view() static Hero({...props}) {
-    const [imageIndex, setImageIndex] = useState(0);
-
-    useEffect(() => {
-      const timeoutId = setTimeout(() => {
-        let newIndex = imageIndex + 1;
-
-        if (newIndex >= HERO_IMAGES.length) {
-          newIndex = 0;
-        }
-
-        setImageIndex(newIndex);
-      }, HERO_IMAGE_DURATION);
-
-      return () => {
-        clearTimeout(timeoutId);
-      };
-    }, [imageIndex]);
-
-    const {image, alt} = HERO_IMAGES[imageIndex];
-
-    return (
-      <div
-        css={{display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem'}}
-        {...props}
-      >
-        <div css={{flexBasis: '600px'}}>
-          <img src={image} alt={alt} css={{width: '100%'}} />
-        </div>
-      </div>
-    );
-  }
-
-  @view() static Introduction() {
-    const {UI} = this;
-
-    const theme = UI.getTheme();
-
-    return (
-      <div css={UI.responsive({maxWidth: 800, margin: '0 auto', fontSize: ['1.25rem', , '1rem']})}>
-        <UI.Markdown>{INTRODUCTION_MESSAGE}</UI.Markdown>
-        <a
-          href="https://mvila.me"
-          target="_blank"
-          rel="noopener noreferrer"
-          css={{
-            'maxWidth': 300,
-            'marginTop': '2.5rem',
-            'paddingTop': '1rem',
-            'display': 'flex',
-            'alignItems': 'center',
-            'borderTop': `${theme.borderWidth} solid ${theme.borderColor}`,
-            'color': theme.textColor,
-            ':hover': {
-              color: theme.textColor,
-              textDecoration: 'none'
-            }
-          }}
-        >
-          <img
-            src={mvilaProfile}
-            alt="Manuel Vila's picture"
-            css={UI.responsive({width: [60, , 50], borderRadius: '50%'})}
-          />
-          <div css={{marginLeft: '1rem'}}>
-            <div>Manuel Vila</div>
-            <div css={{color: theme.muted.textColor}}>Creator of Liaison</div>
-          </div>
-        </a>
-      </div>
-    );
-  }
-
-  @view() static GettingStarted({...props}) {
     const {UI} = this;
 
     const theme = UI.useTheme();
 
     return (
       <div
-        css={{display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem'}}
+        css={UI.responsive({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: ['3rem 1.5rem', , '3rem 15px']
+        })}
         {...props}
       >
-        <div css={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-          <div
-            css={UI.responsive({
-              fontSize: ['2rem', , '1.5rem'],
-              lineHeight: theme.small.lineHeight,
-              textAlign: 'center'
-            })}
-          >
-            Build a full-stack web app two to three times faster
+        <div
+          css={UI.responsive({
+            display: 'flex',
+            flexDirection: ['row', 'column-reverse'],
+            alignItems: 'center',
+            maxWidth: '1024px'
+          })}
+        >
+          <div css={UI.responsive({marginTop: [0, '3rem'], textAlign: ['left', 'center']})}>
+            <h2
+              css={UI.responsive({
+                fontSize: [, , '1.953rem', '1.563rem'],
+                lineHeight: '1.45'
+              })}
+            >
+              Dramatically Simplify Full‑Stack Development
+            </h2>
+            <div
+              css={UI.responsive({
+                fontSize: ['1.563rem', , , '1.25rem'],
+                color: theme.muted.textColor
+              })}
+            >
+              Inherit your frontend from your backend and build your application as if it were a
+              single unified thing.
+            </div>
+            <UI.Button
+              secondary
+              large
+              onClick={() => {
+                this.Docs.Main.navigate();
+              }}
+              css={{marginTop: '2rem'}}
+            >
+              Get started
+            </UI.Button>
           </div>
-          <div
-            css={UI.responsive({
-              marginTop: '.75rem',
-              fontSize: ['1.25rem', , '1rem'],
-              color: theme.muted.textColor,
-              textAlign: 'center'
-            })}
-          >
-            While still keeping it scalable and maintainable. No bullshit.
-          </div>
-          <UI.Button
-            secondary
-            large
-            onClick={() => {
-              this.Docs.Main.navigate();
-            }}
-            css={{marginTop: '1.75rem', marginBottom: '.5rem'}}
-          >
-            Get started
-          </UI.Button>
+          <img
+            src={typicalVsUnified}
+            alt="Typical stack vs unified stack"
+            css={UI.responsive({marginLeft: ['2.5rem', 0], maxWidth: [500, , '100%']})}
+          />
         </div>
       </div>
+    );
+  }
+
+  @view() static NoWebAPI() {
+    const {Common, UI} = this;
+
+    return (
+      <Common.Feature
+        title="Look Ma, No Web API"
+        description="Stop wasting your time building a web API. With Liaison, the frontend and the backend can [communicate directly](/blog/articles/Do-We-Really-Need-A-Web-API-yq12wz) as if they were not separated."
+      >
+        <div css={{marginTop: '3rem', maxWidth: 640}}>
+          <h5 css={{marginTop: '2rem'}}>Backend</h5>
+          <UI.Markdown>{NO_WEB_API_BACKEND_EXAMPLE}</UI.Markdown>
+          <h5 css={{marginTop: '2rem'}}>Frontend</h5>
+          <UI.Markdown>{NO_WEB_API_FRONTEND_EXAMPLE}</UI.Markdown>
+        </div>
+      </Common.Feature>
+    );
+  }
+
+  @view() static ORM() {
+    const {Common, UI} = this;
+
+    return (
+      <Common.Feature
+        title="Database Abstracted Away"
+        description={
+          "Extend your classes with the [`Storable()`](/docs/v1/reference/storable) mixin, register them into a [store](/docs/v1/reference/store), and you're ready to build your application without having to worry about the database."
+        }
+      >
+        <div css={{marginTop: '3rem', maxWidth: 640}}>
+          <h5 css={{marginTop: '2rem'}}>Data Modeling</h5>
+          <UI.Markdown>{ORM_DATA_MODELING_EXAMPLE}</UI.Markdown>
+          <h5 css={{marginTop: '2rem'}}>Store Registration</h5>
+          <UI.Markdown>{ORM_STORE_REGISTRATION_EXAMPLE}</UI.Markdown>
+          <h5 css={{marginTop: '2rem'}}>CRUD Operations</h5>
+          <UI.Markdown>{ORM_STORE_CRUD_OPERATIONS_EXAMPLE}</UI.Markdown>
+          <h5 css={{marginTop: '2rem'}}>Finding Data</h5>
+          <UI.Markdown>{ORM_STORE_FINDING_DATA_EXAMPLE}</UI.Markdown>
+        </div>
+      </Common.Feature>
+    );
+  }
+
+  @view() static UserInterface() {
+    const {Common, UI} = this;
+
+    return (
+      <Common.Feature
+        title="Encapsulated User Interface"
+        description={
+          'Implement your [routes](/docs/v1/reference/routable) and [views](/docs/v1/reference/react-integration#view-decorator) as methods of your models, and keep your application as cohesive as possible.'
+        }
+      >
+        <div css={{marginTop: '3rem', maxWidth: 640}}>
+          <h5 css={{marginTop: '2rem'}}>Routes</h5>
+          <UI.Markdown>{USER_INTERFACE_ROUTES_EXAMPLE}</UI.Markdown>
+          <h5 css={{marginTop: '2rem'}}>Views</h5>
+          <UI.Markdown>{USER_INTERFACE_VIEWS_EXAMPLE}</UI.Markdown>
+        </div>
+      </Common.Feature>
+    );
+  }
+
+  @view() static DeveloperExperience() {
+    const {Common, UI} = this;
+
+    return (
+      <Common.Feature
+        title="Developer Experience First"
+        description={
+          'Liaison strives to find the right balance between powerful abstractions and ease of use so that you can build an application in the most enjoyable way possible.'
+        }
+      >
+        <UI.Button
+          secondary
+          large
+          onClick={() => {
+            this.Docs.Main.navigate();
+          }}
+          css={{marginTop: '2rem'}}
+        >
+          Read the docs
+        </UI.Button>
+      </Common.Feature>
     );
   }
 }

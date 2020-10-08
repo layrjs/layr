@@ -821,4 +821,14 @@ export class UI extends Component {
 
     return <div dangerouslySetInnerHTML={{__html: html}} />;
   }
+
+  @view() static InlineMarkdown({children: markdown}: {children: string}) {
+    markdown = markdown.replace(/\n/g, '  \n');
+
+    let html = (marked as any).parseInline(markdown);
+
+    html = DOMPurify.sanitize(html);
+
+    return <span dangerouslySetInnerHTML={{__html: html}} />;
+  }
 }
