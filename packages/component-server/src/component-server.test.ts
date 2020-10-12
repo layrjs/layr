@@ -86,7 +86,7 @@ describe('ComponentServer', () => {
                     name: 'title',
                     type: 'Attribute',
                     valueType: 'string',
-                    default: {__function: "function () {\nreturn '';\n}"},
+                    default: {__function: "function () {\nreturn ''\n}"},
                     validators: [
                       {
                         name: 'notEmpty',

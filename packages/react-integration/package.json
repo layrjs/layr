@@ -1,6 +1,6 @@
 {
   "name": "@liaison/react-integration",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "React integration for Liaison",
   "keywords": [
     "liaison",
@@ -28,21 +28,21 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/browser-router": "^1.0.2",
-    "@liaison/component": "^1.0.1",
-    "@liaison/observable": "^1.0.0",
-    "@liaison/router": "^1.0.1",
-    "core-helpers": "^1.0.1",
+    "@liaison/browser-router": "^1.0.3",
+    "@liaison/component": "^1.0.6",
+    "@liaison/observable": "^1.0.1",
+    "@liaison/router": "^1.0.2",
+    "core-helpers": "^1.0.2",
     "lodash": "^4.17.20",
-    "tslib": "^1.13.0"
+    "tslib": "^2.0.3"
   },
   "peerDependencies": {
     "react": "^16.13.1"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.24",
+    "@mvila/dev-tools": "^1.0.26",
     "@mvila/tsconfig": "^1.0.4",
-    "@types/lodash": "^4.14.161",
-    "@types/react": "^16.9.49"
+    "@types/lodash": "^4.14.162",
+    "@types/react": "^16.9.52"
   }
 }

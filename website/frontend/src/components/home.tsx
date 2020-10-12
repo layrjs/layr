@@ -235,8 +235,8 @@ export class Home extends Routable(Component) {
                 color: theme.muted.textColor
               })}
             >
-              Inherit your frontend from your backend and build your application as if it were a
-              single unified thing.
+              Inherit the frontend from the backend and build your application as if it were a
+              single thing.
             </div>
             <UI.Button
               secondary

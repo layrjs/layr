@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-express-middleware",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An Express middleware for your Liaison components",
   "keywords": [
     "liaison",
@@ -27,16 +27,16 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.1",
-    "@liaison/component-server": "^1.0.2",
-    "co-body": "^6.0.0",
-    "core-helpers": "^1.0.1",
+    "@liaison/component": "^1.0.6",
+    "@liaison/component-server": "^1.0.3",
+    "co-body": "^6.1.0",
+    "core-helpers": "^1.0.2",
     "http-errors": "^1.8.0",
     "sleep-promise": "^8.0.1",
-    "tslib": "^1.13.0"
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.24",
+    "@mvila/dev-tools": "^1.0.26",
     "@mvila/tsconfig": "^1.0.4",
     "@types/co-body": "^5.1.0",
     "@types/http-errors": "^1.8.0"
