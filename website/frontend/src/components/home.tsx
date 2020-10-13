@@ -8,7 +8,7 @@ import type {Newsletter} from './newsletter';
 import type {Common} from './common';
 import type {UI} from './ui';
 // @ts-ignore
-import typicalVsUnified from '../assets/typical-stack-vs-unified-stack-20201007.immutable.png';
+import typicalVsLiaison from '../assets/typical-stack-vs-liaison-stack-20201013.immutable.png';
 
 const NO_WEB_API_BACKEND_EXAMPLE = `
 \`\`\`
@@ -235,8 +235,8 @@ export class Home extends Routable(Component) {
                 color: theme.muted.textColor
               })}
             >
-              Inherit the frontend from the backend and build your application as if it were a
-              single thing.
+              Inherit the frontend from the backend and build your application as if it were made of
+              a single layer.
             </div>
             <UI.Button
               secondary
@@ -250,8 +250,8 @@ export class Home extends Routable(Component) {
             </UI.Button>
           </div>
           <img
-            src={typicalVsUnified}
-            alt="Typical stack vs unified stack"
+            src={typicalVsLiaison}
+            alt="Typical stack vs Liaison stack"
             css={UI.responsive({marginLeft: ['2.5rem', 0], maxWidth: [500, , '100%']})}
           />
         </div>
