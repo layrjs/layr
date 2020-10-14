@@ -1,0 +1,28 @@
+{
+  "name": "counter-with-parcel-ts-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel serve ./src/index.html"
+  },
+  "dependencies": {
+    "@liaison/component": "^1.0.6",
+    "@liaison/component-http-client": "^1.0.3",
+    "@liaison/react-integration": "^1.0.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/preset-env": "^7.12.0",
+    "@babel/preset-react": "^7.10.4",
+    "@babel/preset-typescript": "^7.12.0",
+    "@types/node": "^14.11.8",
+    "@types/react": "^16.9.52",
+    "@types/react-dom": "^16.9.8",
+    "parcel": "next"
+  }
+}
