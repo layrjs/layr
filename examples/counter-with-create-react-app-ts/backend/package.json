@@ -1,0 +1,22 @@
+{
+  "name": "counter-with-create-react-app-ts-backend",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon --watch ./src --exec ts-node ./src/http-server.ts"
+  },
+  "dependencies": {
+    "@liaison/component": "^1.0.0",
+    "@liaison/component-server": "^1.0.0",
+    "tslib": "^2.0.3"
+  },
+  "devDependencies": {
+    "@liaison/component-http-server": "^1.0.0",
+    "@types/node": "^14.11.8",
+    "nodemon": "^2.0.5",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.3"
+  }
+}

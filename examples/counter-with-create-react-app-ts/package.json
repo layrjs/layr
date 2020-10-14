@@ -1,0 +1,15 @@
+{
+  "name": "counter-with-create-react-app-ts",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "(cd ./frontend && npm install) && (cd ./backend && npm install)",
+    "start": "concurrently --names=frontend,backend --prefix-colors=green,blue --kill-others \"(cd ./frontend && npm run start)\" \"(cd ./backend && npm run start)\"",
+    "update": "(cd ./frontend && npm update) && (cd ./backend && npm update)"
+  },
+  "devDependencies": {
+    "concurrently": "^5.3.0"
+  }
+}
