@@ -1,0 +1,39 @@
+{
+  "name": "counter-with-rollup-ts-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "scripts": {
+    "copy": "mkdir -p ./build && cp ./src/index.html ./build/index.html",
+    "build": "npm run copy && rollup --config",
+    "watch": "npm run copy && rollup --config --watch",
+    "serve": "serve --listen 3000 ./build",
+    "start": "npm-run-all --parallel watch serve"
+  },
+  "dependencies": {
+    "@liaison/component": "^1.0.6",
+    "@liaison/component-http-client": "^1.0.3",
+    "@liaison/react-integration": "^1.0.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.0",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@babel/preset-env": "^7.12.0",
+    "@babel/preset-react": "^7.10.4",
+    "@babel/preset-typescript": "^7.12.0",
+    "@rollup/plugin-babel": "^5.2.1",
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@types/node": "^14.11.8",
+    "@types/react": "^16.9.52",
+    "@types/react-dom": "^16.9.8",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^2.30.0",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "serve": "^11.3.2"
+  }
+}
