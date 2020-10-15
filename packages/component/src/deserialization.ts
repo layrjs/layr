@@ -160,11 +160,7 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
           })
         ),
         (deserializedAttributes) => {
-          const {__context: context} = deserializedAttributes;
-          const deserializedFunction = deserializeFunction(
-            functionCode,
-            context as PlainObject | undefined
-          );
+          const deserializedFunction = deserializeFunction(functionCode);
           Object.assign(deserializedFunction, deserializedAttributes);
           return deserializedFunction;
         }
@@ -175,14 +171,16 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
   return simpleDeserialize(value, {...otherOptions, objectDeserializer, functionDeserializer});
 }
 
-export function deserializeFunction(functionCode: string, context?: PlainObject): Function {
-  let evalCode = `(${functionCode});`;
+export function deserializeFunction(functionCode: string): Function {
+  return new Function(`return (${functionCode});`)();
 
-  if (context !== undefined) {
-    const contextKeys = Object.keys(context).join(', ');
-    const contextCode = `const {${contextKeys}} = context;`;
-    evalCode = `${contextCode} ${evalCode}`;
-  }
+  // let evalCode = `(${functionCode});`;
 
-  return eval(evalCode);
+  // if (context !== undefined) {
+  //   const contextKeys = Object.keys(context).join(', ');
+  //   const contextCode = `const {${contextKeys}} = context;`;
+  //   evalCode = `${contextCode} ${evalCode}`;
+  // }
+
+  // return eval(evalCode);
 }

@@ -388,18 +388,5 @@ describe('Deserialization', () => {
     expect(Object.keys(func)).toEqual(['displayName']);
     expect((func as any).displayName).toBe('sum');
     expect(func(1, 2)).toBe(3);
-
-    serializedFunction = {
-      __function: 'function sum() { return a + b; }',
-      __context: {a: 1, b: 2}
-    };
-
-    func = deserialize(serializedFunction, {deserializeFunctions: true}) as Function;
-
-    expect(typeof func).toBe('function');
-    expect(func.name).toBe('sum');
-    expect(Object.keys(func)).toEqual(['__context']);
-    expect((func as any).__context).toEqual({a: 1, b: 2});
-    expect(func(1, 2)).toBe(3);
   });
 });

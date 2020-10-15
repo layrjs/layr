@@ -437,15 +437,6 @@ describe('Serialization', () => {
       displayName: 'sum'
     });
 
-    sum.__context = {x: 1, y: 2};
-
-    expect(serialize(sum)).toStrictEqual({displayName: 'sum', __context: {x: 1, y: 2}});
-    expect(trimSerializedFunction(serialize(sum, {serializeFunctions: true}))).toStrictEqual({
-      __function: 'function sum(a, b) {\nreturn a + b;\n}',
-      displayName: 'sum',
-      __context: {x: 1, y: 2}
-    });
-
     function trimSerializedFunction(serializedFunction: any) {
       return {
         ...serializedFunction,
