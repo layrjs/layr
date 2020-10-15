@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component-koa-middleware",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A Koa middleware for your Liaison components",
   "keywords": [
     "liaison",
@@ -27,10 +27,10 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.6",
-    "@liaison/component-server": "^1.0.3",
+    "@liaison/component": "^1.0.8",
+    "@liaison/component-server": "^1.0.4",
     "co-body": "^6.1.0",
-    "core-helpers": "^1.0.2",
+    "core-helpers": "^1.0.3",
     "sleep-promise": "^8.0.1",
     "tslib": "^2.0.3"
   },

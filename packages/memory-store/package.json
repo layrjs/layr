@@ -1,6 +1,6 @@
 {
   "name": "@liaison/memory-store",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A Liaison store using memory (useful for testing)",
   "keywords": [
     "liaison",
@@ -26,9 +26,9 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.6",
-    "@liaison/store": "^1.0.2",
-    "core-helpers": "^1.0.2",
+    "@liaison/component": "^1.0.8",
+    "@liaison/store": "^1.0.4",
+    "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "sort-on": "^4.1.0",
     "tslib": "^2.0.3"

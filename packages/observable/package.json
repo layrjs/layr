@@ -1,6 +1,6 @@
 {
   "name": "@liaison/observable",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Observe JavaScript objects, arrays, or your own classes",
   "keywords": [
     "observe",
@@ -31,7 +31,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "core-helpers": "^1.0.2",
+    "core-helpers": "^1.0.3",
     "tslib": "^2.0.3"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@liaison/component",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The base class of all your components",
   "keywords": [
     "liaison",
@@ -28,8 +28,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/observable": "^1.0.1",
-    "core-helpers": "^1.0.2",
+    "@liaison/observable": "^1.0.2",
+    "core-helpers": "^1.0.3",
     "cuid": "^2.1.8",
     "lodash": "^4.17.20",
     "possibly-async": "^1.0.2",
