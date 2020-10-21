@@ -79,6 +79,48 @@ Also, here are some more advanced examples that you can check out:
 - [RealWorld Example App (JS)](https://github.com/liaisonjs/react-liaison-realworld-example-app)
 - [Liaison Website (TS)](https://github.com/liaisonjs/liaison/tree/master/website)
 
+## Roadmap
+
+#### Components
+
+- [x] Basic components
+- [x] Controlled attributes
+- [x] Component provision
+- [x] Cross-layer inheritance
+- [x] Remote method invocation
+- [ ] Optimized serialization
+- [ ] Weak Identity Map
+- [ ] Component subscriptions (realtime updates)
+
+#### Storage
+
+- [x] Basic storage (MongoDB)
+- [ ] Transactions
+- [ ] Ability to query attribute of referenced components (LEFT JOIN)
+- [ ] Sugar to query reverse relationships
+- [ ] Support for more databases (PostgreSQL, MySQL, DynamoDB,...)
+- [ ] Query subscriptions (realtime updates)
+
+#### Routing
+
+- [x] Basic routing
+- [ ] Nested routing
+
+#### Authorizations
+
+- [x] Basic authorizations
+- [x] Role-based authorizations
+
+#### CLI
+
+- [ ] Scaffolding
+- [ ] Deployment
+
+#### Integrations
+
+- [x] React integration
+- [x] Basic AWS integration
+
 ## Contributing
 
 Contributions are welcome.
