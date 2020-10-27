@@ -282,7 +282,7 @@ export class Home extends Routable(Component) {
 
     return (
       <Common.Feature
-        title="Database Abstracted Away"
+        title="Abstracted Away Database"
         description={
           "Extend your classes with the [`Storable()`](/docs/v1/reference/storable) mixin, register them into a [store](/docs/v1/reference/store), and you're ready to build your application without having to worry about the database."
         }
@@ -326,7 +326,7 @@ export class Home extends Routable(Component) {
 
     return (
       <Common.Feature
-        title="Developer Experience First"
+        title="Delightful Developer Experience"
         description={
           'Layr strives to find the right balance between powerful abstractions and ease of use so that you can build an application in the most enjoyable way possible.'
         }

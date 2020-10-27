@@ -69,19 +69,17 @@ export class Common extends Component {
           width: '100%',
           display: 'flex',
           alignItems: 'center',
-          padding: ['1.2rem 1.5rem 0 1.5rem', , '1.2rem 15px 0 15px']
+          padding: ['1rem 1.5rem 0 1.5rem', , '1rem 15px 0 15px']
         })}
       >
         <Home.Main.Link>
-          <img src={layrLogo} alt="Layr" css={{position: 'relative', top: 1, width: 70}} />
+          <img src={layrLogo} alt="Layr" css={{width: 75}} />
         </Home.Main.Link>
         <div css={{marginLeft: '0.6rem'}}>
           <small css={{color: theme.muted.textColor, letterSpacing: '0.04rem'}}>v1</small>
         </div>
 
-        <div css={{flexGrow: 1}} />
-
-        <nav>
+        <nav css={{marginLeft: 'auto'}}>
           <ul css={menuStyle}>
             <li css={menuItemStyle}>
               <Docs.Main.Link>Docs</Docs.Main.Link>
