@@ -166,7 +166,7 @@ export class Home extends Routable(Component) {
   @route('/') @view() static Main() {
     const {Newsletter, Common, UI} = this;
 
-    Common.useTitle('A love story between the frontend and the backend');
+    Common.useTitle('Dramatically simplify full‑stack development');
 
     UI.useAnchor();
 

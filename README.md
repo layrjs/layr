@@ -4,7 +4,7 @@
 	<br>
 </p>
 
-> A love story between the frontend and the backend.
+> Dramatically simplify full‑stack development.
 
 ## Overview
 

@@ -77,7 +77,7 @@ export class Article extends WithAuthor(Entity) {
 
     const feed = new RSS({
       title: 'Layr Blog',
-      description: 'A love story between the frontend and the backend',
+      description: 'Dramatically simplify full‑stack development',
       feed_url: `${backendURL}/blog/feed`,
       site_url: `${frontendURL}/blog`
     });

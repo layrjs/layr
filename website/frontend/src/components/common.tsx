@@ -69,7 +69,7 @@ export class Common extends Component {
           width: '100%',
           display: 'flex',
           alignItems: 'center',
-          padding: ['1.5rem 1.5rem 0 1.5rem', , '1.5rem 15px 0 15px']
+          padding: ['1.2rem 1.5rem 0 1.5rem', , '1.2rem 15px 0 15px']
         })}
       >
         <Home.Main.Link>
