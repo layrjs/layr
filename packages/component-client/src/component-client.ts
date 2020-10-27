@@ -8,16 +8,16 @@ import {
   ensureComponentClass,
   ComponentMixin,
   assertIsComponentMixin
-} from '@liaison/component';
-import type {ComponentServerLike} from '@liaison/component-server';
+} from '@layr/component';
+import type {ComponentServerLike} from '@layr/component-server';
 import {Microbatcher, Invocation} from 'microbatcher';
 import {getTypeOf, PlainObject} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import debugModule from 'debug';
 
-const debug = debugModule('liaison:component-client');
+const debug = debugModule('layr:component-client');
 // To display the debug log, set this environment:
-// DEBUG=liaison:component-client DEBUG_DEPTH=5
+// DEBUG=layr:component-client DEBUG_DEPTH=5
 
 import {isComponentClientInstance} from './utilities';
 
@@ -34,9 +34,9 @@ export type ComponentClientOptions = {
 };
 
 /**
- * A base class allowing to access a root [`Component`](https://liaison.dev/docs/v1/reference/component) that is served by a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
+ * A base class allowing to access a root [`Component`](https://layrjs.com/docs/v1/reference/component) that is served by a [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server).
  *
- * Typically, instead of using this class, you would use a subclass such as [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client).
+ * Typically, instead of using this class, you would use a subclass such as [`ComponentHTTPClient`](https://layrjs.com/docs/v1/reference/component-http-client).
  */
 export class ComponentClient {
   _componentServer: ComponentServerLike;
@@ -47,9 +47,9 @@ export class ComponentClient {
   /**
    * Creates a component client.
    *
-   * @param componentServer The [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) to connect to.
+   * @param componentServer The [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) to connect to.
    * @param [options.version] A number specifying the expected version of the component server (default: `undefined`). If a version is specified, an error is thrown when a request is sent and the component server has a different version. The thrown error is a JavaScript `Error` instance with a `code` attribute set to `'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'`.
-   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://liaison.dev/docs/v1/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
+   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://layrjs.com/docs/v1/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
    *
    * @returns A `ComponentClient` instance.
    *
@@ -57,9 +57,9 @@ export class ComponentClient {
    * ```
    * // JS
    *
-   * import {Component, attribute, expose} from '﹫liaison/component';
-   * import {ComponentClient} from '﹫liaison/component-client';
-   * import {ComponentServer} from '﹫liaison/component-server';
+   * import {Component, attribute, expose} from '﹫layr/component';
+   * import {ComponentClient} from '﹫layr/component-client';
+   * import {ComponentServer} from '﹫layr/component-server';
    *
    * class Movie extends Component {
    *   ﹫expose({get: true, set: true}) ﹫attribute('string') title;
@@ -75,9 +75,9 @@ export class ComponentClient {
    * ```
    * // TS
    *
-   * import {Component, attribute, expose} from '﹫liaison/component';
-   * import {ComponentClient} from '﹫liaison/component-client';
-   * import {ComponentServer} from '﹫liaison/component-server';
+   * import {Component, attribute, expose} from '﹫layr/component';
+   * import {ComponentClient} from '﹫layr/component-client';
+   * import {ComponentServer} from '﹫layr/component-server';
    *
    * class Movie extends Component {
    *   ﹫expose({get: true, set: true}) ﹫attribute('string') title!: string;
@@ -120,9 +120,9 @@ export class ComponentClient {
   /**
    * Gets the component that is served by the component server.
    *
-   * @returns A [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+   * @returns A [`Component`](https://layrjs.com/docs/v1/reference/component) class.
    *
-   * @examplelink See [`constructor`'s example](https://liaison.dev/docs/v1/reference/component-client#constructor).
+   * @examplelink See [`constructor`'s example](https://layrjs.com/docs/v1/reference/component-client#constructor).
    *
    * @category Getting the Served Component
    * @possiblyasync

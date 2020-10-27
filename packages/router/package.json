@@ -1,16 +1,16 @@
 {
-  "name": "@liaison/router",
-  "version": "1.0.3",
-  "description": "A base class for implementing Liaison routers",
+  "name": "@layr/router",
+  "version": "1.0.5",
+  "description": "A base class for implementing Layr routers",
   "keywords": [
-    "liaison",
+    "layr",
     "router",
     "base",
     "class"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/router",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/router",
   "files": [
     "dist"
   ],
@@ -28,8 +28,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
-    "@liaison/observable": "^1.0.2",
+    "@layr/component": "^1.0.10",
+    "@layr/observable": "^1.0.3",
     "core-helpers": "^1.0.3",
     "qs": "^6.9.4",
     "tslib": "^2.0.3"

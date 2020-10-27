@@ -85,7 +85,7 @@ export function createAttributeSelectorFromNames(names: string[]) {
 /**
  * Creates an `AttributeSelector` from an attribute iterator.
  *
- * @param attributes An [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) iterator.
+ * @param attributes An [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) iterator.
  *
  * @returns An `AttributeSelector`.
  *

@@ -1,6 +1,6 @@
-import {Component, provide} from '@liaison/component';
-import {Storable} from '@liaison/storable';
-import {Store, isStoreInstance} from '@liaison/store';
+import {Component, provide} from '@layr/component';
+import {Storable} from '@layr/storable';
+import {Store, isStoreInstance} from '@layr/store';
 
 describe('Store', () => {
   class MockStore extends Store {

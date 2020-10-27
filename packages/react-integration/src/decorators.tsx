@@ -1,11 +1,11 @@
-import {Component, isComponentClassOrInstance} from '@liaison/component';
+import {Component, isComponentClassOrInstance} from '@layr/component';
 import React from 'react';
 import {PlainObject, hasOwnProperty} from 'core-helpers';
 
 import {useObserve} from './hooks';
 
 /**
- * Decorates a method of a Liaison [component](https://liaison.dev/docs/v1/reference/component) so it be can used as a React component.
+ * Decorates a method of a Layr [component](https://layrjs.com/docs/v1/reference/component) so it be can used as a React component.
  *
  * Like any React component, the method can receive some properties as first parameter and return some [React elements](https://reactjs.org/docs/rendering-elements.html) to render (or `null` if it doesn't render anything).
  *
@@ -15,10 +15,10 @@ import {useObserve} from './hooks';
  *
  * @example
  * ```
- * import {Component, attribute} from '﹫liaison/component';
+ * import {Component, attribute} from '﹫layr/component';
  * import React from 'react';
  * import ReactDOM from 'react-dom';
- * import {view} from '﹫liaison/react-integration';
+ * import {view} from '﹫layr/react-integration';
  *
  * class Person extends Component {
  *   ﹫attribute('string') firstName = '';

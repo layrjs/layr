@@ -1,5 +1,5 @@
-import {ComponentHTTPClient} from '@liaison/component-http-client';
-import {Storable} from '@liaison/storable';
+import {ComponentHTTPClient} from '@layr/component-http-client';
+import {Storable} from '@layr/storable';
 
 (async () => {
   const client = new ComponentHTTPClient('http://localhost:3210', {

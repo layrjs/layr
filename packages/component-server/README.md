@@ -1,11 +1,11 @@
-# @liaison/component-server
+# @layr/component-server
 
-Serves your Liaison components.
+Serves your Layr components.
 
 ## Installation
 
 ```
-npm install @liaison/component-server
+npm install @layr/component-server
 ```
 
 ## License

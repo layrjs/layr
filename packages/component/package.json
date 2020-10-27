@@ -1,16 +1,16 @@
 {
-  "name": "@liaison/component",
-  "version": "1.0.8",
+  "name": "@layr/component",
+  "version": "1.0.10",
   "description": "The base class of all your components",
   "keywords": [
-    "liaison",
+    "layr",
     "component",
     "base",
     "class"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/component",
   "files": [
     "dist"
   ],
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/observable": "^1.0.2",
+    "@layr/observable": "^1.0.3",
     "core-helpers": "^1.0.3",
     "cuid": "^2.1.8",
     "lodash": "^4.17.20",

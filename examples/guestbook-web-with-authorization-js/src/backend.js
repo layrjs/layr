@@ -1,8 +1,8 @@
-import {Component, provide, consume, expose, validators} from '@liaison/component';
-import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
-import {WithRoles, role} from '@liaison/with-roles';
-import {MemoryStore} from '@liaison/memory-store';
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {Component, provide, consume, expose, validators} from '@layr/component';
+import {Storable, primaryIdentifier, attribute} from '@layr/storable';
+import {WithRoles, role} from '@layr/with-roles';
+import {MemoryStore} from '@layr/memory-store';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 const {notEmpty, maxLength} = validators;
 

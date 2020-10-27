@@ -1,15 +1,15 @@
 {
-  "name": "@liaison/component-client",
-  "version": "1.0.4",
-  "description": "Consumes Liaison components served by @liaison/component-server",
+  "name": "@layr/component-client",
+  "version": "1.0.6",
+  "description": "Consumes Layr components served by @layr/component-server",
   "keywords": [
-    "liaison",
+    "layr",
     "component",
     "client"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component-client",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/component-client",
   "files": [
     "dist"
   ],
@@ -27,8 +27,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
-    "@liaison/component-server": "^1.0.4",
+    "@layr/component": "^1.0.10",
+    "@layr/component-server": "^1.0.6",
     "core-helpers": "^1.0.3",
     "debug": "^4.2.0",
     "lodash": "^4.17.20",

@@ -1,4 +1,4 @@
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 import type {Greeter as GreeterType} from './backend';
 

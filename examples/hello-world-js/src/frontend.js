@@ -1,4 +1,4 @@
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 (async () => {
   const client = new ComponentHTTPClient('http://localhost:3210');

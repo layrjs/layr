@@ -1,11 +1,11 @@
-# @liaison/store
+# @layr/store
 
-A base class for implementing Liaison stores.
+A base class for implementing Layr stores.
 
 ## Installation
 
 ```
-npm install @liaison/store
+npm install @layr/store
 ```
 
 ## License

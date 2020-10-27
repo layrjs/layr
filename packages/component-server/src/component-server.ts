@@ -10,19 +10,19 @@ import {
   assertIsComponentClass,
   serialize,
   deserialize
-} from '@liaison/component';
+} from '@layr/component';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
 import debugModule from 'debug';
 
 // To display the debug log, set this environment:
-// DEBUG=liaison:component-server DEBUG_DEPTH=5
-const debug = debugModule('liaison:component-server');
+// DEBUG=layr:component-server DEBUG_DEPTH=5
+const debug = debugModule('layr:component-server');
 
 // To display errors occurring while invoking queries, set this environment:
-// DEBUG=liaison:component-server:error DEBUG_DEPTH=5
-const debugError = debugModule('liaison:component-server:error');
+// DEBUG=layr:component-server:error DEBUG_DEPTH=5
+const debugError = debugModule('layr:component-server:error');
 
 import {isComponentServerInstance} from './utilities';
 
@@ -36,9 +36,9 @@ export type ComponentServerOptions = {
 };
 
 /**
- * A base class allowing to serve a root [`Component`](https://liaison.dev/docs/v1/reference/component) so it can be accessed by a [`ComponentClient`](https://liaison.dev/docs/v1/reference/component-client).
+ * A base class allowing to serve a root [`Component`](https://layrjs.com/docs/v1/reference/component) so it can be accessed by a [`ComponentClient`](https://layrjs.com/docs/v1/reference/component-client).
  *
- * Typically, instead of using this class, you would use a class such as [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server), or a middleware such as [`component-express-middleware`](https://liaison.dev/docs/v1/reference/component-express-middleware).
+ * Typically, instead of using this class, you would use a class such as [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server), or a middleware such as [`component-express-middleware`](https://layrjs.com/docs/v1/reference/component-express-middleware).
  */
 export class ComponentServer {
   _component: typeof Component;
@@ -49,12 +49,12 @@ export class ComponentServer {
   /**
    * Creates a component server.
    *
-   * @param component The root [`Component`](https://liaison.dev/docs/v1/reference/component) class to serve.
+   * @param component The root [`Component`](https://layrjs.com/docs/v1/reference/component) class to serve.
    * @param [options.version] A number specifying the version of the returned component server (default: `undefined`).
    *
    * @returns A `ComponentServer` instance.
    *
-   * @examplelink See [`ComponentClient`'s example](https://liaison.dev/docs/v1/reference/component-client#constructor).
+   * @examplelink See [`ComponentClient`'s example](https://layrjs.com/docs/v1/reference/component-client#constructor).
    *
    * @category Creation
    */

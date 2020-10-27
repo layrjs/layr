@@ -1,6 +1,6 @@
 {
-  "name": "@liaison/observable",
-  "version": "1.0.2",
+  "name": "@layr/observable",
+  "version": "1.0.3",
   "description": "Observe JavaScript objects, arrays, or your own classes",
   "keywords": [
     "observe",
@@ -13,7 +13,7 @@
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/observable",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/observable",
   "files": [
     "dist"
   ],

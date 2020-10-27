@@ -1,11 +1,11 @@
-# @liaison/mongodb-store
+# @layr/mongodb-store
 
-A Liaison store for MongoDB.
+A Layr store for MongoDB.
 
 ## Installation
 
 ```
-npm install @liaison/mongodb-store
+npm install @layr/mongodb-store
 ```
 
 ## License

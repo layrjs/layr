@@ -1,4 +1,4 @@
-import {ComponentServer} from '@liaison/component-server';
+import {ComponentServer} from '@layr/component-server';
 
 import {Counter} from './components/counter';
 

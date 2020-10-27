@@ -1,4 +1,4 @@
-import {isComponentClass} from '@liaison/component';
+import {isComponentClass} from '@layr/component';
 import Koa from 'koa';
 import jsonError from 'koa-json-error';
 import cors from '@koa/cors';

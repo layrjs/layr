@@ -1,5 +1,5 @@
-import {Component, attribute, method, expose} from '@liaison/component';
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {Component, attribute, method, expose} from '@layr/component';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 export class Greeter extends Component {
   @expose({set: true}) @attribute('string') name = 'World';

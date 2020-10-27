@@ -1,9 +1,9 @@
 {
-  "name": "@liaison/storable",
-  "version": "1.0.5",
-  "description": "A mixin providing persistence capabilities to Liaison components",
+  "name": "@layr/storable",
+  "version": "1.0.7",
+  "description": "A mixin providing persistence capabilities to Layr components",
   "keywords": [
-    "liaison",
+    "layr",
     "component",
     "mixin",
     "storage",
@@ -14,7 +14,7 @@
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/storable",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/storable",
   "files": [
     "dist"
   ],
@@ -32,22 +32,22 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
-    "@liaison/store": "^1.0.4",
+    "@layr/component": "^1.0.10",
+    "@layr/store": "^1.0.6",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@liaison/component-client": "^1.0.4",
-    "@liaison/component-server": "^1.0.4",
-    "@liaison/memory-store": "^1.0.2",
-    "@liaison/mongodb-store": "^1.0.3",
+    "@layr/component-client": "^1.0.6",
+    "@layr/component-server": "^1.0.6",
+    "@layr/memory-store": "^1.0.4",
+    "@layr/mongodb-store": "^1.0.5",
     "@mvila/dev-tools": "^1.0.26",
     "@mvila/tsconfig": "^1.0.4",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.162",
-    "@types/mongodb": "^3.5.27",
+    "@types/mongodb": "^3.5.31",
     "mongodb": "^3.6.2",
     "mongodb-memory-server": "^6.9.2"
   }

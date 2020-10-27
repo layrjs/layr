@@ -1,11 +1,11 @@
-# @liaison/component-http-server
+# @layr/component-http-server
 
-A basic HTTP server for your Liaison components.
+A basic HTTP server for your Layr components.
 
 ## Installation
 
 ```
-npm install @liaison/component-http-server
+npm install @layr/component-http-server
 ```
 
 ## License

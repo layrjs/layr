@@ -1,11 +1,11 @@
-# @liaison/browser-router
+# @layr/browser-router
 
-A Liaison router for the browser.
+A Layr router for the browser.
 
 ## Installation
 
 ```
-npm install @liaison/browser-router
+npm install @layr/browser-router
 ```
 
 ## License

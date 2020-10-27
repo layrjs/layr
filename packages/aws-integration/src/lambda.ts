@@ -1,5 +1,5 @@
-import type {ComponentServer} from '@liaison/component-server';
-import {assertIsComponentServerInstance} from '@liaison/component-server';
+import type {ComponentServer} from '@layr/component-server';
+import {assertIsComponentServerInstance} from '@layr/component-server';
 import type {APIGatewayProxyEventV2, Context, APIGatewayProxyStructuredResultV2} from 'aws-lambda';
 
 type CustomRoute = {
@@ -11,19 +11,19 @@ type CustomRoute = {
 };
 
 /**
- * Creates an [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html) for the specified [component server](https://liaison.dev/docs/v1/reference/component-server).
+ * Creates an [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html) for the specified [component server](https://layrjs.com/docs/v1/reference/component-server).
  *
  * The created handler can be hosted in [AWS Lambda](https://aws.amazon.com/lambda/) and consumed by [AWS API Gateway](https://aws.amazon.com/api-gateway/) through an [HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html).
  *
- * @param componentServer A [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) instance.
+ * @param componentServer A [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) instance.
  *
  * @returns An [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html).
  *
  * @example
  * ```
- * import {Component, attribute, expose} from '﹫liaison/component';
- * import {ComponentServer} from '﹫liaison/component-server';
- * import {createAWSLambdaHandlerForComponentServer} from '@liaison/aws-integration';
+ * import {Component, attribute, expose} from '﹫layr/component';
+ * import {ComponentServer} from '﹫layr/component-server';
+ * import {createAWSLambdaHandlerForComponentServer} from '@layr/aws-integration';
  *
  * class Movie extends Component {
  *   ﹫expose({get: true, set: true}) ﹫attribute('string') title = '';

@@ -1,6 +1,6 @@
-import {Component, consume, expose, AttributeSelector} from '@liaison/component';
-import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
-import {WithRoles, role} from '@liaison/with-roles';
+import {Component, consume, expose, AttributeSelector} from '@layr/component';
+import {Storable, primaryIdentifier, attribute} from '@layr/storable';
+import {WithRoles, role} from '@layr/with-roles';
 
 import type {Session} from './session';
 

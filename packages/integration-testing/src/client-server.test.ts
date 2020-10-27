@@ -1,5 +1,5 @@
-import {ComponentClient} from '@liaison/component-client';
-import {ComponentServer} from '@liaison/component-server';
+import {ComponentClient} from '@layr/component-client';
+import {ComponentServer} from '@layr/component-server';
 
 import {Counter as BackendCounter} from './counter.fixture';
 

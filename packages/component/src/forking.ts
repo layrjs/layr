@@ -9,7 +9,7 @@ export type ForkOptions = SimpleForkOptions & {
 };
 
 /**
- * Fork any type of values including objects, arrays, and components (using Component's `fork()` [class method](https://liaison.dev/docs/v1/reference/component#fork-class-method) and [instance method](https://liaison.dev/docs/v1/reference/component#fork-instance-method)).
+ * Fork any type of values including objects, arrays, and components (using Component's `fork()` [class method](https://layrjs.com/docs/v1/reference/component#fork-class-method) and [instance method](https://layrjs.com/docs/v1/reference/component#fork-instance-method)).
  *
  * @param value A value of any type.
  *
@@ -17,7 +17,7 @@ export type ForkOptions = SimpleForkOptions & {
  *
  * @example
  * ```
- * import {fork} from '﹫liaison/component';
+ * import {fork} from '﹫layr/component';
  *
  * const data = {
  *   token: 'xyz123',

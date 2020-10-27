@@ -1,6 +1,6 @@
-import {consume} from '@liaison/component';
+import {consume} from '@layr/component';
 import {useState} from 'react';
-import {view, useAsyncCallback} from '@liaison/react-integration';
+import {view, useAsyncCallback} from '@layr/react-integration';
 import {jsx} from '@emotion/core';
 
 import type {Newsletter as BackendNewsletter} from '../../../backend/src/components/newsletter';
@@ -28,7 +28,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
           title={!isSubscribed ? 'Stay Updated' : 'Thank You!'}
           description={
             !isSubscribed
-              ? "Keep up on all that's happening with Liaison!"
+              ? "Keep up on all that's happening with Layr!"
               : "We'll keep you updated."
           }
         >

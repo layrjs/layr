@@ -1,4 +1,4 @@
-import type {IdentifierDescriptor} from '@liaison/component';
+import type {IdentifierDescriptor} from '@layr/component';
 import {getTypeOf} from 'core-helpers';
 
 import type {Store} from './store';

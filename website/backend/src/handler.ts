@@ -1,4 +1,4 @@
-import {createAWSLambdaHandlerForComponentServer} from '@liaison/aws-integration';
+import {createAWSLambdaHandlerForComponentServer} from '@layr/aws-integration';
 
 import {server} from './server';
 

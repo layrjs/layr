@@ -1,4 +1,4 @@
-import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@liaison/router';
+import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@layr/router';
 import {match, compile, MatchFunction, PathFunction} from 'path-to-regexp';
 import pick from 'lodash/pick';
 
@@ -9,19 +9,19 @@ export type RouteOptions = {
 };
 
 /**
- * Represents a route in a [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class).
+ * Represents a route in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
  *
  * A route is composed of:
  *
- * - A name matching a class method of the [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class) that contains the route.
- * - The canonical [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) of the route.
- * - Some [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) aliases.
+ * - A name matching a class method of the [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that contains the route.
+ * - The canonical [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) of the route.
+ * - Some [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) aliases.
  *
  * #### Usage
  *
- * Typically, you create a `Route` and associate it to a routable component by using the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+ * Typically, you create a `Route` and associate it to a routable component by using the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
  *
- * See an example of use in the [`Routable()`](https://liaison.dev/docs/v1/reference/routable#usage) mixin.
+ * See an example of use in the [`Routable()`](https://layrjs.com/docs/v1/reference/routable#usage) mixin.
  */
 export class Route {
   _name: string;
@@ -32,13 +32,13 @@ export class Route {
   _compiler: PathFunction;
 
   /**
-   * Creates an instance of [`Route`](https://liaison.dev/docs/v1/reference/route). Typically, instead of using this constructor, you would rather use the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   * Creates an instance of [`Route`](https://layrjs.com/docs/v1/reference/route). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param name The name of the route.
-   * @param pattern The canonical [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) of the route.
-   * @param [options.aliases] An array of alternate [URL patterns](https://liaison.dev/docs/v1/reference/route#url-pattern-type).
+   * @param pattern The canonical [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) of the route.
+   * @param [options.aliases] An array of alternate [URL patterns](https://layrjs.com/docs/v1/reference/route#url-pattern-type).
    *
-   * @returns The [`Route`](https://liaison.dev/docs/v1/reference/route) instance that was created.
+   * @returns The [`Route`](https://layrjs.com/docs/v1/reference/route) instance that was created.
    *
    * @example
    * ```
@@ -111,7 +111,7 @@ export class Route {
   /**
    * Returns the canonical URL pattern of the route.
    *
-   * @returns An [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) string.
+   * @returns An [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) string.
    *
    * @example
    * ```
@@ -129,7 +129,7 @@ export class Route {
   /**
    * Returns the alternate URL patterns of the route.
    *
-   * @returns An array of [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) strings.
+   * @returns An array of [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) strings.
    *
    * @example
    * ```
@@ -235,9 +235,9 @@ export class Route {
    *
    * An URL pattern is composed of a *path pattern* and an optional *query pattern* that are separated by an escaped question mark (`\\?`).
    *
-   * A *path pattern* represents the path part of an URL and it can include some parameters by prefixing the name of each parameter with a colon sign (`:`). The [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) package is used under the hood to handle the path patterns, so any path pattern that is supported by `path-to-regexp` is supported by Liaison as well.
+   * A *path pattern* represents the path part of an URL and it can include some parameters by prefixing the name of each parameter with a colon sign (`:`). The [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) package is used under the hood to handle the path patterns, so any path pattern that is supported by `path-to-regexp` is supported by Layr as well.
    *
-   * A *query pattern* represents the query part of an URL and it is composed of a list of parameters separated by an ampersand sign (`&`). Just like a path parameter, a query parameter is represented by a name prefixed with a colon sign (`:`). When an URL is matched against an URL pattern with the [`matchURL()`](https://liaison.dev/docs/v1/reference/route#match-url-instance-method) method, the [`qs`](https://github.com/ljharb/qs) package is used under the hood to parse the query part of the URL.
+   * A *query pattern* represents the query part of an URL and it is composed of a list of parameters separated by an ampersand sign (`&`). Just like a path parameter, a query parameter is represented by a name prefixed with a colon sign (`:`). When an URL is matched against an URL pattern with the [`matchURL()`](https://layrjs.com/docs/v1/reference/route#match-url-instance-method) method, the [`qs`](https://github.com/ljharb/qs) package is used under the hood to parse the query part of the URL.
    *
    * **Examples:**
    *
@@ -262,7 +262,7 @@ export class Route {
 }
 
 /**
- * Returns whether the specified value is a [`Route`](https://liaison.dev/docs/v1/reference/route) class.
+ * Returns whether the specified value is a [`Route`](https://layrjs.com/docs/v1/reference/route) class.
  *
  * @param value A value of any type.
  *
@@ -275,7 +275,7 @@ export function isRouteClass(value: any): value is typeof Route {
 }
 
 /**
- * Returns whether the specified value is a [`Route`](https://liaison.dev/docs/v1/reference/route) instance.
+ * Returns whether the specified value is a [`Route`](https://layrjs.com/docs/v1/reference/route) instance.
  *
  * @param value A value of any type.
  *

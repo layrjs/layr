@@ -1,6 +1,6 @@
-# @liaison/integration-testing
+# @layr/integration-testing
 
-Tests involving a combination of Liaison packages.
+Tests involving a combination of Layr packages.
 
 ## License
 

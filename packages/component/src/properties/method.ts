@@ -6,18 +6,18 @@ export type IntrospectedMethod = IntrospectedProperty;
 export type MethodOptions = PropertyOptions;
 
 /**
- * *Inherits from [`Property`](https://liaison.dev/docs/v1/reference/property).*
+ * *Inherits from [`Property`](https://layrjs.com/docs/v1/reference/property).*
  *
- * A `Method` represents a method of a [Component](https://liaison.dev/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript method, but brings the ability to be exposed to remote calls.
+ * A `Method` represents a method of a [Component](https://layrjs.com/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript method, but brings the ability to be exposed to remote calls.
  *
  * #### Usage
  *
- * Typically, you define a `Method` using the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
+ * Typically, you define a `Method` using the [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorator.
  *
  * For example, here is how you would define a `Movie` class with some methods:
  *
  * ```
- * import {Component, method} from '﹫liaison/component';
+ * import {Component, method} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // Class method
@@ -41,14 +41,14 @@ export type MethodOptions = PropertyOptions;
  * movie.play();
  * ```
  *
- * So far, you may wonder what is the point of defining methods this way. By itself the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator, except for creating a `Method` instance under the hood, doesn't provide much benefit.
+ * So far, you may wonder what is the point of defining methods this way. By itself the [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorator, except for creating a `Method` instance under the hood, doesn't provide much benefit.
  *
- * The trick is that since you have a `Method`, you also have a [`Property`](https://liaison.dev/docs/v1/reference/property) (because `Method` inherits from `Property`), and properties can be exposed to remote access thanks to the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator.
+ * The trick is that since you have a `Method`, you also have a [`Property`](https://layrjs.com/docs/v1/reference/property) (because `Method` inherits from `Property`), and properties can be exposed to remote access thanks to the [`@expose()`](https://layrjs.com/docs/v1/reference/component#expose-decorator) decorator.
  *
  * So here is how you would expose the `Movie` methods:
  *
  * ```
- * import {Component, method} from '﹫liaison/component';
+ * import {Component, method} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // Exposed class method
@@ -76,17 +76,17 @@ export class Method extends Property {
   _methodBrand!: void;
 
   /**
-   * Creates an instance of [`Method`](https://liaison.dev/docs/v1/reference/method). Typically, instead of using this constructor, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
+   * Creates an instance of [`Method`](https://layrjs.com/docs/v1/reference/method). Typically, instead of using this constructor, you would rather use the [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method.
    * @param parent The component class, prototype, or instance that owns the method.
-   * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the method should be exposed to remote calls.
+   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object specifying how the method should be exposed to remote calls.
    *
-   * @returns The [`Method`](https://liaison.dev/docs/v1/reference/method) instance that was created.
+   * @returns The [`Method`](https://layrjs.com/docs/v1/reference/method) instance that was created.
    *
    * @example
    * ```
-   * import {Component, Method} from '﹫liaison/component';
+   * import {Component, Method} from '﹫layr/component';
    *
    * class Movie extends Component {}
    *
@@ -106,7 +106,7 @@ export class Method extends Property {
   // === Methods ===
 
   /**
-   * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
    *
    * @category Methods
    */

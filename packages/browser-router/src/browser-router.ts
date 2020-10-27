@@ -1,4 +1,4 @@
-import {Router, RouterOptions, normalizeURL, stringifyURL} from '@liaison/router';
+import {Router, RouterOptions, normalizeURL, stringifyURL} from '@layr/router';
 import {PlainObject} from 'core-helpers';
 import debounce from 'lodash/debounce';
 
@@ -19,24 +19,24 @@ export type BrowserRouterLinkProps = {
 export type BrowserRouterOptions = RouterOptions;
 
 /**
- * *Inherits from [`Router`](https://liaison.dev/docs/v1/reference/router).*
+ * *Inherits from [`Router`](https://layrjs.com/docs/v1/reference/router).*
  *
- * A [`Router`](https://liaison.dev/docs/v1/reference/router) relying on the browser's [History API](https://developer.mozilla.org/en-US/docs/Web/API/History) to determine the current [route](https://liaison.dev/docs/v1/reference/route).
+ * A [`Router`](https://layrjs.com/docs/v1/reference/router) relying on the browser's [History API](https://developer.mozilla.org/en-US/docs/Web/API/History) to determine the current [route](https://layrjs.com/docs/v1/reference/route).
  *
  * #### Usage
  *
- * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserRouter` in your application is to use the [`useBrowserRouter()`](https://liaison.dev/docs/v1/reference/react-integration#use-browser-router-react-hook) hook that is provided by the `@liaison/react-integration` package.
+ * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserRouter` in your application is to use the [`useBrowserRouter()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-router-react-hook) hook that is provided by the `@layr/react-integration` package.
  *
- * > See the ["Bringing Some Routes"](https://liaison.dev/docs/v1/introduction/routing) guide for a comprehensive example using the `useBrowserRouter()` hook.
+ * > See the ["Bringing Some Routes"](https://layrjs.com/docs/v1/introduction/routing) guide for a comprehensive example using the `useBrowserRouter()` hook.
  *
- * Otherwise, you can create a `BrowserRouter` instance manually, register some [routable components](https://liaison.dev/docs/v1/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
+ * Otherwise, you can create a `BrowserRouter` instance manually, register some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
  *
  * **Example:**
  *
  * ```
- * import {Component} from '@liaison/component';
- * import {Routable, route} from '@liaison/routable';
- * import {BrowserRouter} from '@liaison/browser-router';
+ * import {Component} from '@layr/component';
+ * import {Routable, route} from '@layr/routable';
+ * import {BrowserRouter} from '@layr/browser-router';
  *
  * class Frontend extends Routable(Component) {
  *   ﹫route('/') static Home() {
@@ -62,9 +62,9 @@ export type BrowserRouterOptions = RouterOptions;
  */
 export class BrowserRouter extends Router {
   /**
-   * Creates a [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router).
+   * Creates a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router).
    *
-   * @returns The [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) instance that was created.
+   * @returns The [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) instance that was created.
    *
    * @category Creation
    */
@@ -91,9 +91,9 @@ export class BrowserRouter extends Router {
       this.navigate((event as CustomEvent).detail.url);
     };
 
-    // --- 'liaisonRouterNavigate' event ---
+    // --- 'layrRouterNavigate' event ---
 
-    document.body.addEventListener('liaisonRouterNavigate', this._navigateHandler);
+    document.body.addEventListener('layrRouterNavigate', this._navigateHandler);
 
     // --- Hash navigation fix ---
 
@@ -131,7 +131,7 @@ export class BrowserRouter extends Router {
   // === Component Registration ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#component-registration) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#component-registration) class.
    *
    * @category Component Registration
    */
@@ -139,7 +139,7 @@ export class BrowserRouter extends Router {
   // === Routes ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#routes) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#routes) class.
    *
    * @category Routes
    */
@@ -147,7 +147,7 @@ export class BrowserRouter extends Router {
   // === Current Location ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#current-location) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#current-location) class.
    *
    * @category Current Location
    */
@@ -159,7 +159,7 @@ export class BrowserRouter extends Router {
   // === Navigation ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#navigation) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#navigation) class.
    *
    * @category Navigation
    */
@@ -204,9 +204,9 @@ export class BrowserRouter extends Router {
   /**
    * Renders a link that is managed by the router.
    *
-   * This method is only available when you create your router by using the [`useBrowserRouter()`](https://liaison.dev/docs/v1/reference/react-integration#use-browser-router-react-hook) React hook.
+   * This method is only available when you create your router by using the [`useBrowserRouter()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-router-react-hook) React hook.
    *
-   * Note that instead of using this method, you can use the handy `Link()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `Link()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param props.to A string representing the target URL of the link.
    * @param props.className A [`className`](https://reactjs.org/docs/dom-elements.html#classname) attribute to apply to the rendered link.
@@ -240,7 +240,7 @@ export class BrowserRouter extends Router {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
    *
    * @category Observability
    */

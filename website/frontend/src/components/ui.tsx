@@ -1,7 +1,7 @@
-import {Component} from '@liaison/component';
+import {Component} from '@layr/component';
 import {useEffect} from 'react';
-import {view} from '@liaison/react-integration';
-import {isInternalURL} from '@liaison/browser-router';
+import {view} from '@layr/react-integration';
+import {isInternalURL} from '@layr/browser-router';
 import {jsx, Global} from '@emotion/core';
 import {ThemeProvider, useTheme} from 'emotion-theming';
 import normalize from 'emotion-normalize';
@@ -804,7 +804,7 @@ export class UI extends Component {
 
     if (process.env.NODE_ENV === 'development') {
       const localURL = new URL(window.location.href).origin;
-      html = html.replace(/https:\/\/liaison.dev/g, localURL);
+      html = html.replace(/https:\/\/layrjs.com/g, localURL);
     }
 
     // Handle link clicks
@@ -812,7 +812,7 @@ export class UI extends Component {
     // With: <a href="target" onclick="...">text</a>
     html = html.replace(/<a href="([^"]+)">.*?<\/a>/g, (match, url) => {
       if (isInternalURL(url)) {
-        const onClick = `document.body.dispatchEvent(new CustomEvent('liaisonRouterNavigate', {detail: {url: '${url}'}})); return false;`;
+        const onClick = `document.body.dispatchEvent(new CustomEvent('layrRouterNavigate', {detail: {url: '${url}'}})); return false;`;
         match = match.replace(`<a href="${url}">`, `<a href="${url}" onclick="${onClick}">`);
       }
 

@@ -3,7 +3,7 @@ import type {PlainObject} from 'core-helpers';
 /**
  * @typedef Query
  *
- * A plain object specifying the criteria to be used when selecting some components from a store with the methods [`StorableComponent.find()`](https://liaison.dev/docs/v1/reference/storable#find-class-method) or [`StorableComponent.count()`](https://liaison.dev/docs/v1/reference/storable#count-class-method).
+ * A plain object specifying the criteria to be used when selecting some components from a store with the methods [`StorableComponent.find()`](https://layrjs.com/docs/v1/reference/storable#find-class-method) or [`StorableComponent.count()`](https://layrjs.com/docs/v1/reference/storable#count-class-method).
  *
  * #### Basic Queries
  *
@@ -205,7 +205,7 @@ import type {PlainObject} from 'core-helpers';
  *
  * ##### `$and`
  *
- * Use the `$and` operator to perform a logical **AND** operation on an array of subqueries and select the components that satisfy *all* the subqueries. Note that since **AND** is the implicit logical operation when you combine multiple attributes or operators, you will typically use the `$and` operator in combination with some other logical operators such as [`$or`](https://liaison.dev/docs/v1/reference/query#or) to avoid repetition.
+ * Use the `$and` operator to perform a logical **AND** operation on an array of subqueries and select the components that satisfy *all* the subqueries. Note that since **AND** is the implicit logical operation when you combine multiple attributes or operators, you will typically use the `$and` operator in combination with some other logical operators such as [`$or`](https://layrjs.com/docs/v1/reference/query#or) to avoid repetition.
  *
  * ```
  * // Find the Japanese drama movies
@@ -278,7 +278,7 @@ import type {PlainObject} from 'core-helpers';
  *
  * #### Embedded Components
  *
- * When a query involves an [embedded component](https://liaison.dev/docs/v1/reference/embedded-component), wrap the attributes of the embedded component in an object:
+ * When a query involves an [embedded component](https://layrjs.com/docs/v1/reference/embedded-component), wrap the attributes of the embedded component in an object:
  *
  * ```
  * // Find the movies that have a '16:9' aspect ratio
@@ -290,7 +290,7 @@ import type {PlainObject} from 'core-helpers';
  *
  * #### Referenced Components
  *
- * To check whether a component holds a [reference to another component](https://liaison.dev/docs/v1/reference/component#referencing-components), you can specify an object representing the [primary identifier](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) of the referenced component:
+ * To check whether a component holds a [reference to another component](https://layrjs.com/docs/v1/reference/component#referencing-components), you can specify an object representing the [primary identifier](https://layrjs.com/docs/v1/reference/primary-identifier-attribute) of the referenced component:
  *
  * ```
  * // Find the Tarantino's movies

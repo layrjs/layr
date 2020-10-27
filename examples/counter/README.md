@@ -1,6 +1,6 @@
 # Counter
 
-A simple example to introduce the core concepts of Liaison.
+A simple example to introduce the core concepts of Layr.
 
 ## Usage
 

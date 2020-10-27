@@ -1,5 +1,5 @@
-import {ComponentHTTPClient} from '@liaison/component-http-client';
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {ComponentHTTPClient} from '@layr/component-http-client';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 import {Counter as BackendCounter} from './counter.fixture';
 

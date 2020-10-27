@@ -1,14 +1,14 @@
 {
   "name": "guestbook-cli",
   "version": "1.0.0",
-  "description": "A simple CLI app to introduce data storage with Liaison",
+  "description": "A simple CLI app to introduce data storage with Layr",
   "private": true,
   "dependencies": {
-    "@liaison/component": "^1.0.0",
-    "@liaison/component-http-client": "^1.0.0",
-    "@liaison/component-http-server": "^1.0.0",
-    "@liaison/memory-store": "^1.0.0",
-    "@liaison/storable": "^1.0.0"
+    "@layr/component": "^1.0.0",
+    "@layr/component-http-client": "^1.0.0",
+    "@layr/component-http-server": "^1.0.0",
+    "@layr/memory-store": "^1.0.0",
+    "@layr/storable": "^1.0.0"
   },
   "devDependencies": {
     "ts-node": "^8.10.2",

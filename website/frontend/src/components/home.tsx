@@ -1,19 +1,19 @@
-import {Component, consume} from '@liaison/component';
-import {Routable, route} from '@liaison/routable';
+import {Component, consume} from '@layr/component';
+import {Routable, route} from '@layr/routable';
 import {jsx} from '@emotion/core';
-import {view} from '@liaison/react-integration';
+import {view} from '@layr/react-integration';
 
 import type {Docs} from './docs';
 import type {Newsletter} from './newsletter';
 import type {Common} from './common';
 import type {UI} from './ui';
 // @ts-ignore
-import typicalVsLiaison from '../assets/typical-stack-vs-liaison-stack-20201013.immutable.png';
+import typicalVsLayr from '../assets/typical-stack-vs-layr-stack-20201027.immutable.png';
 
 const NO_WEB_API_BACKEND_EXAMPLE = `
 \`\`\`
-import {Component, attribute, method, expose} from '@liaison/component';
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {Component, attribute, method, expose} from '@layr/component';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 class Greeter extends Component {
   @expose({set: true}) @attribute() name = 'World';
@@ -31,7 +31,7 @@ server.start();
 
 const NO_WEB_API_FRONTEND_EXAMPLE = `
 \`\`\`
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 const client = new ComponentHTTPClient('http://localhost:3210');
 
@@ -51,8 +51,8 @@ console.log(await greeter.hello());
 
 const ORM_DATA_MODELING_EXAMPLE = `
 \`\`\`
-import {Component} from '@liaison/component';
-import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
+import {Component} from '@layr/component';
+import {Storable, primaryIdentifier, attribute} from '@layr/storable';
 
 class Movie extends Storable(Component) {
   @primaryIdentifier() id;
@@ -65,7 +65,7 @@ class Movie extends Storable(Component) {
 
 const ORM_STORE_REGISTRATION_EXAMPLE = `
 \`\`\`
-import {MongoDBStore} from '@liaison/mongodb-store';
+import {MongoDBStore} from '@layr/mongodb-store';
 
 const store = new MongoDBStore('mongodb://user:pass@host:port/db');
 
@@ -111,8 +111,8 @@ const movies = await Movie.find({country: 'Japan', year: 2010});
 
 const USER_INTERFACE_ROUTES_EXAMPLE = `
 \`\`\`
-import {Component} from '@liaison/component';
-import {Routable, route} from '@liaison/routable';
+import {Component} from '@layr/component';
+import {Routable, route} from '@layr/routable';
 
 class Movie extends Routable(Component) {
   @route('/movies') static List() {
@@ -128,9 +128,9 @@ class Movie extends Routable(Component) {
 
 const USER_INTERFACE_VIEWS_EXAMPLE = `
 \`\`\`
-import {Component, attribute} from '@liaison/component';
+import {Component, attribute} from '@layr/component';
 import React from 'react';
-import {view} from '@liaison/react-integration';
+import {view} from '@layr/react-integration';
 
 class Movie extends Component {
   @attribute() title;
@@ -250,8 +250,8 @@ export class Home extends Routable(Component) {
             </UI.Button>
           </div>
           <img
-            src={typicalVsLiaison}
-            alt="Typical stack vs Liaison stack"
+            src={typicalVsLayr}
+            alt="Typical stack vs Layr stack"
             css={UI.responsive({marginLeft: ['2.5rem', 0], maxWidth: [500, , '100%']})}
           />
         </div>
@@ -265,7 +265,7 @@ export class Home extends Routable(Component) {
     return (
       <Common.Feature
         title="Look Ma, No Web API"
-        description="Stop wasting your time building a web API. With Liaison, the frontend and the backend can [communicate directly](/blog/articles/Do-We-Really-Need-A-Web-API-yq12wz) as if they were not separated."
+        description="Stop wasting your time building a web API. With Layr, the frontend and the backend can [communicate directly](/blog/articles/Do-We-Really-Need-A-Web-API-yq12wz) as if they were not separated."
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
           <h5 css={{marginTop: '2rem'}}>Backend</h5>
@@ -328,7 +328,7 @@ export class Home extends Routable(Component) {
       <Common.Feature
         title="Developer Experience First"
         description={
-          'Liaison strives to find the right balance between powerful abstractions and ease of use so that you can build an application in the most enjoyable way possible.'
+          'Layr strives to find the right balance between powerful abstractions and ease of use so that you can build an application in the most enjoyable way possible.'
         }
       >
         <UI.Button

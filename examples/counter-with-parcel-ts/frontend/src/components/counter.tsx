@@ -1,6 +1,6 @@
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 import React from 'react';
-import {view} from '@liaison/react-integration';
+import {view} from '@layr/react-integration';
 
 import type {Counter as BackendCounter} from '../../../backend/src/components/counter';
 

@@ -1,4 +1,4 @@
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 (async () => {
   // We create a client that is connected to the backend's server

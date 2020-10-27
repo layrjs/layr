@@ -1,4 +1,4 @@
-import {Router, RouterOptions, normalizeURL} from '@liaison/router';
+import {Router, RouterOptions, normalizeURL} from '@layr/router';
 
 export type MemoryRouterOptions = RouterOptions & {
   initialURLs?: string[];
@@ -6,27 +6,27 @@ export type MemoryRouterOptions = RouterOptions & {
 };
 
 /**
- * *Inherits from [`Router`](https://liaison.dev/docs/v1/reference/router).*
+ * *Inherits from [`Router`](https://layrjs.com/docs/v1/reference/router).*
  *
- * A [`Router`](https://liaison.dev/docs/v1/reference/router) that keeps the navigation history in memory. Useful in tests and non-browser environments like [React Native](https://reactnative.dev/).
+ * A [`Router`](https://layrjs.com/docs/v1/reference/router) that keeps the navigation history in memory. Useful in tests and non-browser environments like [React Native](https://reactnative.dev/).
  *
  * #### Usage
  *
- * Create a `MemoryRouter` instance and register some [routable components](https://liaison.dev/docs/v1/reference/routable#routable-component-class) into it.
+ * Create a `MemoryRouter` instance and register some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) into it.
  *
- * See an example of use in the [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) class.
+ * See an example of use in the [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) class.
  */
 export class MemoryRouter extends Router {
   _urls: URL[];
   _index: number;
 
   /**
-   * Creates a [`MemoryRouter`](https://liaison.dev/docs/v1/reference/memory-router).
+   * Creates a [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router).
    *
    * @param [options.initialURLs] An array of URLs to populate the initial navigation history (default: `[]`).
    * @param [options.initialIndex] A number specifying the current entry's index in the navigation history (default: the index of the last entry in the navigation history).
    *
-   * @returns The [`MemoryRouter`](https://liaison.dev/docs/v1/reference/memory-router) instance that was created.
+   * @returns The [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router) instance that was created.
    *
    * @category Creation
    */
@@ -42,7 +42,7 @@ export class MemoryRouter extends Router {
   // === Component Registration ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#component-registration) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#component-registration) class.
    *
    * @category Component Registration
    */
@@ -50,7 +50,7 @@ export class MemoryRouter extends Router {
   // === Routes ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#routes) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#routes) class.
    *
    * @category Routes
    */
@@ -58,7 +58,7 @@ export class MemoryRouter extends Router {
   // === Current Location ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#current-location) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#current-location) class.
    *
    * @category Current Location
    */
@@ -74,7 +74,7 @@ export class MemoryRouter extends Router {
   // === Navigation ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://liaison.dev/docs/v1/reference/router#navigation) class.
+   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#navigation) class.
    *
    * @category Navigation
    */
@@ -117,7 +117,7 @@ export class MemoryRouter extends Router {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
    *
    * @category Observability
    */

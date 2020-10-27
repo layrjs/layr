@@ -1,13 +1,13 @@
 import {Component} from './component';
 
 /**
- * *Inherits from [`Component`](https://liaison.dev/docs/v1/reference/component).*
+ * *Inherits from [`Component`](https://layrjs.com/docs/v1/reference/component).*
  *
  * The `EmbeddedComponent` class allows you to define a component that can be embedded into another component. This is useful when you have to deal with a rich data model composed of a hierarchy of properties that can be type checked at runtime and validated. If you don't need such control over some nested attributes, instead of using an embedded component, you can just use an attribute of type `object`.
  *
- * The `EmbeddedComponent` class inherits from the [`Component`](https://liaison.dev/docs/v1/reference/component) class, so you can define and consume an embedded component in the same way you would do with any component.
+ * The `EmbeddedComponent` class inherits from the [`Component`](https://layrjs.com/docs/v1/reference/component) class, so you can define and consume an embedded component in the same way you would do with any component.
  *
- * However, since an embedded component is owned by its parent component, it doesn't behave like a regular component. Head over [here](https://liaison.dev/docs/v1/reference/component#nesting-components) for a broader explanation.
+ * However, since an embedded component is owned by its parent component, it doesn't behave like a regular component. Head over [here](https://layrjs.com/docs/v1/reference/component#nesting-components) for a broader explanation.
  *
  * #### Usage
  *
@@ -20,7 +20,7 @@ import {Component} from './component';
  *
  * // movie-details.js
  *
- * import {EmbeddedComponent} from '@liaison/component';
+ * import {EmbeddedComponent} from '@layr/component';
  *
  * export class MovieDetails extends EmbeddedComponent {
  *   ﹫attribute('number?') duration;
@@ -33,7 +33,7 @@ import {Component} from './component';
  *
  * // movie-details.ts
  *
- * import {EmbeddedComponent} from '@liaison/component';
+ * import {EmbeddedComponent} from '@layr/component';
  *
  * export class MovieDetails extends EmbeddedComponent {
  *   ﹫attribute('number?') duration?: number;
@@ -48,7 +48,7 @@ import {Component} from './component';
  *
  * // movie.js
  *
- * import {Component} from '@liaison/component';
+ * import {Component} from '@layr/component';
  *
  * import {MovieDetails} from './movie-details';
  *
@@ -65,7 +65,7 @@ import {Component} from './component';
  *
  * // movie.ts
  *
- * import {Component} from '@liaison/component';
+ * import {Component} from '@layr/component';
  *
  * import {MovieDetails} from './movie-details';
  *
@@ -77,7 +77,7 @@ import {Component} from './component';
  * }
  * ```
  *
- * > Note that you have to make the `MovieDetails` component accessible from the `Movie` component by using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator. This way, the `MovieDetails` component can be later referred by its name when you define the `details` attribute using the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+ * > Note that you have to make the `MovieDetails` component accessible from the `Movie` component by using the [`@provide()`](https://layrjs.com/docs/v1/reference/component#provide-decorator) decorator. This way, the `MovieDetails` component can be later referred by its name when you define the `details` attribute using the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator.
  *
  * Finally, the `Movie` component can be instantiated like this:
  *
@@ -95,7 +95,7 @@ export class EmbeddedComponent extends Component {
   // === Methods ===
 
   /**
-   * See the methods that are inherited from the [`Component`](https://liaison.dev/docs/v1/reference/component#creation) class.
+   * See the methods that are inherited from the [`Component`](https://layrjs.com/docs/v1/reference/component#creation) class.
    *
    * @category Methods
    */
@@ -103,7 +103,7 @@ export class EmbeddedComponent extends Component {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
    *
    * @category Observability
    */

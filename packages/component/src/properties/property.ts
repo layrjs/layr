@@ -37,24 +37,24 @@ export type UnintrospectedProperty = {
 export type UnintrospectedExposure = Partial<Record<PropertyOperation, true>>;
 
 /**
- * A base class from which classes such as [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) or [`Method`](https://liaison.dev/docs/v1/reference/method) are constructed. Unless you build a custom property class, you probably won't have to use this class directly.
+ * A base class from which classes such as [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) or [`Method`](https://layrjs.com/docs/v1/reference/method) are constructed. Unless you build a custom property class, you probably won't have to use this class directly.
  */
 export class Property {
   _name: string;
   _parent: typeof Component | Component;
 
   /**
-   * Creates an instance of [`Property`](https://liaison.dev/docs/v1/reference/property).
+   * Creates an instance of [`Property`](https://layrjs.com/docs/v1/reference/property).
    *
    * @param name The name of the property.
    * @param parent The component class, prototype, or instance that owns the property.
-   * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the property should be exposed to remote access.
+   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object specifying how the property should be exposed to remote access.
    *
-   * @returns The [`Property`](https://liaison.dev/docs/v1/reference/property) instance that was created.
+   * @returns The [`Property`](https://layrjs.com/docs/v1/reference/property) instance that was created.
    *
    * @example
    * ```
-   * import {Component, Property} from '﹫liaison/component';
+   * import {Component, Property} from '﹫layr/component';
    *
    * class Movie extends Component {}
    *
@@ -131,7 +131,7 @@ export class Property {
   /**
    * Returns an object specifying how the property is exposed to remote access.
    *
-   * @returns A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object.
+   * @returns A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object.
    *
    * @example
    * ```
@@ -147,7 +147,7 @@ export class Property {
   /**
    * Sets how the property is exposed to remote access.
    *
-   * @param [exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object.
+   * @param [exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object.
    *
    * @example
    * ```
@@ -223,7 +223,7 @@ export class Property {
    * The shape of the object is `{[operation]: permission}` where:
    *
    * - `operation` is a string representing the different types of operations (`'get'` and `'set'` for attributes, and `'call'` for methods).
-   * - `permission` is a boolean (or a string or array of strings if the [`WithRoles`](https://liaison.dev/docs/v1/reference/with-roles) mixin is used) specifying whether the operation is allowed or not.
+   * - `permission` is a boolean (or a string or array of strings if the [`WithRoles`](https://layrjs.com/docs/v1/reference/with-roles) mixin is used) specifying whether the operation is allowed or not.
    *
    * @example
    * ```

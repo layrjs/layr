@@ -1,4 +1,4 @@
-import {AttributeSelector, iterateOverAttributeSelector} from '@liaison/component';
+import {AttributeSelector, iterateOverAttributeSelector} from '@layr/component';
 import {PlainObject, isPlainObject, deleteUndefinedProperties} from 'core-helpers';
 
 import type {Path} from './path';

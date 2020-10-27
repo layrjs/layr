@@ -1,4 +1,4 @@
-import {Component} from '@liaison/component';
+import {Component} from '@layr/component';
 
 import {Routable} from '../routable';
 import {route} from '../decorators';

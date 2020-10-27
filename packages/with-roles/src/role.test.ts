@@ -1,4 +1,4 @@
-import {Component} from '@liaison/component';
+import {Component} from '@layr/component';
 
 import {WithRoles} from './with-roles';
 import {Role, isRoleInstance} from './role';

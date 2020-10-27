@@ -1,12 +1,12 @@
 {
   "name": "counter-with-http",
   "version": "1.0.0",
-  "description": "A simple example to introduce the core concepts of Liaison",
+  "description": "A simple example to introduce the core concepts of Layr",
   "private": true,
   "dependencies": {
-    "@liaison/component": "^1.0.0",
-    "@liaison/component-http-client": "^1.0.0",
-    "@liaison/component-http-server": "^1.0.0"
+    "@layr/component": "^1.0.0",
+    "@layr/component-http-client": "^1.0.0",
+    "@layr/component-http-server": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",

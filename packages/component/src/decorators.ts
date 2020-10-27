@@ -22,14 +22,14 @@ type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
 /**
  * Decorates an attribute of a component so it can be type checked at runtime, validated, serialized, observed, etc.
  *
- * @param [valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type#supported-types) that can be stored in the attribute (default: `'any'`).
- * @param [options] The options to create the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#constructor).
+ * @param [valueType] A string specifying the [type of values](https://layrjs.com/docs/v1/reference/value-type#supported-types) that can be stored in the attribute (default: `'any'`).
+ * @param [options] The options to create the [`Attribute`](https://layrjs.com/docs/v1/reference/attribute#constructor).
  *
  * @example
  * ```
  * // JS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {maxLength} = validators;
  *
@@ -52,7 +52,7 @@ type AttributeDecoratorOptions = Omit<AttributeOptions, 'value' | 'default'>;
  * ```
  * // TS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {maxLength} = validators;
  *
@@ -92,16 +92,16 @@ export function attribute(
 }
 
 /**
- * Decorates an attribute of a component as a [primary identifier attribute](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
+ * Decorates an attribute of a component as a [primary identifier attribute](https://layrjs.com/docs/v1/reference/primary-identifier-attribute).
  *
  * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
- * @param [options] The options to create the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
+ * @param [options] The options to create the [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute).
  *
  * @example
  * ```
  * // JS
  *
- * import {Component, primaryIdentifier} from '﹫liaison/component';
+ * import {Component, primaryIdentifier} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // Auto-generated 'string' primary identifier attribute
@@ -118,7 +118,7 @@ export function attribute(
  * ```
  * // TS
  *
- * import {Component, primaryIdentifier} from '﹫liaison/component';
+ * import {Component, primaryIdentifier} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // Auto-generated 'string' primary identifier attribute
@@ -152,16 +152,16 @@ export function primaryIdentifier(
 }
 
 /**
- * Decorates an attribute of a component as a [secondary identifier attribute](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
+ * Decorates an attribute of a component as a [secondary identifier attribute](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute).
  *
  * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
- * @param [options] The options to create the [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute).
+ * @param [options] The options to create the [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute).
  *
  * @example
  * ```
  * // JS
  *
- * import {Component, secondaryIdentifier} from '﹫liaison/component';
+ * import {Component, secondaryIdentifier} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // 'string' secondary identifier attribute
@@ -176,7 +176,7 @@ export function primaryIdentifier(
  * ```
  * // TS
  *
- * import {Component, secondaryIdentifier} from '﹫liaison/component';
+ * import {Component, secondaryIdentifier} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // 'string' secondary identifier attribute
@@ -301,11 +301,11 @@ function getAttributeInitializer(
 /**
  * Decorates a method of a component so it can be exposed and called remotely.
  *
- * @param [options] The options to create the [`Method`](https://liaison.dev/docs/v1/reference/method#constructor).
+ * @param [options] The options to create the [`Method`](https://layrjs.com/docs/v1/reference/method#constructor).
  *
  * @example
  * ```
- * import {Component, method} from '﹫liaison/component';
+ * import {Component, method} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // Class method
@@ -385,13 +385,13 @@ type ClassExposure = {
  *
  * This decorator is usually placed before a component attribute or method, but it can also be placed before a component class. When placed before a component class, you can expose several attributes or methods at once, and even better, you can expose attributes or methods that are defined in a parent class.
  *
- * @param exposure An object specifying which operations should be exposed. When the decorator is placed before a component attribute or method, the object is of type [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type). When the decorator is placed before a component class, the shape of the object is `{[propertyName]: PropertyExposure, prototype: {[propertyName]: PropertyExposure}}`.
+ * @param exposure An object specifying which operations should be exposed. When the decorator is placed before a component attribute or method, the object is of type [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type). When the decorator is placed before a component class, the shape of the object is `{[propertyName]: PropertyExposure, prototype: {[propertyName]: PropertyExposure}}`.
  *
  * @example
  * ```
  * // JS
  *
- * import {Component, expose, attribute, method} from '﹫liaison/component';
+ * import {Component, expose, attribute, method} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // Class attribute exposing the 'get' operation only
@@ -422,7 +422,7 @@ type ClassExposure = {
  * ```
  * // TS
  *
- * import {Component, expose, attribute, method} from '﹫liaison/component';
+ * import {Component, expose, attribute, method} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // Class attribute exposing the 'get' operation only
@@ -509,13 +509,13 @@ export function expose(exposure: ClassExposure | PropertyExposure = {}) {
 }
 
 /**
- * Provides a component so it can be easily accessed from the current component or from any component that is "consuming" it using the [`@consume()`](https://liaison.dev/docs/v1/reference/component#consume-decorator) decorator.
+ * Provides a component so it can be easily accessed from the current component or from any component that is "consuming" it using the [`@consume()`](https://layrjs.com/docs/v1/reference/component#consume-decorator) decorator.
  *
  * @example
  * ```
  * // JS
  *
- * import {Component, provide, consume} from '﹫liaison/component';
+ * import {Component, provide, consume} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   ﹫consume() static Actor;
@@ -536,7 +536,7 @@ export function expose(exposure: ClassExposure | PropertyExposure = {}) {
  * ```
  * // TS
  *
- * import {Component, provide, consume} from '﹫liaison/component';
+ * import {Component, provide, consume} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   ﹫consume() static Actor: typeof Actor;
@@ -585,7 +585,7 @@ export function provide() {
 /**
  * Consumes a component provided by the provider (or recursively, any provider's provider) of the current component so it can be easily accessed using a component accessor.
  *
- * @examplelink See [`@provide()`'s example](https://liaison.dev/docs/v1/reference/component#provide-decorator).
+ * @examplelink See [`@provide()`'s example](https://layrjs.com/docs/v1/reference/component#provide-decorator).
  *
  * @category Decorators
  * @decorator

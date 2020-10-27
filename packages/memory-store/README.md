@@ -1,11 +1,11 @@
-# @liaison/memory-store
+# @layr/memory-store
 
-A Liaison store using memory (useful for testing).
+A Layr store using memory (useful for testing).
 
 ## Installation
 
 ```
-npm install @liaison/memory-store
+npm install @layr/memory-store
 ```
 
 ## License

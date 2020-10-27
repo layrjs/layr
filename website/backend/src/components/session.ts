@@ -6,7 +6,7 @@ import {
   expose,
   AttributeSelector,
   validators
-} from '@liaison/component';
+} from '@layr/component';
 
 import type {User} from './user';
 import type {JWT} from './jwt';

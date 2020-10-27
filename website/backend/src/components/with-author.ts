@@ -1,6 +1,6 @@
-import {expose} from '@liaison/component';
-import {attribute} from '@liaison/storable';
-import {role} from '@liaison/with-roles';
+import {expose} from '@layr/component';
+import {attribute} from '@layr/storable';
+import {role} from '@layr/with-roles';
 
 import type {Entity} from './entity';
 

@@ -1,11 +1,11 @@
-# @liaison/aws-integration
+# @layr/aws-integration
 
-AWS integration for Liaison.
+AWS integration for Layr.
 
 ## Installation
 
 ```
-npm install @liaison/aws-integration
+npm install @layr/aws-integration
 ```
 
 ## License

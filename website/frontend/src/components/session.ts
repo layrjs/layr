@@ -1,4 +1,4 @@
-import {attribute} from '@liaison/component';
+import {attribute} from '@layr/component';
 
 import type {Session as BackendSession} from '../../../backend/src/components/session';
 

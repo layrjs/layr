@@ -1,4 +1,4 @@
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 import {server} from './server';
 

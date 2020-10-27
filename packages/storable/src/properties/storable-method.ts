@@ -1,10 +1,10 @@
-import {Component, Method} from '@liaison/component';
+import {Component, Method} from '@layr/component';
 import {Constructor} from 'core-helpers';
 
 // TODO: Find a way to remove this useless import
 // I did that to remove a TypeScript error in the generated declaration file
 // @ts-ignore
-import type {Property} from '@liaison/component';
+import type {Property} from '@layr/component';
 
 import {StorablePropertyMixin, StorablePropertyOptions} from './storable-property';
 import {assertIsStorableClassOrInstance} from '../utilities';
@@ -15,24 +15,24 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
   /**
    * @name StorableMethod
    *
-   * *Inherits from [`Method`](https://liaison.dev/docs/v1/reference/method) and [`StorableProperty`](https://liaison.dev/docs/v1/reference/storable-property).*
+   * *Inherits from [`Method`](https://layrjs.com/docs/v1/reference/method) and [`StorableProperty`](https://layrjs.com/docs/v1/reference/storable-property).*
    *
-   * The `StorableMethod` class extends the [`Method`](https://liaison.dev/docs/v1/reference/method) class with the capabilities of the [`StorableProperty`](https://liaison.dev/docs/v1/reference/storable-property) class.
+   * The `StorableMethod` class extends the [`Method`](https://layrjs.com/docs/v1/reference/method) class with the capabilities of the [`StorableProperty`](https://layrjs.com/docs/v1/reference/storable-property) class.
    *
-   * In a nutshell, using the `StorableMethod` class allows you to associate a [`Finder`](https://liaison.dev/docs/v1/reference/storable-property#finder-type) to a method so this method can be used in a [`Query`](https://liaison.dev/docs/v1/reference/query).
+   * In a nutshell, using the `StorableMethod` class allows you to associate a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type) to a method so this method can be used in a [`Query`](https://layrjs.com/docs/v1/reference/query).
    *
    *
    * #### Usage
    *
-   * Typically, you create a `StorableMethod` and associate it to a [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) using the [`@method()`](https://liaison.dev/docs/v1/reference/storable#method-decorator) decorator.
+   * Typically, you create a `StorableMethod` and associate it to a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) using the [`@method()`](https://layrjs.com/docs/v1/reference/storable#method-decorator) decorator.
    *
    * For example, here is how you would define a `Movie` component with some storable attributes and methods:
    *
    * ```
    * // JS
    *
-   * import {Component} from '﹫liaison/component';
-   * import {Storable, primaryIdentifier, attribute, method} from '﹫liaison/storable';
+   * import {Component} from '﹫layr/component';
+   * import {Storable, primaryIdentifier, attribute, method} from '﹫layr/storable';
    *
    * class Movie extends Storable(Component) {
    *   ﹫primaryIdentifier() id;
@@ -54,8 +54,8 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
    * ```
    * // TS
    *
-   * import {Component} from '﹫liaison/component';
-   * import {Storable, primaryIdentifier, attribute, method} from '﹫liaison/storable';
+   * import {Component} from '﹫layr/component';
+   * import {Storable, primaryIdentifier, attribute, method} from '﹫layr/storable';
    *
    * class Movie extends Storable(Component) {
    *   ﹫primaryIdentifier() id!: string;
@@ -87,7 +87,7 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
    * await movie.wasReleasedIn(2011); // => false
    * ```
    *
-   * So far, there is nothing special about the `wasReleasedIn()` method. We could have achieved the same result without the [`@method()`](https://liaison.dev/docs/v1/reference/storable#method-decorator) decorator.
+   * So far, there is nothing special about the `wasReleasedIn()` method. We could have achieved the same result without the [`@method()`](https://layrjs.com/docs/v1/reference/storable#method-decorator) decorator.
    *
    * Now, let's imagine that we want to find all the movies that was released in 2010. We could do so as follows:
    *
@@ -106,16 +106,16 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
    * await Movie.find({wasReleasedIn: 2010});
    * ```
    *
-   * Unfortunately, the above [`Query`](https://liaison.dev/docs/v1/reference/query) wouldn't work. To make such a query possible, we must somehow transform the logic of the `wasReleasedIn()` method into a regular query, and this is exactly where a `StorableMethod` can be useful.
+   * Unfortunately, the above [`Query`](https://layrjs.com/docs/v1/reference/query) wouldn't work. To make such a query possible, we must somehow transform the logic of the `wasReleasedIn()` method into a regular query, and this is exactly where a `StorableMethod` can be useful.
    *
-   * Because the `wasReleasedIn()` method is a `StorableMethod` (thanks to the [`@method()`](https://liaison.dev/docs/v1/reference/storable#method-decorator) decorator), we can can associate a [`Finder`](https://liaison.dev/docs/v1/reference/storable-property#finder-type) to it by adding the [`@finder()`](https://liaison.dev/docs/v1/reference/storable#finder-decorator) decorator:
+   * Because the `wasReleasedIn()` method is a `StorableMethod` (thanks to the [`@method()`](https://layrjs.com/docs/v1/reference/storable#method-decorator) decorator), we can can associate a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type) to it by adding the [`@finder()`](https://layrjs.com/docs/v1/reference/storable#finder-decorator) decorator:
    *
    * ```
    * // JS
    *
    * // ...
    *
-   * import {finder} from '﹫liaison/storable';
+   * import {finder} from '﹫layr/storable';
    *
    * class Movie extends Storable(Component) {
    *   // ...
@@ -140,7 +140,7 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
    *
    * // ...
    *
-   * import {finder} from '﹫liaison/storable';
+   * import {finder} from '﹫layr/storable';
    *
    * class Movie extends Storable(Component) {
    *   // ...
@@ -176,13 +176,13 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
     /**
      * @constructor
      *
-     * Creates a storable method. Typically, instead of using this constructor, you would rather use the [`@method()`](https://liaison.dev/docs/v1/reference/storable#method-decorator) decorator.
+     * Creates a storable method. Typically, instead of using this constructor, you would rather use the [`@method()`](https://layrjs.com/docs/v1/reference/storable#method-decorator) decorator.
      *
      * @param name The name of the method.
-     * @param parent The [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class, prototype, or instance that owns the method.
-     * @param [options] An object specifying any option supported by the constructor of [`Method`](https://liaison.dev/docs/v1/reference/method#constructor) and [`StorableProperty`](https://liaison.dev/docs/v1/reference/storable-property#constructor).
+     * @param parent The [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) class, prototype, or instance that owns the method.
+     * @param [options] An object specifying any option supported by the constructor of [`Method`](https://layrjs.com/docs/v1/reference/method#constructor) and [`StorableProperty`](https://layrjs.com/docs/v1/reference/storable-property#constructor).
      *
-     * @returns The [`StorableMethod`](https://liaison.dev/docs/v1/reference/storable-method) instance that was created.
+     * @returns The [`StorableMethod`](https://layrjs.com/docs/v1/reference/storable-method) instance that was created.
      *
      * @category Creation
      */
@@ -190,7 +190,7 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
     // === Property Methods ===
 
     /**
-     * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+     * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
      *
      * @category Property Methods
      */
@@ -198,7 +198,7 @@ export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: 
     // === Finder ===
 
     /**
-     * See the methods that are inherited from the [`StorableProperty`](https://liaison.dev/docs/v1/reference/storable-property#finder) class.
+     * See the methods that are inherited from the [`StorableProperty`](https://layrjs.com/docs/v1/reference/storable-property#finder) class.
      *
      * @category Finder
      */

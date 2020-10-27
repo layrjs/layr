@@ -12,9 +12,9 @@
     "start": "npm-run-all --parallel watch serve"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.6",
-    "@liaison/component-http-client": "^1.0.3",
-    "@liaison/react-integration": "^1.0.3",
+    "@layr/component": "^1.0.6",
+    "@layr/component-http-client": "^1.0.3",
+    "@layr/react-integration": "^1.0.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   },

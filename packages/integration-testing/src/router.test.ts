@@ -1,6 +1,6 @@
-import {Component, provide} from '@liaison/component';
-import {Routable, route} from '@liaison/routable';
-import {Router, isRouterInstance} from '@liaison/router';
+import {Component, provide} from '@layr/component';
+import {Routable, route} from '@layr/routable';
+import {Router, isRouterInstance} from '@layr/router';
 
 describe('Router', () => {
   class MockRouter extends Router {

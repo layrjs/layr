@@ -1,4 +1,4 @@
-import {Component} from '@liaison/component';
+import {Component} from '@layr/component';
 import jwt from 'jsonwebtoken';
 
 // Tip: Use `openssl rand -hex 64` to generate a JWT secret

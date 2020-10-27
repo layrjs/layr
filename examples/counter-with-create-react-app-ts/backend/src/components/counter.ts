@@ -1,4 +1,4 @@
-import {Component, primaryIdentifier, attribute, method, expose} from '@liaison/component';
+import {Component, primaryIdentifier, attribute, method, expose} from '@layr/component';
 
 export class Counter extends Component {
   @expose({get: true, set: true}) @primaryIdentifier() id!: string;

@@ -1,9 +1,9 @@
 {
-  "name": "@liaison/with-roles",
-  "version": "1.0.3",
-  "description": "Simple role system for Liaison",
+  "name": "@layr/with-roles",
+  "version": "1.0.5",
+  "description": "Simple role system for Layr",
   "keywords": [
-    "liaison",
+    "layr",
     "component",
     "attribute",
     "method",
@@ -13,7 +13,7 @@
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/with-roles",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/with-roles",
   "files": [
     "dist"
   ],
@@ -31,7 +31,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
+    "@layr/component": "^1.0.10",
     "core-helpers": "^1.0.3",
     "possibly-async": "^1.0.2",
     "tslib": "^2.0.3"

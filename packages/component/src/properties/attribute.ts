@@ -6,7 +6,7 @@ import {
   canBeObserved,
   isEmbeddable,
   ObserverPayload
-} from '@liaison/observable';
+} from '@layr/observable';
 
 import type {
   Component,
@@ -56,20 +56,20 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
 };
 
 /**
- * *Inherits from [`Property`](https://liaison.dev/docs/v1/reference/property) and [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class).*
+ * *Inherits from [`Property`](https://layrjs.com/docs/v1/reference/property) and [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class).*
  *
- * An `Attribute` represents an attribute of a [Component](https://liaison.dev/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as runtime type checking, validation, serialization, or observability.
+ * An `Attribute` represents an attribute of a [Component](https://layrjs.com/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as runtime type checking, validation, serialization, or observability.
  *
  * #### Usage
  *
- * Typically, you create an `Attribute` and associate it to a component by using the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+ * Typically, you create an `Attribute` and associate it to a component by using the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator.
  *
  * For example, here is how you would define a `Movie` class with some attributes:
  *
  * ```
  * // JS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {minLength} = validators;
  *
@@ -88,7 +88,7 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
  * ```
  * // TS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {minLength} = validators;
  *
@@ -139,24 +139,24 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
  */
 export class Attribute extends Observable(Property) {
   /**
-   * Creates an instance of [`Attribute`](https://liaison.dev/docs/v1/reference/attribute). Typically, instead of using this constructor, you would rather use the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator.
+   * Creates an instance of [`Attribute`](https://layrjs.com/docs/v1/reference/attribute). Typically, instead of using this constructor, you would rather use the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute.
    * @param parent The component class, prototype, or instance that owns the attribute.
-   * @param [options.valueType] A string specifying the [type of values](https://liaison.dev/docs/v1/reference/value-type#supported-types) the attribute can store (default: `'any'`).
+   * @param [options.valueType] A string specifying the [type of values](https://layrjs.com/docs/v1/reference/value-type#supported-types) the attribute can store (default: `'any'`).
    * @param [options.value] The initial value of the attribute (usable for class attributes only).
    * @param [options.default] The default value (or a function returning the default value) of the attribute (usable for instance attributes only).
-   * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validator) for the value of the attribute.
-   * @param [options.items.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validator) for the items of an array attribute.
+   * @param [options.validators] An array of [validators](https://layrjs.com/docs/v1/reference/validator) for the value of the attribute.
+   * @param [options.items.validators] An array of [validators](https://layrjs.com/docs/v1/reference/validator) for the items of an array attribute.
    * @param [options.getter] A getter function for getting the value of the attribute. Plays the same role as a regular [JavaScript getter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get).
    * @param [options.setter] A setter function for setting the value of the attribute. Plays the same role as a regular [JavaScript setter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set).
-   * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
+   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
    *
-   * @returns The [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance that was created.
+   * @returns The [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance that was created.
    *
    * @example
    * ```
-   * import {Component, Attribute} from '﹫liaison/component';
+   * import {Component, Attribute} from '﹫layr/component';
    *
    * class Movie extends Component {}
    *
@@ -244,7 +244,7 @@ export class Attribute extends Observable(Property) {
   // === Property Methods ===
 
   /**
-   * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
    *
    * @category Property Methods
    */
@@ -256,7 +256,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Returns the type of values the attribute can store.
    *
-   * @returns A [ValueType](https://liaison.dev/docs/v1/reference/value-type) instance.
+   * @returns A [ValueType](https://layrjs.com/docs/v1/reference/value-type) instance.
    *
    * @example
    * ```
@@ -342,7 +342,7 @@ export class Attribute extends Observable(Property) {
    * When the attribute's value changes, the observers of the attribute are automatically executed, and the observers of the parent component are executed as well.
    *
    * @param value The value to be set.
-   * @param [options.source] A number specifying the [source of the value](https://liaison.dev/docs/v1/reference/attribute#value-source-type) (default: `0`).
+   * @param [options.source] A number specifying the [source of the value](https://layrjs.com/docs/v1/reference/attribute#value-source-type) (default: `0`).
    *
    * @example
    * ```
@@ -472,7 +472,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Returns the source of the value of the attribute.
    *
-   * @returns A [`ValueSource`](https://liaison.dev/docs/v1/reference/attribute#value-source-type) number.
+   * @returns A [`ValueSource`](https://layrjs.com/docs/v1/reference/attribute#value-source-type) number.
    *
    * @example
    * ```
@@ -489,7 +489,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Sets the source of the value of the attribute.
    *
-   * @param source A [`ValueSource`](https://liaison.dev/docs/v1/reference/attribute#value-source-type) number.
+   * @param source A [`ValueSource`](https://layrjs.com/docs/v1/reference/attribute#value-source-type) number.
    *
    * @example
    * ```
@@ -640,15 +640,15 @@ export class Attribute extends Observable(Property) {
   // === Validation ===
 
   /**
-   * Validates the value of the attribute. If the value doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://liaison.dev/docs/v1/reference/attribute#run-validators-instance-method) method.
+   * Validates the value of the attribute. If the value doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://layrjs.com/docs/v1/reference/attribute#run-validators-instance-method) method.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
    * @example
    * ```
    * // JS
    *
-   * import {Component, attribute, validators} from '﹫liaison/component';
+   * import {Component, attribute, validators} from '﹫layr/component';
    *
    * const {notEmpty} = validators;
    *
@@ -669,7 +669,7 @@ export class Attribute extends Observable(Property) {
    * ```
    * // TS
    *
-   * import {Component, attribute, validators} from '﹫liaison/component';
+   * import {Component, attribute, validators} from '﹫layr/component';
    *
    * const {notEmpty} = validators;
    *
@@ -712,7 +712,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Returns whether the value of the attribute is valid.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
    * @returns A boolean.
    *
@@ -737,9 +737,9 @@ export class Attribute extends Observable(Property) {
   /**
    * Runs the validators with the value of the attribute.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://liaison.dev/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
-   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://liaison.dev/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://layrjs.com/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
    * @example
    * ```
@@ -766,7 +766,7 @@ export class Attribute extends Observable(Property) {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
    *
    * @category Observability
    */

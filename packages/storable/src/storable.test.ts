@@ -5,12 +5,12 @@ import {
   provide,
   expose,
   serialize
-} from '@liaison/component';
-import {MemoryStore} from '@liaison/memory-store';
-import {MongoDBStore} from '@liaison/mongodb-store';
+} from '@layr/component';
+import {MemoryStore} from '@layr/memory-store';
+import {MongoDBStore} from '@layr/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
-import {ComponentClient} from '@liaison/component-client';
-import {ComponentServer} from '@liaison/component-server';
+import {ComponentClient} from '@layr/component-client';
+import {ComponentServer} from '@layr/component-server';
 import {PlainObject} from 'core-helpers';
 
 import {Storable, StorableComponent} from './storable';

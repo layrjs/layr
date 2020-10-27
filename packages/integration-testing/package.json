@@ -1,11 +1,11 @@
 {
-  "name": "@liaison/integration-testing",
-  "version": "1.0.4",
+  "name": "@layr/integration-testing",
+  "version": "1.0.5",
   "private": true,
-  "description": "Tests involving a combination of Liaison packages",
+  "description": "Tests involving a combination of Layr packages",
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/integration-testing",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/integration-testing",
   "files": [
     "dist"
   ],
@@ -22,18 +22,18 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
-    "@liaison/component-client": "^1.0.4",
-    "@liaison/component-express-middleware": "^1.0.3",
-    "@liaison/component-http-client": "^1.0.4",
-    "@liaison/component-http-server": "^1.0.4",
-    "@liaison/component-koa-middleware": "^1.0.4",
-    "@liaison/component-server": "^1.0.4",
-    "@liaison/memory-router": "^1.0.2",
-    "@liaison/routable": "^1.0.3",
-    "@liaison/router": "^1.0.3",
-    "@liaison/storable": "^1.0.5",
-    "@liaison/store": "^1.0.4",
+    "@layr/component": "^1.0.10",
+    "@layr/component-client": "^1.0.6",
+    "@layr/component-express-middleware": "^1.0.5",
+    "@layr/component-http-client": "^1.0.6",
+    "@layr/component-http-server": "^1.0.6",
+    "@layr/component-koa-middleware": "^1.0.6",
+    "@layr/component-server": "^1.0.6",
+    "@layr/memory-router": "^1.0.4",
+    "@layr/routable": "^1.0.5",
+    "@layr/router": "^1.0.5",
+    "@layr/storable": "^1.0.7",
+    "@layr/store": "^1.0.6",
     "express": "^4.17.1",
     "koa": "^2.13.0",
     "koa-mount": "^4.0.0",
@@ -43,7 +43,7 @@
     "@mvila/dev-tools": "^1.0.26",
     "@mvila/tsconfig": "^1.0.4",
     "@types/jest": "^25.2.3",
-    "@types/koa": "^2.11.5",
+    "@types/koa": "^2.11.6",
     "@types/koa-mount": "^4.0.0"
   }
 }

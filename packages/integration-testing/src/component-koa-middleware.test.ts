@@ -1,8 +1,8 @@
 import Koa from 'koa';
 import mount from 'koa-mount';
 import type {Server} from 'http';
-import {serveComponent} from '@liaison/component-koa-middleware';
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {serveComponent} from '@layr/component-koa-middleware';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 import {Counter as BackendCounter} from './counter.fixture';
 

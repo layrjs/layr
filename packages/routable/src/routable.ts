@@ -1,29 +1,29 @@
-import {Component, isComponentClass} from '@liaison/component';
-import {Router, normalizeURL} from '@liaison/router';
+import {Component, isComponentClass} from '@layr/component';
+import {Router, normalizeURL} from '@layr/router';
 import {hasOwnProperty, getTypeOf, Constructor} from 'core-helpers';
 import debugModule from 'debug';
 
 import {Route, RouteOptions, RoutePattern} from './route';
 import {isRoutableInstance} from './utilities';
 
-const debug = debugModule('liaison:routable');
+const debug = debugModule('layr:routable');
 // To display the debug log, set this environment:
-// DEBUG=liaison:routable DEBUG_DEPTH=10
+// DEBUG=layr:routable DEBUG_DEPTH=10
 
 /**
- * Extends a [`Component`](https://liaison.dev/docs/v1/reference/component) class with some routing capabilities.
+ * Extends a [`Component`](https://layrjs.com/docs/v1/reference/component) class with some routing capabilities.
  *
  * #### Usage
  *
- * Call `Routable()` with a [`Component`](https://liaison.dev/docs/v1/reference/component) class to construct a [`RoutableComponent`](https://liaison.dev/docs/v1/reference/routable#routable-component-class) class. Then, you can define some routes into this class by using the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+ * Call `Routable()` with a [`Component`](https://layrjs.com/docs/v1/reference/component) class to construct a [`RoutableComponent`](https://layrjs.com/docs/v1/reference/routable#routable-component-class) class. Then, you can define some routes into this class by using the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
  *
  * **Example:**
  *
  * ```
  * // JS
  *
- * import {Component} from '@liaison/component';
- * import {Routable, route} from '@liaison/routable';
+ * import {Component} from '@layr/component';
+ * import {Routable, route} from '@layr/routable';
  *
  * class Article extends Routable(Component) {
  *   ﹫route('/articles/:id/upvote') static upvote({id}) {
@@ -35,8 +35,8 @@ const debug = debugModule('liaison:routable');
  * ```
  * // TS
  *
- * import {Component} from '@liaison/component';
- * import {Routable, route} from '@liaison/routable';
+ * import {Component} from '@layr/component';
+ * import {Routable, route} from '@layr/routable';
  *
  * class Article extends Routable(Component) {
  *   ﹫route('/articles/:id/upvote') static upvote({id}: {id: string}) {
@@ -47,7 +47,7 @@ const debug = debugModule('liaison:routable');
  *
  * Once you have a routable component, you can use any method provided by the `Routable()` mixin.
  *
- * For example, to call the `upvote()` method by a URL, you can use the [`callRouteByURL()`](https://liaison.dev/docs/v1/reference/routable#call-route-by-url-class-method) method:
+ * For example, to call the `upvote()` method by a URL, you can use the [`callRouteByURL()`](https://layrjs.com/docs/v1/reference/routable#call-route-by-url-class-method) method:
  *
  * ```
  * await Article.callRouteByURL('/articles/abc123/upvote');
@@ -56,10 +56,10 @@ const debug = debugModule('liaison:routable');
  * await Article.upvote({id: 'abc123'});
  * ```
  *
- * A routable component can be registered into a router such as [BrowserRouter](https://liaison.dev/docs/v1/reference/browser-router) by using the [`registerRoutable()`](https://liaison.dev/docs/v1/reference/router#register-routable-instance-method) method (or [`registerRootComponent()`](https://liaison.dev/docs/v1/reference/router#register-root-component-instance-method) to register several components at once):
+ * A routable component can be registered into a router such as [BrowserRouter](https://layrjs.com/docs/v1/reference/browser-router) by using the [`registerRoutable()`](https://layrjs.com/docs/v1/reference/router#register-routable-instance-method) method (or [`registerRootComponent()`](https://layrjs.com/docs/v1/reference/router#register-root-component-instance-method) to register several components at once):
  *
  * ```
- * import {BrowserRouter} from '@liaison/browser-router';
+ * import {BrowserRouter} from '@layr/browser-router';
  *
  * const router = new BrowserRouter();
  *
@@ -72,13 +72,13 @@ const debug = debugModule('liaison:routable');
  * await router.callRouteByURL('/articles/abc123/upvote');
  * ```
  *
- * See the ["Bringing Some Routes"](https://liaison.dev/docs/v1/introduction/routing) guide for a comprehensive example using the `Routable()` mixin.
+ * See the ["Bringing Some Routes"](https://layrjs.com/docs/v1/introduction/routing) guide for a comprehensive example using the `Routable()` mixin.
  *
  * ### RoutableComponent <badge type="primary">class</badge> {#routable-component-class}
  *
- * *Inherits from [`Component`](https://liaison.dev/docs/v1/reference/component).*
+ * *Inherits from [`Component`](https://layrjs.com/docs/v1/reference/component).*
  *
- * A `RoutableComponent` class is constructed by calling the `Routable()` mixin ([see above](https://liaison.dev/docs/v1/reference/routable#routable-mixin)).
+ * A `RoutableComponent` class is constructed by calling the `Routable()` mixin ([see above](https://layrjs.com/docs/v1/reference/routable#routable-mixin)).
  *
  * @mixin
  */
@@ -99,7 +99,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     // === Component Methods ===
 
     /**
-     * See the methods that are inherited from the [`Component`](https://liaison.dev/docs/v1/reference/component#creation) class.
+     * See the methods that are inherited from the [`Component`](https://layrjs.com/docs/v1/reference/component#creation) class.
      *
      * @category Component Methods
      */
@@ -111,7 +111,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Returns the router in which the routable component is registered. If the routable component is not registered in a router, an error is thrown.
      *
-     * @returns A [`Router`](https://liaison.dev/docs/v1/reference/router) instance.
+     * @returns A [`Router`](https://layrjs.com/docs/v1/reference/router) instance.
      *
      * @example
      * ```
@@ -135,7 +135,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Returns the router in which the routable component is registered. If the routable component is not registered in a router, an error is thrown.
      *
-     * @returns A [`Router`](https://liaison.dev/docs/v1/reference/router) instance.
+     * @returns A [`Router`](https://layrjs.com/docs/v1/reference/router) instance.
      *
      * @example
      * ```
@@ -191,7 +191,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param name The name of the route to get.
      *
-     * @returns A [Route](https://liaison.dev/docs/v1/reference/route) instance.
+     * @returns A [Route](https://layrjs.com/docs/v1/reference/route) instance.
      *
      * @example
      * ```
@@ -237,13 +237,13 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Sets a route in the storable component.
      *
-     * Typically, instead of using this method, you would rather use the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+     * Typically, instead of using this method, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
      *
      * @param name The name of the route.
-     * @param pattern A string specifying the [URL pattern](https://liaison.dev/docs/v1/reference/route#url-pattern-type) associated with the route.
-     * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://liaison.dev/docs/v1/reference/route#constructor) when the route is created.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) associated with the route.
+     * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v1/reference/route#constructor) when the route is created.
      *
-     * @returns The [Route](https://liaison.dev/docs/v1/reference/route) instance that was created.
+     * @returns The [Route](https://layrjs.com/docs/v1/reference/route) instance that was created.
      *
      * @example
      * ```
@@ -301,7 +301,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
      *
-     * @returns An object of the shape `{route, params}` (or `undefined` if no route was found) where `route` is the [route](https://liaison.dev/docs/v1/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     * @returns An object of the shape `{route, params}` (or `undefined` if no route was found) where `route` is the [route](https://layrjs.com/docs/v1/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
      *
      * @example
      * ```
@@ -379,7 +379,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     // === Observability ===
 
     /**
-     * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+     * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
      *
      * @category Observability
      */

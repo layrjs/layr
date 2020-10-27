@@ -28,18 +28,18 @@ export type ValueTypeOptions = {
 };
 
 /**
- * A class to handle the various types of values supported by Liaison.
+ * A class to handle the various types of values supported by Layr.
  *
  * #### Usage
  *
- * You shouldn't have to create a `ValueType` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator)), you can specify a string representing a type of value, and a `ValueType` will be automatically created for you.
+ * You shouldn't have to create a `ValueType` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator)), you can specify a string representing a type of value, and a `ValueType` will be automatically created for you.
  *
  * **Example:**
  *
  * ```
  * // JS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {integer, greaterThan} = validators;
  *
@@ -64,7 +64,7 @@ export type ValueTypeOptions = {
  * ```
  * // TS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {integer, greaterThan} = validators;
  *
@@ -113,7 +113,7 @@ export type ValueTypeOptions = {
  *
  * #### Supported Types
  *
- * Liaison supports a number of types that can be represented by a string in a way that is very similar to the way you specify basic types in [TypeScript](https://www.typescriptlang.org/).
+ * Layr supports a number of types that can be represented by a string in a way that is very similar to the way you specify basic types in [TypeScript](https://www.typescriptlang.org/).
  *
  * ##### Scalars
  *
@@ -145,12 +145,12 @@ export type ValueTypeOptions = {
  *
  * ##### Components
  *
- * An attribute can hold a reference to a [`Component`](https://liaison.dev/docs/v1/reference/component) instance, or contain an [`EmbeddedComponent`](https://liaison.dev/docs/v1/reference/embedded-component) instance. To specify such a type, just specify the name of the component:
+ * An attribute can hold a reference to a [`Component`](https://layrjs.com/docs/v1/reference/component) instance, or contain an [`EmbeddedComponent`](https://layrjs.com/docs/v1/reference/embedded-component) instance. To specify such a type, just specify the name of the component:
  *
  * * `'Director'`: A reference to a `Director` component instance.
  * * `'MovieDetails'`: A `MovieDetails` embedded component instance.
  *
- * It is also possible to specify a type that represents a reference to a [`Component`](https://liaison.dev/docs/v1/reference/component) class. To do so, add `'typeof '` before the name of the component:
+ * It is also possible to specify a type that represents a reference to a [`Component`](https://layrjs.com/docs/v1/reference/component) class. To do so, add `'typeof '` before the name of the component:
  *
  * * `'typeof Director'`: A reference to the `Director` component class.
  *
@@ -207,7 +207,7 @@ export class ValueType {
   /**
    * Returns the validators associated to the value type.
    *
-   * @returns A array of [`Validator`](https://liaison.dev/docs/v1/reference/component).
+   * @returns A array of [`Validator`](https://layrjs.com/docs/v1/reference/component).
    *
    * @example
    * ```
@@ -226,7 +226,7 @@ export class ValueType {
    *
    * In case the value type is an array, returns the value type of the items it contains.
    *
-   * @returns A [ValueType](https://liaison.dev/docs/v1/reference/value-type).
+   * @returns A [ValueType](https://layrjs.com/docs/v1/reference/value-type).
    *
    * @example
    * ```

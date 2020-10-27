@@ -1,4 +1,4 @@
-# Liaison Website
+# Layr Website
 
 ## Install
 
@@ -35,7 +35,7 @@ Add the following entry in the local storage of your browser:
 ```
 | Key   | Value     |
 | ----- | --------- |
-| debug | liaison:* |
+| debug | layr:* |
 ```
 
 #### Server
@@ -43,5 +43,5 @@ Add the following entry in the local storage of your browser:
 Add the following environment variables when starting the app:
 
 ```sh
-DEBUG=liaison:* DEBUG_DEPTH=10
+DEBUG=layr:* DEBUG_DEPTH=10
 ```

@@ -1,6 +1,6 @@
-import {Component, consume, attribute} from '@liaison/component';
-import {Routable, route} from '@liaison/routable';
-import {view, useAsyncCall} from '@liaison/react-integration';
+import {Component, consume, attribute} from '@layr/component';
+import {Routable, route} from '@layr/routable';
+import {view, useAsyncCall} from '@layr/react-integration';
 import {useMemo} from 'react';
 import {jsx} from '@emotion/core';
 

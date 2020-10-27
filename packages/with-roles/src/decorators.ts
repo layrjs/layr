@@ -2,13 +2,13 @@ import {ComponentWithRoles} from './with-roles';
 import {isComponentWithRolesClassOrInstance} from './utilities';
 
 /**
- * Defines a [role](https://liaison.dev/docs/v1/reference/role) in a [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+ * Defines a [role](https://layrjs.com/docs/v1/reference/role) in a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
  *
  * This decorator should be used to decorate a class or instance method that implements the role's resolver. The method can be asynchronous and should return a boolean indicating whether a user has the corresponding role.
  *
  * @param name The name of the role to define.
  *
- * @examplelink See an example of use in the [`WithRoles()`](https://liaison.dev/docs/v1/reference/with-roles#with-roles-mixin) mixin.
+ * @examplelink See an example of use in the [`WithRoles()`](https://layrjs.com/docs/v1/reference/with-roles#with-roles-mixin) mixin.
  *
  * @category Decorators
  * @decorator

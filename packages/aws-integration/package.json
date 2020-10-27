@@ -1,9 +1,9 @@
 {
-  "name": "@liaison/aws-integration",
-  "version": "1.0.4",
-  "description": "AWS integration for Liaison",
+  "name": "@layr/aws-integration",
+  "version": "1.0.6",
+  "description": "AWS integration for Layr",
   "keywords": [
-    "liaison",
+    "layr",
     "aws",
     "integration",
     "lambda",
@@ -11,7 +11,7 @@
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/aws-integration",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/aws-integration",
   "files": [
     "dist"
   ],
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component-server": "^1.0.4",
+    "@layr/component-server": "^1.0.6",
     "@types/aws-lambda": "^8.10.64",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",

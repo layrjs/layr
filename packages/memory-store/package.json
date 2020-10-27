@@ -1,15 +1,15 @@
 {
-  "name": "@liaison/memory-store",
-  "version": "1.0.2",
-  "description": "A Liaison store using memory (useful for testing)",
+  "name": "@layr/memory-store",
+  "version": "1.0.4",
+  "description": "A Layr store using memory (useful for testing)",
   "keywords": [
-    "liaison",
+    "layr",
     "store",
     "memory"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/memory-store",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/memory-store",
   "files": [
     "dist"
   ],
@@ -26,8 +26,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
-    "@liaison/store": "^1.0.4",
+    "@layr/component": "^1.0.10",
+    "@layr/store": "^1.0.6",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "sort-on": "^4.1.0",

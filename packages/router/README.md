@@ -1,11 +1,11 @@
-# @liaison/router
+# @layr/router
 
-A base class for implementing Liaison routers.
+A base class for implementing Layr routers.
 
 ## Installation
 
 ```
-npm install @liaison/router
+npm install @layr/router
 ```
 
 ## License

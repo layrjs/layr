@@ -1,11 +1,11 @@
-# @liaison/react-integration
+# @layr/react-integration
 
-React integration for Liaison.
+React integration for Layr.
 
 ## Installation
 
 ```
-npm install @liaison/react-integration
+npm install @layr/react-integration
 ```
 
 ## License

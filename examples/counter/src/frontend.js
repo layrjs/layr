@@ -1,4 +1,4 @@
-import {ComponentClient} from '@liaison/component-client';
+import {ComponentClient} from '@layr/component-client';
 
 import {server} from './backend';
 

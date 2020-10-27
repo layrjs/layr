@@ -1,17 +1,17 @@
-import {ComponentClient, ComponentClientOptions} from '@liaison/component-client';
+import {ComponentClient, ComponentClientOptions} from '@layr/component-client';
 import fetch from 'cross-fetch';
 import type {PlainObject} from 'core-helpers';
 
 export type ComponentHTTPClientOptions = ComponentClientOptions;
 
 /**
- * *Inherits from [`ComponentClient`](https://liaison.dev/docs/v1/reference/component-client).*
+ * *Inherits from [`ComponentClient`](https://layrjs.com/docs/v1/reference/component-client).*
  *
- * A class allowing to access a root [`Component`](https://liaison.dev/docs/v1/reference/component) that is served by a [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server), a middleware such as [`component-express-middleware`](https://liaison.dev/docs/v1/reference/component-express-middleware), or any HTTP server exposing a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
+ * A class allowing to access a root [`Component`](https://layrjs.com/docs/v1/reference/component) that is served by a [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server), a middleware such as [`component-express-middleware`](https://layrjs.com/docs/v1/reference/component-express-middleware), or any HTTP server exposing a [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server).
  *
  * #### Usage
  *
- * Create an instance of `ComponentHTTPClient` by specifying the URL of the component server, and use the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method to get the served component.
+ * Create an instance of `ComponentHTTPClient` by specifying the URL of the component server, and use the [`getComponent()`](https://layrjs.com/docs/v1/reference/component-http-client#get-component-instance-method) method to get the served component.
  *
  * For example, to access a `Movie` component that is served by a component server, you could do the following:
  *
@@ -20,8 +20,8 @@ export type ComponentHTTPClientOptions = ComponentClientOptions;
  *
  * // backend.js
  *
- * import {Component, attribute, method, expose} from '@liaison/component';
- * import {ComponentHTTPServer} from '@liaison/component-http-server';
+ * import {Component, attribute, method, expose} from '@layr/component';
+ * import {ComponentHTTPServer} from '@layr/component-http-server';
  *
  * export class Movie extends Component {
  *   @expose({get: true, set: true}) @attribute('string') title;
@@ -41,7 +41,7 @@ export type ComponentHTTPClientOptions = ComponentClientOptions;
  *
  * // frontend.js
  *
- * import {ComponentHTTPClient} from '@liaison/component-http-client';
+ * import {ComponentHTTPClient} from '@layr/component-http-client';
  *
  * (async () => {
  *   const client = new ComponentHTTPClient('http://localhost:3210');
@@ -59,8 +59,8 @@ export type ComponentHTTPClientOptions = ComponentClientOptions;
  *
  * // backend.ts
  *
- * import {Component, attribute, method, expose} from '@liaison/component';
- * import {ComponentHTTPServer} from '@liaison/component-http-server';
+ * import {Component, attribute, method, expose} from '@layr/component';
+ * import {ComponentHTTPServer} from '@layr/component-http-server';
  *
  * export class Movie extends Component {
  *   @expose({get: true, set: true}) @attribute('string') title!: string;
@@ -80,7 +80,7 @@ export type ComponentHTTPClientOptions = ComponentClientOptions;
  *
  * // frontend.ts
  *
- * import {ComponentHTTPClient} from '@liaison/component-http-client';
+ * import {ComponentHTTPClient} from '@layr/component-http-client';
  *
  * import type {Movie as MovieType} from './backend';
  *
@@ -101,7 +101,7 @@ export class ComponentHTTPClient extends ComponentClient {
    *
    * @param url A string specifying the URL of the component server to connect to.
    * @param [options.version] A number specifying the expected version of the component server (default: `undefined`). If a version is specified, an error is thrown when a request is sent and the component server has a different version. The thrown error is a JavaScript `Error` instance with a `code` attribute set to `'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'`.
-   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://liaison.dev/docs/v1/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
+   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://layrjs.com/docs/v1/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
    *
    * @returns A `ComponentHTTPClient` instance.
    *
@@ -118,9 +118,9 @@ export class ComponentHTTPClient extends ComponentClient {
    *
    * Gets the component that is served by the component server.
    *
-   * @returns A [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+   * @returns A [`Component`](https://layrjs.com/docs/v1/reference/component) class.
    *
-   * @examplelink See an [example of use](https://liaison.dev/docs/v1/reference/component-http-client#usage) above.
+   * @examplelink See an [example of use](https://layrjs.com/docs/v1/reference/component-http-client#usage) above.
    *
    * @category Getting the Served Component
    * @async

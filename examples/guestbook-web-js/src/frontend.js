@@ -1,14 +1,9 @@
 import React, {useCallback} from 'react';
 import ReactDOM from 'react-dom';
-import {Component, attribute, provide} from '@liaison/component';
-import {Storable} from '@liaison/storable';
-import {ComponentHTTPClient} from '@liaison/component-http-client';
-import {
-  view,
-  useAsyncCall,
-  useAsyncCallback,
-  useRecomputableMemo
-} from '@liaison/react-integration';
+import {Component, attribute, provide} from '@layr/component';
+import {Storable} from '@layr/storable';
+import {ComponentHTTPClient} from '@layr/component-http-client';
+import {view, useAsyncCall, useAsyncCallback, useRecomputableMemo} from '@layr/react-integration';
 
 async function main() {
   const client = new ComponentHTTPClient('http://localhost:3210', {

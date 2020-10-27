@@ -9,7 +9,7 @@ import {
   AttributeSelector,
   normalizeAttributeSelector,
   pickFromAttributeSelector
-} from '@liaison/component';
+} from '@layr/component';
 import {
   PlainObject,
   isPlainObject,
@@ -85,7 +85,7 @@ export type TraceEntry = {
 };
 
 /**
- * An abstract class from which classes such as [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) or [`MemoryStore`](https://liaison.dev/docs/v1/reference/memory-store) are constructed. Unless you build a custom store, you probably won't have to use this class directly.
+ * An abstract class from which classes such as [`MongoDBStore`](https://layrjs.com/docs/v1/reference/mongodb-store) or [`MemoryStore`](https://layrjs.com/docs/v1/reference/memory-store) are constructed. Unless you build a custom store, you probably won't have to use this class directly.
  */
 export abstract class Store {
   constructor(options = {}) {
@@ -97,15 +97,15 @@ export abstract class Store {
   _rootComponents = new Set<typeof Component>();
 
   /**
-   * Registers all the [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class) that are provided (directly or recursively) by the specified root component.
+   * Registers all the [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that are provided (directly or recursively) by the specified root component.
    *
-   * @param rootComponent A [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+   * @param rootComponent A [`Component`](https://layrjs.com/docs/v1/reference/component) class.
    *
    * @example
    * ```
-   * import {Component} from '﹫liaison/component';
-   * import {Storable} from '﹫liaison/storable';
-   * import {MongoDBStore} from '﹫liaison/mongodb-store';
+   * import {Component} from '﹫layr/component';
+   * import {Storable} from '﹫layr/storable';
+   * import {MongoDBStore} from '﹫layr/mongodb-store';
    *
    * class User extends Storable(Component) {
    *   // ...
@@ -157,7 +157,7 @@ export abstract class Store {
   /**
    * Gets all the root components that are registered into the store.
    *
-   * @returns An iterator of [`Component`](https://liaison.dev/docs/v1/reference/component) classes.
+   * @returns An iterator of [`Component`](https://layrjs.com/docs/v1/reference/component) classes.
    *
    * @category Component Registration
    */
@@ -170,11 +170,11 @@ export abstract class Store {
   _storables = new Map<string, typeof StorableLike>();
 
   /**
-   * Gets a [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) that is registered into the store. An error is thrown if there is no storable component with the specified name.
+   * Gets a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that is registered into the store. An error is thrown if there is no storable component with the specified name.
    *
    * @param name The name of the storable component to get.
    *
-   * @returns A [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class.
+   * @returns A [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) class.
    *
    * @example
    * ```
@@ -198,7 +198,7 @@ export abstract class Store {
   }
 
   /**
-   * Returns whether a [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) is registered into the store.
+   * Returns whether a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) is registered into the store.
    *
    * @param name The name of the storable component to check.
    *
@@ -250,9 +250,9 @@ export abstract class Store {
   }
 
   /**
-   * Registers a specific [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) into the store. Typically, instead of using this method, you would rather use the [`registerRootComponent()`](https://liaison.dev/docs/v1/reference/store#register-root-component-instance-method) method to register multiple storable components at once.
+   * Registers a specific [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) into the store. Typically, instead of using this method, you would rather use the [`registerRootComponent()`](https://layrjs.com/docs/v1/reference/store#register-root-component-instance-method) method to register multiple storable components at once.
    *
-   * @param storable The [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class to register.
+   * @param storable The [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) class to register.
    *
    * @example
    * ```
@@ -296,9 +296,9 @@ export abstract class Store {
   }
 
   /**
-   * Gets all the [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class) that are registered into the store.
+   * Gets all the [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that are registered into the store.
    *
-   * @returns An iterator of [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class) classes.
+   * @returns An iterator of [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) classes.
    *
    * @category Component Registration
    */

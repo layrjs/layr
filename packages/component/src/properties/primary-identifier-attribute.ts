@@ -6,26 +6,26 @@ import {IdentifierAttribute, IdentifierValue} from './identifier-attribute';
 import {isComponentInstance, ensureComponentClass} from '../utilities';
 
 /**
- * *Inherits from [`IdentifierAttribute`](https://liaison.dev/docs/v1/reference/identifier-attribute).*
+ * *Inherits from [`IdentifierAttribute`](https://layrjs.com/docs/v1/reference/identifier-attribute).*
  *
- * A `PrimaryIdentifierAttribute` is a special kind of attribute that uniquely identify a [Component](https://liaison.dev/docs/v1/reference/component) instance.
+ * A `PrimaryIdentifierAttribute` is a special kind of attribute that uniquely identify a [Component](https://layrjs.com/docs/v1/reference/component) instance.
  *
- * A `Component` can have only one `PrimaryIdentifierAttribute`. To define a `Component` with more than one identifier, you can add some [`SecondaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/secondary-identifier-attribute) in addition to the `PrimaryIdentifierAttribute`.
+ * A `Component` can have only one `PrimaryIdentifierAttribute`. To define a `Component` with more than one identifier, you can add some [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) in addition to the `PrimaryIdentifierAttribute`.
  *
  * Another characteristic of a `PrimaryIdentifierAttribute` is that its value is immutable (i.e., once set it cannot change). This ensures a stable identity of the components across the different layers of an application (e.g., frontend, backend, and database).
  *
- * When a `Component` has a `PrimaryIdentifierAttribute`, its instances are managed by an [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) ensuring that there can only be one instance with a specific identifier.
+ * When a `Component` has a `PrimaryIdentifierAttribute`, its instances are managed by an [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map) ensuring that there can only be one instance with a specific identifier.
  *
  * #### Usage
  *
- * Typically, you create a `PrimaryIdentifierAttribute` and associate it to a component prototype using the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
+ * Typically, you create a `PrimaryIdentifierAttribute` and associate it to a component prototype using the [`@primaryIdentifier()`](https://layrjs.com/docs/v1/reference/component#primary-identifier-decorator) decorator.
  *
  * For example, here is how you would define a `Movie` class with an `id` primary identifer attribute:
  *
  * ```
  * // JS
  *
- * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ * import {Component, primaryIdentifier, attribute} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // An auto-generated 'string' primary identifier attribute
@@ -39,7 +39,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * ```
  * // TS
  *
- * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ * import {Component, primaryIdentifier, attribute} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // An auto-generated 'string' primary identifier attribute
@@ -59,7 +59,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * movie.title; // => 'Inception'
  * ```
  *
- * Note that we didn't have to specify a value for the `id` attribute; it was automatically generated (using the [`Component.generateId()`](https://liaison.dev/docs/v1/reference/component#generate-id-class-method) method under the hood).
+ * Note that we didn't have to specify a value for the `id` attribute; it was automatically generated (using the [`Component.generateId()`](https://layrjs.com/docs/v1/reference/component#generate-id-class-method) method under the hood).
  *
  * To create a `Movie` instance with an `id` of your choice, just do:
  *
@@ -70,7 +70,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * movie.title; // => 'Inception'
  * ```
  *
- * As mentioned previously, when a component has a primary identifier attribute, all its instances are managed by an [`IdentityMap`](https://liaison.dev/docs/v1/reference/identity-map) ensuring that there is only one instance with a specific identifier.
+ * As mentioned previously, when a component has a primary identifier attribute, all its instances are managed by an [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map) ensuring that there is only one instance with a specific identifier.
  *
  * So, since we previously created a `Movie` with `'abc123'` as primary identifier, we cannot create another `Movie` with the same primary identifier:
  *
@@ -83,7 +83,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * ```
  * // JS
  *
- * import {Component, primaryIdentifier} from '﹫liaison/component';
+ * import {Component, primaryIdentifier} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // An auto-generated 'number' primary identifier attribute
@@ -94,7 +94,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  * ```
  * // TS
  *
- * import {Component, primaryIdentifier} from '﹫liaison/component';
+ * import {Component, primaryIdentifier} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   // An auto-generated 'number' primary identifier attribute
@@ -104,20 +104,20 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  */
 export class PrimaryIdentifierAttribute extends IdentifierAttribute {
   /**
-   * Creates an instance of [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute). Typically, instead of using this constructor, you would rather use the [`@primaryIdentifier()`](https://liaison.dev/docs/v1/reference/component#primary-identifier-decorator) decorator.
+   * Creates an instance of [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute). Typically, instead of using this constructor, you would rather use the [`@primaryIdentifier()`](https://layrjs.com/docs/v1/reference/component#primary-identifier-decorator) decorator.
    *
    * @param name The name of the attribute.
    * @param parent The component prototype that owns the attribute.
    * @param [options.valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
    * @param [options.default] A function returning the default value of the attribute (default when `valueType` is `'string'`: `function () { return this.constructor.generateId() }`).
-   * @param [options.validators] An array of [validators](https://liaison.dev/docs/v1/reference/validator) for the value of the attribute.
-   * @param [options.exposure] A [`PropertyExposure`](https://liaison.dev/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
+   * @param [options.validators] An array of [validators](https://layrjs.com/docs/v1/reference/validator) for the value of the attribute.
+   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
    *
-   * @returns The [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) instance that was created.
+   * @returns The [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute) instance that was created.
    *
    * @example
    * ```
-   * import {Component, PrimaryIdentifierAttribute} from '﹫liaison/component';
+   * import {Component, PrimaryIdentifierAttribute} from '﹫layr/component';
    *
    * class Movie extends Component {}
    *
@@ -162,7 +162,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
   // === Property Methods ===
 
   /**
-   * See the methods that are inherited from the [`Property`](https://liaison.dev/docs/v1/reference/property#basic-methods) class.
+   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
    *
    * @category Property Methods
    */
@@ -170,7 +170,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
   // === Attribute Methods ===
 
   /**
-   * See the methods that are inherited from the [`Attribute`](https://liaison.dev/docs/v1/reference/attribute#value-type) class.
+   * See the methods that are inherited from the [`Attribute`](https://layrjs.com/docs/v1/reference/attribute#value-type) class.
    *
    * @category Attribute Methods
    */
@@ -197,7 +197,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
    *
    * @category Observability
    */

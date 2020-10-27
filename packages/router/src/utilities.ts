@@ -3,7 +3,7 @@ import {getTypeOf} from 'core-helpers';
 
 import type {Router} from './router';
 
-const LIAISON_PROTOCOL = 'liaison:';
+const LAYR_PROTOCOL = 'layr:';
 
 /**
  * Returns whether the specified value is a router class.
@@ -43,7 +43,7 @@ export function normalizeURL(url: URL | string) {
   }
 
   try {
-    return new URL(url, `${LIAISON_PROTOCOL}/`);
+    return new URL(url, `${LAYR_PROTOCOL}/`);
   } catch (error) {
     throw new Error(`The specified URL is invalid (URL: '${url}')`);
   }
@@ -56,8 +56,8 @@ export function stringifyURL(url: URL) {
 
   let urlString = url.toString();
 
-  if (urlString.startsWith(LIAISON_PROTOCOL)) {
-    urlString = urlString.slice(LIAISON_PROTOCOL.length);
+  if (urlString.startsWith(LAYR_PROTOCOL)) {
+    urlString = urlString.slice(LAYR_PROTOCOL.length);
   }
 
   return urlString;

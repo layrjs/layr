@@ -8,7 +8,7 @@ import {
   provide,
   consume,
   validators
-} from '@liaison/component';
+} from '@layr/component';
 import {PlainObject, forEachDeep} from 'core-helpers';
 
 import {ComponentServer} from './component-server';

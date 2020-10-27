@@ -1,5 +1,5 @@
-import {Component, consume} from '@liaison/component';
-import {view, useDelay} from '@liaison/react-integration';
+import {Component, consume} from '@layr/component';
+import {view, useDelay} from '@layr/react-integration';
 import {jsx, css} from '@emotion/core';
 import {Fragment, useMemo, useState} from 'react';
 import useMetaTags from 'react-metatags-hook';
@@ -9,7 +9,7 @@ import type {Docs} from './docs';
 import type {Blog} from './blog';
 import type {UI} from './ui';
 // @ts-ignore
-import liaisonLogo from '../assets/liaison-logo-dark-mode-20191111.immutable.svg';
+import layrLogo from '../assets/layr-logo-with-icon-dark-mode-20201027.immutable.svg';
 // @ts-ignore
 import brokenHeart from '../assets/broken-heart-20200822.immutable.svg';
 // @ts-ignore
@@ -68,12 +68,12 @@ export class Common extends Component {
           ...UI.styles.centeredPage,
           width: '100%',
           display: 'flex',
-          alignItems: 'flex-end',
+          alignItems: 'center',
           padding: ['1.5rem 1.5rem 0 1.5rem', , '1.5rem 15px 0 15px']
         })}
       >
         <Home.Main.Link>
-          <img src={liaisonLogo} alt="Liaison" css={{width: 80}} />
+          <img src={layrLogo} alt="Layr" css={{position: 'relative', top: 1, width: 70}} />
         </Home.Main.Link>
         <div css={{marginLeft: '0.6rem'}}>
           <small css={{color: theme.muted.textColor, letterSpacing: '0.04rem'}}>v1</small>
@@ -91,7 +91,7 @@ export class Common extends Component {
             </li>
             <li css={UI.responsive({...menuItemStyle, display: ['inline-block', , , 'none']})}>
               <a
-                href="https://github.com/liaisonjs/liaison"
+                href="https://github.com/layrjs/layr"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -122,7 +122,7 @@ export class Common extends Component {
               <Blog.Main.Link>Blog</Blog.Main.Link>
             </li>
             <li css={menuItemStyle}>
-              <a href="mailto:hello@liaison.dev" target="_blank" rel="noopener noreferrer">
+              <a href="mailto:hello@layrjs.com" target="_blank" rel="noopener noreferrer">
                 Contact
               </a>
             </li>
@@ -131,7 +131,7 @@ export class Common extends Component {
           <ul css={menuStyle}>
             <li css={menuItemStyle}>
               <a
-                href="https://github.com/liaisonjs/liaison"
+                href="https://github.com/layrjs/layr"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -139,7 +139,7 @@ export class Common extends Component {
               </a>
             </li>
             <li css={menuItemStyle}>
-              <a href="https://twitter.com/liaisonjs" target="_blank" rel="noopener noreferrer">
+              <a href="https://twitter.com/layrjs" target="_blank" rel="noopener noreferrer">
                 Twitter
               </a>
             </li>
@@ -258,7 +258,7 @@ export class Common extends Component {
           alignItems: 'center'
         }}
       >
-        <img src={brokenHeart} alt="Liaison" css={{width: 150}} />
+        <img src={brokenHeart} alt="Layr" css={{width: 150}} />
         <div css={{marginTop: '2rem'}}>Sorry, there is nothing here.</div>
       </div>
     );
@@ -367,9 +367,9 @@ export class Common extends Component {
 
   static useTitle(title?: string) {
     if (title === undefined) {
-      title = 'Liaison';
+      title = 'Layr';
     } else {
-      title = 'Liaison – ' + title;
+      title = 'Layr – ' + title;
     }
 
     useMetaTags({title}, [title]);

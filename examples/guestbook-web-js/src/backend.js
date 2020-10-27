@@ -1,7 +1,7 @@
-import {Component, expose, validators} from '@liaison/component';
-import {Storable, primaryIdentifier, attribute} from '@liaison/storable';
-import {MemoryStore} from '@liaison/memory-store';
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {Component, expose, validators} from '@layr/component';
+import {Storable, primaryIdentifier, attribute} from '@layr/storable';
+import {MemoryStore} from '@layr/memory-store';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 const {notEmpty, maxLength} = validators;
 

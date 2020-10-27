@@ -3,24 +3,24 @@ import {
   isComponentClass,
   isComponentInstance,
   PropertyOperationSetting
-} from '@liaison/component';
+} from '@layr/component';
 import {possiblyAsync} from 'possibly-async';
 import {hasOwnProperty, getTypeOf, Constructor, PromiseLikeable} from 'core-helpers';
 
 import {Role, RoleResolver} from './role';
 
 /**
- * Extends a [`Component`](https://liaison.dev/docs/v1/reference/component) class with the ability to handle [roles](https://liaison.dev/docs/v1/reference/role).
+ * Extends a [`Component`](https://layrjs.com/docs/v1/reference/component) class with the ability to handle [roles](https://layrjs.com/docs/v1/reference/role).
  *
  * #### Usage
  *
- * Call `WithRoles()` with a [`Component`](https://liaison.dev/docs/v1/reference/component) class to construct a [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class. Next, use the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator to define some [roles](https://liaison.dev/docs/v1/reference/role). Lastly, use the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator to authorize some attributes or methods according to these roles.
+ * Call `WithRoles()` with a [`Component`](https://layrjs.com/docs/v1/reference/component) class to construct a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class. Next, use the [`@role()`](https://layrjs.com/docs/v1/reference/with-roles#role-decorator) decorator to define some [roles](https://layrjs.com/docs/v1/reference/role). Lastly, use the [`@expose()`](https://layrjs.com/docs/v1/reference/component#expose-decorator) decorator to authorize some attributes or methods according to these roles.
  *
  * **Example:**
  *
  * ```
- * import {Component, attribute, method, expose} from '@liaison/component';
- * import {WithRoles, role} from '@liaison/with-roles';
+ * import {Component, attribute, method, expose} from '@layr/component';
+ * import {WithRoles, role} from '@layr/with-roles';
  *
  * class Article extends WithRoles(Component) {
  *   ﹫role('admin') static adminRoleResolver() {
@@ -37,19 +37,19 @@ import {Role, RoleResolver} from './role';
  * }
  * ```
  *
- * Once you have a [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class), you can use any method provided by the `WithRoles()` mixin. For example, you can use the [`resolveRole()`](https://liaison.dev/docs/v1/reference/with-roles#resolve-role-dual-method) method to determine if the user has a specific role:
+ * Once you have a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class), you can use any method provided by the `WithRoles()` mixin. For example, you can use the [`resolveRole()`](https://layrjs.com/docs/v1/reference/with-roles#resolve-role-dual-method) method to determine if the user has a specific role:
  *
  * ```
  * Article.resolveRole('admin'); // `true` or `false` depending on the current user
  * ```
  *
- * See the ["Handling Authorization"](https://liaison.dev/docs/v1/introduction/authorization) guide for a comprehensive example using the `WithRoles()` mixin.
+ * See the ["Handling Authorization"](https://layrjs.com/docs/v1/introduction/authorization) guide for a comprehensive example using the `WithRoles()` mixin.
  *
  * ### ComponentWithRoles <badge type="primary">class</badge> {#component-with-roles-class}
  *
- * *Inherits from [`Component`](https://liaison.dev/docs/v1/reference/component).*
+ * *Inherits from [`Component`](https://layrjs.com/docs/v1/reference/component).*
  *
- * A `ComponentWithRoles` class is constructed by calling the `WithRoles()` mixin ([see above](https://liaison.dev/docs/v1/reference/with-roles#with-roles-mixin)).
+ * A `ComponentWithRoles` class is constructed by calling the `WithRoles()` mixin ([see above](https://layrjs.com/docs/v1/reference/with-roles#with-roles-mixin)).
  *
  * @mixin
  */
@@ -131,7 +131,7 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
      * @param name The name of the role to get.
      * @param [options.fallbackToClass] A boolean specifying whether the role should be get from the component class if there is no role with the specified name in the component prototype or instance (default: `false`).
      *
-     * @returns A [Role](https://liaison.dev/docs/v1/reference/role) instance.
+     * @returns A [Role](https://layrjs.com/docs/v1/reference/role) instance.
      *
      * @example
      * ```
@@ -154,7 +154,7 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
      * @param name The name of the role to get.
      * @param [options.fallbackToClass] A boolean specifying whether the role should be get from the component class if there is no role with the specified name in the component prototype or instance (default: `false`).
      *
-     * @returns A [Role](https://liaison.dev/docs/v1/reference/role) instance.
+     * @returns A [Role](https://layrjs.com/docs/v1/reference/role) instance.
      *
      * @example
      * ```
@@ -180,7 +180,7 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Returns whether the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) has a role with the specified name.
+     * Returns whether the [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) has a role with the specified name.
      *
      * @param name The name of the role to check.
      * @param [options.fallbackToClass] A boolean specifying whether the component class should be considered if there is no role with the specified name in the component prototype or instance (default: `false`).
@@ -203,7 +203,7 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Returns whether the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) has a role with the specified name.
+     * Returns whether the [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) has a role with the specified name.
      *
      * @param name The name of the role to check.
      * @param [options.fallbackToClass] A boolean specifying whether the component class should be considered if there is no role with the specified name in the component prototype or instance (default: `false`).
@@ -253,14 +253,14 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Sets a role in the current [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+     * Sets a role in the current [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
      *
-     * Typically, instead of using this method, you would rather use the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator.
+     * Typically, instead of using this method, you would rather use the [`@role()`](https://layrjs.com/docs/v1/reference/with-roles#role-decorator) decorator.
      *
      * @param name The name of the role.
      * @param resolver A function that should return a boolean indicating whether a user has the corresponding role. The function can be asynchronous and is called with the role's parent as `this` context.
      *
-     * @returns The [Role](https://liaison.dev/docs/v1/reference/role) instance that was created.
+     * @returns The [Role](https://layrjs.com/docs/v1/reference/role) instance that was created.
      *
      * @example
      * ```
@@ -276,14 +276,14 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Sets a role in the current [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+     * Sets a role in the current [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
      *
-     * Typically, instead of using this method, you would rather use the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator.
+     * Typically, instead of using this method, you would rather use the [`@role()`](https://layrjs.com/docs/v1/reference/with-roles#role-decorator) decorator.
      *
      * @param name The name of the role.
      * @param resolver A function that should return a boolean indicating whether a user has the corresponding role. The function can be asynchronous and is called with the role's parent as `this` context.
      *
-     * @returns The [Role](https://liaison.dev/docs/v1/reference/role) instance that was created.
+     * @returns The [Role](https://layrjs.com/docs/v1/reference/role) instance that was created.
      *
      * @example
      * ```
@@ -305,7 +305,7 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Resolves a role by calling its resolver function. If there is no role with the specified name in the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype, an error is thrown.
+     * Resolves a role by calling its resolver function. If there is no role with the specified name in the [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype, an error is thrown.
      *
      * The resolver function is called with the role's parent as `this` context.
      *
@@ -328,7 +328,7 @@ export function WithRoles<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     /**
-     * Resolves a role by calling its resolver function. If there is no role with the specified name in the [`ComponentWithRoles`](https://liaison.dev/docs/v1/reference/with-roles#component-with-roles-class) class or prototype, an error is thrown.
+     * Resolves a role by calling its resolver function. If there is no role with the specified name in the [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype, an error is thrown.
      *
      * The resolver function is called with the role's parent as `this` context.
      *

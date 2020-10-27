@@ -1,9 +1,9 @@
 {
-  "name": "@liaison/store",
-  "version": "1.0.4",
-  "description": "A base class for implementing Liaison stores",
+  "name": "@layr/store",
+  "version": "1.0.6",
+  "description": "A base class for implementing Layr stores",
   "keywords": [
-    "liaison",
+    "layr",
     "store",
     "persistence",
     "storage",
@@ -11,7 +11,7 @@
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/store",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/store",
   "files": [
     "dist"
   ],
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
+    "@layr/component": "^1.0.10",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "simple-serialization": "^1.0.2",

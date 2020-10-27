@@ -1,10 +1,10 @@
 ### Hello, World!
 
-Let's start our journey into Liaison by implementing the mandatory ["Hello, World!"](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) program, and let's make it object-oriented and full-stack!
+Let's start our journey into Layr by implementing the mandatory ["Hello, World!"](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) program, and let's make it object-oriented and full-stack!
 
-> Liaison supports both [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) and [TypeScript](https://www.typescriptlang.org/). To select your language of choice, use the drop-down menu on the left.
+> Layr supports both [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) and [TypeScript](https://www.typescriptlang.org/). To select your language of choice, use the drop-down menu on the left.
 
-> TLDR: The completed project is available in the <!-- <if language="js"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/hello-world-js)<!-- </if> --><!-- <if language="ts"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/hello-world-ts)<!-- </if> -->.
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/hello-world-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/hello-world-ts)<!-- </if> -->.
 
 #### Creating the Project
 
@@ -21,13 +21,13 @@ Then, initialize your project with:
 npm init -y
 ```
 
-> Note that in a real application, we'd create different packages for the frontend part and the backend part of a full-stack project. But to keep this guide as simple as possible, we're going to put everything in a single package. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/liaisonjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of application that is organized into multiple packages.
+> Note that in a real application, we'd create different packages for the frontend part and the backend part of a full-stack project. But to keep this guide as simple as possible, we're going to put everything in a single package. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/layrjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/layrjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of application that is organized into multiple packages.
 
 #### Setting Up Your Development Environment
 
 <!-- <if language="js"> -->
 
-Since Liaison is using some novel JavaScript features (such as decorators), you need to install [Babel](https://babeljs.io/) to compile the code we're going to write:
+Since Layr is using some novel JavaScript features (such as decorators), you need to install [Babel](https://babeljs.io/) to compile the code we're going to write:
 
 ```sh
 npm install --save-dev @babel/core @babel/node @babel/preset-env \
@@ -91,26 +91,26 @@ Our full-stack "Hello, World!" will be composed of two parts:
 - A backend in charge of the data model and business logic.
 - A frontend in charge of the user interface.
 
-Sure, such an architecture sounds silly for a simple "Hello, World!". But it serves our purpose, which is to introduce the core concepts of Liaison.
+Sure, such an architecture sounds silly for a simple "Hello, World!". But it serves our purpose, which is to introduce the core concepts of Layr.
 
 So let's start by implementing the backend.
 
-First, install the Liaison's packages we're going to use:
+First, install the Layr's packages we're going to use:
 
 ```sh
-npm install @liaison/component @liaison/component-http-server
+npm install @layr/component @layr/component-http-server
 ```
 
 We've installed:
 
-- `@liaison/component` that provides the [`Component`](https://liaison.dev/docs/v1/reference/component) class, which can be conceptualized as the basic JavaScript [`Object`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) class, but with superpowers.
-- `@liaison/component-http-server` that provides the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) class, which allows to serve a `Component` class over HTTP.
+- `@layr/component` that provides the [`Component`](https://layrjs.com/docs/v1/reference/component) class, which can be conceptualized as the basic JavaScript [`Object`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) class, but with superpowers.
+- `@layr/component-http-server` that provides the [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server) class, which allows to serve a `Component` class over HTTP.
 
 Now, let's write some actual code. With your favorite code editor, create a file named <!-- <if language="js"> -->`backend.js`<!-- </if> --><!-- <if language="ts"> -->`backend.ts`<!-- </if> --> in an `src` directory, and write the following code:
 
 ```js
-import {Component, attribute, method, expose} from '@liaison/component';
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {Component, attribute, method, expose} from '@layr/component';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 export class Greeter extends Component {
   @expose({set: true}) @attribute('string') name = 'World';
@@ -129,21 +129,21 @@ Oh my! All that code just for a simple "Hello, World!"? Sure, it sounds overkill
 
 Let's decompose the code to understand what we've accomplished.
 
-First, we've defined a `Greeter` class that inherits from [`Component`](https://liaison.dev/docs/v1/reference/component). In a nutshell, by inheriting a class from `Component`, you get most of the goodness provided by Liaison, such as attribute type checking, validation, serialization, or remote method invocation.
+First, we've defined a `Greeter` class that inherits from [`Component`](https://layrjs.com/docs/v1/reference/component). In a nutshell, by inheriting a class from `Component`, you get most of the goodness provided by Layr, such as attribute type checking, validation, serialization, or remote method invocation.
 
 Our `Greeter` class is composed of two properties:
 
-- The `name` attribute prefixed with the [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator) decorator. This decorator enables (among other things) to specify the type of values an attribute can store (`'string'` in our case). Notice that the `name` attribute also specifies a default value (`'World'`).
-- The `hello()` method prefixed with the [`@method()`](https://liaison.dev/docs/v1/reference/component#method-decorator) decorator.
+- The `name` attribute prefixed with the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator. This decorator enables (among other things) to specify the type of values an attribute can store (`'string'` in our case). Notice that the `name` attribute also specifies a default value (`'World'`).
+- The `hello()` method prefixed with the [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorator.
 
-Both properties are exposed to remote access thanks to the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator:
+Both properties are exposed to remote access thanks to the [`@expose()`](https://layrjs.com/docs/v1/reference/component#expose-decorator) decorator:
 
 - The `name` attribute can be remotely set (`{set: true}`).
 - The `hello()` method can be remotely called (`{call: true}`).
 
-> Note that you don't need to prefix all your attributes and methods with a decorator. Typically, you only use a decorator when you want to take profit of a Liaison feature.
+> Note that you don't need to prefix all your attributes and methods with a decorator. Typically, you only use a decorator when you want to take profit of a Layr feature.
 
-After the class definition, a [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) is created and then started with [`server.start()`](https://liaison.dev/docs/v1/reference/component-http-server#start-instance-method).
+After the class definition, a [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server) is created and then started with [`server.start()`](https://layrjs.com/docs/v1/reference/component-http-server#start-instance-method).
 
 This is it! Our backend is completed and ready to be executed with:
 
@@ -166,23 +166,23 @@ If nothing happens on the screen, it's all good. The backend is running and wait
 > ```sh
 > // JS
 >
-> DEBUG=liaison:* DEBUG_DEPTH=5 npx babel-node ./src/backend.js
+> DEBUG=layr:* DEBUG_DEPTH=5 npx babel-node ./src/backend.js
 > ```
 >
 > ```sh
 > // TS
 >
-> DEBUG=liaison:* DEBUG_DEPTH=5 npx ts-node ./src/backend.ts
+> DEBUG=layr:* DEBUG_DEPTH=5 npx ts-node ./src/backend.ts
 > ```
 
 #### Implementing the frontend
 
 A typical frontend runs in a browser, but to make this guide easier to grasp, we're going to implement a CLI frontend (i.e., a frontend that runs in the terminal).
 
-First, install `@liaison/component-http-client`, which will allow us to communicate with the backend.
+First, install `@layr/component-http-client`, which will allow us to communicate with the backend.
 
 ```sh
-npm install @liaison/component-http-client
+npm install @layr/component-http-client
 ```
 
 Then, create a file named <!-- <if language="js"> -->`frontend.js`<!-- </if> --><!-- <if language="ts"> -->`frontend.ts`<!-- </if> --> in the `src` directory, and write the following code:
@@ -190,7 +190,7 @@ Then, create a file named <!-- <if language="js"> -->`frontend.js`<!-- </if> -->
 ```js
 // JS
 
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 (async () => {
   const client = new ComponentHTTPClient('http://localhost:3210');
@@ -206,7 +206,7 @@ import {ComponentHTTPClient} from '@liaison/component-http-client';
 ```ts
 // TS
 
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 import type {Greeter as GreeterType} from './backend';
 
@@ -223,9 +223,9 @@ import type {Greeter as GreeterType} from './backend';
 
 That wasn't too difficult, was it? Well, actually, with these few lines of code, there's quite a lot going on.
 
-First, a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://liaison.dev/docs/v1/reference/component-http-server) that was created in the backend.
+First, a [`ComponentHTTPClient`](https://layrjs.com/docs/v1/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server) that was created in the backend.
 
-Then, the [`getComponent()`](https://liaison.dev/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we're getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their [types](https://liaison.dev/docs/v1/reference/value-type), [validators](https://liaison.dev/docs/v1/reference/validator), default values, etc.), and all the backend's exposed methods are callable from the frontend.
+Then, the [`getComponent()`](https://layrjs.com/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we're getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their [types](https://layrjs.com/docs/v1/reference/value-type), [validators](https://layrjs.com/docs/v1/reference/validator), default values, etc.), and all the backend's exposed methods are callable from the frontend.
 
 <!-- <if language="ts"> -->
 
@@ -264,7 +264,7 @@ Modify the <!-- <if language="js"> -->`frontend.js`<!-- </if> --><!-- <if langua
 ```js
 // JS
 
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 (async () => {
   const client = new ComponentHTTPClient('http://localhost:3210');
@@ -286,7 +286,7 @@ import {ComponentHTTPClient} from '@liaison/component-http-client';
 ```ts
 // TS
 
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 import type {Greeter as GreeterType} from './backend';
 
@@ -315,4 +315,4 @@ If you run the frontend again, you should now get the following output:
 HELLO, STEVE!
 ```
 
-Liaison brings what we like to call a "cross-layer component inheritance" ability. Instead of seeing the frontend and the backend as two separate worlds, you can see them as one unified world. Naturally, the frontend and the backend remain _physically_ separated. They run in two different execution environments. But _logically_, they are one thing, and that changes the game completely.
+Layr brings what we like to call a "cross-layer component inheritance" ability. Instead of seeing the frontend and the backend as two separate worlds, you can see them as one unified world. Naturally, the frontend and the backend remain _physically_ separated. They run in two different execution environments. But _logically_, they are one thing, and that changes the game completely.

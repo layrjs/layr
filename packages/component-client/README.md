@@ -1,11 +1,11 @@
-# @liaison/component-client
+# @layr/component-client
 
-Consumes Liaison components served by @liaison/component-server.
+Consumes Layr components served by @layr/component-server.
 
 ## Installation
 
 ```
-npm install @liaison/component-client
+npm install @layr/component-client
 ```
 
 ## License

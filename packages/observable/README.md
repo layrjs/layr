@@ -1,11 +1,11 @@
-# @liaison/observable
+# @layr/observable
 
 Observe JavaScript objects, arrays, or your own classes.
 
 ## Installation
 
 ```
-npm install @liaison/observable
+npm install @layr/observable
 ```
 
 ## License

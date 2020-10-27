@@ -1,11 +1,11 @@
-# @liaison/component
+# @layr/component
 
 The base class of all your components.
 
 ## Installation
 
 ```
-npm install @liaison/component
+npm install @layr/component
 ```
 
 ## License

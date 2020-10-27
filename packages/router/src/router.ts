@@ -1,5 +1,5 @@
-import {Component, assertIsComponentClass} from '@liaison/component';
-import {Observable} from '@liaison/observable';
+import {Component, assertIsComponentClass} from '@layr/component';
+import {Observable} from '@layr/observable';
 import {PlainObject, assertNoUnknownOptions} from 'core-helpers';
 
 import {RoutableLike, isRoutableLikeClass, assertIsRoutableLikeClass} from './routable-like';
@@ -37,9 +37,9 @@ export type RouterOptions = {
 };
 
 /**
- * *Inherits from [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class).*
+ * *Inherits from [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class).*
  *
- * An abstract class from which classes such as [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) or [`MemoryRouter`](https://liaison.dev/docs/v1/reference/memory-router) are constructed. Unless you build a custom router, you probably won't have to use this class directly.
+ * An abstract class from which classes such as [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) or [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router) are constructed. Unless you build a custom router, you probably won't have to use this class directly.
  */
 export abstract class Router extends Observable(Object) {
   constructor(options: RouterOptions = {}) {
@@ -69,15 +69,15 @@ export abstract class Router extends Observable(Object) {
   _rootComponents = new Set<typeof Component>();
 
   /**
-   * Registers all the [routable components](https://liaison.dev/docs/v1/reference/routable#routable-component-class) that are provided (directly or recursively) by the specified root component.
+   * Registers all the [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that are provided (directly or recursively) by the specified root component.
    *
-   * @param rootComponent A [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+   * @param rootComponent A [`Component`](https://layrjs.com/docs/v1/reference/component) class.
    *
    * @example
    * ```
-   * import {Component} from '﹫liaison/component';
-   * import {Routable} from '﹫liaison/routable';
-   * import {BrowserRouter} from '﹫liaison/browser-router';
+   * import {Component} from '﹫layr/component';
+   * import {Routable} from '﹫layr/routable';
+   * import {BrowserRouter} from '﹫layr/browser-router';
    *
    * class User extends Routable(Component) {
    *   // ...
@@ -129,7 +129,7 @@ export abstract class Router extends Observable(Object) {
   /**
    * Gets all the root components that are registered into the router.
    *
-   * @returns An iterator of [`Component`](https://liaison.dev/docs/v1/reference/component) classes.
+   * @returns An iterator of [`Component`](https://layrjs.com/docs/v1/reference/component) classes.
    *
    * @category Component Registration
    */
@@ -142,11 +142,11 @@ export abstract class Router extends Observable(Object) {
   _routables = new Map<string, typeof RoutableLike>();
 
   /**
-   * Gets a [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class) that is registered into the router. An error is thrown if there is no routable component with the specified name.
+   * Gets a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that is registered into the router. An error is thrown if there is no routable component with the specified name.
    *
    * @param name The name of the routable component to get.
    *
-   * @returns A [`RoutableComponent`](https://liaison.dev/docs/v1/reference/routable#routable-component-class) class.
+   * @returns A [`RoutableComponent`](https://layrjs.com/docs/v1/reference/routable#routable-component-class) class.
    *
    * @example
    * ```
@@ -170,7 +170,7 @@ export abstract class Router extends Observable(Object) {
   }
 
   /**
-   * Returns whether a [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class) is registered into the router.
+   * Returns whether a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) is registered into the router.
    *
    * @param name The name of the routable component to check.
    *
@@ -196,9 +196,9 @@ export abstract class Router extends Observable(Object) {
   }
 
   /**
-   * Registers a specific [routable component](https://liaison.dev/docs/v1/reference/routable#routable-component-class) into the router. Typically, instead of using this method, you would rather use the [`registerRootComponent()`](https://liaison.dev/docs/v1/reference/router#register-root-component-instance-method) method to register multiple routable components at once.
+   * Registers a specific [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) into the router. Typically, instead of using this method, you would rather use the [`registerRootComponent()`](https://layrjs.com/docs/v1/reference/router#register-root-component-instance-method) method to register multiple routable components at once.
    *
-   * @param routable The [`RoutableComponent`](https://liaison.dev/docs/v1/reference/routable#routable-component-class) class to register.
+   * @param routable The [`RoutableComponent`](https://layrjs.com/docs/v1/reference/routable#routable-component-class) class to register.
    *
    * @example
    * ```
@@ -242,9 +242,9 @@ export abstract class Router extends Observable(Object) {
   }
 
   /**
-   * Gets all the [routable components](https://liaison.dev/docs/v1/reference/routable#routable-component-class) that are registered into the router.
+   * Gets all the [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that are registered into the router.
    *
-   * @returns An iterator of [`RoutableComponent`](https://liaison.dev/docs/v1/reference/routable#routable-component-class) classes.
+   * @returns An iterator of [`RoutableComponent`](https://layrjs.com/docs/v1/reference/routable#routable-component-class) classes.
    *
    * @category Component Registration
    */
@@ -261,7 +261,7 @@ export abstract class Router extends Observable(Object) {
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    *
-   * @returns An object of the shape `{routable, route, params}` (or `undefined` if no route was found) where `routable` is the [`RoutableComponent`](https://liaison.dev/docs/v1/reference/routable#routable-component-class) containing the route that was found, `route` is the [route](https://liaison.dev/docs/v1/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+   * @returns An object of the shape `{routable, route, params}` (or `undefined` if no route was found) where `routable` is the [`RoutableComponent`](https://layrjs.com/docs/v1/reference/routable#routable-component-class) containing the route that was found, `route` is the [route](https://layrjs.com/docs/v1/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
    *
    * @example
    * ```
@@ -528,7 +528,7 @@ export abstract class Router extends Observable(Object) {
    *
    * The observers of the router are automatically called.
    *
-   * Note that instead of using this method, you can use the handy `navigate()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `navigate()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
@@ -568,7 +568,7 @@ export abstract class Router extends Observable(Object) {
    *
    * The observers of the router are automatically called.
    *
-   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
@@ -604,7 +604,7 @@ export abstract class Router extends Observable(Object) {
   /**
    * Reloads the execution environment with the specified URL.
    *
-   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://liaison.dev/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    *
@@ -715,7 +715,7 @@ export abstract class Router extends Observable(Object) {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://liaison.dev/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
    *
    * @category Observability
    */

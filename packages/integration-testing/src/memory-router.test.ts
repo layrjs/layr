@@ -1,6 +1,6 @@
-import {Component, provide} from '@liaison/component';
-import {MemoryRouter} from '@liaison/memory-router';
-import {Routable, route} from '@liaison/routable';
+import {Component, provide} from '@layr/component';
+import {MemoryRouter} from '@layr/memory-router';
+import {Routable, route} from '@layr/routable';
 
 describe('MemoryRouter', () => {
   let currentRouteResult: string;

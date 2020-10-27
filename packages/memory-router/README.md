@@ -1,11 +1,11 @@
-# @liaison/memory-router
+# @layr/memory-router
 
-A simple router for Liaison that works without a browser.
+A simple router for Layr that works without a browser.
 
 ## Installation
 
 ```
-npm install @liaison/memory-router
+npm install @layr/memory-router
 ```
 
 ## License

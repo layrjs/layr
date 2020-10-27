@@ -1,6 +1,6 @@
-import {consume, expose, validators} from '@liaison/component';
-import {secondaryIdentifier, attribute, method, loader} from '@liaison/storable';
-import {role} from '@liaison/with-roles';
+import {consume, expose, validators} from '@layr/component';
+import {secondaryIdentifier, attribute, method, loader} from '@layr/storable';
+import {role} from '@layr/with-roles';
 import bcrypt from 'bcryptjs';
 import compact from 'lodash/compact';
 

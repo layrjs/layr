@@ -1,5 +1,5 @@
-import {ComponentServer} from '@liaison/component-server';
-import {MongoDBStore} from '@liaison/mongodb-store';
+import {ComponentServer} from '@layr/component-server';
+import {MongoDBStore} from '@layr/mongodb-store';
 
 import {Application} from './components/application';
 

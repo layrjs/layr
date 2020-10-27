@@ -1,11 +1,11 @@
-# @liaison/routable
+# @layr/routable
 
-Makes the methods of your Liaison components callable by URL.
+Makes the methods of your Layr components callable by URL.
 
 ## Installation
 
 ```
-npm install @liaison/routable
+npm install @layr/routable
 ```
 
 ## License

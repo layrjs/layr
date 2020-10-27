@@ -1,12 +1,12 @@
 ### Handling Authorization
 
-In the [previous guide](https://liaison.dev/docs/v1/introduction/routing), we added a feature to our "Guestbook" application so that the user can edit an existing message. We have a problem though. Currently, anyone can edit any message of the guestbook, and that's certainly not what we want. The ability to edit any message should be restricted to the administrator of the guestbook. So, how can we implement this restriction?
+In the [previous guide](https://layrjs.com/docs/v1/introduction/routing), we added a feature to our "Guestbook" application so that the user can edit an existing message. We have a problem though. Currently, anyone can edit any message of the guestbook, and that's certainly not what we want. The ability to edit any message should be restricted to the administrator of the guestbook. So, how can we implement this restriction?
 
-> TLDR: The completed project is available in the <!-- <if language="js"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-web-with-authorization-js)<!-- </if> --><!-- <if language="ts"> -->[Liaison repository](https://github.com/liaisonjs/liaison/tree/master/examples/guestbook-web-with-authorization-ts)<!-- </if> -->.
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-with-authorization-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-with-authorization-ts)<!-- </if> -->.
 
 #### Preparing the Project
 
-You can duplicate the [previous project](https://liaison.dev/docs/v1/introduction/routing) or simply modify it in place.
+You can duplicate the [previous project](https://layrjs.com/docs/v1/introduction/routing) or simply modify it in place.
 
 #### Modifying the Backend
 
@@ -17,7 +17,7 @@ To restrict the use of a particular feature to a user, we need to be able to:
 
 To keep this guide simple, we're going to fully implement only the authorization part of the mechanism. For the authentication part, we'll "cheat" a bit by implementing a minimal authentication system based on a secret shared between the frontend and the backend.
 
-> For an example of a full authentication system with user registration and password verification, you can have a look at the Liaison's [RealWorld example](https://github.com/liaisonjs/react-liaison-realworld-example-app) implementation.
+> For an example of a full authentication system with user registration and password verification, you can have a look at the Layr's [RealWorld example](https://github.com/layrjs/react-layr-realworld-example-app) implementation.
 
 ##### Authenticating the User
 
@@ -55,14 +55,14 @@ export class Session extends Component {
 
 This component will be in charge of handling a user's session and is made of:
 
-- A `secret` attribute that can be set from the frontend thanks to the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator.
+- A `secret` attribute that can be set from the frontend thanks to the [`@expose()`](https://layrjs.com/docs/v1/reference/component#expose-decorator) decorator.
 - An `isAdmin()` method that compares the value of the `secret` attribute with the value of an `ADMIN_SECRET` environment variable which is available only in the backend.
 
 Voilà! We've implemented our minimal authentication system in the backend.
 
 ##### Authorizing the User
 
-Currently, we already have some sort of authorizations in the backend, but they are pretty binary. We've used the [`@expose()`](https://liaison.dev/docs/v1/reference/component#expose-decorator) decorator to expose some methods to the frontend:
+Currently, we already have some sort of authorizations in the backend, but they are pretty binary. We've used the [`@expose()`](https://layrjs.com/docs/v1/reference/component#expose-decorator) decorator to expose some methods to the frontend:
 
 ```js
 @expose({
@@ -90,16 +90,16 @@ So, first, modify the class exposure as follows:
 
 So now the `save()` method is callable only by a `'creator'` (of a new message) or an `'admin'`. The strings `'creator'` and `'admin'` represent the names of some roles that we're going to define.
 
-First, install the `@liaison/with-roles` package:
+First, install the `@layr/with-roles` package:
 
 ```sh
-npm install @liaison/with-roles
+npm install @layr/with-roles
 ```
 
-Next, add the following line at the beginning of the <!-- <if language="js"> -->`src/backend.js`<!-- </if> --><!-- <if language="ts"> -->`src/backend.ts`<!-- </if> --> file to import the [`WithRoles()`](https://liaison.dev/docs/v1/reference/with-roles) mixin and the [`@role()`](https://liaison.dev/docs/v1/reference/with-roles#role-decorator) decorator:
+Next, add the following line at the beginning of the <!-- <if language="js"> -->`src/backend.js`<!-- </if> --><!-- <if language="ts"> -->`src/backend.ts`<!-- </if> --> file to import the [`WithRoles()`](https://layrjs.com/docs/v1/reference/with-roles) mixin and the [`@role()`](https://layrjs.com/docs/v1/reference/with-roles#role-decorator) decorator:
 
 ```js
-import {WithRoles, role} from '@liaison/with-roles';
+import {WithRoles, role} from '@layr/with-roles';
 ```
 
 Next, change the `Message` class definition as follows:
@@ -110,7 +110,7 @@ export class Message extends WithRoles(Storable(Component)) {
 }
 ```
 
-By using the [`WithRoles()`](https://liaison.dev/docs/v1/reference/with-roles) mixin, we've given the `Message` class the ability to handle roles.
+By using the [`WithRoles()`](https://layrjs.com/docs/v1/reference/with-roles) mixin, we've given the `Message` class the ability to handle roles.
 
 Next, add the following lines inside the `Message` class to define the roles that we need:
 
@@ -124,9 +124,9 @@ Next, add the following lines inside the `Message` class to define the roles tha
 }
 ```
 
-A [role](https://liaison.dev/docs/v1/reference/role) is defined by a name and a method that should return a boolean indicating whether the user has a specific role.
+A [role](https://layrjs.com/docs/v1/reference/role) is defined by a name and a method that should return a boolean indicating whether the user has a specific role.
 
-The `creatorRoleResolver()` method simply returns the result of the [`isNew()`](https://liaison.dev/docs/v1/reference/component#is-new-instance-method) method. So when a message is new, the user gets the `creator` role.
+The `creatorRoleResolver()` method simply returns the result of the [`isNew()`](https://layrjs.com/docs/v1/reference/component#is-new-instance-method) method. So when a message is new, the user gets the `creator` role.
 
 The `adminRoleResolver()` method is calling the `Session.isAdmin()` method to determine whether the user as the `'admin'` role. Notice that since the `adminRoleResolver()` method doesn't depend on a particular message, it can be defined as a class method (with the `static` keyword).
 
@@ -136,10 +136,10 @@ Next, add the following line inside the `Message` class (preferably at the begin
 @provide() static Session = Session;
 ```
 
-Lastly, since we are using the [`@provide()`](https://liaison.dev/docs/v1/reference/component#provide-decorator) decorator, we need to import it by modifying the first line of the file as follows:
+Lastly, since we are using the [`@provide()`](https://layrjs.com/docs/v1/reference/component#provide-decorator) decorator, we need to import it by modifying the first line of the file as follows:
 
 ```js
-import {Component, provide, expose, validators} from '@liaison/component';
+import {Component, provide, expose, validators} from '@layr/component';
 ```
 
 #### Testing the Application
@@ -168,7 +168,7 @@ npx webpack-dev-server
 
 Lastly, open [http://localhost:8080/](http://localhost:8080/) in a browser.
 
-You should see the same thing as [before](https://liaison.dev/docs/v1/introduction/routing#testing-the-application), except that when you try to submit an edited message, you should see the following message:
+You should see the same thing as [before](https://layrjs.com/docs/v1/introduction/routing#testing-the-application), except that when you try to submit an edited message, you should see the following message:
 
 ```json
 Sorry, an error occurred while submitting your message.
@@ -216,7 +216,7 @@ class Session extends BackendMessage.Session {
 }
 ```
 
-So now, the `Session.secret` attribute can get its value, thanks to the [`getter`](https://liaison.dev/docs/v1/reference/attribute#constructor) option, from the browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
+So now, the `Session.secret` attribute can get its value, thanks to the [`getter`](https://layrjs.com/docs/v1/reference/attribute#constructor) option, from the browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
 
 Lastly, we need to make sure that the `Message` component is aware of the new `Session` component. So add the following line inside the `Message` class (preferably at the beginning):
 
@@ -237,7 +237,7 @@ Open the browser's developer tools, and add the following entry in the local sto
 If you are using [Chrome](https://www.google.com/chrome/), you should have something like this:
 
 <p>
-	<img src="https://liaison-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-5.png" alt="Screenshot of the Chrome's developer tools showing how to set the secret's value in the local storage" style="width: 100%; margin-top: .5rem">
+	<img src="https://layr-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-5.png" alt="Screenshot of the Chrome's developer tools showing how to set the secret's value in the local storage" style="width: 100%; margin-top: .5rem">
 </p>
 
 Now, try to edit a message again, and this time it should work.
@@ -273,4 +273,4 @@ You've implemented an authorization mechanism so the guestbook's messages can on
 
 Well done! Our "Guestbook" application is now completed. It was pretty easy, wasn't it?
 
-At this point, you should be able to grasp the main concepts of Liaison. More advanced guides will be available soon, but in the meantime, please head over to the "Reference" section of the documentation for a comprehensive description of the Liaison API.
+At this point, you should be able to grasp the main concepts of Layr. More advanced guides will be available soon, but in the meantime, please head over to the "Reference" section of the documentation for a comprehensive description of the Layr API.

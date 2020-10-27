@@ -1,18 +1,18 @@
 /**
  * @module component-koa-middleware
  *
- * A [Koa](https://koajs.com/) middleware allowing to serve a root [`Component`](https://liaison.dev/docs/v1/reference/component) so it can be accessed by a [`ComponentHTTPClient`](https://liaison.dev/docs/v1/reference/component-http-client).
+ * A [Koa](https://koajs.com/) middleware allowing to serve a root [`Component`](https://layrjs.com/docs/v1/reference/component) so it can be accessed by a [`ComponentHTTPClient`](https://layrjs.com/docs/v1/reference/component-http-client).
  *
  * #### Usage
  *
- * Call the [`serveComponent()`](https://liaison.dev/docs/v1/reference/component-koa-middleware#serve-component-function) function to create a middleware for your Koa application.
+ * Call the [`serveComponent()`](https://layrjs.com/docs/v1/reference/component-koa-middleware#serve-component-function) function to create a middleware for your Koa application.
  *
  * **Example:**
  *
  * ```
  * import Koa from 'koa';
- * import {Component} from '@liaison/component';
- * import {serveComponent} from '@liaison/component-koa-middleware';
+ * import {Component} from '@layr/component';
+ * import {serveComponent} from '@layr/component-koa-middleware';
  *
  * class Movie extends Component {
  *   // ...
@@ -36,9 +36,9 @@
  * ```
  */
 
-import type {Component} from '@liaison/component';
-import {ensureComponentServer} from '@liaison/component-server';
-import type {ComponentServer, ComponentServerOptions} from '@liaison/component-server';
+import type {Component} from '@layr/component';
+import {ensureComponentServer} from '@layr/component-server';
+import type {ComponentServer, ComponentServerOptions} from '@layr/component-server';
 import body from 'co-body';
 import sleep from 'sleep-promise';
 
@@ -51,10 +51,10 @@ export type ServeComponentOptions = ComponentServerOptions & {
 };
 
 /**
- * Creates a [Koa](https://koajs.com/) middleware exposing the specified root [`Component`](https://liaison.dev/docs/v1/reference/component) class.
+ * Creates a [Koa](https://koajs.com/) middleware exposing the specified root [`Component`](https://layrjs.com/docs/v1/reference/component) class.
  *
- * @param componentOrComponentServer The root [`Component`](https://liaison.dev/docs/v1/reference/component) class to serve. An instance of a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) will be created under the hood. Alternatively, you can pass an existing instance of a [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server).
- * @param [options.version] A number specifying the version of the created [`ComponentServer`](https://liaison.dev/docs/v1/reference/component-server) (default: `undefined`).
+ * @param componentOrComponentServer The root [`Component`](https://layrjs.com/docs/v1/reference/component) class to serve. An instance of a [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) will be created under the hood. Alternatively, you can pass an existing instance of a [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server).
+ * @param [options.version] A number specifying the version of the created [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) (default: `undefined`).
  *
  * @returns A Koa middleware.
  *

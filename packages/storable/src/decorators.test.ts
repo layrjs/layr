@@ -1,4 +1,4 @@
-import {Component} from '@liaison/component';
+import {Component} from '@layr/component';
 
 import {Storable} from './storable';
 import {attribute, method, loader, finder} from './decorators';

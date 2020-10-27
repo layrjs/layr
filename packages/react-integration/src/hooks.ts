@@ -1,27 +1,27 @@
-import type {Component} from '@liaison/component';
-import {ObservableType, isObservable} from '@liaison/observable';
-import {BrowserRouter} from '@liaison/browser-router';
+import type {Component} from '@layr/component';
+import {ObservableType, isObservable} from '@layr/observable';
+import {BrowserRouter} from '@layr/browser-router';
 import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {AsyncFunction, getTypeOf} from 'core-helpers';
 
 import {RouterPlugin} from './plugins';
 
 /**
- * Creates a [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) and registers the specified root [component](https://liaison.dev/docs/v1/reference/component).
+ * Creates a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
  *
- * Typically, this hook is used in the context of a "view method" (i.e., a component method decorated by the [`@view()`](https://liaison.dev/docs/v1/reference/react-integration#view-decorator) decorator) at the root of an application.
+ * Typically, this hook is used in the context of a "view method" (i.e., a component method decorated by the [`@view()`](https://layrjs.com/docs/v1/reference/react-integration#view-decorator) decorator) at the root of an application.
  *
  * The created router is observed so the view where this hook is used is automatically re-rendered when the current route changes.
  *
- * @param rootComponent A [`Component`](https://liaison.dev/docs/v1/reference/component) class providing some [routable components](https://liaison.dev/docs/v1/reference/routable#routable-component-class).
+ * @param rootComponent A [`Component`](https://layrjs.com/docs/v1/reference/component) class providing some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
  *
- * @returns An array of the shape `[router, isReady]` where `router` is the [`BrowserRouter`](https://liaison.dev/docs/v1/reference/browser-router) instance that was created and `isReady` is a boolean indicating whether the router is ready. Since the router is initialized asynchronously, make sure that the value of `isReady` is `true` before consuming `router`.
+ * @returns An array of the shape `[router, isReady]` where `router` is the [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) instance that was created and `isReady` is a boolean indicating whether the router is ready. Since the router is initialized asynchronously, make sure that the value of `isReady` is `true` before consuming `router`.
  *
  * @example
  * ```
- * import {Component, provide} from '﹫liaison/component';
+ * import {Component, provide} from '﹫layr/component';
  * import React from 'react';
- * import {view, useBrowserRouter} from '﹫liaison/react-integration';
+ * import {view, useBrowserRouter} from '﹫layr/react-integration';
  *
  * import {MyComponent} from './my-component';
  *
@@ -74,16 +74,16 @@ export function useBrowserRouter(rootComponent: typeof Component) {
 }
 
 /**
- * Makes a view dependent of an [observable](https://liaison.dev/docs/v1/reference/observable#observable-type) so the view is automatically re-rendered when the observable changes.
+ * Makes a view dependent of an [observable](https://layrjs.com/docs/v1/reference/observable#observable-type) so the view is automatically re-rendered when the observable changes.
  *
- * @param observable An [observable](https://liaison.dev/docs/v1/reference/observable#observable-type) object.
+ * @param observable An [observable](https://layrjs.com/docs/v1/reference/observable#observable-type) object.
  *
  * @example
  * ```
- * import {Component} from '﹫liaison/component';
- * import {createObservable} from '﹫liaison/observable';
+ * import {Component} from '﹫layr/component';
+ * import {createObservable} from '﹫layr/observable';
  * import React from 'react';
- * import {view, useObserve} from '﹫liaison/react-integration';
+ * import {view, useObserve} from '﹫layr/react-integration';
  *
  * const observableArray = createObservable([]);
  *
@@ -141,9 +141,9 @@ export function useObserve(observable: ObservableType) {
  *
  * @example
  * ```
- * import {Component} from '﹫liaison/component';
+ * import {Component} from '﹫layr/component';
  * import React from 'react';
- * import {view, useAsyncCallback} from '﹫liaison/react-integration';
+ * import {view, useAsyncCallback} from '﹫layr/react-integration';
  *
  * class Article extends Component {
  *   ﹫view() UpvoteButton() {
@@ -212,10 +212,10 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
  *
  * @example
  * ```
- * import {Component} from '﹫liaison/component';
- * import {Storable} from '﹫liaison/storable';
+ * import {Component} from '﹫layr/component';
+ * import {Storable} from '﹫layr/storable';
  * import React from 'react';
- * import {view, useAsyncMemo} from '﹫liaison/react-integration';
+ * import {view, useAsyncMemo} from '﹫layr/react-integration';
  *
  * class Article extends Storable(Component) {
  *   // ...
@@ -303,10 +303,10 @@ export function useAsyncMemo<Result>(asyncFunc: () => Promise<Result>, deps: Dep
  *
  * @example
  * ```
- * import {Component, provide} from '﹫liaison/component';
- * import {Storable} from '﹫liaison/storable';
+ * import {Component, provide} from '﹫layr/component';
+ * import {Storable} from '﹫layr/storable';
  * import React, {useCallback} from 'react';
- * import {view, useRecomputableMemo} from '﹫liaison/react-integration';
+ * import {view, useRecomputableMemo} from '﹫layr/react-integration';
  *
  * class Article extends Storable(Component) {
  *   // ...
@@ -361,10 +361,10 @@ export function useRecomputableMemo<Result>(func: () => Result, deps: Dependency
  * ```
  * // JS
  *
- * import {Component, provide, attribute} from '﹫liaison/component';
- * import {Storable} from '﹫liaison/storable';
+ * import {Component, provide, attribute} from '﹫layr/component';
+ * import {Storable} from '﹫layr/storable';
  * import React from 'react';
- * import {view, useAsyncCall} from '﹫liaison/react-integration';
+ * import {view, useAsyncCall} from '﹫layr/react-integration';
  *
  * class Article extends Storable(Component) {
  *   // ...
@@ -406,10 +406,10 @@ export function useRecomputableMemo<Result>(func: () => Result, deps: Dependency
  * ```
  * // TS
  *
- * import {Component, provide, attribute} from '﹫liaison/component';
- * import {Storable} from '﹫liaison/storable';
+ * import {Component, provide, attribute} from '﹫layr/component';
+ * import {Storable} from '﹫layr/storable';
  * import React from 'react';
- * import {view, useAsyncCall} from '﹫liaison/react-integration';
+ * import {view, useAsyncCall} from '﹫layr/react-integration';
  *
  * class Article extends Storable(Component) {
  *   // ...

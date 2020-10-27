@@ -1,5 +1,5 @@
-import {Router, normalizeURL} from '@liaison/router';
-import {BrowserRouterLinkProps} from '@liaison/browser-router';
+import {Router, normalizeURL} from '@layr/router';
+import {BrowserRouterLinkProps} from '@layr/browser-router';
 import React, {useMemo, useCallback} from 'react';
 
 export function RouterPlugin() {

@@ -1,5 +1,5 @@
-import {Component, primaryIdentifier, attribute, method, expose} from '@liaison/component';
-import {ComponentHTTPServer} from '@liaison/component-http-server';
+import {Component, primaryIdentifier, attribute, method, expose} from '@layr/component';
+import {ComponentHTTPServer} from '@layr/component-http-server';
 
 class Counter extends Component {
   // We need a primary identifier so a Counter instance

@@ -19,11 +19,11 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
 };
 
 /**
- * Deserializes any type of serialized values including objects, arrays, dates, and components (using [`Component.recreate()`](https://liaison.dev/docs/v1/reference/component#recreate-class-method) and [`Component.deserialize()`](https://liaison.dev/docs/v1/reference/component#deserialize-class-method)).
+ * Deserializes any type of serialized values including objects, arrays, dates, and components (using [`Component.recreate()`](https://layrjs.com/docs/v1/reference/component#recreate-class-method) and [`Component.deserialize()`](https://layrjs.com/docs/v1/reference/component#deserialize-class-method)).
  *
  * @param value A serialized value.
  * @param [options.componentGetter] A function used to get the component classes from the component types encountered in the serialized value. The function is invoked with a string representing a component type and should return a component class or prototype.
- * @param [options.attributeFilter] A (possibly async) function used to filter the component attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://liaison.dev/docs/v1/reference/attribute) instance as first argument.
+ * @param [options.attributeFilter] A (possibly async) function used to filter the component attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
  * @param [options.source] The source of the serialization (default: `0`).
  *
  * @returns The deserialized value.
@@ -32,7 +32,7 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
  * ```
  * // JS
  *
- * import {Component, deserialize} from '﹫liaison/component';
+ * import {Component, deserialize} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   ﹫attribute('string') title;
@@ -61,7 +61,7 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
  * ```
  * // TS
  *
- * import {Component, deserialize} from '﹫liaison/component';
+ * import {Component, deserialize} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   ﹫attribute('string') title!: string;

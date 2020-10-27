@@ -1,11 +1,11 @@
-# @liaison/component-http-client
+# @layr/component-http-client
 
-An HTTP client for your Liaison components.
+An HTTP client for your Layr components.
 
 ## Installation
 
 ```
-npm install @liaison/component-http-client
+npm install @layr/component-http-client
 ```
 
 ## License

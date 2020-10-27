@@ -1,9 +1,9 @@
 {
-  "name": "@liaison/react-integration",
-  "version": "1.0.4",
-  "description": "React integration for Liaison",
+  "name": "@layr/react-integration",
+  "version": "1.0.6",
+  "description": "React integration for Layr",
   "keywords": [
-    "liaison",
+    "layr",
     "react",
     "integration",
     "hook",
@@ -11,7 +11,7 @@
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/react-integration",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/react-integration",
   "files": [
     "dist"
   ],
@@ -28,10 +28,10 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/browser-router": "^1.0.4",
-    "@liaison/component": "^1.0.8",
-    "@liaison/observable": "^1.0.2",
-    "@liaison/router": "^1.0.3",
+    "@layr/browser-router": "^1.0.6",
+    "@layr/component": "^1.0.10",
+    "@layr/observable": "^1.0.3",
+    "@layr/router": "^1.0.5",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "tslib": "^2.0.3"
@@ -43,6 +43,6 @@
     "@mvila/dev-tools": "^1.0.26",
     "@mvila/tsconfig": "^1.0.4",
     "@types/lodash": "^4.14.162",
-    "@types/react": "^16.9.52"
+    "@types/react": "^16.9.53"
   }
 }

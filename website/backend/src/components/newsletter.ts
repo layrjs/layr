@@ -1,4 +1,4 @@
-import {Component, method, expose} from '@liaison/component';
+import {Component, method, expose} from '@layr/component';
 import fetch from 'cross-fetch';
 
 const MAILER_LITE_API_URL = 'https://api.mailerlite.com/api/v2';

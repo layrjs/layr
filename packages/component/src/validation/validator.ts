@@ -20,14 +20,14 @@ export type IntrospectedValidator = {
  *
  * #### Usage
  *
- * You shouldn't have to create a `Validator` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://liaison.dev/docs/v1/reference/component#attribute-decorator)), you can invoke some [built-in validator builders](https://liaison.dev/docs/v1/reference/validator#built-in-validator-builders) or specify your own [custom validation functions](https://liaison.dev/docs/v1/reference/validator#custom-validation-functions) that will be automatically transformed into `Validator` instances.
+ * You shouldn't have to create a `Validator` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator)), you can invoke some [built-in validator builders](https://layrjs.com/docs/v1/reference/validator#built-in-validator-builders) or specify your own [custom validation functions](https://layrjs.com/docs/v1/reference/validator#custom-validation-functions) that will be automatically transformed into `Validator` instances.
  *
  * **Example:**
  *
  * ```
  * // JS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {notEmpty, maxLength, integer, greaterThan} = validators;
  *
@@ -47,7 +47,7 @@ export type IntrospectedValidator = {
  * ```
  * // TS
  *
- * import {Component, attribute, validators} from '﹫liaison/component';
+ * import {Component, attribute, validators} from '﹫layr/component';
  *
  * const {notEmpty, maxLength, integer, greaterThan} = validators;
  *
@@ -84,7 +84,7 @@ export type IntrospectedValidator = {
  *
  * #### Built-In Validator Builders
  *
- * Liaison provides a number of validator builders that can be used when you define your component attributes. See an [example of use](https://liaison.dev/docs/v1/reference/validator#usage) above.
+ * Layr provides a number of validator builders that can be used when you define your component attributes. See an [example of use](https://layrjs.com/docs/v1/reference/validator#usage) above.
  *
  * ##### Numbers
  *
@@ -140,7 +140,7 @@ export type IntrospectedValidator = {
  *
  * #### Custom Validation Functions
  *
- * In addition to the [built-in validator builders](https://liaison.dev/docs/v1/reference/validator#built-in-validator-builders), you can validate your component attributes with your own custom validation functions.
+ * In addition to the [built-in validator builders](https://layrjs.com/docs/v1/reference/validator#built-in-validator-builders), you can validate your component attributes with your own custom validation functions.
  *
  * A custom validation function takes a value as first parameter and returns a boolean indicating whether the validation has succeeded or not.
  *
@@ -149,7 +149,7 @@ export type IntrospectedValidator = {
  * ```
  * // JS
  *
- * import {Component, attribute} from '﹫liaison/component';
+ * import {Component, attribute} from '﹫layr/component';
  *
  * class OddNumber extends Component {
  *   // Ensures that the value is an odd number
@@ -160,7 +160,7 @@ export type IntrospectedValidator = {
  * ```
  * // TS
  *
- * import {Component, attribute} from '﹫liaison/component';
+ * import {Component, attribute} from '﹫layr/component';
  *
  * class OddNumber extends Component {
  *   // Ensures that the value is an odd number

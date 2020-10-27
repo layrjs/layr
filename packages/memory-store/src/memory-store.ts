@@ -11,8 +11,8 @@ import {
   Path,
   Operator,
   SortDescriptor
-} from '@liaison/store';
-import {NormalizedIdentifierDescriptor} from '@liaison/component';
+} from '@layr/store';
+import {NormalizedIdentifierDescriptor} from '@layr/component';
 import pull from 'lodash/pull';
 import get from 'lodash/get';
 import set from 'lodash/set';
@@ -24,23 +24,23 @@ type Collection = Document[];
 type CollectionMap = {[name: string]: Collection};
 
 /**
- * *Inherits from [`Store`](https://liaison.dev/docs/v1/reference/store).*
+ * *Inherits from [`Store`](https://layrjs.com/docs/v1/reference/store).*
  *
- * A [`Store`](https://liaison.dev/docs/v1/reference/store) that uses the memory to "persist" its registered [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class). Since the stored data is wiped off every time the execution environment is restarted, a `MemoryStore` shouldn't be used for a real application.
+ * A [`Store`](https://layrjs.com/docs/v1/reference/store) that uses the memory to "persist" its registered [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class). Since the stored data is wiped off every time the execution environment is restarted, a `MemoryStore` shouldn't be used for a real application.
  *
  * #### Usage
  *
- * Create a `MemoryStore` instance, register some [storable components](https://liaison.dev/docs/v1/reference/storable#storable-component-class) into it, and then use any [`StorableComponent`](https://liaison.dev/docs/v1/reference/storable#storable-component-class)'s method to load, save, delete, or find components from the store.
+ * Create a `MemoryStore` instance, register some [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) into it, and then use any [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class)'s method to load, save, delete, or find components from the store.
  *
- * See an example of use in the [`MongoDBStore`](https://liaison.dev/docs/v1/reference/mongodb-store) class.
+ * See an example of use in the [`MongoDBStore`](https://layrjs.com/docs/v1/reference/mongodb-store) class.
  */
 export class MemoryStore extends Store {
   /**
-   * Creates a [`MemoryStore`](https://liaison.dev/docs/v1/reference/memory-store).
+   * Creates a [`MemoryStore`](https://layrjs.com/docs/v1/reference/memory-store).
    *
-   * @param [options.initialCollections] A plain object specifying the initial data that should be populated into the store. The shape of the objet should be `{[collectionName]: documents}` where `collectionName` is the name of a [storable component](https://liaison.dev/docs/v1/reference/storable#storable-component-class) class, and `documents` is an array of serialized storable component instances.
+   * @param [options.initialCollections] A plain object specifying the initial data that should be populated into the store. The shape of the objet should be `{[collectionName]: documents}` where `collectionName` is the name of a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) class, and `documents` is an array of serialized storable component instances.
    *
-   * @returns The [`MemoryStore`](https://liaison.dev/docs/v1/reference/memory-store) instance that was created.
+   * @returns The [`MemoryStore`](https://layrjs.com/docs/v1/reference/memory-store) instance that was created.
    *
    * @example
    * ```
@@ -79,7 +79,7 @@ export class MemoryStore extends Store {
   // === Component Registration ===
 
   /**
-   * See the methods that are inherited from the [`Store`](https://liaison.dev/docs/v1/reference/store#component-registration) class.
+   * See the methods that are inherited from the [`Store`](https://layrjs.com/docs/v1/reference/store#component-registration) class.
    *
    * @category Component Registration
    */

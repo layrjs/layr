@@ -15,7 +15,7 @@ execFileSync(
   [
     'run',
     '--name',
-    'liaison-website-database',
+    'layr-website-database',
     '--rm',
     '--volume',
     `${__dirname}/data:/data/db`,

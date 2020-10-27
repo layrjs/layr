@@ -1,6 +1,6 @@
-import {consume} from '@liaison/component';
-import {Routable, route} from '@liaison/routable';
-import {view, useAsyncCallback, useAsyncMemo} from '@liaison/react-integration';
+import {consume} from '@layr/component';
+import {Routable, route} from '@layr/routable';
+import {view, useAsyncCallback, useAsyncMemo} from '@layr/react-integration';
 import {Fragment, useMemo} from 'react';
 import {jsx} from '@emotion/core';
 import {format} from 'date-fns';

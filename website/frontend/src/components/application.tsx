@@ -1,8 +1,8 @@
-import {provide} from '@liaison/component';
-import {Storable} from '@liaison/storable';
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {provide} from '@layr/component';
+import {Storable} from '@layr/storable';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 import {jsx} from '@emotion/core';
-import {view, useBrowserRouter} from '@liaison/react-integration';
+import {view, useBrowserRouter} from '@layr/react-integration';
 
 import type {Application as BackendApplication} from '../../../backend/src/components/application';
 import {Home} from './home';

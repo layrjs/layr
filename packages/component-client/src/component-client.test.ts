@@ -1,5 +1,5 @@
-import {Component, isComponentClass} from '@liaison/component';
-import type {ComponentServerLike} from '@liaison/component-server';
+import {Component, isComponentClass} from '@layr/component';
+import type {ComponentServerLike} from '@layr/component-server';
 import isEqual from 'lodash/isEqual';
 
 import {ComponentClient} from './component-client';

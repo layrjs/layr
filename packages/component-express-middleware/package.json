@@ -1,16 +1,16 @@
 {
-  "name": "@liaison/component-express-middleware",
-  "version": "1.0.3",
-  "description": "An Express middleware for your Liaison components",
+  "name": "@layr/component-express-middleware",
+  "version": "1.0.5",
+  "description": "An Express middleware for your Layr components",
   "keywords": [
-    "liaison",
+    "layr",
     "component",
     "express",
     "middleware"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/liaisonjs/liaison/tree/master/packages/component-express-middleware",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/component-express-middleware",
   "files": [
     "dist"
   ],
@@ -27,8 +27,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@liaison/component": "^1.0.8",
-    "@liaison/component-server": "^1.0.4",
+    "@layr/component": "^1.0.10",
+    "@layr/component-server": "^1.0.6",
     "co-body": "^6.1.0",
     "core-helpers": "^1.0.3",
     "http-errors": "^1.8.0",

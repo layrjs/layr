@@ -1,5 +1,5 @@
 # Hello, World! (JS)
 
-An "Hello, World!" program to introduce the core concepts of Liaison.
+An "Hello, World!" program to introduce the core concepts of Layr.
 
-See the [corresponding guide](https://liaison.dev/docs/v1/introduction/hello-world?language=js).
+See the [corresponding guide](https://layrjs.com/docs/v1/introduction/hello-world?language=js).

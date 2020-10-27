@@ -5,7 +5,7 @@ import {isComponentClass, isComponentInstance} from './utilities';
 export {CloneOptions};
 
 /**
- * Deeply clones any type of values including objects, arrays, and component instances (using Component's [`clone()`](https://liaison.dev/docs/v1/reference/component#clone-instance-method) instance method).
+ * Deeply clones any type of values including objects, arrays, and component instances (using Component's [`clone()`](https://layrjs.com/docs/v1/reference/component#clone-instance-method) instance method).
  *
  * @param value A value of any type.
  *
@@ -13,7 +13,7 @@ export {CloneOptions};
  *
  * @example
  * ```
- * import {clone} from '﹫liaison/component';
+ * import {clone} from '﹫layr/component';
  *
  * const data = {
  *   token: 'xyz123',

@@ -1,11 +1,11 @@
-# @liaison/with-roles
+# @layr/with-roles
 
-Simple role system for Liaison.
+Simple role system for Layr.
 
 ## Installation
 
 ```
-npm install @liaison/with-roles
+npm install @layr/with-roles
 ```
 
 ## License

@@ -1,4 +1,4 @@
-import {Component, attribute, expose} from '@liaison/component';
+import {Component, attribute, expose} from '@layr/component';
 import fetch from 'cross-fetch';
 
 import {ComponentHTTPServer} from './component-http-server';

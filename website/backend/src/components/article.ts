@@ -1,5 +1,5 @@
-import {expose, validators} from '@liaison/component';
-import {secondaryIdentifier, attribute, method} from '@liaison/storable';
+import {expose, validators} from '@layr/component';
+import {secondaryIdentifier, attribute, method} from '@layr/storable';
 import slugify from 'slugify';
 import RSS from 'rss';
 import escape from 'lodash/escape';
@@ -76,7 +76,7 @@ export class Article extends WithAuthor(Entity) {
     );
 
     const feed = new RSS({
-      title: 'Liaison Blog',
+      title: 'Layr Blog',
       description: 'A love story between the frontend and the backend',
       feed_url: `${backendURL}/blog/feed`,
       site_url: `${frontendURL}/blog`

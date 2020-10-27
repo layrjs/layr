@@ -1,4 +1,4 @@
-import {Component, provide} from '@liaison/component';
+import {Component, provide} from '@layr/component';
 
 import {Session} from './session';
 import {User} from './user';

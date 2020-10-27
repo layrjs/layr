@@ -5,15 +5,15 @@ import type {Component} from './component';
 type IdentifierValue = string | number;
 
 /**
- * A class to manage the instances of the [`Component`](https://liaison.dev/docs/v1/reference/component) classes that are identifiable.
+ * A class to manage the instances of the [`Component`](https://layrjs.com/docs/v1/reference/component) classes that are identifiable.
  *
- * A component class is identifiable when its prototype has a [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute).
+ * A component class is identifiable when its prototype has a [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute).
  *
  * When a component class is identifiable, the `IdentityMap` ensures that there can only be one component instance with a specific identifier. So if you try to create two components with the same identifer, you will get an error.
  *
  * #### Usage
  *
- * You shouldn't have to create an `IdentityMap` by yourself. Identity maps are created automatically for each [`Component`](https://liaison.dev/docs/v1/reference/component) class that are identifiable.
+ * You shouldn't have to create an `IdentityMap` by yourself. Identity maps are created automatically for each [`Component`](https://layrjs.com/docs/v1/reference/component) class that are identifiable.
  *
  * **Example:**
  *
@@ -22,7 +22,7 @@ type IdentifierValue = string | number;
  * ```
  * // JS
  *
- * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ * import {Component, primaryIdentifier, attribute} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   ﹫primaryIdentifier() id;
@@ -33,7 +33,7 @@ type IdentifierValue = string | number;
  * ```
  * // TS
  *
- * import {Component, primaryIdentifier, attribute} from '﹫liaison/component';
+ * import {Component, primaryIdentifier, attribute} from '﹫layr/component';
  *
  * class Movie extends Component {
  *   ﹫primaryIdentifier() id!: string;
@@ -47,7 +47,7 @@ type IdentifierValue = string | number;
  * const identityMap = Movie.getIdentityMap();
  * ```
  *
- * Currently, the `IdentifyMap` provides only one public method — [`getComponent()`](https://liaison.dev/docs/v1/reference/identity-map#get-component-instance-method) — that allows to retrieve a component instance from its identifier:
+ * Currently, the `IdentifyMap` provides only one public method — [`getComponent()`](https://layrjs.com/docs/v1/reference/identity-map#get-component-instance-method) — that allows to retrieve a component instance from its identifier:
  *
  * ```
  * const movie = new Movie({id: 'abc123', title: 'Inception'});
@@ -77,15 +77,15 @@ export class IdentityMap {
   /**
    * Gets a component instance from one of its identifiers. If there are no components corresponding to the specified identifiers, returns `undefined`.
    *
-   * @param identifiers A plain object specifying some identifiers. The shape of the object should be `{[identifierName]: identifierValue}`. Alternatively, you can specify a string or a number representing the value of the [`PrimaryIdentifierAttribute`](https://liaison.dev/docs/v1/reference/primary-identifier-attribute) of the component you want to get.
+   * @param identifiers A plain object specifying some identifiers. The shape of the object should be `{[identifierName]: identifierValue}`. Alternatively, you can specify a string or a number representing the value of the [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute) of the component you want to get.
    *
-   * @returns A [`Component`](https://liaison.dev/docs/v1/reference/component) instance or `undefined`.
+   * @returns A [`Component`](https://layrjs.com/docs/v1/reference/component) instance or `undefined`.
    *
    * @example
    * ```
    * // JS
    *
-   * import {Component, primaryIdentifier, secondaryIdentifier} from '﹫liaison/component';
+   * import {Component, primaryIdentifier, secondaryIdentifier} from '﹫layr/component';
    *
    * class Movie extends Component {
    *   ﹫primaryIdentifier() id;
@@ -104,7 +104,7 @@ export class IdentityMap {
    * ```
    * // TS
    *
-   * import {Component, primaryIdentifier, secondaryIdentifier} from '﹫liaison/component';
+   * import {Component, primaryIdentifier, secondaryIdentifier} from '﹫layr/component';
    *
    * class Movie extends Component {
    *   ﹫primaryIdentifier() id!: string;

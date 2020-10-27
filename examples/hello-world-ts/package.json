@@ -1,12 +1,12 @@
 {
   "name": "hello-world",
   "version": "1.0.0",
-  "description": "An \"Hello, World!\" program to introduce the core concepts of Liaison.",
+  "description": "An \"Hello, World!\" program to introduce the core concepts of Layr.",
   "private": true,
   "dependencies": {
-    "@liaison/component": "^1.0.0",
-    "@liaison/component-http-client": "^1.0.0",
-    "@liaison/component-http-server": "^1.0.0"
+    "@layr/component": "^1.0.0",
+    "@layr/component-http-client": "^1.0.0",
+    "@layr/component-http-server": "^1.0.0"
   },
   "devDependencies": {
     "ts-node": "^8.10.2",

@@ -1,7 +1,7 @@
-import {Component, consume} from '@liaison/component';
-import {Routable, route} from '@liaison/routable';
+import {Component, consume} from '@layr/component';
+import {Routable, route} from '@layr/routable';
 import React, {Fragment, useCallback} from 'react';
-import {view, useAsyncMemo, useAsyncCall} from '@liaison/react-integration';
+import {view, useAsyncMemo, useAsyncCall} from '@layr/react-integration';
 import {jsx, css} from '@emotion/core';
 import isEqual from 'lodash/isEqual';
 

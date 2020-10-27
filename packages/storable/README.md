@@ -1,11 +1,11 @@
-# @liaison/storable
+# @layr/storable
 
-A mixin providing persistence capabilities to Liaison components.
+A mixin providing persistence capabilities to Layr components.
 
 ## Installation
 
 ```
-npm install @liaison/storable
+npm install @layr/storable
 ```
 
 ## License

@@ -1,7 +1,7 @@
 import express from 'express';
 import type {Server} from 'http';
-import {serveComponent} from '@liaison/component-express-middleware';
-import {ComponentHTTPClient} from '@liaison/component-http-client';
+import {serveComponent} from '@layr/component-express-middleware';
+import {ComponentHTTPClient} from '@layr/component-http-client';
 
 import {Counter as BackendCounter} from './counter.fixture';
 
