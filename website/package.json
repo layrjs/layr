@@ -10,10 +10,7 @@
     "start": "concurrently --names=frontend,backend,database --prefix-colors=green,blue,gray --kill-others \"(cd ./frontend && npm run start)\" \"(cd ./backend && npm run start)\" \"(cd ./database && node ./start.js)\"",
     "update": "(cd ./backend && npm update) && (cd ./frontend && npm update)"
   },
-  "prettier": "@mvila/prettierrc",
   "devDependencies": {
-    "@mvila/prettierrc": "^1.1.0",
-    "concurrently": "^5.3.0",
-    "prettier": "^2.1.1"
+    "concurrently": "^5.3.0"
   }
 }
