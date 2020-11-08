@@ -163,7 +163,7 @@ export class Home extends Routable(Component) {
   @consume() static Common: typeof Common;
   @consume() static UI: typeof UI;
 
-  @route('/') @view() static Main() {
+  @route('/', {aliases: ['/index.html']}) @view() static Main() {
     const {Newsletter, Common, UI} = this;
 
     Common.useTitle('Dramatically simplify full‑stack development');
