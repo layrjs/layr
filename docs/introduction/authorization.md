@@ -237,7 +237,7 @@ Open the browser's developer tools, and add the following entry in the local sto
 If you are using [Chrome](https://www.google.com/chrome/), you should have something like this:
 
 <p>
-	<img src="https://layr-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-5.png" alt="Screenshot of the Chrome's developer tools showing how to set the secret's value in the local storage" style="width: 100%; margin-top: .5rem">
+	<img src="https://liaison-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-5.png" alt="Screenshot of the Chrome's developer tools showing how to set the secret's value in the local storage" style="width: 100%; margin-top: .5rem">
 </p>
 
 Now, try to edit a message again, and this time it should work.

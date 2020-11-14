@@ -290,13 +290,13 @@ How does the `MessageEditor()` view know which message to edit? The current `mes
 You should now see an "Edit" link below each message:
 
 <p>
-	<img src="https://layr-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-3.png" alt="Screenshot of the guestbook app showing an 'Edit' link" style="width: 100%; margin-top: .5rem">
+	<img src="https://liaison-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-3.png" alt="Screenshot of the guestbook app showing an 'Edit' link" style="width: 100%; margin-top: .5rem">
 </p>
 
 And when you click on an "Edit" link, you should see something like this:
 
 <p>
-	<img src="https://layr-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-4.png" alt="Screenshot of the guestbook app showing the 'Edit Message' page" style="width: 100%; margin-top: .5rem">
+	<img src="https://liaison-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-4.png" alt="Screenshot of the guestbook app showing the 'Edit Message' page" style="width: 100%; margin-top: .5rem">
 </p>
 
 Modify a message, click the "Submit" button, and you should be back at the home page showing the modified message.

@@ -581,13 +581,13 @@ npx webpack-dev-server
 Then open [http://localhost:8080/](http://localhost:8080/) in a browser, and you should see the following display:
 
 <p>
-	<img src="https://layr-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-1.png" alt="Screenshot of the guestbook app with no messages" style="width: 100%; margin-top: .5rem">
+	<img src="https://liaison-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-1.png" alt="Screenshot of the guestbook app with no messages" style="width: 100%; margin-top: .5rem">
 </p>
 
 Submit a message, and you should now see something like this:
 
 <p>
-	<img src="https://layr-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-2.png" alt="Screenshot of the guestbook app with one message" style="width: 100%; margin-top: .5rem">
+	<img src="https://liaison-blog.s3.dualstack.us-west-2.amazonaws.com/images/guestbook-screen-2.png" alt="Screenshot of the guestbook app with one message" style="width: 100%; margin-top: .5rem">
 </p>
 
 Just to make sure that your message is stored into the backend, refresh the browser, and you should see that your message is indeed still there.
