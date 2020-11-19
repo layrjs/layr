@@ -45,7 +45,7 @@ class Greeter extends BackendGreeter {
 
 const greeter = new Greeter({name: 'Steve'});
 
-console.log(await greeter.hello());
+await greeter.hello(); // => 'HELLO, STEVE!'
 \`\`\`
 `;
 
@@ -235,7 +235,7 @@ export class Home extends Routable(Component) {
                 color: theme.muted.textColor
               })}
             >
-              Inherit the frontend from the backend and build your application as if it were made of
+              Inherit your frontend from your backend and build an application as if it were made of
               a single layer.
             </div>
             <UI.Button
