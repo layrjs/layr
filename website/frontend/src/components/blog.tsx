@@ -51,7 +51,6 @@ export class Blog extends Routable(Component) {
           {},
           {
             title: true,
-            description: true,
             slug: true,
             author: {fullName: true, url: true},
             createdAt: true

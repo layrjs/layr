@@ -86,18 +86,16 @@ export const Article = (Base: typeof BackendArticle) => {
     }
 
     @view() Preview() {
+      const {UI} = this.constructor;
+
+      const theme = UI.useTheme();
+
       return (
         <Fragment>
-          <div
-            onClick={() => {
-              this.constructor.Main.navigate(this);
-            }}
-            css={{cursor: 'pointer'}}
-          >
-            <h4>{this.title}</h4>
-            <div>{this.description}</div>
-          </div>
-          <this.Meta />
+          <this.constructor.Main.Link params={this}>
+            <h4 css={{':hover': {color: theme.link.highlighted.primaryColor}}}>{this.title}</h4>
+          </this.constructor.Main.Link>
+          <this.Meta css={{marginTop: '-.75rem'}} />
         </Fragment>
       );
     }
