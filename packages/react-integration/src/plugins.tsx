@@ -2,7 +2,7 @@ import {Router, normalizeURL} from '@layr/router';
 import {BrowserRouterLinkProps} from '@layr/browser-router';
 import React, {useMemo, useCallback} from 'react';
 
-export function RouterPlugin() {
+export function BrowserRouterPlugin() {
   return function (router: Router) {
     Object.assign(router, {
       Link(props: BrowserRouterLinkProps) {

@@ -1,10 +1,11 @@
 import type {Component} from '@layr/component';
 import {ObservableType, isObservable} from '@layr/observable';
 import {BrowserRouter} from '@layr/browser-router';
+import {MemoryRouter, MemoryRouterOptions} from '@layr/memory-router';
 import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {AsyncFunction, getTypeOf} from 'core-helpers';
 
-import {RouterPlugin} from './plugins';
+import {BrowserRouterPlugin} from './plugins';
 
 /**
  * Creates a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
@@ -50,7 +51,7 @@ import {RouterPlugin} from './plugins';
  */
 export function useBrowserRouter(rootComponent: typeof Component) {
   const router = useMemo(() => {
-    const router = new BrowserRouter({plugins: [RouterPlugin()]});
+    const router = new BrowserRouter({plugins: [BrowserRouterPlugin()]});
     router.registerRootComponent(rootComponent);
     return router;
   }, [rootComponent]);
@@ -71,6 +72,70 @@ export function useBrowserRouter(rootComponent: typeof Component) {
   }, [router]);
 
   return [router, isReady] as const;
+}
+
+/**
+ * Creates a [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
+ *
+ * Typically, this hook is used in the context of a "view method" (i.e., a component method decorated by the [`@view()`](https://layrjs.com/docs/v1/reference/react-integration#view-decorator) decorator) at the root of an application.
+ *
+ * The created router is observed so the view where this hook is used is automatically re-rendered when the current route changes.
+ *
+ * @param rootComponent A [`Component`](https://layrjs.com/docs/v1/reference/component) class providing some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
+ * @param [options.initialURLs] An array of URLs to populate the initial navigation history (default: `[]`).
+ * @param [options.initialIndex] A number specifying the current entry's index in the navigation history (default: the index of the last entry in the navigation history).
+ *
+ * @returns An array of the shape `[router]` where `router` is the [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router) instance that was created.
+ *
+ * @example
+ * ```
+ * import {Component, provide} from '﹫layr/component';
+ * import React from 'react';
+ * import {view, useMemoryRouter} from '﹫layr/react-integration';
+ *
+ * import {MyComponent} from './my-component';
+ *
+ * class Frontend extends Component {
+ *   ﹫provide() static MyComponent = MyComponent; // A routable component
+ *
+ *   ﹫view() static View() {
+ *     const [router] = useMemoryRouter(this, {initialURLs: ['/']});
+ *
+ *     return (
+ *       <div>
+ *         <h1>My App</h1>
+ *         {router.callCurrentRoute()}
+ *       </div>
+ *     );
+ *   }
+ * }
+ * ```
+ *
+ * @category Hooks
+ * @reacthook
+ */
+export function useMemoryRouter(
+  rootComponent: typeof Component,
+  options: MemoryRouterOptions = {}
+) {
+  const router = useMemo(() => {
+    const router = new MemoryRouter(options);
+    router.registerRootComponent(rootComponent);
+    return router;
+  }, [rootComponent]);
+
+  const forceUpdate = useForceUpdate();
+
+  useEffect(() => {
+    router.addObserver(forceUpdate);
+
+    return function () {
+      router.removeObserver(forceUpdate);
+      router.unmount();
+    };
+  }, [router]);
+
+  return [router] as const;
 }
 
 /**

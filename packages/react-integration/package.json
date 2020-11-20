@@ -1,6 +1,6 @@
 {
   "name": "@layr/react-integration",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
@@ -30,6 +30,7 @@
   "dependencies": {
     "@layr/browser-router": "^1.0.6",
     "@layr/component": "^1.0.10",
+    "@layr/memory-router": "^1.0.4",
     "@layr/observable": "^1.0.3",
     "@layr/router": "^1.0.5",
     "core-helpers": "^1.0.3",
