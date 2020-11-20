@@ -3319,6 +3319,12 @@ export class Component extends Observable(Object) {
     // @ts-ignore
     const {[name]: forkedComponent} = {[name]: class extends this {}};
 
+    if (forkedComponent.name !== name) {
+      // In case the code has been transpiled by Babel with @babel/plugin-transform-classes,
+      // the above trick doesn't work, so let's set the class name manually
+      Object.defineProperty(forkedComponent, 'name', {value: name});
+    }
+
     if (componentProvider !== undefined) {
       forkedComponent.__setComponentProvider(componentProvider);
     }
