@@ -45,12 +45,20 @@ To run your application, you'll need a JavaScript runtime for both the frontend 
 
 ##### Frontend
 
-Any modern browser should work fine, and here are the minimum versions with which Layr is tested:
+###### Web
+
+Any modern browser should work fine.
+
+Here are the minimum versions with which Layr is tested:
 
 - Chrome v51
 - Safari v10
 - Firefox v54
 - Edge Chromium
+
+###### Mobile and Desktop
+
+Any mobile or desktop application framework using JavaScript (such as [React Native](https://reactnative.dev/) or [Electron](https://www.electronjs.org/)) should work fine.
 
 ##### Backend
 
