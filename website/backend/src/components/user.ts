@@ -12,7 +12,7 @@ const INVITE_TOKEN_DURATION = 604800000; // 1 week
 
 const {rangeLength} = validators;
 
-@expose({get: {call: 'anyone'}, prototype: {load: {call: 'anyone'}, save: {call: 'self'}}})
+@expose({get: {call: true}, prototype: {load: {call: true}, save: {call: 'self'}}})
 export class User extends Entity {
   ['constructor']!: typeof User;
 
@@ -46,15 +46,15 @@ export class User extends Entity {
   })
   password = '';
 
-  @expose({get: 'anyone', set: ['creator', 'self']})
+  @expose({get: true, set: ['creator', 'self']})
   @attribute('string', {validators: [rangeLength([1, 32])]})
   firstName = '';
 
-  @expose({get: 'anyone', set: ['creator', 'self']})
+  @expose({get: true, set: ['creator', 'self']})
   @attribute('string', {validators: [rangeLength([1, 32])]})
   lastName = '';
 
-  @expose({get: 'anyone'})
+  @expose({get: true})
   @loader(async function (this: User) {
     const ghost = this.getGhost();
 
@@ -65,7 +65,7 @@ export class User extends Entity {
   @attribute('string')
   fullName!: string;
 
-  @expose({get: 'anyone', set: ['creator', 'self']})
+  @expose({get: true, set: ['creator', 'self']})
   @attribute('string', {validators: [rangeLength([10, 128])]})
   url = '';
 

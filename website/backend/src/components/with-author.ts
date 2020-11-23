@@ -8,7 +8,7 @@ export const WithAuthor = (Base: typeof Entity) => {
   class WithAuthor extends Base {
     ['constructor']!: typeof WithAuthor;
 
-    @expose({get: 'anyone'}) @attribute('User') author = this.constructor.Session.user!;
+    @expose({get: true}) @attribute('User') author = this.constructor.Session.user!;
 
     @role('author') async authorRoleResolver() {
       if (this.resolveRole('guest')) {

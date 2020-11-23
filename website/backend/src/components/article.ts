@@ -22,29 +22,29 @@ if (!backendURL) {
 const {rangeLength} = validators;
 
 @expose({
-  get: {call: 'anyone'},
-  find: {call: 'anyone'},
-  count: {call: 'anyone'},
+  get: {call: true},
+  find: {call: true},
+  count: {call: true},
   prototype: {
-    load: {call: 'anyone'},
+    load: {call: true},
     save: {call: 'author'},
     delete: {call: 'author'}
   }
 })
 export class Article extends WithAuthor(Entity) {
-  @expose({get: 'anyone', set: 'author'})
+  @expose({get: true, set: 'author'})
   @attribute('string', {validators: [rangeLength([1, 200])]})
   title = '';
 
-  @expose({get: 'anyone', set: 'author'})
+  @expose({get: true, set: 'author'})
   @attribute('string', {validators: [rangeLength([1, 2000])]})
   description = '';
 
-  @expose({get: 'anyone', set: 'author'})
+  @expose({get: true, set: 'author'})
   @attribute('string', {validators: [rangeLength([1, 50000])]})
   body = '';
 
-  @expose({get: 'anyone'})
+  @expose({get: true})
   @secondaryIdentifier('string', {validators: [rangeLength([8, 300])]})
   slug = this.generateSlug();
 
@@ -59,7 +59,7 @@ export class Article extends WithAuthor(Entity) {
   }
 
   // time curl -v -X POST -H "Content-Type: application/json" -d '{"query": {"<=": {"__component": "typeof Article"}, "getRSSFeed=>": {"()": []}}}' http://localhost:18888
-  @expose({call: 'anyone'}) @method() static async getRSSFeed() {
+  @expose({call: true}) @method() static async getRSSFeed() {
     const articles = await this.find(
       {},
       {
