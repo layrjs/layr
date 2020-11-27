@@ -14,7 +14,7 @@ Typically, a full-stack application is composed of a frontend and a backend runn
 
 Separating the frontend and the backend is a good thing, but the problem is that building a web API usually leads to a lot of code scattering, duplication of knowledge, boilerplate, and accidental complexity.
 
-Layr removes the need of building a web API and [reunites](https://layrjs.com/blog/articles/Simplify-Full-Stack-Development-with-a-Unified-Architecture-187fr1) the frontend and the backend in a way that you can experience them as a single entity.
+Layr removes the need of building a web API and [reunites](https://dev.to/mvila/good-bye-web-apis-2bel) the frontend and the backend in a way that you can experience them as a single entity.
 
 On the frontend side, Layr gives you [routing capabilities](https://layrjs.com/docs/v1/reference/routable) and [object observability](https://layrjs.com/docs/v1/reference/observable) so that in most cases you don't need to add an external router or a state manager.
 
@@ -57,12 +57,20 @@ To run your application, you'll need a JavaScript runtime for both the frontend 
 
 ### Frontend
 
-Any modern browser should work fine, and here are the minimum versions with which Layr is tested:
+#### Web
+
+Any modern browser should work fine.
+
+Here are the minimum versions with which Layr is tested:
 
 - Chrome v51
 - Safari v10
 - Firefox v54
 - Edge Chromium
+
+#### Mobile and Desktop
+
+Any mobile or desktop application framework using JavaScript (such as [React Native](https://reactnative.dev/) or [Electron](https://www.electronjs.org/)) should work fine.
 
 ### Backend
 
@@ -76,6 +84,7 @@ Also, here are some more advanced examples that you can check out:
 
 - [CRUD Example App (JS)](https://github.com/layrjs/crud-example-app-js-webpack)
 - [CRUD Example App (TS)](https://github.com/layrjs/crud-example-app-ts-webpack)
+- [CRUD Example App (React Native)](https://github.com/layrjs/crud-example-app-react-native-js)
 - [RealWorld Example App (JS)](https://github.com/layrjs/react-layr-realworld-example-app)
 - [Layr Website (TS)](https://github.com/layrjs/layr/tree/master/website)
 
@@ -91,6 +100,7 @@ Also, here are some more advanced examples that you can check out:
 - [ ] Optimized serialization
 - [ ] Weak Identity Map
 - [ ] Component subscriptions (realtime updates)
+- [ ] HTTP Caching
 
 #### Storage
 
