@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-server",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Serves your Layr components",
   "keywords": [
     "layr",

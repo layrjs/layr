@@ -197,7 +197,7 @@ export class ComponentServer {
   ) {
     const serializedComponents: ComponentSet = new Set();
     const componentDependencies: ComponentSet = new Set(components);
-    const serializedResult =
+    const possiblyAsyncSerializedResult =
       result !== undefined
         ? serialize(result, {
             attributeFilter,
@@ -208,56 +208,58 @@ export class ComponentServer {
           })
         : undefined;
 
-    let serializedComponentDependencies: PlainObject[] | undefined;
-    const handledComponentDependencies = new Set(serializedComponents);
+    return possiblyAsync(possiblyAsyncSerializedResult, (serializedResult) => {
+      let serializedComponentDependencies: PlainObject[] | undefined;
+      const handledComponentDependencies = new Set(serializedComponents);
 
-    const serializeComponentDependencies = function (
-      componentDependencies: ComponentSet
-    ): void | PromiseLike<void> {
-      if (componentDependencies.size === 0) {
-        return;
-      }
+      const serializeComponentDependencies = function (
+        componentDependencies: ComponentSet
+      ): void | PromiseLike<void> {
+        if (componentDependencies.size === 0) {
+          return;
+        }
 
-      const additionalComponentDependencies: ComponentSet = new Set();
+        const additionalComponentDependencies: ComponentSet = new Set();
 
-      return possiblyAsync(
-        possiblyAsync.forEach(
-          componentDependencies.values(),
-          (componentDependency: typeof Component | Component) => {
-            if (handledComponentDependencies.has(componentDependency)) {
-              return;
-            }
+        return possiblyAsync(
+          possiblyAsync.forEach(
+            componentDependencies.values(),
+            (componentDependency: typeof Component | Component) => {
+              if (handledComponentDependencies.has(componentDependency)) {
+                return;
+              }
 
-            return possiblyAsync(
-              componentDependency.serialize({
-                attributeFilter,
-                componentDependencies: additionalComponentDependencies,
-                ignoreEmptyComponents: true,
-                serializeFunctions: true,
-                target: -1
-              }),
-              (serializedComponentDependency) => {
-                if (serializedComponentDependency !== undefined) {
-                  if (serializedComponentDependencies === undefined) {
-                    serializedComponentDependencies = [];
+              return possiblyAsync(
+                componentDependency.serialize({
+                  attributeFilter,
+                  componentDependencies: additionalComponentDependencies,
+                  ignoreEmptyComponents: true,
+                  serializeFunctions: true,
+                  target: -1
+                }),
+                (serializedComponentDependency) => {
+                  if (serializedComponentDependency !== undefined) {
+                    if (serializedComponentDependencies === undefined) {
+                      serializedComponentDependencies = [];
+                    }
+
+                    serializedComponentDependencies.push(serializedComponentDependency);
                   }
 
-                  serializedComponentDependencies.push(serializedComponentDependency);
+                  handledComponentDependencies.add(componentDependency);
                 }
+              );
+            }
+          ),
+          () => serializeComponentDependencies(additionalComponentDependencies)
+        );
+      };
 
-                handledComponentDependencies.add(componentDependency);
-              }
-            );
-          }
-        ),
-        () => serializeComponentDependencies(additionalComponentDependencies)
-      );
-    };
-
-    return possiblyAsync(serializeComponentDependencies(componentDependencies), () => ({
-      serializedResult,
-      serializedComponents: serializedComponentDependencies
-    }));
+      return possiblyAsync(serializeComponentDependencies(componentDependencies), () => ({
+        serializedResult,
+        serializedComponents: serializedComponentDependencies
+      }));
+    });
   }
 
   validateVersion(clientVersion: number | undefined) {
