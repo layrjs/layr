@@ -1,6 +1,6 @@
 {
   "name": "@layr/browser-router",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A Layr router for the browser",
   "keywords": [
     "layr",
@@ -26,7 +26,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/router": "^1.0.6",
+    "@layr/router": "^1.0.7",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "tslib": "^2.0.3"

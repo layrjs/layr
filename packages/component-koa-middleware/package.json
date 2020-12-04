@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-koa-middleware",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A Koa middleware for your Layr components",
   "keywords": [
     "layr",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@layr/component": "^1.0.11",
-    "@layr/component-server": "^1.0.7",
+    "@layr/component-server": "^1.0.8",
     "co-body": "^6.1.0",
     "core-helpers": "^1.0.3",
     "sleep-promise": "^8.0.1",

@@ -39,15 +39,15 @@
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@layr/component-client": "^1.0.7",
-    "@layr/component-server": "^1.0.7",
+    "@layr/component-client": "^1.0.8",
+    "@layr/component-server": "^1.0.8",
     "@layr/memory-store": "^1.0.5",
     "@layr/mongodb-store": "^1.0.6",
     "@mvila/dev-tools": "^1.0.26",
     "@mvila/tsconfig": "^1.0.4",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.165",
-    "@types/mongodb": "^3.5.34",
+    "@types/mongodb": "^3.6.0",
     "mongodb": "^3.6.3",
     "mongodb-memory-server": "^6.9.2"
   }
