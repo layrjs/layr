@@ -4117,8 +4117,8 @@ export class Component extends Observable(Object) {
 
           if (
             isComponentClassOrInstance(newAttributeValue) &&
-            newAttributeValue.getComponentType() ===
-              (previousAttributeValue as typeof Component | Component).getComponentType()
+            isComponentClassOrInstance(previousAttributeValue) &&
+            newAttributeValue.getComponentType() === previousAttributeValue.getComponentType()
           ) {
             return (previousAttributeValue as any).deserialize(serializedAttributeValue, options);
           }
