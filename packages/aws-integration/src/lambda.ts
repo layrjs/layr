@@ -50,6 +50,20 @@ export function createAWSLambdaHandlerForComponentServer(
   ): Promise<APIGatewayProxyStructuredResultV2> => {
     context.callbackWaitsForEmptyEventLoop = false;
 
+    if (
+      !(
+        event.version === '2.0' &&
+        event.rawPath !== undefined &&
+        event.requestContext !== undefined
+      )
+    ) {
+      // Direct invocation
+
+      return (await componentServer.receive(event as any)) as any;
+    }
+
+    // Invocation via API Gateway HTTP API v2
+
     const path = event.rawPath;
 
     for (const customRoute of customRoutes) {
@@ -65,7 +79,7 @@ export function createAWSLambdaHandlerForComponentServer(
     const method = event.requestContext.http.method.toUpperCase();
 
     if (method === 'GET') {
-      return await handleRequest({query: {'introspect=>': {'()': []}}});
+      return await handleHTTPRequest({query: {'introspect=>': {'()': []}}});
     }
 
     if (method === 'POST') {
@@ -83,7 +97,7 @@ export function createAWSLambdaHandlerForComponentServer(
         return {statusCode: 400, body: 'Bad Request'};
       }
 
-      return await handleRequest(request);
+      return await handleHTTPRequest(request);
     }
 
     if (method === 'OPTIONS') {
@@ -93,7 +107,7 @@ export function createAWSLambdaHandlerForComponentServer(
     return {statusCode: 405, body: 'Method Not Allowed'};
   };
 
-  const handleRequest = async (request: any): Promise<APIGatewayProxyStructuredResultV2> => {
+  const handleHTTPRequest = async (request: any): Promise<APIGatewayProxyStructuredResultV2> => {
     const response = await componentServer.receive(request);
 
     return {

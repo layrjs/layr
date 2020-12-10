@@ -1,6 +1,6 @@
 {
   "name": "@layr/aws-integration",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "AWS integration for Layr",
   "keywords": [
     "layr",
