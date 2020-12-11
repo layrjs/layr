@@ -235,7 +235,7 @@ Since we're using TypeScript, we want to make the frontend's `Greeter` class ful
 
 Once we have the `Greeter` class in the frontend, we can use it like any JavaScript class. So an instance of it is created with `new Greeter({name: 'Steve'})`. Note that a value for the `name` attribute is specified, but we could not specify anything, in which case the default value (`'World'`) would be used.
 
-Finally, the `hello()` method is called, and this is where all the magic happens. Although the method is implemented and executed in the backend, we can call it from the frontend as if it were a regular JavaScript method. In our case, the `hello()` method has no parameters, but if it did, they would be automatically transported to the backend. Even better, the instance's attributes that are set in the frontend (`movie.name` in our case) are transported to the backend as well.
+Finally, the `hello()` method is called, and this is where all the magic happens. Although the method is implemented and executed in the backend, we can call it from the frontend as if it were a regular JavaScript method. In our case, the `hello()` method has no parameters, but if it did, they would be automatically transported to the backend. Even better, the instance's attributes that are set in the frontend (`greeter.name` in our case) are transported to the backend as well.
 
 It's about time to run the frontend. While keeping the backend running, invoke the following command in a new terminal:
 
