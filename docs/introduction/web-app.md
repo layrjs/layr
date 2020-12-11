@@ -575,7 +575,7 @@ There is a bunch of code, but if you know a bit of React, it should be pretty ea
 Start the frontend in another terminal by invoking the following command:
 
 ```sh
-npx webpack-dev-server
+npx webpack serve --mode=development
 ```
 
 Then open [http://localhost:8080/](http://localhost:8080/) in a browser, and you should see the following display:

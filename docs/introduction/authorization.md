@@ -163,7 +163,7 @@ Notice how we specified the `ADMIN_SECRET` environment variable so the backend c
 Next, start the frontend in another terminal:
 
 ```sh
-npx webpack-dev-server
+npx webpack serve --mode=development
 ```
 
 Lastly, open [http://localhost:8080/](http://localhost:8080/) in a browser.

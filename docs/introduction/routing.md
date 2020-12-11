@@ -140,7 +140,7 @@ npx ts-node ./src/backend.ts
 Next, start the frontend in another terminal:
 
 ```sh
-npx webpack-dev-server
+npx webpack serve --mode=development
 ```
 
 Lastly, open [http://localhost:8080/](http://localhost:8080/) in a browser, and if everything went well, you should see the same display as [before](https://layrjs.com/docs/v1/introduction/web-app#starting-the-frontend).
