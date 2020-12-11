@@ -167,6 +167,16 @@ First, install `@layr/component-http-client`, which will allow us to communicate
 npm install @layr/component-http-client
 ```
 
+<!-- <if language="ts"> -->
+
+Also, since we are going to use some Node.js features, you need to install the corresponding type definitions:
+
+```sh
+npm install --save-dev @types/node
+```
+
+<!-- </if> -->
+
 Then, create a file named <!-- <if language="js"> -->`frontend.js`<!-- </if> --><!-- <if language="ts"> -->`frontend.ts`<!-- </if> --> in the `src` directory, and write the following code:
 
 ```js
