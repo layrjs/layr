@@ -1,7 +1,7 @@
 {
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ES2017",
     "module": "CommonJS",
     "lib": ["ES2018", "DOM"],
     "jsx": "react",

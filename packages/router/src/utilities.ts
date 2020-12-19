@@ -3,7 +3,7 @@ import {getTypeOf} from 'core-helpers';
 
 import type {Router} from './router';
 
-const LAYR_PROTOCOL = 'layr:';
+const INTERNAL_LAYR_BASE_URL = 'http://internal.layr';
 
 /**
  * Returns whether the specified value is a router class.
@@ -43,7 +43,7 @@ export function normalizeURL(url: URL | string) {
   }
 
   try {
-    return new URL(url, `${LAYR_PROTOCOL}/`);
+    return new URL(url, `${INTERNAL_LAYR_BASE_URL}/`);
   } catch (error) {
     throw new Error(`The specified URL is invalid (URL: '${url}')`);
   }
@@ -56,8 +56,8 @@ export function stringifyURL(url: URL) {
 
   let urlString = url.toString();
 
-  if (urlString.startsWith(LAYR_PROTOCOL)) {
-    urlString = urlString.slice(LAYR_PROTOCOL.length);
+  if (urlString.startsWith(INTERNAL_LAYR_BASE_URL)) {
+    urlString = urlString.slice(INTERNAL_LAYR_BASE_URL.length);
   }
 
   return urlString;

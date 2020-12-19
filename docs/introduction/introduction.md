@@ -51,8 +51,8 @@ Any modern browser should work fine.
 
 Here are the minimum versions with which Layr is tested:
 
-- Chrome v51
-- Safari v10
+- Chrome v55
+- Safari v11
 - Firefox v54
 - Edge Chromium
 

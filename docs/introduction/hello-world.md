@@ -66,9 +66,9 @@ Finally, configure TypeScript by creating a `tsconfig.json` file with the follow
 {
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ES2017",
     "module": "CommonJS",
-    "lib": ["ES2018", "DOM"],
+    "lib": ["ESNext", "DOM"],
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "node",
@@ -77,7 +77,8 @@ Finally, configure TypeScript by creating a `tsconfig.json` file with the follow
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true
   }
 }
 ```

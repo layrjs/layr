@@ -55,9 +55,9 @@ Modify the `tsconfig.json` file as follows:
 {
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ES2017",
     "module": "CommonJS",
-    "lib": ["ES2018", "DOM"],
+    "lib": ["ESNext", "DOM"],
     "jsx": "react",
     "sourceMap": true,
     "strict": true,
@@ -67,7 +67,8 @@ Modify the `tsconfig.json` file as follows:
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true
   }
 }
 ```

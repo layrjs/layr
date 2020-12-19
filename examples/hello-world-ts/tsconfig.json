@@ -1,9 +1,9 @@
 {
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ES2017",
     "module": "CommonJS",
-    "lib": ["ES2018"],
+    "lib": ["ESNext"],
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "node",
@@ -12,6 +12,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true
   }
 }
