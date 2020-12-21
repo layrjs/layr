@@ -10,7 +10,7 @@ import {
   assertIsComponentMixin
 } from '@layr/component';
 import type {ComponentServerLike} from '@layr/component-server';
-import {Microbatcher, Invocation} from 'microbatcher';
+import {Microbatcher, Operation} from 'microbatcher';
 import {getTypeOf, PlainObject} from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import debugModule from 'debug';
@@ -21,8 +21,7 @@ const debug = debugModule('layr:component-client');
 
 import {isComponentClientInstance} from './utilities';
 
-interface SendInvocation extends Invocation {
-  operation: 'send';
+interface SendOperation extends Operation {
   params: Parameters<ComponentClient['_sendOne']>;
   resolve: (value: ReturnType<ComponentClient['_sendOne']>) => void;
 }
@@ -42,7 +41,7 @@ export class ComponentClient {
   _componentServer: ComponentServerLike;
   _version: number | undefined;
   _mixins: ComponentMixin[] | undefined;
-  _sendBatcher: Microbatcher<SendInvocation> | undefined;
+  _sendBatcher: Microbatcher<SendOperation> | undefined;
 
   /**
    * Creates a component client.
@@ -185,7 +184,7 @@ export class ComponentClient {
 
   send(query: PlainObject, options: {componentGetter?: ComponentGetter} = {}): any {
     if (this._sendBatcher !== undefined) {
-      return this._sendBatcher.batch('send', query, options);
+      return this._sendBatcher.batch(query, options);
     }
 
     return this._sendOne(query, options);
@@ -231,20 +230,20 @@ export class ComponentClient {
     );
   }
 
-  async _sendMany(invocations: SendInvocation[]) {
-    if (invocations.length === 1) {
-      const invocation = invocations[0];
+  async _sendMany(operations: SendOperation[]) {
+    if (operations.length === 1) {
+      const operation = operations[0];
 
       try {
-        invocation.resolve(await this._sendOne(...invocation.params));
+        operation.resolve(await this._sendOne(...operation.params));
       } catch (error) {
-        invocation.reject(error);
+        operation.reject(error);
       }
 
       return;
     }
 
-    const queries = {'||': invocations.map(({params: [query]}) => query)};
+    const queries = {'||': operations.map(({params: [query]}) => query)};
 
     const {serializedQuery, serializedComponents} = this._serializeQuery(queries);
 
@@ -265,7 +264,7 @@ export class ComponentClient {
       throw error;
     };
 
-    const firstComponentGetter = invocations[0].params[1].componentGetter;
+    const firstComponentGetter = operations[0].params[1].componentGetter;
 
     await deserialize(serializedResponse.components, {
       componentGetter: firstComponentGetter,
@@ -274,21 +273,21 @@ export class ComponentClient {
       source: 1
     });
 
-    for (let index = 0; index < invocations.length; index++) {
-      const invocation = invocations[index];
+    for (let index = 0; index < operations.length; index++) {
+      const operation = operations[index];
       const serializedResult = (serializedResponse.result as unknown[])[index];
 
       try {
         const result = await deserialize(serializedResult, {
-          componentGetter: invocation.params[1].componentGetter,
+          componentGetter: operation.params[1].componentGetter,
           deserializeFunctions: true,
           errorHandler,
           source: 1
         });
 
-        invocation.resolve(result);
+        operation.resolve(result);
       } catch (error) {
-        invocation.reject(error);
+        operation.reject(error);
       }
     }
   }
