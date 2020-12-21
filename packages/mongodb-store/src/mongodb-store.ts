@@ -17,11 +17,14 @@ import {
   SortDirection
 } from '@layr/store';
 import {ensureComponentInstance} from '@layr/component';
-import {MongoClient, Db} from 'mongodb';
+import {MongoClient, Db, Collection, FilterQuery, FindOneOptions} from 'mongodb';
+import {Microbatcher, Operation} from 'microbatcher';
+import {hasOwnProperty, assertIsObjectLike} from 'core-helpers';
 import isEmpty from 'lodash/isEmpty';
 import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import escapeRegExp from 'lodash/escapeRegExp';
+import groupBy from 'lodash/groupBy';
 import debugModule from 'debug';
 
 const debug = debugModule('layr:mongodb-store');
@@ -209,8 +212,8 @@ export class MongoDBStore extends Store {
     const options = {projection};
 
     const document: Document | null = await debugCall(
-      async () => await collection.findOne(query, options),
-      'db.%s.findOne(%o, %o)',
+      async () => await batchableFindOne(collection, query, options),
+      'db.%s.batchableFindOne(%o, %o)',
       collectionName,
       query,
       options
@@ -283,7 +286,7 @@ export class MongoDBStore extends Store {
 
     const documents: Document[] = await debugCall(
       async () => {
-        const cursor = await collection.find(mongoQuery, options);
+        const cursor = collection.find(mongoQuery, options);
 
         if (mongoSort !== undefined) {
           cursor.sort(mongoSort);
@@ -414,10 +417,19 @@ export class MongoDBStore extends Store {
     return this._db;
   }
 
-  private async _getCollection(name: string) {
-    const database = await this._getDatabase();
+  private _collections: {[name: string]: Collection} | undefined;
 
-    return database.collection(name);
+  private async _getCollection(name: string) {
+    if (this._collections === undefined) {
+      this._collections = Object.create(null);
+    }
+
+    if (this._collections![name] === undefined) {
+      const database = await this._getDatabase();
+      this._collections![name] = database.collection(name);
+    }
+
+    return this._collections![name];
   }
 }
 
@@ -586,4 +598,72 @@ async function debugCall<Result>(
   debug(`${message} => %o`, ...params, result);
 
   return result as Result;
+}
+
+const findOneBatcher = Symbol('batcher');
+
+interface FindOneOperation extends Operation {
+  params: [filter: FilterQuery<any>, options: FindOneOptions<any>];
+}
+
+function batchableFindOne(
+  collection: Collection & {[findOneBatcher]?: Microbatcher<FindOneOperation>},
+  query: FilterQuery<any>,
+  options: FindOneOptions<any>
+) {
+  assertIsObjectLike(query);
+
+  if (collection[findOneBatcher] === undefined) {
+    collection[findOneBatcher] = new Microbatcher(function (operations) {
+      const operationGroups = groupBy(operations, ({params: [query, options]}) => {
+        if (hasOwnProperty(query, '_id') && Object.keys(query).length === 1) {
+          // 'query' has a single '_id' attribute
+          query = {_id: '___???___'};
+        }
+
+        return JSON.stringify([query, options]);
+      });
+
+      for (const operations of Object.values(operationGroups)) {
+        if (operations.length > 1) {
+          // Multiple `findOne()` that can be transformed into a single `find()`
+
+          const ids = operations.map((operation) => operation.params[0]._id);
+          const options = operations[0].params[1]; // All 'options' objects should be identical
+
+          collection
+            .find({_id: {$in: ids}}, options)
+            .toArray()
+            .then(
+              (documents) => {
+                for (const {
+                  params: [query],
+                  resolve
+                } of operations) {
+                  const document = documents.find((document) => document._id === query._id);
+                  resolve(document !== undefined ? document : null);
+                }
+              },
+              (error) => {
+                for (const {reject} of operations) {
+                  reject(error);
+                }
+              }
+            );
+        } else {
+          // Single `findOne()`
+
+          const {
+            params: [query, options],
+            resolve,
+            reject
+          } = operations[0];
+
+          collection.findOne(query, options).then(resolve, reject);
+        }
+      }
+    });
+  }
+
+  return collection[findOneBatcher]!.batch(query, options);
 }
