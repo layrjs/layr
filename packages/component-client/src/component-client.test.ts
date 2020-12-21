@@ -225,10 +225,12 @@ describe('ComponentClient', () => {
         isEqual(
           {query, components},
           {
-            query: [
-              {'<=': {__component: 'Movie', id: 'movie1'}, 'play=>': {'()': []}},
-              {'<=': {__component: 'Movie', id: 'movie2'}, 'play=>': {'()': []}}
-            ],
+            query: {
+              '||': [
+                {'<=': {__component: 'Movie', id: 'movie1'}, 'play=>': {'()': []}},
+                {'<=': {__component: 'Movie', id: 'movie2'}, 'play=>': {'()': []}}
+              ]
+            },
             components: [{__component: 'typeof Session', token: 'abc123'}]
           }
         )

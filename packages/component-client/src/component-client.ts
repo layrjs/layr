@@ -244,7 +244,7 @@ export class ComponentClient {
       return;
     }
 
-    const queries = invocations.map(({params: [query]}) => query);
+    const queries = {'||': invocations.map(({params: [query]}) => query)};
 
     const {serializedQuery, serializedComponents} = this._serializeQuery(queries);
 
