@@ -115,11 +115,13 @@ const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
  */
 export class MongoDBStore extends Store {
   private _connectionString: string;
+  private _poolSize: number;
 
   /**
    * Creates a [`MongoDBStore`](https://layrjs.com/docs/v1/reference/mongodb-store).
    *
    * @param connectionString The [connection string](https://docs.mongodb.com/manual/reference/connection-string/) of the MongoDB database to use.
+   * @param [options.poolSize] A number specifying the maximum size of the connection pool (default: `1`).
    *
    * @returns The [`MongoDBStore`](https://layrjs.com/docs/v1/reference/mongodb-store) instance that was created.
    *
@@ -130,10 +132,13 @@ export class MongoDBStore extends Store {
    *
    * @category Creation
    */
-  constructor(connectionString: string, options = {}) {
-    super(options);
+  constructor(connectionString: string, options: {poolSize?: number} = {}) {
+    const {poolSize = 1, ...otherOptions} = options;
+
+    super(otherOptions);
 
     this._connectionString = connectionString;
+    this._poolSize = poolSize;
   }
 
   // === Component Registration ===
@@ -373,6 +378,7 @@ export class MongoDBStore extends Store {
       debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
 
       this._client = await MongoClient.connect(this._connectionString, {
+        poolSize: this._poolSize,
         useNewUrlParser: true,
         useUnifiedTopology: true
       });
