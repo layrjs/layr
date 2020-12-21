@@ -1,6 +1,6 @@
 {
   "name": "@layr/component",
-  "version": "1.0.15",
+  "version": "1.0.17",
   "description": "The base class of all your components",
   "keywords": [
     "layr",
@@ -32,10 +32,10 @@
     "core-helpers": "^1.0.3",
     "cuid": "^2.1.8",
     "lodash": "^4.17.20",
-    "possibly-async": "^1.0.3",
+    "possibly-async": "^1.0.4",
     "simple-cloning": "^1.0.1",
     "simple-forking": "^1.0.3",
-    "simple-serialization": "^1.0.5",
+    "simple-serialization": "^1.0.6",
     "tslib": "^2.0.3"
   },
   "devDependencies": {

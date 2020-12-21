@@ -1,6 +1,6 @@
 {
   "name": "@layr/memory-router",
-  "version": "1.0.11",
+  "version": "1.0.13",
   "description": "A simple router for Layr that works without a browser",
   "keywords": [
     "layr",
@@ -26,7 +26,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/router": "^1.0.12",
+    "@layr/router": "^1.0.14",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
