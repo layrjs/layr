@@ -105,6 +105,8 @@ Also, here are some more advanced examples that you can check out:
 #### Storage
 
 - [x] Basic storage (MongoDB)
+- [ ] Automatic migrations
+- [ ] Custom migrations
 - [ ] Transactions
 - [ ] Ability to query attribute of referenced components (LEFT JOIN)
 - [ ] Sugar to query reverse relationships
