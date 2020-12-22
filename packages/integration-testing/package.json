@@ -1,6 +1,6 @@
 {
   "name": "@layr/integration-testing",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "private": true,
   "description": "Tests involving a combination of Layr packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -32,7 +32,7 @@
     "@layr/memory-router": "^1.0.13",
     "@layr/routable": "^1.0.14",
     "@layr/router": "^1.0.14",
-    "@layr/storable": "^1.0.14",
+    "@layr/storable": "^1.0.15",
     "@layr/store": "^1.0.13",
     "express": "^4.17.1",
     "koa": "^2.13.0",
