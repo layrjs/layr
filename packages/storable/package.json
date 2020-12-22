@@ -1,6 +1,6 @@
 {
   "name": "@layr/storable",
-  "version": "1.0.15",
+  "version": "1.0.20",
   "description": "A mixin providing persistence capabilities to Layr components",
   "keywords": [
     "layr",
@@ -25,25 +25,24 @@
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
-    "link": "dev-tools link:local-packages",
     "prepare": "npm run build && npm run test",
     "test": "dev-tools test:ts-library",
     "publish:package": "dev-tools publish:package",
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^1.0.17",
-    "@layr/store": "^1.0.13",
+    "@layr/component": "^1.0.19",
+    "@layr/store": "^1.0.16",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@layr/component-client": "^1.0.18",
-    "@layr/component-server": "^1.0.15",
-    "@layr/memory-store": "^1.0.11",
-    "@layr/mongodb-store": "^1.0.15",
-    "@mvila/dev-tools": "^1.0.26",
+    "@layr/component-client": "^1.0.20",
+    "@layr/component-server": "^1.0.17",
+    "@layr/memory-store": "^1.0.15",
+    "@layr/mongodb-store": "^1.0.19",
+    "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.165",

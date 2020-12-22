@@ -1,6 +1,6 @@
 {
   "name": "@layr/react-integration",
-  "version": "1.0.16",
+  "version": "1.0.19",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
@@ -22,17 +22,16 @@
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
-    "link": "dev-tools link:local-packages",
     "prepare": "npm run build",
     "publish:package": "dev-tools publish:package",
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/browser-router": "^1.0.14",
-    "@layr/component": "^1.0.17",
-    "@layr/memory-router": "^1.0.13",
-    "@layr/observable": "^1.0.4",
-    "@layr/router": "^1.0.14",
+    "@layr/browser-router": "^1.0.16",
+    "@layr/component": "^1.0.19",
+    "@layr/memory-router": "^1.0.15",
+    "@layr/observable": "^1.0.5",
+    "@layr/router": "^1.0.17",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "tslib": "^2.0.3"
@@ -41,7 +40,7 @@
     "react": "^16.13.1"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.26",
+    "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/lodash": "^4.14.165",
     "@types/react": "^16.14.2"

@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-http-server",
-  "version": "1.0.14",
+  "version": "1.0.17",
   "description": "A basic HTTP server for your Layr components",
   "keywords": [
     "layr",
@@ -21,7 +21,6 @@
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
-    "link": "dev-tools link:local-packages",
     "prepare": "npm run build && npm run test",
     "test": "dev-tools test:ts-library",
     "publish:package": "dev-tools publish:package",
@@ -29,9 +28,9 @@
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
-    "@layr/component": "^1.0.17",
-    "@layr/component-koa-middleware": "^1.0.14",
-    "@layr/component-server": "^1.0.15",
+    "@layr/component": "^1.0.19",
+    "@layr/component-koa-middleware": "^1.0.16",
+    "@layr/component-server": "^1.0.17",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
     "koa": "^2.13.0",
@@ -40,7 +39,7 @@
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.26",
+    "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/debug": "^4.1.5",
     "@types/jest": "^25.2.3",

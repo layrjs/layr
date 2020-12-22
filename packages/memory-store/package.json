@@ -1,6 +1,6 @@
 {
   "name": "@layr/memory-store",
-  "version": "1.0.11",
+  "version": "1.0.15",
   "description": "A Layr store using memory (useful for testing)",
   "keywords": [
     "layr",
@@ -20,21 +20,20 @@
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
-    "link": "dev-tools link:local-packages",
     "prepare": "npm run build",
     "publish:package": "dev-tools publish:package",
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^1.0.17",
-    "@layr/store": "^1.0.13",
+    "@layr/component": "^1.0.19",
+    "@layr/store": "^1.0.16",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "sort-on": "^4.1.0",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.26",
+    "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/lodash": "^4.14.165"
   }

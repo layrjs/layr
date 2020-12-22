@@ -1,6 +1,6 @@
 {
   "name": "@layr/component",
-  "version": "1.0.17",
+  "version": "1.0.19",
   "description": "The base class of all your components",
   "keywords": [
     "layr",
@@ -21,14 +21,13 @@
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
-    "link": "dev-tools link:local-packages",
     "prepare": "npm run build && npm run test",
     "test": "dev-tools test:ts-library",
     "publish:package": "dev-tools publish:package",
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/observable": "^1.0.4",
+    "@layr/observable": "^1.0.5",
     "core-helpers": "^1.0.3",
     "cuid": "^2.1.8",
     "lodash": "^4.17.20",
@@ -39,7 +38,7 @@
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.26",
+    "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.165",

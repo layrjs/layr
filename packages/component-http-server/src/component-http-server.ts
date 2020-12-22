@@ -91,7 +91,7 @@ export class ComponentHTTPServer {
 
     koa.use(serveComponent(this._componentServer, this._serveComponentOptions));
 
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       this._server = koa.listen(this._port, () => {
         debug(`Component HTTP server started (port: ${this._port})`);
         resolve();
@@ -112,7 +112,7 @@ export class ComponentHTTPServer {
       throw new Error('The component HTTP server is not started');
     }
 
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       server.close(() => {
         this._server = undefined;
         debug(`Component HTTP server stopped`);

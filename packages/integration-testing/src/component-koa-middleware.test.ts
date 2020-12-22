@@ -16,7 +16,7 @@ describe('Koa middleware', () => {
 
     app.use(mount('/api', serveComponent(BackendCounter)));
 
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       server = app.listen(SERVER_PORT, resolve);
     });
   });

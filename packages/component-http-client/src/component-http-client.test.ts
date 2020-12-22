@@ -56,7 +56,7 @@ describe('ComponentHTTPClient', () => {
       }
     });
 
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       server = koa.listen(SERVER_PORT, resolve);
     });
   });
@@ -66,7 +66,7 @@ describe('ComponentHTTPClient', () => {
       return;
     }
 
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       server!.close(() => {
         server = undefined;
         resolve();

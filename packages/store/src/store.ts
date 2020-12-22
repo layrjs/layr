@@ -587,30 +587,30 @@ export abstract class Store {
 
   // === Abstract document operations ===
 
-  abstract async createDocument({
+  abstract createDocument({
     collectionName,
     identifierDescriptor,
     document
   }: CreateDocumentParams): Promise<boolean>;
 
-  abstract async readDocument({
+  abstract readDocument({
     collectionName,
     identifierDescriptor,
     projection
   }: ReadDocumentParams): Promise<Document | undefined>;
 
-  abstract async updateDocument({
+  abstract updateDocument({
     collectionName,
     identifierDescriptor,
     documentPatch
   }: UpdateDocumentParams): Promise<boolean>;
 
-  abstract async deleteDocument({
+  abstract deleteDocument({
     collectionName,
     identifierDescriptor
   }: DeleteDocumentParams): Promise<boolean>;
 
-  abstract async findDocuments({
+  abstract findDocuments({
     collectionName,
     expressions,
     projection,
@@ -619,10 +619,7 @@ export abstract class Store {
     limit
   }: FindDocumentsParams): Promise<Document[]>;
 
-  abstract async countDocuments({
-    collectionName,
-    expressions
-  }: CountDocumentsParams): Promise<number>;
+  abstract countDocuments({collectionName, expressions}: CountDocumentsParams): Promise<number>;
 
   // === Serialization ===
 
