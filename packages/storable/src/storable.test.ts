@@ -177,7 +177,7 @@ describe('Storable', () => {
 
           server = new MongoMemoryServer();
 
-          const connectionString = await server.getConnectionString();
+          const connectionString = await server.getUri();
 
           await seedMongoDB(connectionString);
 

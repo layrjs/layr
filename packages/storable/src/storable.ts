@@ -556,17 +556,26 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         }
       }
 
+      let storableHasBeenCreated = false;
+
       if (storable === undefined) {
         storable = (await this.create(identifierDescriptor, {
           isNew: false
         })) as InstanceType<T>;
+        storableHasBeenCreated = true;
       }
 
-      return await storable.load(attributeSelector, {
+      const loadedStorable = await storable.load(attributeSelector, {
         reload,
         throwIfMissing,
         _callerMethodName: _callerMethodName ?? 'get'
       });
+
+      if (loadedStorable === undefined && storableHasBeenCreated) {
+        storable.detach();
+      }
+
+      return loadedStorable;
     }
 
     /**
