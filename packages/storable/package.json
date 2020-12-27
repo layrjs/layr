@@ -1,6 +1,6 @@
 {
   "name": "@layr/storable",
-  "version": "1.0.20",
+  "version": "1.0.28",
   "description": "A mixin providing persistence capabilities to Layr components",
   "keywords": [
     "layr",
@@ -32,22 +32,14 @@
   },
   "dependencies": {
     "@layr/component": "^1.0.19",
-    "@layr/store": "^1.0.16",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@layr/component-client": "^1.0.20",
-    "@layr/component-server": "^1.0.17",
-    "@layr/memory-store": "^1.0.15",
-    "@layr/mongodb-store": "^1.0.19",
     "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.165",
-    "@types/mongodb": "^3.6.3",
-    "mongodb": "^3.6.3",
-    "mongodb-memory-server": "^6.9.2"
+    "@types/lodash": "^4.14.165"
   }
 }

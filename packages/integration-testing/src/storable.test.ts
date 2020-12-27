@@ -6,6 +6,20 @@ import {
   expose,
   serialize
 } from '@layr/component';
+import {
+  Storable,
+  StorableComponent,
+  attribute,
+  primaryIdentifier,
+  secondaryIdentifier,
+  method,
+  loader,
+  finder,
+  isStorableClass,
+  isStorableInstance,
+  StorableAttributeHookName
+} from '@layr/storable';
+import type {Store} from '@layr/store';
 import {MemoryStore} from '@layr/memory-store';
 import {MongoDBStore} from '@layr/mongodb-store';
 import {MongoMemoryServer} from 'mongodb-memory-server';
@@ -13,17 +27,6 @@ import {ComponentClient} from '@layr/component-client';
 import {ComponentServer} from '@layr/component-server';
 import {PlainObject} from 'core-helpers';
 
-import {Storable, StorableComponent} from './storable';
-import {StorableAttributeHookName} from './properties';
-import {
-  attribute,
-  primaryIdentifier,
-  secondaryIdentifier,
-  method,
-  loader,
-  finder
-} from './decorators';
-import {isStorableClass, isStorableInstance} from './utilities';
 import {getInitialCollections, CREATED_ON, UPDATED_ON, seedMongoDB} from './storable.fixture';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000; // 1 minute
@@ -562,175 +565,129 @@ describe('Storable', () => {
           // ------
 
           if (User.hasStore()) {
+            const store = User.getStore() as Store;
+
             user = User.fork().create({id: 'user1'}, {isNew: false});
 
-            User.getStore().startTrace();
+            store.startTrace();
 
             expect(await user.load({})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([
+            expect(store.getTrace()).toStrictEqual([
               {
                 operation: 'load',
-                params: {
-                  storableType: 'User',
-                  identifierDescriptor: {
-                    id: 'user1'
+                params: [
+                  user,
+                  {
+                    attributeSelector: {
+                      id: true
+                    },
+                    throwIfMissing: true
                   }
-                },
-                options: {
-                  attributeSelector: {
-                    id: true
-                  },
-                  throwIfMissing: true
-                },
-                result: {
-                  __component: 'User',
-                  id: 'user1'
-                }
+                ],
+                result: user
               }
             ]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([]);
+            expect(store.getTrace()).toStrictEqual([]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({id: true})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([]);
+            expect(store.getTrace()).toStrictEqual([]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({id: true, email: true})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([
+            expect(store.getTrace()).toStrictEqual([
               {
                 operation: 'load',
-                params: {
-                  storableType: 'User',
-                  identifierDescriptor: {
-                    id: 'user1'
+                params: [
+                  user,
+                  {
+                    attributeSelector: {email: true},
+                    throwIfMissing: true
                   }
-                },
-                options: {
-                  attributeSelector: {
-                    id: true,
-                    email: true
-                  },
-                  throwIfMissing: true
-                },
-                result: {
-                  __component: 'User',
-                  id: 'user1',
-                  email: '1@user.com'
-                }
+                ],
+                result: user
               }
             ]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({id: true, email: true, fullName: true})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([
+            expect(store.getTrace()).toStrictEqual([
               {
                 operation: 'load',
-                params: {
-                  storableType: 'User',
-                  identifierDescriptor: {
-                    id: 'user1'
+                params: [
+                  user,
+                  {
+                    attributeSelector: {fullName: true},
+                    throwIfMissing: true
                   }
-                },
-                options: {
-                  attributeSelector: {
-                    id: true,
-                    fullName: true
-                  },
-                  throwIfMissing: true
-                },
-                result: {
-                  __component: 'User',
-                  id: 'user1',
-                  fullName: 'User 1'
-                }
+                ],
+                result: user
               }
             ]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({id: true, email: true, fullName: true})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([]);
+            expect(store.getTrace()).toStrictEqual([]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({fullName: true}, {reload: true})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([
+            expect(store.getTrace()).toStrictEqual([
               {
                 operation: 'load',
-                params: {
-                  storableType: 'User',
-                  identifierDescriptor: {
-                    id: 'user1'
+                params: [
+                  user,
+                  {
+                    attributeSelector: {
+                      id: true,
+                      fullName: true
+                    },
+                    throwIfMissing: true
                   }
-                },
-                options: {
-                  attributeSelector: {
-                    id: true,
-                    fullName: true
-                  },
-                  throwIfMissing: true
-                },
-                result: {
-                  __component: 'User',
-                  id: 'user1',
-                  fullName: 'User 1'
-                }
+                ],
+                result: user
               }
             ]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({organization: {}})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([
+            expect(store.getTrace()).toStrictEqual([
               {
                 operation: 'load',
-                params: {
-                  storableType: 'User',
-                  identifierDescriptor: {
-                    id: 'user1'
+                params: [
+                  user,
+                  {
+                    attributeSelector: {organization: {id: true}},
+                    throwIfMissing: true
                   }
-                },
-                options: {
-                  attributeSelector: {
-                    id: true,
-                    organization: {
-                      id: true
-                    }
-                  },
-                  throwIfMissing: true
-                },
-                result: {
-                  __component: 'User',
-                  id: 'user1',
-                  organization: {
-                    __component: 'Organization',
-                    id: 'org1'
-                  }
-                }
+                ],
+                result: user
               }
             ]);
 
-            User.getStore().stopTrace();
-            User.getStore().startTrace();
+            store.stopTrace();
+            store.startTrace();
 
             expect(await user.load({organization: {}})).toBe(user);
-            expect(User.getStore().getTrace()).toStrictEqual([]);
+            expect(store.getTrace()).toStrictEqual([]);
 
-            User.getStore().stopTrace();
+            store.stopTrace();
           }
 
           // ------
@@ -957,6 +914,8 @@ describe('Storable', () => {
           // ------
 
           if (User.hasStore()) {
+            const store = User.getStore() as Store;
+
             user = await User.fork().get('user2', {fullName: true, accessLevel: true});
 
             expect(user.serialize()).toStrictEqual({
@@ -969,25 +928,26 @@ describe('Storable', () => {
 
             user.accessLevel = 2;
 
-            User.getStore().startTrace();
+            store.startTrace();
 
             expect(await user.save()).toBe(user);
 
-            expect(User.getStore().getTrace()).toStrictEqual([
+            expect(store.getTrace()).toStrictEqual([
               {
                 operation: 'save',
-                params: {
-                  storableType: 'User',
-                  identifierDescriptor: {id: 'user2'},
-                  serializedStorable: {__component: 'User', id: 'user2', accessLevel: 2},
-                  isNew: false
-                },
-                options: {throwIfMissing: true, throwIfExists: false},
-                result: true
+                params: [
+                  user,
+                  {
+                    attributeSelector: {id: true, accessLevel: true},
+                    throwIfMissing: true,
+                    throwIfExists: false
+                  }
+                ],
+                result: user
               }
             ]);
 
-            User.getStore().stopTrace();
+            store.stopTrace();
 
             user = await User.fork().get('user2', {fullName: true, accessLevel: true});
 
@@ -999,13 +959,13 @@ describe('Storable', () => {
               accessLevel: 2
             });
 
-            User.getStore().startTrace();
+            store.startTrace();
 
             expect(await user.save()).toBe(user);
 
-            expect(User.getStore().getTrace()).toStrictEqual([]);
+            expect(store.getTrace()).toStrictEqual([]);
 
-            User.getStore().stopTrace();
+            store.stopTrace();
           }
 
           // ------

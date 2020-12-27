@@ -7,20 +7,28 @@ import {
   getComponentNameFromComponentInstanceType,
   NormalizedIdentifierDescriptor,
   AttributeSelector,
-  normalizeAttributeSelector,
-  pickFromAttributeSelector
+  createAttributeSelectorFromNames,
+  pickFromAttributeSelector,
+  mergeAttributeSelectors
 } from '@layr/component';
 import {
-  PlainObject,
+  StorableComponent,
+  isStorableClass,
+  assertIsStorableClass,
+  Query,
+  SortDescriptor,
+  Operator,
+  looksLikeOperator,
+  normalizeOperatorForValue
+} from '@layr/storable';
+import {
   isPlainObject,
   deleteUndefinedProperties,
   assertNoUnknownOptions,
   PromiseLikeValue
 } from 'core-helpers';
 import {serialize, deserialize} from 'simple-serialization';
-import cloneDeep from 'lodash/cloneDeep';
 
-import {StorableLike, isStorableLikeClass, assertIsStorableLikeClass} from './storable-like';
 import {
   Document,
   AttributeValue,
@@ -29,9 +37,7 @@ import {
   DocumentPatch,
   buildDocumentPatch
 } from './document';
-import type {Query} from './query';
 import type {Expression} from './expression';
-import {Operator, looksLikeOperator, normalizeOperatorForValue} from './operator';
 import type {Path} from './path';
 import {isStoreInstance} from './utilities';
 
@@ -72,14 +78,9 @@ export type CountDocumentsParams = {
   expressions: Expression[];
 };
 
-export type SortDescriptor = {[name: string]: SortDirection};
-
-export type SortDirection = 'asc' | 'desc';
-
 export type TraceEntry = {
   operation: string;
-  params: PlainObject;
-  options: PlainObject | undefined;
+  params: any[];
   result?: any;
   error?: any;
 };
@@ -135,7 +136,7 @@ export abstract class Store {
     let storableCount = 0;
 
     const registerIfComponentIsStorable = (component: typeof Component) => {
-      if (isStorableLikeClass(component)) {
+      if (isStorableClass(component)) {
         this.registerStorable(component);
         storableCount++;
       }
@@ -167,7 +168,7 @@ export abstract class Store {
 
   // === Storables ===
 
-  _storables = new Map<string, typeof StorableLike>();
+  _storables = new Map<string, typeof StorableComponent>();
 
   /**
    * Gets a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that is registered into the store. An error is thrown if there is no storable component with the specified name.
@@ -267,8 +268,8 @@ export abstract class Store {
    *
    * @category Component Registration
    */
-  registerStorable(storable: typeof StorableLike) {
-    assertIsStorableLikeClass(storable);
+  registerStorable(storable: typeof StorableComponent) {
+    assertIsStorableClass(storable);
 
     if (storable.hasStore()) {
       if (storable.getStore() === this) {
@@ -308,23 +309,27 @@ export abstract class Store {
 
   // === Collections ===
 
-  _getCollectionNameFromStorable(storable: typeof StorableLike | StorableLike) {
+  _getCollectionNameFromStorable(storable: typeof StorableComponent | StorableComponent) {
     return ensureComponentClass(storable).getComponentName();
   }
 
-  // === Document operations ===
+  // === Storable operations ===
 
   async load(
-    params: {storableType: string; identifierDescriptor: NormalizedIdentifierDescriptor},
+    storable: StorableComponent,
     options: {attributeSelector?: AttributeSelector; throwIfMissing?: boolean} = {}
   ) {
-    return await this._runOperation('load', params, options, async () => {
-      const {storableType, identifierDescriptor} = params;
+    return await this._runOperation('load', [storable, options], async () => {
       let {attributeSelector = true, throwIfMissing = true} = options;
 
-      attributeSelector = normalizeAttributeSelector(attributeSelector);
+      const identifierDescriptor = storable.getIdentifierDescriptor();
 
-      const storable = this.getStorableOfType(storableType);
+      // Always include the identifier attribute
+      const identifierAttributeSelector = createAttributeSelectorFromNames(
+        Object.keys(identifierDescriptor)
+      );
+      attributeSelector = mergeAttributeSelectors(attributeSelector, identifierAttributeSelector);
+
       const collectionName = this._getCollectionNameFromStorable(storable);
 
       const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
@@ -344,7 +349,9 @@ export abstract class Store {
 
         const serializedStorable = this.fromDocument(storable, document);
 
-        return serializedStorable;
+        const loadedStorable = storable.deserialize(serializedStorable, {source: 1});
+
+        return loadedStorable;
       }
 
       if (!throwIfMissing) {
@@ -363,17 +370,17 @@ export abstract class Store {
   }
 
   async save(
-    params: {
-      storableType: string;
-      identifierDescriptor: NormalizedIdentifierDescriptor;
-      serializedStorable: object;
-      isNew?: boolean;
-    },
-    options: {throwIfMissing?: boolean; throwIfExists?: boolean} = {}
+    storable: StorableComponent,
+    options: {
+      attributeSelector?: AttributeSelector;
+      throwIfMissing?: boolean;
+      throwIfExists?: boolean;
+    } = {}
   ) {
-    return await this._runOperation('save', params, options, async () => {
-      const {storableType, identifierDescriptor, serializedStorable, isNew = false} = params;
-      const {throwIfMissing = !isNew, throwIfExists = isNew} = options;
+    return await this._runOperation('save', [storable, options], async () => {
+      const isNew = storable.isNew();
+
+      const {attributeSelector = true, throwIfMissing = !isNew, throwIfExists = isNew} = options;
 
       if (throwIfMissing === true && throwIfExists === true) {
         throw new Error(
@@ -381,10 +388,16 @@ export abstract class Store {
         );
       }
 
-      const storable = this.getStorableOfType(storableType);
+      storable._assertArrayItemsAreFullyLoaded(attributeSelector);
+
+      storable.validate(attributeSelector);
+
       const collectionName = this._getCollectionNameFromStorable(storable);
 
+      const identifierDescriptor = storable.getIdentifierDescriptor();
       const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
+
+      const serializedStorable = storable.serialize({attributeSelector, includeIsNewMarks: false})!;
       const document = this.toDocument(storable, serializedStorable);
 
       let wasSaved: boolean;
@@ -429,23 +442,32 @@ export abstract class Store {
             {code: 'COMPONENT_ALREADY_EXISTS_IN_STORE', expose: true}
           );
         }
+
+        return undefined;
       }
 
-      return wasSaved;
+      if (isNew) {
+        storable.markAsNotNew(); // TODO: Mark also embedded components as not new
+      }
+
+      storable.traverseAttributes(
+        (attribute) => {
+          attribute.setValueSource(1);
+        },
+        {attributeSelector, setAttributesOnly: true}
+      );
+
+      return storable;
     });
   }
 
-  async delete(
-    params: {storableType: string; identifierDescriptor: NormalizedIdentifierDescriptor},
-    options: {throwIfMissing?: boolean} = {}
-  ) {
-    return await this._runOperation('delete', params, options, async () => {
-      const {storableType, identifierDescriptor} = params;
+  async delete(storable: StorableComponent, options: {throwIfMissing?: boolean} = {}) {
+    return await this._runOperation('delete', [storable, options], async () => {
       const {throwIfMissing = true} = options;
 
-      const storable = this.getStorableOfType(storableType);
       const collectionName = this._getCollectionNameFromStorable(storable);
 
+      const identifierDescriptor = storable.getIdentifierDescriptor();
       const documentIdentifierDescriptor = this.toDocument(storable, identifierDescriptor);
 
       const wasDeleted = await this.deleteDocument({
@@ -464,34 +486,34 @@ export abstract class Store {
             {code: 'COMPONENT_IS_MISSING_FROM_STORE', expose: true}
           );
         }
+
+        return undefined;
       }
 
-      return wasDeleted;
+      return storable;
     });
   }
 
   async find(
-    params: {
-      storableType: string;
-      query?: Query;
-      sort?: SortDescriptor;
-      skip?: number;
-      limit?: number;
-    },
-    options: {attributeSelector?: AttributeSelector} = {}
+    storable: typeof StorableComponent,
+    query: Query = {},
+    options: {sort?: SortDescriptor; skip?: number; limit?: number} = {}
   ) {
-    return await this._runOperation('find', params, options, async () => {
-      const {storableType, query = {}, sort = {}, skip, limit} = params;
-      let {attributeSelector = true} = options;
+    return await this._runOperation('find', [storable, query, options], async () => {
+      const {sort = {}, skip, limit} = options;
 
-      attributeSelector = normalizeAttributeSelector(attributeSelector);
+      const storablePrototype = storable.prototype;
 
-      const storable = this.getStorableOfType(storableType);
-      const collectionName = this._getCollectionNameFromStorable(storable);
+      const collectionName = this._getCollectionNameFromStorable(storablePrototype);
 
-      const documentExpressions = this.toDocumentExpressions(storable, query);
-      const documentSort = this.toDocument(storable, sort);
-      const documentAttributeSelector = this.toDocument(storable, attributeSelector);
+      const serializedQuery = serialize(query);
+      const documentExpressions = this.toDocumentExpressions(storablePrototype, serializedQuery);
+
+      const documentSort = this.toDocument(storablePrototype, sort);
+
+      const primaryIdentifierAttribute = storablePrototype.getPrimaryIdentifierAttribute();
+      const attributeSelector = {[primaryIdentifierAttribute.getName()]: true};
+      const documentAttributeSelector = this.toDocument(storablePrototype, attributeSelector);
       const projection = buildProjection(documentAttributeSelector);
 
       let documents = await this.findDocuments({
@@ -513,18 +535,24 @@ export abstract class Store {
         this.fromDocument(storable, document)
       );
 
-      return serializedStorables;
+      const foundStorables: StorableComponent[] = [];
+
+      for (const serializedStorable of serializedStorables) {
+        foundStorables.push(await storable.recreate(serializedStorable, {source: 1}));
+      }
+
+      return foundStorables;
     });
   }
 
-  async count(params: {storableType: string; query?: Query}) {
-    return await this._runOperation('find', params, undefined, async () => {
-      const {storableType, query = {}} = params;
+  async count(storable: typeof StorableComponent, query: Query = {}) {
+    return await this._runOperation('count', [storable, query], async () => {
+      const storablePrototype = storable.prototype;
 
-      const storable = this.getStorableOfType(storableType);
-      const collectionName = this._getCollectionNameFromStorable(storable);
+      const collectionName = this._getCollectionNameFromStorable(storablePrototype);
 
-      const documentExpressions = this.toDocumentExpressions(storable, query);
+      const serializedQuery = serialize(query);
+      const documentExpressions = this.toDocumentExpressions(storablePrototype, serializedQuery);
 
       const documentsCount = await this.countDocuments({
         collectionName,
@@ -538,25 +566,20 @@ export abstract class Store {
   async _runOperation<
     PromiseResult extends Promise<unknown>,
     Result = PromiseLikeValue<PromiseResult>
-  >(
-    operation: string,
-    params: PlainObject,
-    options: PlainObject | undefined,
-    func: () => PromiseResult
-  ): Promise<Result> {
+  >(operation: string, params: any[], func: () => PromiseResult): Promise<Result> {
     const trace = this._trace;
 
     try {
       const result = await func();
 
       if (trace !== undefined) {
-        trace.push({operation, params: cloneDeep(params), options: cloneDeep(options), result});
+        trace.push({operation, params, result});
       }
 
       return result as Result;
     } catch (error) {
       if (trace !== undefined) {
-        trace.push({operation, params: cloneDeep(params), options: cloneDeep(options), error});
+        trace.push({operation, params, error});
       }
 
       throw error;
@@ -623,12 +646,12 @@ export abstract class Store {
 
   // === Serialization ===
 
-  toDocument<Value>(_storable: typeof StorableLike | StorableLike, value: Value) {
+  toDocument<Value>(_storable: typeof StorableComponent | StorableComponent, value: Value) {
     return deserialize(value) as Value;
   }
 
   // {a: 1, b: {c: 2}} => [['a', '$equal', 1], ['b.c', '$equal', 2]]
-  toDocumentExpressions(storable: typeof StorableLike | StorableLike, query: Query) {
+  toDocumentExpressions(storable: typeof StorableComponent | StorableComponent, query: Query) {
     const documentQuery = this.toDocument(storable, query);
 
     const build = function (query: Query, expressions: Expression[], path: Path) {
@@ -751,7 +774,10 @@ export abstract class Store {
     return documentExpressions;
   }
 
-  fromDocument(_storable: typeof StorableLike | StorableLike, document: Document): Document {
+  fromDocument(
+    _storable: typeof StorableComponent | StorableComponent,
+    document: Document
+  ): Document {
     return serialize(document);
   }
 

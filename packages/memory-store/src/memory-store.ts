@@ -8,11 +8,10 @@ import {
   CountDocumentsParams,
   Document,
   Expression,
-  Path,
-  Operator,
-  SortDescriptor
+  Path
 } from '@layr/store';
-import {NormalizedIdentifierDescriptor} from '@layr/component';
+import type {Operator, SortDescriptor} from '@layr/storable';
+import type {NormalizedIdentifierDescriptor} from '@layr/component';
 import pull from 'lodash/pull';
 import get from 'lodash/get';
 import set from 'lodash/set';

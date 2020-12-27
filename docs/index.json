@@ -229,7 +229,7 @@
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",
-          "source": "../packages/store/src/query.ts",
+          "source": "../packages/storable/src/query.ts",
           "category": "Storage"
         },
         {

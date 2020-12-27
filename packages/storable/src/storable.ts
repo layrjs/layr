@@ -8,7 +8,6 @@ import {
   ValueType,
   isArrayValueTypeInstance,
   AttributeSelector,
-  createAttributeSelectorFromNames,
   createAttributeSelectorFromAttributes,
   attributeSelectorsAreEqual,
   mergeAttributeSelectors,
@@ -18,10 +17,8 @@ import {
   normalizeAttributeSelector,
   IdentifierDescriptor,
   IdentifierValue,
-  method,
-  serialize
+  method
 } from '@layr/component';
-import type {Store, Query, SortDescriptor} from '@layr/store';
 import {hasOwnProperty, isPrototypeOf, isPlainObject, getTypeOf, Constructor} from 'core-helpers';
 import mapKeys from 'lodash/mapKeys';
 
@@ -39,7 +36,13 @@ import {
   StorableMethodOptions,
   isStorableMethodInstance
 } from './properties';
+import type {Query} from './query';
+import type {StoreLike} from './store-like';
 import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utilities';
+
+export type SortDescriptor = {[name: string]: SortDirection};
+
+export type SortDirection = 'asc' | 'desc';
 
 /**
  * Extends a [`Component`](https://layrjs.com/docs/v1/reference/component) class with some storage capabilities.
@@ -167,7 +170,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
     // === Store registration ===
 
-    static __store: Store | undefined;
+    static __store: StoreLike | undefined;
 
     /**
      * Returns the store in which the storable component is registered. If the storable component is not registered in a store, an error is thrown.
@@ -209,7 +212,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       return this.__store !== undefined;
     }
 
-    static __setStore(store: Store) {
+    static __setStore(store: StoreLike) {
       Object.defineProperty(this, '__store', {value: store});
     }
 
@@ -706,10 +709,13 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       if (nonComputedAttributeSelector !== false) {
         await this.beforeLoad(nonComputedAttributeSelector);
 
-        if ((this.constructor as typeof StorableComponent).hasStore()) {
-          loadedStorable = await this.__loadFromStore(nonComputedAttributeSelector, {
+        const constructor = this.constructor as typeof StorableComponent;
+
+        if (constructor.hasStore()) {
+          loadedStorable = (await constructor.getStore().load(this, {
+            attributeSelector: nonComputedAttributeSelector,
             throwIfMissing
-          });
+          })) as T;
         } else if (this.hasRemoteMethod('load')) {
           loadedStorable = await this.callRemoteMethod('load', nonComputedAttributeSelector, {
             reload,
@@ -744,36 +750,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         throwIfMissing,
         _callerMethodName
       });
-
-      return loadedStorable;
-    }
-
-    async __loadFromStore<T extends StorableComponent>(
-      this: T,
-      attributeSelector: AttributeSelector,
-      {throwIfMissing}: {throwIfMissing: boolean}
-    ) {
-      const store = (this.constructor as typeof StorableComponent).getStore();
-
-      const storableType = this.getComponentType();
-      const identifierDescriptor = this.getIdentifierDescriptor();
-
-      // Always include the identifier attribute
-      const identifierAttributeSelector = createAttributeSelectorFromNames(
-        Object.keys(identifierDescriptor)
-      );
-      attributeSelector = mergeAttributeSelectors(attributeSelector, identifierAttributeSelector);
-
-      const serializedStorable = await store.load(
-        {storableType, identifierDescriptor},
-        {attributeSelector, throwIfMissing}
-      );
-
-      if (serializedStorable === undefined) {
-        return undefined;
-      }
-
-      const loadedStorable = this.deserialize(serializedStorable, {source: 1}) as T;
 
       return loadedStorable;
     }
@@ -922,11 +898,14 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       let savedStorable: T | undefined;
 
-      if ((this.constructor as typeof StorableComponent).hasStore()) {
-        savedStorable = await this.__saveToStore(resolvedAttributeSelector, {
+      const constructor = this.constructor as typeof StorableComponent;
+
+      if (constructor.hasStore()) {
+        savedStorable = (await constructor.getStore().save(this, {
+          attributeSelector: resolvedAttributeSelector,
           throwIfMissing,
           throwIfExists
-        });
+        })) as T;
       } else if (this.hasRemoteMethod('save')) {
         savedStorable = await this.callRemoteMethod('save', attributeSelector, {
           throwIfMissing,
@@ -945,45 +924,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       await savedStorable.afterSave(resolvedAttributeSelector);
 
       return savedStorable;
-    }
-
-    async __saveToStore(
-      attributeSelector: AttributeSelector,
-      {throwIfMissing, throwIfExists}: {throwIfMissing: boolean; throwIfExists: boolean}
-    ) {
-      this._assertArrayItemsAreFullyLoaded(attributeSelector);
-
-      this.validate(attributeSelector);
-
-      const store = (this.constructor as typeof StorableComponent).getStore();
-
-      const storableType = this.getComponentType();
-      const identifierDescriptor = this.getIdentifierDescriptor();
-      const isNew = this.isNew();
-
-      const serializedStorable = this.serialize({attributeSelector, includeIsNewMarks: false})!;
-
-      const wasSaved = await store.save(
-        {storableType, identifierDescriptor, serializedStorable, isNew},
-        {throwIfMissing, throwIfExists}
-      );
-
-      if (!wasSaved) {
-        return undefined;
-      }
-
-      if (isNew) {
-        this.markAsNotNew(); // TODO: Mark also embedded components as not new
-      }
-
-      this.traverseAttributes(
-        (attribute) => {
-          attribute.setValueSource(1);
-        },
-        {attributeSelector, setAttributesOnly: true}
-      );
-
-      return this;
     }
 
     _assertArrayItemsAreFullyLoaded(attributeSelector: AttributeSelector) {
@@ -1061,8 +1001,10 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       let deletedStorable: T | undefined;
 
-      if ((this.constructor as typeof StorableComponent).hasStore()) {
-        deletedStorable = await this.__deleteFromStore({throwIfMissing});
+      const constructor = this.constructor as typeof StorableComponent;
+
+      if (constructor.hasStore()) {
+        deletedStorable = (await constructor.getStore().delete(this, {throwIfMissing})) as T;
       } else if (this.hasRemoteMethod('delete')) {
         deletedStorable = await this.callRemoteMethod('delete', {throwIfMissing});
       } else {
@@ -1082,21 +1024,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       // TODO: deletedStorable.detach();
 
       return deletedStorable;
-    }
-
-    async __deleteFromStore({throwIfMissing}: {throwIfMissing: boolean}) {
-      const store = (this.constructor as typeof StorableComponent).getStore();
-
-      const storableType = this.getComponentType();
-      const identifierDescriptor = this.getIdentifierDescriptor();
-
-      const wasDeleted = await store.delete({storableType, identifierDescriptor}, {throwIfMissing});
-
-      if (!wasDeleted) {
-        return undefined;
-      }
-
-      return this;
     }
 
     /**
@@ -1154,7 +1081,11 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       let foundStorables: InstanceType<T>[];
 
       if (this.hasStore()) {
-        foundStorables = await this.__findInStore(query, {sort, skip, limit});
+        foundStorables = (await this.getStore().find(this, query, {
+          sort,
+          skip,
+          limit
+        })) as InstanceType<T>[];
       } else if (this.hasRemoteMethod('find')) {
         foundStorables = await this.callRemoteMethod('find', query, {}, {sort, skip, limit});
       } else {
@@ -1170,36 +1101,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       );
 
       return loadedStorables;
-    }
-
-    static async __findInStore<T extends typeof StorableComponent>(
-      this: T,
-      query: Query,
-      {
-        sort,
-        skip,
-        limit
-      }: {sort?: SortDescriptor | undefined; skip?: number | undefined; limit?: number | undefined}
-    ) {
-      const store = this.getStore();
-
-      const storableType = this.prototype.getComponentType();
-
-      const serializedQuery = serialize(query);
-
-      const primaryIdentifierAttribute = this.prototype.getPrimaryIdentifierAttribute();
-      const attributeSelector = {[primaryIdentifierAttribute.getName()]: true};
-
-      const serializedStorables = await store.find(
-        {storableType, query: serializedQuery, sort, skip, limit},
-        {attributeSelector}
-      );
-
-      const foundStorables = serializedStorables.map(
-        (serializedStorable) => this.recreate(serializedStorable, {source: 1}) as InstanceType<T>
-      );
-
-      return foundStorables;
     }
 
     /**
@@ -1237,7 +1138,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       let storablesCount: number;
 
       if (this.hasStore()) {
-        storablesCount = await this.__countInStore(query);
+        storablesCount = await this.getStore().count(this, query);
       } else if (this.hasRemoteMethod('count')) {
         storablesCount = await this.callRemoteMethod('count', query);
       } else {
@@ -1245,18 +1146,6 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
           `To be able to execute the count() method, a storable component should be registered in a store or have an exposed count() remote method (${this.describeComponent()})`
         );
       }
-
-      return storablesCount;
-    }
-
-    static async __countInStore(query: Query) {
-      const store = this.getStore();
-
-      const storableType = this.prototype.getComponentType();
-
-      const serializedQuery = serialize(query);
-
-      const storablesCount = await store.count({storableType, query: serializedQuery});
 
       return storablesCount;
     }

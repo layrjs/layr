@@ -1,6 +1,5 @@
 import {
   Store,
-  StorableLike,
   CreateDocumentParams,
   ReadDocumentParams,
   UpdateDocumentParams,
@@ -8,14 +7,17 @@ import {
   FindDocumentsParams,
   CountDocumentsParams,
   Document,
-  Query,
   Expression,
   Path,
-  Operator,
-  Operand,
-  SortDescriptor,
-  SortDirection
+  Operand
 } from '@layr/store';
+import type {
+  StorableComponent,
+  Query,
+  SortDescriptor,
+  SortDirection,
+  Operator
+} from '@layr/storable';
 import {ensureComponentInstance} from '@layr/component';
 import {MongoClient, Db, Collection, FilterQuery, FindOneOptions} from 'mongodb';
 import {Microbatcher, Operation} from 'microbatcher';
@@ -334,7 +336,7 @@ export class MongoDBStore extends Store {
 
   // === Serialization ===
 
-  toDocument<Value>(storable: typeof StorableLike | StorableLike, value: Value) {
+  toDocument<Value>(storable: typeof StorableComponent | StorableComponent, value: Value) {
     let document = super.toDocument(storable, value);
 
     if (typeof document === 'object') {
@@ -350,7 +352,10 @@ export class MongoDBStore extends Store {
     return document;
   }
 
-  fromDocument(storable: typeof StorableLike | StorableLike, document: Document): Document {
+  fromDocument(
+    storable: typeof StorableComponent | StorableComponent,
+    document: Document
+  ): Document {
     let serializedStorable = super.fromDocument(storable, document);
 
     if (typeof serializedStorable === 'object') {
