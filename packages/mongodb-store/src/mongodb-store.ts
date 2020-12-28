@@ -6,6 +6,8 @@ import {
   DeleteDocumentParams,
   FindDocumentsParams,
   CountDocumentsParams,
+  MigrateCollectionParams,
+  MigrateCollectionResult,
   Document,
   Expression,
   Path,
@@ -369,6 +371,114 @@ export class MongoDBStore extends Store {
     }
 
     return serializedStorable;
+  }
+
+  // === Migration ===
+
+  async migrateCollection({
+    collectionName,
+    collectionSchema,
+    silent = false
+  }: MigrateCollectionParams) {
+    const result: MigrateCollectionResult = {
+      name: collectionName,
+      createdIndexes: [],
+      droppedIndexes: []
+    };
+
+    const database = await this._getDatabase();
+
+    let collection: Collection;
+    let collectionHasBeenCreated: boolean;
+
+    const collections = await database
+      .listCollections({name: collectionName}, {nameOnly: true})
+      .toArray();
+
+    if (collections.length === 0) {
+      if (!silent) {
+        console.log(`Creating collection: '${collectionName}'`);
+      }
+
+      collection = await database.createCollection(collectionName);
+      collectionHasBeenCreated = true;
+    } else {
+      collection = database.collection(collectionName);
+      collectionHasBeenCreated = false;
+    }
+
+    const existingIndexNames: string[] = (await collection.indexes()).map(
+      (index: any) => index.name
+    );
+
+    const indexesToEnsure: any[] = [];
+
+    for (const index of collectionSchema.indexes) {
+      if (index.isPrimary) {
+        continue; // The primary index ('_id') is automatically handled by MongoDB
+      }
+
+      let indexName = '';
+      let indexSpec: any = {};
+
+      for (let [name, direction] of Object.entries(index.attributes)) {
+        const directionString = direction.toLowerCase();
+
+        if (indexName !== '') {
+          indexName += ' + ';
+        }
+
+        indexName += name;
+
+        if (directionString === 'desc') {
+          indexName += ' (desc)';
+        }
+
+        indexSpec[name] = directionString === 'desc' ? -1 : 1;
+      }
+
+      if (index.isUnique) {
+        indexName += ' [unique]';
+      }
+
+      indexesToEnsure.push({name: indexName, spec: indexSpec, isUnique: index.isUnique});
+    }
+
+    const indexesToCreate = indexesToEnsure.filter(
+      (index) => !existingIndexNames.includes(index.name)
+    );
+
+    const indexNamesToDrop = existingIndexNames.filter(
+      (name) => name !== '_id_' && !indexesToEnsure.some((index) => index.name === name)
+    );
+
+    if (indexesToCreate.length !== 0 || indexNamesToDrop.length !== 0) {
+      if (!collectionHasBeenCreated && !silent) {
+        console.log(`Migrating collection: '${collectionName}'`);
+      }
+    }
+
+    for (const name of indexNamesToDrop) {
+      if (!silent) {
+        console.log(`Dropping index: '${name}'`);
+      }
+
+      await collection.dropIndex(name);
+
+      result.droppedIndexes.push(name);
+    }
+
+    for (const index of indexesToCreate) {
+      if (!silent) {
+        console.log(`Creating index: '${index.name}'`);
+      }
+
+      await collection.createIndex(index.spec, {name: index.name, unique: index.isUnique});
+
+      result.createdIndexes.push(index.name);
+    }
+
+    return result;
   }
 
   // === MongoDB client ===

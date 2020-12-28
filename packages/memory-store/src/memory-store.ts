@@ -6,6 +6,8 @@ import {
   DeleteDocumentParams,
   FindDocumentsParams,
   CountDocumentsParams,
+  MigrateCollectionParams,
+  MigrateCollectionResult,
   Document,
   Expression,
   Path
@@ -229,6 +231,18 @@ export class MemoryStore extends Store {
     const documents = await this._findDocuments({collection, expressions});
 
     return documents.length;
+  }
+
+  // === Migration ===
+
+  async migrateCollection({collectionName}: MigrateCollectionParams) {
+    const result: MigrateCollectionResult = {
+      name: collectionName,
+      createdIndexes: [],
+      droppedIndexes: []
+    };
+
+    return result;
   }
 }
 

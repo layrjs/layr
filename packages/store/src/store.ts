@@ -9,7 +9,10 @@ import {
   AttributeSelector,
   createAttributeSelectorFromNames,
   pickFromAttributeSelector,
-  mergeAttributeSelectors
+  mergeAttributeSelectors,
+  isIdentifierAttributeInstance,
+  isPrimaryIdentifierAttributeInstance,
+  isSecondaryIdentifierAttributeInstance
 } from '@layr/component';
 import {
   StorableComponent,
@@ -17,6 +20,7 @@ import {
   assertIsStorableClass,
   Query,
   SortDescriptor,
+  SortDirection,
   Operator,
   looksLikeOperator,
   normalizeOperatorForValue
@@ -76,6 +80,27 @@ export type FindDocumentsParams = {
 export type CountDocumentsParams = {
   collectionName: string;
   expressions: Expression[];
+};
+
+export type MigrateCollectionParams = {
+  collectionName: string;
+  collectionSchema: CollectionSchema;
+  silent?: boolean;
+};
+
+export type MigrateCollectionResult = {
+  name: string;
+  createdIndexes: string[];
+  droppedIndexes: string[];
+};
+
+export type CollectionSchema = {
+  indexes: {
+    attributes: {[name: string]: SortDirection};
+    isPrimary?: boolean;
+    isSecondary?: boolean;
+    isUnique?: boolean;
+  }[];
 };
 
 export type TraceEntry = {
@@ -608,6 +633,14 @@ export abstract class Store {
     this._trace = undefined;
   }
 
+  // === Abstract collection operations ===
+
+  abstract migrateCollection({
+    collectionName,
+    collectionSchema,
+    silent
+  }: MigrateCollectionParams): Promise<MigrateCollectionResult>;
+
   // === Abstract document operations ===
 
   abstract createDocument({
@@ -779,6 +812,48 @@ export abstract class Store {
     document: Document
   ): Document {
     return serialize(document);
+  }
+
+  // === Migration ===
+
+  async migrateStorables(options: {silent?: boolean} = {}) {
+    const {silent = false} = options;
+
+    const allResults: {collections: MigrateCollectionResult[]} = {
+      collections: []
+    };
+
+    for (const storable of this.getStorables()) {
+      const result = await this.migrateStorable(storable, {silent});
+      allResults.collections.push(result);
+    }
+
+    return allResults;
+  }
+
+  async migrateStorable(storable: typeof StorableComponent, options: {silent?: boolean} = {}) {
+    const {silent = false} = options;
+
+    const storablePrototype = storable.prototype;
+
+    const collectionName = this._getCollectionNameFromStorable(storablePrototype);
+
+    const collectionSchema: CollectionSchema = {
+      indexes: []
+    };
+
+    for (const attribute of storablePrototype.getAttributes()) {
+      if (isIdentifierAttributeInstance(attribute)) {
+        const attributes = {[attribute.getName()]: 'asc' as SortDirection};
+        const isPrimary = isPrimaryIdentifierAttributeInstance(attribute);
+        const isSecondary = isSecondaryIdentifierAttributeInstance(attribute);
+        const isUnique = true;
+
+        collectionSchema.indexes.push({attributes, isPrimary, isSecondary, isUnique});
+      }
+    }
+
+    return await this.migrateCollection({collectionName, collectionSchema, silent});
   }
 
   // === Utilities ===
