@@ -36,6 +36,7 @@ import {
   StorableMethodOptions,
   isStorableMethodInstance
 } from './properties';
+import {Index, IndexAttributes, IndexOptions} from './index-class';
 import type {Query} from './query';
 import type {StoreLike} from './store-like';
 import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utilities';
@@ -406,6 +407,114 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       })) {
         await attribute.callHook(name);
       }
+    }
+
+    // === Indexes ===
+
+    getIndex(attributes: IndexAttributes, options: {autoFork?: boolean} = {}) {
+      const {autoFork = true} = options;
+
+      const index = this.__getIndex(attributes, {autoFork});
+
+      if (index === undefined) {
+        throw new Error(
+          `The index \`${JSON.stringify(attributes)}\` is missing (${this.describeComponent()})`
+        );
+      }
+
+      return index;
+    }
+
+    hasIndex(attributes: IndexAttributes) {
+      return this.__getIndex(attributes, {autoFork: false}) !== undefined;
+    }
+
+    __getIndex(attributes: IndexAttributes, options: {autoFork: boolean}) {
+      const {autoFork} = options;
+
+      const indexes = this.__getIndexes();
+      const key = Index._buildIndexKey(attributes);
+
+      let index = indexes[key];
+
+      if (index === undefined) {
+        return undefined;
+      }
+
+      if (autoFork && index.getParent() !== this) {
+        index = index.fork(this);
+        indexes[key] = index;
+      }
+
+      return index;
+    }
+
+    setIndex(attributes: IndexAttributes, options: IndexOptions = {}): Index {
+      let index = this.hasIndex(attributes) ? this.getIndex(attributes) : undefined;
+
+      if (index === undefined) {
+        index = new Index(attributes, this, options);
+        const indexes = this.__getIndexes();
+        const key = Index._buildIndexKey(attributes);
+        indexes[key] = index;
+      } else {
+        index.setOptions(options);
+      }
+
+      return index;
+    }
+
+    deleteIndex(attributes: IndexAttributes) {
+      const indexes = this.__getIndexes();
+      const key = Index._buildIndexKey(attributes);
+
+      if (!hasOwnProperty(indexes, key)) {
+        return false;
+      }
+
+      delete indexes[key];
+
+      return true;
+    }
+
+    getIndexes(
+      options: {
+        autoFork?: boolean;
+      } = {}
+    ) {
+      const {autoFork = true} = options;
+
+      const storable = this;
+
+      return {
+        *[Symbol.iterator]() {
+          const indexes = storable.__getIndexes({autoCreateOrFork: false});
+
+          if (indexes !== undefined) {
+            for (const key in indexes) {
+              const attributes = indexes[key].getAttributes();
+
+              const index = storable.getIndex(attributes, {autoFork});
+
+              yield index;
+            }
+          }
+        }
+      };
+    }
+
+    __indexes?: {[name: string]: Index};
+
+    __getIndexes({autoCreateOrFork = true} = {}) {
+      if (autoCreateOrFork) {
+        if (!('__indexes' in this)) {
+          Object.defineProperty(this, '__indexes', {value: Object.create(null)});
+        } else if (!hasOwnProperty(this, '__indexes')) {
+          Object.defineProperty(this, '__indexes', {value: Object.create(this.__indexes!)});
+        }
+      }
+
+      return this.__indexes!;
     }
 
     // === Storable methods ===

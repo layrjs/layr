@@ -9,7 +9,7 @@ import {
   isComponentInstance
 } from '@layr/component';
 
-import {StorableComponent} from './storable';
+import {StorableComponent, SortDirection} from './storable';
 import {
   StorablePropertyFinder,
   StorableAttribute,
@@ -20,7 +20,8 @@ import {
   StorableMethod,
   StorableMethodOptions
 } from './properties';
-import {isStorableClassOrInstance, isStorableInstance} from './utilities';
+import type {IndexAttributes} from './index-class';
+import {isStorableClass, isStorableInstance, isStorableClassOrInstance} from './utilities';
 
 type StorableAttributeDecoratorOptions = Omit<StorableAttributeOptions, 'value' | 'default'>;
 
@@ -193,5 +194,59 @@ export function finder(finder: StorablePropertyFinder) {
     }
 
     target.getStorableProperty(name).setFinder(finder);
+  };
+}
+
+type ClassIndexParam = {attributes: IndexAttributes; isUnique?: boolean}[];
+type AttributeIndexParam = {direction?: SortDirection; isUnique?: boolean};
+
+export function index(param: ClassIndexParam): (target: typeof StorableComponent) => void;
+export function index(
+  param?: AttributeIndexParam
+): (target: StorableComponent, name: string) => void;
+export function index(param: ClassIndexParam | AttributeIndexParam = {}) {
+  return function (target: typeof StorableComponent | StorableComponent, name?: string) {
+    if (name === undefined) {
+      // Class decorator
+
+      if (!isStorableClass(target)) {
+        throw new Error(
+          `@index() must be used as a storable component class decorator or a storable component attribute decorator`
+        );
+      }
+
+      if (!Array.isArray(param)) {
+        throw new Error(
+          `An array is expected when @index() is used as a storable component class decorator`
+        );
+      }
+
+      for (const {attributes, isUnique} of param) {
+        target.prototype.setIndex(attributes, {isUnique});
+      }
+
+      return;
+    }
+
+    // Attribute decorator
+
+    if (!isStorableInstance(target)) {
+      throw new Error(
+        `@index() must be used as a storable component class decorator or a storable component attribute decorator (property: '${name}')`
+      );
+    }
+
+    if (
+      !target.hasProperty(name) ||
+      target.getProperty(name, {autoFork: false}).getParent() !== target
+    ) {
+      throw new Error(
+        `@index() must be used in combination with @attribute() (property: '${name}')`
+      );
+    }
+
+    const {direction = 'asc', isUnique} = param as AttributeIndexParam;
+
+    target.setIndex({[name]: direction}, {isUnique});
   };
 }

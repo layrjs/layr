@@ -23,6 +23,8 @@ describe('Storable Migration', () => {
       @secondaryIdentifier() slug!: string;
 
       @attribute('string') title!: string;
+
+      @attribute('number') year!: number;
     }
 
     movieClass = Movie;
@@ -63,6 +65,40 @@ describe('Storable Migration', () => {
 
     expect(result).toStrictEqual({
       collections: [{name: 'Movie', createdIndexes: [], droppedIndexes: ['slug [unique]']}]
+    });
+
+    movieClass.prototype.setIndex({title: 'asc'});
+
+    result = await store.migrateStorables({silent: true});
+
+    expect(result).toStrictEqual({
+      collections: [{name: 'Movie', createdIndexes: ['title'], droppedIndexes: []}]
+    });
+
+    movieClass.prototype.setIndex({title: 'asc'}, {isUnique: true});
+
+    result = await store.migrateStorables({silent: true});
+
+    expect(result).toStrictEqual({
+      collections: [{name: 'Movie', createdIndexes: ['title [unique]'], droppedIndexes: ['title']}]
+    });
+
+    movieClass.prototype.deleteIndex({title: 'asc'});
+
+    result = await store.migrateStorables({silent: true});
+
+    expect(result).toStrictEqual({
+      collections: [{name: 'Movie', createdIndexes: [], droppedIndexes: ['title [unique]']}]
+    });
+
+    movieClass.prototype.setIndex({year: 'desc', title: 'asc'}, {isUnique: true});
+
+    result = await store.migrateStorables({silent: true});
+
+    expect(result).toStrictEqual({
+      collections: [
+        {name: 'Movie', createdIndexes: ['year (desc) + title [unique]'], droppedIndexes: []}
+      ]
     });
   });
 });

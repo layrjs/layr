@@ -842,7 +842,7 @@ export abstract class Store {
       indexes: []
     };
 
-    for (const attribute of storablePrototype.getAttributes()) {
+    for (const attribute of storablePrototype.getAttributes({autoFork: false})) {
       if (isIdentifierAttributeInstance(attribute)) {
         const attributes = {[attribute.getName()]: 'asc' as SortDirection};
         const isPrimary = isPrimaryIdentifierAttributeInstance(attribute);
@@ -851,6 +851,13 @@ export abstract class Store {
 
         collectionSchema.indexes.push({attributes, isPrimary, isSecondary, isUnique});
       }
+    }
+
+    for (const index of storablePrototype.getIndexes({autoFork: false})) {
+      const attributes = index.getAttributes();
+      const {isUnique} = index.getOptions();
+
+      collectionSchema.indexes.push({attributes, isUnique});
     }
 
     return await this.migrateCollection({collectionName, collectionSchema, silent});

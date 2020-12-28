@@ -1,6 +1,6 @@
 {
   "name": "@layr/storable",
-  "version": "1.0.28",
+  "version": "1.0.31",
   "description": "A mixin providing persistence capabilities to Layr components",
   "keywords": [
     "layr",

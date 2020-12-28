@@ -1,4 +1,5 @@
 export * from './decorators';
+export * from './index-class';
 export * from './properties';
 export * from './operator';
 export * from './query';
