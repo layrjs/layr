@@ -33,7 +33,7 @@
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
-    "@types/lodash": "^4.14.165",
+    "@types/lodash": "^4.14.166",
     "@types/react": "^16.14.2"
   }
 }

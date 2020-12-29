@@ -42,7 +42,7 @@
     "@types/koa": "^2.11.6",
     "@types/koa-json-error": "^3.1.2",
     "@types/koa__cors": "^3.0.2",
-    "@types/lodash": "^4.14.165",
+    "@types/lodash": "^4.14.166",
     "co-body": "^6.1.0",
     "koa": "^2.13.0",
     "koa-json-error": "^3.1.2",

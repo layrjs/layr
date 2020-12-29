@@ -1,6 +1,6 @@
 {
   "name": "@layr/storable",
-  "version": "1.0.31",
+  "version": "1.1.1",
   "description": "A mixin providing persistence capabilities to Layr components",
   "keywords": [
     "layr",
@@ -40,6 +40,6 @@
     "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.165"
+    "@types/lodash": "^4.14.166"
   }
 }

@@ -41,7 +41,7 @@
     "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.165",
+    "@types/lodash": "^4.14.166",
     "sleep-promise": "^8.0.1"
   }
 }

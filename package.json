@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": "https://github.com/layrjs/layr",
   "scripts": {
-    "build:doc": "simple-doc ./docs ./docs/build"
+    "build:docs": "simple-doc ./docs ./docs/build"
   },
   "prettier": "@mvila/prettierrc",
   "devDependencies": {
