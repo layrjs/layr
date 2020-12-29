@@ -233,6 +233,13 @@
           "category": "Storage"
         },
         {
+          "title": "Index",
+          "slug": "index",
+          "file": "reference/index.md",
+          "source": "../packages/storable/src/index-class.ts",
+          "category": "Storage"
+        },
+        {
           "title": "Store",
           "slug": "store",
           "file": "reference/store.md",
