@@ -10,7 +10,7 @@ export type IndexAttributes = {[name: string]: SortDirection};
 export type IndexOptions = {isUnique?: boolean};
 
 /**
- * An `Index` instance represents an index for one or several [attributes](https://layrjs.com/docs/v1/reference/attribute) of a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class).
+ * Represents an index for one or several [attributes](https://layrjs.com/docs/v1/reference/attribute) of a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class).
  *
  * Once an index is defined for an attribute, all queries involving this attribute (through the [`find()`](https://layrjs.com/docs/v1/reference/storable#find-class-method) or the [`count()`](https://layrjs.com/docs/v1/reference/storable#count-class-method) methods) can be greatly optimized by the storable component's [store](https://layrjs.com/docs/v1/reference/store) and its underlying database.
  *

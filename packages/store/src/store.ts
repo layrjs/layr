@@ -816,6 +816,17 @@ export abstract class Store {
 
   // === Migration ===
 
+  /**
+   * Migrates the database to reflect all the [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that are registered into the store.
+   *
+   * The migration consists in synchronizing the indexes of the database with the indexes that are defined in each storable component (typically using the [`@index()`](https://layrjs.com/docs/v1/reference/storable#index-decorator) decorator).
+   *
+   * @param [options.silent] A boolean specifying whether the operation should not produce any output in the console (default: `false`).
+   *
+   * @examplelink See an example of use in the [`Index`](https://layrjs.com/docs/v1/reference/index) class.
+   *
+   * @category Migration
+   */
   async migrateStorables(options: {silent?: boolean} = {}) {
     const {silent = false} = options;
 

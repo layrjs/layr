@@ -375,6 +375,12 @@ export class MongoDBStore extends Store {
 
   // === Migration ===
 
+  /**
+   * See the methods that are inherited from the [`Store`](https://layrjs.com/docs/v1/reference/store#migration) class.
+   *
+   * @category Migration
+   */
+
   async migrateCollection({
     collectionName,
     collectionSchema,
