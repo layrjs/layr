@@ -201,6 +201,70 @@ type ClassIndexParam = IndexAttributes;
 type ClassIndexOptions = {isUnique?: boolean};
 type AttributeIndexParam = {direction?: SortDirection; isUnique?: boolean};
 
+/**
+ * Defines an [index](https://layrjs.com/docs/v1/reference/index) for an attribute or a set of attributes.
+ *
+ * This decorator is commonly placed before a storable component attribute to define a [single attribute index](https://layrjs.com/docs/v1/reference/index#single-attribute-indexes), but it can also be placed before a storable component class to define a [compound attribute index](https://layrjs.com/docs/v1/reference/index#compound-attribute-indexes).
+ *
+ * @param [optionsOrAttributes] Depends on the type of index you want to define (see below).
+ * @param [options] An object specifying some options in the case of compound attribute index (see below).
+ *
+ * @details
+ * ###### Single Attribute Indexes
+ *
+ * You can define an index for a single attribute by placing the `@index()` decorator before an attribute definition. In this case, you can specify the following parameters:
+ *
+ * - `options`:
+ *   - `direction`: A string representing the sort direction of the index. The possible values are `'asc'` (ascending) or `'desc'` (descending) and the default value is `'asc'`.
+ *   - `isUnique`: A boolean specifying whether the index should hold unique values or not (default: `false`). When set to `true`, the underlying database will prevent you to store an attribute with the same value in multiple storable components.
+ *
+ * ###### Compound Attribute Indexes
+ *
+ * You can define an index that combines multiple attributes by placing the `@index()` decorator before a storable component class definition. In this case, you can specify the following parameters:
+ *
+ * - `attributes`: An object specifying the attributes to be indexed. The shape of the object should be `{attributeName: direction, ...}` where `attributeName` is a string representing the name of an attribute and `direction` is a string representing the sort direction (possible values: `'asc'` or `'desc'`).
+ * - `options`:
+ *   - `isUnique`: A boolean specifying whether the index should hold unique values or not (default: `false`). When set to `true`, the underlying database will prevent you to store an attribute with the same value in multiple storable components.
+ *
+ * @example
+ * ```
+ * // JS
+ *
+ * import {Component} from '@layr/component';
+ * import {Storable, attribute, index} from '@layr/storable';
+ *
+ * // An index that combines the `year` and `title` attributes:
+ * ﹫index({year: 'desc', title: 'asc'})
+ * export class Movie extends Storable(Component) {
+ *   // An index for the `title` attribute with the `isUnique` option:
+ *   @index({isUnique: true}) @attribute('string') title;
+ *
+ *   // An index for the `year` attribute with the `'desc'` sort direction:
+ *   @index({direction: 'desc'}) @attribute('number') year;
+ * }
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import {Component} from '@layr/component';
+ * import {Storable, attribute, index} from '@layr/storable';
+ *
+ * // An index that combines the `year` and `title` attributes:
+ * ﹫index({year: 'desc', title: 'asc'})
+ * export class Movie extends Storable(Component) {
+ *   // An index for the `title` attribute with the `isUnique` option:
+ *   @index({isUnique: true}) @attribute('string') title!: string;
+ *
+ *   // An index for the `year` attribute with the `'desc'` sort direction:
+ *   @index({direction: 'desc'}) @attribute('number') year!: string;
+ * }
+ * ```
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function index(
   param?: AttributeIndexParam
 ): (target: StorableComponent, name: string) => void;
