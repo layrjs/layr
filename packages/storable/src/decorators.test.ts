@@ -93,7 +93,7 @@ describe('Decorators', () => {
   });
 
   test('@index()', async () => {
-    @index([{attributes: {year: 'desc', title: 'asc'}, isUnique: true}])
+    @index({year: 'desc', title: 'asc'}, {isUnique: true})
     class Movie extends Storable(Component) {
       @index({isUnique: true}) @attribute('string') title!: string;
 

@@ -1,8 +1,9 @@
 import {Component} from '@layr/component';
 
 import {Storable} from '../storable';
-import {attribute, method, loader, finder} from '../decorators';
+import {attribute, method, loader, finder, index} from '../decorators';
 import {isStorableAttributeInstance, isStorableMethodInstance} from '../properties';
+import {isIndexInstance} from '../index-class';
 
 describe('Decorators', () => {
   test('@attribute()', async () => {
@@ -89,5 +90,35 @@ describe('Decorators', () => {
     expect(hasAccessLevelMethod.getParent()).toBe(Movie.prototype);
     expect(hasAccessLevelMethod.getFinder()).toBe(hasAccessLevelFinder);
     expect(hasAccessLevelMethod.hasFinder()).toBe(true);
+  });
+
+  test('@index()', async () => {
+    @index({year: 'desc', title: 'asc'}, {isUnique: true})
+    class Movie extends Storable(Component) {
+      @index({isUnique: true}) @attribute('string') title;
+
+      @index({direction: 'desc'}) @attribute('number') year;
+    }
+
+    const titleIndex = Movie.prototype.getIndex({title: 'asc'});
+
+    expect(isIndexInstance(titleIndex)).toBe(true);
+    expect(titleIndex.getAttributes()).toStrictEqual({title: 'asc'});
+    expect(titleIndex.getParent()).toBe(Movie.prototype);
+    expect(titleIndex.getOptions().isUnique).toBe(true);
+
+    const yearIndex = Movie.prototype.getIndex({year: 'desc'});
+
+    expect(isIndexInstance(yearIndex)).toBe(true);
+    expect(yearIndex.getAttributes()).toStrictEqual({year: 'desc'});
+    expect(yearIndex.getParent()).toBe(Movie.prototype);
+    expect(yearIndex.getOptions().isUnique).not.toBe(true);
+
+    const compoundIndex = Movie.prototype.getIndex({year: 'desc', title: 'asc'});
+
+    expect(isIndexInstance(compoundIndex)).toBe(true);
+    expect(compoundIndex.getAttributes()).toStrictEqual({year: 'desc', title: 'asc'});
+    expect(compoundIndex.getParent()).toBe(Movie.prototype);
+    expect(compoundIndex.getOptions().isUnique).toBe(true);
   });
 });

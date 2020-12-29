@@ -197,14 +197,21 @@ export function finder(finder: StorablePropertyFinder) {
   };
 }
 
-type ClassIndexParam = {attributes: IndexAttributes; isUnique?: boolean}[];
+type ClassIndexParam = IndexAttributes;
+type ClassIndexOptions = {isUnique?: boolean};
 type AttributeIndexParam = {direction?: SortDirection; isUnique?: boolean};
 
-export function index(param: ClassIndexParam): (target: typeof StorableComponent) => void;
 export function index(
   param?: AttributeIndexParam
 ): (target: StorableComponent, name: string) => void;
-export function index(param: ClassIndexParam | AttributeIndexParam = {}) {
+export function index(
+  param: ClassIndexParam,
+  options?: ClassIndexOptions
+): (target: typeof StorableComponent) => void;
+export function index(
+  param: ClassIndexParam | AttributeIndexParam = {},
+  options: ClassIndexOptions = {}
+) {
   return function (target: typeof StorableComponent | StorableComponent, name?: string) {
     if (name === undefined) {
       // Class decorator
@@ -215,15 +222,7 @@ export function index(param: ClassIndexParam | AttributeIndexParam = {}) {
         );
       }
 
-      if (!Array.isArray(param)) {
-        throw new Error(
-          `An array is expected when @index() is used as a storable component class decorator`
-        );
-      }
-
-      for (const {attributes, isUnique} of param) {
-        target.prototype.setIndex(attributes, {isUnique});
-      }
+      target.prototype.setIndex(param as ClassIndexParam, options);
 
       return;
     }
