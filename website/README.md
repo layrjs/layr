@@ -26,6 +26,18 @@ FRONTEND_URL=http://localhost:18887 \
 
 The app should then be available at http://localhost:18887.
 
+### Migrating the database
+
+Navigate to the `./backend` directory and execute the following command while replacing the `"********"` placeholders with the values corresponding to the environment you want to migrate.
+
+```sh
+FRONTEND_URL="********" \
+  BACKEND_URL="********" \
+  MONGODB_STORE_CONNECTION_STRING="********" \
+  JWT_SECRET="********" \
+  npm run migrate
+```
+
 ### Debugging
 
 #### Client

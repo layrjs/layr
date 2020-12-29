@@ -1,5 +1,5 @@
 import {Component, consume, expose, AttributeSelector} from '@layr/component';
-import {Storable, primaryIdentifier, attribute} from '@layr/storable';
+import {Storable, primaryIdentifier, attribute, index} from '@layr/storable';
 import {WithRoles, role} from '@layr/with-roles';
 
 import type {Session} from './session';
@@ -9,7 +9,7 @@ export class Entity extends WithRoles(Storable(Component)) {
 
   @expose({get: true, set: true}) @primaryIdentifier() id!: string;
 
-  @expose({get: true}) @attribute('Date') createdAt = new Date();
+  @expose({get: true}) @index() @attribute('Date') createdAt = new Date();
 
   @attribute('Date?') updatedAt?: Date;
 
