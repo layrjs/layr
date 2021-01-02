@@ -254,6 +254,10 @@ export class ValueType {
     return this.isOptional() ? '?' : '';
   }
 
+  getScalarType() {
+    return this as ValueType;
+  }
+
   checkValue(value: unknown, attribute: Attribute) {
     if (!this._checkValue(value, attribute)) {
       throw new Error(

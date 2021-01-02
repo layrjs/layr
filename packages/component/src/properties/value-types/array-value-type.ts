@@ -33,6 +33,10 @@ export class ArrayValueType extends ValueType {
     return `${this.getItemType().toString()}[]${super.toString()}`;
   }
 
+  getScalarType() {
+    return this.getItemType().getScalarType();
+  }
+
   checkValue(values: unknown[], attribute: Attribute) {
     super.checkValue(values, attribute);
 
