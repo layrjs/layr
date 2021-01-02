@@ -105,7 +105,17 @@ Also, here are some more advanced examples that you can check out:
 #### Storage
 
 - [x] Basic storage (MongoDB)
+- [ ] Indexes
+  - [x] Identifier attributes
+  - [x] Regular attributes
+  - [x] Compound attributes
+  - [x] Referenced components
+  - [ ] Embedded components
 - [ ] Automatic migrations
+  - [x] Indexes
+  - [ ] Default values
+  - [ ] Renamed components
+  - [ ] Renamed attributes
 - [ ] Custom migrations
 - [ ] Transactions
 - [ ] Ability to query attribute of referenced components (LEFT JOIN)

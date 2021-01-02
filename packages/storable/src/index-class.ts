@@ -1,4 +1,9 @@
-import {isAttributeInstance, isIdentifierAttributeInstance} from '@layr/component';
+import {
+  isAttributeInstance,
+  isIdentifierAttributeInstance,
+  isComponentValueTypeInstance,
+  isObjectValueTypeInstance
+} from '@layr/component';
 import {assertIsPlainObject, assertNoUnknownOptions} from 'core-helpers';
 
 import type {StorableComponent, SortDirection} from './storable';
@@ -183,6 +188,14 @@ export class Index {
         );
       }
 
+      const scalarType = property.getValueType().getScalarType();
+
+      if (isObjectValueTypeInstance(scalarType)) {
+        throw new Error(
+          `Cannot create an index for an attribute of type 'object' (${parent.describeComponent()}, attribute: '${name}')`
+        );
+      }
+
       if (!(direction === 'asc' || direction === 'desc')) {
         throw new Error(
           `Cannot create an index with an invalid sort direction (${parent.describeComponent()}, attribute: '${name}', sort direction: '${direction}')`
@@ -202,7 +215,15 @@ export class Index {
 
       if (isIdentifierAttributeInstance(attribute)) {
         throw new Error(
-          `Cannot create an index for an identifier attribute because this type of attribute is automatically indexed (${parent.describeComponent()}, attribute: '${name}')`
+          `Cannot explicitly create an index for an identifier attribute (${parent.describeComponent()}, attribute: '${name}'). Note that this type of attribute is automatically indexed.`
+        );
+      }
+
+      const scalarType = attribute.getValueType().getScalarType();
+
+      if (isComponentValueTypeInstance(scalarType)) {
+        throw new Error(
+          `Cannot explicitly create an index for an attribute of type 'Component' (${parent.describeComponent()}, attribute: '${name}'). Note that primary identifier attributes of referenced components are automatically indexed.`
         );
       }
     }

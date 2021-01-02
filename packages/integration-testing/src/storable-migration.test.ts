@@ -1,4 +1,4 @@
-import {Component} from '@layr/component';
+import {Component, provide} from '@layr/component';
 import {
   Storable,
   StorableComponent,
@@ -17,7 +17,15 @@ describe('Storable Migration', () => {
   let store: MongoDBStore;
 
   beforeEach(async () => {
+    class Person extends Storable(Component) {
+      @primaryIdentifier() id!: string;
+
+      @attribute('string') fullName!: string;
+    }
+
     class Movie extends Storable(Component) {
+      @provide() static Person = Person;
+
       @primaryIdentifier() id!: string;
 
       @secondaryIdentifier() slug!: string;
@@ -25,6 +33,8 @@ describe('Storable Migration', () => {
       @attribute('string') title!: string;
 
       @attribute('number') year!: number;
+
+      @attribute('Person') director!: Person;
     }
 
     movieClass = Movie;
@@ -50,13 +60,19 @@ describe('Storable Migration', () => {
     let result = await store.migrateStorables({silent: true});
 
     expect(result).toStrictEqual({
-      collections: [{name: 'Movie', createdIndexes: ['slug [unique]'], droppedIndexes: []}]
+      collections: [
+        {name: 'Movie', createdIndexes: ['slug [unique]', 'director.id'], droppedIndexes: []},
+        {name: 'Person', createdIndexes: [], droppedIndexes: []}
+      ]
     });
 
     result = await store.migrateStorables({silent: true});
 
     expect(result).toStrictEqual({
-      collections: [{name: 'Movie', createdIndexes: [], droppedIndexes: []}]
+      collections: [
+        {name: 'Movie', createdIndexes: [], droppedIndexes: []},
+        {name: 'Person', createdIndexes: [], droppedIndexes: []}
+      ]
     });
 
     movieClass.prototype.deleteProperty('slug');
@@ -64,7 +80,10 @@ describe('Storable Migration', () => {
     result = await store.migrateStorables({silent: true});
 
     expect(result).toStrictEqual({
-      collections: [{name: 'Movie', createdIndexes: [], droppedIndexes: ['slug [unique]']}]
+      collections: [
+        {name: 'Movie', createdIndexes: [], droppedIndexes: ['slug [unique]']},
+        {name: 'Person', createdIndexes: [], droppedIndexes: []}
+      ]
     });
 
     movieClass.prototype.setIndex({title: 'asc'});
@@ -72,7 +91,10 @@ describe('Storable Migration', () => {
     result = await store.migrateStorables({silent: true});
 
     expect(result).toStrictEqual({
-      collections: [{name: 'Movie', createdIndexes: ['title'], droppedIndexes: []}]
+      collections: [
+        {name: 'Movie', createdIndexes: ['title'], droppedIndexes: []},
+        {name: 'Person', createdIndexes: [], droppedIndexes: []}
+      ]
     });
 
     movieClass.prototype.setIndex({title: 'asc'}, {isUnique: true});
@@ -80,7 +102,10 @@ describe('Storable Migration', () => {
     result = await store.migrateStorables({silent: true});
 
     expect(result).toStrictEqual({
-      collections: [{name: 'Movie', createdIndexes: ['title [unique]'], droppedIndexes: ['title']}]
+      collections: [
+        {name: 'Movie', createdIndexes: ['title [unique]'], droppedIndexes: ['title']},
+        {name: 'Person', createdIndexes: [], droppedIndexes: []}
+      ]
     });
 
     movieClass.prototype.deleteIndex({title: 'asc'});
@@ -88,7 +113,10 @@ describe('Storable Migration', () => {
     result = await store.migrateStorables({silent: true});
 
     expect(result).toStrictEqual({
-      collections: [{name: 'Movie', createdIndexes: [], droppedIndexes: ['title [unique]']}]
+      collections: [
+        {name: 'Movie', createdIndexes: [], droppedIndexes: ['title [unique]']},
+        {name: 'Person', createdIndexes: [], droppedIndexes: []}
+      ]
     });
 
     movieClass.prototype.setIndex({year: 'desc', title: 'asc'}, {isUnique: true});
@@ -97,7 +125,8 @@ describe('Storable Migration', () => {
 
     expect(result).toStrictEqual({
       collections: [
-        {name: 'Movie', createdIndexes: ['year (desc) + title [unique]'], droppedIndexes: []}
+        {name: 'Movie', createdIndexes: ['year (desc) + title [unique]'], droppedIndexes: []},
+        {name: 'Person', createdIndexes: [], droppedIndexes: []}
       ]
     });
   });

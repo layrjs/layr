@@ -1,6 +1,8 @@
 import {Component, provide} from '@layr/component';
-import {Storable} from '@layr/storable';
-import {Store, isStoreInstance} from '@layr/store';
+import {Storable, primaryIdentifier, secondaryIdentifier, attribute, index} from '@layr/storable';
+
+import {Store} from './store';
+import {isStoreInstance} from './utilities';
 
 describe('Store', () => {
   class MockStore extends Store {
@@ -26,6 +28,14 @@ describe('Store', () => {
 
     async countDocuments() {
       return 0;
+    }
+
+    async migrateCollection() {
+      return {
+        name: 'Component',
+        createdIndexes: [],
+        droppedIndexes: []
+      };
     }
   }
 
@@ -145,5 +155,71 @@ describe('Store', () => {
     store.registerStorable(Movie);
 
     expect(Array.from(store.getStorables())).toEqual([User, Movie]);
+  });
+
+  test('getCollectionSchema()', async () => {
+    class Person extends Storable(Component) {
+      @primaryIdentifier() id!: string;
+
+      @attribute('string') fullName!: string;
+    }
+
+    @index({year: 'desc', title: 'asc'})
+    @index({director: 'asc', title: 'asc'})
+    class Movie extends Storable(Component) {
+      @provide() static Person = Person;
+
+      @primaryIdentifier() id!: string;
+
+      @secondaryIdentifier() slug!: string;
+
+      @index({isUnique: true}) @attribute('string') title!: string;
+
+      @index({direction: 'desc'}) @attribute('number') year!: number;
+
+      @attribute('string') summary!: string;
+
+      @index() @attribute('string[]') genres!: string[];
+
+      @attribute('Person') director!: Person;
+
+      @attribute('Person[]') actors!: Person[];
+    }
+
+    const store = new MockStore();
+
+    store.registerStorable(Movie);
+
+    const schema = store.getCollectionSchema(Movie.prototype);
+
+    expect(schema).toStrictEqual({
+      indexes: [
+        {attributes: {id: 'asc'}, isPrimary: true, isUnique: true},
+        {attributes: {slug: 'asc'}, isPrimary: false, isUnique: true},
+        {
+          attributes: {'director.id': 'asc'},
+          isPrimary: false,
+          isUnique: false
+        },
+        {
+          attributes: {'actors.id': 'asc'},
+          isPrimary: false,
+          isUnique: false
+        },
+        {attributes: {title: 'asc'}, isPrimary: false, isUnique: true},
+        {attributes: {year: 'desc'}, isPrimary: false, isUnique: false},
+        {attributes: {genres: 'asc'}, isPrimary: false, isUnique: false},
+        {
+          attributes: {'director.id': 'asc', 'title': 'asc'},
+          isPrimary: false,
+          isUnique: false
+        },
+        {
+          attributes: {year: 'desc', title: 'asc'},
+          isPrimary: false,
+          isUnique: false
+        }
+      ]
+    });
   });
 });

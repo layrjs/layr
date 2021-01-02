@@ -1,4 +1,4 @@
-import {Component} from '@layr/component';
+import {Component, provide} from '@layr/component';
 
 import {Storable} from './storable';
 import {primaryIdentifier, secondaryIdentifier, attribute, loader, method} from './decorators';
@@ -6,7 +6,15 @@ import {Index} from './index-class';
 
 describe('Index', () => {
   test('Creation', async () => {
+    class Person extends Storable(Component) {
+      @primaryIdentifier() id!: string;
+
+      @attribute('string') fullName!: string;
+    }
+
     class Movie extends Storable(Component) {
+      @provide() static Person = Person;
+
       @primaryIdentifier() id!: string;
 
       @secondaryIdentifier() slug!: string;
@@ -22,6 +30,14 @@ describe('Index', () => {
       })
       @attribute('boolean')
       isReleased!: boolean;
+
+      @attribute('object') details!: any;
+
+      @attribute('object[]') history!: any[];
+
+      @attribute('Person') director!: Person;
+
+      @attribute('Person[]') actors!: Person[];
 
       @method() play() {}
     }
@@ -67,11 +83,27 @@ describe('Index', () => {
     );
 
     expect(() => new Index({id: 'asc'}, Movie.prototype)).toThrow(
-      "Cannot create an index for an identifier attribute because this type of attribute is automatically indexed (component: 'Movie', attribute: 'id')"
+      "Cannot explicitly create an index for an identifier attribute (component: 'Movie', attribute: 'id'). Note that this type of attribute is automatically indexed."
     );
 
     expect(() => new Index({slug: 'asc'}, Movie.prototype)).toThrow(
-      "Cannot create an index for an identifier attribute because this type of attribute is automatically indexed (component: 'Movie', attribute: 'slug')"
+      "Cannot explicitly create an index for an identifier attribute (component: 'Movie', attribute: 'slug'). Note that this type of attribute is automatically indexed."
+    );
+
+    expect(() => new Index({details: 'asc'}, Movie.prototype)).toThrow(
+      "Cannot create an index for an attribute of type 'object' (component: 'Movie', attribute: 'details')"
+    );
+
+    expect(() => new Index({history: 'asc'}, Movie.prototype)).toThrow(
+      "Cannot create an index for an attribute of type 'object' (component: 'Movie', attribute: 'history')"
+    );
+
+    expect(() => new Index({director: 'asc'}, Movie.prototype)).toThrow(
+      "Cannot explicitly create an index for an attribute of type 'Component' (component: 'Movie', attribute: 'director'). Note that primary identifier attributes of referenced components are automatically indexed."
+    );
+
+    expect(() => new Index({actors: 'asc'}, Movie.prototype)).toThrow(
+      "Cannot explicitly create an index for an attribute of type 'Component' (component: 'Movie', attribute: 'actors'). Note that primary identifier attributes of referenced components are automatically indexed."
     );
 
     expect(() => new Index({isReleased: 'asc'}, Movie.prototype)).toThrow(

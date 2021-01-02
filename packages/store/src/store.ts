@@ -1,5 +1,6 @@
 import {
   Component,
+  isComponentInstance,
   ensureComponentClass,
   assertIsComponentClass,
   assertIsComponentType,
@@ -12,7 +13,7 @@ import {
   mergeAttributeSelectors,
   isIdentifierAttributeInstance,
   isPrimaryIdentifierAttributeInstance,
-  isSecondaryIdentifierAttributeInstance
+  isComponentValueTypeInstance
 } from '@layr/component';
 import {
   StorableComponent,
@@ -32,6 +33,7 @@ import {
   PromiseLikeValue
 } from 'core-helpers';
 import {serialize, deserialize} from 'simple-serialization';
+import mapKeys from 'lodash/mapKeys';
 
 import {
   Document,
@@ -95,12 +97,13 @@ export type MigrateCollectionResult = {
 };
 
 export type CollectionSchema = {
-  indexes: {
-    attributes: {[name: string]: SortDirection};
-    isPrimary?: boolean;
-    isSecondary?: boolean;
-    isUnique?: boolean;
-  }[];
+  indexes: CollectionIndex[];
+};
+
+export type CollectionIndex = {
+  attributes: {[name: string]: SortDirection};
+  isPrimary: boolean;
+  isUnique: boolean;
 };
 
 export type TraceEntry = {
@@ -845,33 +848,85 @@ export abstract class Store {
   async migrateStorable(storable: typeof StorableComponent, options: {silent?: boolean} = {}) {
     const {silent = false} = options;
 
-    const storablePrototype = storable.prototype;
+    const collectionName = this._getCollectionNameFromStorable(storable.prototype);
+    const collectionSchema = this.getCollectionSchema(storable.prototype);
 
-    const collectionName = this._getCollectionNameFromStorable(storablePrototype);
+    const result = await this.migrateCollection({collectionName, collectionSchema, silent});
 
-    const collectionSchema: CollectionSchema = {
-      indexes: []
+    return result;
+  }
+
+  getCollectionSchema(storable: StorableComponent) {
+    const schema: CollectionSchema = {
+      indexes: this._getCollectionIndexes(storable)
     };
 
-    for (const attribute of storablePrototype.getAttributes({autoFork: false})) {
+    return schema;
+  }
+
+  _getCollectionIndexes(storable: StorableComponent) {
+    const indexes: CollectionIndex[] = [];
+
+    const resolveAttributeName = (name: string) => {
+      // If the the type of the attribute is a referenced component,
+      // return the concatenation of attribute name with the referenced component
+      // primary identifier attribute name
+
+      const attribute = storable.getAttribute(name);
+      const scalarType = attribute.getValueType().getScalarType();
+
+      if (isComponentValueTypeInstance(scalarType)) {
+        const component = scalarType.getComponent(attribute);
+
+        if (
+          isComponentInstance(component) &&
+          !ensureComponentClass(component).isEmbedded() &&
+          component.hasPrimaryIdentifierAttribute()
+        ) {
+          return name + '.' + component.getPrimaryIdentifierAttribute({autoFork: false}).getName();
+        }
+      }
+
+      return name;
+    };
+
+    for (const attribute of storable.getAttributes({autoFork: false})) {
       if (isIdentifierAttributeInstance(attribute)) {
         const attributes = {[attribute.getName()]: 'asc' as SortDirection};
         const isPrimary = isPrimaryIdentifierAttributeInstance(attribute);
-        const isSecondary = isSecondaryIdentifierAttributeInstance(attribute);
         const isUnique = true;
 
-        collectionSchema.indexes.push({attributes, isPrimary, isSecondary, isUnique});
+        indexes.push({attributes, isPrimary, isUnique});
+
+        continue;
+      }
+
+      const name = attribute.getName();
+      const resolvedName = resolveAttributeName(name);
+
+      if (name !== resolvedName) {
+        // It means that the type of the attribute is a referenced component
+        // with a primary identifier attribute
+
+        const attributes = {[resolvedName]: 'asc' as SortDirection};
+        const isPrimary = false;
+        const isUnique = false;
+
+        indexes.push({attributes, isPrimary, isUnique});
       }
     }
 
-    for (const index of storablePrototype.getIndexes({autoFork: false})) {
-      const attributes = index.getAttributes();
-      const {isUnique} = index.getOptions();
+    for (const index of storable.getIndexes({autoFork: false})) {
+      const attributes = mapKeys(index.getAttributes(), (_value, name) =>
+        resolveAttributeName(name)
+      );
+      const isPrimary = false;
+      const isUnique = Boolean(index.getOptions().isUnique);
 
-      collectionSchema.indexes.push({attributes, isUnique});
+      indexes.push({attributes, isPrimary, isUnique});
     }
 
-    return await this.migrateCollection({collectionName, collectionSchema, silent});
+    return indexes;
   }
 
   // === Utilities ===
