@@ -466,7 +466,7 @@ export class MongoDBStore extends Store {
 
     for (const name of indexNamesToDrop) {
       if (!silent) {
-        console.log(`Dropping index: '${name}'`);
+        console.log(`- Dropping index: '${name}'`);
       }
 
       await collection.dropIndex(name);
@@ -476,7 +476,7 @@ export class MongoDBStore extends Store {
 
     for (const index of indexesToCreate) {
       if (!silent) {
-        console.log(`Creating index: '${index.name}'`);
+        console.log(`- Creating index: '${index.name}'`);
       }
 
       await collection.createIndex(index.spec, {name: index.name, unique: index.isUnique});

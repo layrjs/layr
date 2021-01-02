@@ -1,6 +1,6 @@
 {
   "name": "@layr/mongodb-store",
-  "version": "1.1.3",
+  "version": "1.1.7",
   "description": "A Layr store for MongoDB",
   "keywords": [
     "layr",
@@ -27,9 +27,9 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^1.0.19",
-    "@layr/storable": "^1.1.1",
-    "@layr/store": "^1.1.3",
+    "@layr/component": "^1.0.20",
+    "@layr/storable": "^1.1.3",
+    "@layr/store": "^1.1.7",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
     "lodash": "^4.17.20",
@@ -41,7 +41,7 @@
     "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/debug": "^4.1.5",
-    "@types/lodash": "^4.14.166",
+    "@types/lodash": "^4.14.167",
     "@types/mongodb": "^3.6.3"
   }
 }
