@@ -198,7 +198,24 @@ export class MongoDBStore extends Store {
       return insertedCount === 1;
     } catch (error) {
       if (error.name === 'MongoError' && error.code === 11000) {
-        return false; // The document already exists
+        const matches = error.message.match(/ index: (.*) dup key/);
+
+        if (matches === null) {
+          throw error;
+        }
+
+        const indexName = matches[1];
+
+        if (indexName === '_id_') {
+          return false; // The document already exists
+        }
+
+        throw Object.assign(
+          new Error(
+            `A duplicate key error occurred while creating a MongoDB document (collection: '${collectionName}', index: '${indexName}')`
+          ),
+          {code: 'DUPLICATE_KEY_ERROR', collectionName, indexName}
+        );
       }
 
       throw error;
@@ -241,9 +258,30 @@ export class MongoDBStore extends Store {
 
     const {matchedCount} = await debugCall(
       async () => {
-        const {matchedCount, modifiedCount} = await collection.updateOne(filter, documentPatch);
+        try {
+          const {matchedCount, modifiedCount} = await collection.updateOne(filter, documentPatch);
 
-        return {matchedCount, modifiedCount};
+          return {matchedCount, modifiedCount};
+        } catch (error) {
+          if (error.name === 'MongoError' && error.code === 11000) {
+            const matches = error.message.match(/ index: (.*) dup key/);
+
+            if (matches === null) {
+              throw error;
+            }
+
+            const indexName = matches[1];
+
+            throw Object.assign(
+              new Error(
+                `A duplicate key error occurred while updating a MongoDB document (collection: '${collectionName}', index: '${indexName}')`
+              ),
+              {code: 'DUPLICATE_KEY_ERROR', collectionName, indexName}
+            );
+          }
+
+          throw error;
+        }
       },
       'db.%s.updateOne(%o, %o)',
       collectionName,

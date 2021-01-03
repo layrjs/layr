@@ -178,7 +178,7 @@ describe('Storable', () => {
 
           userClass = User;
 
-          server = new MongoMemoryServer();
+          server = new MongoMemoryServer({instance: {storageEngine: 'wiredTiger'}});
 
           const connectionString = await server.getUri();
 
@@ -189,6 +189,8 @@ describe('Storable', () => {
           store.registerRootComponent(User);
 
           await store.connect();
+
+          await store.migrateStorables({silent: true});
         });
 
         afterEach(async () => {
@@ -1021,6 +1023,26 @@ describe('Storable', () => {
           ).rejects.toThrow(
             "The 'throwIfMissing' and 'throwIfExists' options cannot be both set to true"
           );
+
+          // ------
+
+          if (User.hasStore() && User.getStore() instanceof MongoDBStore) {
+            user = new (User.fork())({
+              id: 'user3',
+              email: '1@user.com',
+              reference: 3
+            });
+
+            await expect(user.save()).rejects.toThrow(
+              "Cannot save a component with an attribute value that should be unique but already exists in the store (component: 'User', id: 'user3', index: 'email [unique]')"
+            );
+
+            user = User.fork().create({id: 'user2', reference: 1}, {isNew: false});
+
+            await expect(user.save()).rejects.toThrow(
+              "Cannot save a component with an attribute value that should be unique but already exists in the store (component: 'User', id: 'user2', index: 'reference [unique]')"
+            );
+          }
         });
 
         test('delete()', async () => {

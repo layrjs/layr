@@ -430,22 +430,39 @@ export abstract class Store {
 
       let wasSaved: boolean;
 
-      if (isNew) {
-        deleteUndefinedProperties(document);
+      try {
+        if (isNew) {
+          deleteUndefinedProperties(document);
 
-        wasSaved = await this.createDocument({
-          collectionName,
-          identifierDescriptor: documentIdentifierDescriptor,
-          document
-        });
-      } else {
-        const documentPatch = buildDocumentPatch(document);
+          wasSaved = await this.createDocument({
+            collectionName,
+            identifierDescriptor: documentIdentifierDescriptor,
+            document
+          });
+        } else {
+          const documentPatch = buildDocumentPatch(document);
 
-        wasSaved = await this.updateDocument({
-          collectionName,
-          identifierDescriptor: documentIdentifierDescriptor,
-          documentPatch
-        });
+          wasSaved = await this.updateDocument({
+            collectionName,
+            identifierDescriptor: documentIdentifierDescriptor,
+            documentPatch
+          });
+        }
+      } catch (error) {
+        const {code, indexName} = error;
+
+        if (code === 'DUPLICATE_KEY_ERROR') {
+          throw Object.assign(
+            new Error(
+              `Cannot save a component with an attribute value that should be unique but already exists in the store (${storable.describeComponent()}, ${ensureComponentClass(
+                storable
+              ).describeIdentifierDescriptor(identifierDescriptor)}, index: '${indexName}')`
+            ),
+            {code: 'UNIQUE_ATTRIBUTE_ALREADY_EXISTS_IN_STORE', indexName, expose: true}
+          );
+        }
+
+        throw error;
       }
 
       if (!wasSaved) {
