@@ -683,7 +683,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         _callerMethodName: _callerMethodName ?? 'get'
       });
 
-      if (loadedStorable === undefined && storableHasBeenCreated) {
+      if (loadedStorable === undefined && storableHasBeenCreated && storable.isAttached()) {
         storable.detach();
       }
 
