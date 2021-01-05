@@ -1,4 +1,4 @@
-import {Component, provide} from '@layr/component';
+import {Component, EmbeddedComponent, provide} from '@layr/component';
 import {Storable, primaryIdentifier, secondaryIdentifier, attribute, index} from '@layr/storable';
 
 import {Store} from './store';
@@ -56,7 +56,11 @@ describe('Store', () => {
       @provide() static Profile = Profile;
     }
 
-    class Movie extends Storable(Component) {}
+    class MovieDetails extends Storable(EmbeddedComponent) {}
+
+    class Movie extends Storable(Component) {
+      @provide() static MovieDetails = MovieDetails;
+    }
 
     class Root extends Component {
       @provide() static User = User;
@@ -117,6 +121,12 @@ describe('Store', () => {
 
     expect(store.getStorable('User')).toBe(User);
 
+    class UserDetails extends Storable(EmbeddedComponent) {}
+
+    expect(() => store.registerStorable(UserDetails)).toThrow(
+      "Cannot register an embedded storable component (component: 'UserDetails')"
+    );
+
     class NotAStorable {}
 
     // @ts-expect-error
@@ -164,10 +174,18 @@ describe('Store', () => {
       @attribute('string') fullName!: string;
     }
 
+    class MovieDetails extends Storable(EmbeddedComponent) {
+      @index() @attribute('number') duration!: number;
+
+      @attribute('string') aspectRatio!: string;
+    }
+
     @index({year: 'desc', title: 'asc'})
     @index({director: 'asc', title: 'asc'})
     class Movie extends Storable(Component) {
       @provide() static Person = Person;
+
+      @provide() static MovieDetails = MovieDetails;
 
       @primaryIdentifier() id!: string;
 
@@ -184,6 +202,8 @@ describe('Store', () => {
       @attribute('Person') director!: Person;
 
       @attribute('Person[]') actors!: Person[];
+
+      @attribute('MovieDetails') details!: MovieDetails;
     }
 
     const store = new MockStore();
@@ -206,6 +226,7 @@ describe('Store', () => {
           isPrimary: false,
           isUnique: false
         },
+        {attributes: {'details.duration': 'asc'}, isPrimary: false, isUnique: false},
         {attributes: {title: 'asc'}, isPrimary: false, isUnique: true},
         {attributes: {year: 'desc'}, isPrimary: false, isUnique: false},
         {attributes: {genres: 'asc'}, isPrimary: false, isUnique: false},

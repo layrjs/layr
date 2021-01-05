@@ -105,12 +105,12 @@ Also, here are some more advanced examples that you can check out:
 #### Storage
 
 - [x] Basic storage (MongoDB)
-- [ ] Indexes
+- [x] Indexes
   - [x] Identifier attributes
   - [x] Regular attributes
   - [x] Compound attributes
   - [x] Referenced components
-  - [ ] Embedded components
+  - [x] Embedded components
 - [ ] Automatic migrations
   - [x] Indexes
   - [ ] Default values

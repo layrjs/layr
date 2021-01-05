@@ -223,7 +223,7 @@ export class Index {
 
       if (isComponentValueTypeInstance(scalarType)) {
         throw new Error(
-          `Cannot explicitly create an index for an attribute of type 'Component' (${parent.describeComponent()}, attribute: '${name}'). Note that primary identifier attributes of referenced components are automatically indexed.`
+          `Cannot create an index for an attribute of type 'Component' (${parent.describeComponent()}, attribute: '${name}'). Note that primary identifier attributes of referenced components are automatically indexed.`
         );
       }
     }

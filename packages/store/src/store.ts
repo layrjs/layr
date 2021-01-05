@@ -18,6 +18,7 @@ import {
 import {
   StorableComponent,
   isStorableClass,
+  isStorableInstance,
   assertIsStorableClass,
   Query,
   SortDescriptor,
@@ -164,7 +165,7 @@ export abstract class Store {
     let storableCount = 0;
 
     const registerIfComponentIsStorable = (component: typeof Component) => {
-      if (isStorableClass(component)) {
+      if (isStorableClass(component) && !component.isEmbedded()) {
         this.registerStorable(component);
         storableCount++;
       }
@@ -298,6 +299,12 @@ export abstract class Store {
    */
   registerStorable(storable: typeof StorableComponent) {
     assertIsStorableClass(storable);
+
+    if (storable.isEmbedded()) {
+      throw new Error(
+        `Cannot register an embedded storable component (${storable.describeComponent()})`
+      );
+    }
 
     if (storable.hasStore()) {
       if (storable.getStore() === this) {
@@ -897,7 +904,7 @@ export abstract class Store {
 
         if (
           isComponentInstance(component) &&
-          !ensureComponentClass(component).isEmbedded() &&
+          !component.constructor.isEmbedded() &&
           component.hasPrimaryIdentifierAttribute()
         ) {
           return name + '.' + component.getPrimaryIdentifierAttribute({autoFork: false}).getName();
@@ -907,11 +914,13 @@ export abstract class Store {
       return name;
     };
 
-    for (const attribute of storable.getAttributes({autoFork: false})) {
+    for (const attribute of storable.getAttributes()) {
       if (isIdentifierAttributeInstance(attribute)) {
+        const isEmbedded = storable.constructor.isEmbedded();
+
         const attributes = {[attribute.getName()]: 'asc' as SortDirection};
-        const isPrimary = isPrimaryIdentifierAttributeInstance(attribute);
-        const isUnique = true;
+        const isPrimary = !isEmbedded && isPrimaryIdentifierAttributeInstance(attribute);
+        const isUnique = !isEmbedded;
 
         indexes.push({attributes, isPrimary, isUnique});
 
@@ -930,6 +939,26 @@ export abstract class Store {
         const isUnique = false;
 
         indexes.push({attributes, isPrimary, isUnique});
+
+        continue;
+      }
+
+      const scalarType = attribute.getValueType().getScalarType();
+
+      if (isComponentValueTypeInstance(scalarType)) {
+        const component = scalarType.getComponent(attribute);
+
+        if (isStorableInstance(component) && component.constructor.isEmbedded()) {
+          const subindexes = this._getCollectionIndexes(component);
+
+          for (const {attributes, isPrimary, isUnique} of subindexes) {
+            indexes.push({
+              attributes: mapKeys(attributes, (_value, subname) => name + '.' + subname),
+              isPrimary,
+              isUnique
+            });
+          }
+        }
       }
     }
 
