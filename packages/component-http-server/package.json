@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-http-server",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "A basic HTTP server for your Layr components",
   "keywords": [
     "layr",
@@ -33,7 +33,7 @@
     "@layr/component-server": "^1.0.18",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
-    "koa": "^2.13.0",
+    "koa": "^2.13.1",
     "koa-json-error": "^3.1.2",
     "koa-logger": "^3.2.1",
     "tslib": "^2.0.3"
