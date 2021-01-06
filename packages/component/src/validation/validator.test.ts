@@ -1,4 +1,6 @@
 import {Validator, isValidatorInstance, runValidators} from './validator';
+import {serialize} from '../serialization';
+import {deserialize} from '../deserialization';
 
 describe('Validator', () => {
   test('Creation', async () => {
@@ -60,20 +62,76 @@ describe('Validator', () => {
     expect(runValidators([validator], 3)).toEqual([validator]);
   });
 
-  test('Introspection', async () => {
-    const validatorFunction = (value: number, number: number) => value > number;
+  test('Serialization', async () => {
+    const greaterThan = (value: number, number: number) => value > number;
 
-    const validator = new Validator(validatorFunction, {
+    const greaterThanValidator = new Validator(greaterThan, {
       name: 'greaterThan',
       arguments: [5],
       message: 'The value is not greater than 5'
     });
 
-    expect(validator.introspect()).toStrictEqual({
-      name: 'greaterThan',
-      function: validatorFunction,
-      arguments: [5],
-      message: 'The value is not greater than 5'
+    const serializedGreaterThanValidator = greaterThanValidator.serialize(serialize);
+
+    expect(serializedGreaterThanValidator).toStrictEqual({
+      __validator: {
+        name: 'greaterThan',
+        function: {__function: '(value, number) => value > number'},
+        arguments: [5],
+        message: 'The value is not greater than 5'
+      }
     });
+
+    const optional = (value: any, validator: Validator) =>
+      value === undefined || validator.run(value);
+
+    const optionalValidator = new Validator(optional, {
+      name: 'optional',
+      arguments: [greaterThanValidator]
+    });
+
+    const serializedOptionalValidator = optionalValidator.serialize(serialize);
+
+    expect(serializedOptionalValidator).toStrictEqual({
+      __validator: {
+        name: 'optional',
+        function: {__function: '(value, validator) => value === undefined || validator.run(value)'},
+        arguments: [serializedGreaterThanValidator]
+      }
+    });
+  });
+
+  test('Deserialization', async () => {
+    const validator = Validator.recreate(
+      {
+        __validator: {
+          name: 'optional',
+          function: {
+            __function: '(value, validator) => value === undefined || validator.run(value)'
+          },
+          arguments: [
+            {
+              __validator: {
+                name: 'greaterThan',
+                function: {__function: '(value, number) => value > number'},
+                arguments: [5],
+                message: 'The value is not greater than 5'
+              }
+            }
+          ]
+        }
+      },
+      deserialize
+    );
+
+    expect(isValidatorInstance(validator));
+    expect(validator.getName()).toBe('optional');
+    expect(typeof validator.getFunction()).toBe('function');
+    expect(validator.getArguments().length).toBe(1);
+    expect(validator.getArguments()[0].getName()).toBe('greaterThan');
+    expect(typeof validator.getArguments()[0].getFunction()).toBe('function');
+    expect(validator.getArguments()[0].getArguments()).toEqual([5]);
+    expect(validator.getArguments()[0].getMessage()).toBe('The value is not greater than 5');
+    expect(validator.getMessage()).toBe('The validator `optional(greaterThan(5))` failed');
   });
 });

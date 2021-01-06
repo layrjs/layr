@@ -38,9 +38,25 @@ const validatorFunctions: {[name: string]: ValidatorFunction} = {
 
   required: (value) => value !== undefined,
 
+  missing: (value) => value === undefined,
+
   anyOf: (value, array) => array.includes(value),
 
-  noneOf: (value, array) => !array.includes(value)
+  noneOf: (value, array) => !array.includes(value),
+
+  // Operators
+
+  either: (value, validators: Validator[]) => {
+    return validators.some((validator) => validator.run(value));
+  },
+
+  optional: (value, validators: Validator[] | Validator) => {
+    if (!Array.isArray(validators)) {
+      validators = [validators];
+    }
+
+    return value === undefined || validators.every((validator) => validator.run(value));
+  }
 };
 
 export type ValidatorBuilder = (...args: any[]) => Validator;

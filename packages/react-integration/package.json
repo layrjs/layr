@@ -1,6 +1,6 @@
 {
   "name": "@layr/react-integration",
-  "version": "1.0.20",
+  "version": "1.0.22",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
@@ -27,14 +27,14 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/browser-router": "^1.0.17",
-    "@layr/component": "^1.0.20",
-    "@layr/memory-router": "^1.0.16",
-    "@layr/observable": "^1.0.5",
-    "@layr/router": "^1.0.18",
+    "@layr/browser-router": "^1.0.19",
+    "@layr/component": "^1.1.2",
+    "@layr/memory-router": "^1.0.18",
+    "@layr/observable": "^1.0.6",
+    "@layr/router": "^1.0.20",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.20",
-    "tslib": "^2.0.3"
+    "tslib": "^2.1.0"
   },
   "peerDependencies": {
     "react": "^16.13.1"

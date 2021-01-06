@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-client",
-  "version": "1.0.21",
+  "version": "1.1.2",
   "description": "Consumes Layr components served by @layr/component-server",
   "keywords": [
     "layr",
@@ -26,14 +26,14 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^1.0.20",
-    "@layr/component-server": "^1.0.18",
+    "@layr/component": "^1.1.2",
+    "@layr/component-server": "^1.1.2",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
     "lodash": "^4.17.20",
     "microbatcher": "^2.0.1",
     "possibly-async": "^1.0.4",
-    "tslib": "^2.0.3"
+    "tslib": "^2.1.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.27",

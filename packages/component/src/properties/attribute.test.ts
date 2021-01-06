@@ -568,13 +568,7 @@ describe('Attribute', () => {
       type: 'Attribute',
       valueType: 'string?',
       exposure: {get: true},
-      validators: [
-        {
-          name: 'notEmpty',
-          function: notEmpty.getFunction(),
-          message: 'The validator `notEmpty()` failed'
-        }
-      ]
+      validators: [notEmpty]
     });
 
     expect(
@@ -600,13 +594,7 @@ describe('Attribute', () => {
       type: 'Attribute',
       valueType: 'string[]',
       items: {
-        validators: [
-          {
-            name: 'notEmpty',
-            function: notEmpty.getFunction(),
-            message: 'The validator `notEmpty()` failed'
-          }
-        ]
+        validators: [notEmpty]
       },
       exposure: {get: true}
     });
@@ -623,13 +611,7 @@ describe('Attribute', () => {
       valueType: 'string[][]',
       items: {
         items: {
-          validators: [
-            {
-              name: 'notEmpty',
-              function: notEmpty.getFunction(),
-              message: 'The validator `notEmpty()` failed'
-            }
-          ]
+          validators: [notEmpty]
         }
       },
       exposure: {get: true}
@@ -684,28 +666,19 @@ describe('Attribute', () => {
     });
     expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
 
-    const notEmptyFunction = validators.notEmpty().getFunction();
+    const notEmptyValidator = validators.notEmpty();
 
     ({name, options} = Attribute.unintrospect({
       name: 'title',
       type: 'Attribute',
       valueType: 'string?',
-      validators: [
-        {
-          name: 'notEmpty',
-          function: notEmptyFunction,
-          message: 'The validator `notEmpty()` failed'
-        }
-      ],
+      validators: [notEmptyValidator],
       exposure: {get: true}
     }));
 
     expect(name).toBe('title');
     expect(options.valueType).toBe('string?');
-    expect(options.validators).toHaveLength(1);
-    expect(options.validators![0].getName()).toBe('notEmpty');
-    expect(options.validators![0].getFunction()).toBe(notEmptyFunction);
-    expect(options.validators![0].getMessage()).toBe('The validator `notEmpty()` failed');
+    expect(options.validators).toEqual([notEmptyValidator]);
     expect(options.exposure).toEqual({get: true});
     expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
 
@@ -714,13 +687,7 @@ describe('Attribute', () => {
       type: 'Attribute',
       valueType: 'string[]',
       items: {
-        validators: [
-          {
-            name: 'notEmpty',
-            function: notEmptyFunction,
-            message: 'The validator `notEmpty()` failed'
-          }
-        ]
+        validators: [notEmptyValidator]
       },
       exposure: {get: true}
     }));
@@ -728,10 +695,7 @@ describe('Attribute', () => {
     expect(name).toBe('tags');
     expect(options.valueType).toBe('string[]');
     expect(options.validators).toBeUndefined();
-    expect(options.items!.validators).toHaveLength(1);
-    expect(options.items!.validators![0].getName()).toBe('notEmpty');
-    expect(options.items!.validators![0].getFunction()).toBe(notEmptyFunction);
-    expect(options.items!.validators![0].getMessage()).toBe('The validator `notEmpty()` failed');
+    expect(options.items!.validators).toEqual([notEmptyValidator]);
     expect(options.exposure).toEqual({get: true});
     expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
 
@@ -741,13 +705,7 @@ describe('Attribute', () => {
       valueType: 'string[][]',
       items: {
         items: {
-          validators: [
-            {
-              name: 'notEmpty',
-              function: notEmptyFunction,
-              message: 'The validator `notEmpty()` failed'
-            }
-          ]
+          validators: [notEmptyValidator]
         }
       },
       exposure: {get: true}
@@ -757,12 +715,7 @@ describe('Attribute', () => {
     expect(options.valueType).toBe('string[][]');
     expect(options.validators).toBeUndefined();
     expect(options.items!.validators).toBeUndefined();
-    expect(options.items!.items!.validators).toHaveLength(1);
-    expect(options.items!.items!.validators![0].getName()).toBe('notEmpty');
-    expect(options.items!.items!.validators![0].getFunction()).toBe(notEmptyFunction);
-    expect(options.items!.items!.validators![0].getMessage()).toBe(
-      'The validator `notEmpty()` failed'
-    );
+    expect(options.items!.items!.validators).toEqual([notEmptyValidator]);
     expect(options.exposure).toEqual({get: true});
     expect(() => new Attribute(name, Movie.prototype, options)).not.toThrow();
   });

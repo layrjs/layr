@@ -8,6 +8,7 @@ import {isES2015Class} from 'core-helpers';
 
 import type {ComponentSet} from './component';
 import type {PropertyFilter, AttributeSelector} from './properties';
+import {isValidatorInstance} from './validation/validator';
 import {isComponentClassOrInstance} from './utilities';
 
 export type SerializeOptions = SimpleSerializeOptions & {
@@ -77,6 +78,10 @@ export function serialize(value: any, options: SerializeOptions = {}) {
 
     if (isComponentClassOrInstance(object)) {
       return object.serialize({...options, serializedComponents});
+    }
+
+    if (isValidatorInstance(object)) {
+      return object.serialize(serialize);
     }
   };
 

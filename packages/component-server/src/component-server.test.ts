@@ -89,11 +89,12 @@ describe('ComponentServer', () => {
                     default: {__function: "function () {\nreturn ''\n}"},
                     validators: [
                       {
-                        name: 'notEmpty',
-                        function: {
-                          __function: '(value) => value !== undefined && value.length > 0'
-                        },
-                        message: 'The validator `notEmpty()` failed'
+                        __validator: {
+                          name: 'notEmpty',
+                          function: {
+                            __function: '(value) => value !== undefined && value.length > 0'
+                          }
+                        }
                       }
                     ],
                     exposure: {get: true, set: true}

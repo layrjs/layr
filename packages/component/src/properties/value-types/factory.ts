@@ -85,20 +85,10 @@ export function createValueType(
 
 export function unintrospectValueType({
   valueType,
-  validators: introspectedValidators,
+  validators,
   items: introspectedItems
 }: IntrospectedValueType) {
-  let unintrospectedValidators: Validator[] | undefined;
   let unintrospectedItems: UnintrospectedValueType | undefined;
-
-  if (introspectedValidators !== undefined) {
-    unintrospectedValidators = introspectedValidators.map((introspectedValidator) => {
-      const {name, function: func, arguments: args, message} = Validator.unintrospect(
-        introspectedValidator
-      );
-      return new Validator(func, {name, arguments: args, message});
-    });
-  }
 
   if (introspectedItems !== undefined) {
     unintrospectedItems = unintrospectValueType(introspectedItems);
@@ -110,8 +100,8 @@ export function unintrospectValueType({
     unintrospectedValueType.valueType = valueType;
   }
 
-  if (unintrospectedValidators !== undefined) {
-    unintrospectedValueType.validators = unintrospectedValidators;
+  if (validators !== undefined) {
+    unintrospectedValueType.validators = validators;
   }
 
   if (unintrospectedItems !== undefined) {

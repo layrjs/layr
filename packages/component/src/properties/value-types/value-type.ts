@@ -7,18 +7,12 @@ import type {
 } from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
-import {
-  Validator,
-  ValidatorFunction,
-  IntrospectedValidator,
-  runValidators,
-  normalizeValidator
-} from '../../validation';
+import {Validator, ValidatorFunction, runValidators, normalizeValidator} from '../../validation';
 import {serialize, SerializeOptions} from '../../serialization';
 
 export type IntrospectedValueType = {
   valueType?: string;
-  validators?: IntrospectedValidator[];
+  validators?: Validator[];
   items?: IntrospectedValueType;
 };
 
@@ -314,10 +308,10 @@ export class ValueType {
   introspect() {
     const introspectedValueType: IntrospectedValueType = {valueType: this.toString()};
 
-    const introspectedValidators = this.getValidators().map((validator) => validator.introspect());
+    const validators = this.getValidators();
 
-    if (introspectedValidators.length > 0) {
-      introspectedValueType.validators = introspectedValidators;
+    if (validators.length > 0) {
+      introspectedValueType.validators = validators;
     }
 
     return introspectedValueType;

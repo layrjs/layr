@@ -8,13 +8,6 @@ type ValidatorOptions = {
   message?: string;
 };
 
-export type IntrospectedValidator = {
-  name: string;
-  function: ValidatorFunction;
-  arguments?: any[];
-  message: string;
-};
-
 /**
  * A class to handle the validation of the component attributes.
  *
@@ -127,6 +120,14 @@ export type IntrospectedValidator = {
  * The following validator builder can be used to validate any type of values:
  *
  * * `required()`: Ensures that a value is not undefined.
+ * * `missing()`: Ensures that a value is undefined.
+ *
+ * ##### Validator Operators
+ *
+ * You can compose several validators using some validator operators:
+ *
+ * * `either(arrayOfValidators)`: Performs a logical **OR** operation on an array of validators.
+ * * `optional(validatorOrArrayOfValidators)`: If a value is is not undefined, ensures that it satisfies the specified validators (can be a single validator or an array of validators).
  *
  * ##### Custom Failed Validation Message
  *
@@ -172,18 +173,13 @@ export class Validator {
   _function: ValidatorFunction;
   _name: string;
   _arguments: any[];
-  _message: string;
+  _message: string | undefined;
 
   constructor(func: ValidatorFunction, options: ValidatorOptions = {}) {
     let {name, arguments: args = [], message} = options;
 
     if (name === undefined) {
       name = getFunctionName(func) || 'anonymous';
-    }
-
-    if (message === undefined) {
-      const signature = `${name}(${stringifyArguments(args)})`;
-      message = `The validator \`${signature}\` failed`;
     }
 
     this._function = func;
@@ -241,6 +237,10 @@ export class Validator {
     return this._arguments;
   }
 
+  getSignature(): string {
+    return `${this.getName()}(${stringifyArguments(this.getArguments())})`;
+  }
+
   /**
    * Returns the message of the error that is thrown in case of failed validation.
    *
@@ -254,7 +254,9 @@ export class Validator {
    * @category Methods
    */
   getMessage() {
-    return this._message;
+    return this._message !== undefined
+      ? this._message
+      : `The validator \`${this.getSignature()}\` failed`;
   }
 
   /**
@@ -275,8 +277,8 @@ export class Validator {
     return this.getFunction()(value, ...this.getArguments());
   }
 
-  introspect() {
-    const introspectedValidator: Partial<IntrospectedValidator> = {
+  serialize(serializer: Function) {
+    let serializedValidator: any = {
       name: this.getName(),
       function: this.getFunction()
     };
@@ -284,16 +286,31 @@ export class Validator {
     const args = this.getArguments();
 
     if (args.length > 0) {
-      introspectedValidator.arguments = args;
+      serializedValidator.arguments = args;
     }
 
-    introspectedValidator.message = this.getMessage();
+    if (this._message !== undefined) {
+      serializedValidator.message = this._message;
+    }
 
-    return introspectedValidator as IntrospectedValidator;
+    serializedValidator = {
+      __validator: serializer(serializedValidator, {serializeFunctions: true})
+    };
+
+    return serializedValidator;
   }
 
-  static unintrospect(introspectedValidator: IntrospectedValidator) {
-    return {...introspectedValidator};
+  static recreate(serializedValidator: any, deserializer: Function) {
+    const {
+      name,
+      function: func,
+      arguments: args,
+      message
+    } = deserializer(serializedValidator.__validator, {deserializeFunctions: true});
+
+    const validator = new this(func, {name, arguments: args, message});
+
+    return validator;
   }
 
   static isValidator(value: any): value is Validator {
@@ -327,12 +344,20 @@ function stringifyArguments(args: any[]) {
       return `__regExp(${value.toString()})regExp__`;
     }
 
+    if (value instanceof Validator) {
+      return `__validator(${value.getSignature()})validator__`;
+    }
+
     return value;
   });
 
-  // Fix the RegExp
+  // Fix RegExps
   string = string.replace(/"__regExp\(/g, '');
   string = string.replace(/\)regExp__"/g, '');
+
+  // Fix validator signatures
+  string = string.replace(/"__validator\(/g, '');
+  string = string.replace(/\)validator__"/g, '');
 
   // Remove the array brackets
   string = string.slice(1, -1);

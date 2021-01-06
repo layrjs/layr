@@ -27,6 +27,14 @@ describe('Validator builders', () => {
     expect(validator.getArguments()).toEqual([5]);
     expect(validator.getMessage()).toBe('The minimum length is 5');
 
+    expect(() => validators.minLength()).toThrow(
+      "A required parameter is missing to build the validator 'minLength'"
+    );
+
+    expect(() => validators.minLength(5, 10)).toThrow(
+      "When building a validator, if an extra parameter is specified, it must be a string representing the failed validation message (validator: 'minLength')"
+    );
+
     validator = validators.anyOf([1, 2, 3]);
 
     expect(isValidatorInstance(validator));
@@ -35,13 +43,15 @@ describe('Validator builders', () => {
     expect(validator.getArguments()).toEqual([[1, 2, 3]]);
     expect(validator.getMessage()).toBe('The validator `anyOf([1,2,3])` failed');
 
-    expect(() => validators.minLength()).toThrow(
-      "A required parameter is missing to build the validator 'minLength'"
-    );
+    const missingValidator = validators.missing();
+    const minLengthValidator = validators.minLength(5);
+    validator = validators.either([missingValidator, minLengthValidator]);
 
-    expect(() => validators.minLength(5, 10)).toThrow(
-      "When building a validator, if an extra parameter is specified, it must be a string representing the failed validation message (validator: 'minLength')"
-    );
+    expect(isValidatorInstance(validator));
+    expect(validator.getName()).toBe('either');
+    expect(typeof validator.getFunction()).toBe('function');
+    expect(validator.getArguments()).toEqual([[missingValidator, minLengthValidator]]);
+    expect(validator.getMessage()).toBe('The validator `either([missing(),minLength(5)])` failed');
   });
 
   test('Running built-in validators', async () => {
@@ -72,5 +82,19 @@ describe('Validator builders', () => {
 
     expect(validators.match(/b/).run('abc')).toBe(true);
     expect(validators.match(/e/).run('abc')).toBe(false);
+
+    expect(validators.either([validators.missing(), validators.minLength(3)]).run(undefined)).toBe(
+      true
+    );
+    expect(validators.either([validators.missing(), validators.minLength(3)]).run('abc')).toBe(
+      true
+    );
+    expect(validators.either([validators.missing(), validators.minLength(3)]).run('ab')).toBe(
+      false
+    );
+
+    expect(validators.optional(validators.minLength(3)).run(undefined)).toBe(true);
+    expect(validators.optional(validators.minLength(3)).run('abc')).toBe(true);
+    expect(validators.optional(validators.minLength(3)).run('ab')).toBe(false);
   });
 });

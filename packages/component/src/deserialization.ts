@@ -8,6 +8,7 @@ import {PlainObject} from 'core-helpers';
 
 import type {Component, ComponentSet, ComponentGetter} from './component';
 import type {PropertyFilter} from './properties';
+import {Validator, isSerializedValidator} from './validation/validator';
 import {isComponentClass} from './utilities';
 
 export type DeserializeOptions = SimpleDeserializeOptions & {
@@ -110,6 +111,10 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
       if (deserializedObject !== undefined) {
         return deserializedObject;
       }
+    }
+
+    if (isSerializedValidator(object)) {
+      return Validator.recreate(object, deserialize);
     }
 
     const {__component: componentType, ...attributes} = object;
