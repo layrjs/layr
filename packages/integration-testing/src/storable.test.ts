@@ -740,6 +740,8 @@ describe('Storable', () => {
             );
           }
 
+          expect(user.isNew()).toBe(true);
+          expect(user.picture!.isNew()).toBe(true);
           expect(user.getAttribute('id').getValueSource()).toBe(0);
           expect(user.getAttribute('fullName').getValueSource()).toBe(0);
           expect(user.getAttribute('tags').getValueSource()).toBe(0);
@@ -748,6 +750,8 @@ describe('Storable', () => {
 
           expect(await user.save()).toBe(user);
 
+          expect(user.isNew()).toBe(false);
+          // TODO: expect(user.picture!.isNew()).toBe(false);
           expect(user.getAttribute('id').getValueSource()).toBe(1);
           expect(user.getAttribute('fullName').getValueSource()).toBe(1);
           expect(user.getAttribute('tags').getValueSource()).toBe(1);
