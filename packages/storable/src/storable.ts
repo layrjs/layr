@@ -39,7 +39,12 @@ import {
 import {Index, IndexAttributes, IndexOptions} from './index-class';
 import type {Query} from './query';
 import type {StoreLike} from './store-like';
-import {isStorableInstance, isStorableClassOrInstance, isStorable} from './utilities';
+import {
+  isStorableInstance,
+  isStorableClassOrInstance,
+  ensureStorableClass,
+  isStorable
+} from './utilities';
 
 export type SortDescriptor = {[name: string]: SortDirection};
 
@@ -884,7 +889,10 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         this,
         resolvedAttributeSelector,
         (componentOrObject, subattributeSelector) => {
-          if (isStorableClassOrInstance(componentOrObject)) {
+          if (
+            isStorableClassOrInstance(componentOrObject) &&
+            !ensureStorableClass(componentOrObject).isEmbedded()
+          ) {
             const storable = componentOrObject;
 
             if (!storablesWithAttributeSelectors.has(storable)) {
