@@ -1,6 +1,6 @@
 {
   "name": "@layr/mongodb-store",
-  "version": "1.1.18",
+  "version": "1.1.19",
   "description": "A Layr store for MongoDB",
   "keywords": [
     "layr",
@@ -42,7 +42,7 @@
     "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/debug": "^4.1.5",
-    "@types/jest": "^26.0.19",
+    "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.167",
     "@types/mongodb": "^3.6.3",
     "mongodb-memory-server": "^6.9.2"

@@ -535,18 +535,34 @@ export class MongoDBStore extends Store {
     return this._client!;
   }
 
-  private async _connectClient() {
-    if (this._client === undefined) {
-      debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
+  private _connectClientPromise: Promise<void> | undefined;
 
-      this._client = await MongoClient.connect(this._connectionString, {
-        poolSize: this._poolSize,
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
+  private _connectClient() {
+    // This method memoize the ongoing promise to allow concurrent execution
 
-      debug(`Connected to MongoDB Server (connectionString: ${this._connectionString})`);
+    if (this._connectClientPromise !== undefined) {
+      return this._connectClientPromise;
     }
+
+    this._connectClientPromise = (async () => {
+      try {
+        if (this._client === undefined) {
+          debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
+
+          this._client = await MongoClient.connect(this._connectionString, {
+            poolSize: this._poolSize,
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+          });
+
+          debug(`Connected to MongoDB Server (connectionString: ${this._connectionString})`);
+        }
+      } finally {
+        this._connectClientPromise = undefined;
+      }
+    })();
+
+    return this._connectClientPromise;
   }
 
   private async _disconnectClient() {
