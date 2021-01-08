@@ -566,6 +566,15 @@ export class MongoDBStore extends Store {
   }
 
   private async _disconnectClient() {
+    if (this._connectClientPromise !== undefined) {
+      // If the connection is ongoing, let's wait it finishes before disconnecting
+      try {
+        await this._connectClientPromise;
+      } catch {
+        // NOOP
+      }
+    }
+
     const client = this._client;
 
     if (client !== undefined) {
