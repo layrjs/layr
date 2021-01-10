@@ -875,6 +875,10 @@ export abstract class Store {
     const collectionName = this._getCollectionNameFromStorable(storable.prototype);
     const collectionSchema = this.getCollectionSchema(storable.prototype);
 
+    for (const index of collectionSchema.indexes) {
+      index.attributes = this.toDocument(storable.prototype, index.attributes);
+    }
+
     const result = await this.migrateCollection({collectionName, collectionSchema, silent});
 
     return result;
@@ -889,6 +893,8 @@ export abstract class Store {
   }
 
   _getCollectionIndexes(storable: StorableComponent) {
+    // TODO: Reimplement this method from scratch make it more maintainable
+
     const indexes: CollectionIndex[] = [];
 
     const resolveAttributeName = (name: string) => {

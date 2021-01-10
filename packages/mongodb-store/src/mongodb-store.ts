@@ -36,6 +36,7 @@ const debug = debugModule('layr:mongodb-store');
 // DEBUG=layr:mongodb-store DEBUG_DEPTH=10
 
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
+const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME = '_id_';
 
 /**
  * *Inherits from [`Store`](https://layrjs.com/docs/v1/reference/store).*
@@ -206,7 +207,7 @@ export class MongoDBStore extends Store {
 
         const indexName = matches[1];
 
-        if (indexName === '_id_') {
+        if (indexName === MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME) {
           return false; // The document already exists
         }
 
@@ -458,10 +459,6 @@ export class MongoDBStore extends Store {
     const indexesToEnsure: any[] = [];
 
     for (const index of collectionSchema.indexes) {
-      if (index.isPrimary) {
-        continue; // The primary index ('_id') is automatically handled by MongoDB
-      }
-
       let indexName = '';
       let indexSpec: any = {};
 
@@ -485,6 +482,10 @@ export class MongoDBStore extends Store {
         indexName += ' [unique]';
       }
 
+      if (indexName === `${MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME} [unique]`) {
+        indexName = MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME;
+      }
+
       indexesToEnsure.push({name: indexName, spec: indexSpec, isUnique: index.isUnique});
     }
 
@@ -493,7 +494,9 @@ export class MongoDBStore extends Store {
     );
 
     const indexNamesToDrop = existingIndexNames.filter(
-      (name) => name !== '_id_' && !indexesToEnsure.some((index) => index.name === name)
+      (name) =>
+        name !== MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME &&
+        !indexesToEnsure.some((index) => index.name === name)
     );
 
     if (indexesToCreate.length !== 0 || indexNamesToDrop.length !== 0) {
@@ -800,9 +803,12 @@ function batchableFindOne(
   if (collection[findOneBatcher] === undefined) {
     collection[findOneBatcher] = new Microbatcher(function (operations) {
       const operationGroups = groupBy(operations, ({params: [query, options]}) => {
-        if (hasOwnProperty(query, '_id') && Object.keys(query).length === 1) {
+        if (
+          hasOwnProperty(query, MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME) &&
+          Object.keys(query).length === 1
+        ) {
           // 'query' has a single '_id' attribute
-          query = {_id: '___???___'};
+          query = {[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: '___???___'};
         }
 
         return JSON.stringify([query, options]);
@@ -812,11 +818,13 @@ function batchableFindOne(
         if (operations.length > 1) {
           // Multiple `findOne()` that can be transformed into a single `find()`
 
-          const ids = operations.map((operation) => operation.params[0]._id);
+          const ids = operations.map(
+            (operation) => operation.params[0][MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]
+          );
           const options = operations[0].params[1]; // All 'options' objects should be identical
 
           collection
-            .find({_id: {$in: ids}}, options)
+            .find({[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: {$in: ids}}, options)
             .toArray()
             .then(
               (documents) => {
@@ -824,7 +832,11 @@ function batchableFindOne(
                   params: [query],
                   resolve
                 } of operations) {
-                  const document = documents.find((document) => document._id === query._id);
+                  const document = documents.find(
+                    (document) =>
+                      document[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME] ===
+                      query[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]
+                  );
                   resolve(document !== undefined ? document : null);
                 }
               },

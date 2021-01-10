@@ -129,6 +129,17 @@ describe('MongoDBStore', () => {
           {name: 'Person', createdIndexes: [], droppedIndexes: []}
         ]
       });
+
+      movieClass.prototype.setIndex({year: 'asc', id: 'asc'});
+
+      result = await store.migrateStorables({silent: true});
+
+      expect(result).toStrictEqual({
+        collections: [
+          {name: 'Movie', createdIndexes: ['year + _id'], droppedIndexes: []},
+          {name: 'Person', createdIndexes: [], droppedIndexes: []}
+        ]
+      });
     });
   });
 
@@ -149,7 +160,7 @@ describe('MongoDBStore', () => {
         collectionName: 'Movie',
         collectionSchema: {
           indexes: [
-            {attributes: {id: 'asc'}, isPrimary: true, isUnique: true},
+            {attributes: {_id: 'asc'}, isPrimary: true, isUnique: true},
             {attributes: {slug: 'asc'}, isPrimary: false, isUnique: true},
             {attributes: {title: 'asc'}, isPrimary: false, isUnique: false},
             {attributes: {year: 'desc'}, isPrimary: false, isUnique: false},
