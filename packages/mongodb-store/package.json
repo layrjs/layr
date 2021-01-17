@@ -45,6 +45,6 @@
     "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.167",
     "@types/mongodb": "^3.6.3",
-    "mongodb-memory-server": "^6.9.2"
+    "mongodb-memory-server": "^6.9.3"
   }
 }
