@@ -2,13 +2,10 @@ import type {ComponentServer} from '@layr/component-server';
 import {assertIsComponentServerInstance} from '@layr/component-server';
 import type {APIGatewayProxyEventV2, Context, APIGatewayProxyStructuredResultV2} from 'aws-lambda';
 
-type CustomRoute = {
-  path: string;
-  handler: (
-    event: APIGatewayProxyEventV2,
-    context: Context
-  ) => Promise<APIGatewayProxyStructuredResultV2>;
-};
+type CustomHandler = (
+  event: APIGatewayProxyEventV2,
+  context: Context
+) => Promise<APIGatewayProxyStructuredResultV2 | undefined>;
 
 /**
  * Creates an [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html) for the specified [component server](https://layrjs.com/docs/v1/reference/component-server).
@@ -40,7 +37,7 @@ type CustomRoute = {
  */
 export function createAWSLambdaHandlerForComponentServer(
   componentServer: ComponentServer,
-  {customRoutes = []}: {customRoutes?: CustomRoute[]} = {}
+  {customHandler}: {customHandler?: CustomHandler} = {}
 ) {
   assertIsComponentServerInstance(componentServer);
 
@@ -64,13 +61,15 @@ export function createAWSLambdaHandlerForComponentServer(
 
     // Invocation via API Gateway HTTP API v2
 
-    const path = event.rawPath;
+    if (customHandler !== undefined) {
+      const result = await customHandler(event, context);
 
-    for (const customRoute of customRoutes) {
-      if (customRoute.path === path) {
-        return await customRoute.handler(event, context);
+      if (result !== undefined) {
+        return result;
       }
     }
+
+    const path = event.rawPath;
 
     if (path !== '/') {
       return {statusCode: 404, body: 'Not Found'};
