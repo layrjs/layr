@@ -91,7 +91,17 @@ export function serveComponent(
     }
 
     if (ctx.method === 'POST') {
-      const {query, components, version} = await body.json(ctx.req, {limit, strict: true});
+      let parsedBody: any;
+
+      if (ctx.req.rawBody !== undefined) {
+        // In case the body has already been read, just parse it
+        // This is specific to this package and not related to the way Koa usually works
+        parsedBody = JSON.parse(ctx.req.rawBody);
+      } else {
+        parsedBody = await body.json(ctx.req, {limit, strict: true});
+      }
+
+      const {query, components, version} = parsedBody;
       ctx.body = await componentServer.receive({query, components, version});
       return;
     }
