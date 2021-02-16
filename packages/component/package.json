@@ -1,6 +1,6 @@
 {
   "name": "@layr/component",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "The base class of all your components",
   "keywords": [
     "layr",
@@ -41,7 +41,7 @@
     "@mvila/dev-tools": "^1.0.27",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.167",
+    "@types/lodash": "^4.14.168",
     "sleep-promise": "^8.0.1"
   }
 }

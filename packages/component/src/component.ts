@@ -4118,7 +4118,8 @@ export class Component extends Observable(Object) {
           if (
             isComponentClassOrInstance(newAttributeValue) &&
             isComponentClassOrInstance(previousAttributeValue) &&
-            newAttributeValue.getComponentType() === previousAttributeValue.getComponentType()
+            newAttributeValue.getComponentType() === previousAttributeValue.getComponentType() &&
+            ensureComponentClass(previousAttributeValue).isEmbedded()
           ) {
             return (previousAttributeValue as any).deserialize(serializedAttributeValue, options);
           }

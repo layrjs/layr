@@ -1,5 +1,6 @@
 import {Component} from './component';
-import {attribute} from './decorators';
+import {EmbeddedComponent} from './embedded-component';
+import {provide, attribute, primaryIdentifier} from './decorators';
 import {deserialize} from './deserialization';
 
 describe('Deserialization', () => {
@@ -242,119 +243,128 @@ describe('Deserialization', () => {
     expect(() => movie.deserialize({__new: true})).toThrow(
       "Cannot mark as new an existing non-new component (component: 'Movie')"
     );
+  });
 
-    // --- With a referenced component ---
-
-    class Trailer extends Component {
-      @attribute() url?: string;
-      @attribute() movie?: Movie;
+  test('Embedded component instances', async () => {
+    class Person extends EmbeddedComponent {
+      @attribute('string') fullName?: string;
     }
 
-    componentGetter = function (type: string): any {
-      if (type === 'Trailer') {
-        return Trailer.prototype;
+    class Movie extends Component {
+      @provide() static Person = Person;
+
+      @attribute() title?: string;
+      @attribute('Person?') director?: Person;
+      @attribute('Person[]?') actors?: Person[];
+    }
+
+    const componentGetter = function (type: string): any {
+      if (type === 'Movie') {
+        return Movie.prototype;
       }
 
       throw new Error('Component not found');
     };
 
-    expect(() =>
-      deserialize(
-        {
-          __component: 'Trailer',
-          url: 'https://trailer.com/abc123',
-          movie: {__component: 'Movie', title: 'The Matrix'}
-        },
-        {componentGetter}
-      )
-    ).toThrow("Cannot get the component of type 'Movie' from the component 'Trailer'");
-
-    Movie.provideComponent(Trailer);
-
-    const trailer = deserialize(
+    const movie1 = deserialize(
       {
-        __component: 'Trailer',
-        url: 'https://trailer.com/abc123',
-        movie: {__component: 'Movie', title: 'The Matrix'}
+        __component: 'Movie',
+        title: 'Movie 1',
+        director: {__component: 'Person', fullName: 'Person 1'}
       },
       {componentGetter}
-    ) as Trailer;
+    ) as Movie;
 
-    expect(trailer).toBeInstanceOf(Trailer);
-    expect(trailer.url).toBe('https://trailer.com/abc123');
+    expect(movie1).toBeInstanceOf(Movie);
+    expect(movie1.title).toBe('Movie 1');
 
-    movie = trailer.movie!;
+    const movie1Director = movie1.director;
 
-    expect(movie).toBeInstanceOf(Movie);
-    expect(movie.title).toBe('The Matrix');
-    expect(movie.getAttribute('duration').isSet()).toBe(false);
+    expect(movie1Director).toBeInstanceOf(Person);
+    expect(movie1Director?.fullName).toBe('Person 1');
 
-    trailer.deserialize({
-      url: 'https://trailer.com/xyz456',
-      movie: {__component: 'Movie', duration: 120}
-    });
+    movie1.deserialize({director: {__component: 'Person', fullName: 'Person 1 (modified)'}});
 
-    expect(trailer.url).toBe('https://trailer.com/xyz456');
+    // The identity of movie1.director should be preserved
+    expect(movie1.director).toBe(movie1Director);
+    expect(movie1Director?.fullName).toBe('Person 1 (modified)');
 
-    // Referenced component identities should be preserved
-    expect(trailer.movie).toBe(movie);
+    const movie2 = deserialize(
+      {
+        __component: 'Movie',
+        title: 'Movie 2',
+        actors: [{__component: 'Person', fullName: 'Person 2'}]
+      },
+      {componentGetter}
+    ) as Movie;
 
-    expect(movie.title).toBe('The Matrix');
-    expect(movie.duration).toBe(120);
+    expect(movie2).toBeInstanceOf(Movie);
+    expect(movie2.title).toBe('Movie 2');
 
-    // --- With an array of a referenced components ---
+    const movie2Actor = movie2.actors![0];
 
-    class Cinema extends Component {
-      @attribute() name?: string;
-      @attribute() movies?: Movie[];
+    expect(movie2Actor).toBeInstanceOf(Person);
+    expect(movie2Actor?.fullName).toBe('Person 2');
+
+    movie2.deserialize({actors: [{__component: 'Person', fullName: 'Person 2 (modified)'}]});
+
+    // The identity of movie2.actors[0] should NOT be preserved
+    expect(movie2.actors![0]).not.toBe(movie2Actor);
+    expect(movie2.actors![0].fullName).toBe('Person 2 (modified)');
+  });
+
+  test('Referenced component instances', async () => {
+    class Person extends Component {
+      @primaryIdentifier() id!: string;
+      @attribute('string') fullName?: string;
     }
 
-    componentGetter = function (type: string): any {
-      if (type === 'Cinema') {
-        return Cinema.prototype;
+    class Movie extends Component {
+      @provide() static Person = Person;
+
+      @primaryIdentifier() id!: string;
+      @attribute() title?: string;
+      @attribute('Person?') director?: Person;
+    }
+
+    const componentGetter = function (type: string): any {
+      if (type === 'Movie') {
+        return Movie.prototype;
       }
 
       throw new Error('Component not found');
     };
 
-    Movie.provideComponent(Cinema);
+    const person1 = new Person({id: 'person1', fullName: 'Person 1'});
+    const person2 = new Person({id: 'person2', fullName: 'Person 2'});
 
-    const cinema = deserialize(
+    const movie1 = new Movie({id: 'movie1', title: 'Movie 1', director: person1});
+
+    expect(movie1.director).toBe(person1);
+
+    let deserializedMovie = deserialize(
       {
-        __component: 'Cinema',
-        name: 'Paradiso',
-        movies: [{__component: 'Movie', title: 'The Matrix'}]
+        __component: 'Movie',
+        id: 'movie1',
+        director: {__component: 'Person', id: 'person2'}
       },
       {componentGetter}
-    ) as Cinema;
+    ) as Movie;
 
-    expect(cinema).toBeInstanceOf(Cinema);
-    expect(cinema.name).toBe('Paradiso');
-    expect(cinema.movies).toHaveLength(1);
+    expect(deserializedMovie).toBe(movie1);
+    expect(movie1.director).toBe(person2);
 
-    movie = cinema.movies![0];
+    deserializedMovie = deserialize(
+      {
+        __component: 'Movie',
+        id: 'movie1',
+        director: {__undefined: true}
+      },
+      {componentGetter}
+    ) as Movie;
 
-    expect(movie).toBeInstanceOf(Movie);
-    expect(movie.title).toBe('The Matrix');
-    expect(movie.getAttribute('duration').isSet()).toBe(false);
-
-    cinema.deserialize({
-      __component: 'Cinema',
-      name: 'New Paradiso',
-      movies: [{__component: 'Movie', title: 'The Matrix 2', duration: 120}]
-    }) as Cinema;
-
-    expect(cinema.name).toBe('New Paradiso');
-    expect(cinema.movies).toHaveLength(1);
-
-    const otherMovie = cinema.movies![0];
-
-    // For referenced components in arrays, the identity is not (currently) be preserved
-    expect(otherMovie).not.toBe(movie);
-
-    expect(otherMovie).toBeInstanceOf(Movie);
-    expect(otherMovie.title).toBe('The Matrix 2');
-    expect(otherMovie.duration).toBe(120);
+    expect(deserializedMovie).toBe(movie1);
+    expect(movie1.director).toBeUndefined();
   });
 
   test('Functions', async () => {
