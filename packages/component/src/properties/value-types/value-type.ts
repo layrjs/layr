@@ -305,6 +305,10 @@ export class ValueType {
     return serialize(value, options);
   }
 
+  canDeserializeInPlace(_attribute: Attribute) {
+    return false;
+  }
+
   introspect() {
     const introspectedValueType: IntrospectedValueType = {valueType: this.toString()};
 

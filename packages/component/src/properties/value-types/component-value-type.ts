@@ -121,6 +121,10 @@ export class ComponentValueType extends ValueType {
     return super.serializeValue(value, attribute, options);
   }
 
+  canDeserializeInPlace(attribute: Attribute) {
+    return ensureComponentClass(this.getComponent(attribute)).isEmbedded();
+  }
+
   static isComponentValueType(value: any): value is ComponentValueType {
     return isComponentValueTypeInstance(value);
   }

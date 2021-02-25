@@ -7,6 +7,7 @@ import {
   isEmbeddable,
   ObserverPayload
 } from '@layr/observable';
+import {possiblyAsync} from 'possibly-async';
 
 import type {
   Component,
@@ -26,6 +27,7 @@ import {fork} from '../forking';
 import {AttributeSelector} from './attribute-selector';
 import type {Validator, ValidatorFunction} from '../validation';
 import {SerializeOptions} from '../serialization';
+import {deserialize, DeserializeOptions} from '../deserialization';
 import {isComponentClass, isComponentInstance, ensureComponentClass} from '../utilities';
 
 export type AttributeOptions = PropertyOptions & {
@@ -635,6 +637,31 @@ export class Attribute extends Observable(Property) {
     }
 
     return this.getValueType().serializeValue(this.getValue(), this, options);
+  }
+
+  // === Deserialization ===
+
+  deserialize(
+    serializedValue: unknown,
+    options: DeserializeOptions = {}
+  ): void | PromiseLike<void> {
+    if (this.isSet()) {
+      const value = this.getValue();
+
+      if (value !== undefined && this.getValueType().canDeserializeInPlace(this)) {
+        return (value as any).deserialize(serializedValue, options);
+      }
+    }
+
+    const componentClass = ensureComponentClass(this.getParent());
+    const componentGetter = (type: string) => componentClass.getComponentOfType(type);
+
+    return possiblyAsync(
+      deserialize(serializedValue, {...options, componentGetter}),
+      (deserializedValue) => {
+        this.setValue(deserializedValue, {source: options.source});
+      }
+    );
   }
 
   // === Validation ===

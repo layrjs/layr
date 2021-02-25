@@ -49,7 +49,7 @@ import {clone, CloneOptions} from './cloning';
 import {ForkOptions} from './forking';
 import {merge, MergeOptions} from './merging';
 import {SerializeOptions} from './serialization';
-import {deserialize, DeserializeOptions} from './deserialization';
+import {DeserializeOptions} from './deserialization';
 import {
   isComponentClass,
   isComponentInstance,
@@ -4063,9 +4063,6 @@ export class Component extends Observable(Object) {
   ): void | PromiseLike<void> {
     const {attributeFilter} = options;
 
-    const componentClass = ensureComponentClass(this);
-    const componentGetter = (type: string) => componentClass.getComponentOfType(type);
-
     return possiblyAsync.forEach(
       Object.entries(serializedAttributes),
       ([attributeName, serializedAttributeValue]: [string, unknown]) => {
@@ -4075,57 +4072,10 @@ export class Component extends Observable(Object) {
           attributeFilter !== undefined ? attributeFilter.call(this, attribute) : true,
           (isNotFilteredOut) => {
             if (isNotFilteredOut) {
-              return this.__deserializeAttribute(
-                attribute,
-                serializedAttributeValue,
-                componentGetter,
-                options
-              );
+              return attribute.deserialize(serializedAttributeValue, options);
             }
           }
         );
-      }
-    );
-  }
-
-  static get __deserializeAttribute() {
-    return this.prototype.__deserializeAttribute;
-  }
-
-  __deserializeAttribute(
-    attribute: Attribute,
-    serializedAttributeValue: unknown,
-    componentGetter: ComponentGetter,
-    options: DeserializeOptions
-  ): void | PromiseLike<void> {
-    const {source = 0} = options;
-
-    // OPTIMIZE: Move the following logic into the Attribute class so we can avoid
-    // deserializing two times in case of in place deserialization of nested models
-
-    return possiblyAsync(
-      deserialize(serializedAttributeValue, {...options, componentGetter}),
-      (newAttributeValue) => {
-        if (attribute.isSet()) {
-          const previousAttributeValue = attribute.getValue();
-
-          if (newAttributeValue === previousAttributeValue) {
-            // Optimization
-            attribute.setValueSource(source);
-            return;
-          }
-
-          if (
-            isComponentClassOrInstance(newAttributeValue) &&
-            isComponentClassOrInstance(previousAttributeValue) &&
-            newAttributeValue.getComponentType() === previousAttributeValue.getComponentType() &&
-            ensureComponentClass(previousAttributeValue).isEmbedded()
-          ) {
-            return (previousAttributeValue as any).deserialize(serializedAttributeValue, options);
-          }
-        }
-
-        attribute.setValue(newAttributeValue, {source});
       }
     );
   }
