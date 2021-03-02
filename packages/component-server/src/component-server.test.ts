@@ -183,7 +183,7 @@ describe('ComponentServer', () => {
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie', id: 'm1', title: ''},
+      result: {__component: 'Movie', __new: true, id: 'm1', title: ''},
       components: [{__component: 'typeof Movie', offset: 0}]
     });
 
@@ -197,7 +197,7 @@ describe('ComponentServer', () => {
       })
     ).toStrictEqual({
       result: {title: ''},
-      components: [{__component: 'Movie', id: 'm1', title: ''}]
+      components: [{__component: 'Movie', __new: true, id: 'm1', title: ''}]
     });
 
     expect(
@@ -207,7 +207,7 @@ describe('ComponentServer', () => {
         }
       })
     ).toStrictEqual({
-      result: {__component: 'Movie', id: 'm1'},
+      result: {__component: 'Movie', __new: true, id: 'm1'},
       components: [{__component: 'typeof Movie', offset: 0}]
     });
 

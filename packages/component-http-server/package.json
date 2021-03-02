@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-http-server",
-  "version": "1.1.5",
+  "version": "1.1.8",
   "description": "A basic HTTP server for your Layr components",
   "keywords": [
     "layr",
@@ -28,9 +28,9 @@
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
-    "@layr/component": "^1.1.5",
-    "@layr/component-koa-middleware": "^1.1.4",
-    "@layr/component-server": "^1.1.4",
+    "@layr/component": "^1.1.8",
+    "@layr/component-koa-middleware": "^1.1.7",
+    "@layr/component-server": "^1.1.7",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
     "koa": "^2.13.1",

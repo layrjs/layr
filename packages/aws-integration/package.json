@@ -1,6 +1,6 @@
 {
   "name": "@layr/aws-integration",
-  "version": "1.1.4",
+  "version": "1.1.7",
   "description": "AWS integration for Layr",
   "keywords": [
     "layr",
@@ -27,7 +27,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component-server": "^1.1.4",
+    "@layr/component-server": "^1.1.7",
     "@types/aws-lambda": "^8.10.72",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",

@@ -1,6 +1,6 @@
 {
   "name": "@layr/memory-store",
-  "version": "1.1.13",
+  "version": "1.1.17",
   "description": "A Layr store using memory (useful for testing)",
   "keywords": [
     "layr",
@@ -25,9 +25,9 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^1.1.5",
-    "@layr/storable": "^1.1.11",
-    "@layr/store": "^1.1.19",
+    "@layr/component": "^1.1.8",
+    "@layr/storable": "^1.1.15",
+    "@layr/store": "^1.1.23",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "sort-on": "^4.1.0",

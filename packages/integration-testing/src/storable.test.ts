@@ -313,7 +313,6 @@ describe('Storable', () => {
 
           const expectedSerializedUser = {
             __component: 'User',
-            __new: false,
             id: 'user1',
             email: '1@user.com',
             reference: 1,
@@ -327,27 +326,23 @@ describe('Storable', () => {
             ],
             picture: {
               __component: 'Picture',
-              __new: false,
               type: 'JPEG',
               url: 'https://pictures.com/1-2.jpg'
             },
             pastPictures: [
               {
                 __component: 'Picture',
-                __new: false,
                 type: 'JPEG',
                 url: 'https://pictures.com/1-1.jpg'
               },
               {
                 __component: 'Picture',
-                __new: false,
                 type: 'PNG',
                 url: 'https://pictures.com/1-1.png'
               }
             ],
             organization: {
               __component: 'Organization',
-              __new: false,
               id: 'org1',
               name: 'Organization 1'
             },
@@ -370,14 +365,13 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             fullName: 'User 1'
           });
 
           user = await User.fork().get({id: 'user1'}, {});
 
-          expect(user.serialize()).toStrictEqual({__component: 'User', __new: false, id: 'user1'});
+          expect(user.serialize()).toStrictEqual({__component: 'User', id: 'user1'});
 
           await expect(User.fork().get({id: 'user2'})).rejects.toThrow(
             "Cannot load a component that is missing from the store (component: 'User', id: 'user2')"
@@ -397,7 +391,6 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             email: '1@user.com',
             fullName: 'User 1'
@@ -411,7 +404,6 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             reference: 1,
             fullName: 'User 1'
@@ -478,12 +470,11 @@ describe('Storable', () => {
           }
 
           expect(await user.load({})).toBe(user);
-          expect(user.serialize()).toStrictEqual({__component: 'User', __new: false, id: 'user1'});
+          expect(user.serialize()).toStrictEqual({__component: 'User', id: 'user1'});
 
           expect(await user.load({email: true})).toBe(user);
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             email: '1@user.com'
           });
@@ -491,7 +482,6 @@ describe('Storable', () => {
           expect(await user.load()).toBe(user);
           expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             email: '1@user.com',
             reference: 1,
@@ -505,27 +495,23 @@ describe('Storable', () => {
             ],
             picture: {
               __component: 'Picture',
-              __new: false,
               type: 'JPEG',
               url: 'https://pictures.com/1-2.jpg'
             },
             pastPictures: [
               {
                 __component: 'Picture',
-                __new: false,
                 type: 'JPEG',
                 url: 'https://pictures.com/1-1.jpg'
               },
               {
                 __component: 'Picture',
-                __new: false,
                 type: 'PNG',
                 url: 'https://pictures.com/1-1.png'
               }
             ],
             organization: {
               __component: 'Organization',
-              __new: false,
               id: 'org1',
               name: 'Organization 1'
             },
@@ -550,7 +536,6 @@ describe('Storable', () => {
           expect(await user.load({})).toBe(user);
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             email: '1@user.com'
           });
@@ -558,7 +543,6 @@ describe('Storable', () => {
           expect(await user.load({fullName: true})).toBe(user);
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             email: '1@user.com',
             fullName: 'User 1'
@@ -766,7 +750,6 @@ describe('Storable', () => {
 
           expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user2',
             email: '2@user.com',
             reference: 2,
@@ -777,14 +760,12 @@ describe('Storable', () => {
             pastLocations: [],
             picture: {
               __component: 'Picture',
-              __new: false,
               type: 'JPEG',
               url: 'https://pictures.com/2-1.jpg'
             },
             pastPictures: [],
             organization: {
               __component: 'Organization',
-              __new: false,
               id: 'org2',
               name: 'Organization 2'
             },
@@ -823,7 +804,6 @@ describe('Storable', () => {
 
           expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user2',
             fullName: 'User 2 (modified)',
             accessLevel: 1,
@@ -832,21 +812,18 @@ describe('Storable', () => {
             pastLocations: [{country: 'USA', city: 'San Francisco'}],
             picture: {
               __component: 'Picture',
-              __new: false,
               type: 'JPEG',
               url: 'https://pictures.com/2-2.jpg'
             },
             pastPictures: [
               {
                 __component: 'Picture',
-                __new: false,
                 type: 'JPEG',
                 url: 'https://pictures.com/2-1.jpg'
               }
             ],
             organization: {
               __component: 'Organization',
-              __new: false,
               id: 'org1',
               name: 'Organization 1'
             },
@@ -877,20 +854,17 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user2',
             location: {country: 'USA'},
             pastLocations: [{country: 'USA'}],
             picture: {
               __component: 'Picture',
-              __new: false,
               type: {__undefined: true},
               url: 'https://pictures.com/2-2.jpg'
             },
             pastPictures: [
               {
                 __component: 'Picture',
-                __new: false,
                 type: {__undefined: true},
                 url: 'https://pictures.com/2-1.jpg'
               }
@@ -911,7 +885,6 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user2',
             location: {},
             pastLocations: [{}]
@@ -926,7 +899,6 @@ describe('Storable', () => {
 
             expect(user.serialize()).toStrictEqual({
               __component: 'User',
-              __new: false,
               id: 'user2',
               fullName: 'User 2 (modified)',
               accessLevel: 1
@@ -959,7 +931,6 @@ describe('Storable', () => {
 
             expect(user.serialize()).toStrictEqual({
               __component: 'User',
-              __new: false,
               id: 'user2',
               fullName: 'User 2 (modified)',
               accessLevel: 2
@@ -980,9 +951,8 @@ describe('Storable', () => {
 
           expect(user.serialize()).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user2',
-            pastPictures: [{__component: 'Picture', __new: false, type: {__undefined: true}}]
+            pastPictures: [{__component: 'Picture', type: {__undefined: true}}]
           });
 
           user.pastPictures[0].type = 'JPEG';
@@ -1095,7 +1065,6 @@ describe('Storable', () => {
           expect(serialize(users, {includeReferencedComponents: true})).toStrictEqual([
             {
               __component: 'User',
-              __new: false,
               id: 'user1',
               email: '1@user.com',
               reference: 1,
@@ -1109,27 +1078,23 @@ describe('Storable', () => {
               ],
               picture: {
                 __component: 'Picture',
-                __new: false,
                 type: 'JPEG',
                 url: 'https://pictures.com/1-2.jpg'
               },
               pastPictures: [
                 {
                   __component: 'Picture',
-                  __new: false,
                   type: 'JPEG',
                   url: 'https://pictures.com/1-1.jpg'
                 },
                 {
                   __component: 'Picture',
-                  __new: false,
                   type: 'PNG',
                   url: 'https://pictures.com/1-1.png'
                 }
               ],
               organization: {
                 __component: 'Organization',
-                __new: false,
                 id: 'org1',
                 name: 'Organization 1'
               },
@@ -1139,7 +1104,6 @@ describe('Storable', () => {
             },
             {
               __component: 'User',
-              __new: false,
               id: 'user11',
               email: '11@user.com',
               reference: 11,
@@ -1150,21 +1114,18 @@ describe('Storable', () => {
               pastLocations: [{country: 'France'}],
               picture: {
                 __component: 'Picture',
-                __new: false,
                 type: 'JPEG',
                 url: 'https://pictures.com/11-1.jpg'
               },
               pastPictures: [
                 {
                   __component: 'Picture',
-                  __new: false,
                   type: 'PNG',
                   url: 'https://pictures.com/11-1.png'
                 }
               ],
               organization: {
                 __component: 'Organization',
-                __new: false,
                 id: 'org2',
                 name: 'Organization 2'
               },
@@ -1174,7 +1135,6 @@ describe('Storable', () => {
             },
             {
               __component: 'User',
-              __new: false,
               id: 'user12',
               email: '12@user.com',
               reference: 12,
@@ -1188,20 +1148,17 @@ describe('Storable', () => {
               ],
               picture: {
                 __component: 'Picture',
-                __new: false,
                 type: 'PNG',
                 url: 'https://pictures.com/12-3.png'
               },
               pastPictures: [
                 {
                   __component: 'Picture',
-                  __new: false,
                   type: 'PNG',
                   url: 'https://pictures.com/12-2.png'
                 },
                 {
                   __component: 'Picture',
-                  __new: false,
                   type: 'PNG',
                   url: 'https://pictures.com/12-1.png'
                 }
@@ -1216,7 +1173,6 @@ describe('Storable', () => {
             },
             {
               __component: 'User',
-              __new: false,
               id: 'user13',
               email: '13@user.com',
               reference: 13,
@@ -1241,7 +1197,6 @@ describe('Storable', () => {
           expect(serialize(users, {includeReferencedComponents: true})).toStrictEqual([
             {
               __component: 'User',
-              __new: false,
               id: 'user12',
               email: '12@user.com',
               reference: 12,
@@ -1255,27 +1210,23 @@ describe('Storable', () => {
               ],
               picture: {
                 __component: 'Picture',
-                __new: false,
                 type: 'PNG',
                 url: 'https://pictures.com/12-3.png'
               },
               pastPictures: [
                 {
                   __component: 'Picture',
-                  __new: false,
                   type: 'PNG',
                   url: 'https://pictures.com/12-2.png'
                 },
                 {
                   __component: 'Picture',
-                  __new: false,
                   type: 'PNG',
                   url: 'https://pictures.com/12-1.png'
                 }
               ],
               organization: {
                 __component: 'Organization',
-                __new: false,
                 id: 'org2',
                 name: 'Organization 2'
               },
@@ -1290,43 +1241,41 @@ describe('Storable', () => {
           users = await User.fork().find({accessLevel: 3}, {email: true});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11', email: '11@user.com'},
-            {__component: 'User', __new: false, id: 'user13', email: '13@user.com'}
+            {__component: 'User', id: 'user11', email: '11@user.com'},
+            {__component: 'User', id: 'user13', email: '13@user.com'}
           ]);
 
           users = await User.fork().find({emailIsVerified: false}, {email: true});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1', email: '1@user.com'},
-            {__component: 'User', __new: false, id: 'user13', email: '13@user.com'}
+            {__component: 'User', id: 'user1', email: '1@user.com'},
+            {__component: 'User', id: 'user13', email: '13@user.com'}
           ]);
 
           // --- With a query involving two attributes ---
 
           users = await User.fork().find({accessLevel: 3, emailIsVerified: true}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user11'}]);
 
           // --- With 'sort' ---
 
           users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 'asc'}});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1', accessLevel: 0},
-            {__component: 'User', __new: false, id: 'user12', accessLevel: 1},
-            {__component: 'User', __new: false, id: 'user11', accessLevel: 3},
-            {__component: 'User', __new: false, id: 'user13', accessLevel: 3}
+            {__component: 'User', id: 'user1', accessLevel: 0},
+            {__component: 'User', id: 'user12', accessLevel: 1},
+            {__component: 'User', id: 'user11', accessLevel: 3},
+            {__component: 'User', id: 'user13', accessLevel: 3}
           ]);
 
           users = await User.fork().find({}, {accessLevel: true}, {sort: {accessLevel: 'desc'}});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11', accessLevel: 3},
-            {__component: 'User', __new: false, id: 'user13', accessLevel: 3},
-            {__component: 'User', __new: false, id: 'user12', accessLevel: 1},
-            {__component: 'User', __new: false, id: 'user1', accessLevel: 0}
+            {__component: 'User', id: 'user11', accessLevel: 3},
+            {__component: 'User', id: 'user13', accessLevel: 3},
+            {__component: 'User', id: 'user12', accessLevel: 1},
+            {__component: 'User', id: 'user1', accessLevel: 0}
           ]);
 
           users = await User.fork().find(
@@ -1336,10 +1285,10 @@ describe('Storable', () => {
           );
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1', reference: 1, accessLevel: 0},
-            {__component: 'User', __new: false, id: 'user12', reference: 12, accessLevel: 1},
-            {__component: 'User', __new: false, id: 'user13', reference: 13, accessLevel: 3},
-            {__component: 'User', __new: false, id: 'user11', reference: 11, accessLevel: 3}
+            {__component: 'User', id: 'user1', reference: 1, accessLevel: 0},
+            {__component: 'User', id: 'user12', reference: 12, accessLevel: 1},
+            {__component: 'User', id: 'user13', reference: 13, accessLevel: 3},
+            {__component: 'User', id: 'user11', reference: 11, accessLevel: 3}
           ]);
 
           // --- With 'skip' ---
@@ -1347,8 +1296,8 @@ describe('Storable', () => {
           users = await User.fork().find({}, {}, {skip: 2});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user12'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user12'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // --- With 'limit' ---
@@ -1356,8 +1305,8 @@ describe('Storable', () => {
           users = await User.fork().find({}, {}, {limit: 2});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user11'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user11'}
           ]);
 
           // --- With 'skip' and 'limit' ---
@@ -1365,8 +1314,8 @@ describe('Storable', () => {
           users = await User.fork().find({}, {}, {skip: 1, limit: 2});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // --- With 'sort', 'skip', and 'limit' ---
@@ -1374,8 +1323,8 @@ describe('Storable', () => {
           users = await User.fork().find({}, {}, {sort: {id: 'desc'}, skip: 1, limit: 2});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user12'},
-            {__component: 'User', __new: false, id: 'user11'}
+            {__component: 'User', id: 'user12'},
+            {__component: 'User', id: 'user11'}
           ]);
 
           await expect(User.fork().find({unknownAttribute: 1})).rejects.toThrow(
@@ -1390,25 +1339,21 @@ describe('Storable', () => {
 
           users = await User.fork().find({accessLevel: {$equal: 0}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           await expect(User.fork().find({accessLevel: {$equal: /0/}}, {})).rejects.toThrow(
             "Expected a scalar value of the operator '$equal', but received a value of type 'RegExp' (query: '{\"accessLevel\":{\"$equal\":{}}}')"
           );
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           // - '$notEqual' -
 
           users = await User.fork().find({accessLevel: {$notEqual: 3}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // - '$greaterThan' -
@@ -1420,8 +1365,8 @@ describe('Storable', () => {
           users = await User.fork().find({accessLevel: {$greaterThan: 2}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // - '$greaterThanOrEqual' -
@@ -1429,25 +1374,23 @@ describe('Storable', () => {
           users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 3}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // - '$lessThan' -
 
           users = await User.fork().find({accessLevel: {$lessThan: 1}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           // - '$lessThanOrEqual' -
 
           users = await User.fork().find({accessLevel: {$lessThanOrEqual: 1}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // - '$in' -
@@ -1463,8 +1406,8 @@ describe('Storable', () => {
           users = await User.fork().find({accessLevel: {$in: [0, 1]}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // --- With two basic operators ---
@@ -1476,8 +1419,8 @@ describe('Storable', () => {
           users = await User.fork().find({accessLevel: {$greaterThanOrEqual: 0, $lessThan: 2}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // --- With an impossible expression ---
@@ -1496,9 +1439,7 @@ describe('Storable', () => {
 
           users = await User.fork().find({email: {$includes: '2'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user12'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
 
           await expect(User.fork().find({email: {$includes: 2}}, {})).rejects.toThrow(
             "Expected a string as value of the operator '$includes', but received a value of type 'number' (query: '{\"email\":{\"$includes\":2}}')"
@@ -1512,9 +1453,7 @@ describe('Storable', () => {
 
           users = await User.fork().find({email: {$startsWith: '1@'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           // - '$endsWith' -
 
@@ -1525,8 +1464,8 @@ describe('Storable', () => {
           users = await User.fork().find({location: {city: {$endsWith: 'ris'}}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // - '$matches' -
@@ -1538,8 +1477,8 @@ describe('Storable', () => {
           users = await User.fork().find({location: {country: {$matches: /usa/i}}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user11'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user11'}
           ]);
 
           await expect(User.fork().find({location: {country: {$matches: 'usa'}}})).rejects.toThrow(
@@ -1557,8 +1496,8 @@ describe('Storable', () => {
           users = await User.fork().find({accessLevel: {$not: {$lessThan: 3}}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // - '$and' -
@@ -1569,9 +1508,7 @@ describe('Storable', () => {
 
           users = await User.fork().find({$and: [{tags: 'admin'}, {emailIsVerified: true}]}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user11'}]);
 
           // - '$or' -
 
@@ -1585,8 +1522,8 @@ describe('Storable', () => {
           users = await User.fork().find({$or: [{accessLevel: 0}, {accessLevel: 1}]}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // - '$nor' -
@@ -1601,8 +1538,8 @@ describe('Storable', () => {
           users = await User.fork().find({$nor: [{accessLevel: 0}, {accessLevel: 1}]}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // --- With an object attribute ---
@@ -1613,28 +1550,22 @@ describe('Storable', () => {
 
           users = await User.fork().find({location: {country: 'France'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user12'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
 
           users = await User.fork().find({location: {country: 'USA'}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user11'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user11'}
           ]);
 
           users = await User.fork().find({location: {country: 'USA', city: 'Paris'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           users = await User.fork().find({location: undefined}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user13'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user13'}]);
 
           // --- With an array attribute ---
 
@@ -1646,47 +1577,43 @@ describe('Storable', () => {
 
           users = await User.fork().find({tags: {$some: 'blocked'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           users = await User.fork().find({tags: {$some: 'admin'}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // '$some' should be implicit
           users = await User.fork().find({tags: 'admin'}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // '$includes' should be replaced by '$some' when '$some' is missing
           users = await User.fork().find({tags: {$includes: 'admin'}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // When '$some' is present, '$includes' remains a string operator
           users = await User.fork().find({tags: {$some: {$includes: 'lock'}}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           // - '$every' -
 
           users = await User.fork().find({tags: {$every: 'admin'}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user12'},
-            {__component: 'User', __new: false, id: 'user13'}
+            {__component: 'User', id: 'user12'},
+            {__component: 'User', id: 'user13'}
           ]);
 
           // - '$length' -
@@ -1697,15 +1624,13 @@ describe('Storable', () => {
 
           users = await User.fork().find({tags: {$length: 0}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user12'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
 
           users = await User.fork().find({tags: {$length: 2}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user11'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user11'}
           ]);
 
           // --- With an array of object attribute ---
@@ -1716,28 +1641,22 @@ describe('Storable', () => {
 
           users = await User.fork().find({pastLocations: {country: 'Japan'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user12'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user12'}]);
 
           users = await User.fork().find({pastLocations: {country: 'France'}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           users = await User.fork().find({pastLocations: {country: 'USA', city: 'Nice'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           users = await User.fork().find({pastLocations: {city: undefined}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user11'}]);
 
           // --- With an array of embedded components ---
 
@@ -1745,37 +1664,31 @@ describe('Storable', () => {
 
           users = await User.fork().find({pastPictures: {type: 'JPEG'}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
           users = await User.fork().find({pastPictures: {type: 'PNG'}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           // - '$length' -
 
           users = await User.fork().find({pastPictures: {$length: 0}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user13'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user13'}]);
 
           users = await User.fork().find({pastPictures: {$length: 1}}, {});
 
-          expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user11'}
-          ]);
+          expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user11'}]);
 
           users = await User.fork().find({pastPictures: {$length: 2}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user12'}
           ]);
 
           users = await User.fork().find({pastPictures: {$length: 3}}, {});
@@ -1794,7 +1707,6 @@ describe('Storable', () => {
           expect(users[0]).toBe(user);
           expect(serialize(user)).toStrictEqual({
             __component: 'User',
-            __new: false,
             id: 'user1',
             email: '1@user.com',
             fullName: 'User 1'
@@ -1811,12 +1723,10 @@ describe('Storable', () => {
           expect(serialize(users)).toStrictEqual([
             {
               __component: 'User',
-              __new: false,
               id: 'user11'
             },
             {
               __component: 'User',
-              __new: false,
               id: 'user12'
             }
           ]);
@@ -1831,9 +1741,9 @@ describe('Storable', () => {
           users = await ForkedUser.find({organization: {$in: [organization1, organization2]}}, {});
 
           expect(serialize(users)).toStrictEqual([
-            {__component: 'User', __new: false, id: 'user1'},
-            {__component: 'User', __new: false, id: 'user11'},
-            {__component: 'User', __new: false, id: 'user12'}
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user12'}
           ]);
         });
 
@@ -1919,7 +1829,6 @@ describe('Storable', () => {
 
       expect(user.serialize()).toStrictEqual({
         __component: 'User',
-        __new: false,
         id: 'user1',
         fullName: 'User 1',
         firstName: 'User'
@@ -1979,19 +1888,19 @@ describe('Storable', () => {
 
       let users = await User.fork().find({hasNoAccess: true}, {});
 
-      expect(serialize(users)).toStrictEqual([{__component: 'User', __new: false, id: 'user1'}]);
+      expect(serialize(users)).toStrictEqual([{__component: 'User', id: 'user1'}]);
 
       users = await User.fork().find({hasNoAccess: true}, {hasNoAccess: true});
 
       expect(serialize(users)).toStrictEqual([
-        {__component: 'User', __new: false, id: 'user1', accessLevel: 0, hasNoAccess: true}
+        {__component: 'User', id: 'user1', accessLevel: 0, hasNoAccess: true}
       ]);
 
       users = await User.fork().find({hasAccessLevel: 3}, {});
 
       expect(serialize(users)).toStrictEqual([
-        {__component: 'User', __new: false, id: 'user11'},
-        {__component: 'User', __new: false, id: 'user13'}
+        {__component: 'User', id: 'user11'},
+        {__component: 'User', id: 'user13'}
       ]);
     });
 
