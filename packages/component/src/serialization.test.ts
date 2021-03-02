@@ -126,23 +126,20 @@ describe('Serialization', () => {
     movie = Movie.create({}, {isNew: false});
 
     expect(movie.serialize()).toStrictEqual({
-      __component: 'Movie',
-      __new: false
+      __component: 'Movie'
     });
 
-    expect(movie.serialize({includeComponentTypes: false})).toStrictEqual({__new: false});
+    expect(movie.serialize({includeComponentTypes: false})).toStrictEqual({});
 
     movie.title = 'Inception';
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception'
     });
 
     expect(movie.serialize({includeComponentTypes: false})).toStrictEqual({
-      title: 'Inception',
-      __new: false
+      title: 'Inception'
     });
 
     // - Value sourcing -
@@ -151,7 +148,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception'
     });
     expect(movie.serialize({target: -1})).toStrictEqual({
@@ -164,7 +160,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception',
       director: {
         __component: 'Director',
@@ -178,14 +173,12 @@ describe('Serialization', () => {
       movie.serialize({attributeSelector: {title: true, director: {name: true}}})
     ).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception',
       director: {__component: 'Director', __new: true, name: 'Christopher Nolan'}
     });
 
     expect(movie.serialize({attributeSelector: {title: true, director: {}}})).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception',
       director: {__component: 'Director', __new: true}
     });
@@ -206,7 +199,6 @@ describe('Serialization', () => {
       })
     ).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception'
     });
 
@@ -220,7 +212,6 @@ describe('Serialization', () => {
       })
     ).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception'
     });
 
@@ -235,9 +226,8 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception',
-      director: {__component: 'Director', __new: false, name: 'Christopher Nolan', country: 'USA'}
+      director: {__component: 'Director', name: 'Christopher Nolan', country: 'USA'}
     });
 
     expect(movie.serialize({target: -1})).toStrictEqual({__component: 'Movie'});
@@ -246,7 +236,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize({target: -1})).toStrictEqual({
       __component: 'Movie',
-      director: {__component: 'Director', __new: false, country: 'US'}
+      director: {__component: 'Director', country: 'US'}
     });
 
     // --- With an array of embedded components ---
@@ -255,7 +245,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize({attributeSelector: {actors: true}})).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       actors: [
         {__component: 'Actor', __new: true, name: 'Leonardo DiCaprio', country: {__undefined: true}}
       ]
@@ -274,8 +263,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize({attributeSelector: {actors: true}})).toStrictEqual({
       __component: 'Movie',
-      __new: false,
-      actors: [{__component: 'Actor', __new: false, name: 'Leonardo DiCaprio', country: 'USA'}]
+      actors: [{__component: 'Actor', name: 'Leonardo DiCaprio', country: 'USA'}]
     });
 
     expect(movie.serialize({attributeSelector: {actors: true}, target: -1})).toStrictEqual({
@@ -286,7 +274,7 @@ describe('Serialization', () => {
 
     expect(movie.serialize({attributeSelector: {actors: true}, target: -1})).toStrictEqual({
       __component: 'Movie',
-      actors: [{__component: 'Actor', __new: false, name: 'Leonardo DiCaprio', country: 'US'}]
+      actors: [{__component: 'Actor', name: 'Leonardo DiCaprio', country: 'US'}]
     });
   });
 
@@ -301,7 +289,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
-      __new: false,
       title: 'Inception'
     });
 
@@ -313,7 +300,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
-      __new: false,
       id: 'abc123',
       title: 'Inception'
     });
@@ -327,7 +313,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
-      __new: false,
       slug: 'inception',
       title: 'Inception'
     });
@@ -344,7 +329,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
-      __new: false,
       id: 'abc123',
       slug: 'inception',
       title: 'Inception'
@@ -361,7 +345,6 @@ describe('Serialization', () => {
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
-      __new: false,
       id: 'abc123',
       title: 'Inception'
     });
@@ -393,7 +376,6 @@ describe('Serialization', () => {
 
     expect(cinema.serialize()).toEqual({
       __component: 'Cinema',
-      __new: false,
       id: 'xyz456',
       name: 'Paradiso',
       movies: [{__component: 'Movie', id: 'abc123'}]
@@ -403,7 +385,6 @@ describe('Serialization', () => {
 
     expect(cinema.serialize({componentDependencies})).toEqual({
       __component: 'Cinema',
-      __new: false,
       id: 'xyz456',
       name: 'Paradiso',
       movies: [{__component: 'Movie', id: 'abc123'}]

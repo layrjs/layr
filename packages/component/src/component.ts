@@ -395,7 +395,7 @@ export class Component extends Observable(Object) {
 
     const component: Component = Object.create(this.prototype);
 
-    component.setIsNewMark(isNew, {source});
+    component.setIsNewMark(isNew);
 
     // Always include attributes present in the specified object
     const fullAttributeSelector = mergeAttributeSelectors(
@@ -629,9 +629,8 @@ export class Component extends Observable(Object) {
    *
    * @category isNew Mark
    */
-  setIsNewMark(isNew: boolean, {source}: {source?: number} = {}) {
+  setIsNewMark(isNew: boolean) {
     Object.defineProperty(this, '__isNew', {value: isNew, configurable: true});
-    this.setIsNewMarkSource(source);
   }
 
   /**
@@ -661,8 +660,8 @@ export class Component extends Observable(Object) {
    *
    * @category isNew Mark
    */
-  markAsNew({source}: {source?: number} = {}) {
-    this.setIsNewMark(true, {source});
+  markAsNew() {
+    this.setIsNewMark(true);
   }
 
   /**
@@ -672,18 +671,8 @@ export class Component extends Observable(Object) {
    *
    * @category isNew Mark
    */
-  markAsNotNew({source}: {source?: number} = {}) {
-    this.setIsNewMark(false, {source});
-  }
-
-  __isNewSource: number | undefined;
-
-  getIsNewMarkSource() {
-    return this.__isNewSource !== undefined ? this.__isNewSource : 0;
-  }
-
-  setIsNewMarkSource(source = 0) {
-    Object.defineProperty(this, '__isNewSource', {value: source, configurable: true});
+  markAsNotNew() {
+    this.setIsNewMark(false);
   }
 
   // === Observability ===
@@ -3276,7 +3265,6 @@ export class Component extends Observable(Object) {
       {},
       {
         isNew: this.getIsNewMark(),
-        source: this.getIsNewMarkSource(),
         attributeSelector: {},
         initialize: false
       }
@@ -3769,8 +3757,7 @@ export class Component extends Observable(Object) {
       ignoreEmptyComponents,
       includeComponentTypes,
       includeIsNewMarks,
-      includeReferencedComponents,
-      target
+      includeReferencedComponents
     } = options;
 
     const serializedComponent: PlainObject = {};
@@ -3807,9 +3794,10 @@ export class Component extends Observable(Object) {
       }
     }
 
-    // TODO: Rethink the whole '__new' logic
-    if (includeIsNewMarks && (isEmbedded || this.getIsNewMarkSource() !== target)) {
-      serializedComponent.__new = this.getIsNewMark();
+    const isNew = this.getIsNewMark();
+
+    if (isNew && includeIsNewMarks) {
+      serializedComponent.__new = true;
     }
 
     return possiblyAsync(
@@ -3886,7 +3874,7 @@ export class Component extends Observable(Object) {
     object: PlainObject = {},
     options: DeserializeOptions = {}
   ): InstanceType<T> | PromiseLike<InstanceType<T>> {
-    const {__component: componentType, __new: isNew, ...attributes} = object;
+    const {__component: componentType, __new: isNew = false, ...attributes} = object;
     const {attributeFilter, deserializedComponents, source} = options;
 
     if (componentType !== undefined) {
@@ -3903,22 +3891,20 @@ export class Component extends Observable(Object) {
 
     let component: Component | undefined;
 
-    if (!isNew && this.prototype.hasPrimaryIdentifierAttribute()) {
+    if (this.prototype.hasPrimaryIdentifierAttribute()) {
       component = this.getIdentityMap().getComponent(identifierAttributes);
     }
 
     if (component === undefined) {
       component = this.create(identifierAttributes, {
-        isNew: Boolean(isNew),
+        isNew,
         source,
         attributeSelector: {},
         attributeFilter,
         initialize: false
       });
     } else {
-      if (isNew !== undefined) {
-        component.setIsNewMark(isNew, {source});
-      }
+      component.setIsNewMark(isNew);
     }
 
     if (deserializedComponents !== undefined && !component.constructor.isEmbedded()) {
@@ -4020,9 +4006,9 @@ export class Component extends Observable(Object) {
     object: PlainObject = {},
     options: DeserializeOptions = {}
   ): T | PromiseLike<T> {
-    const {deserializedComponents, source} = options;
+    const {deserializedComponents} = options;
 
-    const {__component: componentType, __new: isNew, ...attributes} = object;
+    const {__component: componentType, __new: isNew = false, ...attributes} = object;
 
     if (componentType !== undefined) {
       const expectedComponentType = this.getComponentType();
@@ -4034,15 +4020,13 @@ export class Component extends Observable(Object) {
       }
     }
 
-    if (isNew !== undefined) {
-      if (isNew && !this.getIsNewMark()) {
-        throw new Error(
-          `Cannot mark as new an existing non-new component (${this.describeComponent()})`
-        );
-      }
-
-      this.setIsNewMark(isNew, {source});
+    if (isNew && !this.getIsNewMark()) {
+      throw new Error(
+        `Cannot mark as new an existing non-new component (${this.describeComponent()})`
+      );
     }
+
+    this.setIsNewMark(isNew);
 
     if (deserializedComponents !== undefined && !this.constructor.isEmbedded()) {
       deserializedComponents.add(this);

@@ -225,13 +225,6 @@ describe('Deserialization', () => {
     movie.deserialize({});
 
     expect(movie).toBe(movie);
-    expect(movie.isNew()).toBe(true);
-    expect(movie.title).toBe('Inception');
-    expect(movie.duration).toBe(120);
-
-    movie.deserialize({__new: false});
-
-    expect(movie).toBe(movie);
     expect(movie.isNew()).toBe(false);
     expect(movie.title).toBe('Inception');
     expect(movie.duration).toBe(120);

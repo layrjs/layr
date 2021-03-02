@@ -556,7 +556,7 @@ describe('Identifiable component', () => {
     const deserializedArticle = ForkedArticle.recreate({
       id: 'xyz789',
       title: 'Hello 2',
-      author: {__component: 'User', __new: false, id: 'abc123'}
+      author: {__component: 'User', id: 'abc123'}
     }) as Article;
 
     const deserializedAuthor = deserializedArticle.author;

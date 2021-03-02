@@ -97,7 +97,7 @@ Also, here are some more advanced examples that you can check out:
 - [x] Component provision
 - [x] Cross-layer inheritance
 - [x] Remote method invocation
-- [ ] Optimized serialization
+- [x] Optimized serialization
 - [ ] Weak Identity Map
 - [ ] Component subscriptions (realtime updates)
 - [ ] HTTP Caching
