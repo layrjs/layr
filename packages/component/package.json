@@ -1,6 +1,6 @@
 {
   "name": "@layr/component",
-  "version": "1.1.8",
+  "version": "1.1.11",
   "description": "The base class of all your components",
   "keywords": [
     "layr",
@@ -27,7 +27,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/observable": "^1.0.6",
+    "@layr/observable": "^1.0.7",
     "core-helpers": "^1.0.3",
     "cuid": "^2.1.8",
     "lodash": "^4.17.21",
@@ -38,7 +38,7 @@
     "tslib": "^2.1.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.27",
+    "@mvila/dev-tools": "^1.0.28",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.168",
