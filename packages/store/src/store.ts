@@ -162,12 +162,9 @@ export abstract class Store {
 
     this._rootComponents.add(rootComponent);
 
-    let storableCount = 0;
-
     const registerIfComponentIsStorable = (component: typeof Component) => {
       if (isStorableClass(component) && !component.isEmbedded()) {
         this.registerStorable(component);
-        storableCount++;
       }
     };
 
@@ -175,12 +172,6 @@ export abstract class Store {
 
     for (const providedComponent of rootComponent.getProvidedComponents({deep: true})) {
       registerIfComponentIsStorable(providedComponent);
-    }
-
-    if (storableCount === 0) {
-      throw new Error(
-        `No storable components were found from the specified root component '${rootComponent.describeComponent()}'`
-      );
     }
   }
 
