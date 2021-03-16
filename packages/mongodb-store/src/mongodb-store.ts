@@ -141,6 +141,18 @@ export class MongoDBStore extends Store {
    * @category Creation
    */
   constructor(connectionString: string, options: {poolSize?: number} = {}) {
+    if (typeof connectionString !== 'string') {
+      throw new Error(
+        `Expected a 'connectionString' to create a MongoDBStore, but received a value of type '${typeof connectionString}'`
+      );
+    }
+
+    if (connectionString.length === 0) {
+      throw new Error(
+        `Expected a 'connectionString' to create a MongoDBStore, but received an empty string`
+      );
+    }
+
     const {poolSize = 1, ...otherOptions} = options;
 
     super(otherOptions);
