@@ -161,6 +161,10 @@ export class MongoDBStore extends Store {
     this._poolSize = poolSize;
   }
 
+  getURL() {
+    return this._connectionString;
+  }
+
   // === Component Registration ===
 
   /**

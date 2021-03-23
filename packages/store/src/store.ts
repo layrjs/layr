@@ -122,6 +122,10 @@ export abstract class Store {
     assertNoUnknownOptions(options);
   }
 
+  getURL(): string | undefined {
+    return undefined;
+  }
+
   // === Root components ===
 
   _rootComponents = new Set<typeof Component>();

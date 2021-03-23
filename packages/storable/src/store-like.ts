@@ -5,6 +5,8 @@ import type {Query} from './query';
 import type {SortDescriptor} from './storable';
 
 export declare class StoreLike {
+  getURL: () => string | undefined;
+
   load: (
     storable: StorableComponent,
     options?: {attributeSelector?: AttributeSelector; throwIfMissing?: boolean}
