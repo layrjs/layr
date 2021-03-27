@@ -1,5 +1,5 @@
 import type {ComponentServer} from '@layr/component-server';
-import {assertIsComponentServerInstance} from '@layr/component-server';
+import {isComponentServerInstance, assertIsComponentServerInstance} from '@layr/component-server';
 import type {APIGatewayProxyEventV2, Context, APIGatewayProxyStructuredResultV2} from 'aws-lambda';
 
 type CustomHandler = (
@@ -36,16 +36,29 @@ type CustomHandler = (
  * @category Functions
  */
 export function createAWSLambdaHandlerForComponentServer(
-  componentServer: ComponentServer,
+  componentServerOrComponentServerGetter: ComponentServer | (() => Promise<ComponentServer>),
   {customHandler}: {customHandler?: CustomHandler} = {}
 ) {
-  assertIsComponentServerInstance(componentServer);
+  let componentServer: ComponentServer;
 
   const handler = async (
     event: APIGatewayProxyEventV2,
     context: Context
   ): Promise<APIGatewayProxyStructuredResultV2> => {
     context.callbackWaitsForEmptyEventLoop = false;
+
+    if (componentServer === undefined) {
+      if (isComponentServerInstance(componentServerOrComponentServerGetter)) {
+        componentServer = componentServerOrComponentServerGetter;
+      } else if (typeof componentServerOrComponentServerGetter === 'function') {
+        componentServer = await componentServerOrComponentServerGetter();
+        assertIsComponentServerInstance(componentServer);
+      } else {
+        throw new Error(
+          `Expected a componentServer or a function returning a componentServer, but received a value of type '${typeof componentServerOrComponentServerGetter}'`
+        );
+      }
+    }
 
     if (
       !(
