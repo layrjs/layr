@@ -1,4 +1,4 @@
-import {Component, provide} from '@layr/component';
+import {Component, provide, primaryIdentifier} from '@layr/component';
 import {Routable, route} from '@layr/routable';
 import {Router, isRouterInstance} from '@layr/router';
 
@@ -132,13 +132,15 @@ describe('Router', () => {
   describe('Routes', () => {
     const getRouter = function () {
       class Movie extends Routable(Component) {
-        @route('/movies/:id') static Main({id}: {id: string}) {
-          return `Movie #${id}`;
+        @primaryIdentifier() id!: string;
+
+        @route('/movies/:id') ItemPage() {
+          return `Movie #${this.id}`;
         }
       }
 
       class Actor extends Routable(Component) {
-        @route('/actors/top') static Top() {
+        @route('/actors/top') static TopPage() {
           return `Top actors`;
         }
       }
@@ -160,17 +162,17 @@ describe('Router', () => {
 
       let result = router.findRouteByURL('/movies/abc123');
 
-      expect(result!.routable.getComponentName()).toBe('Movie');
-      expect(result!.route.getName()).toBe('Main');
+      expect(result!.routable.getComponentType()).toBe('Movie');
+      expect(result!.route.getName()).toBe('ItemPage');
       expect(result!.params).toEqual({id: 'abc123'});
 
       result = router.findRouteByURL('/actors/top');
 
-      expect(result!.routable.getComponentName()).toBe('Actor');
-      expect(result!.route.getName()).toBe('Top');
+      expect(result!.routable.getComponentType()).toBe('typeof Actor');
+      expect(result!.route.getName()).toBe('TopPage');
       expect(result!.params).toEqual({});
 
-      result = router.findRouteByURL('/movies/abc123/about');
+      result = router.findRouteByURL('/movies/abc123/details');
 
       expect(result).toBeUndefined();
     });
@@ -181,8 +183,8 @@ describe('Router', () => {
       expect(router.getParamsFromURL('/movies/abc123')).toEqual({id: 'abc123'});
       expect(router.getParamsFromURL('/actors/top')).toEqual({});
 
-      expect(() => router.getParamsFromURL('/movies/abc123/about')).toThrow(
-        "Couldn't find a route matching the specified URL (URL: '/movies/abc123/about')"
+      expect(() => router.getParamsFromURL('/movies/abc123/details')).toThrow(
+        "Couldn't find a route matching the specified URL (URL: '/movies/abc123/details')"
       );
     });
 
@@ -192,12 +194,12 @@ describe('Router', () => {
       expect(router.callRouteByURL('/movies/abc123')).toBe('Movie #abc123');
       expect(router.callRouteByURL('/actors/top')).toBe('Top actors');
 
-      expect(() => router.callRouteByURL('/movies/abc123/about')).toThrow(
-        "Couldn't find a route matching the specified URL (URL: '/movies/abc123/about')"
+      expect(() => router.callRouteByURL('/movies/abc123/details')).toThrow(
+        "Couldn't find a route matching the specified URL (URL: '/movies/abc123/details')"
       );
 
       expect(
-        router.callRouteByURL('/movies/abc123/about', {fallback: () => 'Route not found'})
+        router.callRouteByURL('/movies/abc123/details', {fallback: () => 'Route not found'})
       ).toBe('Route not found');
     });
   });

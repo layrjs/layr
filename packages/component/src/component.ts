@@ -1740,7 +1740,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an object composed of all the set identifiers of the component. The shape of the returned object is `{[identifierName]: identifierValue}`. If the component doesn't have any set identifiers, returns `undefined`.
+   * Returns an object composed of all the set identifiers of the component. The shape of the returned object is `{[identifierName]: identifierValue}`. Throws an error if the component doesn't have any set identifiers.
    *
    * @returns An object.
    *

@@ -761,7 +761,7 @@ export class UI extends Component {
           language = 'ts'; // Always highlight JS as TS
         }
 
-        return highlightJS.highlight(language, code).value;
+        return highlightJS.highlight(code, {language}).value;
       }
     });
 

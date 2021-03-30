@@ -1,4 +1,4 @@
-import {Component, provide} from '@layr/component';
+import {Component, provide, primaryIdentifier} from '@layr/component';
 import {MemoryRouter} from '@layr/memory-router';
 import {Routable, route} from '@layr/routable';
 
@@ -7,35 +7,34 @@ describe('MemoryRouter', () => {
 
   const getRouter = function () {
     class Home extends Routable(Component) {
-      @route('/') static Main() {
+      @route('/') static HomePage() {
         return `Home`;
       }
     }
 
-    class MovieList extends Routable(Component) {
-      @route('/movies') static Main() {
+    class Movie extends Routable(Component) {
+      @primaryIdentifier() id!: string;
+
+      @route('/movies') static ListPage() {
         return `Movies`;
       }
-    }
 
-    class Movie extends Routable(Component) {
-      @route('/movies/:id') static Main({id}: {id: string}) {
-        return `Movie #${id}`;
+      @route('/movies/:id') ItemPage() {
+        return `Movie #${this.id}`;
       }
 
-      @route('/movies/:id/about') static About({id}: {id: string}) {
-        return `About movie #${id}`;
+      @route('/movies/:id/details') DetailsPage() {
+        return `More about movie #${this.id}`;
       }
     }
 
     class Root extends Component {
       @provide() static Home = Home;
-      @provide() static MovieList = MovieList;
       @provide() static Movie = Movie;
     }
 
     const router = new MemoryRouter({
-      initialURLs: ['/', '/movies', '/movies/abc123?showDetails=true#main']
+      initialURLs: ['/', '/movies', '/movies/abc123?showTrailers=true#main']
     });
 
     router.registerRootComponent(Root);
@@ -69,7 +68,7 @@ describe('MemoryRouter', () => {
   test('getCurrentURL()', async () => {
     const router = getRouter();
 
-    expect(router.getCurrentURL()).toBe('/movies/abc123?showDetails=true#main');
+    expect(router.getCurrentURL()).toBe('/movies/abc123?showTrailers=true#main');
   });
 
   test('getCurrentParams()', async () => {
@@ -91,7 +90,7 @@ describe('MemoryRouter', () => {
   test('getCurrentQuery()', async () => {
     const router = getRouter();
 
-    expect(router.getCurrentQuery()).toEqual({showDetails: 'true'});
+    expect(router.getCurrentQuery()).toEqual({showTrailers: 'true'});
 
     router.goBack();
 
@@ -120,9 +119,9 @@ describe('MemoryRouter', () => {
     expect(currentRouteResult).toBe('Movie #abc123');
     expect(router.getHistoryLength()).toBe(3);
 
-    router.navigate('/movies/abc123/about');
+    router.navigate('/movies/abc123/details');
 
-    expect(currentRouteResult).toBe('About movie #abc123');
+    expect(currentRouteResult).toBe('More about movie #abc123');
     expect(router.getHistoryLength()).toBe(4);
 
     router.go(-3); // We should be at the first entry of the history
@@ -133,11 +132,11 @@ describe('MemoryRouter', () => {
     expect(router.getHistoryLength()).toBe(2);
     expect(router.getCurrentQuery()).toEqual({});
 
-    router.navigate('/movies/abc123?showDetails=true');
+    router.navigate('/movies/abc123?showTrailers=true');
 
     expect(currentRouteResult).toBe('Movie #abc123');
     expect(router.getHistoryLength()).toBe(3);
-    expect(router.getCurrentQuery()).toEqual({showDetails: 'true'});
+    expect(router.getCurrentQuery()).toEqual({showTrailers: 'true'});
   });
 
   test('redirect()', async () => {
