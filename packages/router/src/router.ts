@@ -286,8 +286,18 @@ export abstract class Router extends Observable(Object) {
    * @category Routes
    */
   findRouteByURL(url: URL | string) {
-    for (const routable of this.getRoutables()) {
-      const result = routable.findRouteByURL(url);
+    for (const routableClass of this.getRoutables()) {
+      let routable: typeof RoutableLike | RoutableLike = routableClass;
+
+      let result = routable.findRouteByURL(url);
+
+      if (result !== undefined) {
+        return {routable, ...result};
+      }
+
+      routable = routableClass.prototype;
+
+      result = routable.findRouteByURL(url);
 
       if (result !== undefined) {
         return {routable, ...result};
@@ -734,7 +744,7 @@ export abstract class Router extends Observable(Object) {
     this._customRouteDecorators.push(decorator);
   }
 
-  applyCustomRouteDecorators(routable: typeof RoutableLike, method: Function) {
+  applyCustomRouteDecorators(routable: typeof RoutableLike | RoutableLike, method: Function) {
     for (const customRouteDecorator of this._customRouteDecorators) {
       customRouteDecorator.call(routable, method);
     }

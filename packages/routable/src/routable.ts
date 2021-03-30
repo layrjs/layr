@@ -200,7 +200,25 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    static getRoute(name: string) {
+    static get getRoute() {
+      return this.prototype.getRoute;
+    }
+
+    /**
+     * Gets a route. If there is no route with the specified name, an error is thrown.
+     *
+     * @param name The name of the route to get.
+     *
+     * @returns A [Route](https://layrjs.com/docs/v1/reference/route) instance.
+     *
+     * @example
+     * ```
+     * Article.getRoute('upvote'); => upvote() route
+     * ```
+     *
+     * @category Routes
+     */
+    getRoute(name: string) {
       const route = this.__getRoute(name);
 
       if (route === undefined) {
@@ -224,11 +242,33 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    static hasRoute(name: string) {
+    static get hasRoute() {
+      return this.prototype.hasRoute;
+    }
+
+    /**
+     * Returns whether the routable component has a route with the specified name.
+     *
+     * @param name The name of the route to check.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Article.hasRoute('upvote'); // => true
+     * ```
+     *
+     * @category Routes
+     */
+    hasRoute(name: string) {
       return this.__getRoute(name) !== undefined;
     }
 
-    static __getRoute(name: string) {
+    static get __getRoute() {
+      return this.prototype.__getRoute;
+    }
+
+    __getRoute(name: string) {
       const routes = this.__getRoutes();
 
       return routes.get(name);
@@ -252,7 +292,29 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    static setRoute(name: string, pattern: RoutePattern, options: RouteOptions = {}) {
+    static get setRoute() {
+      return this.prototype.setRoute;
+    }
+
+    /**
+     * Sets a route in the storable component.
+     *
+     * Typically, instead of using this method, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+     *
+     * @param name The name of the route.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) associated with the route.
+     * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v1/reference/route#constructor) when the route is created.
+     *
+     * @returns The [Route](https://layrjs.com/docs/v1/reference/route) instance that was created.
+     *
+     * @example
+     * ```
+     * Article.setRoute('upvote', '/articles/:id/upvote');
+     * ```
+     *
+     * @category Routes
+     */
+    setRoute(name: string, pattern: RoutePattern, options: RouteOptions = {}) {
       const route = new Route(name, pattern, options);
 
       const routes = this.__getRoutes(true);
@@ -280,18 +342,54 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    static callRoute(name: string, params?: any) {
+    static get callRoute() {
+      return this.prototype.callRoute;
+    }
+
+    /**
+     * Calls the method associated to a route that has the specified name. If there is no route with the specified name, an error is thrown.
+     *
+     * @param name The name of the route for which the associated method should be called.
+     * @param [params] The parameters to pass when the method is called.
+     *
+     * @returns The result of the called method.
+     *
+     * @example
+     * ```
+     * await Article.callRoute('upvote', {id: 'abc123'});
+     *
+     * // Which is the equivalent of calling the `upvote()` method directly:
+     * await Article.upvote({id: 'abc123'});
+     * ```
+     *
+     * @category Routes
+     */
+    callRoute(name: string, params?: any) {
       const route = this.getRoute(name);
 
       return this.__callRoute(route, params);
     }
 
-    static __callRoute(route: Route, params: any) {
+    static get __callRoute() {
+      return this.prototype.__callRoute;
+    }
+
+    __callRoute(route: Route, params: any) {
       const name = route.getName();
 
-      debug('Calling %s.%s(%o)', this.getComponentName(), name, params);
+      debug('Calling %s(%o)', this.describeComponentProperty(name), params);
 
-      return (this as any)[name](params);
+      let component: any;
+
+      if (isComponentClass(this)) {
+        component = this;
+      } else {
+        component =
+          this.constructor.getIdentityMap().getComponent(params) ??
+          this.constructor.create(params, {isNew: false});
+      }
+
+      return component[name](params);
     }
 
     /**
@@ -313,7 +411,30 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    static findRouteByURL(url: URL | string) {
+    static get findRouteByURL() {
+      return this.prototype.findRouteByURL;
+    }
+
+    /**
+     * Finds the first route that matches the specified URL.
+     *
+     * If no route matches the specified URL, returns `undefined`.
+     *
+     * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
+     *
+     * @returns An object of the shape `{route, params}` (or `undefined` if no route was found) where `route` is the [route](https://layrjs.com/docs/v1/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     *
+     * @example
+     * ```
+     * const {route, params} = Article.findRouteByURL('/articles/abc123/upvote');
+     *
+     * route; // => upvote() route
+     * params; // => {id: 'abc123'}
+     * ```
+     *
+     * @category Routes
+     */
+    findRouteByURL(url: URL | string) {
       const normalizedURL = normalizeURL(url);
 
       const routes = this.__getRoutes();
@@ -350,7 +471,32 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    static callRouteByURL(url: URL | string) {
+    static get callRouteByURL() {
+      return this.prototype.callRouteByURL;
+    }
+
+    /**
+     * Calls the method associated to the first route that matches the specified URL.
+     *
+     * If no route matches the specified URL, an error is thrown.
+     *
+     * When a route is found, the associated method is called with the parameters that are included in the specified URL.
+     *
+     * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
+     *
+     * @returns The result of the method associated to the route that was found.
+     *
+     * @example
+     * ```
+     * await Article.callRouteByURL('/articles/abc123/upvote');
+     *
+     * // Which is the equivalent of calling the `upvote()` method directly:
+     * await Article.upvote({id: 'abc123'});
+     * ```
+     *
+     * @category Routes
+     */
+    callRouteByURL(url: URL | string) {
       const result = this.findRouteByURL(url);
 
       if (result === undefined) {
@@ -364,16 +510,22 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       return this.__callRoute(route, params);
     }
 
-    static __routes: Map<string, Route>;
+    static __routes?: Map<string, Route>;
 
-    static __getRoutes(autoFork = false) {
+    __routes?: Map<string, Route>;
+
+    static get __getRoutes() {
+      return this.prototype.__getRoutes;
+    }
+
+    __getRoutes(autoFork = false) {
       if (this.__routes === undefined) {
         Object.defineProperty(this, '__routes', {value: new Map()});
       } else if (autoFork && !hasOwnProperty(this, '__routes')) {
         Object.defineProperty(this, '__routes', {value: new Map(this.__routes)});
       }
 
-      return this.__routes;
+      return this.__routes!;
     }
 
     // === Observability ===

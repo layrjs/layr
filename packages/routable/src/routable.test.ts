@@ -1,96 +1,180 @@
-import {Component} from '@layr/component';
+import {Component, primaryIdentifier} from '@layr/component';
 
 import {Routable} from './routable';
-import {isRoutableClass} from './utilities';
+import {isRoutableClass, isRoutableInstance} from './utilities';
 
 describe('Routable', () => {
   test('Routable()', async () => {
     class Movie extends Routable(Component) {}
 
     expect(isRoutableClass(Movie)).toBe(true);
+    expect(isRoutableInstance(Movie.prototype)).toBe(true);
   });
 
   test('getRoute() and hasRoute()', async () => {
     class Movie extends Routable(Component) {}
 
-    const route = Movie.setRoute('Main', '/movies/:id');
+    // --- Class routes ---
 
-    expect(Movie.getRoute('Main')).toBe(route);
+    const listPageRoute = Movie.setRoute('ListPage', '/movies');
 
-    expect(Movie.hasRoute('About')).toBe(false);
-    expect(() => Movie.getRoute('About')).toThrow(
-      "The route 'About' is missing (component: 'Movie')"
+    expect(Movie.getRoute('ListPage')).toBe(listPageRoute);
+
+    expect(Movie.hasRoute('HotPage')).toBe(false);
+    expect(() => Movie.getRoute('HotPage')).toThrow(
+      "The route 'HotPage' is missing (component: 'Movie')"
+    );
+
+    // --- Prototype routes ---
+
+    const itemPageRoute = Movie.prototype.setRoute('ItemPage', '/movies/:id');
+
+    expect(Movie.prototype.getRoute('ItemPage')).toBe(itemPageRoute);
+
+    expect(Movie.prototype.hasRoute('DetailsPage')).toBe(false);
+    expect(() => Movie.prototype.getRoute('DetailsPage')).toThrow(
+      "The route 'DetailsPage' is missing (component: 'Movie')"
     );
   });
 
   test('setRoute()', async () => {
     class Movie extends Routable(Component) {}
 
-    expect(Movie.hasRoute('Main')).toBe(false);
+    class ExtendedMovie extends Movie {}
 
-    const mainRoute = Movie.setRoute('Main', '/movies/:id');
+    // --- Class routes ---
 
-    expect(Movie.getRoute('Main')).toBe(mainRoute);
+    expect(Movie.hasRoute('ListPage')).toBe(false);
 
-    // --- Testing route inheritance ---
+    const listPageRoute = Movie.setRoute('ListPage', '/movies');
 
-    class MovieWithAbout extends Movie {}
+    expect(Movie.getRoute('ListPage')).toBe(listPageRoute);
 
-    expect(MovieWithAbout.hasRoute('About')).toBe(false);
+    // - Testing route inheritance -
 
-    const aboutRoute = MovieWithAbout.setRoute('About', '/movies/:id/about');
+    expect(ExtendedMovie.hasRoute('HotPage')).toBe(false);
 
-    expect(MovieWithAbout.getRoute('About')).toBe(aboutRoute);
-    expect(MovieWithAbout.getRoute('Main')).toBe(mainRoute);
-    expect(Movie.hasRoute('About')).toBe(false);
+    const hotPageRoute = ExtendedMovie.setRoute('HotPage', '/movies/hot');
+
+    expect(ExtendedMovie.getRoute('HotPage')).toBe(hotPageRoute);
+    expect(ExtendedMovie.getRoute('ListPage')).toBe(listPageRoute);
+    expect(Movie.hasRoute('HotPage')).toBe(false);
+
+    // --- Prototype routes ---
+
+    expect(Movie.prototype.hasRoute('ItemPage')).toBe(false);
+
+    const itemPageRoute = Movie.prototype.setRoute('ItemPage', '/movies/:id');
+
+    expect(Movie.prototype.getRoute('ItemPage')).toBe(itemPageRoute);
+
+    // - Testing route inheritance -
+
+    expect(ExtendedMovie.prototype.hasRoute('DetailsPage')).toBe(false);
+
+    const detailsPageRoute = ExtendedMovie.prototype.setRoute('DetailsPage', '/movies/:id/details');
+
+    expect(ExtendedMovie.prototype.getRoute('DetailsPage')).toBe(detailsPageRoute);
+    expect(ExtendedMovie.prototype.getRoute('ItemPage')).toBe(itemPageRoute);
+    expect(Movie.prototype.hasRoute('DetailsPage')).toBe(false);
   });
 
   test('callRoute()', async () => {
     class Movie extends Routable(Component) {
-      static Main({id}: {id: string}) {
-        return `Movie #${id}`;
+      @primaryIdentifier() id!: string;
+
+      static ListPage() {
+        return `All movies`;
+      }
+
+      ItemPage() {
+        return `Movie #${this.id}`;
       }
     }
 
-    Movie.setRoute('Main', '/movies/:id');
+    // --- Class routes ---
 
-    expect(Movie.callRoute('Main', {id: 'abc123'})).toBe('Movie #abc123');
+    Movie.setRoute('ListPage', '/movies');
 
-    expect(() => Movie.callRoute('About', {id: 'abc123'})).toThrow(
-      "The route 'About' is missing (component: 'Movie')"
+    expect(Movie.callRoute('ListPage')).toBe('All movies');
+
+    expect(() => Movie.callRoute('HotPage')).toThrow(
+      "The route 'HotPage' is missing (component: 'Movie')"
     );
+
+    // --- Prototype routes ---
+
+    Movie.prototype.setRoute('ItemPage', '/movies/:id');
+
+    expect(Movie.prototype.callRoute('ItemPage', {id: 'abc123'})).toBe('Movie #abc123');
+    expect(Movie.prototype.callRoute('ItemPage', {id: 'def456'})).toBe('Movie #def456');
   });
 
   test('findRouteByURL()', async () => {
     class Movie extends Routable(Component) {}
 
-    const mainRoute = Movie.setRoute('Main', '/movies/:id');
-    const aboutRoute = Movie.setRoute('About', '/movies/:id/about');
+    // --- Class routes ---
 
-    expect(Movie.findRouteByURL('/movies/abc123')).toEqual({
-      route: mainRoute,
+    const listPageRoute = Movie.setRoute('ListPage', '/movies');
+    const hotPageRoute = Movie.setRoute('HotPage', '/movies/hot');
+
+    expect(Movie.findRouteByURL('/movies')).toEqual({
+      route: listPageRoute,
+      params: {}
+    });
+    expect(Movie.findRouteByURL('/movies/hot')).toEqual({
+      route: hotPageRoute,
+      params: {}
+    });
+    expect(Movie.findRouteByURL('/films')).toBeUndefined();
+
+    // --- Prototype routes ---
+
+    const itemPageRoute = Movie.prototype.setRoute('ItemPage', '/movies/:id');
+    const detailsPageRoute = Movie.prototype.setRoute('DetailsPage', '/movies/:id/details');
+
+    expect(Movie.prototype.findRouteByURL('/movies/abc123')).toEqual({
+      route: itemPageRoute,
       params: {id: 'abc123'}
     });
-    expect(Movie.findRouteByURL('/movies/abc123/about')).toEqual({
-      route: aboutRoute,
+    expect(Movie.prototype.findRouteByURL('/movies/abc123/details')).toEqual({
+      route: detailsPageRoute,
       params: {id: 'abc123'}
     });
-    expect(Movie.findRouteByURL('/films/abc123')).toBeUndefined();
+    expect(Movie.prototype.findRouteByURL('/films/abc123')).toBeUndefined();
   });
 
   test('callRouteByURL()', async () => {
     class Movie extends Routable(Component) {
-      static Main({id}: {id: string}) {
-        return `Movie #${id}`;
+      @primaryIdentifier() id!: string;
+
+      static ListPage() {
+        return `All movies`;
+      }
+
+      ItemPage() {
+        return `Movie #${this.id}`;
       }
     }
 
-    Movie.setRoute('Main', '/movies/:id');
+    // --- Class routes ---
 
-    expect(Movie.callRouteByURL('/movies/abc123')).toBe('Movie #abc123');
+    Movie.setRoute('ListPage', '/movies');
 
-    expect(() => Movie.callRouteByURL('/movies/abc123/about')).toThrow(
-      "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/abc123/about')"
+    expect(Movie.callRouteByURL('/movies')).toBe('All movies');
+
+    expect(() => Movie.callRouteByURL('/movies/hot')).toThrow(
+      "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/hot')"
+    );
+
+    // --- Prototype routes ---
+
+    Movie.prototype.setRoute('ItemPage', '/movies/:id');
+
+    expect(Movie.prototype.callRouteByURL('/movies/abc123')).toBe('Movie #abc123');
+
+    expect(() => Movie.prototype.callRouteByURL('/movies/abc123/details')).toThrow(
+      "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/abc123/details')"
     );
   });
 });

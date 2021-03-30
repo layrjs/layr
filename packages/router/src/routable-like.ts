@@ -5,7 +5,13 @@ import type {Router} from './router';
 export declare class RoutableLike {
   static getComponentName: () => string;
 
+  static getComponentType: () => string;
+
+  getComponentType: () => string;
+
   static describeComponent: () => string;
+
+  describeComponent: () => string;
 
   static getRouter: () => Router;
 
@@ -15,7 +21,11 @@ export declare class RoutableLike {
 
   static findRouteByURL: (url: URL | string) => {route: any; params: PlainObject} | undefined;
 
+  findRouteByURL: (url: URL | string) => {route: any; params: PlainObject} | undefined;
+
   static __callRoute: (route: any, params: any) => any;
+
+  __callRoute: (route: any, params: any) => any;
 }
 
 export function isRoutableLikeClass(value: any): value is typeof RoutableLike {

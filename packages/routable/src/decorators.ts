@@ -1,11 +1,12 @@
 import {Router, URLOptions, NavigationOptions} from '@layr/router';
+import {hasOwnProperty} from 'core-helpers';
 
 import type {RoutableComponent} from './routable';
 import type {RouteOptions, RoutePattern} from './route';
-import {isRoutableClass} from './utilities';
+import {isRoutableClassOrInstance, isRoutableInstance} from './utilities';
 
 /**
- * Defines a [route](https://layrjs.com/docs/v1/reference/route) for a class method in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
+ * Defines a [route](https://layrjs.com/docs/v1/reference/route) for a static or instance method in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
  *
  * @param pattern The canonical [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) of the route.
  * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v1/reference/route#constructor) when the route is created.
@@ -37,45 +38,57 @@ import {isRoutableClass} from './utilities';
  * @decorator
  */
 export function route(pattern: RoutePattern, options: RouteOptions = {}) {
-  return function (target: typeof RoutableComponent, name: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: typeof RoutableComponent | RoutableComponent,
+    name: string,
+    descriptor: PropertyDescriptor
+  ) {
     const {value: method, get: originalGet, configurable, enumerable} = descriptor;
 
     if (
       !(
-        isRoutableClass(target) &&
+        isRoutableClassOrInstance(target) &&
         (typeof method === 'function' || originalGet !== undefined) &&
         enumerable === false
       )
     ) {
       throw new Error(
-        `@route() should be used to decorate a routable component static method (property: '${name}')`
+        `@route() should be used to decorate a routable component method (property: '${name}')`
       );
     }
 
     const route = target.setRoute(name, pattern, options);
 
-    const decorate = function (this: typeof RoutableComponent, method: Function) {
+    const decorate = function (
+      this: typeof RoutableComponent | RoutableComponent,
+      method: Function
+    ) {
+      const useDefaultParams = (params?: any) =>
+        isRoutableInstance(this) && this.hasIdentifiers()
+          ? {...this.getIdentifiers(), ...params}
+          : params;
+
       defineMethod(method, 'matchURL', function (url: URL | string) {
         return route.matchURL(url);
       });
 
       defineMethod(method, 'generateURL', function (params?: any, options?: URLOptions) {
-        return route.generateURL(params, options);
+        return route.generateURL(useDefaultParams(params), options);
       });
 
       defineMethod(method, 'generatePath', function (params?: any) {
-        return route.generatePath(params);
+        return route.generatePath(useDefaultParams(params));
       });
 
       defineMethod(method, 'generateQueryString', function (params?: any) {
-        return route.generateQueryString(params);
+        return route.generateQueryString(useDefaultParams(params));
       });
 
       Object.defineProperty(method, '__isDecorated', {value: true});
     };
 
     const decorateWithRouter = function (
-      this: typeof RoutableComponent,
+      this: typeof RoutableComponent | RoutableComponent,
       method: Function,
       router: Router
     ) {
@@ -120,18 +133,22 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       });
     };
 
-    const get = function (this: typeof RoutableComponent) {
+    const get = function (this: typeof RoutableComponent | RoutableComponent) {
+      // TODO: Don't assume that `originalGet` returns a bound method (like when @view() is used).
+      // We should return a bound method in any case to make instance routes work
+      // (see `decorator.test.ts`)
+
       const actualMethod = originalGet !== undefined ? originalGet.call(this) : method;
 
       if (typeof actualMethod !== 'function') {
         throw new Error(`@route() can only be used on methods`);
       }
 
-      if (actualMethod.__isDecorated === undefined) {
+      if (!hasOwnProperty(actualMethod, '__isDecorated')) {
         decorate.call(this, actualMethod);
       }
 
-      if (actualMethod.__isDecoratedWithRouter === undefined) {
+      if (!hasOwnProperty(actualMethod, '__isDecoratedWithRouter')) {
         if (this.hasRouter()) {
           decorateWithRouter.call(this, actualMethod, this.getRouter());
         }
