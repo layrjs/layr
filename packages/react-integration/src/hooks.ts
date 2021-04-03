@@ -2,10 +2,11 @@ import type {Component} from '@layr/component';
 import {ObservableType, isObservable} from '@layr/observable';
 import {BrowserRouter} from '@layr/browser-router';
 import {MemoryRouter, MemoryRouterOptions} from '@layr/memory-router';
-import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
+import React, {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {AsyncFunction, getTypeOf} from 'core-helpers';
 
 import {BrowserRouterPlugin} from './plugins';
+import {useCustomization} from './components';
 
 /**
  * Creates a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
@@ -136,6 +137,52 @@ export function useMemoryRouter(
   }, [router]);
 
   return [router] as const;
+}
+
+export function useData<Result>(
+  getter: () => Promise<Result>,
+  renderer: (data: Result) => JSX.Element | null,
+  deps: DependencyList = []
+) {
+  const {dataPlaceholder, errorRenderer} = useCustomization();
+
+  const [element, isExecuting, error] = useAsyncMemo(async () => {
+    const data = await getter();
+
+    const element = React.createElement(function ActualView() {
+      return renderer(data);
+    });
+
+    return element;
+  }, deps);
+
+  if (isExecuting) {
+    return dataPlaceholder();
+  }
+
+  if (error) {
+    return errorRenderer(error);
+  }
+
+  return element!;
+}
+
+export function useAction<Args extends any[] = any[], Result = any>(
+  handler: AsyncFunction<Args, Result>,
+  deps: DependencyList = []
+) {
+  const {actionWrapper, errorNotifier} = useCustomization();
+
+  const action = useCallback(async (...args: Args) => {
+    try {
+      return (await actionWrapper(handler as (...args: any[]) => Promise<any>, args)) as Result;
+    } catch (error) {
+      await errorNotifier(error);
+      throw error;
+    }
+  }, deps);
+
+  return action;
 }
 
 /**
@@ -348,6 +395,7 @@ export function useAsyncMemo<Result>(asyncFunc: () => Promise<Result>, deps: Dep
   }, [...deps, recomputeCount]);
 
   const recompute = useCallback(() => {
+    setState({isExecuting: true});
     setRecomputeCount((recomputeCount) => recomputeCount + 1);
   }, []);
 
