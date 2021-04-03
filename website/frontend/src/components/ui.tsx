@@ -767,7 +767,7 @@ export class UI extends Component {
 
     if (languageFilter !== undefined) {
       // Finish removing the filtered out languages
-      html = html.replace(/<pre><code( class="language-\w+")?><\/code><\/pre>\n/g, '');
+      html = html.replace(/<pre><code( class="language-\w+")?>\s?<\/code><\/pre>\n/g, '');
 
       // Handle the '<if language>' tags
       html = html.replace(
