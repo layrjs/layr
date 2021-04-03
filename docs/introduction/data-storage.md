@@ -67,7 +67,7 @@ export class Message extends Storable(Component) {
 
   @expose({get: true, set: true})
   @attribute('string', {validators: [notEmpty(), maxLength(300)]})
-  message = '';
+  text = '';
 
   @expose({get: true}) @attribute('Date') createdAt = new Date();
 }
