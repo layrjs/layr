@@ -2,7 +2,18 @@ import {ComponentClient, ComponentClientOptions} from '@layr/component-client';
 import fetch from 'cross-fetch';
 import type {PlainObject} from 'core-helpers';
 
-export type ComponentHTTPClientOptions = ComponentClientOptions;
+const DEFAULT_MAXIMUM_REQUEST_RETRIES = 10;
+const DEFAULT_MINIMUM_TIME_BETWEEN_REQUEST_RETRIES = 3000; // 3 seconds
+
+export type ComponentHTTPClientOptions = ComponentClientOptions & {
+  retryFailedRequests?: RetryFailedRequests;
+  maximumRequestRetries?: number;
+  minimumTimeBetweenRequestRetries?: number;
+};
+
+export type RetryFailedRequests =
+  | boolean
+  | (({error, numberOfRetries}: {error: Error; numberOfRetries: number}) => Promise<boolean>);
 
 /**
  * *Inherits from [`ComponentClient`](https://layrjs.com/docs/v1/reference/component-client).*
@@ -102,15 +113,29 @@ export class ComponentHTTPClient extends ComponentClient {
    * @param url A string specifying the URL of the component server to connect to.
    * @param [options.version] A number specifying the expected version of the component server (default: `undefined`). If a version is specified, an error is thrown when a request is sent and the component server has a different version. The thrown error is a JavaScript `Error` instance with a `code` attribute set to `'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'`.
    * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://layrjs.com/docs/v1/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
+   * @param [options.retryFailedRequests] A boolean or a function returning a boolean specifying whether a request should be retried in case of a network issue (default: `false`). In case a function is specified, the function will receive an object of the shape `{error, numberOfRetries}` where `error` is the error that has occurred and `numberOfRetries` is the number of retries that has been attempted so far. The function can be asynchronous ans should return a boolean.
+   * @param [options.maximumRequestRetries] The maximum number of times a request can be retried (default: `10`).
+   * @param [options.minimumTimeBetweenRequestRetries] A number specifying the minimum time in milliseconds that should elapse between each request retry (default: `3000`).
    *
    * @returns A `ComponentHTTPClient` instance.
    *
    * @category Creation
    */
   constructor(url: string, options: ComponentHTTPClientOptions = {}) {
-    const componentServer = createComponentServer(url);
+    const {
+      retryFailedRequests = false,
+      maximumRequestRetries = DEFAULT_MAXIMUM_REQUEST_RETRIES,
+      minimumTimeBetweenRequestRetries = DEFAULT_MINIMUM_TIME_BETWEEN_REQUEST_RETRIES,
+      ...componentClientOptions
+    } = options;
 
-    super(componentServer, {...options, batchable: true});
+    const componentServer = createComponentServer(url, {
+      retryFailedRequests,
+      maximumRequestRetries,
+      minimumTimeBetweenRequestRetries
+    });
+
+    super(componentServer, {...componentClientOptions, batchable: true});
   }
 
   /**
@@ -127,31 +152,79 @@ export class ComponentHTTPClient extends ComponentClient {
    */
 }
 
-function createComponentServer(url: string) {
+function createComponentServer(
+  url: string,
+  {
+    retryFailedRequests,
+    maximumRequestRetries,
+    minimumTimeBetweenRequestRetries
+  }: {
+    retryFailedRequests: RetryFailedRequests;
+    maximumRequestRetries: number;
+    minimumTimeBetweenRequestRetries: number;
+  }
+) {
   return {
     async receive(request: {query: PlainObject; components?: PlainObject[]; version?: number}) {
       const {query, components, version} = request;
 
-      const json = {query, components, version};
+      const jsonRequest = {query, components, version};
 
-      const fetchResponse = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(json)
-      });
+      let numberOfRetries = 0;
 
-      const response = await fetchResponse.json();
+      while (true) {
+        let fetchResponse: Response;
+        let jsonResponse: any;
 
-      if (fetchResponse.status !== 200) {
-        const {
-          message = 'An error occurred while sending query to remote components',
-          ...attributes
-        } = response ?? {};
+        try {
+          fetchResponse = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(jsonRequest)
+          });
 
-        throw Object.assign(new Error(message), attributes);
+          jsonResponse = await fetchResponse.json();
+        } catch (error) {
+          if (numberOfRetries < maximumRequestRetries) {
+            const startTime = Date.now();
+
+            const shouldRetry =
+              typeof retryFailedRequests === 'function'
+                ? await retryFailedRequests({error, numberOfRetries})
+                : retryFailedRequests;
+
+            if (shouldRetry) {
+              const elapsedTime = Date.now() - startTime;
+
+              if (elapsedTime < minimumTimeBetweenRequestRetries) {
+                await sleep(minimumTimeBetweenRequestRetries - elapsedTime);
+              }
+
+              numberOfRetries++;
+              continue;
+            }
+          }
+
+          throw error;
+        }
+
+        if (fetchResponse.status !== 200) {
+          const {
+            message = 'An error occurred while sending query to remote components',
+            ...attributes
+          } = jsonResponse ?? {};
+
+          throw Object.assign(new Error(message), attributes);
+        }
+
+        return jsonResponse;
       }
-
-      return response;
     }
   };
+}
+
+function sleep(duration: number) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, duration);
+  });
 }
