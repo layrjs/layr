@@ -47,6 +47,6 @@
     "@types/koa-json-error": "^3.1.2",
     "@types/koa-logger": "^3.1.1",
     "@types/koa__cors": "^3.0.2",
-    "cross-fetch": "^3.1.2"
+    "cross-fetch": "^3.1.4"
   }
 }

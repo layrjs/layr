@@ -1,6 +1,6 @@
 {
   "name": "@layr/integration-testing",
-  "version": "1.0.76",
+  "version": "1.0.78",
   "private": true,
   "description": "Tests involving a combination of Layr packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -24,7 +24,7 @@
     "@layr/component": "^1.1.12",
     "@layr/component-client": "^1.1.11",
     "@layr/component-express-middleware": "^1.1.9",
-    "@layr/component-http-client": "^1.1.11",
+    "@layr/component-http-client": "^1.1.18",
     "@layr/component-http-server": "^1.1.11",
     "@layr/component-koa-middleware": "^1.1.10",
     "@layr/component-server": "^1.1.11",
@@ -50,6 +50,6 @@
     "@types/koa": "^2.13.1",
     "@types/koa-mount": "^4.0.0",
     "@types/lodash": "^4.14.168",
-    "@types/mongodb": "^3.6.10"
+    "@types/mongodb": "^3.6.11"
   }
 }
