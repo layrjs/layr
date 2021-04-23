@@ -1,4 +1,4 @@
-import {PlainObject, getTypeOf} from 'core-helpers';
+import {getTypeOf} from 'core-helpers';
 
 import type {Router} from './router';
 
@@ -19,13 +19,15 @@ export declare class RoutableLike {
 
   static __setRouter: (router: Router) => void;
 
-  static findRouteByURL: (url: URL | string) => {route: any; params: PlainObject} | undefined;
+  static findRouteByURL: (
+    url: URL | string
+  ) => {route: any; attributes: any; params: any} | undefined;
 
-  findRouteByURL: (url: URL | string) => {route: any; params: PlainObject} | undefined;
+  findRouteByURL: (url: URL | string) => {route: any; attributes: any; params: any} | undefined;
 
-  static __callRoute: (route: any, params: any) => any;
+  static __callRoute: (route: any, attribute: any, params: any) => any;
 
-  __callRoute: (route: any, params: any) => any;
+  __callRoute: (route: any, attribute: any, params: any) => any;
 }
 
 export function isRoutableLikeClass(value: any): value is typeof RoutableLike {

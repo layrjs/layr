@@ -1,26 +1,20 @@
 import {Component, assertIsComponentClass} from '@layr/component';
 import {Observable} from '@layr/observable';
-import {PlainObject, assertNoUnknownOptions} from 'core-helpers';
+import {assertNoUnknownOptions} from 'core-helpers';
 
 import {RoutableLike, isRoutableLikeClass, assertIsRoutableLikeClass} from './routable-like';
 import {isRouterInstance, normalizeURL, stringifyURL, parseQuery} from './utilities';
 
 declare global {
   interface Function {
-    matchURL: (url: URL | string) => PlainObject | undefined;
-    generateURL: (params?: PlainObject, options?: URLOptions) => string;
-    generatePath: (params?: PlainObject) => string;
-    generateQueryString: (params?: PlainObject) => string;
-    navigate: (
-      params?: PlainObject,
-      options?: URLOptions & NavigationOptions
-    ) => Promise<void> | undefined;
-    redirect: (
-      params?: PlainObject,
-      options?: URLOptions & NavigationOptions
-    ) => Promise<void> | undefined;
-    reload: (params?: PlainObject, options?: URLOptions) => void;
-    isActive: (params?: PlainObject) => boolean;
+    matchURL: (url: URL | string) => {attributes: any; params: any} | undefined;
+    generateURL: (params?: any, options?: URLOptions) => string;
+    generatePath: () => string;
+    generateQueryString: (params?: any) => string;
+    navigate: (params?: any, options?: URLOptions & NavigationOptions) => Promise<void> | undefined;
+    redirect: (params?: any, options?: URLOptions & NavigationOptions) => Promise<void> | undefined;
+    reload: (params?: any, options?: URLOptions) => void;
+    isActive: () => boolean;
   }
 }
 
@@ -307,6 +301,16 @@ export abstract class Router extends Observable(Object) {
     return undefined;
   }
 
+  getAttributesFromURL(url: URL | string) {
+    const result = this.findRouteByURL(url);
+
+    if (result === undefined) {
+      throw new Error(`Couldn't find a route matching the specified URL (URL: '${url}')`);
+    }
+
+    return result.attributes;
+  }
+
   /**
    * Returns the parameters that are included in the specified URL.
    *
@@ -365,9 +369,9 @@ export abstract class Router extends Observable(Object) {
     const result = this.findRouteByURL(url);
 
     if (result !== undefined) {
-      const {routable, route, params} = result;
+      const {routable, route, attributes, params} = result;
 
-      return routable.__callRoute(route, params);
+      return routable.__callRoute(route, attributes, params);
     }
 
     if (fallback !== undefined) {
@@ -399,6 +403,10 @@ export abstract class Router extends Observable(Object) {
   }
 
   abstract _getCurrentURL(): URL;
+
+  getCurrentAttributes() {
+    return this.getAttributesFromURL(this._getCurrentURL());
+  }
 
   /**
    * Returns the parameters that are included in the current URL of the router.

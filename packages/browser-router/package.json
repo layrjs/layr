@@ -1,6 +1,6 @@
 {
   "name": "@layr/browser-router",
-  "version": "1.0.30",
+  "version": "2.0.3",
   "description": "A Layr router for the browser",
   "keywords": [
     "layr",
@@ -25,10 +25,10 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/router": "^1.0.35",
+    "@layr/router": "^2.0.2",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
-    "tslib": "^2.1.0"
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.28",

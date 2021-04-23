@@ -8,66 +8,126 @@ describe('Route', () => {
 
     expect(route.getName()).toBe('Main');
     expect(route.getPattern()).toBe('/movies');
-    expect(route.getAliases()).toEqual([]);
+    expect(route.getParams()).toStrictEqual({});
+    expect(route.getAliases()).toStrictEqual([]);
+
+    // --- Using aliases ---
 
     route = new Route('Main', '/movies', {aliases: ['/']});
 
     expect(route.getName()).toBe('Main');
     expect(route.getPattern()).toBe('/movies');
-    expect(route.getAliases()).toEqual(['/']);
+    expect(route.getParams()).toStrictEqual({});
+    expect(route.getAliases()).toStrictEqual(['/']);
+
+    // -- Using route attributes ---
 
     route = new Route('Main', '/movies/:id');
 
     expect(route.getName()).toBe('Main');
     expect(route.getPattern()).toBe('/movies/:id');
-    expect(route.getAliases()).toEqual([]);
+    expect(route.getParams()).toStrictEqual({});
+    expect(route.getAliases()).toStrictEqual([]);
+
+    // -- Using route parameters ---
+
+    route = new Route('Main', '/movies', {params: {showDetails: 'boolean?'}});
+
+    expect(route.getName()).toBe('Main');
+    expect(route.getPattern()).toBe('/movies');
+    expect(route.getParams()).toStrictEqual({showDetails: 'boolean?'});
+    expect(route.getAliases()).toStrictEqual([]);
+
+    // @ts-expect-error
+    expect(() => new Route('Main', '/movies', {params: {showDetails: 'any'}})).toThrow(
+      "Couldn't parse a route parameter type ('any' is not a supported type)"
+    );
   });
 
   test('matchURL()', async () => {
     let route = new Route('Main', '/movies');
 
-    expect(route.matchURL('/movies')).toEqual({});
+    expect(route.matchURL('/movies')).toStrictEqual({attributes: {}, params: {}});
     expect(route.matchURL('/movies/abc123')).toBeUndefined();
     expect(route.matchURL('/films')).toBeUndefined();
     expect(route.matchURL('/')).toBeUndefined();
 
+    // --- Using aliases ---
+
     route = new Route('Main', '/movies', {aliases: ['/', '/films']});
 
-    expect(route.matchURL('/movies')).toEqual({});
-    expect(route.matchURL('/')).toEqual({});
-    expect(route.matchURL('/films')).toEqual({});
+    expect(route.matchURL('/movies')).toStrictEqual({attributes: {}, params: {}});
+    expect(route.matchURL('/')).toStrictEqual({attributes: {}, params: {}});
+    expect(route.matchURL('/films')).toStrictEqual({attributes: {}, params: {}});
     expect(route.matchURL('/motion-pictures')).toBeUndefined();
+
+    // -- Using route attributes ---
 
     route = new Route('Main', '/movies/:id', {aliases: ['/films/:id']});
 
-    expect(route.matchURL('/movies/abc123')).toEqual({id: 'abc123'});
-    expect(route.matchURL('/films/abc123')).toEqual({id: 'abc123'});
+    expect(route.matchURL('/movies/abc123')).toStrictEqual({
+      attributes: {id: 'abc123'},
+      params: {}
+    });
+    expect(route.matchURL('/films/abc123')).toStrictEqual({attributes: {id: 'abc123'}, params: {}});
     expect(route.matchURL('/movies')).toBeUndefined();
     expect(route.matchURL('/movies/')).toBeUndefined();
     expect(route.matchURL('/movies/abc123/about')).toBeUndefined();
 
-    // --- Using parameter constraints ---
+    // --- Using route attributes constraints ---
 
     route = new Route('Main', '/:mentionName(@[a-z]+)');
 
-    expect(route.matchURL('/@user')).toEqual({mentionName: '@user'});
-    expect(route.matchURL('/@USER')).toEqual({mentionName: '@USER'});
+    expect(route.matchURL('/@user')).toStrictEqual({
+      attributes: {mentionName: '@user'},
+      params: {}
+    });
+    expect(route.matchURL('/@USER')).toStrictEqual({
+      attributes: {mentionName: '@USER'},
+      params: {}
+    });
     expect(route.matchURL('/@123')).toBeUndefined();
     expect(route.matchURL('/@')).toBeUndefined();
     expect(route.matchURL('/user')).toBeUndefined();
 
-    // --- Using query parameters ---
+    // --- Using optional route parameters ---
 
-    route = new Route('Main', '/movies/:id\\?:language&:showDetails');
-
-    expect(route.matchURL('/movies/abc123')).toEqual({id: 'abc123'});
-    expect(route.matchURL('/movies/abc123?language=fr')).toEqual({id: 'abc123', language: 'fr'});
-    expect(route.matchURL('/movies/abc123?language=fr&showDetails=true')).toEqual({
-      id: 'abc123',
-      language: 'fr',
-      showDetails: 'true'
+    route = new Route('Main', '/movies/:id', {
+      params: {language: 'string?', showDetails: 'boolean?'}
     });
-    expect(route.matchURL('/movies/abc123?unknownParam=abc')).toEqual({id: 'abc123'});
+
+    expect(route.matchURL('/movies/abc123')).toStrictEqual({
+      attributes: {id: 'abc123'},
+      params: {language: undefined, showDetails: undefined}
+    });
+    expect(route.matchURL('/movies/abc123?language=fr')).toStrictEqual({
+      attributes: {id: 'abc123'},
+      params: {language: 'fr', showDetails: undefined}
+    });
+    expect(route.matchURL('/movies/abc123?language=fr&showDetails=1')).toStrictEqual({
+      attributes: {id: 'abc123'},
+      params: {language: 'fr', showDetails: true}
+    });
+    expect(route.matchURL('/movies/abc123?unknownParam=abc')).toStrictEqual({
+      attributes: {id: 'abc123'},
+      params: {language: undefined, showDetails: undefined}
+    });
+    expect(() => route.matchURL('/movies/abc123?showDetails=true')).toThrow(
+      "Couldn't deserialize a route parameter (name: 'showDetails', value: 'true', type: 'boolean?'"
+    );
+
+    // --- Using required route parameters ---
+
+    route = new Route('Main', '/', {params: {language: 'string'}});
+
+    expect(route.matchURL('/?language=fr')).toStrictEqual({
+      attributes: {},
+      params: {language: 'fr'}
+    });
+
+    expect(() => route.matchURL('/')).toThrow(
+      "A required route parameter is missing (name: 'language', type: 'string')"
+    );
   });
 
   test('generateURL()', async () => {
@@ -90,7 +150,7 @@ describe('Route', () => {
     expect(() => route.generateURL({id: ''})).toThrow();
     expect(() => route.generateURL({ref: 'abc123'})).toThrow();
 
-    // --- Using parameter constraints ---
+    // --- Using route attribute constraints ---
 
     route = new Route('Main', '/:mentionName(@[a-z]+)');
 
@@ -99,35 +159,39 @@ describe('Route', () => {
     expect(() => route.generateURL({mentionName: '@'})).toThrow();
     expect(() => route.generateURL()).toThrow();
 
-    // --- Using query parameters ---
+    // --- Using route parameters ---
 
-    route = new Route('Main', '/movies/:id\\?:language&:showDetails');
+    route = new Route('Main', '/movies/:id', {
+      params: {language: 'string?', showDetails: 'boolean?'}
+    });
 
     expect(route.generateURL({id: 'abc123'})).toBe('/movies/abc123');
-    expect(route.generateURL({id: 'abc123', language: 'fr'})).toBe('/movies/abc123?language=fr');
-    expect(route.generateURL({id: 'abc123', language: 'fr', showDetails: 'true'})).toBe(
-      '/movies/abc123?language=fr&showDetails=true'
+    expect(route.generateURL({id: 'abc123'}, {language: 'fr'})).toBe('/movies/abc123?language=fr');
+    expect(route.generateURL({id: 'abc123'}, {language: 'fr', showDetails: true})).toBe(
+      '/movies/abc123?language=fr&showDetails=1'
     );
-    expect(route.generateURL({id: 'abc123', unknownParam: 'abc'})).toBe('/movies/abc123');
+    expect(route.generateURL({id: 'abc123'}, {unknownParam: 'abc'})).toBe('/movies/abc123');
+    expect(() => route.generateURL({id: 'abc123'}, {language: 123})).toThrow(
+      "Couldn't serialize a route parameter (name: 'language', value: '123', expected type: 'string?', received type: 'number')"
+    );
 
     // --- Using the 'hash' option ---
 
     route = new Route('Main', '/movies/:id');
 
-    expect(route.generateURL({id: 'abc123'}, {hash: 'main'})).toBe('/movies/abc123#main');
+    expect(route.generateURL({id: 'abc123'}, {}, {hash: 'main'})).toBe('/movies/abc123#main');
   });
 
   test('generatePath()', async () => {
-    const route = new Route('Main', '/movies/:id\\?:language');
+    const route = new Route('Main', '/movies/:id', {params: {language: 'string?'}});
 
     expect(route.generatePath({id: 'abc123'})).toBe('/movies/abc123');
-    expect(route.generatePath({id: 'abc123', language: 'fr'})).toBe('/movies/abc123');
   });
 
   test('generateQueryString()', async () => {
-    const route = new Route('Main', '/movies/:id\\?:language');
+    const route = new Route('Main', '/movies/:id', {params: {language: 'string?'}});
 
-    expect(route.generateQueryString({id: 'abc123'})).toBe('');
-    expect(route.generateQueryString({id: 'abc123', language: 'fr'})).toBe('language=fr');
+    expect(route.generateQueryString({})).toBe('');
+    expect(route.generateQueryString({language: 'fr'})).toBe('language=fr');
   });
 });

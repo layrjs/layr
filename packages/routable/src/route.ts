@@ -1,11 +1,26 @@
 import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@layr/router';
 import {match, compile, MatchFunction, PathFunction} from 'path-to-regexp';
-import pick from 'lodash/pick';
+import {getTypeOf} from 'core-helpers';
+
+export type RouteOptions = {
+  params?: RouteParams;
+  aliases?: RoutePattern[];
+};
 
 export type RoutePattern = string;
 
-export type RouteOptions = {
-  aliases?: RoutePattern[];
+export type RouteParams = Record<string, RouteParamTypeSpecifier>;
+
+const ROUTE_PARAM_TYPE = ['boolean', 'number', 'string', 'Date'] as const;
+
+export type RouteParamType = typeof ROUTE_PARAM_TYPE[number];
+
+export type RouteParamTypeSpecifier = `${RouteParamType}${'' | '?'}`;
+
+export type RouteParamTypeDescriptor = {
+  type: RouteParamType;
+  isOptional: boolean;
+  specifier: RouteParamTypeSpecifier;
 };
 
 /**
@@ -13,7 +28,7 @@ export type RouteOptions = {
  *
  * A route is composed of:
  *
- * - A name matching a class method of the [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that contains the route.
+ * - A name matching a method of the [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that contains the route.
  * - The canonical [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) of the route.
  * - Some [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) aliases.
  *
@@ -26,9 +41,9 @@ export type RouteOptions = {
 export class Route {
   _name: string;
   _pattern: RoutePattern;
+  _params: Record<string, RouteParamTypeDescriptor>;
   _aliases: RoutePattern[];
   _matchers: MatchFunction[];
-  _queryParamNames: string[];
   _compiler: PathFunction;
 
   /**
@@ -48,46 +63,29 @@ export class Route {
    * @category Creation
    */
   constructor(name: string, pattern: RoutePattern, options: RouteOptions = {}) {
-    const {aliases = []} = options;
+    const {params = {}, aliases = []} = options;
 
     this._name = name;
     this._pattern = pattern;
+
+    this._params = Object.create(null);
+
+    for (const [name, typeSpecifier] of Object.entries(params)) {
+      this._params[name] = {
+        ...parseRouteParamTypeSpecifier(typeSpecifier),
+        specifier: typeSpecifier
+      };
+    }
+
     this._aliases = aliases;
 
     this._matchers = [];
-    this._queryParamNames = [];
 
-    for (const pathAndQueryPattern of [pattern, ...aliases]) {
-      const [pathPattern, queryPattern] = pathAndQueryPattern.split('\\?');
-
-      this._matchers.push(match(pathPattern));
-
-      if (queryPattern !== undefined) {
-        const queryParams = queryPattern.split('&');
-
-        for (const queryParam of queryParams) {
-          if (queryParam === '') {
-            continue;
-          }
-
-          if (!queryParam.startsWith(':')) {
-            throw new Error(
-              `A route query param should start with a colon (route name: '${name}', route pattern: '${pattern}')`
-            );
-          }
-
-          const queryParamName = queryParam.slice(1);
-
-          if (!this._queryParamNames.includes(queryParamName)) {
-            this._queryParamNames.push(queryParamName);
-          }
-        }
-      }
+    for (const routePatternOrAliasPattern of [pattern, ...aliases]) {
+      this._matchers.push(match(routePatternOrAliasPattern));
     }
 
-    const [pathPattern] = pattern.split('\\?');
-
-    this._compiler = compile(pathPattern);
+    this._compiler = compile(pattern);
   }
 
   /**
@@ -124,6 +122,16 @@ export class Route {
    */
   getPattern() {
     return this._pattern;
+  }
+
+  getParams() {
+    const params: RouteParams = {};
+
+    for (const [name, descriptor] of Object.entries(this._params)) {
+      params[name] = descriptor.specifier;
+    }
+
+    return params;
   }
 
   /**
@@ -171,10 +179,16 @@ export class Route {
       const result = matcher(path);
 
       if (result !== false) {
-        let query = parseQuery(queryString);
-        query = pick(query, this._queryParamNames);
+        const query: Record<string, string> = parseQuery(queryString);
+        const params: Record<string, any> = {};
 
-        return {...result.params, ...query};
+        for (const [name, descriptor] of Object.entries(this._params)) {
+          const queryValue = query[name];
+          const paramValue = deserializeRouteParam(name, queryValue, descriptor);
+          params[name] = paramValue;
+        }
+
+        return {attributes: {...result.params} as Record<string, any>, params};
       }
     }
 
@@ -202,8 +216,12 @@ export class Route {
    *
    * @category URL Matching and Generation
    */
-  generateURL(params?: object, options?: URLOptions) {
-    let url = this.generatePath(params);
+  generateURL(
+    attributes?: Record<string, string | number>,
+    params?: Record<string, any>,
+    options?: URLOptions
+  ) {
+    let url = this.generatePath(attributes);
 
     const queryString = this.generateQueryString(params);
 
@@ -218,12 +236,18 @@ export class Route {
     return url;
   }
 
-  generatePath(params?: object) {
-    return this._compiler(params);
+  generatePath(attributes?: Record<string, string | number>) {
+    return this._compiler(attributes);
   }
 
-  generateQueryString(params?: object) {
-    const query = pick(params, this._queryParamNames);
+  generateQueryString(params: Record<string, any> = {}) {
+    const query: Record<string, string | undefined> = {};
+
+    for (const [name, descriptor] of Object.entries(this._params)) {
+      const paramValue = params[name];
+      const queryValue = serializeRouteParam(name, paramValue, descriptor);
+      query[name] = queryValue;
+    }
 
     return stringifyQuery(query);
   }
@@ -285,4 +309,131 @@ export function isRouteClass(value: any): value is typeof Route {
  */
 export function isRouteInstance(value: any): value is Route {
   return typeof value?.constructor?.isRoute === 'function';
+}
+
+function deserializeRouteParam(
+  name: string,
+  value: string | undefined,
+  typeDescriptor: RouteParamTypeDescriptor
+) {
+  const {type, isOptional, specifier} = typeDescriptor;
+
+  if (value === undefined) {
+    if (isOptional) {
+      return undefined;
+    }
+
+    throw new Error(
+      `A required route parameter is missing (name: '${name}', type: '${specifier}')`
+    );
+  }
+
+  if (type === 'boolean') {
+    if (value === '0') {
+      return false;
+    }
+
+    if (value === '1') {
+      return true;
+    }
+  }
+
+  if (type === 'number') {
+    const result = Number(value);
+
+    if (!isNaN(result)) {
+      return result;
+    }
+  }
+
+  if (type === 'string') {
+    return value;
+  }
+
+  if (type === 'Date') {
+    const result = new Date(value);
+
+    if (!isNaN(result.valueOf())) {
+      return result;
+    }
+  }
+
+  throw new Error(
+    `Couldn't deserialize a route parameter (name: '${name}', value: '${value}', type: '${specifier}')`
+  );
+}
+
+function serializeRouteParam(name: string, value: any, typeDescriptor: RouteParamTypeDescriptor) {
+  const {type, isOptional, specifier} = typeDescriptor;
+
+  if (value === undefined) {
+    if (isOptional) {
+      return undefined;
+    }
+
+    throw new Error(
+      `A required route parameter is missing (name: '${name}', type: '${specifier}')`
+    );
+  }
+
+  if (type === 'boolean') {
+    if (typeof value === 'boolean') {
+      return value ? '1' : '0';
+    }
+  }
+
+  if (type === 'number') {
+    if (typeof value === 'number' && !isNaN(value)) {
+      return String(value);
+    }
+  }
+
+  if (type === 'string') {
+    if (typeof value === 'string') {
+      return value;
+    }
+  }
+
+  if (type === 'Date') {
+    if (value instanceof Date && !isNaN(value.valueOf())) {
+      return value.toISOString();
+    }
+  }
+
+  throw new Error(
+    `Couldn't serialize a route parameter (name: '${name}', value: '${value}', expected type: '${specifier}', received type: '${getTypeOf(
+      value
+    )}')`
+  );
+}
+
+function parseRouteParamTypeSpecifier(typeSpecifier: RouteParamTypeSpecifier) {
+  let type: RouteParamType;
+  let isOptional: boolean;
+
+  if (typeof typeSpecifier !== 'string') {
+    throw new Error(
+      `Couldn't parse a route parameter type (expected a string, but received a value of type '${getTypeOf(
+        typeSpecifier
+      )}')`
+    );
+  }
+
+  if (typeSpecifier.endsWith('?')) {
+    type = typeSpecifier.slice(0, -1) as RouteParamType;
+    isOptional = true;
+  } else {
+    type = typeSpecifier as RouteParamType;
+    isOptional = false;
+  }
+
+  if (type.length === 0) {
+    throw new Error("Couldn't parse a route parameter type (received an empty string)");
+  }
+
+  if (!ROUTE_PARAM_TYPE.includes(type)) {
+    throw new Error(`Couldn't parse a route parameter type ('${type}' is not a supported type)`);
+  }
+
+  return {type, isOptional};
 }

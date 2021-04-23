@@ -71,10 +71,10 @@ describe('MemoryRouter', () => {
     expect(router.getCurrentURL()).toBe('/movies/abc123?showTrailers=true#main');
   });
 
-  test('getCurrentParams()', async () => {
+  test('getCurrentAttributes()', async () => {
     const router = getRouter();
 
-    expect(router.getCurrentParams()).toEqual({id: 'abc123'});
+    expect(router.getCurrentAttributes()).toEqual({id: 'abc123'});
   });
 
   test('getCurrentPath()', async () => {

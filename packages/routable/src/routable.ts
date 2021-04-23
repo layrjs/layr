@@ -3,7 +3,7 @@ import {Router, normalizeURL} from '@layr/router';
 import {hasOwnProperty, getTypeOf, Constructor} from 'core-helpers';
 import debugModule from 'debug';
 
-import {Route, RouteOptions, RoutePattern} from './route';
+import {Route, RoutePattern, RouteOptions} from './route';
 import {isRoutableInstance} from './utilities';
 
 const debug = debugModule('layr:routable');
@@ -364,17 +364,17 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    callRoute(name: string, params?: any) {
+    callRoute(name: string, attributes: any = {}, params: any = {}) {
       const route = this.getRoute(name);
 
-      return this.__callRoute(route, params);
+      return this.__callRoute(route, attributes, params);
     }
 
     static get __callRoute() {
       return this.prototype.__callRoute;
     }
 
-    __callRoute(route: Route, params: any) {
+    __callRoute(route: Route, attributes: any, params: any) {
       const name = route.getName();
 
       debug('Calling %s(%o)', this.describeComponentProperty(name), params);
@@ -385,8 +385,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         component = this;
       } else {
         component =
-          this.constructor.getIdentityMap().getComponent(params) ??
-          this.constructor.create(params, {isNew: false});
+          this.constructor.getIdentityMap().getComponent(attributes) ??
+          this.constructor.create(attributes, {isNew: false});
       }
 
       return component[name](params);
@@ -443,7 +443,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         const result = route.matchURL(normalizedURL);
 
         if (result !== undefined) {
-          return {route, params: result};
+          return {route, ...result};
         }
       }
 
@@ -505,9 +505,9 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         );
       }
 
-      const {route, params} = result;
+      const {route, attributes, params} = result;
 
-      return this.__callRoute(route, params);
+      return this.__callRoute(route, attributes, params);
     }
 
     static __routes?: Map<string, Route>;

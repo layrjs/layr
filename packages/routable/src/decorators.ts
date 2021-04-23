@@ -2,7 +2,7 @@ import {Router, URLOptions, NavigationOptions} from '@layr/router';
 import {hasOwnProperty} from 'core-helpers';
 
 import type {RoutableComponent} from './routable';
-import type {RouteOptions, RoutePattern} from './route';
+import type {Route, RoutePattern, RouteOptions} from './route';
 import {isRoutableClassOrInstance, isRoutableInstance} from './utilities';
 
 /**
@@ -57,31 +57,29 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       );
     }
 
-    const route = target.setRoute(name, pattern, options);
+    const route: Route = target.setRoute(name, pattern, options);
 
     const decorate = function (
       this: typeof RoutableComponent | RoutableComponent,
       method: Function
     ) {
-      const useDefaultParams = (params?: any) =>
-        isRoutableInstance(this) && this.hasIdentifiers()
-          ? {...this.getIdentifiers(), ...params}
-          : params;
+      const getRouteAttributes = () =>
+        isRoutableInstance(this) && this.hasIdentifiers() ? this.getIdentifiers() : undefined;
 
       defineMethod(method, 'matchURL', function (url: URL | string) {
         return route.matchURL(url);
       });
 
       defineMethod(method, 'generateURL', function (params?: any, options?: URLOptions) {
-        return route.generateURL(useDefaultParams(params), options);
+        return route.generateURL(getRouteAttributes(), params, options);
       });
 
-      defineMethod(method, 'generatePath', function (params?: any) {
-        return route.generatePath(useDefaultParams(params));
+      defineMethod(method, 'generatePath', function () {
+        return route.generatePath(getRouteAttributes());
       });
 
       defineMethod(method, 'generateQueryString', function (params?: any) {
-        return route.generateQueryString(useDefaultParams(params));
+        return route.generateQueryString(params);
       });
 
       Object.defineProperty(method, '__isDecorated', {value: true});
@@ -92,29 +90,29 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       method: Function,
       router: Router
     ) {
-      defineMethod(method, 'navigate', function (
-        this: Function,
-        params?: any,
-        options?: URLOptions & NavigationOptions
-      ) {
-        return router.navigate(this.generateURL(params, options), options);
-      });
+      defineMethod(
+        method,
+        'navigate',
+        function (this: Function, params?: any, options?: URLOptions & NavigationOptions) {
+          return router.navigate(this.generateURL(params, options), options);
+        }
+      );
 
-      defineMethod(method, 'redirect', function (
-        this: Function,
-        params?: any,
-        options?: URLOptions & NavigationOptions
-      ) {
-        return router.redirect(this.generateURL(params, options), options);
-      });
+      defineMethod(
+        method,
+        'redirect',
+        function (this: Function, params?: any, options?: URLOptions & NavigationOptions) {
+          return router.redirect(this.generateURL(params, options), options);
+        }
+      );
 
       defineMethod(method, 'reload', function (this: Function, params?: any, options?: URLOptions) {
         router.reload(this.generateURL(params, options));
       });
 
-      defineMethod(method, 'isActive', function (this: Function, params?: any) {
+      defineMethod(method, 'isActive', function (this: Function) {
         const currentPath = router.getCurrentPath();
-        const routePath = this.generatePath(params);
+        const routePath = this.generatePath();
 
         return routePath === currentPath;
       });

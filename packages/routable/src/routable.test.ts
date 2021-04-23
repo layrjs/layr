@@ -87,8 +87,8 @@ describe('Routable', () => {
         return `All movies`;
       }
 
-      ItemPage() {
-        return `Movie #${this.id}`;
+      ItemPage({showDetails = false}) {
+        return `Movie #${this.id}${showDetails ? ' (with details)' : ''}`;
       }
     }
 
@@ -104,10 +104,13 @@ describe('Routable', () => {
 
     // --- Prototype routes ---
 
-    Movie.prototype.setRoute('ItemPage', '/movies/:id');
+    Movie.prototype.setRoute('ItemPage', '/movies/:id', {params: {showDetails: 'boolean?'}});
 
     expect(Movie.prototype.callRoute('ItemPage', {id: 'abc123'})).toBe('Movie #abc123');
     expect(Movie.prototype.callRoute('ItemPage', {id: 'def456'})).toBe('Movie #def456');
+    expect(Movie.prototype.callRoute('ItemPage', {id: 'abc123'}, {showDetails: true})).toBe(
+      'Movie #abc123 (with details)'
+    );
   });
 
   test('findRouteByURL()', async () => {
@@ -120,10 +123,12 @@ describe('Routable', () => {
 
     expect(Movie.findRouteByURL('/movies')).toEqual({
       route: listPageRoute,
+      attributes: {},
       params: {}
     });
     expect(Movie.findRouteByURL('/movies/hot')).toEqual({
       route: hotPageRoute,
+      attributes: {},
       params: {}
     });
     expect(Movie.findRouteByURL('/films')).toBeUndefined();
@@ -135,11 +140,13 @@ describe('Routable', () => {
 
     expect(Movie.prototype.findRouteByURL('/movies/abc123')).toEqual({
       route: itemPageRoute,
-      params: {id: 'abc123'}
+      attributes: {id: 'abc123'},
+      params: {}
     });
     expect(Movie.prototype.findRouteByURL('/movies/abc123/details')).toEqual({
       route: detailsPageRoute,
-      params: {id: 'abc123'}
+      attributes: {id: 'abc123'},
+      params: {}
     });
     expect(Movie.prototype.findRouteByURL('/films/abc123')).toBeUndefined();
   });
@@ -152,8 +159,8 @@ describe('Routable', () => {
         return `All movies`;
       }
 
-      ItemPage() {
-        return `Movie #${this.id}`;
+      ItemPage({showDetails = false}) {
+        return `Movie #${this.id}${showDetails ? ' (with details)' : ''}`;
       }
     }
 
@@ -169,9 +176,12 @@ describe('Routable', () => {
 
     // --- Prototype routes ---
 
-    Movie.prototype.setRoute('ItemPage', '/movies/:id');
+    Movie.prototype.setRoute('ItemPage', '/movies/:id', {params: {showDetails: 'boolean?'}});
 
     expect(Movie.prototype.callRouteByURL('/movies/abc123')).toBe('Movie #abc123');
+    expect(Movie.prototype.callRouteByURL('/movies/abc123?showDetails=1')).toBe(
+      'Movie #abc123 (with details)'
+    );
 
     expect(() => Movie.prototype.callRouteByURL('/movies/abc123/details')).toThrow(
       "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/abc123/details')"

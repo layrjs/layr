@@ -1,10 +1,9 @@
 import {Router, RouterOptions, normalizeURL, stringifyURL} from '@layr/router';
-import {PlainObject} from 'core-helpers';
 import debounce from 'lodash/debounce';
 
 declare global {
   interface Function {
-    Link: (props: {params?: PlainObject; hash?: string} & PlainObject) => any;
+    Link: (props: {params?: any; hash?: string; [key: string]: any}) => any;
   }
 }
 
