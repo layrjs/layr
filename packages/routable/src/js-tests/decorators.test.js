@@ -1,4 +1,4 @@
-import {Component, primaryIdentifier} from '@layr/component';
+import {Component, provide, primaryIdentifier, attribute} from '@layr/component';
 
 import {Routable} from '../routable';
 import {route} from '../decorators';
@@ -6,8 +6,16 @@ import {isRouteInstance} from '../route';
 
 describe('Decorators', () => {
   test('@route()', async () => {
-    class Movie extends Routable(Component) {
+    class Studio extends Component {
       @primaryIdentifier() id;
+    }
+
+    class Movie extends Routable(Component) {
+      @provide() static Studio = Studio;
+
+      @primaryIdentifier() id;
+
+      @attribute('Studio') studio;
 
       @route('/movies', {aliases: ['/films']}) static ListPage() {
         return `All movies`;
@@ -15,6 +23,13 @@ describe('Decorators', () => {
 
       // Use a getter to simulate the view() decorator
       @route('/movies/:id', {aliases: ['/films/:id']}) get ItemPage() {
+        return function () {
+          return `Movie #${this.id}`;
+        };
+      }
+
+      // Use a getter to simulate the view() decorator
+      @route('/studios/:studio.id/movies/:id') get ItemWithStudioPage() {
         return function () {
           return `Movie #${this.id}`;
         };
@@ -64,10 +79,29 @@ describe('Decorators', () => {
       params: {}
     });
 
+    const itemWithStudioPageRoute = Movie.prototype.getRoute('ItemWithStudioPage');
+    expect(itemWithStudioPageRoute.getName()).toBe('ItemWithStudioPage');
+    expect(itemWithStudioPageRoute.getPattern()).toBe('/studios/:studio.id/movies/:id');
+    expect(itemWithStudioPageRoute.getAliases()).toEqual([]);
+    expect(itemWithStudioPageRoute.matchURL('/studios/abc/movies/123')).toEqual({
+      identifiers: {id: '123', studio: {id: 'abc'}},
+      params: {}
+    });
+    expect(itemWithStudioPageRoute.generateURL({id: '123', studio: {id: 'abc'}})).toBe(
+      '/studios/abc/movies/123'
+    );
+
+    expect(Movie.prototype.ItemWithStudioPage.matchURL('/studios/abc/movies/123')).toEqual({
+      identifiers: {id: '123', studio: {id: 'abc'}},
+      params: {}
+    });
+
     // --- Instance routes ---
 
-    const movie = new Movie({id: 'abc123'});
+    const studio = new Studio({id: 'abc'});
+    const movie = new Movie({id: '123', studio});
 
-    expect(movie.ItemPage.generateURL()).toBe('/movies/abc123');
+    expect(movie.ItemPage.generateURL()).toBe('/movies/123');
+    expect(movie.ItemWithStudioPage.generateURL()).toBe('/studios/abc/movies/123');
   });
 });

@@ -4,7 +4,7 @@ import {hasOwnProperty} from 'core-helpers';
 import type {RoutableComponent} from './routable';
 import type {Route, RouteOptions} from './route';
 import type {RoutePattern} from './route-pattern';
-import {isRoutableClassOrInstance, isRoutableInstance} from './utilities';
+import {isRoutableClassOrInstance} from './utilities';
 
 /**
  * Defines a [route](https://layrjs.com/docs/v1/reference/route) for a static or instance method in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
@@ -64,20 +64,18 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       this: typeof RoutableComponent | RoutableComponent,
       method: Function
     ) {
-      // TODO: Implement support for nested identifiers
-      const getRouteIdentifiers = () =>
-        isRoutableInstance(this) && this.hasIdentifiers() ? this.getIdentifiers() : undefined;
+      const component = this;
 
       defineMethod(method, 'matchURL', function (url: URL | string) {
         return route.matchURL(url);
       });
 
       defineMethod(method, 'generateURL', function (params?: any, options?: URLOptions) {
-        return route.generateURL(getRouteIdentifiers(), params, options);
+        return route.generateURL(component, params, options);
       });
 
       defineMethod(method, 'generatePath', function () {
-        return route.generatePath(getRouteIdentifiers());
+        return route.generatePath(component);
       });
 
       defineMethod(method, 'generateQueryString', function (params?: any) {
