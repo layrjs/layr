@@ -1,26 +1,22 @@
 import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@layr/router';
-import {match, compile, MatchFunction, PathFunction} from 'path-to-regexp';
-import {getTypeOf} from 'core-helpers';
+
+import {
+  parseRoutePattern,
+  RoutePattern,
+  RoutePathMatcher,
+  RoutePathGenerator
+} from './route-pattern';
+import {
+  serializeRouteParam,
+  deserializeRouteParam,
+  parseRouteParamTypeSpecifier,
+  RouteParams,
+  RouteParamTypeDescriptor
+} from './route-param';
 
 export type RouteOptions = {
   params?: RouteParams;
   aliases?: RoutePattern[];
-};
-
-export type RoutePattern = string;
-
-export type RouteParams = Record<string, RouteParamTypeSpecifier>;
-
-const ROUTE_PARAM_TYPE = ['boolean', 'number', 'string', 'Date'] as const;
-
-export type RouteParamType = typeof ROUTE_PARAM_TYPE[number];
-
-export type RouteParamTypeSpecifier = `${RouteParamType}${'' | '?'}`;
-
-export type RouteParamTypeDescriptor = {
-  type: RouteParamType;
-  isOptional: boolean;
-  specifier: RouteParamTypeSpecifier;
 };
 
 /**
@@ -40,11 +36,12 @@ export type RouteParamTypeDescriptor = {
  */
 export class Route {
   _name: string;
-  _pattern: RoutePattern;
+  _patterns: {
+    pattern: RoutePattern;
+    matcher: RoutePathMatcher;
+    generator: RoutePathGenerator;
+  }[];
   _params: Record<string, RouteParamTypeDescriptor>;
-  _aliases: RoutePattern[];
-  _matchers: MatchFunction[];
-  _compiler: PathFunction;
 
   /**
    * Creates an instance of [`Route`](https://layrjs.com/docs/v1/reference/route). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
@@ -66,7 +63,6 @@ export class Route {
     const {params = {}, aliases = []} = options;
 
     this._name = name;
-    this._pattern = pattern;
 
     this._params = Object.create(null);
 
@@ -77,15 +73,12 @@ export class Route {
       };
     }
 
-    this._aliases = aliases;
-
-    this._matchers = [];
+    this._patterns = [];
 
     for (const routePatternOrAliasPattern of [pattern, ...aliases]) {
-      this._matchers.push(match(routePatternOrAliasPattern));
+      const {matcher, generator} = parseRoutePattern(routePatternOrAliasPattern);
+      this._patterns.push({pattern: routePatternOrAliasPattern, matcher, generator});
     }
-
-    this._compiler = compile(pattern);
   }
 
   /**
@@ -121,7 +114,7 @@ export class Route {
    * @category Basic Methods
    */
   getPattern() {
-    return this._pattern;
+    return this._patterns[0].pattern;
   }
 
   getParams() {
@@ -149,7 +142,7 @@ export class Route {
    * @category Basic Methods
    */
   getAliases() {
-    return this._aliases;
+    return this._patterns.slice(1).map(({pattern}) => pattern);
   }
 
   /**
@@ -175,10 +168,10 @@ export class Route {
   matchURL(url: URL | string) {
     const {pathname: path, search: queryString} = normalizeURL(url);
 
-    for (const matcher of this._matchers) {
-      const result = matcher(path);
+    for (const {matcher} of this._patterns) {
+      const identifiers = matcher(path);
 
-      if (result !== false) {
+      if (identifiers !== undefined) {
         const query: Record<string, string> = parseQuery(queryString);
         const params: Record<string, any> = {};
 
@@ -188,7 +181,7 @@ export class Route {
           params[name] = paramValue;
         }
 
-        return {attributes: {...result.params} as Record<string, any>, params};
+        return {identifiers, params};
       }
     }
 
@@ -217,11 +210,11 @@ export class Route {
    * @category URL Matching and Generation
    */
   generateURL(
-    attributes?: Record<string, string | number>,
+    identifiers?: Record<string, any>,
     params?: Record<string, any>,
     options?: URLOptions
   ) {
-    let url = this.generatePath(attributes);
+    let url = this.generatePath(identifiers);
 
     const queryString = this.generateQueryString(params);
 
@@ -236,8 +229,8 @@ export class Route {
     return url;
   }
 
-  generatePath(attributes?: Record<string, string | number>) {
-    return this._compiler(attributes);
+  generatePath(identifiers?: Record<string, any>) {
+    return this._patterns[0].generator(identifiers);
   }
 
   generateQueryString(params: Record<string, any> = {}) {
@@ -309,131 +302,4 @@ export function isRouteClass(value: any): value is typeof Route {
  */
 export function isRouteInstance(value: any): value is Route {
   return typeof value?.constructor?.isRoute === 'function';
-}
-
-function deserializeRouteParam(
-  name: string,
-  value: string | undefined,
-  typeDescriptor: RouteParamTypeDescriptor
-) {
-  const {type, isOptional, specifier} = typeDescriptor;
-
-  if (value === undefined) {
-    if (isOptional) {
-      return undefined;
-    }
-
-    throw new Error(
-      `A required route parameter is missing (name: '${name}', type: '${specifier}')`
-    );
-  }
-
-  if (type === 'boolean') {
-    if (value === '0') {
-      return false;
-    }
-
-    if (value === '1') {
-      return true;
-    }
-  }
-
-  if (type === 'number') {
-    const result = Number(value);
-
-    if (!isNaN(result)) {
-      return result;
-    }
-  }
-
-  if (type === 'string') {
-    return value;
-  }
-
-  if (type === 'Date') {
-    const result = new Date(value);
-
-    if (!isNaN(result.valueOf())) {
-      return result;
-    }
-  }
-
-  throw new Error(
-    `Couldn't deserialize a route parameter (name: '${name}', value: '${value}', type: '${specifier}')`
-  );
-}
-
-function serializeRouteParam(name: string, value: any, typeDescriptor: RouteParamTypeDescriptor) {
-  const {type, isOptional, specifier} = typeDescriptor;
-
-  if (value === undefined) {
-    if (isOptional) {
-      return undefined;
-    }
-
-    throw new Error(
-      `A required route parameter is missing (name: '${name}', type: '${specifier}')`
-    );
-  }
-
-  if (type === 'boolean') {
-    if (typeof value === 'boolean') {
-      return value ? '1' : '0';
-    }
-  }
-
-  if (type === 'number') {
-    if (typeof value === 'number' && !isNaN(value)) {
-      return String(value);
-    }
-  }
-
-  if (type === 'string') {
-    if (typeof value === 'string') {
-      return value;
-    }
-  }
-
-  if (type === 'Date') {
-    if (value instanceof Date && !isNaN(value.valueOf())) {
-      return value.toISOString();
-    }
-  }
-
-  throw new Error(
-    `Couldn't serialize a route parameter (name: '${name}', value: '${value}', expected type: '${specifier}', received type: '${getTypeOf(
-      value
-    )}')`
-  );
-}
-
-function parseRouteParamTypeSpecifier(typeSpecifier: RouteParamTypeSpecifier) {
-  let type: RouteParamType;
-  let isOptional: boolean;
-
-  if (typeof typeSpecifier !== 'string') {
-    throw new Error(
-      `Couldn't parse a route parameter type (expected a string, but received a value of type '${getTypeOf(
-        typeSpecifier
-      )}')`
-    );
-  }
-
-  if (typeSpecifier.endsWith('?')) {
-    type = typeSpecifier.slice(0, -1) as RouteParamType;
-    isOptional = true;
-  } else {
-    type = typeSpecifier as RouteParamType;
-    isOptional = false;
-  }
-
-  if (type.length === 0) {
-    throw new Error("Couldn't parse a route parameter type (received an empty string)");
-  }
-
-  if (!ROUTE_PARAM_TYPE.includes(type)) {
-    throw new Error(`Couldn't parse a route parameter type ('${type}' is not a supported type)`);
-  }
-
-  return {type, isOptional};
 }

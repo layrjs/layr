@@ -29,12 +29,12 @@ describe('Decorators', () => {
     expect(listPageRoute.getName()).toBe('ListPage');
     expect(listPageRoute.getPattern()).toBe('/movies');
     expect(listPageRoute.getAliases()).toEqual(['/films']);
-    expect(listPageRoute.matchURL('/movies')).toEqual({attributes: {}, params: {}});
-    expect(listPageRoute.matchURL('/films')).toEqual({attributes: {}, params: {}});
+    expect(listPageRoute.matchURL('/movies')).toEqual({identifiers: {}, params: {}});
+    expect(listPageRoute.matchURL('/films')).toEqual({identifiers: {}, params: {}});
     expect(listPageRoute.generateURL()).toBe('/movies');
 
-    expect(Movie.ListPage.matchURL('/movies')).toEqual({attributes: {}, params: {}});
-    expect(Movie.ListPage.matchURL('/films')).toEqual({attributes: {}, params: {}});
+    expect(Movie.ListPage.matchURL('/movies')).toEqual({identifiers: {}, params: {}});
+    expect(Movie.ListPage.matchURL('/films')).toEqual({identifiers: {}, params: {}});
     expect(Movie.ListPage.generateURL()).toBe('/movies');
 
     // --- Prototype routes ---
@@ -46,21 +46,21 @@ describe('Decorators', () => {
     expect(itemPageRoute.getPattern()).toBe('/movies/:id');
     expect(itemPageRoute.getAliases()).toEqual(['/films/:id']);
     expect(itemPageRoute.matchURL('/movies/abc123')).toEqual({
-      attributes: {id: 'abc123'},
+      identifiers: {id: 'abc123'},
       params: {}
     });
     expect(itemPageRoute.matchURL('/films/abc123')).toEqual({
-      attributes: {id: 'abc123'},
+      identifiers: {id: 'abc123'},
       params: {}
     });
     expect(itemPageRoute.generateURL({id: 'abc123'})).toBe('/movies/abc123');
 
     expect(Movie.prototype.ItemPage.matchURL('/movies/abc123')).toEqual({
-      attributes: {id: 'abc123'},
+      identifiers: {id: 'abc123'},
       params: {}
     });
     expect(Movie.prototype.ItemPage.matchURL('/films/abc123')).toEqual({
-      attributes: {id: 'abc123'},
+      identifiers: {id: 'abc123'},
       params: {}
     });
 

@@ -123,12 +123,12 @@ describe('Routable', () => {
 
     expect(Movie.findRouteByURL('/movies')).toEqual({
       route: listPageRoute,
-      attributes: {},
+      identifiers: {},
       params: {}
     });
     expect(Movie.findRouteByURL('/movies/hot')).toEqual({
       route: hotPageRoute,
-      attributes: {},
+      identifiers: {},
       params: {}
     });
     expect(Movie.findRouteByURL('/films')).toBeUndefined();
@@ -140,12 +140,12 @@ describe('Routable', () => {
 
     expect(Movie.prototype.findRouteByURL('/movies/abc123')).toEqual({
       route: itemPageRoute,
-      attributes: {id: 'abc123'},
+      identifiers: {id: 'abc123'},
       params: {}
     });
     expect(Movie.prototype.findRouteByURL('/movies/abc123/details')).toEqual({
       route: detailsPageRoute,
-      attributes: {id: 'abc123'},
+      identifiers: {id: 'abc123'},
       params: {}
     });
     expect(Movie.prototype.findRouteByURL('/films/abc123')).toBeUndefined();

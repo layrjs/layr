@@ -2,7 +2,8 @@ import {Router, URLOptions, NavigationOptions} from '@layr/router';
 import {hasOwnProperty} from 'core-helpers';
 
 import type {RoutableComponent} from './routable';
-import type {Route, RoutePattern, RouteOptions} from './route';
+import type {Route, RouteOptions} from './route';
+import type {RoutePattern} from './route-pattern';
 import {isRoutableClassOrInstance, isRoutableInstance} from './utilities';
 
 /**
@@ -63,7 +64,8 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       this: typeof RoutableComponent | RoutableComponent,
       method: Function
     ) {
-      const getRouteAttributes = () =>
+      // TODO: Implement support for nested identifiers
+      const getRouteIdentifiers = () =>
         isRoutableInstance(this) && this.hasIdentifiers() ? this.getIdentifiers() : undefined;
 
       defineMethod(method, 'matchURL', function (url: URL | string) {
@@ -71,11 +73,11 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
       });
 
       defineMethod(method, 'generateURL', function (params?: any, options?: URLOptions) {
-        return route.generateURL(getRouteAttributes(), params, options);
+        return route.generateURL(getRouteIdentifiers(), params, options);
       });
 
       defineMethod(method, 'generatePath', function () {
-        return route.generatePath(getRouteAttributes());
+        return route.generatePath(getRouteIdentifiers());
       });
 
       defineMethod(method, 'generateQueryString', function (params?: any) {

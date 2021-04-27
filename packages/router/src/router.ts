@@ -7,7 +7,7 @@ import {isRouterInstance, normalizeURL, stringifyURL, parseQuery} from './utilit
 
 declare global {
   interface Function {
-    matchURL: (url: URL | string) => {attributes: any; params: any} | undefined;
+    matchURL: (url: URL | string) => {identifiers: any; params: any} | undefined;
     generateURL: (params?: any, options?: URLOptions) => string;
     generatePath: () => string;
     generateQueryString: (params?: any) => string;
@@ -301,14 +301,14 @@ export abstract class Router extends Observable(Object) {
     return undefined;
   }
 
-  getAttributesFromURL(url: URL | string) {
+  getIdentifiersFromURL(url: URL | string) {
     const result = this.findRouteByURL(url);
 
     if (result === undefined) {
       throw new Error(`Couldn't find a route matching the specified URL (URL: '${url}')`);
     }
 
-    return result.attributes;
+    return result.identifiers;
   }
 
   /**
@@ -369,9 +369,9 @@ export abstract class Router extends Observable(Object) {
     const result = this.findRouteByURL(url);
 
     if (result !== undefined) {
-      const {routable, route, attributes, params} = result;
+      const {routable, route, identifiers, params} = result;
 
-      return routable.__callRoute(route, attributes, params);
+      return routable.__callRoute(route, identifiers, params);
     }
 
     if (fallback !== undefined) {
@@ -404,8 +404,8 @@ export abstract class Router extends Observable(Object) {
 
   abstract _getCurrentURL(): URL;
 
-  getCurrentAttributes() {
-    return this.getAttributesFromURL(this._getCurrentURL());
+  getCurrentIdentifiers() {
+    return this.getIdentifiersFromURL(this._getCurrentURL());
   }
 
   /**

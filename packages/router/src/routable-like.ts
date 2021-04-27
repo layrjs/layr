@@ -21,13 +21,13 @@ export declare class RoutableLike {
 
   static findRouteByURL: (
     url: URL | string
-  ) => {route: any; attributes: any; params: any} | undefined;
+  ) => {route: any; identifiers: any; params: any} | undefined;
 
-  findRouteByURL: (url: URL | string) => {route: any; attributes: any; params: any} | undefined;
+  findRouteByURL: (url: URL | string) => {route: any; identifiers: any; params: any} | undefined;
 
-  static __callRoute: (route: any, attribute: any, params: any) => any;
+  static __callRoute: (route: any, identifiers: any, params: any) => any;
 
-  __callRoute: (route: any, attribute: any, params: any) => any;
+  __callRoute: (route: any, identifiers: any, params: any) => any;
 }
 
 export function isRoutableLikeClass(value: any): value is typeof RoutableLike {

@@ -3,7 +3,8 @@ import {Router, normalizeURL} from '@layr/router';
 import {hasOwnProperty, getTypeOf, Constructor} from 'core-helpers';
 import debugModule from 'debug';
 
-import {Route, RoutePattern, RouteOptions} from './route';
+import {Route, RouteOptions} from './route';
+import type {RoutePattern} from './route-pattern';
 import {isRoutableInstance} from './utilities';
 
 const debug = debugModule('layr:routable');
@@ -364,17 +365,17 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    callRoute(name: string, attributes: any = {}, params: any = {}) {
+    callRoute(name: string, identifiers: any = {}, params: any = {}) {
       const route = this.getRoute(name);
 
-      return this.__callRoute(route, attributes, params);
+      return this.__callRoute(route, identifiers, params);
     }
 
     static get __callRoute() {
       return this.prototype.__callRoute;
     }
 
-    __callRoute(route: Route, attributes: any, params: any) {
+    __callRoute(route: Route, identifiers: any, params: any) {
       const name = route.getName();
 
       debug('Calling %s(%o)', this.describeComponentProperty(name), params);
@@ -385,8 +386,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         component = this;
       } else {
         component =
-          this.constructor.getIdentityMap().getComponent(attributes) ??
-          this.constructor.create(attributes, {isNew: false});
+          this.constructor.getIdentityMap().getComponent(identifiers) ??
+          this.constructor.create(identifiers, {isNew: false});
       }
 
       return component[name](params);
@@ -505,9 +506,9 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         );
       }
 
-      const {route, attributes, params} = result;
+      const {route, identifiers, params} = result;
 
-      return this.__callRoute(route, attributes, params);
+      return this.__callRoute(route, identifiers, params);
     }
 
     static __routes?: Map<string, Route>;

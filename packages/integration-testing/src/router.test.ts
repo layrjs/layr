@@ -164,21 +164,21 @@ describe('Router', () => {
 
       expect(result!.routable.getComponentType()).toBe('Movie');
       expect(result!.route.getName()).toBe('ItemPage');
-      expect(result!.attributes).toEqual({id: 'abc123'});
+      expect(result!.identifiers).toEqual({id: 'abc123'});
       expect(result!.params).toEqual({});
 
       result = router.findRouteByURL('/movies/abc123?showDetails=1');
 
       expect(result!.routable.getComponentType()).toBe('Movie');
       expect(result!.route.getName()).toBe('ItemPage');
-      expect(result!.attributes).toEqual({id: 'abc123'});
+      expect(result!.identifiers).toEqual({id: 'abc123'});
       expect(result!.params).toEqual({showDetails: true});
 
       result = router.findRouteByURL('/actors/top');
 
       expect(result!.routable.getComponentType()).toBe('typeof Actor');
       expect(result!.route.getName()).toBe('TopPage');
-      expect(result!.attributes).toEqual({});
+      expect(result!.identifiers).toEqual({});
       expect(result!.params).toEqual({});
 
       result = router.findRouteByURL('/movies/abc123/details');
@@ -186,13 +186,13 @@ describe('Router', () => {
       expect(result).toBeUndefined();
     });
 
-    test('getAttributesFromURL()', async () => {
+    test('getIdentifiersFromURL()', async () => {
       const router = getRouter();
 
-      expect(router.getAttributesFromURL('/movies/abc123')).toEqual({id: 'abc123'});
-      expect(router.getAttributesFromURL('/actors/top')).toEqual({});
+      expect(router.getIdentifiersFromURL('/movies/abc123')).toEqual({id: 'abc123'});
+      expect(router.getIdentifiersFromURL('/actors/top')).toEqual({});
 
-      expect(() => router.getAttributesFromURL('/movies/abc123/details')).toThrow(
+      expect(() => router.getIdentifiersFromURL('/movies/abc123/details')).toThrow(
         "Couldn't find a route matching the specified URL (URL: '/movies/abc123/details')"
       );
     });
