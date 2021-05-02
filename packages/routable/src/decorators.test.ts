@@ -1,8 +1,9 @@
 import {Component, provide, primaryIdentifier, attribute} from '@layr/component';
 
 import {Routable} from './routable';
-import {route} from './decorators';
+import {route, wrapper} from './decorators';
 import {isRouteInstance} from './route';
+import {isWrapperInstance} from './wrapper';
 
 describe('Decorators', () => {
   test('@route()', async () => {
@@ -44,12 +45,28 @@ describe('Decorators', () => {
     expect(listPageRoute.getName()).toBe('ListPage');
     expect(listPageRoute.getPattern()).toBe('/movies');
     expect(listPageRoute.getAliases()).toEqual(['/films']);
-    expect(listPageRoute.matchURL('/movies')).toEqual({identifiers: {}, params: {}});
-    expect(listPageRoute.matchURL('/films')).toEqual({identifiers: {}, params: {}});
+    expect(listPageRoute.matchURL('/movies')).toEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
+    expect(listPageRoute.matchURL('/films')).toEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
     expect(listPageRoute.generateURL()).toBe('/movies');
 
-    expect(Movie.ListPage.matchURL('/movies')).toEqual({identifiers: {}, params: {}});
-    expect(Movie.ListPage.matchURL('/films')).toEqual({identifiers: {}, params: {}});
+    expect(Movie.ListPage.matchURL('/movies')).toEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
+    expect(Movie.ListPage.matchURL('/films')).toEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
     expect(Movie.ListPage.generateURL()).toBe('/movies');
 
     // --- Prototype routes ---
@@ -62,21 +79,25 @@ describe('Decorators', () => {
     expect(itemPageRoute.getAliases()).toEqual(['/films/:id']);
     expect(itemPageRoute.matchURL('/movies/abc123')).toEqual({
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(itemPageRoute.matchURL('/films/abc123')).toEqual({
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(itemPageRoute.generateURL({id: 'abc123'})).toBe('/movies/abc123');
 
     expect(Movie.prototype.ItemPage.matchURL('/movies/abc123')).toEqual({
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(Movie.prototype.ItemPage.matchURL('/films/abc123')).toEqual({
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
 
     const itemWithStudioPageRoute = Movie.prototype.getRoute('ItemWithStudioPage');
@@ -85,7 +106,8 @@ describe('Decorators', () => {
     expect(itemWithStudioPageRoute.getAliases()).toEqual([]);
     expect(itemWithStudioPageRoute.matchURL('/studios/abc/movies/123')).toEqual({
       identifiers: {id: '123', studio: {id: 'abc'}},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(itemWithStudioPageRoute.generateURL({id: '123', studio: {id: 'abc'}})).toBe(
       '/studios/abc/movies/123'
@@ -93,7 +115,8 @@ describe('Decorators', () => {
 
     expect(Movie.prototype.ItemWithStudioPage.matchURL('/studios/abc/movies/123')).toEqual({
       identifiers: {id: '123', studio: {id: 'abc'}},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
 
     // --- Instance routes ---
@@ -103,5 +126,29 @@ describe('Decorators', () => {
 
     expect(movie.ItemPage.generateURL()).toBe('/movies/123');
     expect(movie.ItemWithStudioPage.generateURL()).toBe('/studios/abc/movies/123');
+  });
+
+  test('@wrapper()', async () => {
+    class Movie extends Routable(Component) {
+      @wrapper('/movies') static MainLayout() {}
+
+      @wrapper('[/movies]/:id') ItemLayout() {}
+    }
+
+    // --- Class wrappers ---
+
+    const mainLayoutWrapper = Movie.getWrapper('MainLayout');
+
+    expect(isWrapperInstance(mainLayoutWrapper)).toBe(true);
+    expect(mainLayoutWrapper.getName()).toBe('MainLayout');
+    expect(mainLayoutWrapper.getPattern()).toBe('/movies');
+
+    // --- Prototype wrappers ---
+
+    const itemLayoutWrapper = Movie.prototype.getWrapper('ItemLayout');
+
+    expect(isWrapperInstance(itemLayoutWrapper)).toBe(true);
+    expect(itemLayoutWrapper.getName()).toBe('ItemLayout');
+    expect(itemLayoutWrapper.getPattern()).toBe('[/movies]/:id');
   });
 });

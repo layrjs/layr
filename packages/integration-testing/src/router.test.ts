@@ -1,5 +1,5 @@
 import {Component, provide, primaryIdentifier} from '@layr/component';
-import {Routable, route} from '@layr/routable';
+import {Routable, route, wrapper} from '@layr/routable';
 import {Router, isRouterInstance} from '@layr/router';
 
 describe('Router', () => {
@@ -134,20 +134,26 @@ describe('Router', () => {
       class Movie extends Routable(Component) {
         @primaryIdentifier() id!: string;
 
-        @route('/movies/:id', {params: {showDetails: 'boolean?'}}) ItemPage({showDetails = false}) {
+        @route('[/]movies/:id', {params: {showDetails: 'boolean?'}}) ItemPage({
+          showDetails = false
+        }) {
           return `Movie #${this.id}${showDetails ? ' (with details)' : ''}`;
         }
       }
 
       class Actor extends Routable(Component) {
-        @route('/actors/top') static TopPage() {
+        @route('[/]actors/top') static TopPage() {
           return `Top actors`;
         }
       }
 
-      class Root extends Component {
+      class Root extends Routable(Component) {
         @provide() static Movie = Movie;
         @provide() static Actor = Actor;
+
+        @wrapper('/') static MainLayout({children}: {children: () => any}) {
+          return `[${children()}]`;
+        }
       }
 
       const router = new MockRouter();
@@ -211,11 +217,11 @@ describe('Router', () => {
     test('callRouteByURL()', async () => {
       const router = getRouter();
 
-      expect(router.callRouteByURL('/movies/abc123')).toBe('Movie #abc123');
+      expect(router.callRouteByURL('/movies/abc123')).toBe('[Movie #abc123]');
       expect(router.callRouteByURL('/movies/abc123?showDetails=1')).toBe(
-        'Movie #abc123 (with details)'
+        '[Movie #abc123 (with details)]'
       );
-      expect(router.callRouteByURL('/actors/top')).toBe('Top actors');
+      expect(router.callRouteByURL('/actors/top')).toBe('[Top actors]');
 
       expect(() => router.callRouteByURL('/movies/abc123/details')).toThrow(
         "Couldn't find a route matching the specified URL (URL: '/movies/abc123/details')"

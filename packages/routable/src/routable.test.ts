@@ -124,12 +124,14 @@ describe('Routable', () => {
     expect(Movie.findRouteByURL('/movies')).toEqual({
       route: listPageRoute,
       identifiers: {},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(Movie.findRouteByURL('/movies/hot')).toEqual({
       route: hotPageRoute,
       identifiers: {},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(Movie.findRouteByURL('/films')).toBeUndefined();
 
@@ -141,12 +143,14 @@ describe('Routable', () => {
     expect(Movie.prototype.findRouteByURL('/movies/abc123')).toEqual({
       route: itemPageRoute,
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(Movie.prototype.findRouteByURL('/movies/abc123/details')).toEqual({
       route: detailsPageRoute,
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(Movie.prototype.findRouteByURL('/films/abc123')).toBeUndefined();
   });
@@ -154,6 +158,10 @@ describe('Routable', () => {
   test('callRouteByURL()', async () => {
     class Movie extends Routable(Component) {
       @primaryIdentifier() id!: string;
+
+      static MainLayout({children}: {children: () => any}) {
+        return `[${children()}]`;
+      }
 
       static ListPage() {
         return `All movies`;
@@ -164,11 +172,13 @@ describe('Routable', () => {
       }
     }
 
+    Movie.setWrapper('MainLayout', '/');
+
     // --- Class routes ---
 
-    Movie.setRoute('ListPage', '/movies');
+    Movie.setRoute('ListPage', '[/]movies');
 
-    expect(Movie.callRouteByURL('/movies')).toBe('All movies');
+    expect(Movie.callRouteByURL('/movies')).toBe('[All movies]');
 
     expect(() => Movie.callRouteByURL('/movies/hot')).toThrow(
       "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/hot')"
@@ -176,11 +186,11 @@ describe('Routable', () => {
 
     // --- Prototype routes ---
 
-    Movie.prototype.setRoute('ItemPage', '/movies/:id', {params: {showDetails: 'boolean?'}});
+    Movie.prototype.setRoute('ItemPage', '[/]movies/:id', {params: {showDetails: 'boolean?'}});
 
-    expect(Movie.prototype.callRouteByURL('/movies/abc123')).toBe('Movie #abc123');
+    expect(Movie.prototype.callRouteByURL('/movies/abc123')).toBe('[Movie #abc123]');
     expect(Movie.prototype.callRouteByURL('/movies/abc123?showDetails=1')).toBe(
-      'Movie #abc123 (with details)'
+      '[Movie #abc123 (with details)]'
     );
 
     expect(() => Movie.prototype.callRouteByURL('/movies/abc123/details')).toThrow(

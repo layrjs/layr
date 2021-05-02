@@ -3,7 +3,8 @@ import {hasOwnProperty} from 'core-helpers';
 
 import type {RoutableComponent} from './routable';
 import type {Route, RouteOptions} from './route';
-import type {RoutePattern} from './route-pattern';
+import type {WrapperOptions} from './wrapper';
+import type {Pattern} from './pattern';
 import {isRoutableClassOrInstance} from './utilities';
 
 /**
@@ -38,7 +39,7 @@ import {isRoutableClassOrInstance} from './utilities';
  * @category Decorators
  * @decorator
  */
-export function route(pattern: RoutePattern, options: RouteOptions = {}) {
+export function route(pattern: Pattern, options: RouteOptions = {}) {
   return function (
     target: typeof RoutableComponent | RoutableComponent,
     name: string,
@@ -156,5 +157,29 @@ export function route(pattern: RoutePattern, options: RouteOptions = {}) {
     };
 
     return {get, configurable, enumerable};
+  };
+}
+
+export function wrapper(pattern: Pattern, options: WrapperOptions = {}) {
+  return function (
+    target: typeof RoutableComponent | RoutableComponent,
+    name: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const {value: method, get, enumerable} = descriptor;
+
+    if (
+      !(
+        isRoutableClassOrInstance(target) &&
+        (typeof method === 'function' || get !== undefined) &&
+        enumerable === false
+      )
+    ) {
+      throw new Error(
+        `@wrapper() should be used to decorate a routable component method (property: '${name}')`
+      );
+    }
+
+    target.setWrapper(name, pattern, options);
   };
 }

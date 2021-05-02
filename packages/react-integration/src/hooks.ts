@@ -51,28 +51,29 @@ import {useCustomization} from './components';
  * @reacthook
  */
 export function useBrowserRouter(rootComponent: typeof Component) {
-  const router = useMemo(() => {
-    const router = new BrowserRouter({plugins: [BrowserRouterPlugin()]});
-    router.registerRootComponent(rootComponent);
-    return router;
-  }, [rootComponent]);
+  const routerRef = useRef<BrowserRouter>();
+
+  if (routerRef.current === undefined) {
+    routerRef.current = new BrowserRouter({plugins: [BrowserRouterPlugin()]});
+    routerRef.current.registerRootComponent(rootComponent);
+  }
 
   const [isReady, setIsReady] = useState(false);
 
   const forceUpdate = useForceUpdate();
 
   useEffect(() => {
-    router.addObserver(forceUpdate);
+    routerRef.current!.addObserver(forceUpdate);
 
     setIsReady(true);
 
     return function () {
-      router.removeObserver(forceUpdate);
-      router.unmount();
+      routerRef.current!.removeObserver(forceUpdate);
+      routerRef.current!.unmount();
     };
-  }, [router]);
+  }, []);
 
-  return [router, isReady] as const;
+  return [routerRef.current, isReady] as const;
 }
 
 /**
@@ -119,52 +120,50 @@ export function useMemoryRouter(
   rootComponent: typeof Component,
   options: MemoryRouterOptions = {}
 ) {
-  const router = useMemo(() => {
-    const router = new MemoryRouter(options);
-    router.registerRootComponent(rootComponent);
-    return router;
-  }, [rootComponent]);
+  const routerRef = useRef<MemoryRouter>();
+
+  if (routerRef.current === undefined) {
+    routerRef.current = new MemoryRouter(options);
+    routerRef.current.registerRootComponent(rootComponent);
+  }
 
   const forceUpdate = useForceUpdate();
 
   useEffect(() => {
-    router.addObserver(forceUpdate);
+    routerRef.current!.addObserver(forceUpdate);
 
     return function () {
-      router.removeObserver(forceUpdate);
-      router.unmount();
+      routerRef.current!.removeObserver(forceUpdate);
+      routerRef.current!.unmount();
     };
-  }, [router]);
+  }, []);
 
-  return [router] as const;
+  return [routerRef.current] as const;
 }
 
 export function useData<Result>(
   getter: () => Promise<Result>,
   renderer: (data: Result) => JSX.Element | null,
-  deps: DependencyList = []
+  getterDeps: DependencyList = [],
+  rendererDeps: DependencyList = []
 ) {
   const {dataPlaceholder, errorRenderer} = useCustomization();
 
-  const [element, isExecuting, error] = useAsyncMemo(async () => {
-    const data = await getter();
+  const [data, isExecuting, error] = useAsyncMemo(getter, getterDeps);
 
-    const element = React.createElement(function ActualView() {
-      return renderer(data);
+  return useMemo(() => {
+    if (isExecuting) {
+      return dataPlaceholder();
+    }
+
+    if (error) {
+      return errorRenderer(error);
+    }
+
+    return React.createElement(function ViewWithData() {
+      return renderer(data!);
     });
-
-    return element;
-  }, deps);
-
-  if (isExecuting) {
-    return dataPlaceholder();
-  }
-
-  if (error) {
-    return errorRenderer(error);
-  }
-
-  return element!;
+  }, [data, isExecuting, error, ...rendererDeps]);
 }
 
 export function useAction<Args extends any[] = any[], Result = any>(

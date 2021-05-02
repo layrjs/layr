@@ -1,24 +1,20 @@
 import {getTypeOf} from 'core-helpers';
 
-export type RouteParams = Record<string, RouteParamTypeSpecifier>;
+export type Params = Record<string, TypeSpecifier>;
 
-const ROUTE_PARAM_TYPE = ['boolean', 'number', 'string', 'Date'] as const;
+const PARAM_TYPE = ['boolean', 'number', 'string', 'Date'] as const;
 
-export type RouteParamType = typeof ROUTE_PARAM_TYPE[number];
+export type ParamType = typeof PARAM_TYPE[number];
 
-export type RouteParamTypeSpecifier = `${RouteParamType}${'' | '?'}`;
+export type TypeSpecifier = `${ParamType}${'' | '?'}`;
 
-export type RouteParamTypeDescriptor = {
-  type: RouteParamType;
+export type ParamTypeDescriptor = {
+  type: ParamType;
   isOptional: boolean;
-  specifier: RouteParamTypeSpecifier;
+  specifier: TypeSpecifier;
 };
 
-export function serializeRouteParam(
-  name: string,
-  value: any,
-  typeDescriptor: RouteParamTypeDescriptor
-) {
+export function serializeParam(name: string, value: any, typeDescriptor: ParamTypeDescriptor) {
   const {type, isOptional, specifier} = typeDescriptor;
 
   if (value === undefined) {
@@ -27,7 +23,7 @@ export function serializeRouteParam(
     }
 
     throw new Error(
-      `A required route parameter is missing (name: '${name}', type: '${specifier}')`
+      `A required route (or wrapper) parameter is missing (name: '${name}', type: '${specifier}')`
     );
   }
 
@@ -56,16 +52,16 @@ export function serializeRouteParam(
   }
 
   throw new Error(
-    `Couldn't serialize a route parameter (name: '${name}', value: '${value}', expected type: '${specifier}', received type: '${getTypeOf(
+    `Couldn't serialize a route (or wrapper) parameter (name: '${name}', value: '${value}', expected type: '${specifier}', received type: '${getTypeOf(
       value
     )}')`
   );
 }
 
-export function deserializeRouteParam(
+export function deserializeParam(
   name: string,
   value: string | undefined,
-  typeDescriptor: RouteParamTypeDescriptor
+  typeDescriptor: ParamTypeDescriptor
 ) {
   const {type, isOptional, specifier} = typeDescriptor;
 
@@ -75,7 +71,7 @@ export function deserializeRouteParam(
     }
 
     throw new Error(
-      `A required route parameter is missing (name: '${name}', type: '${specifier}')`
+      `A required route (or wrapper) parameter is missing (name: '${name}', type: '${specifier}')`
     );
   }
 
@@ -110,36 +106,40 @@ export function deserializeRouteParam(
   }
 
   throw new Error(
-    `Couldn't deserialize a route parameter (name: '${name}', value: '${value}', type: '${specifier}')`
+    `Couldn't deserialize a route (or wrapper) parameter (name: '${name}', value: '${value}', type: '${specifier}')`
   );
 }
 
-export function parseRouteParamTypeSpecifier(typeSpecifier: RouteParamTypeSpecifier) {
-  let type: RouteParamType;
+export function parseParamTypeSpecifier(typeSpecifier: TypeSpecifier) {
+  let type: ParamType;
   let isOptional: boolean;
 
   if (typeof typeSpecifier !== 'string') {
     throw new Error(
-      `Couldn't parse a route parameter type (expected a string, but received a value of type '${getTypeOf(
+      `Couldn't parse a route (or wrapper) parameter type (expected a string, but received a value of type '${getTypeOf(
         typeSpecifier
       )}')`
     );
   }
 
   if (typeSpecifier.endsWith('?')) {
-    type = typeSpecifier.slice(0, -1) as RouteParamType;
+    type = typeSpecifier.slice(0, -1) as ParamType;
     isOptional = true;
   } else {
-    type = typeSpecifier as RouteParamType;
+    type = typeSpecifier as ParamType;
     isOptional = false;
   }
 
   if (type.length === 0) {
-    throw new Error("Couldn't parse a route parameter type (received an empty string)");
+    throw new Error(
+      "Couldn't parse a route (or wrapper) parameter type (received an empty string)"
+    );
   }
 
-  if (!ROUTE_PARAM_TYPE.includes(type)) {
-    throw new Error(`Couldn't parse a route parameter type ('${type}' is not a supported type)`);
+  if (!PARAM_TYPE.includes(type)) {
+    throw new Error(
+      `Couldn't parse a route (or wrapper) parameter type ('${type}' is not a supported type)`
+    );
   }
 
   return {type, isOptional};

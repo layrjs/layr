@@ -4,7 +4,8 @@ import {hasOwnProperty, getTypeOf, Constructor} from 'core-helpers';
 import debugModule from 'debug';
 
 import {Route, RouteOptions} from './route';
-import type {RoutePattern} from './route-pattern';
+import {Wrapper, WrapperOptions} from './wrapper';
+import type {Pattern} from './pattern';
 import {isRoutableInstance} from './utilities';
 
 const debug = debugModule('layr:routable');
@@ -315,7 +316,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    setRoute(name: string, pattern: RoutePattern, options: RouteOptions = {}) {
+    setRoute(name: string, pattern: Pattern, options: RouteOptions = {}) {
       const route = new Route(name, pattern, options);
 
       const routes = this.__getRoutes(true);
@@ -365,20 +366,20 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    callRoute(name: string, identifiers: any = {}, params: any = {}) {
+    callRoute(name: string, identifiers: any = {}, params: any = {}, wrapperPath = '') {
       const route = this.getRoute(name);
 
-      return this.__callRoute(route, identifiers, params);
+      return this.__callRoute(route, identifiers, params, wrapperPath);
     }
 
     static get __callRoute() {
       return this.prototype.__callRoute;
     }
 
-    __callRoute(route: Route, identifiers: any, params: any) {
+    __callRoute(route: Route, identifiers: any, params: any, wrapperPath: string) {
       const name = route.getName();
 
-      debug('Calling %s(%o)', this.describeComponentProperty(name), params);
+      debug('Calling route %s(%o)', this.describeComponentProperty(name), params);
 
       let component: any;
 
@@ -390,7 +391,25 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           this.constructor.create(identifiers, {isNew: false});
       }
 
-      return component[name](params);
+      const router = this.hasRouter() ? this.getRouter() : undefined;
+
+      if (wrapperPath !== '') {
+        if (router !== undefined) {
+          return router.callWrapperByURL(wrapperPath, function () {
+            return router.callAddressableMethodWrapper(component, component[name], params);
+          });
+        } else {
+          return this.callWrapperByURL(wrapperPath, function () {
+            return component[name](params);
+          });
+        }
+      } else {
+        if (router !== undefined) {
+          return router.callAddressableMethodWrapper(component, component[name], params);
+        } else {
+          return component[name](params);
+        }
+      }
     }
 
     /**
@@ -506,9 +525,9 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         );
       }
 
-      const {route, identifiers, params} = result;
+      const {route, identifiers, params, wrapperPath} = result;
 
-      return this.__callRoute(route, identifiers, params);
+      return this.__callRoute(route, identifiers, params, wrapperPath);
     }
 
     static __routes?: Map<string, Route>;
@@ -527,6 +546,394 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       }
 
       return this.__routes!;
+    }
+
+    // === Wrappers ===
+
+    /**
+     * Gets a wrapper. If there is no wrapper with the specified name, an error is thrown.
+     *
+     * @param name The name of the wrapper to get.
+     *
+     * @returns A [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance.
+     *
+     * @example
+     * ```
+     * Article.getWrapper('upvote'); => upvote() wrapper
+     * ```
+     *
+     * @category Wrappers
+     */
+    static get getWrapper() {
+      return this.prototype.getWrapper;
+    }
+
+    /**
+     * Gets a wrapper. If there is no wrapper with the specified name, an error is thrown.
+     *
+     * @param name The name of the wrapper to get.
+     *
+     * @returns A [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance.
+     *
+     * @example
+     * ```
+     * Article.getWrapper('upvote'); => upvote() wrapper
+     * ```
+     *
+     * @category Wrappers
+     */
+    getWrapper(name: string) {
+      const wrapper = this.__getWrapper(name);
+
+      if (wrapper === undefined) {
+        throw new Error(`The wrapper '${name}' is missing (${this.describeComponent()})`);
+      }
+
+      return wrapper;
+    }
+
+    /**
+     * Returns whether the routable component has a wrapper with the specified name.
+     *
+     * @param name The name of the wrapper to check.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Article.hasWrapper('upvote'); // => true
+     * ```
+     *
+     * @category Wrappers
+     */
+    static get hasWrapper() {
+      return this.prototype.hasWrapper;
+    }
+
+    /**
+     * Returns whether the routable component has a wrapper with the specified name.
+     *
+     * @param name The name of the wrapper to check.
+     *
+     * @returns A boolean.
+     *
+     * @example
+     * ```
+     * Article.hasWrapper('upvote'); // => true
+     * ```
+     *
+     * @category Wrappers
+     */
+    hasWrapper(name: string) {
+      return this.__getWrapper(name) !== undefined;
+    }
+
+    static get __getWrapper() {
+      return this.prototype.__getWrapper;
+    }
+
+    __getWrapper(name: string) {
+      const wrappers = this.__getWrappers();
+
+      return wrappers.get(name);
+    }
+
+    /**
+     * Sets a wrapper in the storable component.
+     *
+     * Typically, instead of using this method, you would rather use the [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator) decorator.
+     *
+     * @param name The name of the wrapper.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/wrapper#url-pattern-type) associated with the wrapper.
+     * @param [options] An object specifying the options to pass to the `Wrapper`'s [constructor](https://layrjs.com/docs/v1/reference/wrapper#constructor) when the wrapper is created.
+     *
+     * @returns The [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance that was created.
+     *
+     * @example
+     * ```
+     * Article.setWrapper('upvote', '/articles/:id/upvote');
+     * ```
+     *
+     * @category Wrappers
+     */
+    static get setWrapper() {
+      return this.prototype.setWrapper;
+    }
+
+    /**
+     * Sets a wrapper in the storable component.
+     *
+     * Typically, instead of using this method, you would rather use the [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator) decorator.
+     *
+     * @param name The name of the wrapper.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/wrapper#url-pattern-type) associated with the wrapper.
+     * @param [options] An object specifying the options to pass to the `Wrapper`'s [constructor](https://layrjs.com/docs/v1/reference/wrapper#constructor) when the wrapper is created.
+     *
+     * @returns The [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance that was created.
+     *
+     * @example
+     * ```
+     * Article.setWrapper('upvote', '/articles/:id/upvote');
+     * ```
+     *
+     * @category Wrappers
+     */
+    setWrapper(name: string, pattern: Pattern, options: WrapperOptions = {}) {
+      const wrapper = new Wrapper(name, pattern, options);
+
+      const wrappers = this.__getWrappers(true);
+
+      wrappers.set(name, wrapper);
+
+      return wrapper;
+    }
+
+    /**
+     * Calls the method associated to a wrapper that has the specified name. If there is no wrapper with the specified name, an error is thrown.
+     *
+     * @param name The name of the wrapper for which the associated method should be called.
+     * @param [params] The parameters to pass when the method is called.
+     *
+     * @returns The result of the called method.
+     *
+     * @example
+     * ```
+     * await Article.callWrapper('upvote', {id: 'abc123'});
+     *
+     * // Which is the equivalent of calling the `upvote()` method directly:
+     * await Article.upvote({id: 'abc123'});
+     * ```
+     *
+     * @category Wrappers
+     */
+    static get callWrapper() {
+      return this.prototype.callWrapper;
+    }
+
+    /**
+     * Calls the method associated to a wrapper that has the specified name. If there is no wrapper with the specified name, an error is thrown.
+     *
+     * @param name The name of the wrapper for which the associated method should be called.
+     * @param [params] The parameters to pass when the method is called.
+     *
+     * @returns The result of the called method.
+     *
+     * @example
+     * ```
+     * await Article.callWrapper('upvote', {id: 'abc123'});
+     *
+     * // Which is the equivalent of calling the `upvote()` method directly:
+     * await Article.upvote({id: 'abc123'});
+     * ```
+     *
+     * @category Wrappers
+     */
+    callWrapper(
+      name: string,
+      identifiers: any = {},
+      params: any = {},
+      wrapperPath = '',
+      children: () => any = () => {}
+    ) {
+      const wrapper = this.getWrapper(name);
+
+      return this.__callWrapper(wrapper, identifiers, params, wrapperPath, children);
+    }
+
+    static get __callWrapper() {
+      return this.prototype.__callWrapper;
+    }
+
+    __callWrapper(
+      wrapper: Wrapper,
+      identifiers: any,
+      params: any,
+      wrapperPath: string,
+      children: () => any
+    ): any {
+      const name = wrapper.getName();
+
+      debug('Calling wrapper %s(%o)', this.describeComponentProperty(name), params);
+
+      let component: any;
+
+      if (isComponentClass(this)) {
+        component = this;
+      } else {
+        component =
+          this.constructor.getIdentityMap().getComponent(identifiers) ??
+          this.constructor.create(identifiers, {isNew: false});
+      }
+
+      const router = this.hasRouter() ? this.getRouter() : undefined;
+
+      if (wrapperPath !== '') {
+        if (router !== undefined) {
+          return router.callWrapperByURL(wrapperPath, function () {
+            return router.callAddressableMethodWrapper(component, component[name], {
+              ...params,
+              children
+            });
+          });
+        } else {
+          return this.callWrapperByURL(wrapperPath, function () {
+            return component[name]({...params, children});
+          });
+        }
+      } else {
+        if (router !== undefined) {
+          return router.callAddressableMethodWrapper(component, component[name], {
+            ...params,
+            children
+          });
+        } else {
+          return component[name]({...params, children});
+        }
+      }
+    }
+
+    /**
+     * Finds the first wrapper that matches the specified URL.
+     *
+     * If no wrapper matches the specified URL, returns `undefined`.
+     *
+     * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
+     *
+     * @returns An object of the shape `{wrapper, params}` (or `undefined` if no wrapper was found) where `wrapper` is the [wrapper](https://layrjs.com/docs/v1/reference/wrapper) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     *
+     * @example
+     * ```
+     * const {wrapper, params} = Article.findWrapperByURL('/articles/abc123/upvote');
+     *
+     * wrapper; // => upvote() wrapper
+     * params; // => {id: 'abc123'}
+     * ```
+     *
+     * @category Wrappers
+     */
+    static get findWrapperByURL() {
+      return this.prototype.findWrapperByURL;
+    }
+
+    /**
+     * Finds the first wrapper that matches the specified URL.
+     *
+     * If no wrapper matches the specified URL, returns `undefined`.
+     *
+     * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
+     *
+     * @returns An object of the shape `{wrapper, params}` (or `undefined` if no wrapper was found) where `wrapper` is the [wrapper](https://layrjs.com/docs/v1/reference/wrapper) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     *
+     * @example
+     * ```
+     * const {wrapper, params} = Article.findWrapperByURL('/articles/abc123/upvote');
+     *
+     * wrapper; // => upvote() wrapper
+     * params; // => {id: 'abc123'}
+     * ```
+     *
+     * @category Wrappers
+     */
+    findWrapperByURL(url: URL | string) {
+      const normalizedURL = normalizeURL(url);
+
+      const wrappers = this.__getWrappers();
+
+      for (const wrapper of wrappers.values()) {
+        const result = wrapper.matchURL(normalizedURL);
+
+        if (result !== undefined) {
+          return {wrapper, ...result};
+        }
+      }
+
+      return undefined;
+    }
+
+    /**
+     * Calls the method associated to the first wrapper that matches the specified URL.
+     *
+     * If no wrapper matches the specified URL, an error is thrown.
+     *
+     * When a wrapper is found, the associated method is called with the parameters that are included in the specified URL.
+     *
+     * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
+     *
+     * @returns The result of the method associated to the wrapper that was found.
+     *
+     * @example
+     * ```
+     * await Article.callWrapperByURL('/articles/abc123/upvote');
+     *
+     * // Which is the equivalent of calling the `upvote()` method directly:
+     * await Article.upvote({id: 'abc123'});
+     * ```
+     *
+     * @category Wrappers
+     */
+    static get callWrapperByURL() {
+      return this.prototype.callWrapperByURL;
+    }
+
+    /**
+     * Calls the method associated to the first wrapper that matches the specified URL.
+     *
+     * If no wrapper matches the specified URL, an error is thrown.
+     *
+     * When a wrapper is found, the associated method is called with the parameters that are included in the specified URL.
+     *
+     * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
+     *
+     * @returns The result of the method associated to the wrapper that was found.
+     *
+     * @example
+     * ```
+     * await Article.callWrapperByURL('/articles/abc123/upvote');
+     *
+     * // Which is the equivalent of calling the `upvote()` method directly:
+     * await Article.upvote({id: 'abc123'});
+     * ```
+     *
+     * @category Wrappers
+     */
+    callWrapperByURL(url: URL | string, children: () => any): any {
+      let routable: typeof Routable | Routable = this;
+
+      let result = routable.findWrapperByURL(url);
+
+      if (result === undefined && isRoutableInstance(routable)) {
+        // Fallback to the class
+        routable = routable.constructor as typeof Routable;
+        result = routable.findWrapperByURL(url);
+      }
+
+      if (result === undefined) {
+        throw new Error(
+          `Couldn't find a wrapper matching the specified URL (${routable.describeComponent()}, URL: '${url}')`
+        );
+      }
+
+      const {wrapper, identifiers, params, wrapperPath} = result;
+
+      return routable.__callWrapper(wrapper, identifiers, params, wrapperPath, children);
+    }
+
+    static __wrappers?: Map<string, Wrapper>;
+
+    __wrappers?: Map<string, Wrapper>;
+
+    static get __getWrappers() {
+      return this.prototype.__getWrappers;
+    }
+
+    __getWrappers(autoFork = false) {
+      if (this.__wrappers === undefined) {
+        Object.defineProperty(this, '__wrappers', {value: new Map()});
+      } else if (autoFork && !hasOwnProperty(this, '__wrappers')) {
+        Object.defineProperty(this, '__wrappers', {value: new Map(this.__wrappers)});
+      }
+
+      return this.__wrappers!;
     }
 
     // === Observability ===

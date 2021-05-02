@@ -1,5 +1,4 @@
 import {Component, isComponentClassOrInstance} from '@layr/component';
-import React from 'react';
 import {PlainObject, hasOwnProperty} from 'core-helpers';
 
 import {useObserve} from './hooks';
@@ -71,20 +70,17 @@ export function view(options: {observe?: boolean} = {}) {
         let BoundReactComponent = this.__boundReactComponents[name];
 
         if (BoundReactComponent === undefined) {
-          BoundReactComponent = (props: any, context: any) => {
-            if (context === undefined) {
-              // The component has been called directly (without React.createElement())
-              return <BoundReactComponent {...props} />;
-            }
-
+          BoundReactComponent = (...args: any[]) => {
             if (observe) {
               useObserve(this);
             }
 
-            return ReactComponent.call(this, props, context);
+            return ReactComponent.apply(this, args);
           };
 
           BoundReactComponent.displayName = this.describeComponentProperty(name);
+
+          Object.defineProperty(BoundReactComponent, '__isView', {value: true});
 
           this.__boundReactComponents[name] = BoundReactComponent;
         }

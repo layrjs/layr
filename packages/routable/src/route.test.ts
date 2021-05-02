@@ -40,14 +40,14 @@ describe('Route', () => {
 
     // @ts-expect-error
     expect(() => new Route('Main', '/movies', {params: {showDetails: 'any'}})).toThrow(
-      "Couldn't parse a route parameter type ('any' is not a supported type)"
+      "Couldn't parse a route (or wrapper) parameter type ('any' is not a supported type)"
     );
   });
 
   test('matchURL()', async () => {
     let route = new Route('Main', '/movies');
 
-    expect(route.matchURL('/movies')).toStrictEqual({identifiers: {}, params: {}});
+    expect(route.matchURL('/movies')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
     expect(route.matchURL('/movies/abc123')).toBeUndefined();
     expect(route.matchURL('/films')).toBeUndefined();
     expect(route.matchURL('/')).toBeUndefined();
@@ -56,9 +56,9 @@ describe('Route', () => {
 
     route = new Route('Main', '/movies', {aliases: ['/', '/films']});
 
-    expect(route.matchURL('/movies')).toStrictEqual({identifiers: {}, params: {}});
-    expect(route.matchURL('/')).toStrictEqual({identifiers: {}, params: {}});
-    expect(route.matchURL('/films')).toStrictEqual({identifiers: {}, params: {}});
+    expect(route.matchURL('/movies')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
+    expect(route.matchURL('/')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
+    expect(route.matchURL('/films')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
     expect(route.matchURL('/motion-pictures')).toBeUndefined();
 
     // -- Using route identifiers ---
@@ -67,15 +67,18 @@ describe('Route', () => {
 
     expect(route.matchURL('/movies/abc123')).toStrictEqual({
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(route.matchURL('/movies/group%2F12345')).toStrictEqual({
       identifiers: {id: 'group/12345'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(route.matchURL('/films/abc123')).toStrictEqual({
       identifiers: {id: 'abc123'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(route.matchURL('/movies')).toBeUndefined();
     expect(route.matchURL('/movies/')).toBeUndefined();
@@ -83,10 +86,11 @@ describe('Route', () => {
 
     // -- Using route nested identifiers ---
 
-    route = new Route('Main', '/project/:project.slug/implementations/:id');
-    expect(route.matchURL('/project/realworld/implementations/abc123')).toStrictEqual({
+    route = new Route('Main', '/projects/:project.slug/implementations/:id');
+    expect(route.matchURL('/projects/realworld/implementations/abc123')).toStrictEqual({
       identifiers: {id: 'abc123', project: {slug: 'realworld'}},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
 
     // --- Using route identifier prefixes ---
@@ -95,10 +99,20 @@ describe('Route', () => {
 
     expect(route.matchURL('/@john')).toStrictEqual({
       identifiers: {username: 'john'},
-      params: {}
+      params: {},
+      wrapperPath: ''
     });
     expect(route.matchURL('/@')).toBeUndefined();
     expect(route.matchURL('/john')).toBeUndefined();
+
+    // -- Using wrappers ---
+
+    route = new Route('Main', '[/projects/:project.slug]/implementations/:id');
+    expect(route.matchURL('/projects/realworld/implementations/abc123')).toStrictEqual({
+      identifiers: {id: 'abc123', project: {slug: 'realworld'}},
+      params: {},
+      wrapperPath: '/projects/realworld'
+    });
 
     // --- Using optional route parameters ---
 
@@ -108,22 +122,26 @@ describe('Route', () => {
 
     expect(route.matchURL('/movies/abc123')).toStrictEqual({
       identifiers: {id: 'abc123'},
-      params: {language: undefined, showDetails: undefined}
+      params: {language: undefined, showDetails: undefined},
+      wrapperPath: ''
     });
     expect(route.matchURL('/movies/abc123?language=fr')).toStrictEqual({
       identifiers: {id: 'abc123'},
-      params: {language: 'fr', showDetails: undefined}
+      params: {language: 'fr', showDetails: undefined},
+      wrapperPath: ''
     });
     expect(route.matchURL('/movies/abc123?language=fr&showDetails=1')).toStrictEqual({
       identifiers: {id: 'abc123'},
-      params: {language: 'fr', showDetails: true}
+      params: {language: 'fr', showDetails: true},
+      wrapperPath: ''
     });
     expect(route.matchURL('/movies/abc123?unknownParam=abc')).toStrictEqual({
       identifiers: {id: 'abc123'},
-      params: {language: undefined, showDetails: undefined}
+      params: {language: undefined, showDetails: undefined},
+      wrapperPath: ''
     });
     expect(() => route.matchURL('/movies/abc123?showDetails=true')).toThrow(
-      "Couldn't deserialize a route parameter (name: 'showDetails', value: 'true', type: 'boolean?'"
+      "Couldn't deserialize a route (or wrapper) parameter (name: 'showDetails', value: 'true', type: 'boolean?'"
     );
 
     // --- Using required route parameters ---
@@ -132,11 +150,12 @@ describe('Route', () => {
 
     expect(route.matchURL('/?language=fr')).toStrictEqual({
       identifiers: {},
-      params: {language: 'fr'}
+      params: {language: 'fr'},
+      wrapperPath: ''
     });
 
     expect(() => route.matchURL('/')).toThrow(
-      "A required route parameter is missing (name: 'language', type: 'string')"
+      "A required route (or wrapper) parameter is missing (name: 'language', type: 'string')"
     );
   });
 
@@ -157,24 +176,24 @@ describe('Route', () => {
     expect(route.generateURL(movie)).toBe('/movies/abc123');
 
     expect(() => route.generateURL()).toThrow(
-      "Couldn't build a route path from the route pattern '/movies/:id' because the identifier 'id' is missing"
+      "Couldn't build a route (or wrapper) path from the pattern '/movies/:id' because the identifier 'id' is missing"
     );
     expect(() => route.generateURL({})).toThrow(
-      "Couldn't build a route path from the route pattern '/movies/:id' because the identifier 'id' is missing"
+      "Couldn't build a route (or wrapper) path from the pattern '/movies/:id' because the identifier 'id' is missing"
     );
     expect(() => route.generateURL({id: ''})).toThrow(
-      "Couldn't build a route path from the route pattern '/movies/:id' because the identifier 'id' is missing"
+      "Couldn't build a route (or wrapper) path from the pattern '/movies/:id' because the identifier 'id' is missing"
     );
     expect(() => route.generateURL({ref: 'abc123'})).toThrow(
-      "Couldn't build a route path from the route pattern '/movies/:id' because the identifier 'id' is missing"
+      "Couldn't build a route (or wrapper) path from the pattern '/movies/:id' because the identifier 'id' is missing"
     );
 
     // -- Using route nested identifiers ---
 
-    route = new Route('Main', '/project/:project.slug/implementations/:id');
+    route = new Route('Main', '/projects/:project.slug/implementations/:id');
 
     expect(route.generateURL({id: 'abc123', project: {slug: 'realworld'}})).toBe(
-      '/project/realworld/implementations/abc123'
+      '/projects/realworld/implementations/abc123'
     );
 
     // --- Using route identifier prefixes ---
@@ -183,10 +202,10 @@ describe('Route', () => {
 
     expect(route.generateURL({username: 'john'})).toBe('/@john');
     expect(() => route.generateURL({})).toThrow(
-      "Couldn't build a route path from the route pattern '/@:username' because the identifier 'username' is missing"
+      "Couldn't build a route (or wrapper) path from the pattern '/@:username' because the identifier 'username' is missing"
     );
     expect(() => route.generateURL({username: ''})).toThrow(
-      "Couldn't build a route path from the route pattern '/@:username' because the identifier 'username' is missing"
+      "Couldn't build a route (or wrapper) path from the pattern '/@:username' because the identifier 'username' is missing"
     );
 
     // --- Using route parameters ---
@@ -202,7 +221,7 @@ describe('Route', () => {
     );
     expect(route.generateURL({id: 'abc123'}, {unknownParam: 'abc'})).toBe('/movies/abc123');
     expect(() => route.generateURL({id: 'abc123'}, {language: 123})).toThrow(
-      "Couldn't serialize a route parameter (name: 'language', value: '123', expected type: 'string?', received type: 'number')"
+      "Couldn't serialize a route (or wrapper) parameter (name: 'language', value: '123', expected type: 'string?', received type: 'number')"
     );
 
     // --- Using the 'hash' option ---

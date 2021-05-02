@@ -21,13 +21,39 @@ export declare class RoutableLike {
 
   static findRouteByURL: (
     url: URL | string
-  ) => {route: any; identifiers: any; params: any} | undefined;
+  ) => {route: any; identifiers: any; params: any; wrapperPath: string} | undefined;
 
-  findRouteByURL: (url: URL | string) => {route: any; identifiers: any; params: any} | undefined;
+  findRouteByURL: (
+    url: URL | string
+  ) => {route: any; identifiers: any; params: any; wrapperPath: string} | undefined;
 
-  static __callRoute: (route: any, identifiers: any, params: any) => any;
+  static __callRoute: (route: any, identifiers: any, params: any, wrapperPath: string) => any;
 
-  __callRoute: (route: any, identifiers: any, params: any) => any;
+  __callRoute: (route: any, identifiers: any, params: any, wrapperPath: string) => any;
+
+  static findWrapperByURL: (
+    url: URL | string
+  ) => {wrapper: any; identifiers: any; params: any; wrapperPath: string} | undefined;
+
+  findWrapperByURL: (
+    url: URL | string
+  ) => {wrapper: any; identifiers: any; params: any; wrapperPath: string} | undefined;
+
+  static __callWrapper: (
+    wrapper: any,
+    identifiers: any,
+    params: any,
+    wrapperPath: string,
+    children: () => any
+  ) => any;
+
+  __callWrapper: (
+    wrapper: any,
+    identifiers: any,
+    params: any,
+    wrapperPath: string,
+    children: () => any
+  ) => any;
 }
 
 export function isRoutableLikeClass(value: any): value is typeof RoutableLike {

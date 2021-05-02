@@ -24,6 +24,8 @@ export type NavigationOptions = {silent?: boolean; defer?: boolean};
 
 type RouterPlugin = (router: Router) => void;
 
+type AddressableMethodWrapper = (receiver: any, method: Function, params: any) => any;
+
 type CustomRouteDecorator = (method: Function) => void;
 
 export type RouterOptions = {
@@ -369,9 +371,9 @@ export abstract class Router extends Observable(Object) {
     const result = this.findRouteByURL(url);
 
     if (result !== undefined) {
-      const {routable, route, identifiers, params} = result;
+      const {routable, route, identifiers, params, wrapperPath} = result;
 
-      return routable.__callRoute(route, identifiers, params);
+      return routable.__callRoute(route, identifiers, params, wrapperPath);
     }
 
     if (fallback !== undefined) {
@@ -379,6 +381,73 @@ export abstract class Router extends Observable(Object) {
     }
 
     throw new Error(`Couldn't find a route matching the specified URL (URL: '${url}')`);
+  }
+
+  // === Wrappers ===
+
+  /**
+   * Finds the first wrapper that matches the specified URL.
+   *
+   * If no wrapper matches the specified URL, returns `undefined`.
+   *
+   * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
+   *
+   * @returns An object of the shape `{routable, wrapper, params}` (or `undefined` if no wrapper was found) where `routable` is the [`RoutableComponent`](https://layrjs.com/docs/v1/reference/routable#routable-component-class) containing the wrapper that was found, `wrapper` is the [wrapper](https://layrjs.com/docs/v1/reference/wrapper) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+   *
+   * @example
+   * ```
+   * class Movie extends Routable(Component) {
+   *   // ...
+   *
+   *   ﹫wrapper('/movies/:slug') ﹫view() static Viewer() {
+   *     // ...
+   *   }
+   * }
+   *
+   * const router = new BrowserRouter();
+   * router.registerRoutable(Movie);
+   *
+   * const {routable, wrapper, params} = router.findWrapperByURL('/movies/inception');
+   *
+   * routable; // => Movie class
+   * wrapper; // => Viewer() wrapper
+   * params; // => {slug: 'inception'}
+   * ```
+   *
+   * @category Wrappers
+   */
+  findWrapperByURL(url: URL | string) {
+    for (const routableClass of this.getRoutables()) {
+      let routable: typeof RoutableLike | RoutableLike = routableClass;
+
+      let result = routable.findWrapperByURL(url);
+
+      if (result !== undefined) {
+        return {routable, ...result};
+      }
+
+      routable = routableClass.prototype;
+
+      result = routable.findWrapperByURL(url);
+
+      if (result !== undefined) {
+        return {routable, ...result};
+      }
+    }
+
+    return undefined;
+  }
+
+  callWrapperByURL(url: URL | string, children: () => any) {
+    const result = this.findWrapperByURL(url);
+
+    if (result === undefined) {
+      throw new Error(`Couldn't find a wrapper matching the specified URL (URL: '${url}')`);
+    }
+
+    const {routable, wrapper, identifiers, params, wrapperPath} = result;
+
+    return routable.__callWrapper(wrapper, identifiers, params, wrapperPath, children);
   }
 
   // === Current Location ===
@@ -728,8 +797,6 @@ export abstract class Router extends Observable(Object) {
 
   abstract _getHistoryLength(): number;
 
-  Link!: (props: any) => any;
-
   // === Observability ===
 
   /**
@@ -746,6 +813,29 @@ export abstract class Router extends Observable(Object) {
     }
   }
 
+  _addressableMethodWrappers: AddressableMethodWrapper[] = [];
+
+  addAddressableMethodWrapper(methodWrapper: AddressableMethodWrapper) {
+    // TODO: Support multiple addressable method wrappers
+
+    if (this._addressableMethodWrappers.length > 0) {
+      throw new Error('You cannot add more than one addressable method wrapper');
+    }
+
+    this._addressableMethodWrappers.push(methodWrapper);
+  }
+
+  callAddressableMethodWrapper(receiver: any, method: Function, params: any) {
+    // TODO: Support multiple addressable method wrappers
+
+    if (this._addressableMethodWrappers.length === 1) {
+      const methodWrapper = this._addressableMethodWrappers[0];
+      return methodWrapper(receiver, method, params);
+    } else {
+      return method.call(receiver, params);
+    }
+  }
+
   _customRouteDecorators: CustomRouteDecorator[] = [];
 
   addCustomRouteDecorator(decorator: CustomRouteDecorator) {
@@ -757,6 +847,8 @@ export abstract class Router extends Observable(Object) {
       customRouteDecorator.call(routable, method);
     }
   }
+
+  Link!: (props: any) => any;
 
   // === Utilities ===
 

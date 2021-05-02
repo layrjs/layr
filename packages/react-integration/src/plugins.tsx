@@ -1,9 +1,26 @@
 import {Router, normalizeURL} from '@layr/router';
 import {BrowserRouterLinkProps} from '@layr/browser-router';
-import React, {useMemo, useCallback} from 'react';
+import React, {useMemo, useCallback, FunctionComponent} from 'react';
+import {hasOwnProperty} from 'core-helpers';
 
 export function BrowserRouterPlugin() {
   return function (router: Router) {
+    router.addAddressableMethodWrapper(function (receiver, method, params) {
+      if (hasOwnProperty(method, '__isView')) {
+        return React.createElement(method as FunctionComponent, params);
+      } else {
+        return method.call(receiver, params);
+      }
+    });
+
+    router.addCustomRouteDecorator(function (method) {
+      method.Link = function ({params, hash, ...props}) {
+        const to = method.generateURL(params, {hash});
+
+        return router.Link({to, ...props});
+      };
+    });
+
     Object.assign(router, {
       Link(props: BrowserRouterLinkProps) {
         const {to, className, activeClassName, style, activeStyle, ...otherProps} = props;
@@ -56,14 +73,6 @@ export function BrowserRouterPlugin() {
           />
         );
       }
-    });
-
-    router.addCustomRouteDecorator(function (method) {
-      method.Link = function ({params, hash, ...props}) {
-        const to = method.generateURL(params, {hash});
-
-        return router.Link({to, ...props});
-      };
     });
   };
 }

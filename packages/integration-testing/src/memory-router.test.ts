@@ -1,13 +1,13 @@
 import {Component, provide, primaryIdentifier} from '@layr/component';
 import {MemoryRouter} from '@layr/memory-router';
-import {Routable, route} from '@layr/routable';
+import {Routable, route, wrapper} from '@layr/routable';
 
 describe('MemoryRouter', () => {
   let currentRouteResult: string;
 
   const getRouter = function () {
     class Home extends Routable(Component) {
-      @route('/') static HomePage() {
+      @route('[/]') static HomePage() {
         return `Home`;
       }
     }
@@ -15,22 +15,30 @@ describe('MemoryRouter', () => {
     class Movie extends Routable(Component) {
       @primaryIdentifier() id!: string;
 
-      @route('/movies') static ListPage() {
+      @route('[/]movies') static ListPage() {
         return `Movies`;
       }
 
-      @route('/movies/:id') ItemPage() {
-        return `Movie #${this.id}`;
+      @wrapper('[/]movies/:id') ItemLayout({children}: {children: () => any}) {
+        return `Movie #${this.id}${children()}`;
       }
 
-      @route('/movies/:id/details') DetailsPage() {
-        return `More about movie #${this.id}`;
+      @route('[/movies/:id]') ItemPage() {
+        return '';
+      }
+
+      @route('[/movies/:id]/details') DetailsPage() {
+        return ' (details)';
       }
     }
 
-    class Root extends Component {
+    class Root extends Routable(Component) {
       @provide() static Home = Home;
       @provide() static Movie = Movie;
+
+      @wrapper('/') static MainLayout({children}: {children: () => any}) {
+        return `[${children()}]`;
+      }
     }
 
     const router = new MemoryRouter({
@@ -110,31 +118,31 @@ describe('MemoryRouter', () => {
   test('callCurrentRoute()', async () => {
     const router = getRouter();
 
-    expect(router.callCurrentRoute()).toBe('Movie #abc123');
+    expect(router.callCurrentRoute()).toBe('[Movie #abc123]');
   });
 
   test('navigate()', async () => {
     const router = getRouter();
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(router.getHistoryLength()).toBe(3);
 
     router.navigate('/movies/abc123/details');
 
-    expect(currentRouteResult).toBe('More about movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123 (details)]');
     expect(router.getHistoryLength()).toBe(4);
 
     router.go(-3); // We should be at the first entry of the history
 
     router.navigate('/movies/abc123');
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(router.getHistoryLength()).toBe(2);
     expect(router.getCurrentQuery()).toEqual({});
 
     router.navigate('/movies/abc123?showTrailers=true');
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(router.getHistoryLength()).toBe(3);
     expect(router.getCurrentQuery()).toEqual({showTrailers: 'true'});
   });
@@ -142,56 +150,56 @@ describe('MemoryRouter', () => {
   test('redirect()', async () => {
     const router = getRouter();
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(router.getHistoryLength()).toBe(3);
 
     router.redirect('/movies/def456');
 
-    expect(currentRouteResult).toBe('Movie #def456');
+    expect(currentRouteResult).toBe('[Movie #def456]');
     expect(router.getHistoryLength()).toBe(3);
 
     router.go(-2); // We should be at the first entry of the history
 
     router.redirect('/movies/abc123');
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(router.getHistoryLength()).toBe(1);
   });
 
   test('go()', async () => {
     const router = getRouter();
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
 
     router.go(-1);
 
-    expect(currentRouteResult).toBe('Movies');
+    expect(currentRouteResult).toBe('[Movies]');
 
     router.go(-1);
 
-    expect(currentRouteResult).toBe('Home');
+    expect(currentRouteResult).toBe('[Home]');
 
     router.go(2);
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
 
     expect(() => router.go(1)).toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
 
     expect(() => router.go(2)).toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
 
     expect(() => router.go(-3)).toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
 
     expect(() => router.go(-4)).toThrow(
       'Cannot go to an entry that does not exist in the router history'
@@ -201,21 +209,21 @@ describe('MemoryRouter', () => {
   test('goBack()', async () => {
     const router = getRouter();
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
 
     router.goBack();
 
-    expect(currentRouteResult).toBe('Movies');
+    expect(currentRouteResult).toBe('[Movies]');
 
     router.goBack();
 
-    expect(currentRouteResult).toBe('Home');
+    expect(currentRouteResult).toBe('[Home]');
 
     expect(() => router.goBack()).toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
-    expect(currentRouteResult).toBe('Home');
+    expect(currentRouteResult).toBe('[Home]');
   });
 
   test('goForward()', async () => {
@@ -223,21 +231,21 @@ describe('MemoryRouter', () => {
 
     router.go(-2);
 
-    expect(currentRouteResult).toBe('Home');
+    expect(currentRouteResult).toBe('[Home]');
 
     router.goForward();
 
-    expect(currentRouteResult).toBe('Movies');
+    expect(currentRouteResult).toBe('[Movies]');
 
     router.goForward();
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
 
     expect(() => router.goForward()).toThrow(
       'Cannot go to an entry that does not exist in the router history'
     );
 
-    expect(currentRouteResult).toBe('Movie #abc123');
+    expect(currentRouteResult).toBe('[Movie #abc123]');
   });
 
   test('getHistoryLength()', async () => {
