@@ -1,7 +1,17 @@
 import {Component, isComponentClassOrInstance} from '@layr/component';
+import {
+  RoutableComponent,
+  route,
+  RouteOptions,
+  wrapper,
+  WrapperOptions,
+  Pattern
+} from '@layr/routable';
 import {PlainObject, hasOwnProperty} from 'core-helpers';
 
 import {useObserve} from './hooks';
+
+type ViewOption = {observe?: boolean};
 
 /**
  * Decorates a method of a Layr [component](https://layrjs.com/docs/v1/reference/component) so it be can used as a React component.
@@ -37,7 +47,7 @@ import {useObserve} from './hooks';
  * @category Decorators
  * @decorator
  */
-export function view(options: {observe?: boolean} = {}) {
+export function view(options: ViewOption = {}) {
   const {observe = true} = options;
 
   return function (
@@ -88,5 +98,29 @@ export function view(options: {observe?: boolean} = {}) {
         return BoundReactComponent;
       }
     };
+  };
+}
+
+export function page(pattern: Pattern, options: ViewOption & RouteOptions = {}) {
+  return function (
+    target: typeof RoutableComponent | RoutableComponent,
+    name: string,
+    descriptor: PropertyDescriptor
+  ) {
+    descriptor = view(options)(target, name, descriptor);
+    descriptor = route(pattern, options)(target, name, descriptor);
+    return descriptor;
+  };
+}
+
+export function layout(pattern: Pattern, options: ViewOption & WrapperOptions = {}) {
+  return function (
+    target: typeof RoutableComponent | RoutableComponent,
+    name: string,
+    descriptor: PropertyDescriptor
+  ) {
+    descriptor = view(options)(target, name, descriptor);
+    descriptor = wrapper(pattern, options)(target, name, descriptor);
+    return descriptor;
   };
 }

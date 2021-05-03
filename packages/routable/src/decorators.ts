@@ -181,5 +181,7 @@ export function wrapper(pattern: Pattern, options: WrapperOptions = {}) {
     }
 
     target.setWrapper(name, pattern, options);
+
+    return descriptor;
   };
 }

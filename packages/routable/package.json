@@ -1,6 +1,6 @@
 {
   "name": "@layr/routable",
-  "version": "2.0.16",
+  "version": "2.0.17",
   "description": "Makes the methods of your Layr components callable by URL",
   "keywords": [
     "layr",
