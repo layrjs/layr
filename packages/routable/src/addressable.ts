@@ -38,6 +38,7 @@ export abstract class Addressable {
     wrapperGenerator: PathGenerator;
   }[];
   _params: Record<string, ParamTypeDescriptor>;
+  _isCatchAll: boolean;
 
   /**
    * Creates an instance of [`Addressable`](https://layrjs.com/docs/v1/reference/addressable). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator)) decorator.
@@ -71,9 +72,21 @@ export abstract class Addressable {
 
     this._patterns = [];
 
+    this._isCatchAll = false;
+
     for (const patternOrAlias of [pattern, ...aliases]) {
-      const {matcher, generator, wrapperGenerator} = parsePattern(patternOrAlias);
+      const {matcher, generator, wrapperGenerator, isCatchAll} = parsePattern(patternOrAlias);
       this._patterns.push({pattern: patternOrAlias, matcher, generator, wrapperGenerator});
+
+      if (isCatchAll) {
+        this._isCatchAll = true;
+      }
+    }
+
+    if (this._isCatchAll && this._patterns.length > 1) {
+      throw new Error(
+        `Couldn't create the addressable '${name}' (a catch-all addressable cannot have aliases)`
+      );
     }
   }
 
@@ -139,6 +152,10 @@ export abstract class Addressable {
    */
   getAliases() {
     return this._patterns.slice(1).map(({pattern}) => pattern);
+  }
+
+  isCatchAll() {
+    return this._isCatchAll;
   }
 
   /**

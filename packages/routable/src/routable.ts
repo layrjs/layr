@@ -459,15 +459,25 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       const routes = this.__getRoutes();
 
-      for (const route of routes.values()) {
-        const result = route.matchURL(normalizedURL);
+      let result:
+        | ({
+            route: Route;
+          } & ReturnType<Route['matchURL']>)
+        | undefined;
 
-        if (result !== undefined) {
-          return {route, ...result};
+      for (const route of routes.values()) {
+        const routeResult = route.matchURL(normalizedURL);
+
+        if (routeResult !== undefined) {
+          result = {route, ...routeResult};
+
+          if (!result.route.isCatchAll()) {
+            break;
+          }
         }
       }
 
-      return undefined;
+      return result;
     }
 
     /**

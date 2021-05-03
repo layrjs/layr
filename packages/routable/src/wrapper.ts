@@ -1,4 +1,5 @@
 import {Addressable, AddressableOptions} from './addressable';
+import {Pattern} from './pattern';
 
 export type WrapperOptions = AddressableOptions;
 
@@ -18,6 +19,14 @@ export type WrapperOptions = AddressableOptions;
  * See an example of use in the [`Routable()`](https://layrjs.com/docs/v1/reference/routable#usage) mixin.
  */
 export class Wrapper extends Addressable {
+  constructor(name: string, pattern: Pattern, options: WrapperOptions = {}) {
+    super(name, pattern, options);
+
+    if (this.isCatchAll()) {
+      throw new Error(`Couldn't create the wrapper '${name}' (cath-all wrappers are not allowed)`);
+    }
+  }
+
   static isWrapper(value: any): value is Wrapper {
     return isWrapperInstance(value);
   }

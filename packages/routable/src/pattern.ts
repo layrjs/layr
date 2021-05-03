@@ -12,7 +12,7 @@ const IDENTIFIER_NAME_CHARACTER_REGEXP = /[A-Za-z0-9.]/;
 const IDENTIFIER_VALUE_GROUP_PATTERN = '([^/]+)';
 
 export function parsePattern(pattern: Pattern) {
-  const [wrapperParts, regularParts] = splitPattern(pattern);
+  const {wrapperParts, regularParts, isCatchAll} = splitPattern(pattern);
   const allParts = [...wrapperParts, ...regularParts];
 
   const regExpParts: string[] = [];
@@ -28,7 +28,13 @@ export function parsePattern(pattern: Pattern) {
     }
   }
 
-  const regExp = new RegExp('^' + regExpParts.join('') + '\\/?$');
+  regExpParts.push('\\/?');
+
+  if (isCatchAll) {
+    regExpParts.push('.*');
+  }
+
+  const regExp = new RegExp('^' + regExpParts.join('') + '$');
 
   const matcher: PathMatcher = function (path) {
     const matches = path.match(regExp);
@@ -77,7 +83,7 @@ export function parsePattern(pattern: Pattern) {
     return generate(wrapperParts, identifiers);
   };
 
-  return {matcher, generator, wrapperGenerator};
+  return {matcher, generator, wrapperGenerator, isCatchAll};
 }
 
 // '[/]projects/:slug/edit/' => [['/'], ['projects', ':slug', '/edit']]
@@ -90,7 +96,23 @@ function splitPattern(pattern: Pattern) {
     );
   }
 
-  if (normalizedPattern !== '/' && normalizedPattern.endsWith('/')) {
+  let isCatchAll: boolean;
+
+  const wildcardIndex = normalizedPattern.indexOf('*');
+
+  if (wildcardIndex !== -1) {
+    if (wildcardIndex !== normalizedPattern.length - 1) {
+      throw new Error(
+        `Couldn't parse the route (or wrapper) pattern '${pattern}' (a wildcard character '*' is only allowed at the end of the pattern)`
+      );
+    }
+    normalizedPattern = normalizedPattern.slice(0, -1);
+    isCatchAll = true;
+  } else {
+    isCatchAll = false;
+  }
+
+  if (normalizedPattern !== '/' && normalizedPattern.endsWith('/') && !isCatchAll) {
     normalizedPattern = normalizedPattern.slice(0, -1);
   }
 
@@ -179,5 +201,5 @@ function splitPattern(pattern: Pattern) {
     );
   }
 
-  return [wrapperParts, regularParts];
+  return {wrapperParts, regularParts, isCatchAll};
 }

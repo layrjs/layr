@@ -153,6 +153,42 @@ describe('Routable', () => {
       wrapperPath: ''
     });
     expect(Movie.prototype.findRouteByURL('/films/abc123')).toBeUndefined();
+
+    // --- Catch-all routes ---
+
+    const notFoundPageRoute = Movie.setRoute('NotFoundPage', '/*');
+
+    expect(Movie.findRouteByURL('/movies')).toEqual({
+      route: listPageRoute,
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
+
+    expect(Movie.findRouteByURL('/films')).toEqual({
+      route: notFoundPageRoute,
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
+
+    // Let's make sure that a route defined after a catch-all route is working...
+    const actorListPageRoute = Movie.setRoute('ActorListPage', '/actors');
+
+    expect(Movie.findRouteByURL('/actors')).toEqual({
+      route: actorListPageRoute,
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
+
+    // ... and that the catch-all route is working too
+    expect(Movie.findRouteByURL('/films')).toEqual({
+      route: notFoundPageRoute,
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
   });
 
   test('callRouteByURL()', async () => {

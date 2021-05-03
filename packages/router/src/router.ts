@@ -282,25 +282,41 @@ export abstract class Router extends Observable(Object) {
    * @category Routes
    */
   findRouteByURL(url: URL | string) {
+    const normalizedURL = normalizeURL(url);
+
+    let result:
+      | ({
+          routable: typeof RoutableLike | RoutableLike;
+        } & ReturnType<RoutableLike['findRouteByURL']>)
+      | undefined;
+
     for (const routableClass of this.getRoutables()) {
       let routable: typeof RoutableLike | RoutableLike = routableClass;
 
-      let result = routable.findRouteByURL(url);
+      let routableResult = routable.findRouteByURL(normalizedURL);
 
-      if (result !== undefined) {
-        return {routable, ...result};
+      if (routableResult !== undefined) {
+        result = {routable, ...routableResult};
+
+        if (!result.route.isCatchAll()) {
+          break;
+        }
       }
 
       routable = routableClass.prototype;
 
-      result = routable.findRouteByURL(url);
+      routableResult = routable.findRouteByURL(normalizedURL);
 
-      if (result !== undefined) {
-        return {routable, ...result};
+      if (routableResult !== undefined) {
+        result = {routable, ...routableResult};
+
+        if (!result.route.isCatchAll()) {
+          break;
+        }
       }
     }
 
-    return undefined;
+    return result;
   }
 
   getIdentifiersFromURL(url: URL | string) {
@@ -365,22 +381,16 @@ export abstract class Router extends Observable(Object) {
    *
    * @category Routes
    */
-  callRouteByURL(url: URL | string, options: {fallback?: Function} = {}) {
-    const {fallback} = options;
-
+  callRouteByURL(url: URL | string) {
     const result = this.findRouteByURL(url);
 
-    if (result !== undefined) {
-      const {routable, route, identifiers, params, wrapperPath} = result;
-
-      return routable.__callRoute(route, identifiers, params, wrapperPath);
+    if (result === undefined) {
+      throw new Error(`Couldn't find a route matching the specified URL (URL: '${url}')`);
     }
 
-    if (fallback !== undefined) {
-      return fallback();
-    }
+    const {routable, route, identifiers, params, wrapperPath} = result;
 
-    throw new Error(`Couldn't find a route matching the specified URL (URL: '${url}')`);
+    return routable.__callRoute(route, identifiers, params, wrapperPath);
   }
 
   // === Wrappers ===
@@ -598,12 +608,10 @@ export abstract class Router extends Observable(Object) {
    *
    * @category Current Location
    */
-  callCurrentRoute(options: {fallback?: Function} = {}) {
-    const {fallback} = options;
-
+  callCurrentRoute() {
     const url = this._getCurrentURL();
 
-    return this.callRouteByURL(url, {fallback});
+    return this.callRouteByURL(url);
   }
 
   // === Navigation ===
