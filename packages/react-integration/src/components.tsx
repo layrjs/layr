@@ -128,8 +128,6 @@ class ActionView extends React.Component<{}, {count: number; activeElement: Elem
           left: 0,
           width: '100vw',
           height: '100vh',
-          backgroundColor: 'white',
-          opacity: 0.5,
           zIndex: 30000
         }}
       />
