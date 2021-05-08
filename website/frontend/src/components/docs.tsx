@@ -1,12 +1,14 @@
 import {Component, consume} from '@layr/component';
-import {Routable, route} from '@layr/routable';
+import {stringifyQuery} from '@layr/router';
+import {Routable} from '@layr/routable';
 import React, {Fragment, useCallback} from 'react';
-import {view, useAsyncMemo, useAsyncCall} from '@layr/react-integration';
+import {layout, page, view, useData} from '@layr/react-integration';
 import {jsx, css} from '@emotion/core';
 import isEqual from 'lodash/isEqual';
 
-import type {Common} from './common';
+import type {createApplicationComponent} from './application';
 import type {UI} from './ui';
+import {useTitle} from '../utilities';
 
 const VERSIONS = [{name: '1', value: 'v1'}];
 const LANGUAGES = [
@@ -16,6 +18,13 @@ const LANGUAGES = [
 
 const BASE_URL = '/docs';
 const INDEX_PATH = 'index.json';
+
+type URLParams = {
+  version: string;
+  bookSlug: string;
+  chapterSlug: string;
+  language: string;
+};
 
 type Contents = {books: Book[]};
 
@@ -27,7 +36,6 @@ type Chapter = {
   file: string;
   content: string;
   category: string | undefined;
-  path: string[];
   nextChapter?: Chapter;
 };
 
@@ -39,99 +47,82 @@ type Category = {
 export class Docs extends Routable(Component) {
   ['constructor']!: typeof Docs;
 
-  @consume() static Common: typeof Common;
+  @consume() static Application: ReturnType<typeof createApplicationComponent>;
   @consume() static UI: typeof UI;
 
-  @view() static Layout({title = 'Docs', children}: {title?: string; children: React.ReactNode}) {
-    const {Common} = this;
+  @layout('[/]docs') static MainLayout({children}: {children: () => any}) {
+    return useData(
+      async () => {
+        await this.loadContents();
+      },
 
-    return (
-      <Common.Layout title={title} width={'960px'}>
-        {children}
-      </Common.Layout>
+      () => <div css={{flexBasis: 960}}>{children()}</div>,
+
+      [], // getter deps
+
+      [children] // renderer deps
     );
   }
 
-  @route('/docs/:version?/:path*\\?:language')
-  @view()
-  static Main({
-    path = [],
-    version,
-    language
-  }: {
-    path?: string[];
-    version?: string;
-    language?: string;
-  }) {
-    const {Common, UI} = this;
+  @page('[/docs]*') static MainPage() {
+    const {Application, UI} = this;
 
-    const [isLoading, loadingError, retryLoading] = useAsyncCall(async () => {
-      await this.loadContents();
-    }, []);
+    const {version, bookSlug, chapterSlug, language} = this.resolveURL();
 
-    if (isLoading) {
-      return <Common.LoadingSpinner />;
+    if (
+      version === undefined ||
+      bookSlug === undefined ||
+      chapterSlug === undefined ||
+      language === undefined
+    ) {
+      return <Application.NotFoundView />;
     }
 
-    if (loadingError !== undefined) {
-      return <Common.ErrorMessage error={loadingError} onRetry={retryLoading} />;
-    }
+    const router = this.getRouter();
 
-    const resolvedPath = this.resolvePath(path);
-    const resolvedVersion = this.resolveVersion(version);
-    const resolvedLanguage = this.resolveLanguage(language);
-
-    if (resolvedVersion === undefined || resolvedLanguage === undefined) {
-      return (
-        <this.Layout>
-          <Common.RouteNotFound />
-        </this.Layout>
+    if (
+      router.getCurrentPath() !== this.generatePath({version, bookSlug, chapterSlug}) ||
+      !isEqual(router.getCurrentQuery(), this.generateQuery({language}))
+    ) {
+      router.redirect(
+        this.generateURL({version, bookSlug, chapterSlug, language, hash: router.getCurrentHash()}),
+        {defer: true}
       );
-    }
-
-    if (resolvedPath !== undefined) {
-      const resolvedParams = {
-        path: resolvedPath,
-        version: resolvedVersion,
-        language: resolvedLanguage
-      };
-
-      if (!isEqual({path, version, language}, resolvedParams)) {
-        const hash = this.getRouter().getCurrentHash();
-        this.Main.redirect(resolvedParams, {hash, silent: true});
-      }
+      return null;
     }
 
     return (
-      <this.Layout>
-        <div css={UI.responsive({display: 'flex', flexWrap: ['nowrap', , 'wrap-reverse']})}>
-          <div css={UI.responsive({width: ['250px', , '100%'], paddingRight: [20, , 0]})}>
-            <this.Contents />
-          </div>
-
-          {resolvedPath !== undefined ? (
-            <React.Fragment>
-              <hr css={UI.responsive({display: ['none', , 'block'], width: '100%'})} />
-
-              <div css={{flexGrow: 1, flexBasis: 640}}>
-                <this.Chapter />
-              </div>
-            </React.Fragment>
-          ) : (
-            <Common.RouteNotFound />
-          )}
+      <div css={UI.responsive({display: 'flex', flexWrap: ['nowrap', , 'wrap-reverse']})}>
+        <div css={UI.responsive({width: ['250px', , '100%'], paddingRight: [20, , 0]})}>
+          <this.ContentsView
+            version={version}
+            bookSlug={bookSlug}
+            chapterSlug={chapterSlug}
+            language={language}
+          />
         </div>
-      </this.Layout>
+
+        <Fragment>
+          <hr css={UI.responsive({display: ['none', , 'block'], width: '100%'})} />
+
+          <div css={{flexGrow: 1, flexBasis: 640}}>
+            <this.ChapterView
+              version={version}
+              bookSlug={bookSlug}
+              chapterSlug={chapterSlug}
+              language={language}
+            />
+          </div>
+        </Fragment>
+      </div>
     );
   }
 
-  @view() static Contents() {
+  @view() static ContentsView({version, bookSlug, chapterSlug, language}: URLParams) {
     const {UI} = this;
 
     const router = this.getRouter();
     const theme = UI.useTheme();
-
-    const {version, language} = router.getCurrentParams();
 
     const contents = this.getContents();
 
@@ -169,7 +160,12 @@ export class Docs extends Routable(Component) {
     return (
       <nav>
         <div css={{marginBottom: 20}}>
-          <this.Options />
+          <this.OptionsView
+            version={version}
+            bookSlug={bookSlug}
+            chapterSlug={chapterSlug}
+            language={language}
+          />
         </div>
         <ul css={bookMenuStyle}>
           {contents.books.map((book) => {
@@ -189,12 +185,17 @@ export class Docs extends Routable(Component) {
                           {category.chapters.map((chapter) => {
                             return (
                               <li key={chapter.slug} css={chapterMenuItemStyle}>
-                                <this.Main.Link
-                                  params={{path: chapter.path, version, language}}
+                                <router.Link
+                                  to={this.generateURL({
+                                    version,
+                                    bookSlug: book.slug,
+                                    chapterSlug: chapter.slug,
+                                    language
+                                  })}
                                   activeStyle={{color: theme.link.highlighted.primaryColor}}
                                 >
                                   {chapter.title}
-                                </this.Main.Link>
+                                </router.Link>
                               </li>
                             );
                           })}
@@ -211,22 +212,21 @@ export class Docs extends Routable(Component) {
     );
   }
 
-  @view() static Options() {
+  @view() static OptionsView({version, bookSlug, chapterSlug, language}: URLParams) {
     const {UI} = this;
 
     const router = this.getRouter();
     const theme = UI.useTheme();
 
-    const {path, version, language} = router.getCurrentParams();
     const hash = router.getCurrentHash();
 
     const changeLanguage = useCallback(
       (event: React.ChangeEvent<HTMLSelectElement>) => {
         const language = event.target.value;
         window.localStorage.setItem('language', language);
-        this.Main.redirect({path, version, language}, {hash});
+        router.redirect(this.generateURL({version, bookSlug, chapterSlug, language, hash}));
       },
-      [path.join('/'), version, hash]
+      [version, bookSlug, chapterSlug, hash]
     );
 
     const labelStyle = css({
@@ -266,47 +266,47 @@ export class Docs extends Routable(Component) {
     );
   }
 
-  @view() static Chapter() {
-    const {Common, UI} = this;
+  @view() static ChapterView({version, bookSlug, chapterSlug, language}: URLParams) {
+    return useData(
+      async () => await this.getChapter({bookSlug, chapterSlug}),
 
-    const router = this.getRouter();
-    const theme = UI.useTheme();
+      (chapter) => {
+        const {UI} = this;
 
-    const {path, version, language} = router.getCurrentParams();
+        const router = this.getRouter();
+        const theme = UI.useTheme();
 
-    const [chapter, isLoading, loadingError, retryLoading] = useAsyncMemo(async () => {
-      return await this.getChapter(path);
-    }, [path.join('/')]);
+        useTitle(chapter.title);
 
-    if (isLoading) {
-      return <Common.LoadingSpinner />;
-    }
+        const {nextChapter} = chapter;
 
-    if (loadingError !== undefined || chapter === undefined) {
-      return <Common.ErrorMessage error={loadingError} onRetry={retryLoading} />;
-    }
+        return (
+          <Fragment>
+            <UI.Markdown languageFilter={language}>{chapter.content}</UI.Markdown>
 
-    const {nextChapter} = chapter;
+            {nextChapter && (
+              <div css={{marginBottom: 15}}>
+                <hr />
+                <div>
+                  <span style={{color: theme.muted.textColor}}>Next:</span>{' '}
+                  <router.Link
+                    to={this.generateURL({
+                      version,
+                      bookSlug,
+                      chapterSlug: nextChapter.slug,
+                      language
+                    })}
+                  >
+                    {nextChapter.title} →
+                  </router.Link>
+                </div>
+              </div>
+            )}
+          </Fragment>
+        );
+      },
 
-    return (
-      <Fragment>
-        <UI.Markdown languageFilter={language}>{chapter.content}</UI.Markdown>
-
-        {nextChapter && (
-          <div css={{marginBottom: 15}}>
-            <hr />
-            <div>
-              <span style={{color: theme.muted.textColor}}>Next:</span>{' '}
-              <this.Main.Link
-                params={{path: nextChapter.path, version, language}}
-                activeStyle={{color: theme.highlighted.textColor}}
-              >
-                {nextChapter.title} →
-              </this.Main.Link>
-            </div>
-          </div>
-        )}
-      </Fragment>
+      [bookSlug, chapterSlug]
     );
   }
 
@@ -326,8 +326,6 @@ export class Docs extends Routable(Component) {
           let previousChapter: Chapter | undefined;
 
           for (const chapter of book.chapters) {
-            chapter.path = [book.slug, chapter.slug];
-
             if (previousChapter !== undefined) {
               previousChapter.nextChapter = chapter;
             }
@@ -348,21 +346,19 @@ export class Docs extends Routable(Component) {
     return this._contents;
   }
 
-  static async getChapter(path: string[]) {
+  static async getChapter({bookSlug, chapterSlug}: {bookSlug: string; chapterSlug: string}) {
     const contents = this.getContents();
-
-    let [bookSlug, chapterSlug] = path;
 
     const book = contents.books.find((book) => book.slug === bookSlug);
 
     if (book === undefined) {
-      throw new Error(`Book not found (path: '${path.join('/')}')`);
+      throw new Error(`Book not found (path: '${bookSlug}/${chapterSlug}')`);
     }
 
     const chapter = book.chapters.find((chapter) => chapter.slug === chapterSlug);
 
     if (chapter === undefined) {
-      throw new Error(`Chapter not found (path: '${path.join('/')}')`);
+      throw new Error(`Chapter not found (path: '${bookSlug}/${chapterSlug}')`);
     }
 
     if (chapter.content === undefined) {
@@ -385,10 +381,34 @@ export class Docs extends Routable(Component) {
     return chapter;
   }
 
-  static resolvePath(path: string[]) {
+  static resolveURL() {
+    const router = this.getRouter();
+
+    const path = router.getCurrentPath();
+    const query = router.getCurrentQuery();
+
+    const {version, bookSlug, chapterSlug} = this.resolvePath(path);
+    const {language} = this.resolveQuery(query);
+
+    return {version, bookSlug, chapterSlug, language};
+  }
+
+  static resolvePath(path: string) {
     const contents = this.getContents();
 
-    let [bookSlug, chapterSlug, ...otherSlugs] = path;
+    const result: {version?: string; bookSlug?: string; chapterSlug?: string} = {};
+
+    let [version, bookSlug, chapterSlug, ...otherSegments] = path.slice('/docs/'.length).split('/');
+
+    if (otherSegments.length > 0) {
+      return result;
+    }
+
+    result.version = this.resolveVersion(version);
+
+    if (result.version === undefined) {
+      return result;
+    }
 
     if (bookSlug === undefined || bookSlug === '') {
       bookSlug = contents.books[0].slug;
@@ -397,8 +417,10 @@ export class Docs extends Routable(Component) {
     const book = contents.books.find((book) => book.slug === bookSlug);
 
     if (book === undefined) {
-      return undefined;
+      return result;
     }
+
+    result.bookSlug = book.slug;
 
     if (chapterSlug === undefined || chapterSlug === '') {
       chapterSlug = book.chapters[0].slug;
@@ -407,18 +429,16 @@ export class Docs extends Routable(Component) {
     const chapter = book.chapters.find((chapter) => chapter.slug === chapterSlug);
 
     if (chapter === undefined) {
-      return undefined;
+      return result;
     }
 
-    if (otherSlugs.length > 0) {
-      return undefined;
-    }
+    result.chapterSlug = chapter.slug;
 
-    return [book.slug, chapter.slug];
+    return result;
   }
 
   static resolveVersion(version: string | undefined) {
-    if (version === undefined) {
+    if (version === undefined || version === '') {
       version = VERSIONS[0].value;
     }
 
@@ -427,6 +447,12 @@ export class Docs extends Routable(Component) {
     }
 
     return version;
+  }
+
+  static resolveQuery(query: {language?: string}) {
+    const language = this.resolveLanguage(query.language);
+
+    return {language};
   }
 
   static resolveLanguage(language: string | undefined) {
@@ -439,6 +465,46 @@ export class Docs extends Routable(Component) {
     }
 
     return language;
+  }
+
+  static generateURL({
+    version,
+    bookSlug,
+    chapterSlug,
+    language,
+    hash
+  }: URLParams & {
+    hash?: string;
+  }) {
+    let url = this.generatePath({version, bookSlug, chapterSlug});
+
+    const queryString = stringifyQuery(this.generateQuery({language}));
+
+    if (queryString !== '') {
+      url += `?${queryString}`;
+    }
+
+    if (hash !== undefined) {
+      url += `#${hash}`;
+    }
+
+    return url;
+  }
+
+  static generatePath({
+    version,
+    bookSlug,
+    chapterSlug
+  }: {
+    version: string;
+    bookSlug: string;
+    chapterSlug: string;
+  }) {
+    return `/docs/${version}/${bookSlug}/${chapterSlug}`;
+  }
+
+  static generateQuery({language}: {language: string}) {
+    return {language};
   }
 }
 

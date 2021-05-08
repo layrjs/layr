@@ -2,7 +2,7 @@ import {attribute} from '@layr/component';
 
 import type {Session as BackendSession} from '../../../backend/src/components/session';
 
-export const Session = (Base: typeof BackendSession) => {
+export const createSessionComponent = (Base: typeof BackendSession) => {
   class Session extends Base {
     @attribute('string?', {
       getter() {

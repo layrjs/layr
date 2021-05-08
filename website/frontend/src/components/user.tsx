@@ -1,55 +1,54 @@
 import {consume} from '@layr/component';
-import {Routable, route} from '@layr/routable';
-import {view, useAsyncCallback, useAsyncMemo} from '@layr/react-integration';
-import {useState} from 'react';
+import {Routable} from '@layr/routable';
+import {page, view, useData, useAction} from '@layr/react-integration';
+import {useState, useMemo} from 'react';
 import {jsx} from '@emotion/core';
 
 import type {User as BackendUser} from '../../../backend/src/components/user';
-import type {Session} from './session';
+import type {createSessionComponent} from './session';
 import type {Home} from './home';
-import type {Common} from './common';
+import {useTitle} from '../utilities';
 
-export const User = (Base: typeof BackendUser) => {
+export const createUserComponent = (Base: typeof BackendUser) => {
   class User extends Routable(Base) {
     ['constructor']!: typeof User;
 
-    @consume() static Session: ReturnType<typeof Session>;
+    @consume() static Session: ReturnType<typeof createSessionComponent>;
     @consume() static Home: typeof Home;
-    @consume() static Common: typeof Common;
 
-    @route('/sign-up') @view() static SignUp() {
+    @page('[/]sign-up') static SignUpPage() {
       const {Session, Home} = this;
 
-      if (Session.user) {
-        Home.Main.redirect();
+      if (Session.user !== undefined) {
+        Home.MainPage.redirect(undefined, {defer: true});
         return null;
       }
 
-      const user = new (this.fork())();
+      const user = useMemo(() => new this(), []);
 
-      return <user.SignUp />;
+      useTitle('Sign up');
+
+      return <user.SignUpView />;
     }
 
-    @view() SignUp() {
-      const {Home, Common} = this.constructor;
+    @view() SignUpView() {
+      const {Home} = this.constructor;
 
       const [inviteToken, setInviteToken] = useState('');
 
-      const [handleSignUp, isSigningUp, signingUpError] = useAsyncCallback(async () => {
+      const signUp = useAction(async () => {
         await this.signUp({inviteToken});
-        Home.Main.reload();
+        Home.MainPage.reload();
       }, [inviteToken]);
 
       return (
-        <Common.Layout title="Sign up" width="400px">
+        <div css={{flexBasis: 400}}>
           <h2>Sign Up</h2>
-
-          {signingUpError && <Common.ErrorMessage error={signingUpError} />}
 
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              handleSignUp();
+              signUp();
             }}
           >
             <div css={{marginTop: '1rem'}}>
@@ -131,46 +130,44 @@ export const User = (Base: typeof BackendUser) => {
             </div>
 
             <div css={{marginTop: '1rem'}}>
-              <button type="submit" disabled={isSigningUp}>
-                Sign up
-              </button>
+              <button type="submit">Sign up</button>
             </div>
           </form>
-        </Common.Layout>
+        </div>
       );
     }
 
-    @route('/sign-in') @view() static SignIn() {
+    @page('[/]sign-in') static SignInPage() {
       const {Session, Home} = this;
 
-      if (Session.user) {
-        Home.Main.redirect();
+      if (Session.user !== undefined) {
+        Home.MainPage.redirect(undefined, {defer: true});
         return null;
       }
 
-      const user = new (this.fork())();
+      const user = useMemo(() => new this(), []);
 
-      return <user.SignIn />;
+      useTitle('Sign in');
+
+      return <user.SignInView />;
     }
 
-    @view() SignIn() {
-      const {Home, Common} = this.constructor;
+    @view() SignInView() {
+      const {Home} = this.constructor;
 
-      const [handleSignIn, isSigningIn, signingInError] = useAsyncCallback(async () => {
+      const signIn = useAction(async () => {
         await this.signIn();
-        Home.Main.reload();
-      }, []);
+        Home.MainPage.reload();
+      });
 
       return (
-        <Common.Layout title="Sign in" width="400px">
+        <div css={{flexBasis: 400}}>
           <h2>Sign In</h2>
-
-          {signingInError && <Common.ErrorMessage error={signingInError} />}
 
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              handleSignIn();
+              signIn();
             }}
           >
             <div css={{marginTop: '1rem'}}>
@@ -200,42 +197,34 @@ export const User = (Base: typeof BackendUser) => {
             </div>
 
             <div css={{marginTop: '1rem'}}>
-              <button type="submit" disabled={isSigningIn}>
-                Sign in
-              </button>
+              <button type="submit">Sign in</button>
             </div>
           </form>
-        </Common.Layout>
+        </div>
       );
     }
 
-    @route('/sign-out') static signOut() {
+    @page('/sign-out') static signOutPage() {
       const {Session, Home} = this;
 
       Session.token = undefined;
-      Home.Main.reload();
+      Home.MainPage.reload();
+
+      return null;
     }
 
-    @route('/invite') @view() static Invite() {
-      const {Common} = this;
+    @page('[/]invite') static InvitePage() {
+      return useData(
+        async () => {
+          return await this.generateInviteToken();
+        },
 
-      const [inviteToken, isInviting, invitingError, retryInviting] = useAsyncMemo(async () => {
-        return await this.generateInviteToken();
-      }, []);
-
-      if (isInviting) {
-        return <Common.LoadingSpinner />;
-      }
-
-      if (invitingError) {
-        return <Common.ErrorMessage error={invitingError} onRetry={retryInviting} />;
-      }
-
-      return (
-        <div>
-          <p>Invite token:</p>
-          <pre>{inviteToken}</pre>
-        </div>
+        (inviteToken) => (
+          <div>
+            <p>Invite token:</p>
+            <pre>{inviteToken}</pre>
+          </div>
+        )
       );
     }
   }

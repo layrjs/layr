@@ -1,42 +1,39 @@
 import {consume} from '@layr/component';
 import {useState} from 'react';
-import {view, useAsyncCallback} from '@layr/react-integration';
+import {view, useAction} from '@layr/react-integration';
 import {jsx} from '@emotion/core';
 
 import type {Newsletter as BackendNewsletter} from '../../../backend/src/components/newsletter';
-import type {Common} from './common';
 import type {UI} from './ui';
+import {FeatureSection} from '../utilities';
 
-export const Newsletter = (Base: typeof BackendNewsletter) => {
+export const createNewsletterComponent = (Base: typeof BackendNewsletter) => {
   class Newsletter extends Base {
-    @consume() static Common: typeof Common;
     @consume() static UI: typeof UI;
 
-    @view() static Subscription() {
-      const {Common, UI} = this;
+    @view() static SubscriptionView() {
+      const {UI} = this;
 
       const [email, setEmail] = useState('');
       const [isSubscribed, setIsSubscribed] = useState(false);
 
-      const [handleSubscribe, isSubscribingUp, subscribeError] = useAsyncCallback(async () => {
+      const subscribe = useAction(async () => {
         await this.subscribe({email});
         setIsSubscribed(true);
       }, [email]);
 
       return (
-        <Common.Feature
+        <FeatureSection
           title={!isSubscribed ? 'Stay Updated' : 'Thank You!'}
           description={
-            !isSubscribed
-              ? "Keep up on all that's happening with Layr!"
-              : "We'll keep you updated."
+            !isSubscribed ? "Keep up on all that's happening with Layr!" : "We'll keep you updated."
           }
         >
           {!isSubscribed && (
             <form
               onSubmit={(event) => {
                 event.preventDefault();
-                handleSubscribe();
+                subscribe();
               }}
               css={{
                 display: 'flex',
@@ -53,7 +50,6 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
                   setEmail(event.target.value);
                 }}
                 value={email}
-                disabled={isSubscribingUp}
                 required
                 placeholder="Your email address"
                 large
@@ -65,7 +61,6 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
               />
               <UI.Button
                 type="submit"
-                disabled={isSubscribingUp}
                 primary
                 large
                 css={UI.responsive({width: ['auto', , '100%']})}
@@ -74,9 +69,7 @@ export const Newsletter = (Base: typeof BackendNewsletter) => {
               </UI.Button>
             </form>
           )}
-
-          {subscribeError && <Common.ErrorMessage error={subscribeError} />}
-        </Common.Feature>
+        </FeatureSection>
       );
     }
   }

@@ -44,9 +44,16 @@ export class Article extends WithAuthor(Entity) {
   @attribute('string', {validators: [rangeLength([1, 50000])]})
   body = '';
 
-  @expose({get: true})
-  @secondaryIdentifier('string', {validators: [rangeLength([8, 300])]})
-  slug = this.generateSlug();
+  @expose({get: true, set: true})
+  @secondaryIdentifier('string', {
+    beforeSave(this: Article) {
+      if (this.slug === '') {
+        this.slug = this.generateSlug();
+      }
+    },
+    validators: [rangeLength([8, 300])]
+  })
+  slug = '';
 
   generateSlug() {
     this.validate({title: true});

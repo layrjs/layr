@@ -1,6 +1,6 @@
 import {Component} from '@layr/component';
 import {useEffect} from 'react';
-import {view} from '@layr/react-integration';
+import {view, RootView} from '@layr/react-integration';
 import {isInternalURL} from '@layr/browser-router';
 import {jsx, Global} from '@emotion/core';
 import {ThemeProvider, useTheme} from 'emotion-theming';
@@ -30,10 +30,12 @@ highlightJS.registerLanguage('bash', bash);
 export class UI extends Component {
   @view() static Root({children}: {children: React.ReactNode}) {
     return (
-      <ThemeProvider theme={this.getTheme()}>
-        <Global styles={this.globalStyles} />
-        {children}
-      </ThemeProvider>
+      <RootView>
+        <ThemeProvider theme={this.getTheme()}>
+          <Global styles={this.globalStyles} />
+          {children}
+        </ThemeProvider>
+      </RootView>
     );
   }
 

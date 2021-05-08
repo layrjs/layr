@@ -1,106 +1,77 @@
 import {consume} from '@layr/component';
-import {Routable, route} from '@layr/routable';
-import {view, useAsyncCallback, useAsyncMemo} from '@layr/react-integration';
+import {Routable} from '@layr/routable';
+import {layout, page, view, useData, useAction} from '@layr/react-integration';
 import {Fragment, useMemo} from 'react';
 import {jsx} from '@emotion/core';
 import {format} from 'date-fns';
 
 import type {Article as BackendArticle} from '../../../backend/src/components/article';
 import type {Home} from './home';
-import type {Blog} from './blog';
-import type {Common} from './common';
 import type {UI} from './ui';
+import {useTitle} from '../utilities';
 
-export const Article = (Base: typeof BackendArticle) => {
+export const creteArticleComponent = (Base: typeof BackendArticle) => {
   class Article extends Routable(Base) {
     ['constructor']!: typeof Article;
 
     @consume() static Home: typeof Home;
-    @consume() static Blog: typeof Blog;
-    @consume() static Common: typeof Common;
     @consume() static UI: typeof UI;
 
-    @route('/blog/articles/:slug') @view() static Main({slug}: {slug: string}) {
-      return <this.Loader slug={slug}>{(article) => <article.Main />}</this.Loader>;
+    @layout('[/blog]/articles/:slug') ItemLayout({children}: {children: () => any}) {
+      return useData(
+        async () => {
+          await this.load({
+            title: true,
+            description: true,
+            body: true,
+            slug: true,
+            author: {fullName: true, url: true},
+            createdAt: true
+          });
+        },
+
+        () => {
+          useTitle(this.title);
+
+          return children();
+        },
+
+        [], // Getter deps
+
+        [children] // Renderer deps
+      );
     }
 
-    @view() static Loader({
-      slug,
-      children
-    }: {
-      slug: string;
-      children: (article: Article) => JSX.Element;
-    }) {
-      const {Blog, Common} = this;
-
-      const [article, isLoading, loadingError, retryLoading] = useAsyncMemo(async () => {
-        try {
-          return await this.get(
-            {slug},
-            {
-              title: true,
-              description: true,
-              body: true,
-              slug: true,
-              author: {fullName: true, url: true},
-              createdAt: true
-            }
-          );
-        } catch (error) {
-          error.displayMessage = `Sorry, something went wrong while loading the ${this.getComponentName().toLowerCase()} information.`;
-          throw error;
-        }
-      }, [slug]);
-
-      if (isLoading) {
-        return <Common.LoadingSpinner />;
-      }
-
-      if (loadingError) {
-        return (
-          <Blog.Layout>
-            {loadingError.code === 'COMPONENT_IS_MISSING_FROM_STORE' ? (
-              <Common.RouteNotFound />
-            ) : (
-              <Common.ErrorMessage error={loadingError} onRetry={retryLoading} />
-            )}
-          </Blog.Layout>
-        );
-      }
-
-      return children(article!);
-    }
-
-    @view() Main() {
-      const {Blog, UI} = this.constructor;
+    @page('[/blog/articles/:slug]') ItemPage() {
+      const {UI} = this.constructor;
 
       UI.useAnchor();
 
       return (
-        <Blog.Layout title={this.title}>
+        <Fragment>
           <h2>{this.title}</h2>
-          <this.Meta css={{marginTop: '-.75rem', marginBottom: '1.5rem'}} />
+          <this.MetaView css={{marginTop: '-.75rem', marginBottom: '1.5rem'}} />
           <UI.Markdown>{this.body}</UI.Markdown>
-        </Blog.Layout>
+        </Fragment>
       );
     }
 
-    @view() Preview() {
+    @view() ListItemView() {
       const {UI} = this.constructor;
 
       const theme = UI.useTheme();
 
       return (
         <Fragment>
-          <this.constructor.Main.Link params={this}>
+          <this.ItemPage.Link>
             <h4 css={{':hover': {color: theme.link.highlighted.primaryColor}}}>{this.title}</h4>
-          </this.constructor.Main.Link>
-          <this.Meta css={{marginTop: '-.75rem'}} />
+          </this.ItemPage.Link>
+          <this.MetaView css={{marginTop: '-.75rem'}} />
         </Fragment>
       );
     }
 
-    @view() Meta({...props}) {
+    @view() MetaView({...props}) {
       const {UI} = this.constructor;
 
       const theme = UI.useTheme();
@@ -121,76 +92,55 @@ export const Article = (Base: typeof BackendArticle) => {
       );
     }
 
-    @route('/blog/editor') @view() static Creator() {
+    @page('[/blog]/articles/add') static AddPage() {
       const {Session, Home} = this;
 
-      if (!Session.user) {
-        Home.Main.redirect();
+      if (Session.user === undefined) {
+        Home.MainPage.redirect(undefined, {defer: true});
         return null;
       }
 
       const article = useMemo(() => new this(), []);
 
-      return <article.Creator />;
+      const save = useAction(async () => {
+        await article.save();
+        article.ItemPage.navigate();
+      }, [article]);
+
+      return <article.FormView onSubmit={save} />;
     }
 
-    @view() Creator() {
-      const Article = this.constructor;
-      const {Common} = Article;
+    @page('[/blog/articles/:slug]/edit') EditPage() {
+      const {Session, Home} = this.constructor;
 
-      const [handleSave, , savingError] = useAsyncCallback(async () => {
-        await this.save();
-        Article.Main.navigate(this);
-      }, []);
-
-      return (
-        <Common.Layout title="Blog">
-          {savingError && <Common.ErrorMessage error={savingError} />}
-
-          <this.Form onSubmit={handleSave} />
-        </Common.Layout>
-      );
-    }
-
-    @route('/blog/editor/:slug') @view() static Editor({slug}: {slug: string}) {
-      return <this.Loader slug={slug}>{(article) => <article.Editor />}</this.Loader>;
-    }
-
-    @view() Editor() {
-      const Article = this.constructor;
-      const {Common} = Article;
+      if (Session.user === undefined) {
+        Home.MainPage.redirect(undefined, {defer: true});
+        return null;
+      }
 
       const fork = useMemo(() => this.fork(), []);
 
-      const [handleSave, , savingError] = useAsyncCallback(async () => {
+      const save = useAction(async () => {
         await fork.save();
         this.merge(fork);
-        Article.Main.navigate(this);
+        this.ItemPage.navigate();
       }, [fork]);
 
-      return (
-        <Common.Layout title="Blog">
-          {savingError && <Common.ErrorMessage error={savingError} />}
-
-          <fork.Form onSubmit={handleSave} />
-        </Common.Layout>
-      );
+      return <fork.FormView onSubmit={save} />;
     }
 
-    @view() Form({onSubmit}: {onSubmit: Function}) {
-      const [handleSubmit, isSubmitting] = useAsyncCallback(
-        async (event) => {
-          event.preventDefault();
-          await onSubmit();
-        },
-        [onSubmit]
-      );
-
+    @view() FormView({onSubmit}: {onSubmit: Function}) {
       return (
         <div>
           <h2>Article</h2>
 
-          <form onSubmit={handleSubmit} autoComplete="off">
+          <form
+            onSubmit={async (event) => {
+              event.preventDefault();
+              await onSubmit();
+            }}
+            autoComplete="off"
+          >
             <div css={{marginTop: '1rem'}}>
               <input
                 type="text"
@@ -231,9 +181,7 @@ export const Article = (Base: typeof BackendArticle) => {
             </div>
 
             <div css={{marginTop: '1rem'}}>
-              <button type="submit" disabled={isSubmitting}>
-                Publish
-              </button>
+              <button type="submit">Publish</button>
             </div>
           </form>
         </div>

@@ -1,53 +1,44 @@
-import {Component, consume, attribute} from '@layr/component';
-import {Routable, route} from '@layr/routable';
-import {view, useAsyncCall} from '@layr/react-integration';
-import {useMemo} from 'react';
+import {Component, consume} from '@layr/component';
+import {Routable} from '@layr/routable';
+import {Fragment} from 'react';
+import {layout, page, useData} from '@layr/react-integration';
 import {jsx} from '@emotion/core';
 
-import type {Article} from './article';
-import type {Common} from './common';
+import type {creteArticleComponent} from './article';
 import type {UI} from './ui';
+import {useTitle} from '../utilities';
 
 export class Blog extends Routable(Component) {
   ['constructor']!: typeof Blog;
 
-  @consume() static Article: ReturnType<typeof Article>;
-  @consume() static Common: typeof Common;
+  @consume() static Article: ReturnType<typeof creteArticleComponent>;
   @consume() static UI: typeof UI;
 
-  @attribute('Article[]?') loadedArticles?: InstanceType<ReturnType<typeof Article>>[];
-
-  @view() static Layout({title = 'Blog', children}: {title?: string; children: React.ReactNode}) {
-    const {Common, UI} = this;
+  @layout('[/]blog') static MainLayout({children}: {children: () => any}) {
+    const {UI} = this;
 
     const theme = UI.useTheme();
 
+    useTitle('Blog');
+
     return (
-      <Common.Layout title={title}>
-        <h2>
-          <this.Main.Link css={{color: theme.muted.textColor}}>Blog</this.Main.Link>
-        </h2>
-        {children}
-      </Common.Layout>
+      <div css={{flexBasis: 650}}>
+        <Fragment>
+          <h2>
+            <this.MainPage.Link css={{color: theme.muted.textColor}}>Blog</this.MainPage.Link>
+          </h2>
+          {children()}
+        </Fragment>
+      </div>
     );
   }
 
-  @route('/blog') @view() static Main() {
-    const blog = useMemo(() => new this(), []);
+  @page('[/blog]', {aliases: ['[/blog]/articles']}) static MainPage() {
+    const {Article} = this;
 
-    return <blog.Main />;
-  }
-
-  @route('/blog/articles') static Articles() {
-    this.Main.redirect();
-  }
-
-  @view() Main() {
-    const {Article, Common} = this.constructor;
-
-    const [isLoading, loadingError, retryLoading] = useAsyncCall(async () => {
-      try {
-        this.loadedArticles = await Article.find(
+    return useData(
+      async () =>
+        await Article.find(
           {},
           {
             title: true,
@@ -56,38 +47,18 @@ export class Blog extends Routable(Component) {
             createdAt: true
           },
           {sort: {createdAt: 'desc'}}
-        );
-      } catch (error) {
-        error.displayMessage = 'Sorry, something went wrong while loading the articles.';
-        throw error;
-      }
-    }, []);
+        ),
 
-    if (isLoading) {
-      return <Common.LoadingSpinner />;
-    }
-
-    if (loadingError) {
-      return <Common.ErrorMessage error={loadingError} onRetry={retryLoading} />;
-    }
-
-    const {loadedArticles} = this;
-
-    if (loadedArticles!.length === 0) {
-      return <div>No articles are here... yet.</div>;
-    }
-
-    return (
-      <this.constructor.Layout>
-        {loadedArticles!.map((article, index) => {
-          return (
+      (articles) => (
+        <Fragment>
+          {articles.map((article, index) => (
             <div key={article.slug}>
               {index > 0 && <hr />}
-              <article.Preview />
+              <article.ListItemView />
             </div>
-          );
-        })}
-      </this.constructor.Layout>
+          ))}
+        </Fragment>
+      )
     );
   }
 }
