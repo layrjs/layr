@@ -1,6 +1,6 @@
 {
   "name": "@layr/routable",
-  "version": "2.0.17",
+  "version": "2.0.19",
   "description": "Makes the methods of your Layr components callable by URL",
   "keywords": [
     "layr",
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@layr/component": "^1.1.12",
-    "@layr/router": "^2.0.9",
+    "@layr/router": "^2.0.10",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
     "lodash": "^4.17.21",

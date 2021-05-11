@@ -10,6 +10,7 @@ describe('Route', () => {
     expect(route.getPattern()).toBe('/movies');
     expect(route.getParams()).toStrictEqual({});
     expect(route.getAliases()).toStrictEqual([]);
+    expect(route.getFilter()).toBeUndefined();
 
     // --- Using aliases ---
 
@@ -19,6 +20,7 @@ describe('Route', () => {
     expect(route.getPattern()).toBe('/movies');
     expect(route.getParams()).toStrictEqual({});
     expect(route.getAliases()).toStrictEqual(['/']);
+    expect(route.getFilter()).toBeUndefined();
 
     // -- Using route identifiers ---
 
@@ -28,6 +30,7 @@ describe('Route', () => {
     expect(route.getPattern()).toBe('/movies/:id');
     expect(route.getParams()).toStrictEqual({});
     expect(route.getAliases()).toStrictEqual([]);
+    expect(route.getFilter()).toBeUndefined();
 
     // -- Using route parameters ---
 
@@ -37,11 +40,26 @@ describe('Route', () => {
     expect(route.getPattern()).toBe('/movies');
     expect(route.getParams()).toStrictEqual({showDetails: 'boolean?'});
     expect(route.getAliases()).toStrictEqual([]);
+    expect(route.getFilter()).toBeUndefined();
 
     // @ts-expect-error
     expect(() => new Route('Main', '/movies', {params: {showDetails: 'any'}})).toThrow(
       "Couldn't parse a route (or wrapper) parameter type ('any' is not a supported type)"
     );
+
+    // -- Using route filters ---
+
+    const filter = function (request: any) {
+      return request?.method === 'GET';
+    };
+
+    route = new Route('Main', '/movies', {filter});
+
+    expect(route.getName()).toBe('Main');
+    expect(route.getPattern()).toBe('/movies');
+    expect(route.getParams()).toStrictEqual({});
+    expect(route.getAliases()).toStrictEqual([]);
+    expect(route.getFilter()).toBe(filter);
   });
 
   test('matchURL()', async () => {
@@ -157,6 +175,22 @@ describe('Route', () => {
     expect(() => route.matchURL('/')).toThrow(
       "A required route (or wrapper) parameter is missing (name: 'language', type: 'string')"
     );
+
+    // -- Using route filters ---
+
+    route = new Route('Main', '/movies', {
+      filter(request: any) {
+        return request?.method === 'GET';
+      }
+    });
+
+    expect(route.matchURL('/movies', {method: 'GET'})).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
+    expect(route.matchURL('/movies', {method: 'POST'})).toBeUndefined();
+    expect(route.matchURL('/movies')).toBeUndefined();
   });
 
   test('generateURL()', async () => {

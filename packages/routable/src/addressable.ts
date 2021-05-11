@@ -12,7 +12,10 @@ import {
 export type AddressableOptions = {
   params?: Params;
   aliases?: Pattern[];
+  filter?: AddressableFilter;
 };
+
+export type AddressableFilter = (request: any) => boolean;
 
 /**
  * Represents a route or a wrapper in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
@@ -37,8 +40,9 @@ export abstract class Addressable {
     generator: PathGenerator;
     wrapperGenerator: PathGenerator;
   }[];
-  _params: Record<string, ParamTypeDescriptor>;
   _isCatchAll: boolean;
+  _params: Record<string, ParamTypeDescriptor>;
+  _filter: AddressableFilter | undefined;
 
   /**
    * Creates an instance of [`Addressable`](https://layrjs.com/docs/v1/reference/addressable). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator)) decorator.
@@ -57,7 +61,7 @@ export abstract class Addressable {
    * @category Creation
    */
   constructor(name: string, pattern: Pattern, options: AddressableOptions = {}) {
-    const {params = {}, aliases = []} = options;
+    const {params = {}, aliases = [], filter} = options;
 
     this._name = name;
 
@@ -88,6 +92,8 @@ export abstract class Addressable {
         `Couldn't create the addressable '${name}' (a catch-all addressable cannot have aliases)`
       );
     }
+
+    this._filter = filter;
   }
 
   /**
@@ -126,6 +132,10 @@ export abstract class Addressable {
     return this._patterns[0].pattern;
   }
 
+  isCatchAll() {
+    return this._isCatchAll;
+  }
+
   getParams() {
     const params: Params = {};
 
@@ -154,8 +164,8 @@ export abstract class Addressable {
     return this._patterns.slice(1).map(({pattern}) => pattern);
   }
 
-  isCatchAll() {
-    return this._isCatchAll;
+  getFilter() {
+    return this._filter;
   }
 
   /**
@@ -178,26 +188,32 @@ export abstract class Addressable {
    *
    * @category URL Matching and Generation
    */
-  matchURL(url: URL | string) {
+  matchURL(url: URL | string, request?: any) {
     const {pathname: path, search: queryString} = normalizeURL(url);
 
     for (const {matcher, wrapperGenerator} of this._patterns) {
       const identifiers = matcher(path);
 
-      if (identifiers !== undefined) {
-        const query: Record<string, string> = parseQuery(queryString);
-        const params: Record<string, any> = {};
-
-        for (const [name, descriptor] of Object.entries(this._params)) {
-          const queryValue = query[name];
-          const paramValue = deserializeParam(name, queryValue, descriptor);
-          params[name] = paramValue;
-        }
-
-        const wrapperPath = wrapperGenerator(identifiers);
-
-        return {identifiers, params, wrapperPath};
+      if (identifiers === undefined) {
+        continue;
       }
+
+      if (this._filter !== undefined && !this._filter(request)) {
+        continue;
+      }
+
+      const query: Record<string, string> = parseQuery(queryString);
+      const params: Record<string, any> = {};
+
+      for (const [name, descriptor] of Object.entries(this._params)) {
+        const queryValue = query[name];
+        const paramValue = deserializeParam(name, queryValue, descriptor);
+        params[name] = paramValue;
+      }
+
+      const wrapperPath = wrapperGenerator(identifiers);
+
+      return {identifiers, params, wrapperPath};
     }
 
     return undefined;

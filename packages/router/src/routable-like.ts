@@ -20,23 +20,39 @@ export declare class RoutableLike {
   static __setRouter: (router: Router) => void;
 
   static findRouteByURL: (
-    url: URL | string
+    url: URL | string,
+    request?: any
   ) => {route: any; identifiers: any; params: any; wrapperPath: string} | undefined;
 
   findRouteByURL: (
-    url: URL | string
+    url: URL | string,
+    request?: any
   ) => {route: any; identifiers: any; params: any; wrapperPath: string} | undefined;
 
-  static __callRoute: (route: any, identifiers: any, params: any, wrapperPath: string) => any;
+  static __callRoute: (
+    route: any,
+    identifiers: any,
+    params: any,
+    wrapperPath: string,
+    request: any
+  ) => any;
 
-  __callRoute: (route: any, identifiers: any, params: any, wrapperPath: string) => any;
+  __callRoute: (
+    route: any,
+    identifiers: any,
+    params: any,
+    wrapperPath: string,
+    request: any
+  ) => any;
 
   static findWrapperByURL: (
-    url: URL | string
+    url: URL | string,
+    request?: any
   ) => {wrapper: any; identifiers: any; params: any; wrapperPath: string} | undefined;
 
   findWrapperByURL: (
-    url: URL | string
+    url: URL | string,
+    request?: any
   ) => {wrapper: any; identifiers: any; params: any; wrapperPath: string} | undefined;
 
   static __callWrapper: (
@@ -44,7 +60,8 @@ export declare class RoutableLike {
     identifiers: any,
     params: any,
     wrapperPath: string,
-    children: () => any
+    children: () => any,
+    request: any
   ) => any;
 
   __callWrapper: (
@@ -52,7 +69,8 @@ export declare class RoutableLike {
     identifiers: any,
     params: any,
     wrapperPath: string,
-    children: () => any
+    children: () => any,
+    request: any
   ) => any;
 }
 

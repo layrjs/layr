@@ -155,6 +155,15 @@ describe('Router', () => {
           return `[${children()}]`;
         }
 
+        @route('[/]ping', {
+          filter(request) {
+            return request?.method === 'GET';
+          }
+        })
+        static ping() {
+          return 'pong';
+        }
+
         @route('[/]*') static NotFoundPage() {
           return 'Sorry, there is nothing here.';
         }
@@ -197,6 +206,20 @@ describe('Router', () => {
       expect(result!.route.getName()).toBe('NotFoundPage');
       expect(result!.identifiers).toEqual({});
       expect(result!.params).toEqual({});
+
+      result = router.findRouteByURL('/ping', {method: 'GET'});
+
+      expect(result!.routable.getComponentType()).toBe('typeof Root');
+      expect(result!.route.getName()).toBe('ping');
+      expect(result!.identifiers).toEqual({});
+      expect(result!.params).toEqual({});
+
+      result = router.findRouteByURL('/ping', {method: 'POST'});
+
+      expect(result!.routable.getComponentType()).toBe('typeof Root');
+      expect(result!.route.getName()).toBe('NotFoundPage');
+      expect(result!.identifiers).toEqual({});
+      expect(result!.params).toEqual({});
     });
 
     test('getIdentifiersFromURL()', async () => {
@@ -224,6 +247,10 @@ describe('Router', () => {
       );
       expect(router.callRouteByURL('/actors/top')).toBe('[Top actors]');
       expect(router.callRouteByURL('/movies/abc123/details')).toBe(
+        '[Sorry, there is nothing here.]'
+      );
+      expect(router.callRouteByURL('/ping', {method: 'GET'})).toBe('[pong]');
+      expect(router.callRouteByURL('/ping', {method: 'POST'})).toBe(
         '[Sorry, there is nothing here.]'
       );
     });

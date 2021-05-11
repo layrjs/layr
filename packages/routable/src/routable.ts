@@ -366,17 +366,23 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    callRoute(name: string, identifiers: any = {}, params: any = {}, wrapperPath = '') {
+    callRoute(
+      name: string,
+      identifiers: any = {},
+      params: any = {},
+      wrapperPath = '',
+      request?: any
+    ) {
       const route = this.getRoute(name);
 
-      return this.__callRoute(route, identifiers, params, wrapperPath);
+      return this.__callRoute(route, identifiers, params, wrapperPath, request);
     }
 
     static get __callRoute() {
       return this.prototype.__callRoute;
     }
 
-    __callRoute(route: Route, identifiers: any, params: any, wrapperPath: string) {
+    __callRoute(route: Route, identifiers: any, params: any, wrapperPath: string, request: any) {
       const name = route.getName();
 
       debug('Calling route %s(%o)', this.describeComponentProperty(name), params);
@@ -395,13 +401,21 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       if (wrapperPath !== '') {
         if (router !== undefined) {
-          return router.callWrapperByURL(wrapperPath, function () {
-            return router.callAddressableMethodWrapper(component, component[name], params);
-          });
+          return router.callWrapperByURL(
+            wrapperPath,
+            function () {
+              return router.callAddressableMethodWrapper(component, component[name], params);
+            },
+            request
+          );
         } else {
-          return this.callWrapperByURL(wrapperPath, function () {
-            return component[name](params);
-          });
+          return this.callWrapperByURL(
+            wrapperPath,
+            function () {
+              return component[name](params);
+            },
+            request
+          );
         }
       } else {
         if (router !== undefined) {
@@ -454,7 +468,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    findRouteByURL(url: URL | string) {
+    findRouteByURL(url: URL | string, request?: any) {
       const normalizedURL = normalizeURL(url);
 
       const routes = this.__getRoutes();
@@ -466,7 +480,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         | undefined;
 
       for (const route of routes.values()) {
-        const routeResult = route.matchURL(normalizedURL);
+        const routeResult = route.matchURL(normalizedURL, request);
 
         if (routeResult !== undefined) {
           result = {route, ...routeResult};
@@ -526,8 +540,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Routes
      */
-    callRouteByURL(url: URL | string) {
-      const result = this.findRouteByURL(url);
+    callRouteByURL(url: URL | string, request?: any) {
+      const result = this.findRouteByURL(url, request);
 
       if (result === undefined) {
         throw new Error(
@@ -537,7 +551,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       const {route, identifiers, params, wrapperPath} = result;
 
-      return this.__callRoute(route, identifiers, params, wrapperPath);
+      return this.__callRoute(route, identifiers, params, wrapperPath, request);
     }
 
     static __routes?: Map<string, Route>;
@@ -743,11 +757,12 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       identifiers: any = {},
       params: any = {},
       wrapperPath = '',
-      children: () => any = () => {}
+      children: () => any = () => {},
+      request?: any
     ) {
       const wrapper = this.getWrapper(name);
 
-      return this.__callWrapper(wrapper, identifiers, params, wrapperPath, children);
+      return this.__callWrapper(wrapper, identifiers, params, wrapperPath, children, request);
     }
 
     static get __callWrapper() {
@@ -759,7 +774,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       identifiers: any,
       params: any,
       wrapperPath: string,
-      children: () => any
+      children: () => any,
+      request: any
     ): any {
       const name = wrapper.getName();
 
@@ -779,16 +795,24 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       if (wrapperPath !== '') {
         if (router !== undefined) {
-          return router.callWrapperByURL(wrapperPath, function () {
-            return router.callAddressableMethodWrapper(component, component[name], {
-              ...params,
-              children
-            });
-          });
+          return router.callWrapperByURL(
+            wrapperPath,
+            function () {
+              return router.callAddressableMethodWrapper(component, component[name], {
+                ...params,
+                children
+              });
+            },
+            request
+          );
         } else {
-          return this.callWrapperByURL(wrapperPath, function () {
-            return component[name]({...params, children});
-          });
+          return this.callWrapperByURL(
+            wrapperPath,
+            function () {
+              return component[name]({...params, children});
+            },
+            request
+          );
         }
       } else {
         if (router !== undefined) {
@@ -844,13 +868,13 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Wrappers
      */
-    findWrapperByURL(url: URL | string) {
+    findWrapperByURL(url: URL | string, request?: any) {
       const normalizedURL = normalizeURL(url);
 
       const wrappers = this.__getWrappers();
 
       for (const wrapper of wrappers.values()) {
-        const result = wrapper.matchURL(normalizedURL);
+        const result = wrapper.matchURL(normalizedURL, request);
 
         if (result !== undefined) {
           return {wrapper, ...result};
@@ -906,15 +930,15 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Wrappers
      */
-    callWrapperByURL(url: URL | string, children: () => any): any {
+    callWrapperByURL(url: URL | string, children: () => any, request?: any): any {
       let routable: typeof Routable | Routable = this;
 
-      let result = routable.findWrapperByURL(url);
+      let result = routable.findWrapperByURL(url, request);
 
       if (result === undefined && isRoutableInstance(routable)) {
         // Fallback to the class
         routable = routable.constructor as typeof Routable;
-        result = routable.findWrapperByURL(url);
+        result = routable.findWrapperByURL(url, request);
       }
 
       if (result === undefined) {
@@ -925,7 +949,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       const {wrapper, identifiers, params, wrapperPath} = result;
 
-      return routable.__callWrapper(wrapper, identifiers, params, wrapperPath, children);
+      return routable.__callWrapper(wrapper, identifiers, params, wrapperPath, children, request);
     }
 
     static __wrappers?: Map<string, Wrapper>;
