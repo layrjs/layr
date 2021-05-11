@@ -1,6 +1,6 @@
 {
   "name": "@layr/react-integration",
-  "version": "2.0.30",
+  "version": "2.0.32",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
@@ -31,7 +31,7 @@
     "@layr/component": "^1.1.12",
     "@layr/memory-router": "^2.0.9",
     "@layr/observable": "^1.0.7",
-    "@layr/routable": "^2.0.19",
+    "@layr/routable": "^2.0.21",
     "@layr/router": "^2.0.10",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",

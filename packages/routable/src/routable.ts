@@ -397,6 +397,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           this.constructor.create(identifiers, {isNew: false});
       }
 
+      const method = route.transformMethod(component[name], request);
+
       const router = this.hasRouter() ? this.getRouter() : undefined;
 
       if (wrapperPath !== '') {
@@ -404,7 +406,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           return router.callWrapperByURL(
             wrapperPath,
             function () {
-              return router.callAddressableMethodWrapper(component, component[name], params);
+              return router.callAddressableMethodWrapper(component, method, params);
             },
             request
           );
@@ -412,16 +414,16 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           return this.callWrapperByURL(
             wrapperPath,
             function () {
-              return component[name](params);
+              return method.call(component, params);
             },
             request
           );
         }
       } else {
         if (router !== undefined) {
-          return router.callAddressableMethodWrapper(component, component[name], params);
+          return router.callAddressableMethodWrapper(component, method, params);
         } else {
-          return component[name](params);
+          return method.call(component, params);
         }
       }
     }
@@ -791,6 +793,10 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           this.constructor.create(identifiers, {isNew: false});
       }
 
+      const method = wrapper.transformMethod(component[name], request);
+
+      const paramsWithChildren = {...params, children};
+
       const router = this.hasRouter() ? this.getRouter() : undefined;
 
       if (wrapperPath !== '') {
@@ -798,10 +804,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           return router.callWrapperByURL(
             wrapperPath,
             function () {
-              return router.callAddressableMethodWrapper(component, component[name], {
-                ...params,
-                children
-              });
+              return router.callAddressableMethodWrapper(component, method, paramsWithChildren);
             },
             request
           );
@@ -809,19 +812,16 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           return this.callWrapperByURL(
             wrapperPath,
             function () {
-              return component[name]({...params, children});
+              return method.call(component, paramsWithChildren);
             },
             request
           );
         }
       } else {
         if (router !== undefined) {
-          return router.callAddressableMethodWrapper(component, component[name], {
-            ...params,
-            children
-          });
+          return router.callAddressableMethodWrapper(component, method, paramsWithChildren);
         } else {
-          return component[name]({...params, children});
+          return method.call(component, paramsWithChildren);
         }
       }
     }

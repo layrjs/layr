@@ -11,6 +11,7 @@ describe('Route', () => {
     expect(route.getParams()).toStrictEqual({});
     expect(route.getAliases()).toStrictEqual([]);
     expect(route.getFilter()).toBeUndefined();
+    expect(route.getTransformers()).toStrictEqual({});
 
     // --- Using aliases ---
 
@@ -21,6 +22,7 @@ describe('Route', () => {
     expect(route.getParams()).toStrictEqual({});
     expect(route.getAliases()).toStrictEqual(['/']);
     expect(route.getFilter()).toBeUndefined();
+    expect(route.getTransformers()).toStrictEqual({});
 
     // -- Using route identifiers ---
 
@@ -31,6 +33,7 @@ describe('Route', () => {
     expect(route.getParams()).toStrictEqual({});
     expect(route.getAliases()).toStrictEqual([]);
     expect(route.getFilter()).toBeUndefined();
+    expect(route.getTransformers()).toStrictEqual({});
 
     // -- Using route parameters ---
 
@@ -41,6 +44,7 @@ describe('Route', () => {
     expect(route.getParams()).toStrictEqual({showDetails: 'boolean?'});
     expect(route.getAliases()).toStrictEqual([]);
     expect(route.getFilter()).toBeUndefined();
+    expect(route.getTransformers()).toStrictEqual({});
 
     // @ts-expect-error
     expect(() => new Route('Main', '/movies', {params: {showDetails: 'any'}})).toThrow(
@@ -60,6 +64,30 @@ describe('Route', () => {
     expect(route.getParams()).toStrictEqual({});
     expect(route.getAliases()).toStrictEqual([]);
     expect(route.getFilter()).toBe(filter);
+    expect(route.getTransformers()).toStrictEqual({});
+
+    // -- Using route transformers ---
+
+    const input = function (params: any) {
+      return params;
+    };
+
+    const output = function (result: any) {
+      return result;
+    };
+
+    const error = function (error: any) {
+      throw error;
+    };
+
+    route = new Route('Main', '/movies', {transformers: {input, output, error}});
+
+    expect(route.getName()).toBe('Main');
+    expect(route.getPattern()).toBe('/movies');
+    expect(route.getParams()).toStrictEqual({});
+    expect(route.getAliases()).toStrictEqual([]);
+    expect(route.getFilter()).toBeUndefined();
+    expect(route.getTransformers()).toStrictEqual({input, output, error});
   });
 
   test('matchURL()', async () => {

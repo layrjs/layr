@@ -1,4 +1,6 @@
 import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@layr/router';
+import {possiblyAsync} from 'possibly-async';
+import isEmpty from 'lodash/isEmpty';
 
 import {parsePattern, Pattern, PathMatcher, PathGenerator} from './pattern';
 import {
@@ -12,10 +14,17 @@ import {
 export type AddressableOptions = {
   params?: Params;
   aliases?: Pattern[];
-  filter?: AddressableFilter;
+  filter?: Filter;
+  transformers?: Transformers;
 };
 
-export type AddressableFilter = (request: any) => boolean;
+export type Filter = (request: any) => boolean;
+
+export type Transformers = {
+  input?: (params?: any, request?: any) => any;
+  output?: (result?: any, request?: any) => any;
+  error?: (error?: any, request?: any) => any;
+};
 
 /**
  * Represents a route or a wrapper in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
@@ -42,7 +51,8 @@ export abstract class Addressable {
   }[];
   _isCatchAll: boolean;
   _params: Record<string, ParamTypeDescriptor>;
-  _filter: AddressableFilter | undefined;
+  _filter: Filter | undefined;
+  _transformers: Transformers;
 
   /**
    * Creates an instance of [`Addressable`](https://layrjs.com/docs/v1/reference/addressable). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator)) decorator.
@@ -61,7 +71,7 @@ export abstract class Addressable {
    * @category Creation
    */
   constructor(name: string, pattern: Pattern, options: AddressableOptions = {}) {
-    const {params = {}, aliases = [], filter} = options;
+    const {params = {}, aliases = [], filter, transformers = {}} = options;
 
     this._name = name;
 
@@ -94,6 +104,7 @@ export abstract class Addressable {
     }
 
     this._filter = filter;
+    this._transformers = transformers;
   }
 
   /**
@@ -166,6 +177,43 @@ export abstract class Addressable {
 
   getFilter() {
     return this._filter;
+  }
+
+  getTransformers() {
+    return this._transformers;
+  }
+
+  transformMethod(method: Function, request: any) {
+    const transformers = this._transformers;
+
+    if (isEmpty(transformers)) {
+      // OPTIMIZATION
+      return method;
+    }
+
+    return function (this: any, params: any) {
+      if (transformers.input !== undefined) {
+        params = transformers.input.call(this, params, request);
+      }
+
+      return possiblyAsync.invoke(
+        () => method.call(this, params),
+        (result) => {
+          if (transformers.output !== undefined) {
+            result = transformers.output.call(this, result, request);
+          }
+
+          return result;
+        },
+        (error) => {
+          if (transformers.error !== undefined) {
+            return transformers.error.call(this, error, request);
+          }
+
+          throw error;
+        }
+      );
+    };
   }
 
   /**

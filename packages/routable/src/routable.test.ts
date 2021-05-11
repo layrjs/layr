@@ -90,6 +90,22 @@ describe('Routable', () => {
       ItemPage({showDetails = false}) {
         return `Movie #${this.id}${showDetails ? ' (with details)' : ''}`;
       }
+
+      static echo({message}: {message: string}) {
+        if (message === 'GET:') {
+          throw new Error("'message' cannot be empty");
+        }
+
+        return message;
+      }
+
+      static async echoAsync({message}: {message: string}) {
+        if (message === 'GET:') {
+          throw new Error("'message' cannot be empty");
+        }
+
+        return message;
+      }
     }
 
     // --- Class routes ---
@@ -111,6 +127,66 @@ describe('Routable', () => {
     expect(Movie.prototype.callRoute('ItemPage', {id: 'abc123'}, {showDetails: true})).toBe(
       'Movie #abc123 (with details)'
     );
+
+    // --- Route transformers ---
+
+    const transformers = {
+      input({message}: {message: string}, {method}: {method: string}) {
+        return {message: `${method}:${message}`};
+      },
+      output(result: string) {
+        return {
+          status: 200,
+          headers: {'content-type': 'application/json'},
+          body: JSON.stringify(result)
+        };
+      },
+      error(error: Error) {
+        return {
+          status: 400,
+          headers: {'content-type': 'application/json'},
+          body: JSON.stringify({message: error.message})
+        };
+      }
+    };
+
+    // - With a synchronous method -
+
+    Movie.setRoute('echo', '/echo', {transformers});
+
+    expect(
+      Movie.callRoute('echo', undefined, {message: 'hello'}, undefined, {method: 'GET'})
+    ).toStrictEqual({
+      status: 200,
+      headers: {'content-type': 'application/json'},
+      body: '"GET:hello"'
+    });
+    expect(
+      Movie.callRoute('echo', undefined, {message: ''}, undefined, {method: 'GET'})
+    ).toStrictEqual({
+      status: 400,
+      headers: {'content-type': 'application/json'},
+      body: `{"message":"'message' cannot be empty"}`
+    });
+
+    // - With an asynchronous method -
+
+    Movie.setRoute('echoAsync', '/echo-async', {transformers});
+
+    expect(
+      await Movie.callRoute('echoAsync', undefined, {message: 'hello'}, undefined, {method: 'GET'})
+    ).toStrictEqual({
+      status: 200,
+      headers: {'content-type': 'application/json'},
+      body: '"GET:hello"'
+    });
+    expect(
+      await Movie.callRoute('echoAsync', undefined, {message: ''}, undefined, {method: 'GET'})
+    ).toStrictEqual({
+      status: 400,
+      headers: {'content-type': 'application/json'},
+      body: `{"message":"'message' cannot be empty"}`
+    });
   });
 
   test('findRouteByURL()', async () => {

@@ -22,7 +22,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "rss": "^1.2.2",
-    "slugify": "^1.5.1",
+    "slugify": "^1.5.2",
     "tslib": "^2.2.0"
   },
   "devDependencies": {

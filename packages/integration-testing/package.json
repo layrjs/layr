@@ -1,6 +1,6 @@
 {
   "name": "@layr/integration-testing",
-  "version": "1.0.90",
+  "version": "1.0.92",
   "private": true,
   "description": "Tests involving a combination of Layr packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -31,7 +31,7 @@
     "@layr/memory-router": "^2.0.9",
     "@layr/memory-store": "^1.1.25",
     "@layr/mongodb-store": "^1.1.39",
-    "@layr/routable": "^2.0.19",
+    "@layr/routable": "^2.0.21",
     "@layr/router": "^2.0.10",
     "@layr/storable": "^1.1.21",
     "@layr/store": "^1.1.31",
