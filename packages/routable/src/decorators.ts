@@ -185,3 +185,117 @@ export function wrapper(pattern: Pattern, options: WrapperOptions = {}) {
     return descriptor;
   };
 }
+
+const HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
+const ANY_HTTP_METHOD = '*';
+
+type HTTPMethod = typeof HTTP_METHODS[number];
+type AnyHTTPMethod = typeof ANY_HTTP_METHOD;
+
+export function basicHTTPRouteInputTransformer(params: any, _request: any) {
+  return params;
+}
+
+export function basicHTTPRouteOutputTransformer(result: any, request: any) {
+  let response: {status?: number; headers?: Record<string, string>; body?: string | Buffer} = {};
+
+  if (result === undefined) {
+    response.status = 204; // No Content
+  } else {
+    if (request?.method === 'POST') {
+      response.status = 201; // Created
+    } else {
+      response.status = 200; // OK
+    }
+
+    if (Buffer.isBuffer(result)) {
+      response.headers = {'content-type': 'application/octet-stream'};
+      response.body = result;
+    } else {
+      response.headers = {'content-type': 'application/json'};
+      response.body = JSON.stringify(result);
+    }
+  }
+
+  return response;
+}
+
+export function basicHTTPRouteErrorTransformer(error: any, _request: any) {
+  const response: {status: number; headers: Record<string, string>; body: string} = {
+    status: 500,
+    headers: {'content-type': 'application/json'},
+    body: JSON.stringify({
+      message: 'Internal server error'
+    })
+  };
+
+  if (typeof error !== 'object' || error === null) {
+    return response;
+  }
+
+  if (typeof error.status === 'number') {
+    response.status = error.status;
+  }
+
+  const expose: boolean = typeof error.expose === 'boolean' ? error.expose : response.status < 500;
+
+  if (expose) {
+    const body: Record<string, any> = {};
+
+    body.message = typeof error.message === 'string' ? error.message : 'Unknown error';
+
+    for (const [key, value] of Object.entries(error)) {
+      if (key === 'status' || key === 'message' || value === undefined) {
+        continue;
+      }
+
+      body[key] = value;
+    }
+
+    response.body = JSON.stringify(body);
+  }
+
+  return response;
+}
+
+export function httpRoute(
+  httpMethod: HTTPMethod | AnyHTTPMethod,
+  pattern: Pattern,
+  options: RouteOptions = {}
+) {
+  if (!(httpMethod === ANY_HTTP_METHOD || HTTP_METHODS.includes(httpMethod))) {
+    throw new Error(
+      `The HTTP method '${httpMethod}' is not supported by the @httpRoute() decorator (supported values are: ${HTTP_METHODS.map(
+        (method) => `'${method}'`
+      ).join(', ')}, or '${ANY_HTTP_METHOD}')`
+    );
+  }
+
+  const {
+    filter = function (request) {
+      return httpMethod === '*'
+        ? HTTP_METHODS.includes(request?.method)
+        : request?.method === httpMethod;
+    },
+    transformers = {},
+    ...otherOptions
+  } = options;
+
+  const {
+    input = basicHTTPRouteInputTransformer,
+    output = basicHTTPRouteOutputTransformer,
+    error = basicHTTPRouteErrorTransformer
+  } = transformers;
+
+  return function (
+    target: typeof RoutableComponent | RoutableComponent,
+    name: string,
+    descriptor: PropertyDescriptor
+  ) {
+    return route(pattern, {filter, transformers: {input, output, error}, ...otherOptions})(
+      target,
+      name,
+      descriptor
+    );
+  };
+}

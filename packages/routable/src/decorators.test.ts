@@ -1,7 +1,8 @@
 import {Component, provide, primaryIdentifier, attribute} from '@layr/component';
+import createError from 'http-errors';
 
 import {Routable} from './routable';
-import {route, wrapper} from './decorators';
+import {route, wrapper, httpRoute} from './decorators';
 import {isRouteInstance} from './route';
 import {isWrapperInstance} from './wrapper';
 
@@ -150,5 +151,60 @@ describe('Decorators', () => {
     expect(isWrapperInstance(itemLayoutWrapper)).toBe(true);
     expect(itemLayoutWrapper.getName()).toBe('ItemLayout');
     expect(itemLayoutWrapper.getPattern()).toBe('[/movies]/:id');
+  });
+
+  test('@httpRoute()', async () => {
+    class Movie extends Routable(Component) {
+      @primaryIdentifier() id!: string;
+
+      @httpRoute('GET', '/movies/:id') async getMovie() {
+        if (this.id === 'abc123') {
+          return {id: 'abc123', title: 'Inception'};
+        }
+
+        throw createError(404, 'Movie not found', {
+          displayMessage: "Couldn't find a movie with the specified 'id'",
+          code: 'ITEM_NOT_FOUND'
+        });
+      }
+
+      @httpRoute('*', '/*') routeNotFound() {
+        throw createError(404, 'Route not found');
+      }
+    }
+
+    expect(await Movie.prototype.callRouteByURL('/movies/abc123', {method: 'GET'})).toStrictEqual({
+      status: 200,
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify({id: 'abc123', title: 'Inception'})
+    });
+
+    expect(await Movie.prototype.callRouteByURL('/movies/def456', {method: 'GET'})).toStrictEqual({
+      status: 404,
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify({
+        message: 'Movie not found',
+        displayMessage: "Couldn't find a movie with the specified 'id'",
+        code: 'ITEM_NOT_FOUND'
+      })
+    });
+
+    expect(await Movie.prototype.callRouteByURL('/films', {method: 'GET'})).toStrictEqual({
+      status: 404,
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify({
+        message: 'Route not found'
+      })
+    });
+
+    expect(() => {
+      // @ts-ignore
+      class Movie extends Routable(Component) {
+        // @ts-expect-error
+        @httpRoute('TRACE', '/trace') static trace() {}
+      }
+    }).toThrow(
+      "The HTTP method 'TRACE' is not supported by the @httpRoute() decorator (supported values are: 'GET', 'POST', 'PUT', 'DELETE', 'PATCH', or '*')"
+    );
   });
 });
