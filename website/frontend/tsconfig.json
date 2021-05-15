@@ -1,22 +1,7 @@
 {
+  "extends": "@boostr/tsconfig",
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "ES2017",
-    "module": "CommonJS",
-    "lib": ["ES2018", "DOM"],
-    "jsx": "react",
-    "jsxFactory": "jsx",
-    "sourceMap": true,
-    "importHelpers": true,
-    "strict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true,
-    "resolveJsonModule": true,
-    "stripInternal": true
+    "jsxFactory": "jsx"
   }
 }

@@ -4,17 +4,11 @@
   "private": true,
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "scripts": {
-    "build": "rm -rf ./build && tsc --outDir ./build",
-    "deploy": "npm run build && simple-deployment",
-    "migrate": "ts-node ./src/commands/migrate.ts",
-    "start": "nodemon --watch ./src --exec ts-node ./src/http-server.ts"
-  },
+  "main": "./src/index.ts",
   "dependencies": {
-    "@layr/aws-integration": "^1.1.14",
     "@layr/component": "^1.1.12",
-    "@layr/component-server": "^1.1.11",
     "@layr/mongodb-store": "^1.1.39",
+    "@layr/routable": "^2.0.22",
     "@layr/storable": "^1.1.21",
     "@layr/with-roles": "^1.0.29",
     "bcryptjs": "^2.4.3",
@@ -22,19 +16,14 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "rss": "^1.2.2",
-    "slugify": "^1.5.2",
-    "tslib": "^2.2.0"
+    "slugify": "^1.5.3"
   },
   "devDependencies": {
-    "@layr/component-http-server": "^1.1.11",
+    "@boostr/tsconfig": "^1.0.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^8.5.1",
-    "@types/lodash": "^4.14.168",
-    "@types/node": "^14.14.44",
-    "@types/rss": "0.0.28",
-    "nodemon": "^2.0.7",
-    "simple-deployment": "^0.1.46",
-    "ts-node": "^8.10.2",
-    "typescript": "^3.9.9"
+    "@types/lodash": "^4.14.169",
+    "@types/node": "^14.14.45",
+    "@types/rss": "0.0.28"
   }
 }

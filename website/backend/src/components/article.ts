@@ -1,23 +1,12 @@
 import {expose, validators} from '@layr/component';
 import {secondaryIdentifier, attribute, method} from '@layr/storable';
+import {Routable, httpRoute} from '@layr/routable';
 import slugify from 'slugify';
 import RSS from 'rss';
 import escape from 'lodash/escape';
 
 import {Entity} from './entity';
 import {WithAuthor} from './with-author';
-
-const frontendURL = process.env.FRONTEND_URL;
-
-if (!frontendURL) {
-  throw new Error(`'FRONTEND_URL' environment variable is missing`);
-}
-
-const backendURL = process.env.BACKEND_URL;
-
-if (!backendURL) {
-  throw new Error(`'BACKEND_URL' environment variable is missing`);
-}
 
 const {rangeLength} = validators;
 
@@ -31,7 +20,7 @@ const {rangeLength} = validators;
     delete: {call: 'author'}
   }
 })
-export class Article extends WithAuthor(Entity) {
+export class Article extends Routable(WithAuthor(Entity)) {
   @expose({get: true, set: 'author'})
   @attribute('string', {validators: [rangeLength([1, 200])]})
   title = '';
@@ -65,8 +54,21 @@ export class Article extends WithAuthor(Entity) {
     );
   }
 
-  // time curl -v -X POST -H "Content-Type: application/json" -d '{"query": {"<=": {"__component": "typeof Article"}, "getRSSFeed=>": {"()": []}}}' http://localhost:18888
-  @expose({call: true}) @method() static async getRSSFeed() {
+  // time curl -v http://localhost:18888/blog/feed
+  @httpRoute('GET', '/blog/feed', {
+    transformers: {
+      output(result) {
+        return {
+          status: 200,
+          headers: {'content-type': 'application/rss+xml'},
+          body: result
+        };
+      }
+    }
+  })
+  @expose({call: true})
+  @method()
+  static async getRSSFeed() {
     const articles = await this.find(
       {},
       {
@@ -85,12 +87,12 @@ export class Article extends WithAuthor(Entity) {
     const feed = new RSS({
       title: 'Layr Blog',
       description: 'Dramatically simplify full‑stack development',
-      feed_url: `${backendURL}/blog/feed`,
-      site_url: `${frontendURL}/blog`
+      feed_url: `${process.env.BACKEND_URL}blog/feed`,
+      site_url: `${process.env.FRONTEND_URL}blog`
     });
 
     for (const article of articles) {
-      const url = `${frontendURL}/blog/articles/${article.slug}`;
+      const url = `${process.env.FRONTEND_URL}blog/articles/${article.slug}`;
 
       const description = `<p>${escape(
         article.description

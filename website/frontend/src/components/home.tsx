@@ -8,8 +8,7 @@ import type {Docs} from './docs';
 import type {createNewsletterComponent} from './newsletter';
 import type {UI} from './ui';
 import {FeatureSection, useTitle} from '../utilities';
-// @ts-ignore
-import typicalVsLayr from '../assets/typical-stack-vs-layr-stack-20201027.immutable.png';
+import typicalVsLayr from '../assets/typical-stack-vs-layr-stack.png';
 
 const NO_WEB_API_BACKEND_EXAMPLE = `
 \`\`\`
@@ -172,7 +171,7 @@ export class Home extends Routable(Component) {
     UI.useAnchor();
 
     return (
-      <div>
+      <UI.Root>
         <UI.FullHeight
           css={{display: 'flex', flexDirection: 'column', backgroundColor: UI.colors.blueGrey800}}
         >
@@ -194,7 +193,7 @@ export class Home extends Routable(Component) {
         </div>
 
         <Application.FooterView />
-      </div>
+      </UI.Root>
     );
   }
 

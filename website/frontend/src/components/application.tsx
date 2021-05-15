@@ -13,12 +13,9 @@ import {Blog} from './blog';
 import {creteArticleComponent} from './article';
 import {createNewsletterComponent} from './newsletter';
 import {UI} from './ui';
-// @ts-ignore
-import layrLogo from '../assets/layr-logo-with-icon-dark-mode-20201027.immutable.svg';
-// @ts-ignore
-import brokenHeart from '../assets/broken-heart-20200822.immutable.svg';
-// @ts-ignore
-import love from '../assets/f-plus-b-equals-love-20191111.immutable.svg';
+import layrLogo from '../assets/layr-logo-with-icon-dark-mode.svg';
+import brokenHeart from '../assets/broken-heart.svg';
+import love from '../assets/f-plus-b-equals-love.svg';
 
 export const createApplicationComponent = (Base: typeof BackendApplication) => {
   class Application extends Routable(Base) {
@@ -35,7 +32,7 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
       const {UI} = this;
 
       return (
-        <div>
+        <UI.Root>
           <UI.FullHeight css={{display: 'flex', flexDirection: 'column'}}>
             <this.HeaderView />
             <div
@@ -50,7 +47,7 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
             </div>
             <this.FooterView />
           </UI.FullHeight>
-        </div>
+        </UI.Root>
       );
     }
 
