@@ -166,16 +166,10 @@ export abstract class Store {
 
     this._rootComponents.add(rootComponent);
 
-    const registerIfComponentIsStorable = (component: typeof Component) => {
+    for (const component of rootComponent.traverseComponents()) {
       if (isStorableClass(component) && !component.isEmbedded()) {
         this.registerStorable(component);
       }
-    };
-
-    registerIfComponentIsStorable(rootComponent);
-
-    for (const providedComponent of rootComponent.getProvidedComponents({deep: true})) {
-      registerIfComponentIsStorable(providedComponent);
     }
   }
 

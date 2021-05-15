@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-server",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Serves your Layr components",
   "keywords": [
     "layr",
@@ -27,8 +27,8 @@
   },
   "dependencies": {
     "@deepr/runtime": "^1.0.6",
-    "@layr/component": "^1.1.13",
-    "@layr/router": "^2.0.12",
+    "@layr/component": "^1.1.14",
+    "@layr/router": "^2.0.13",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
     "lodash": "^4.17.21",
