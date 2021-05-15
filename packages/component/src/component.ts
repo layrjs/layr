@@ -2840,6 +2840,24 @@ export class Component extends Observable(Object) {
     return isComponentClassType ? component : component.prototype;
   }
 
+  static traverseComponents(options: {filter?: (component: typeof Component) => boolean} = {}) {
+    const {filter} = options;
+
+    const component = this;
+
+    return {
+      *[Symbol.iterator](): Generator<typeof Component> {
+        if (filter === undefined || filter(component)) {
+          yield component;
+        }
+
+        for (const providedComponent of component.getProvidedComponents({deep: true, filter})) {
+          yield providedComponent;
+        }
+      }
+    };
+  }
+
   // --- Component provision ---
 
   /**

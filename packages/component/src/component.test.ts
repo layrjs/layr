@@ -1344,6 +1344,8 @@ describe('Component', () => {
         Actor
       ]);
 
+      expect(Array.from(Root.traverseComponents())).toEqual([Root, Movie, Director, Actor]);
+
       class Film extends Component {}
 
       expect(() => Film.provideComponent(Director)).toThrow(
