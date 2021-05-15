@@ -100,12 +100,9 @@ export abstract class Router extends Observable(Object) {
 
     this._rootComponents.add(rootComponent);
 
-    let routableCount = 0;
-
     const registerIfComponentIsRoutable = (component: typeof Component) => {
       if (isRoutableLikeClass(component)) {
         this.registerRoutable(component);
-        routableCount++;
       }
     };
 
@@ -113,12 +110,6 @@ export abstract class Router extends Observable(Object) {
 
     for (const providedComponent of rootComponent.getProvidedComponents({deep: true})) {
       registerIfComponentIsRoutable(providedComponent);
-    }
-
-    if (routableCount === 0) {
-      throw new Error(
-        `No routable components were found from the specified root component '${rootComponent.describeComponent()}'`
-      );
     }
   }
 

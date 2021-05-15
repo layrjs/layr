@@ -1,6 +1,6 @@
 {
   "name": "@layr/router",
-  "version": "2.0.10",
+  "version": "2.0.12",
   "description": "A base class for implementing Layr routers",
   "keywords": [
     "layr",
@@ -27,8 +27,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^1.1.12",
-    "@layr/observable": "^1.0.7",
+    "@layr/component": "^1.1.13",
+    "@layr/observable": "^1.0.8",
     "core-helpers": "^1.0.3",
     "qs": "^6.10.1",
     "tslib": "^2.2.0"

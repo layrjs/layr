@@ -1,6 +1,6 @@
 {
   "name": "@layr/store",
-  "version": "1.1.31",
+  "version": "1.1.32",
   "description": "A base class for implementing Layr stores",
   "keywords": [
     "layr",
@@ -28,17 +28,17 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^1.1.12",
-    "@layr/storable": "^1.1.21",
+    "@layr/component": "^1.1.13",
+    "@layr/storable": "^1.1.22",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "simple-serialization": "^1.0.6",
-    "tslib": "^2.1.0"
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.28",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.168"
+    "@types/lodash": "^4.14.169"
   }
 }

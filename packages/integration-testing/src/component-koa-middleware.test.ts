@@ -3,6 +3,7 @@ import mount from 'koa-mount';
 import type {Server} from 'http';
 import {serveComponent} from '@layr/component-koa-middleware';
 import {ComponentHTTPClient} from '@layr/component-http-client';
+import fetch from 'cross-fetch';
 
 import {Counter as BackendCounter} from './counter.fixture';
 
@@ -25,7 +26,7 @@ describe('Koa middleware', () => {
     server?.close();
   });
 
-  test('Simple component', async () => {
+  test('API-less', async () => {
     const client = new ComponentHTTPClient(`http://localhost:${SERVER_PORT}/api`);
 
     const Counter = (await client.getComponent()) as typeof BackendCounter;
@@ -41,5 +42,38 @@ describe('Koa middleware', () => {
     await counter.increment();
 
     expect(counter.value).toBe(2);
+  });
+
+  test('REST API', async () => {
+    let response = await fetch(`http://localhost:${SERVER_PORT}/api/ping`);
+    let result = await response.json();
+
+    expect(result).toBe('pong');
+
+    response = await fetch(`http://localhost:${SERVER_PORT}/api/echo`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: 'hello'})
+    });
+    result = await response.json();
+
+    expect(result).toStrictEqual({message: 'hello'});
+
+    response = await fetch(`http://localhost:${SERVER_PORT}/api/echo`, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: 'hello'
+    });
+    result = await response.json();
+
+    expect(result).toBe('hello');
+
+    response = await fetch(`http://localhost:${SERVER_PORT}/api/echo`, {
+      method: 'POST',
+      body: Buffer.from([1, 2, 3])
+    });
+    result = await response.json();
+
+    expect(result).toStrictEqual([1, 2, 3]);
   });
 });

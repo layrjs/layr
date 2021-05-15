@@ -39,7 +39,9 @@
 import type {Component} from '@layr/component';
 import {ensureComponentServer} from '@layr/component-server';
 import type {ComponentServer, ComponentServerOptions} from '@layr/component-server';
-import body from 'co-body';
+import type {Context} from 'koa';
+import getRawBody from 'raw-body';
+import mime from 'mime-types';
 import sleep from 'sleep-promise';
 
 const DEFAULT_LIMIT = '8mb';
@@ -68,7 +70,9 @@ export function serveComponent(
 
   const {limit = DEFAULT_LIMIT, delay = 0, errorRate = 0} = options;
 
-  return async function (ctx: any) {
+  const router = componentServer.findRouter();
+
+  return async function (ctx: Context) {
     if (delay > 0) {
       await sleep(delay);
     }
@@ -81,31 +85,70 @@ export function serveComponent(
       }
     }
 
-    if (ctx.url !== '/') {
-      ctx.throw(404);
-    }
+    const method = ctx.request.method;
+    const url = ctx.request.url;
+    const headers = (ctx.request.headers as Record<string, string>) ?? {};
+    const contentType = headers['content-type'] || 'application/octet-stream';
+    const charset = mime.charset(contentType) || undefined;
+    const body: string | Buffer = await getRawBody(ctx.req, {limit, encoding: charset});
 
-    if (ctx.method === 'GET') {
-      ctx.body = await componentServer.receive({query: {'introspect=>': {'()': []}}});
-      return;
-    }
-
-    if (ctx.method === 'POST') {
-      let parsedBody: any;
-
-      if (ctx.req.rawBody !== undefined) {
-        // In case the body has already been read, just parse it
-        // This is specific to this package and not related to the way Koa usually works
-        parsedBody = JSON.parse(ctx.req.rawBody);
-      } else {
-        parsedBody = await body.json(ctx.req, {limit, strict: true});
+    if (url === '/') {
+      if (method === 'GET') {
+        ctx.response.body = await componentServer.receive({query: {'introspect=>': {'()': []}}});
+        return;
       }
 
-      const {query, components, version} = parsedBody;
-      ctx.body = await componentServer.receive({query, components, version});
+      if (method === 'POST') {
+        let parsedBody: any;
+
+        if (typeof body !== 'string') {
+          throw new Error(
+            `Expected a body of type 'string', but received a value of type '${typeof body}'`
+          );
+        }
+
+        try {
+          parsedBody = JSON.parse(body);
+        } catch (error) {
+          throw new Error(`An error occurred while parsing a JSON body string ('${body}')`);
+        }
+
+        const {query, components, version} = parsedBody;
+        ctx.response.body = await componentServer.receive({query, components, version});
+        return;
+      }
+
+      ctx.throw(405);
+    }
+
+    if (router !== undefined) {
+      const routeResponse: {
+        status: number;
+        headers?: Record<string, string>;
+        body?: string | Buffer;
+      } = await router.callRouteByURL(url, {method, headers, body});
+
+      if (typeof routeResponse?.status !== 'number') {
+        throw new Error(
+          `Unexpected response \`${JSON.stringify(
+            routeResponse
+          )}\` returned by a component route (a proper response should be an object of the shape \`{status: number; headers?: Record<string, string>; body?: string | Buffer;}\`)`
+        );
+      }
+
+      ctx.response.status = routeResponse.status;
+
+      if (routeResponse.headers !== undefined) {
+        ctx.response.set(routeResponse.headers);
+      }
+
+      if (routeResponse.body !== undefined) {
+        ctx.response.body = routeResponse.body;
+      }
+
       return;
     }
 
-    ctx.throw(405);
+    ctx.throw(404);
   };
 }

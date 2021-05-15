@@ -11,6 +11,7 @@ import {
   serialize,
   deserialize
 } from '@layr/component';
+import {isRoutableLikeClass} from '@layr/router';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
@@ -75,6 +76,36 @@ export class ComponentServer {
     this._introspectedComponent = introspectedComponent;
     this._name = name;
     this._version = version;
+  }
+
+  getComponent() {
+    return this._component;
+  }
+
+  findRouter() {
+    const findRouter = (component: typeof Component) => {
+      if (isRoutableLikeClass(component) && component.hasRouter()) {
+        return component.getRouter();
+      }
+
+      return undefined;
+    };
+
+    const router = findRouter(this._component);
+
+    if (router !== undefined) {
+      return router;
+    }
+
+    for (const providedComponent of this._component.getProvidedComponents({deep: true})) {
+      const router = findRouter(providedComponent);
+
+      if (router !== undefined) {
+        return router;
+      }
+    }
+
+    return undefined;
   }
 
   receive(request: {query: PlainObject; components?: PlainObject[]; version?: number}) {
