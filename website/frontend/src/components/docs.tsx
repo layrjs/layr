@@ -2,11 +2,12 @@ import {Component, consume} from '@layr/component';
 import {stringifyQuery} from '@layr/router';
 import {Routable} from '@layr/routable';
 import React, {Fragment, useCallback} from 'react';
-import {layout, page, view, useData} from '@layr/react-integration';
+import {page, view, useData} from '@layr/react-integration';
 import {jsx, css} from '@emotion/core';
 import isEqual from 'lodash/isEqual';
 
 import type {createApplicationComponent} from './application';
+import docs from '../docs.json';
 import type {UI} from './ui';
 import {useTitle} from '../utilities';
 
@@ -17,7 +18,6 @@ const LANGUAGES = [
 ];
 
 const BASE_URL = '/docs';
-const INDEX_PATH = 'index.json';
 
 type URLParams = {
   version: string;
@@ -50,21 +50,7 @@ export class Docs extends Routable(Component) {
   @consume() static Application: ReturnType<typeof createApplicationComponent>;
   @consume() static UI: typeof UI;
 
-  @layout('[/]docs') static MainLayout({children}: {children: () => any}) {
-    return useData(
-      async () => {
-        await this.loadContents();
-      },
-
-      () => <div css={{flexBasis: 960}}>{children()}</div>,
-
-      [], // getter deps
-
-      [children] // renderer deps
-    );
-  }
-
-  @page('[/docs]*') static MainPage() {
+  @page('[/]docs*') static MainPage() {
     const {Application, UI} = this;
 
     const {version, bookSlug, chapterSlug, language} = this.resolveURL();
@@ -92,7 +78,13 @@ export class Docs extends Routable(Component) {
     }
 
     return (
-      <div css={UI.responsive({display: 'flex', flexWrap: ['nowrap', , 'wrap-reverse']})}>
+      <div
+        css={UI.responsive({
+          flexBasis: 960,
+          display: 'flex',
+          flexWrap: ['nowrap', , 'wrap-reverse']
+        })}
+      >
         <div css={UI.responsive({width: ['250px', , '100%'], paddingRight: [20, , 0]})}>
           <this.ContentsView
             version={version}
@@ -312,37 +304,25 @@ export class Docs extends Routable(Component) {
 
   static _contents: Contents;
 
-  static async loadContents() {
-    if (this._contents === undefined) {
-      try {
-        const response = await fetch(`${BASE_URL}/${INDEX_PATH}`);
-        const contents: Contents = await response.json();
-
-        if (response.status !== 200) {
-          throw new Error('An error occurred while fetching the documentation index');
-        }
-
-        for (const book of contents.books) {
-          let previousChapter: Chapter | undefined;
-
-          for (const chapter of book.chapters) {
-            if (previousChapter !== undefined) {
-              previousChapter.nextChapter = chapter;
-            }
-
-            previousChapter = chapter;
-          }
-        }
-
-        this._contents = contents;
-      } catch (error) {
-        error.displayMessage = 'Sorry, something went wrong while loading the documentation.';
-        throw error;
-      }
-    }
-  }
-
   static getContents() {
+    if (this._contents === undefined) {
+      const contents: Contents = (docs as any).versions.v1;
+
+      for (const book of contents.books) {
+        let previousChapter: Chapter | undefined;
+
+        for (const chapter of book.chapters) {
+          if (previousChapter !== undefined) {
+            previousChapter.nextChapter = chapter;
+          }
+
+          previousChapter = chapter;
+        }
+      }
+
+      this._contents = contents;
+    }
+
     return this._contents;
   }
 
@@ -363,7 +343,7 @@ export class Docs extends Routable(Component) {
 
     if (chapter.content === undefined) {
       try {
-        const response = await fetch(`${BASE_URL}/${chapter.file}`);
+        const response = await fetch(`${BASE_URL}/v1/${chapter.file}`);
         const content = await response.text();
 
         if (response.status !== 200) {
