@@ -11,7 +11,6 @@ import {
   serialize,
   deserialize
 } from '@layr/component';
-import {isRoutableLikeClass} from '@layr/router';
 import {invokeQuery} from '@deepr/runtime';
 import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
@@ -82,32 +81,6 @@ export class ComponentServer {
     return this._component;
   }
 
-  findRouter() {
-    const findRouter = (component: typeof Component) => {
-      if (isRoutableLikeClass(component) && component.hasRouter()) {
-        return component.getRouter();
-      }
-
-      return undefined;
-    };
-
-    const router = findRouter(this._component);
-
-    if (router !== undefined) {
-      return router;
-    }
-
-    for (const providedComponent of this._component.getProvidedComponents({deep: true})) {
-      const router = findRouter(providedComponent);
-
-      if (router !== undefined) {
-        return router;
-      }
-    }
-
-    return undefined;
-  }
-
   receive(request: {query: PlainObject; components?: PlainObject[]; version?: number}) {
     const {
       query: serializedQuery,
@@ -117,10 +90,10 @@ export class ComponentServer {
 
     this.validateVersion(clientVersion);
 
-    const forkedComponent = this._component.fork();
+    const componentFork = this._component.fork();
     const deeprRoot = this.getDeeprRoot();
 
-    const componentGetter = (type: string) => forkedComponent.getComponentOfType(type);
+    const componentGetter = (type: string) => componentFork.getComponentOfType(type);
 
     const getFilter = function (attribute: Attribute) {
       return attribute.operationIsAllowed('get');

@@ -31,6 +31,14 @@ export function isRouterInstance(value: any): value is Router {
   return typeof value?.constructor?.isRouter === 'function';
 }
 
+export function assertIsRouterInstance(value: any): asserts value is Router {
+  if (!isRouterInstance(value)) {
+    throw new Error(
+      `Expected a router instance, but received a value of type '${getTypeOf(value)}'`
+    );
+  }
+}
+
 export function normalizeURL(url: URL | string) {
   if (url instanceof URL) {
     return url;

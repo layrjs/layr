@@ -1,6 +1,6 @@
 {
   "name": "@layr/router",
-  "version": "2.0.13",
+  "version": "2.0.15",
   "description": "A base class for implementing Layr routers",
   "keywords": [
     "layr",
