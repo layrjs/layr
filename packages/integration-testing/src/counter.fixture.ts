@@ -39,4 +39,4 @@ export class Counter extends Routable(Component) {
 
 const router = new MemoryRouter();
 
-router.registerRoutable(Counter);
+Counter.registerRouter(router);

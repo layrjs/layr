@@ -1,6 +1,6 @@
-import {Component, primaryIdentifier} from '@layr/component';
+import {Component, provide, primaryIdentifier} from '@layr/component';
 
-import {Routable} from './routable';
+import {Routable, callRouteByURL} from './routable';
 import {isRoutableClass, isRoutableInstance} from './utilities';
 
 describe('Routable', () => {
@@ -77,116 +77,6 @@ describe('Routable', () => {
     expect(ExtendedMovie.prototype.getRoute('DetailsPage')).toBe(detailsPageRoute);
     expect(ExtendedMovie.prototype.getRoute('ItemPage')).toBe(itemPageRoute);
     expect(Movie.prototype.hasRoute('DetailsPage')).toBe(false);
-  });
-
-  test('callRoute()', async () => {
-    class Movie extends Routable(Component) {
-      @primaryIdentifier() id!: string;
-
-      static ListPage() {
-        return `All movies`;
-      }
-
-      ItemPage({showDetails = false}) {
-        return `Movie #${this.id}${showDetails ? ' (with details)' : ''}`;
-      }
-
-      static echo({message}: {message: string}) {
-        if (message === 'GET:') {
-          throw new Error("'message' cannot be empty");
-        }
-
-        return message;
-      }
-
-      static async echoAsync({message}: {message: string}) {
-        if (message === 'GET:') {
-          throw new Error("'message' cannot be empty");
-        }
-
-        return message;
-      }
-    }
-
-    // --- Class routes ---
-
-    Movie.setRoute('ListPage', '/movies');
-
-    expect(Movie.callRoute('ListPage')).toBe('All movies');
-
-    expect(() => Movie.callRoute('HotPage')).toThrow(
-      "The route 'HotPage' is missing (component: 'Movie')"
-    );
-
-    // --- Prototype routes ---
-
-    Movie.prototype.setRoute('ItemPage', '/movies/:id', {params: {showDetails: 'boolean?'}});
-
-    expect(Movie.prototype.callRoute('ItemPage', {id: 'abc123'})).toBe('Movie #abc123');
-    expect(Movie.prototype.callRoute('ItemPage', {id: 'def456'})).toBe('Movie #def456');
-    expect(Movie.prototype.callRoute('ItemPage', {id: 'abc123'}, {showDetails: true})).toBe(
-      'Movie #abc123 (with details)'
-    );
-
-    // --- Route transformers ---
-
-    const transformers = {
-      input({message}: {message: string}, {method}: {method: string}) {
-        return {message: `${method}:${message}`};
-      },
-      output(result: string) {
-        return {
-          status: 200,
-          headers: {'content-type': 'application/json'},
-          body: JSON.stringify(result)
-        };
-      },
-      error(error: Error) {
-        return {
-          status: 400,
-          headers: {'content-type': 'application/json'},
-          body: JSON.stringify({message: error.message})
-        };
-      }
-    };
-
-    // - With a synchronous method -
-
-    Movie.setRoute('echo', '/echo', {transformers});
-
-    expect(
-      Movie.callRoute('echo', undefined, {message: 'hello'}, undefined, {method: 'GET'})
-    ).toStrictEqual({
-      status: 200,
-      headers: {'content-type': 'application/json'},
-      body: '"GET:hello"'
-    });
-    expect(
-      Movie.callRoute('echo', undefined, {message: ''}, undefined, {method: 'GET'})
-    ).toStrictEqual({
-      status: 400,
-      headers: {'content-type': 'application/json'},
-      body: `{"message":"'message' cannot be empty"}`
-    });
-
-    // - With an asynchronous method -
-
-    Movie.setRoute('echoAsync', '/echo-async', {transformers});
-
-    expect(
-      await Movie.callRoute('echoAsync', undefined, {message: 'hello'}, undefined, {method: 'GET'})
-    ).toStrictEqual({
-      status: 200,
-      headers: {'content-type': 'application/json'},
-      body: '"GET:hello"'
-    });
-    expect(
-      await Movie.callRoute('echoAsync', undefined, {message: ''}, undefined, {method: 'GET'})
-    ).toStrictEqual({
-      status: 400,
-      headers: {'content-type': 'application/json'},
-      body: `{"message":"'message' cannot be empty"}`
-    });
   });
 
   test('findRouteByURL()', async () => {
@@ -271,10 +161,6 @@ describe('Routable', () => {
     class Movie extends Routable(Component) {
       @primaryIdentifier() id!: string;
 
-      static MainLayout({children}: {children: () => any}) {
-        return `[${children()}]`;
-      }
-
       static ListPage() {
         return `All movies`;
       }
@@ -284,29 +170,107 @@ describe('Routable', () => {
       }
     }
 
-    Movie.setWrapper('MainLayout', '/');
+    class Application extends Routable(Component) {
+      @provide() static Movie = Movie;
+
+      static MainLayout({children}: {children: () => any}) {
+        return `[${children()}]`;
+      }
+
+      static echo({message = ''}: {message?: string}) {
+        if (message === 'GET:') {
+          throw new Error("'message' cannot be empty");
+        }
+
+        return message;
+      }
+
+      static async echoAsync({message = ''}: {message?: string}) {
+        if (message === 'GET:') {
+          throw new Error("'message' cannot be empty");
+        }
+
+        return message;
+      }
+    }
+
+    Application.setWrapper('MainLayout', '/');
 
     // --- Class routes ---
 
     Movie.setRoute('ListPage', '[/]movies');
 
-    expect(Movie.callRouteByURL('/movies')).toBe('[All movies]');
+    expect(callRouteByURL(Application, '/movies')).toBe('[All movies]');
 
-    expect(() => Movie.callRouteByURL('/movies/hot')).toThrow(
-      "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/hot')"
+    expect(() => callRouteByURL(Application, '/movies/hot')).toThrow(
+      "Couldn't find a route matching the specified URL (URL: '/movies/hot')"
     );
 
     // --- Prototype routes ---
 
     Movie.prototype.setRoute('ItemPage', '[/]movies/:id', {params: {showDetails: 'boolean?'}});
 
-    expect(Movie.prototype.callRouteByURL('/movies/abc123')).toBe('[Movie #abc123]');
-    expect(Movie.prototype.callRouteByURL('/movies/abc123?showDetails=1')).toBe(
+    expect(callRouteByURL(Application, '/movies/abc123')).toBe('[Movie #abc123]');
+    expect(callRouteByURL(Application, '/movies/abc123?showDetails=1')).toBe(
       '[Movie #abc123 (with details)]'
     );
 
-    expect(() => Movie.prototype.callRouteByURL('/movies/abc123/details')).toThrow(
-      "Couldn't find a route matching the specified URL (component: 'Movie', URL: '/movies/abc123/details')"
+    expect(() => callRouteByURL(Application, '/movies/abc123/details')).toThrow(
+      "Couldn't find a route matching the specified URL (URL: '/movies/abc123/details')"
     );
+
+    // --- Route transformers ---
+
+    const transformers = {
+      input({message = ''}: {message?: string}, {method}: {method: string}) {
+        return {message: `${method}:${message}`};
+      },
+      output(result: string) {
+        return {
+          status: 200,
+          headers: {'content-type': 'application/json'},
+          body: JSON.stringify(result)
+        };
+      },
+      error(error: Error) {
+        return {
+          status: 400,
+          headers: {'content-type': 'application/json'},
+          body: JSON.stringify({message: error.message})
+        };
+      }
+    };
+
+    // - With a synchronous method -
+
+    Application.setRoute('echo', '/echo', {params: {message: 'string?'}, transformers});
+
+    expect(callRouteByURL(Application, '/echo?message=hello', {method: 'GET'})).toStrictEqual({
+      status: 200,
+      headers: {'content-type': 'application/json'},
+      body: '"GET:hello"'
+    });
+    expect(callRouteByURL(Application, '/echo', {method: 'GET'})).toStrictEqual({
+      status: 400,
+      headers: {'content-type': 'application/json'},
+      body: `{"message":"'message' cannot be empty"}`
+    });
+
+    // - With an asynchronous method -
+
+    Application.setRoute('echoAsync', '/echo-async', {params: {message: 'string?'}, transformers});
+
+    expect(
+      await callRouteByURL(Application, '/echo-async?message=hello', {method: 'GET'})
+    ).toStrictEqual({
+      status: 200,
+      headers: {'content-type': 'application/json'},
+      body: '"GET:hello"'
+    });
+    expect(await callRouteByURL(Application, '/echo-async', {method: 'GET'})).toStrictEqual({
+      status: 400,
+      headers: {'content-type': 'application/json'},
+      body: `{"message":"'message' cannot be empty"}`
+    });
   });
 });

@@ -1,6 +1,6 @@
 import {Component, provide, primaryIdentifier} from '@layr/component';
 import {MemoryRouter} from '@layr/memory-router';
-import {Routable, route, wrapper} from '@layr/routable';
+import {Routable, route, wrapper, callRouteByURL} from '@layr/routable';
 
 describe('MemoryRouter', () => {
   let currentRouteResult: string;
@@ -32,7 +32,7 @@ describe('MemoryRouter', () => {
       }
     }
 
-    class Root extends Routable(Component) {
+    class Application extends Routable(Component) {
       @provide() static Home = Home;
       @provide() static Movie = Movie;
 
@@ -45,10 +45,10 @@ describe('MemoryRouter', () => {
       initialURLs: ['/', '/movies', '/movies/abc123?showTrailers=true#main']
     });
 
-    router.registerRootComponent(Root);
+    Application.registerRouter(router);
 
     router.addObserver(() => {
-      currentRouteResult = router.callCurrentRoute();
+      currentRouteResult = callRouteByURL(Application, router.getCurrentURL());
     });
 
     router.callObservers();
@@ -79,12 +79,6 @@ describe('MemoryRouter', () => {
     expect(router.getCurrentURL()).toBe('/movies/abc123?showTrailers=true#main');
   });
 
-  test('getCurrentIdentifiers()', async () => {
-    const router = getRouter();
-
-    expect(router.getCurrentIdentifiers()).toEqual({id: 'abc123'});
-  });
-
   test('getCurrentPath()', async () => {
     const router = getRouter();
 
@@ -113,12 +107,6 @@ describe('MemoryRouter', () => {
     router.goBack();
 
     expect(router.getCurrentHash()).toBeUndefined();
-  });
-
-  test('callCurrentRoute()', async () => {
-    const router = getRouter();
-
-    expect(router.callCurrentRoute()).toBe('[Movie #abc123]');
   });
 
   test('navigate()', async () => {

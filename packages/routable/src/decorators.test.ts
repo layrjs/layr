@@ -1,7 +1,7 @@
 import {Component, provide, primaryIdentifier, attribute} from '@layr/component';
 import createError from 'http-errors';
 
-import {Routable} from './routable';
+import {Routable, callRouteByURL} from './routable';
 import {route, wrapper, httpRoute} from './decorators';
 import {isRouteInstance} from './route';
 import {isWrapperInstance} from './wrapper';
@@ -173,13 +173,13 @@ describe('Decorators', () => {
       }
     }
 
-    expect(await Movie.prototype.callRouteByURL('/movies/abc123', {method: 'GET'})).toStrictEqual({
+    expect(await callRouteByURL(Movie, '/movies/abc123', {method: 'GET'})).toStrictEqual({
       status: 200,
       headers: {'content-type': 'application/json'},
       body: JSON.stringify({id: 'abc123', title: 'Inception'})
     });
 
-    expect(await Movie.prototype.callRouteByURL('/movies/def456', {method: 'GET'})).toStrictEqual({
+    expect(await callRouteByURL(Movie, '/movies/def456', {method: 'GET'})).toStrictEqual({
       status: 404,
       headers: {'content-type': 'application/json'},
       body: JSON.stringify({
@@ -189,7 +189,7 @@ describe('Decorators', () => {
       })
     });
 
-    expect(await Movie.prototype.callRouteByURL('/films', {method: 'GET'})).toStrictEqual({
+    expect(await callRouteByURL(Movie, '/films', {method: 'GET'})).toStrictEqual({
       status: 404,
       headers: {'content-type': 'application/json'},
       body: JSON.stringify({

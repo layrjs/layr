@@ -1,4 +1,4 @@
-import type {Component} from '@layr/component';
+import {RoutableComponent, assertIsRoutableClass} from '@layr/routable';
 import {ObservableType, isObservable} from '@layr/observable';
 import {BrowserRouter} from '@layr/browser-router';
 import {MemoryRouter, MemoryRouterOptions} from '@layr/memory-router';
@@ -50,12 +50,14 @@ import {useCustomization} from './components';
  * @category Hooks
  * @reacthook
  */
-export function useBrowserRouter(rootComponent: typeof Component) {
+export function useBrowserRouter(rootComponent: typeof RoutableComponent) {
+  assertIsRoutableClass(rootComponent);
+
   const routerRef = useRef<BrowserRouter>();
 
   if (routerRef.current === undefined) {
     routerRef.current = new BrowserRouter({plugins: [BrowserRouterPlugin()]});
-    routerRef.current.registerRootComponent(rootComponent);
+    rootComponent.registerRouter(routerRef.current);
   }
 
   const [isReady, setIsReady] = useState(false);
@@ -117,14 +119,16 @@ export function useBrowserRouter(rootComponent: typeof Component) {
  * @reacthook
  */
 export function useMemoryRouter(
-  rootComponent: typeof Component,
+  rootComponent: typeof RoutableComponent,
   options: MemoryRouterOptions = {}
 ) {
+  assertIsRoutableClass(rootComponent);
+
   const routerRef = useRef<MemoryRouter>();
 
   if (routerRef.current === undefined) {
     routerRef.current = new MemoryRouter(options);
-    routerRef.current.registerRootComponent(rootComponent);
+    rootComponent.registerRouter(routerRef.current);
   }
 
   const forceUpdate = useForceUpdate();

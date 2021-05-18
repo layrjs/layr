@@ -148,8 +148,10 @@ export function route(pattern: Pattern, options: RouteOptions = {}) {
       }
 
       if (!hasOwnProperty(actualMethod, '__isDecoratedWithRouter')) {
-        if (this.hasRouter()) {
-          decorateWithRouter.call(this, actualMethod, this.getRouter());
+        const router = this.findRouter();
+
+        if (router !== undefined) {
+          decorateWithRouter.call(this, actualMethod, router);
         }
       }
 

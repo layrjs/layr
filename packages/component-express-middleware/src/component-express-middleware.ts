@@ -29,6 +29,7 @@
 import type {Component} from '@layr/component';
 import {ensureComponentServer} from '@layr/component-server';
 import type {ComponentServer, ComponentServerOptions} from '@layr/component-server';
+import {callRouteByURL, isRoutableClass} from '@layr/routable';
 import type {Request, Response} from 'express';
 import getRawBody from 'raw-body';
 import mime from 'mime-types';
@@ -58,10 +59,10 @@ export function serveComponent(
   options: ServeComponentOptions = {}
 ) {
   const componentServer = ensureComponentServer(componentOrComponentServer, options);
+  const component = componentServer.getComponent();
+  const routableComponent = isRoutableClass(component) ? component : undefined;
 
   const {limit = DEFAULT_LIMIT, delay = 0, errorRate = 0} = options;
-
-  const router = componentServer.findRouter();
 
   return async function (req: Request, res: Response) {
     if (delay > 0) {
@@ -112,12 +113,14 @@ export function serveComponent(
       throw httpError(405);
     }
 
-    if (router !== undefined) {
+    if (routableComponent !== undefined) {
+      const routableComponentFork = routableComponent.fork();
+
       const routeResponse: {
         status: number;
         headers?: Record<string, string>;
         body?: string | Buffer;
-      } = await router.callRouteByURL(url, {method, headers, body});
+      } = await callRouteByURL(routableComponentFork, url, {method, headers, body});
 
       if (typeof routeResponse?.status !== 'number') {
         throw new Error(
