@@ -298,7 +298,9 @@ export class Docs extends Routable(Component) {
         );
       },
 
-      [bookSlug, chapterSlug]
+      [bookSlug, chapterSlug], // getter deps
+
+      [language] // renderer deps
     );
   }
 
