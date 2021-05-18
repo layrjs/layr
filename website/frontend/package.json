@@ -33,7 +33,7 @@
     "@types/facepaint": "^1.2.1",
     "@types/lodash": "^4.14.169",
     "@types/marked": "^1.2.2",
-    "@types/react": "^17.0.5",
+    "@types/react": "^17.0.6",
     "@types/react-dom": "^17.0.5"
   }
 }

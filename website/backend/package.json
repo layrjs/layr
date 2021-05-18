@@ -23,7 +23,7 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^8.5.1",
     "@types/lodash": "^4.14.169",
-    "@types/node": "^14.14.45",
+    "@types/node": "^14.17.0",
     "@types/rss": "0.0.28"
   }
 }
