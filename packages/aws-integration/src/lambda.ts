@@ -1,5 +1,7 @@
 import type {ComponentServer} from '@layr/component-server';
 import {isComponentServerInstance, assertIsComponentServerInstance} from '@layr/component-server';
+import type {RoutableComponent} from '@layr/routable';
+import {callRouteByURL, isRoutableClass} from '@layr/routable';
 import type {APIGatewayProxyEventV2, Context, APIGatewayProxyStructuredResultV2} from 'aws-lambda';
 
 type CustomHandler = (
@@ -40,6 +42,7 @@ export function createAWSLambdaHandlerForComponentServer(
   {customHandler}: {customHandler?: CustomHandler} = {}
 ) {
   let componentServer: ComponentServer;
+  let routableComponent: typeof RoutableComponent | undefined;
 
   const handler = async (
     event: APIGatewayProxyEventV2,
@@ -58,6 +61,9 @@ export function createAWSLambdaHandlerForComponentServer(
           `Expected a componentServer or a function returning a componentServer, but received a value of type '${typeof componentServerOrComponentServerGetter}'`
         );
       }
+
+      const component = componentServer.getComponent();
+      routableComponent = isRoutableClass(component) ? component : undefined;
     }
 
     if (
@@ -82,44 +88,83 @@ export function createAWSLambdaHandlerForComponentServer(
       }
     }
 
-    const path = event.rawPath;
-
-    if (path !== '/') {
-      return {statusCode: 404, body: 'Not Found'};
-    }
-
-    const method = event.requestContext.http.method.toUpperCase();
-
-    if (method === 'GET') {
-      return await handleHTTPRequest({query: {'introspect=>': {'()': []}}});
-    }
-
-    if (method === 'POST') {
-      const body = event.body;
-
-      if (typeof body !== 'string') {
-        return {statusCode: 400, body: 'Bad Request'};
-      }
-
-      let request: any;
-
-      try {
-        request = JSON.parse(body);
-      } catch {
-        return {statusCode: 400, body: 'Bad Request'};
-      }
-
-      return await handleHTTPRequest(request);
-    }
+    const method = event.requestContext.http.method;
 
     if (method === 'OPTIONS') {
       return {statusCode: 200};
     }
 
-    return {statusCode: 405, body: 'Method Not Allowed'};
+    const path = event.rawPath;
+
+    if (path === '/') {
+      if (method === 'GET') {
+        return await receiveRequest({query: {'introspect=>': {'()': []}}});
+      }
+
+      if (method === 'POST') {
+        const body = event.body;
+
+        if (typeof body !== 'string') {
+          return {statusCode: 400, body: 'Bad Request'};
+        }
+
+        let request: any;
+
+        try {
+          request = JSON.parse(body);
+        } catch {
+          return {statusCode: 400, body: 'Bad Request'};
+        }
+
+        return await receiveRequest(request);
+      }
+
+      return {statusCode: 405, body: 'Method Not Allowed'};
+    }
+
+    if (routableComponent !== undefined) {
+      const routableComponentFork = routableComponent.fork();
+
+      let url = path;
+
+      if (event.rawQueryString) {
+        url += `?${event.rawQueryString}`;
+      }
+
+      const headers = event.headers;
+
+      let body: string | Buffer | undefined = event.body;
+
+      if (body !== undefined && event.isBase64Encoded) {
+        body = Buffer.from(body, 'base64');
+      }
+
+      const response: {
+        status: number;
+        headers?: Record<string, string>;
+        body?: string | Buffer;
+      } = await callRouteByURL(routableComponentFork, url, {method, headers, body});
+
+      if (typeof response?.status !== 'number') {
+        throw new Error(
+          `Unexpected response \`${JSON.stringify(
+            response
+          )}\` returned by a component route (a proper response should be an object of the shape \`{status: number; headers?: Record<string, string>; body?: string | Buffer;}\`)`
+        );
+      }
+
+      return {
+        statusCode: response.status,
+        headers: response.headers,
+        body: Buffer.isBuffer(response.body) ? response.body.toString('base64') : response.body,
+        isBase64Encoded: Buffer.isBuffer(response.body)
+      };
+    }
+
+    return {statusCode: 404, body: 'Not Found'};
   };
 
-  const handleHTTPRequest = async (request: any): Promise<APIGatewayProxyStructuredResultV2> => {
+  const receiveRequest = async (request: any): Promise<APIGatewayProxyStructuredResultV2> => {
     const response = await componentServer.receive(request);
 
     return {
