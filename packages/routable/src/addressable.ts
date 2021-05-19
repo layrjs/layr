@@ -1,4 +1,4 @@
-import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@layr/router';
+import {normalizeURL, parseQuery, stringifyQuery, URLOptions} from '@layr/navigator';
 import {possiblyAsync} from 'possibly-async';
 import isEmpty from 'lodash/isEmpty';
 

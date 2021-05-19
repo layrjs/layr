@@ -1,6 +1,6 @@
 import {Component, primaryIdentifier, attribute, method, expose} from '@layr/component';
 import {Routable, httpRoute} from '@layr/routable';
-import {MemoryRouter} from '@layr/memory-router';
+import {MemoryNavigator} from '@layr/memory-navigator';
 
 export class Counter extends Routable(Component) {
   @expose({get: true, set: true}) @primaryIdentifier() id!: string;
@@ -37,6 +37,6 @@ export class Counter extends Routable(Component) {
   }
 }
 
-const router = new MemoryRouter();
+const navigator = new MemoryNavigator();
 
-Counter.registerRouter(router);
+Counter.registerNavigator(navigator);

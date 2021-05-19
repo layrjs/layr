@@ -1,5 +1,5 @@
 import {Component, consume} from '@layr/component';
-import {stringifyQuery} from '@layr/router';
+import {stringifyQuery} from '@layr/navigator';
 import {Routable} from '@layr/routable';
 import React, {Fragment, useCallback} from 'react';
 import {page, view, useData} from '@layr/react-integration';
@@ -64,14 +64,20 @@ export class Docs extends Routable(Component) {
       return <Application.NotFoundView />;
     }
 
-    const router = this.getRouter();
+    const navigator = this.getNavigator();
 
     if (
-      router.getCurrentPath() !== this.generatePath({version, bookSlug, chapterSlug}) ||
-      !isEqual(router.getCurrentQuery(), this.generateQuery({language}))
+      navigator.getCurrentPath() !== this.generatePath({version, bookSlug, chapterSlug}) ||
+      !isEqual(navigator.getCurrentQuery(), this.generateQuery({language}))
     ) {
-      router.redirect(
-        this.generateURL({version, bookSlug, chapterSlug, language, hash: router.getCurrentHash()}),
+      navigator.redirect(
+        this.generateURL({
+          version,
+          bookSlug,
+          chapterSlug,
+          language,
+          hash: navigator.getCurrentHash()
+        }),
         {defer: true}
       );
       return null;
@@ -113,7 +119,7 @@ export class Docs extends Routable(Component) {
   @view() static ContentsView({version, bookSlug, chapterSlug, language}: URLParams) {
     const {UI} = this;
 
-    const router = this.getRouter();
+    const navigator = this.getNavigator();
     const theme = UI.useTheme();
 
     const contents = this.getContents();
@@ -177,7 +183,7 @@ export class Docs extends Routable(Component) {
                           {category.chapters.map((chapter) => {
                             return (
                               <li key={chapter.slug} css={chapterMenuItemStyle}>
-                                <router.Link
+                                <navigator.Link
                                   to={this.generateURL({
                                     version,
                                     bookSlug: book.slug,
@@ -187,7 +193,7 @@ export class Docs extends Routable(Component) {
                                   activeStyle={{color: theme.link.highlighted.primaryColor}}
                                 >
                                   {chapter.title}
-                                </router.Link>
+                                </navigator.Link>
                               </li>
                             );
                           })}
@@ -207,16 +213,16 @@ export class Docs extends Routable(Component) {
   @view() static OptionsView({version, bookSlug, chapterSlug, language}: URLParams) {
     const {UI} = this;
 
-    const router = this.getRouter();
+    const navigator = this.getNavigator();
     const theme = UI.useTheme();
 
-    const hash = router.getCurrentHash();
+    const hash = navigator.getCurrentHash();
 
     const changeLanguage = useCallback(
       (event: React.ChangeEvent<HTMLSelectElement>) => {
         const language = event.target.value;
         window.localStorage.setItem('language', language);
-        router.redirect(this.generateURL({version, bookSlug, chapterSlug, language, hash}));
+        navigator.redirect(this.generateURL({version, bookSlug, chapterSlug, language, hash}));
       },
       [version, bookSlug, chapterSlug, hash]
     );
@@ -265,7 +271,7 @@ export class Docs extends Routable(Component) {
       (chapter) => {
         const {UI} = this;
 
-        const router = this.getRouter();
+        const navigator = this.getNavigator();
         const theme = UI.useTheme();
 
         useTitle(chapter.title);
@@ -281,7 +287,7 @@ export class Docs extends Routable(Component) {
                 <hr />
                 <div>
                   <span style={{color: theme.muted.textColor}}>Next:</span>{' '}
-                  <router.Link
+                  <navigator.Link
                     to={this.generateURL({
                       version,
                       bookSlug,
@@ -290,7 +296,7 @@ export class Docs extends Routable(Component) {
                     })}
                   >
                     {nextChapter.title} →
-                  </router.Link>
+                  </navigator.Link>
                 </div>
               </div>
             )}
@@ -364,10 +370,10 @@ export class Docs extends Routable(Component) {
   }
 
   static resolveURL() {
-    const router = this.getRouter();
+    const navigator = this.getNavigator();
 
-    const path = router.getCurrentPath();
-    const query = router.getCurrentQuery();
+    const path = navigator.getCurrentPath();
+    const query = navigator.getCurrentQuery();
 
     const {version, bookSlug, chapterSlug} = this.resolvePath(path);
     const {language} = this.resolveQuery(query);

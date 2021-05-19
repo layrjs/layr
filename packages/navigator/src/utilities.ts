@@ -1,12 +1,12 @@
 import qs from 'qs';
 import {getTypeOf} from 'core-helpers';
 
-import type {Router} from './router';
+import type {Navigator} from './navigator';
 
 const INTERNAL_LAYR_BASE_URL = 'http://internal.layr';
 
 /**
- * Returns whether the specified value is a router class.
+ * Returns whether the specified value is a navigator class.
  *
  * @param value A value of any type.
  *
@@ -14,12 +14,12 @@ const INTERNAL_LAYR_BASE_URL = 'http://internal.layr';
  *
  * @category Utilities
  */
-export function isRouterClass(value: any): value is typeof Router {
-  return typeof value?.isRouter === 'function';
+export function isNavigatorClass(value: any): value is typeof Navigator {
+  return typeof value?.isNavigator === 'function';
 }
 
 /**
- * Returns whether the specified value is a router instance.
+ * Returns whether the specified value is a navigator instance.
  *
  * @param value A value of any type.
  *
@@ -27,14 +27,14 @@ export function isRouterClass(value: any): value is typeof Router {
  *
  * @category Utilities
  */
-export function isRouterInstance(value: any): value is Router {
-  return typeof value?.constructor?.isRouter === 'function';
+export function isNavigatorInstance(value: any): value is Navigator {
+  return typeof value?.constructor?.isNavigator === 'function';
 }
 
-export function assertIsRouterInstance(value: any): asserts value is Router {
-  if (!isRouterInstance(value)) {
+export function assertIsNavigatorInstance(value: any): asserts value is Navigator {
+  if (!isNavigatorInstance(value)) {
     throw new Error(
-      `Expected a router instance, but received a value of type '${getTypeOf(value)}'`
+      `Expected a navigator instance, but received a value of type '${getTypeOf(value)}'`
     );
   }
 }

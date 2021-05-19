@@ -1,11 +1,11 @@
-import {Router, normalizeURL} from '@layr/router';
-import {BrowserRouterLinkProps} from '@layr/browser-router';
+import {Navigator, normalizeURL} from '@layr/navigator';
+import {BrowserNavigatorLinkProps} from '@layr/browser-navigator';
 import React, {useMemo, useCallback, FunctionComponent} from 'react';
 import {hasOwnProperty} from 'core-helpers';
 
-export function BrowserRouterPlugin() {
-  return function (router: Router) {
-    router.addAddressableMethodWrapper(function (receiver, method, params) {
+export function BrowserNavigatorPlugin() {
+  return function (navigator: Navigator) {
+    navigator.addAddressableMethodWrapper(function (receiver, method, params) {
       if (hasOwnProperty(method, '__isView')) {
         return React.createElement(method as FunctionComponent, params);
       } else {
@@ -13,16 +13,16 @@ export function BrowserRouterPlugin() {
       }
     });
 
-    router.addCustomRouteDecorator(function (method) {
+    navigator.addCustomRouteDecorator(function (method) {
       method.Link = function ({params, hash, ...props}) {
         const to = method.generateURL(params, {hash});
 
-        return router.Link({to, ...props});
+        return navigator.Link({to, ...props});
       };
     });
 
-    Object.assign(router, {
-      Link(props: BrowserRouterLinkProps) {
+    Object.assign(navigator, {
+      Link(props: BrowserNavigatorLinkProps) {
         const {to, className, activeClassName, style, activeStyle, ...otherProps} = props;
 
         if ('onClick' in props) {
@@ -34,13 +34,13 @@ export function BrowserRouterPlugin() {
             if (!(event.shiftKey || event.ctrlKey || event.altKey || event.metaKey)) {
               event.preventDefault();
 
-              router.navigate(to);
+              navigator.navigate(to);
             }
           },
           [to]
         );
 
-        const currentPath = router.getCurrentPath();
+        const currentPath = navigator.getCurrentPath();
         const linkPath = normalizeURL(to).pathname;
         const isActive = linkPath === currentPath;
 

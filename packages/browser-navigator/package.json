@@ -1,15 +1,16 @@
 {
-  "name": "@layr/memory-router",
-  "version": "2.0.13",
-  "description": "A simple router for Layr that works without a browser",
+  "name": "@layr/browser-navigator",
+  "version": "2.0.2",
+  "description": "Provides a navigation system for a Layr application running in a browser",
   "keywords": [
     "layr",
-    "router",
-    "memory"
+    "navigator",
+    "navigation",
+    "browser"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/memory-router",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/browser-navigator",
   "files": [
     "dist"
   ],
@@ -25,11 +26,15 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/router": "^2.0.15",
+    "@layr/navigator": "^2.0.1",
+    "core-helpers": "^1.0.3",
+    "lodash": "^4.17.21",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.28",
-    "@mvila/tsconfig": "^1.0.5"
+    "@mvila/tsconfig": "^1.0.5",
+    "@types/lodash": "^4.14.169",
+    "@types/react": "^16.14.6"
   }
 }

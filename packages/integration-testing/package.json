@@ -1,6 +1,6 @@
 {
   "name": "@layr/integration-testing",
-  "version": "2.0.11",
+  "version": "2.0.13",
   "private": true,
   "description": "Tests involving a combination of Layr packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -23,16 +23,16 @@
   "dependencies": {
     "@layr/component": "^1.1.14",
     "@layr/component-client": "^2.0.5",
-    "@layr/component-express-middleware": "^2.0.5",
+    "@layr/component-express-middleware": "^2.0.6",
     "@layr/component-http-client": "^2.0.5",
-    "@layr/component-http-server": "^2.0.5",
-    "@layr/component-koa-middleware": "^2.0.5",
+    "@layr/component-http-server": "^2.0.6",
+    "@layr/component-koa-middleware": "^2.0.6",
     "@layr/component-server": "^2.0.6",
-    "@layr/memory-router": "^2.0.13",
+    "@layr/memory-navigator": "^2.0.2",
     "@layr/memory-store": "^1.1.28",
     "@layr/mongodb-store": "^1.1.43",
-    "@layr/routable": "^2.0.29",
-    "@layr/router": "^2.0.15",
+    "@layr/navigator": "^2.0.1",
+    "@layr/routable": "^2.0.31",
     "@layr/storable": "^1.1.24",
     "@layr/store": "^1.1.36",
     "cross-fetch": "^3.1.4",
@@ -51,6 +51,6 @@
     "@types/koa": "^2.13.1",
     "@types/koa-mount": "^4.0.0",
     "@types/lodash": "^4.14.169",
-    "@types/mongodb": "^3.6.13"
+    "@types/mongodb": "^3.6.14"
   }
 }

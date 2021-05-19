@@ -1,29 +1,29 @@
 import {RoutableComponent, assertIsRoutableClass} from '@layr/routable';
 import {ObservableType, isObservable} from '@layr/observable';
-import {BrowserRouter} from '@layr/browser-router';
-import {MemoryRouter, MemoryRouterOptions} from '@layr/memory-router';
+import {BrowserNavigator} from '@layr/browser-navigator';
+import {MemoryNavigator, MemoryNavigatorOptions} from '@layr/memory-navigator';
 import React, {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {AsyncFunction, getTypeOf} from 'core-helpers';
 
-import {BrowserRouterPlugin} from './plugins';
+import {BrowserNavigatorPlugin} from './plugins';
 import {useCustomization} from './components';
 
 /**
- * Creates a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
+ * Creates a [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
  *
  * Typically, this hook is used in the context of a "view method" (i.e., a component method decorated by the [`@view()`](https://layrjs.com/docs/v1/reference/react-integration#view-decorator) decorator) at the root of an application.
  *
- * The created router is observed so the view where this hook is used is automatically re-rendered when the current route changes.
+ * The created navigator is observed so the view where this hook is used is automatically re-rendered when the current route changes.
  *
  * @param rootComponent A [`Component`](https://layrjs.com/docs/v1/reference/component) class providing some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
  *
- * @returns An array of the shape `[router, isReady]` where `router` is the [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) instance that was created and `isReady` is a boolean indicating whether the router is ready. Since the router is initialized asynchronously, make sure that the value of `isReady` is `true` before consuming `router`.
+ * @returns An array of the shape `[navigator, isReady]` where `navigator` is the [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) instance that was created and `isReady` is a boolean indicating whether the navigator is ready. Since the navigator is initialized asynchronously, make sure that the value of `isReady` is `true` before consuming `navigator`.
  *
  * @example
  * ```
  * import {Component, provide} from '﹫layr/component';
  * import React from 'react';
- * import {view, useBrowserRouter} from '﹫layr/react-integration';
+ * import {view, useBrowserNavigator} from '﹫layr/react-integration';
  *
  * import {MyComponent} from './my-component';
  *
@@ -31,7 +31,7 @@ import {useCustomization} from './components';
  *   ﹫provide() static MyComponent = MyComponent; // A routable component
  *
  *   ﹫view() static View() {
- *     const [router, isReady] = useBrowserRouter(this);
+ *     const [navigator, isReady] = useBrowserNavigator(this);
  *
  *     if (!isReady) {
  *       return null;
@@ -40,7 +40,7 @@ import {useCustomization} from './components';
  *     return (
  *       <div>
  *         <h1>My App</h1>
- *         {router.callCurrentRoute()}
+ *         {navigator.callCurrentRoute()}
  *       </div>
  *     );
  *   }
@@ -50,14 +50,14 @@ import {useCustomization} from './components';
  * @category Hooks
  * @reacthook
  */
-export function useBrowserRouter(rootComponent: typeof RoutableComponent) {
+export function useBrowserNavigator(rootComponent: typeof RoutableComponent) {
   assertIsRoutableClass(rootComponent);
 
-  const routerRef = useRef<BrowserRouter>();
+  const navigatorRef = useRef<BrowserNavigator>();
 
-  if (routerRef.current === undefined) {
-    routerRef.current = new BrowserRouter({plugins: [BrowserRouterPlugin()]});
-    rootComponent.registerRouter(routerRef.current);
+  if (navigatorRef.current === undefined) {
+    navigatorRef.current = new BrowserNavigator({plugins: [BrowserNavigatorPlugin()]});
+    rootComponent.registerNavigator(navigatorRef.current);
   }
 
   const [isReady, setIsReady] = useState(false);
@@ -65,37 +65,37 @@ export function useBrowserRouter(rootComponent: typeof RoutableComponent) {
   const forceUpdate = useForceUpdate();
 
   useEffect(() => {
-    routerRef.current!.addObserver(forceUpdate);
+    navigatorRef.current!.addObserver(forceUpdate);
 
     setIsReady(true);
 
     return function () {
-      routerRef.current!.removeObserver(forceUpdate);
-      routerRef.current!.unmount();
+      navigatorRef.current!.removeObserver(forceUpdate);
+      navigatorRef.current!.unmount();
     };
   }, []);
 
-  return [routerRef.current, isReady] as const;
+  return [navigatorRef.current, isReady] as const;
 }
 
 /**
- * Creates a [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
+ * Creates a [`MemoryNavigator`](https://layrjs.com/docs/v1/reference/memory-navigator) and registers the specified root [component](https://layrjs.com/docs/v1/reference/component).
  *
  * Typically, this hook is used in the context of a "view method" (i.e., a component method decorated by the [`@view()`](https://layrjs.com/docs/v1/reference/react-integration#view-decorator) decorator) at the root of an application.
  *
- * The created router is observed so the view where this hook is used is automatically re-rendered when the current route changes.
+ * The created navigator is observed so the view where this hook is used is automatically re-rendered when the current route changes.
  *
  * @param rootComponent A [`Component`](https://layrjs.com/docs/v1/reference/component) class providing some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
  * @param [options.initialURLs] An array of URLs to populate the initial navigation history (default: `[]`).
  * @param [options.initialIndex] A number specifying the current entry's index in the navigation history (default: the index of the last entry in the navigation history).
  *
- * @returns An array of the shape `[router]` where `router` is the [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router) instance that was created.
+ * @returns An array of the shape `[navigator]` where `navigator` is the [`MemoryNavigator`](https://layrjs.com/docs/v1/reference/memory-navigator) instance that was created.
  *
  * @example
  * ```
  * import {Component, provide} from '﹫layr/component';
  * import React from 'react';
- * import {view, useMemoryRouter} from '﹫layr/react-integration';
+ * import {view, useMemoryNavigator} from '﹫layr/react-integration';
  *
  * import {MyComponent} from './my-component';
  *
@@ -103,12 +103,12 @@ export function useBrowserRouter(rootComponent: typeof RoutableComponent) {
  *   ﹫provide() static MyComponent = MyComponent; // A routable component
  *
  *   ﹫view() static View() {
- *     const [router] = useMemoryRouter(this, {initialURLs: ['/']});
+ *     const [navigator] = useMemoryNavigator(this, {initialURLs: ['/']});
  *
  *     return (
  *       <div>
  *         <h1>My App</h1>
- *         {router.callCurrentRoute()}
+ *         {navigator.callCurrentRoute()}
  *       </div>
  *     );
  *   }
@@ -118,31 +118,31 @@ export function useBrowserRouter(rootComponent: typeof RoutableComponent) {
  * @category Hooks
  * @reacthook
  */
-export function useMemoryRouter(
+export function useMemoryNavigator(
   rootComponent: typeof RoutableComponent,
-  options: MemoryRouterOptions = {}
+  options: MemoryNavigatorOptions = {}
 ) {
   assertIsRoutableClass(rootComponent);
 
-  const routerRef = useRef<MemoryRouter>();
+  const navigatorRef = useRef<MemoryNavigator>();
 
-  if (routerRef.current === undefined) {
-    routerRef.current = new MemoryRouter(options);
-    rootComponent.registerRouter(routerRef.current);
+  if (navigatorRef.current === undefined) {
+    navigatorRef.current = new MemoryNavigator(options);
+    rootComponent.registerNavigator(navigatorRef.current);
   }
 
   const forceUpdate = useForceUpdate();
 
   useEffect(() => {
-    routerRef.current!.addObserver(forceUpdate);
+    navigatorRef.current!.addObserver(forceUpdate);
 
     return function () {
-      routerRef.current!.removeObserver(forceUpdate);
-      routerRef.current!.unmount();
+      navigatorRef.current!.removeObserver(forceUpdate);
+      navigatorRef.current!.unmount();
     };
   }, []);
 
-  return [routerRef.current] as const;
+  return [navigatorRef.current] as const;
 }
 
 export function useData<Result>(

@@ -1,9 +1,9 @@
 import {Component, provide, primaryIdentifier} from '@layr/component';
 import {Routable, route, wrapper, findRouteByURL, callRouteByURL} from '@layr/routable';
-import {Router, isRouterInstance} from '@layr/router';
+import {Navigator, isNavigatorInstance} from '@layr/navigator';
 
-describe('Router', () => {
-  class MockRouter extends Router {
+describe('Navigator', () => {
+  class MockNavigator extends Navigator {
     _getCurrentURL() {
       return new URL('http://localhost/');
     }
@@ -22,18 +22,18 @@ describe('Router', () => {
   }
 
   test('Creation', async () => {
-    let router = new MockRouter();
+    let navigator = new MockNavigator();
 
-    expect(isRouterInstance(router)).toBe(true);
+    expect(isNavigatorInstance(navigator)).toBe(true);
 
     // @ts-expect-error
-    expect(() => new MockRouter({unknown: true})).toThrow(
+    expect(() => new MockNavigator({unknown: true})).toThrow(
       "Did not expect the option 'unknown' to exist"
     );
   });
 
   describe('Registration', () => {
-    test('registerRouter() and getRouter()', async () => {
+    test('registerNavigator() and getNavigator()', async () => {
       class Profile extends Routable(Component) {}
 
       class User extends Routable(Component) {
@@ -47,19 +47,19 @@ describe('Router', () => {
         @provide() static Movie = Movie;
       }
 
-      const router = new MockRouter();
+      const navigator = new MockNavigator();
 
-      Application.registerRouter(router);
+      Application.registerNavigator(navigator);
 
-      expect(Application.getRouter()).toBe(router);
-      expect(User.getRouter()).toBe(router);
-      expect(Movie.getRouter()).toBe(router);
-      expect(Profile.getRouter()).toBe(router);
+      expect(Application.getNavigator()).toBe(navigator);
+      expect(User.getNavigator()).toBe(navigator);
+      expect(Movie.getNavigator()).toBe(navigator);
+      expect(Profile.getNavigator()).toBe(navigator);
 
-      expect(Application.prototype.getRouter()).toBe(router);
-      expect(User.prototype.getRouter()).toBe(router);
-      expect(Movie.prototype.getRouter()).toBe(router);
-      expect(Profile.prototype.getRouter()).toBe(router);
+      expect(Application.prototype.getNavigator()).toBe(navigator);
+      expect(User.prototype.getNavigator()).toBe(navigator);
+      expect(Movie.prototype.getNavigator()).toBe(navigator);
+      expect(Profile.prototype.getNavigator()).toBe(navigator);
     });
   });
 
@@ -103,9 +103,9 @@ describe('Router', () => {
         }
       }
 
-      const router = new MockRouter();
+      const navigator = new MockNavigator();
 
-      Application.registerRouter(router);
+      Application.registerNavigator(navigator);
 
       return Application;
     };

@@ -1,13 +1,13 @@
 {
   "name": "@layr/react-integration",
-  "version": "2.0.39",
+  "version": "2.0.42",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
     "react",
     "integration",
     "hook",
-    "router-plugin"
+    "navigator-plugin"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
@@ -27,12 +27,12 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/browser-router": "^2.0.14",
+    "@layr/browser-navigator": "^2.0.2",
     "@layr/component": "^1.1.14",
-    "@layr/memory-router": "^2.0.13",
+    "@layr/memory-navigator": "^2.0.2",
+    "@layr/navigator": "^2.0.1",
     "@layr/observable": "^1.0.8",
-    "@layr/routable": "^2.0.29",
-    "@layr/router": "^2.0.15",
+    "@layr/routable": "^2.0.31",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "tslib": "^2.2.0"

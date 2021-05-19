@@ -72,27 +72,27 @@ Which is the same as:
 Guestbook.Home(); // => Some React elements
 ```
 
-However, in a typical web application, you'll rarely call a method by using the `callRouteByURL()` method. Instead, you'll use a [router](https://layrjs.com/docs/v1/reference/router) to automatically call a route when the user navigates.
+However, in a typical web application, you'll rarely call a method by using the `callRouteByURL()` method. Instead, you'll use a [navigator](https://layrjs.com/docs/v1/reference/navigator) to automatically call a route when the user navigates.
 
-##### Adding a Router
+##### Adding a Navigator
 
-First, let's import the [`useBrowserRouter()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-router-react-hook) React hook from the `@layr/react-integration` package:
+First, let's import the [`useBrowserNavigator()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-navigator-react-hook) React hook from the `@layr/react-integration` package:
 
 ```js
-import {useBrowserRouter} from '@layr/react-integration';
+import {useBrowserNavigator} from '@layr/react-integration';
 ```
 
-Then, let's implement a new `Guestbook`'s view that will be in charge of creating a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) (with [`useBrowserRouter()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-router-react-hook)), calling the current route (with [`callCurrentRoute()`](https://layrjs.com/docs/v1/reference/router#call-current-route-instance-method)), and rendering the result (`content`) inside a minimal layout:
+Then, let's implement a new `Guestbook`'s view that will be in charge of creating a [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) (with [`useBrowserNavigator()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-navigator-react-hook)), calling the current route (with [`callCurrentRoute()`](https://layrjs.com/docs/v1/reference/navigator#call-current-route-instance-method)), and rendering the result (`content`) inside a minimal layout:
 
 ```js
 @view() static Root() {
-  const [router, isReady] = useBrowserRouter(this);
+  const [navigator, isReady] = useBrowserNavigator(this);
 
   if (!isReady) {
     return null;
   }
 
-  const content = router.callCurrentRoute({
+  const content = navigator.callCurrentRoute({
     fallback: () => 'Sorry, there is nothing here.'
   });
 
@@ -119,7 +119,7 @@ As follows:
 ReactDOM.render(<Guestbook.Root />, document.getElementById('root'));
 ```
 
-Congrats! Our application is now equipped with a router, and it's a great step forward because we can now add new pages. But before that, let's start the application to make sure we didn't break anything.
+Congrats! Our application is now equipped with a navigator, and it's a great step forward because we can now add new pages. But before that, let's start the application to make sure we didn't break anything.
 
 #### Starting the Application
 
@@ -147,7 +147,7 @@ Lastly, open [http://localhost:8080/](http://localhost:8080/) in a browser, and 
 
 #### Adding the "Edit Message" Page
 
-Now that we have a router in place, it is easy to add the "edit message" page. All we have to do is to implement a new view and use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator to provide a URL.
+Now that we have a navigator in place, it is easy to add the "edit message" page. All we have to do is to implement a new view and use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator to provide a URL.
 
 First, import a new React hook that we're going to use:
 
@@ -265,7 +265,7 @@ The `saveMessage()` callback does three things:
 
 1. It [saves](https://layrjs.com/docs/v1/reference/storable#save-instance-method) the message fork (`editedMessage`) to the backend.
 2. It [merges](https://layrjs.com/docs/v1/reference/component#merge-instance-method) the message fork (`editedMessage`) into the original message (`existingMessage`) so the changes made by the user can be reflected in the `MessageList()` view.
-3. It [navigates](https://layrjs.com/docs/v1/reference/router#navigate-instance-method) to the Guestbook's `Home` view.
+3. It [navigates](https://layrjs.com/docs/v1/reference/navigator#navigate-instance-method) to the Guestbook's `Home` view.
 
 The rest of the `MessageEditor()` view is just regular React code.
 
@@ -303,4 +303,4 @@ Modify a message, click the "Submit" button, and you should be back at the home 
 
 #### Wrapping Up
 
-You've added a new page to our "Guestbook" application so the user can edit a message, and along the way, you've discovered how to implement routing by using a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) and some [routes](https://layrjs.com/docs/v1/reference/route). Also, you got a glimpse of some of the most powerful features of Layr — [component forking](https://layrjs.com/docs/v1/reference/component#forking) and [identity mapping](https://layrjs.com/docs/v1/reference/identity-map).
+You've added a new page to our "Guestbook" application so the user can edit a message, and along the way, you've discovered how to implement routing by using a [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) and some [routes](https://layrjs.com/docs/v1/reference/route). Also, you got a glimpse of some of the most powerful features of Layr — [component forking](https://layrjs.com/docs/v1/reference/component#forking) and [identity mapping](https://layrjs.com/docs/v1/reference/identity-map).

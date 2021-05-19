@@ -8,7 +8,7 @@
   "dependencies": {
     "@layr/component": "^1.1.14",
     "@layr/mongodb-store": "^1.1.43",
-    "@layr/routable": "^2.0.29",
+    "@layr/routable": "^2.0.31",
     "@layr/storable": "^1.1.24",
     "@layr/with-roles": "^1.0.32",
     "bcryptjs": "^2.4.3",

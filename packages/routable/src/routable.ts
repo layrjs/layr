@@ -1,5 +1,5 @@
 import {Component, isComponentClass, assertIsComponentClass} from '@layr/component';
-import {Router, assertIsRouterInstance, normalizeURL} from '@layr/router';
+import {Navigator, assertIsNavigatorInstance, normalizeURL} from '@layr/navigator';
 import {hasOwnProperty, getTypeOf, Constructor} from 'core-helpers';
 import debugModule from 'debug';
 
@@ -58,20 +58,20 @@ const debug = debugModule('layr:routable');
  * await Article.upvote({id: 'abc123'});
  * ```
  *
- * A routable component can be registered into a router such as [BrowserRouter](https://layrjs.com/docs/v1/reference/browser-router) by using the [`registerRoutable()`](https://layrjs.com/docs/v1/reference/router#register-routable-instance-method) method (or [`registerRootComponent()`](https://layrjs.com/docs/v1/reference/router#register-root-component-instance-method) to register several components at once):
+ * A routable component can be registered into a navigator such as [BrowserNavigator](https://layrjs.com/docs/v1/reference/browser-navigator) by using the [`registerRoutable()`](https://layrjs.com/docs/v1/reference/navigator#register-routable-instance-method) method (or [`registerRootComponent()`](https://layrjs.com/docs/v1/reference/navigator#register-root-component-instance-method) to register several components at once):
  *
  * ```
- * import {BrowserRouter} from '@layr/browser-router';
+ * import {BrowserNavigator} from '@layr/browser-navigator';
  *
- * const router = new BrowserRouter();
+ * const navigator = new BrowserNavigator();
  *
- * router.registerRoutable(Article);
+ * navigator.registerRoutable(Article);
  * ```
  *
- * Once a routable component is registered into a router you can control it through its router:
+ * Once a routable component is registered into a navigator you can control it through its navigator:
  *
  * ```
- * await router.callRouteByURL('/articles/abc123/upvote');
+ * await navigator.callRouteByURL('/articles/abc123/upvote');
  * ```
  *
  * See the ["Bringing Some Routes"](https://layrjs.com/docs/v1/introduction/routing) guide for a comprehensive example using the `Routable()` mixin.
@@ -106,62 +106,62 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      * @category Component Methods
      */
 
-    // === Router registration ===
+    // === Navigator registration ===
 
-    static __router: Router | undefined;
+    static __navigator: Navigator | undefined;
 
-    static registerRouter(router: Router) {
-      assertIsRouterInstance(router);
+    static registerNavigator(navigator: Navigator) {
+      assertIsNavigatorInstance(navigator);
 
-      Object.defineProperty(this, '__router', {value: router});
+      Object.defineProperty(this, '__navigator', {value: navigator});
     }
 
     /**
-     * Returns the router in which the routable component is registered. If the routable component is not registered in a router, an error is thrown.
+     * Returns the navigator in which the routable component is registered. If the routable component is not registered in a navigator, an error is thrown.
      *
-     * @returns A [`Router`](https://layrjs.com/docs/v1/reference/router) instance.
+     * @returns A [`Navigator`](https://layrjs.com/docs/v1/reference/navigator) instance.
      *
      * @example
      * ```
-     * Article.getRouter(); // => router
+     * Article.getNavigator(); // => navigator
      * ```
      *
-     * @category Router Registration
+     * @category Navigator Registration
      */
-    static getRouter() {
-      const router = this.findRouter();
+    static getNavigator() {
+      const navigator = this.findNavigator();
 
-      if (router === undefined) {
+      if (navigator === undefined) {
         throw new Error(
-          `Couldn't find a router from the current routable component (${this.describeComponent()})`
+          `Couldn't find a navigator from the current routable component (${this.describeComponent()})`
         );
       }
 
-      return router;
+      return navigator;
     }
 
     /**
-     * Returns the router in which the routable component is registered. If the routable component is not registered in a router, an error is thrown.
+     * Returns the navigator in which the routable component is registered. If the routable component is not registered in a navigator, an error is thrown.
      *
-     * @returns A [`Router`](https://layrjs.com/docs/v1/reference/router) instance.
+     * @returns A [`Navigator`](https://layrjs.com/docs/v1/reference/navigator) instance.
      *
      * @example
      * ```
-     * Article.getRouter(); // => router
+     * Article.getNavigator(); // => navigator
      * ```
      *
-     * @category Router Registration
+     * @category Navigator Registration
      */
-    getRouter() {
-      return (this.constructor as typeof Routable).getRouter();
+    getNavigator() {
+      return (this.constructor as typeof Routable).getNavigator();
     }
 
-    static findRouter() {
+    static findNavigator() {
       let currentComponent: typeof Component = this;
 
       while (true) {
-        if (isRoutableClass(currentComponent) && currentComponent.__router !== undefined) {
-          return currentComponent.__router;
+        if (isRoutableClass(currentComponent) && currentComponent.__navigator !== undefined) {
+          return currentComponent.__navigator;
         }
 
         const componentProvider = currentComponent.getComponentProvider();
@@ -176,8 +176,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       return undefined;
     }
 
-    findRouter() {
-      return (this.constructor as typeof Routable).findRouter();
+    findNavigator() {
+      return (this.constructor as typeof Routable).findNavigator();
     }
 
     // === Routes ===
@@ -348,15 +348,15 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       const method = route.transformMethod(component[name], request);
 
-      const router = this.findRouter();
+      const navigator = this.findNavigator();
 
       if (wrapperPath !== '') {
         return callWrapperByURL(
           rootComponent,
           wrapperPath,
           function () {
-            if (router !== undefined) {
-              return router.callAddressableMethodWrapper(component, method, params);
+            if (navigator !== undefined) {
+              return navigator.callAddressableMethodWrapper(component, method, params);
             } else {
               return method.call(component, params);
             }
@@ -364,8 +364,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           request
         );
       } else {
-        if (router !== undefined) {
-          return router.callAddressableMethodWrapper(component, method, params);
+        if (navigator !== undefined) {
+          return navigator.callAddressableMethodWrapper(component, method, params);
         } else {
           return method.call(component, params);
         }
@@ -426,10 +426,10 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         | undefined;
 
       for (const route of routes.values()) {
-        const routeResult = route.matchURL(normalizedURL, request);
+        const navigatoresult = route.matchURL(normalizedURL, request);
 
-        if (routeResult !== undefined) {
-          result = {route, ...routeResult};
+        if (navigatoresult !== undefined) {
+          result = {route, ...navigatoresult};
 
           if (!result.route.isCatchAll()) {
             break;
@@ -629,15 +629,15 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       const paramsWithChildren = {...params, children};
 
-      const router = this.findRouter();
+      const navigator = this.findNavigator();
 
       if (wrapperPath !== '') {
         return callWrapperByURL(
           rootComponent,
           wrapperPath,
           function () {
-            if (router !== undefined) {
-              return router.callAddressableMethodWrapper(component, method, paramsWithChildren);
+            if (navigator !== undefined) {
+              return navigator.callAddressableMethodWrapper(component, method, paramsWithChildren);
             } else {
               return method.call(component, paramsWithChildren);
             }
@@ -645,8 +645,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
           request
         );
       } else {
-        if (router !== undefined) {
-          return router.callAddressableMethodWrapper(component, method, paramsWithChildren);
+        if (navigator !== undefined) {
+          return navigator.callAddressableMethodWrapper(component, method, paramsWithChildren);
         } else {
           return method.call(component, paramsWithChildren);
         }

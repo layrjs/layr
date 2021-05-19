@@ -1,4 +1,4 @@
-import {Router, RouterOptions, normalizeURL, stringifyURL} from '@layr/router';
+import {Navigator, NavigatorOptions, normalizeURL, stringifyURL} from '@layr/navigator';
 import debounce from 'lodash/debounce';
 
 declare global {
@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-export type BrowserRouterLinkProps = {
+export type BrowserNavigatorLinkProps = {
   to: string;
   className?: string;
   activeClassName?: string;
@@ -15,27 +15,27 @@ export type BrowserRouterLinkProps = {
   activeStyle?: React.CSSProperties;
 };
 
-export type BrowserRouterOptions = RouterOptions;
+export type BrowserNavigatorOptions = NavigatorOptions;
 
 /**
- * *Inherits from [`Router`](https://layrjs.com/docs/v1/reference/router).*
+ * *Inherits from [`Navigator`](https://layrjs.com/docs/v1/reference/navigator).*
  *
- * A [`Router`](https://layrjs.com/docs/v1/reference/router) relying on the browser's [History API](https://developer.mozilla.org/en-US/docs/Web/API/History) to determine the current [route](https://layrjs.com/docs/v1/reference/route).
+ * A [`Navigator`](https://layrjs.com/docs/v1/reference/navigator) relying on the browser's [History API](https://developer.mozilla.org/en-US/docs/Web/API/History) to determine the current [route](https://layrjs.com/docs/v1/reference/route).
  *
  * #### Usage
  *
- * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserRouter` in your application is to use the [`useBrowserRouter()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-router-react-hook) hook that is provided by the `@layr/react-integration` package.
+ * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserNavigator` in your application is to use the [`useBrowserNavigator()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-navigator-react-hook) hook that is provided by the `@layr/react-integration` package.
  *
- * > See the ["Bringing Some Routes"](https://layrjs.com/docs/v1/introduction/routing) guide for a comprehensive example using the `useBrowserRouter()` hook.
+ * > See the ["Bringing Some Routes"](https://layrjs.com/docs/v1/introduction/routing) guide for a comprehensive example using the `useBrowserNavigator()` hook.
  *
- * Otherwise, you can create a `BrowserRouter` instance manually, register some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
+ * Otherwise, you can create a `BrowserNavigator` instance manually, register some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
  *
  * **Example:**
  *
  * ```
  * import {Component} from '@layr/component';
  * import {Routable, route} from '@layr/routable';
- * import {BrowserRouter} from '@layr/browser-router';
+ * import {BrowserNavigator} from '@layr/browser-navigator';
  *
  * class Frontend extends Routable(Component) {
  *   ﹫route('/') static Home() {
@@ -49,25 +49,25 @@ export type BrowserRouterOptions = RouterOptions;
  *   }
  * }
  *
- * const router = new BrowserRouter();
+ * const navigator = new BrowserNavigator();
  *
- * router.registerRoutable(Frontend);
+ * navigator.registerRoutable(Frontend);
  *
- * router.addObserver(() => {
- *   const result = router.callCurrentRoute();
+ * navigator.addObserver(() => {
+ *   const result = navigator.callCurrentRoute();
  *   // Display the result in the browser...
  * });
  * ```
  */
-export class BrowserRouter extends Router {
+export class BrowserNavigator extends Navigator {
   /**
-   * Creates a [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router).
+   * Creates a [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator).
    *
-   * @returns The [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) instance that was created.
+   * @returns The [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) instance that was created.
    *
    * @category Creation
    */
-  constructor(options: BrowserRouterOptions = {}) {
+  constructor(options: BrowserNavigatorOptions = {}) {
     super(options);
   }
 
@@ -90,9 +90,9 @@ export class BrowserRouter extends Router {
       this.navigate((event as CustomEvent).detail.url);
     };
 
-    // --- 'layrRouterNavigate' event ---
+    // --- 'layrNavigatorNavigate' event ---
 
-    document.body.addEventListener('layrRouterNavigate', this._navigateHandler);
+    document.body.addEventListener('layrNavigatorNavigate', this._navigateHandler);
 
     // --- Hash navigation fix ---
 
@@ -130,7 +130,7 @@ export class BrowserRouter extends Router {
   // === Component Registration ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#component-registration) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#component-registration) class.
    *
    * @category Component Registration
    */
@@ -138,7 +138,7 @@ export class BrowserRouter extends Router {
   // === Routes ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#routes) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#routes) class.
    *
    * @category Routes
    */
@@ -146,7 +146,7 @@ export class BrowserRouter extends Router {
   // === Current Location ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#current-location) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#current-location) class.
    *
    * @category Current Location
    */
@@ -158,7 +158,7 @@ export class BrowserRouter extends Router {
   // === Navigation ===
 
   /**
-   * See the methods that are inherited from the [`Router`](https://layrjs.com/docs/v1/reference/router#navigation) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#navigation) class.
    *
    * @category Navigation
    */
@@ -201,17 +201,17 @@ export class BrowserRouter extends Router {
   }
 
   /**
-   * Renders a link that is managed by the router.
+   * Renders a link that is managed by the navigator.
    *
-   * This method is only available when you create your router by using the [`useBrowserRouter()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-router-react-hook) React hook.
+   * This method is only available when you create your navigator by using the [`useBrowserNavigator()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-navigator-react-hook) React hook.
    *
    * Note that instead of using this method, you can use the handy `Link()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param props.to A string representing the target URL of the link.
    * @param props.className A [`className`](https://reactjs.org/docs/dom-elements.html#classname) attribute to apply to the rendered link.
-   * @param props.activeClassName An additional [`className`](https://reactjs.org/docs/dom-elements.html#classname) attribute to apply to the rendered link when the URL of the current router's route is the same as the target URL of the link.
+   * @param props.activeClassName An additional [`className`](https://reactjs.org/docs/dom-elements.html#classname) attribute to apply to the rendered link when the URL of the current navigator's route is the same as the target URL of the link.
    * @param props.style A [`style`](https://reactjs.org/docs/dom-elements.html#style) attribute to apply to the rendered link.
-   * @param props.activeStyle An additional [`style`](https://reactjs.org/docs/dom-elements.html#style) attribute to apply to the rendered link when the URL of the current router's route is the same as the target URL of the link.
+   * @param props.activeStyle An additional [`style`](https://reactjs.org/docs/dom-elements.html#style) attribute to apply to the rendered link when the URL of the current navigator's route is the same as the target URL of the link.
    *
    * @returns An `<a>` React element.
    *
@@ -219,8 +219,8 @@ export class BrowserRouter extends Router {
    * ```
    * class Frontend extends Routable(Component) {
    *    ﹫route('/') @view static Home() {
-   *      const router = this.getRouter();
-   *      return <router.Link to="/about-us">About Us</router.Link>;
+   *      const navigator = this.getNavigator();
+   *      return <navigator.Link to="/about-us">About Us</navigator.Link>;
    *
    *      // Same as above, but in a more idiomatic way:
    *      return <this.AboutUs.Link>About Us</this.AboutUs.Link>;
@@ -234,7 +234,7 @@ export class BrowserRouter extends Router {
    *
    * @category Link Rendering
    */
-  Link!: (props: BrowserRouterLinkProps) => any;
+  Link!: (props: BrowserNavigatorLinkProps) => any;
 
   // === Observability ===
 

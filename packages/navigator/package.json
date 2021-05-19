@@ -1,16 +1,17 @@
 {
-  "name": "@layr/router",
-  "version": "2.0.15",
-  "description": "A base class for implementing Layr routers",
+  "name": "@layr/navigator",
+  "version": "2.0.1",
+  "description": "A base class for implementing Layr navigators",
   "keywords": [
     "layr",
-    "router",
+    "navigator",
+    "navigation",
     "base",
     "class"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/router",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/navigator",
   "files": [
     "dist"
   ],

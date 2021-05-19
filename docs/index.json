@@ -279,24 +279,27 @@
           "category": "Routing"
         },
         {
-          "title": "Router",
-          "slug": "router",
-          "file": "reference/router.md",
-          "source": ["../packages/router/src/router.ts", "../packages/router/src/utilities.ts"],
+          "title": "Navigator",
+          "slug": "navigator",
+          "file": "reference/navigator.md",
+          "source": [
+            "../packages/navigator/src/navigator.ts",
+            "../packages/navigator/src/utilities.ts"
+          ],
           "category": "Routing"
         },
         {
-          "title": "BrowserRouter",
-          "slug": "browser-router",
-          "file": "reference/browser-router.md",
-          "source": "../packages/browser-router/src/browser-router.ts",
+          "title": "BrowserNavigator",
+          "slug": "browser-navigator",
+          "file": "reference/browser-navigator.md",
+          "source": "../packages/browser-navigator/src/browser-navigator.ts",
           "category": "Routing"
         },
         {
-          "title": "MemoryRouter",
-          "slug": "memory-router",
-          "file": "reference/memory-router.md",
-          "source": "../packages/memory-router/src/memory-router.ts",
+          "title": "MemoryNavigator",
+          "slug": "memory-navigator",
+          "file": "reference/memory-navigator.md",
+          "source": "../packages/memory-navigator/src/memory-navigator.ts",
           "category": "Routing"
         },
         {

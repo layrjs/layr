@@ -1,7 +1,7 @@
 import {Observable} from '@layr/observable';
 import {assertNoUnknownOptions} from 'core-helpers';
 
-import {isRouterInstance, normalizeURL, stringifyURL, parseQuery} from './utilities';
+import {isNavigatorInstance, normalizeURL, stringifyURL, parseQuery} from './utilities';
 
 declare global {
   interface Function {
@@ -20,23 +20,23 @@ export type URLOptions = {hash?: string};
 
 export type NavigationOptions = {silent?: boolean; defer?: boolean};
 
-type RouterPlugin = (router: Router) => void;
+type NavigatorPlugin = (navigator: Navigator) => void;
 
 type AddressableMethodWrapper = (receiver: any, method: Function, params: any) => any;
 
 type CustomRouteDecorator = (method: Function) => void;
 
-export type RouterOptions = {
-  plugins?: RouterPlugin[];
+export type NavigatorOptions = {
+  plugins?: NavigatorPlugin[];
 };
 
 /**
  * *Inherits from [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class).*
  *
- * An abstract class from which classes such as [`BrowserRouter`](https://layrjs.com/docs/v1/reference/browser-router) or [`MemoryRouter`](https://layrjs.com/docs/v1/reference/memory-router) are constructed. Unless you build a custom router, you probably won't have to use this class directly.
+ * An abstract class from which classes such as [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) or [`MemoryNavigator`](https://layrjs.com/docs/v1/reference/memory-navigator) are constructed. Unless you build a custom navigator, you probably won't have to use this class directly.
  */
-export abstract class Router extends Observable(Object) {
-  constructor(options: RouterOptions = {}) {
+export abstract class Navigator extends Observable(Object) {
+  constructor(options: NavigatorOptions = {}) {
     super();
 
     const {plugins, ...otherOptions} = options;
@@ -61,16 +61,16 @@ export abstract class Router extends Observable(Object) {
   // === Current Location ===
 
   /**
-   * Returns the current URL of the router.
+   * Returns the current URL of the navigator.
    *
    * @returns A string.
    *
    * @example
    * ```
-   * // See the definition of `router` in the `findRouteByURL()` example
+   * // See the definition of `navigator` in the `findRouteByURL()` example
    *
-   * router.navigate('/movies/inception?showDetails=1#actors');
-   * router.getCurrentURL(); // => /movies/inception?showDetails=1#actors'
+   * navigator.navigate('/movies/inception?showDetails=1#actors');
+   * navigator.getCurrentURL(); // => /movies/inception?showDetails=1#actors'
    * ```
    *
    * @category Current Location
@@ -88,10 +88,10 @@ export abstract class Router extends Observable(Object) {
    *
    * @example
    * ```
-   * // See the definition of `router` in the `findRouteByURL()` example
+   * // See the definition of `navigator` in the `findRouteByURL()` example
    *
-   * router.navigate('/movies/inception?showDetails=1#actors');
-   * router.getCurrentPath(); // => '/movies/inception'
+   * navigator.navigate('/movies/inception?showDetails=1#actors');
+   * navigator.getCurrentPath(); // => '/movies/inception'
    * ```
    *
    * @category Current Location
@@ -109,10 +109,10 @@ export abstract class Router extends Observable(Object) {
    *
    * @example
    * ```
-   * // See the definition of `router` in the `findRouteByURL()` example
+   * // See the definition of `navigator` in the `findRouteByURL()` example
    *
-   * router.navigate('/movies/inception?showDetails=1#actors');
-   * router.getCurrentQuery(); // => {showDetails: '1'}
+   * navigator.navigate('/movies/inception?showDetails=1#actors');
+   * navigator.getCurrentQuery(); // => {showDetails: '1'}
    * ```
    *
    * @category Current Location
@@ -128,19 +128,19 @@ export abstract class Router extends Observable(Object) {
    *
    * @example
    * ```
-   * // See the definition of `router` in the `findRouteByURL()` example
+   * // See the definition of `navigator` in the `findRouteByURL()` example
    *
-   * router.navigate('/movies/inception?showDetails=1#actors');
-   * router.getCurrentHash(); // => 'actors'
+   * navigator.navigate('/movies/inception?showDetails=1#actors');
+   * navigator.getCurrentHash(); // => 'actors'
    *
-   * router.navigate('/movies/inception?showDetails=1#actors');
-   * router.getCurrentHash(); // => 'actors'
+   * navigator.navigate('/movies/inception?showDetails=1#actors');
+   * navigator.getCurrentHash(); // => 'actors'
    *
-   * router.navigate('/movies/inception?showDetails=1#');
-   * router.getCurrentHash(); // => undefined
+   * navigator.navigate('/movies/inception?showDetails=1#');
+   * navigator.getCurrentHash(); // => undefined
    *
-   * router.navigate('/movies/inception?showDetails=1');
-   * router.getCurrentHash(); // => undefined
+   * navigator.navigate('/movies/inception?showDetails=1');
+   * navigator.getCurrentHash(); // => undefined
    * ```
    *
    * @category Current Location
@@ -164,19 +164,19 @@ export abstract class Router extends Observable(Object) {
   /**
    * Navigates to a URL.
    *
-   * The specified URL is added to the router's history.
+   * The specified URL is added to the navigator's history.
    *
-   * The observers of the router are automatically called.
+   * The observers of the navigator are automatically called.
    *
    * Note that instead of using this method, you can use the handy `navigate()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
-   * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the router's observers should be deferred to the next tick (default: `false`).
+   * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
    *
    * @example
    * ```
-   * router.navigate('/movies/inception');
+   * navigator.navigate('/movies/inception');
    *
    * // Same as above, but in a more idiomatic way:
    * Movie.Viewer.navigate({slug: 'inception});
@@ -204,19 +204,19 @@ export abstract class Router extends Observable(Object) {
   /**
    * Redirects to a URL.
    *
-   * The specified URL replaces the current entry of the router's history.
+   * The specified URL replaces the current entry of the navigator's history.
    *
-   * The observers of the router are automatically called.
+   * The observers of the navigator are automatically called.
    *
    * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
-   * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the router's observers should be deferred to the next tick (default: `false`).
+   * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
    *
    * @example
    * ```
-   * router.redirect('/sign-in');
+   * navigator.redirect('/sign-in');
    *
    * // Same as above, but in a more idiomatic way:
    * Session.SignIn.redirect();
@@ -250,7 +250,7 @@ export abstract class Router extends Observable(Object) {
    *
    * @example
    * ```
-   * router.reload('/');
+   * navigator.reload('/');
    *
    * // Same as above, but in a more idiomatic way:
    * Frontend.Home.reload();
@@ -267,23 +267,23 @@ export abstract class Router extends Observable(Object) {
   abstract _reload(url: URL | undefined): void;
 
   /**
-   * Move forwards or backwards through the router's history.
+   * Move forwards or backwards through the navigator's history.
    *
-   * The observers of the router are automatically called.
+   * The observers of the navigator are automatically called.
    *
-   * @param delta A number representing the position in the router's history to which you want to move, relative to the current entry. A negative value moves backwards, a positive value moves forwards.
-   * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the router's observers should be deferred to the next tick (default: `false`).
+   * @param delta A number representing the position in the navigator's history to which you want to move, relative to the current entry. A negative value moves backwards, a positive value moves forwards.
+   * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
    *
    * @example
    * ```
-   * router.go(-2); // Move backwards by two entries of the router's history
+   * navigator.go(-2); // Move backwards by two entries of the navigator's history
    *
-   * router.go(-1); // Equivalent of calling `router.goBack()`
+   * navigator.go(-1); // Equivalent of calling `navigator.goBack()`
    *
-   * router.go(1); // Equivalent of calling `router.goForward()`
+   * navigator.go(1); // Equivalent of calling `navigator.goForward()`
    *
-   * router.go(2); // Move forward two entries of the router's history
+   * navigator.go(2); // Move forward two entries of the navigator's history
    * ```
    *
    * @category Navigation
@@ -306,14 +306,14 @@ export abstract class Router extends Observable(Object) {
   abstract _go(delta: number): void;
 
   /**
-   * Go back to the previous entry in the router's history.
+   * Go back to the previous entry in the navigator's history.
    *
-   * This method is the equivalent of calling `router.go(-1)`.
+   * This method is the equivalent of calling `navigator.go(-1)`.
    *
-   * The observers of the router are automatically called.
+   * The observers of the navigator are automatically called.
    *
-   * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the router's observers should be deferred to the next tick (default: `false`).
+   * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
    *
    * @category Navigation
    * @possiblyasync
@@ -323,14 +323,14 @@ export abstract class Router extends Observable(Object) {
   }
 
   /**
-   * Go forward to the next entry in the router's history.
+   * Go forward to the next entry in the navigator's history.
    *
-   * This method is the equivalent of calling `router.go(1)`.
+   * This method is the equivalent of calling `navigator.go(1)`.
    *
-   * The observers of the router are automatically called.
+   * The observers of the navigator are automatically called.
    *
-   * @param [options.silent] A boolean specifying whether the router's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the router's observers should be deferred to the next tick (default: `false`).
+   * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
    *
    * @category Navigation
    * @possiblyasync
@@ -340,7 +340,7 @@ export abstract class Router extends Observable(Object) {
   }
 
   /**
-   * Returns the number of entries in the router's history.
+   * Returns the number of entries in the navigator's history.
    *
    * @category Navigation
    */
@@ -360,7 +360,7 @@ export abstract class Router extends Observable(Object) {
 
   // === Customization ===
 
-  applyPlugins(plugins: RouterPlugin[]) {
+  applyPlugins(plugins: NavigatorPlugin[]) {
     for (const plugin of plugins) {
       plugin(this);
     }
@@ -405,8 +405,8 @@ export abstract class Router extends Observable(Object) {
 
   // === Utilities ===
 
-  static isRouter(value: any): value is Router {
-    return isRouterInstance(value);
+  static isNavigator(value: any): value is Navigator {
+    return isNavigatorInstance(value);
   }
 }
 

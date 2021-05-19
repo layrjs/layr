@@ -1,7 +1,7 @@
 import {Component} from '@layr/component';
 import {useEffect} from 'react';
 import {view} from '@layr/react-integration';
-import {isInternalURL} from '@layr/browser-router';
+import {isInternalURL} from '@layr/browser-navigator';
 import {jsx, Global} from '@emotion/core';
 import {ThemeProvider, useTheme} from 'emotion-theming';
 import normalize from 'emotion-normalize';
@@ -812,7 +812,7 @@ export class UI extends Component {
     // With: <a href="target" onclick="...">text</a>
     html = html.replace(/<a href="([^"]+)">.*?<\/a>/g, (match, url) => {
       if (isInternalURL(url)) {
-        const onClick = `document.body.dispatchEvent(new CustomEvent('layrRouterNavigate', {detail: {url: '${url}'}})); return false;`;
+        const onClick = `document.body.dispatchEvent(new CustomEvent('layrNavigatorNavigate', {detail: {url: '${url}'}})); return false;`;
         match = match.replace(`<a href="${url}">`, `<a href="${url}" onclick="${onClick}">`);
       }
 
