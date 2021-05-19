@@ -2,7 +2,7 @@ import {provide} from '@layr/component';
 import {Routable} from '@layr/routable';
 import {useState} from 'react';
 import {jsx, css} from '@emotion/core';
-import {layout, page, view, useBrowserRouter} from '@layr/react-integration';
+import {layout, page, view} from '@layr/react-integration';
 
 import type {Application as BackendApplication} from '../../../backend/src/components/application';
 import {Home} from './home';
@@ -211,20 +211,6 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
           <div css={{marginTop: '2rem'}}>Sorry, there is nothing here.</div>
         </div>
       );
-    }
-
-    @view() static RootView() {
-      const {UI} = this;
-
-      const [router, isReady] = useBrowserRouter(this);
-
-      if (!isReady) {
-        return null;
-      }
-
-      const content = router.callCurrentRoute();
-
-      return <UI.Root>{content}</UI.Root>;
     }
   }
 
