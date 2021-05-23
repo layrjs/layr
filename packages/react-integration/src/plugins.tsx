@@ -34,7 +34,7 @@ export function BrowserNavigatorPlugin() {
             if (!(event.shiftKey || event.ctrlKey || event.altKey || event.metaKey)) {
               event.preventDefault();
 
-              navigator.navigate(to);
+              navigator.navigate(to, {defer: false});
             }
           },
           [to]

@@ -172,7 +172,7 @@ export abstract class Navigator extends Observable(Object) {
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
    *
    * @example
    * ```
@@ -186,7 +186,7 @@ export abstract class Navigator extends Observable(Object) {
    * @possiblyasync
    */
   navigate(url: string | URL, options: NavigationOptions = {}) {
-    const {silent = false, defer = false} = options;
+    const {silent = false, defer = true} = options;
 
     this._navigate(normalizeURL(url));
 
@@ -212,7 +212,7 @@ export abstract class Navigator extends Observable(Object) {
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
    *
    * @example
    * ```
@@ -226,7 +226,7 @@ export abstract class Navigator extends Observable(Object) {
    * @possiblyasync
    */
   redirect(url: string | URL, options: NavigationOptions = {}) {
-    const {silent = false, defer = false} = options;
+    const {silent = false, defer = true} = options;
 
     this._redirect(normalizeURL(url));
 
@@ -273,7 +273,7 @@ export abstract class Navigator extends Observable(Object) {
    *
    * @param delta A number representing the position in the navigator's history to which you want to move, relative to the current entry. A negative value moves backwards, a positive value moves forwards.
    * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
    *
    * @example
    * ```
@@ -290,7 +290,7 @@ export abstract class Navigator extends Observable(Object) {
    * @possiblyasync
    */
   go(delta: number, options: NavigationOptions = {}) {
-    const {silent = false, defer = false} = options;
+    const {silent = false, defer = true} = options;
 
     this._go(delta);
 
@@ -313,7 +313,7 @@ export abstract class Navigator extends Observable(Object) {
    * The observers of the navigator are automatically called.
    *
    * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
    *
    * @category Navigation
    * @possiblyasync
@@ -330,7 +330,7 @@ export abstract class Navigator extends Observable(Object) {
    * The observers of the navigator are automatically called.
    *
    * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
-   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
    *
    * @category Navigation
    * @possiblyasync

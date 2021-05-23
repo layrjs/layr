@@ -84,7 +84,7 @@ describe('MemoryNavigator', () => {
 
     expect(navigator.getCurrentPath()).toBe('/movies/abc123');
 
-    navigator.goBack();
+    navigator.goBack({defer: false});
 
     expect(navigator.getCurrentPath()).toBe('/movies');
   });
@@ -94,7 +94,7 @@ describe('MemoryNavigator', () => {
 
     expect(navigator.getCurrentQuery()).toEqual({showTrailers: 'true'});
 
-    navigator.goBack();
+    navigator.goBack({defer: false});
 
     expect(navigator.getCurrentQuery()).toEqual({});
   });
@@ -104,7 +104,7 @@ describe('MemoryNavigator', () => {
 
     expect(navigator.getCurrentHash()).toBe('main');
 
-    navigator.goBack();
+    navigator.goBack({defer: false});
 
     expect(navigator.getCurrentHash()).toBeUndefined();
   });
@@ -115,20 +115,20 @@ describe('MemoryNavigator', () => {
     expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(navigator.getHistoryLength()).toBe(3);
 
-    navigator.navigate('/movies/abc123/details');
+    navigator.navigate('/movies/abc123/details', {defer: false});
 
     expect(currentRouteResult).toBe('[Movie #abc123 (details)]');
     expect(navigator.getHistoryLength()).toBe(4);
 
     navigator.go(-3); // We should be at the first entry of the history
 
-    navigator.navigate('/movies/abc123');
+    navigator.navigate('/movies/abc123', {defer: false});
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(navigator.getHistoryLength()).toBe(2);
     expect(navigator.getCurrentQuery()).toEqual({});
 
-    navigator.navigate('/movies/abc123?showTrailers=true');
+    navigator.navigate('/movies/abc123?showTrailers=true', {defer: false});
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(navigator.getHistoryLength()).toBe(3);
@@ -141,14 +141,14 @@ describe('MemoryNavigator', () => {
     expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(navigator.getHistoryLength()).toBe(3);
 
-    navigator.redirect('/movies/def456');
+    navigator.redirect('/movies/def456', {defer: false});
 
     expect(currentRouteResult).toBe('[Movie #def456]');
     expect(navigator.getHistoryLength()).toBe(3);
 
     navigator.go(-2); // We should be at the first entry of the history
 
-    navigator.redirect('/movies/abc123');
+    navigator.redirect('/movies/abc123', {defer: false});
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
     expect(navigator.getHistoryLength()).toBe(1);
@@ -159,37 +159,37 @@ describe('MemoryNavigator', () => {
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
 
-    navigator.go(-1);
+    navigator.go(-1, {defer: false});
 
     expect(currentRouteResult).toBe('[Movies]');
 
-    navigator.go(-1);
+    navigator.go(-1, {defer: false});
 
     expect(currentRouteResult).toBe('[Home]');
 
-    navigator.go(2);
+    navigator.go(2, {defer: false});
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
 
-    expect(() => navigator.go(1)).toThrow(
+    expect(() => navigator.go(1, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
 
-    expect(() => navigator.go(2)).toThrow(
+    expect(() => navigator.go(2, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
 
-    expect(() => navigator.go(-3)).toThrow(
+    expect(() => navigator.go(-3, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
 
-    expect(() => navigator.go(-4)).toThrow(
+    expect(() => navigator.go(-4, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
   });
@@ -199,15 +199,15 @@ describe('MemoryNavigator', () => {
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
 
-    navigator.goBack();
+    navigator.goBack({defer: false});
 
     expect(currentRouteResult).toBe('[Movies]');
 
-    navigator.goBack();
+    navigator.goBack({defer: false});
 
     expect(currentRouteResult).toBe('[Home]');
 
-    expect(() => navigator.goBack()).toThrow(
+    expect(() => navigator.goBack({defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
@@ -217,19 +217,19 @@ describe('MemoryNavigator', () => {
   test('goForward()', async () => {
     const navigator = getNavigator();
 
-    navigator.go(-2);
+    navigator.go(-2, {defer: false});
 
     expect(currentRouteResult).toBe('[Home]');
 
-    navigator.goForward();
+    navigator.goForward({defer: false});
 
     expect(currentRouteResult).toBe('[Movies]');
 
-    navigator.goForward();
+    navigator.goForward({defer: false});
 
     expect(currentRouteResult).toBe('[Movie #abc123]');
 
-    expect(() => navigator.goForward()).toThrow(
+    expect(() => navigator.goForward({defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
