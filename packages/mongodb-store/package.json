@@ -43,8 +43,8 @@
     "@mvila/tsconfig": "^1.0.5",
     "@types/debug": "^4.1.5",
     "@types/jest": "^26.0.23",
-    "@types/lodash": "^4.14.169",
-    "@types/mongodb": "^3.6.14",
+    "@types/lodash": "^4.14.170",
+    "@types/mongodb": "^3.6.16",
     "mongodb-memory-server": "^6.9.6"
   }
 }
