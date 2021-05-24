@@ -2,13 +2,15 @@ import {Component, consume} from '@layr/component';
 import {stringifyQuery} from '@layr/navigator';
 import {Routable} from '@layr/routable';
 import React, {Fragment, useCallback} from 'react';
+import {jsx, css, useTheme} from '@emotion/react';
 import {page, view, useData} from '@layr/react-integration';
-import {jsx, css} from '@emotion/core';
+import {Select} from '@emotion-starter/react';
 import isEqual from 'lodash/isEqual';
 
 import type {createApplicationComponent} from './application';
 import docs from '../docs.json';
-import type {UI} from './ui';
+import {useStyles} from '../styles';
+import {Markdown} from '../markdown';
 import {useTitle} from '../utilities';
 
 const VERSIONS = [{name: '1', value: 'v1'}];
@@ -48,10 +50,11 @@ export class Docs extends Routable(Component) {
   ['constructor']!: typeof Docs;
 
   @consume() static Application: ReturnType<typeof createApplicationComponent>;
-  @consume() static UI: typeof UI;
 
   @page('[/]docs*') static MainPage() {
-    const {Application, UI} = this;
+    const {Application} = this;
+
+    const theme = useTheme();
 
     const {version, bookSlug, chapterSlug, language} = this.resolveURL();
 
@@ -77,21 +80,20 @@ export class Docs extends Routable(Component) {
           chapterSlug,
           language,
           hash: navigator.getCurrentHash()
-        }),
-        {defer: true}
+        })
       );
       return null;
     }
 
     return (
       <div
-        css={UI.responsive({
+        css={theme.responsive({
           flexBasis: 960,
           display: 'flex',
           flexWrap: ['nowrap', , 'wrap-reverse']
         })}
       >
-        <div css={UI.responsive({width: ['250px', , '100%'], paddingRight: [20, , 0]})}>
+        <div css={theme.responsive({width: ['250px', , '100%'], paddingRight: [20, , 0]})}>
           <this.ContentsView
             version={version}
             bookSlug={bookSlug}
@@ -100,59 +102,52 @@ export class Docs extends Routable(Component) {
           />
         </div>
 
-        <Fragment>
-          <hr css={UI.responsive({display: ['none', , 'block'], width: '100%'})} />
+        <hr css={theme.responsive({display: ['none', , 'block'], width: '100%'})} />
 
-          <div css={{flexGrow: 1, flexBasis: 640}}>
-            <this.ChapterView
-              version={version}
-              bookSlug={bookSlug}
-              chapterSlug={chapterSlug}
-              language={language}
-            />
-          </div>
-        </Fragment>
+        <div css={{flexGrow: 1, flexBasis: 640}}>
+          <this.ChapterView
+            version={version}
+            bookSlug={bookSlug}
+            chapterSlug={chapterSlug}
+            language={language}
+          />
+        </div>
       </div>
     );
   }
 
   @view() static ContentsView({version, bookSlug, chapterSlug, language}: URLParams) {
-    const {UI} = this;
-
+    const theme = useTheme();
+    const styles = useStyles();
     const navigator = this.getNavigator();
-    const theme = UI.useTheme();
 
     const contents = this.getContents();
 
-    const bookMenuStyle = css({...UI.styles.unstyledList, ...UI.styles.noMargins});
+    const bookMenuStyle = css({...styles.unstyledList, margin: 0});
     const bookMenuItemStyle = css({marginTop: '1rem'});
     const bookMenuItemTitleStyle = css({
       marginBottom: '-.25rem',
-      fontSize: '1.25rem',
-      fontWeight: 600,
-      color: theme.muted.textColor
+      fontSize: theme.fontSizes.h5,
+      fontWeight: theme.fontWeights.semibold,
+      color: theme.colors.text.muted
     });
 
-    const categoryMenuStyle = css({...UI.styles.unstyledList, ...UI.styles.noMargins});
+    const categoryMenuStyle = css({...styles.unstyledList, margin: 0});
     const categoryMenuItemStyle = css({marginTop: '.75rem'});
     const categoryMenuItemTitleStyle = css({
-      fontSize: theme.small.fontSize,
-      fontWeight: 600,
+      fontSize: theme.fontSizes.small,
+      fontWeight: theme.fontWeights.semibold,
       textTransform: 'uppercase',
       letterSpacing: 1
     });
 
-    const chapterMenuStyle = css({
-      ...UI.styles.unstyledList,
-      ...UI.styles.noMargins,
-      marginTop: '.2rem'
-    });
+    const chapterMenuStyle = css({...styles.unstyledList, margin: 0, marginTop: '.2rem'});
     const chapterMenuItemStyle = css({
       marginTop: 0,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      color: theme.link.primaryColor // Fixes the color of the ellipsis
+      color: theme.colors.primary.normal // Fixes the color of the ellipsis
     });
 
     return (
@@ -165,6 +160,7 @@ export class Docs extends Routable(Component) {
             language={language}
           />
         </div>
+
         <ul css={bookMenuStyle}>
           {contents.books.map((book) => {
             const categories = getBookCategories(book);
@@ -190,7 +186,7 @@ export class Docs extends Routable(Component) {
                                     chapterSlug: chapter.slug,
                                     language
                                   })}
-                                  activeStyle={{color: theme.link.highlighted.primaryColor}}
+                                  activeStyle={{color: theme.colors.primary.highlighted}}
                                 >
                                   {chapter.title}
                                 </navigator.Link>
@@ -211,10 +207,8 @@ export class Docs extends Routable(Component) {
   }
 
   @view() static OptionsView({version, bookSlug, chapterSlug, language}: URLParams) {
-    const {UI} = this;
-
+    const theme = useTheme();
     const navigator = this.getNavigator();
-    const theme = UI.useTheme();
 
     const hash = navigator.getCurrentHash();
 
@@ -229,8 +223,8 @@ export class Docs extends Routable(Component) {
 
     const labelStyle = css({
       marginBottom: 3,
-      color: theme.muted.textColor,
-      fontSize: theme.small.fontSize
+      color: theme.colors.text.muted,
+      fontSize: theme.fontSizes.small
     });
 
     return (
@@ -239,26 +233,26 @@ export class Docs extends Routable(Component) {
           <label htmlFor="version-selector" css={labelStyle}>
             Version
           </label>
-          <UI.Select id="version-selector" small>
+          <Select id="version-selector" size="small">
             {VERSIONS.map(({name, value}) => (
               <option key={value} value={value}>
                 {name}
               </option>
             ))}
-          </UI.Select>
+          </Select>
         </div>
 
         <div css={{display: 'flex', flexDirection: 'column'}}>
           <label htmlFor="version-selector" css={labelStyle}>
             Language
           </label>
-          <UI.Select id="version-selector" small value={language} onChange={changeLanguage}>
+          <Select id="version-selector" value={language} onChange={changeLanguage} size="small">
             {LANGUAGES.map(({name, value}) => (
               <option key={value} value={value}>
                 {name}
               </option>
             ))}
-          </UI.Select>
+          </Select>
         </div>
       </div>
     );
@@ -269,24 +263,22 @@ export class Docs extends Routable(Component) {
       async () => await this.getChapter({bookSlug, chapterSlug}),
 
       (chapter) => {
-        const {UI} = this;
-
+        const theme = useTheme();
         const navigator = this.getNavigator();
-        const theme = UI.useTheme();
 
         useTitle(chapter.title);
 
         const {nextChapter} = chapter;
 
         return (
-          <Fragment>
-            <UI.Markdown languageFilter={language}>{chapter.content}</UI.Markdown>
+          <>
+            <Markdown languageFilter={language}>{chapter.content}</Markdown>
 
             {nextChapter && (
               <div css={{marginBottom: 15}}>
                 <hr />
                 <div>
-                  <span style={{color: theme.muted.textColor}}>Next:</span>{' '}
+                  <span style={{color: theme.colors.text.muted}}>Next:</span>{' '}
                   <navigator.Link
                     to={this.generateURL({
                       version,
@@ -300,7 +292,7 @@ export class Docs extends Routable(Component) {
                 </div>
               </div>
             )}
-          </Fragment>
+          </>
         );
       },
 

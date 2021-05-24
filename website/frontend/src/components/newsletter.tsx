@@ -1,18 +1,15 @@
-import {consume} from '@layr/component';
 import {useState} from 'react';
 import {view, useAction} from '@layr/react-integration';
-import {jsx} from '@emotion/core';
+import {jsx, useTheme} from '@emotion/react';
+import {Input, Button} from '@emotion-starter/react';
 
 import type {Newsletter as BackendNewsletter} from '../../../backend/src/components/newsletter';
-import type {UI} from './ui';
 import {FeatureSection} from '../utilities';
 
 export const createNewsletterComponent = (Base: typeof BackendNewsletter) => {
   class Newsletter extends Base {
-    @consume() static UI: typeof UI;
-
     @view() static SubscriptionView() {
-      const {UI} = this;
+      const theme = useTheme();
 
       const [email, setEmail] = useState('');
       const [isSubscribed, setIsSubscribed] = useState(false);
@@ -44,7 +41,7 @@ export const createNewsletterComponent = (Base: typeof BackendNewsletter) => {
                 marginBottom: '.5rem'
               }}
             >
-              <UI.Input
+              <Input
                 type="email"
                 onChange={(event) => {
                   setEmail(event.target.value);
@@ -52,21 +49,21 @@ export const createNewsletterComponent = (Base: typeof BackendNewsletter) => {
                 value={email}
                 required
                 placeholder="Your email address"
-                large
-                css={UI.responsive({
+                size="large"
+                css={theme.responsive({
                   width: [300, , '100%'],
                   marginRight: ['0.75rem', , 0],
                   marginBottom: [0, , '0.75rem']
                 })}
               />
-              <UI.Button
+              <Button
                 type="submit"
-                primary
-                large
-                css={UI.responsive({width: ['auto', , '100%']})}
+                color="primary"
+                size="large"
+                css={theme.responsive({width: ['auto', , '100%']})}
               >
                 Subscribe
-              </UI.Button>
+              </Button>
             </form>
           )}
         </FeatureSection>

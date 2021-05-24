@@ -2,7 +2,9 @@ import {consume} from '@layr/component';
 import {Routable} from '@layr/routable';
 import {page, view, useData, useAction} from '@layr/react-integration';
 import {useState, useMemo} from 'react';
-import {jsx} from '@emotion/core';
+import {jsx} from '@emotion/react';
+import {Input, Button} from '@emotion-starter/react';
+import {Stack} from '@emotion-kit/react';
 
 import type {User as BackendUser} from '../../../backend/src/components/user';
 import type {createSessionComponent} from './session';
@@ -20,7 +22,7 @@ export const createUserComponent = (Base: typeof BackendUser) => {
       const {Session, Home} = this;
 
       if (Session.user !== undefined) {
-        Home.MainPage.redirect(undefined, {defer: true});
+        Home.MainPage.redirect();
         return null;
       }
 
@@ -50,88 +52,79 @@ export const createUserComponent = (Base: typeof BackendUser) => {
               event.preventDefault();
               signUp();
             }}
+            css={{marginTop: '2rem'}}
           >
-            <div css={{marginTop: '1rem'}}>
-              <input
+            <Stack direction="column">
+              <Input
                 type="email"
-                placeholder="Email"
                 value={this.email}
                 onChange={(event) => {
                   this.email = event.target.value;
                 }}
+                placeholder="Email"
                 required
-                css={{width: '100%'}}
+                size="large"
               />
-            </div>
 
-            <div css={{marginTop: '1rem'}}>
-              <input
+              <Input
                 type="password"
-                placeholder="Password"
                 value={this.password}
                 onChange={(event) => {
                   this.password = event.target.value;
                 }}
+                placeholder="Password"
                 autoComplete="new-password"
                 required
-                css={{width: '100%'}}
+                size="large"
               />
-            </div>
 
-            <div css={{marginTop: '1rem'}}>
-              <input
+              <Input
                 type="text"
-                placeholder="First name"
                 value={this.firstName}
                 onChange={(event) => {
                   this.firstName = event.target.value;
                 }}
+                placeholder="First name"
                 required
-                css={{width: '100%'}}
+                size="large"
               />
-            </div>
 
-            <div css={{marginTop: '1rem'}}>
-              <input
+              <Input
                 type="text"
-                placeholder="Last name"
                 value={this.lastName}
                 onChange={(event) => {
                   this.lastName = event.target.value;
                 }}
+                placeholder="Last name"
                 required
-                css={{width: '100%'}}
+                size="large"
               />
-            </div>
 
-            <div css={{marginTop: '1rem'}}>
-              <input
+              <Input
                 type="url"
-                placeholder="URL"
                 value={this.url}
                 onChange={(event) => {
                   this.url = event.target.value;
                 }}
+                placeholder="URL"
                 required
-                css={{width: '100%'}}
+                size="large"
               />
-            </div>
 
-            <div css={{marginTop: '1rem'}}>
-              <input
+              <Input
                 type="text"
-                placeholder="Invite token"
                 value={inviteToken}
                 onChange={(event) => {
                   setInviteToken(event.target.value);
                 }}
-                css={{width: '100%'}}
+                placeholder="Invite token"
+                size="large"
               />
-            </div>
+            </Stack>
 
-            <div css={{marginTop: '1rem'}}>
-              <button type="submit">Sign up</button>
-            </div>
+            <Button type="submit" size="large" color="primary" css={{marginTop: '2rem'}}>
+              Sign up
+            </Button>
           </form>
         </div>
       );
@@ -141,7 +134,7 @@ export const createUserComponent = (Base: typeof BackendUser) => {
       const {Session, Home} = this;
 
       if (Session.user !== undefined) {
-        Home.MainPage.redirect(undefined, {defer: true});
+        Home.MainPage.redirect();
         return null;
       }
 
@@ -169,36 +162,35 @@ export const createUserComponent = (Base: typeof BackendUser) => {
               event.preventDefault();
               signIn();
             }}
+            css={{marginTop: '2rem'}}
           >
-            <div css={{marginTop: '1rem'}}>
-              <input
+            <Stack direction="column">
+              <Input
                 type="email"
-                placeholder="Email"
                 value={this.email}
                 onChange={(event) => {
                   this.email = event.target.value;
                 }}
+                placeholder="Email"
                 required
-                css={{width: '100%'}}
+                size="large"
               />
-            </div>
 
-            <div css={{marginTop: '1rem'}}>
-              <input
+              <Input
                 type="password"
-                placeholder="Password"
                 value={this.password}
                 onChange={(event) => {
                   this.password = event.target.value;
                 }}
+                placeholder="Password"
                 required
-                css={{width: '100%'}}
+                size="large"
               />
-            </div>
+            </Stack>
 
-            <div css={{marginTop: '1rem'}}>
-              <button type="submit">Sign in</button>
-            </div>
+            <Button type="submit" size="large" color="primary" css={{marginTop: '2rem'}}>
+              Sign in
+            </Button>
           </form>
         </div>
       );

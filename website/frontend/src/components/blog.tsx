@@ -2,33 +2,27 @@ import {Component, consume} from '@layr/component';
 import {Routable} from '@layr/routable';
 import {Fragment} from 'react';
 import {layout, page, useData} from '@layr/react-integration';
-import {jsx} from '@emotion/core';
+import {jsx, useTheme} from '@emotion/react';
 
 import type {creteArticleComponent} from './article';
-import type {UI} from './ui';
 import {useTitle} from '../utilities';
 
 export class Blog extends Routable(Component) {
   ['constructor']!: typeof Blog;
 
   @consume() static Article: ReturnType<typeof creteArticleComponent>;
-  @consume() static UI: typeof UI;
 
   @layout('[/]blog') static MainLayout({children}: {children: () => any}) {
-    const {UI} = this;
-
-    const theme = UI.useTheme();
+    const theme = useTheme();
 
     useTitle('Blog');
 
     return (
       <div css={{flexBasis: 650}}>
-        <Fragment>
-          <h2>
-            <this.MainPage.Link css={{color: theme.muted.textColor}}>Blog</this.MainPage.Link>
-          </h2>
-          {children()}
-        </Fragment>
+        <h2 css={{marginBottom: '2rem'}}>
+          <this.MainPage.Link css={{color: theme.colors.text.muted}}>Blog</this.MainPage.Link>
+        </h2>
+        {children()}
       </div>
     );
   }
@@ -50,14 +44,14 @@ export class Blog extends Routable(Component) {
         ),
 
       (articles) => (
-        <Fragment>
+        <>
           {articles.map((article, index) => (
             <div key={article.slug}>
               {index > 0 && <hr />}
               <article.ListItemView />
             </div>
           ))}
-        </Fragment>
+        </>
       )
     );
   }

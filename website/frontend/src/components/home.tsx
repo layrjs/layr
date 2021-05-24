@@ -1,13 +1,16 @@
 import {Component, consume} from '@layr/component';
 import {Routable} from '@layr/routable';
-import {jsx} from '@emotion/core';
+import {Fragment} from 'react';
+import {jsx, useTheme} from '@emotion/react';
+import {Button} from '@emotion-starter/react';
+import {Container} from '@emotion-kit/react';
 import {page, view} from '@layr/react-integration';
 
 import type {createApplicationComponent} from './application';
 import type {Docs} from './docs';
 import type {createNewsletterComponent} from './newsletter';
-import type {UI} from './ui';
-import {FeatureSection, useTitle} from '../utilities';
+import {Markdown} from '../markdown';
+import {FeatureSection, FullHeight, useTitle} from '../utilities';
 import typicalVsLayr from '../assets/typical-stack-vs-layr-stack.png';
 
 const NO_WEB_API_BACKEND_EXAMPLE = `
@@ -161,24 +164,31 @@ export class Home extends Routable(Component) {
   @consume() static Application: ReturnType<typeof createApplicationComponent>;
   @consume() static Docs: typeof Docs;
   @consume() static Newsletter: ReturnType<typeof createNewsletterComponent>;
-  @consume() static UI: typeof UI;
 
-  @page('/', {aliases: ['/index.html']}) static MainPage() {
-    const {Application, Newsletter, UI} = this;
+  @page('[/]', {aliases: ['[/]index.html']}) static MainPage() {
+    const {Application, Newsletter} = this;
+
+    const theme = useTheme();
 
     useTitle('Dramatically simplify full‑stack development');
 
-    UI.useAnchor();
-
     return (
-      <UI.Root>
-        <UI.FullHeight
-          css={{display: 'flex', flexDirection: 'column', backgroundColor: UI.colors.blueGrey800}}
+      <>
+        <FullHeight
+          css={{
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: theme.colors.background.highlighted
+          }}
         >
-          <Application.HeaderView />
+          <div>
+            <Container>
+              <Application.HeaderView />
+            </Container>
+          </div>
           <this.HeroView css={{flexGrow: 1}} />
           <this.ScrollerView id="features" />
-        </UI.FullHeight>
+        </FullHeight>
 
         <div id="features" css={{maxWidth: 850, margin: '0 auto'}}>
           <this.NoWebAPIView />
@@ -187,24 +197,24 @@ export class Home extends Routable(Component) {
           <hr css={{margin: 0}} />
           <this.UserInterfaceView />
           <hr css={{margin: 0}} />
-          <this.DeveloperExperienceView />
-          <hr css={{margin: 0}} />
           <Newsletter.SubscriptionView />
         </div>
 
-        <Application.FooterView />
-      </UI.Root>
+        <div css={{backgroundColor: theme.colors.background.highlighted}}>
+          <Container>
+            <Application.FooterView />
+          </Container>
+        </div>
+      </>
     );
   }
 
   @view() static HeroView({...props}) {
-    const {UI} = this;
-
-    const theme = UI.useTheme();
+    const theme = useTheme();
 
     return (
       <div
-        css={UI.responsive({
+        css={theme.responsive({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -213,16 +223,16 @@ export class Home extends Routable(Component) {
         {...props}
       >
         <div
-          css={UI.responsive({
+          css={theme.responsive({
             display: 'flex',
             flexDirection: ['row', 'column-reverse'],
             alignItems: 'center',
             maxWidth: '1024px'
           })}
         >
-          <div css={UI.responsive({marginTop: [0, '3rem'], textAlign: ['left', 'center']})}>
+          <div css={theme.responsive({marginTop: [0, '3rem'], textAlign: ['left', 'center']})}>
             <h2
-              css={UI.responsive({
+              css={theme.responsive({
                 fontSize: [, , '1.953rem', '1.563rem'],
                 lineHeight: '1.45'
               })}
@@ -230,29 +240,30 @@ export class Home extends Routable(Component) {
               Dramatically Simplify Full‑Stack Development
             </h2>
             <div
-              css={UI.responsive({
+              css={theme.responsive({
                 fontSize: ['1.563rem', , , '1.25rem'],
-                color: theme.muted.textColor
+                color: theme.colors.text.muted
               })}
             >
               Inherit your frontend from your backend and build an application as if it were made of
               a single layer.
             </div>
-            <UI.Button
-              secondary
-              large
+            <Button
               onClick={() => {
                 this.Docs.MainPage.navigate();
               }}
+              size="large"
+              color="secondary"
               css={{marginTop: '2rem'}}
             >
               Get started
-            </UI.Button>
+            </Button>
           </div>
+
           <img
             src={typicalVsLayr}
             alt="Typical stack vs Layr stack"
-            css={UI.responsive({marginLeft: ['2.5rem', 0], maxWidth: [500, , '100%']})}
+            css={theme.responsive({marginLeft: ['2.5rem', 0], maxWidth: [500, , '100%']})}
           />
         </div>
       </div>
@@ -260,12 +271,10 @@ export class Home extends Routable(Component) {
   }
 
   @view() static ScrollerView({id}: {id: string}) {
-    const {UI} = this;
-
-    const theme = UI.useTheme();
+    const theme = useTheme();
 
     return (
-      <div css={{...UI.styles.minimumLineHeight, alignSelf: 'center', marginBottom: '1.75rem'}}>
+      <div css={{alignSelf: 'center', marginBottom: '1.75rem', lineHeight: 1}}>
         <a
           href={`#${id}`}
           onClick={(event) => {
@@ -276,8 +285,8 @@ export class Home extends Routable(Component) {
             }
           }}
           css={{
-            'color': theme.muted.textColor,
-            ':hover': {color: theme.textColor, textDecoration: 'none'}
+            'color': theme.colors.text.muted,
+            ':hover': {color: theme.colors.text.normal, textDecoration: 'none'}
           }}
         >
           ▼
@@ -287,8 +296,6 @@ export class Home extends Routable(Component) {
   }
 
   @view() static NoWebAPIView() {
-    const {UI} = this;
-
     return (
       <FeatureSection
         title="Look Ma, No Web API"
@@ -296,17 +303,15 @@ export class Home extends Routable(Component) {
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
           <h5 css={{marginTop: '2rem'}}>Backend</h5>
-          <UI.Markdown>{NO_WEB_API_BACKEND_EXAMPLE}</UI.Markdown>
+          <Markdown>{NO_WEB_API_BACKEND_EXAMPLE}</Markdown>
           <h5 css={{marginTop: '2rem'}}>Frontend</h5>
-          <UI.Markdown>{NO_WEB_API_FRONTEND_EXAMPLE}</UI.Markdown>
+          <Markdown>{NO_WEB_API_FRONTEND_EXAMPLE}</Markdown>
         </div>
       </FeatureSection>
     );
   }
 
   @view() static ORMView() {
-    const {UI} = this;
-
     return (
       <FeatureSection
         title="Abstracted Away Database"
@@ -316,21 +321,19 @@ export class Home extends Routable(Component) {
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
           <h5 css={{marginTop: '2rem'}}>Data Modeling</h5>
-          <UI.Markdown>{ORM_DATA_MODELING_EXAMPLE}</UI.Markdown>
+          <Markdown>{ORM_DATA_MODELING_EXAMPLE}</Markdown>
           <h5 css={{marginTop: '2rem'}}>Store Registration</h5>
-          <UI.Markdown>{ORM_STORE_REGISTRATION_EXAMPLE}</UI.Markdown>
+          <Markdown>{ORM_STORE_REGISTRATION_EXAMPLE}</Markdown>
           <h5 css={{marginTop: '2rem'}}>CRUD Operations</h5>
-          <UI.Markdown>{ORM_STORE_CRUD_OPERATIONS_EXAMPLE}</UI.Markdown>
+          <Markdown>{ORM_STORE_CRUD_OPERATIONS_EXAMPLE}</Markdown>
           <h5 css={{marginTop: '2rem'}}>Finding Data</h5>
-          <UI.Markdown>{ORM_STORE_FINDING_DATA_EXAMPLE}</UI.Markdown>
+          <Markdown>{ORM_STORE_FINDING_DATA_EXAMPLE}</Markdown>
         </div>
       </FeatureSection>
     );
   }
 
   @view() static UserInterfaceView() {
-    const {UI} = this;
-
     return (
       <FeatureSection
         title="Encapsulated User Interface"
@@ -340,17 +343,15 @@ export class Home extends Routable(Component) {
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
           <h5 css={{marginTop: '2rem'}}>Routes</h5>
-          <UI.Markdown>{USER_INTERFACE_ROUTES_EXAMPLE}</UI.Markdown>
+          <Markdown>{USER_INTERFACE_ROUTES_EXAMPLE}</Markdown>
           <h5 css={{marginTop: '2rem'}}>Views</h5>
-          <UI.Markdown>{USER_INTERFACE_VIEWS_EXAMPLE}</UI.Markdown>
+          <Markdown>{USER_INTERFACE_VIEWS_EXAMPLE}</Markdown>
         </div>
       </FeatureSection>
     );
   }
 
   @view() static DeveloperExperienceView() {
-    const {UI} = this;
-
     return (
       <FeatureSection
         title="Delightful Developer Experience"
@@ -358,16 +359,16 @@ export class Home extends Routable(Component) {
           'Layr strives to find the right balance between powerful abstractions and ease of use so that you can build an application in the most enjoyable way possible.'
         }
       >
-        <UI.Button
-          secondary
-          large
+        <Button
           onClick={() => {
             this.Docs.MainPage.navigate();
           }}
+          size="large"
+          color="secondary"
           css={{marginTop: '2rem'}}
         >
           Read the docs
-        </UI.Button>
+        </Button>
       </FeatureSection>
     );
   }

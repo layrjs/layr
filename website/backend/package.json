@@ -7,8 +7,8 @@
   "main": "./src/index.ts",
   "dependencies": {
     "@layr/component": "^1.1.14",
-    "@layr/mongodb-store": "^1.1.43",
-    "@layr/routable": "^2.0.31",
+    "@layr/mongodb-store": "^1.1.44",
+    "@layr/routable": "^2.0.32",
     "@layr/storable": "^1.1.24",
     "@layr/with-roles": "^1.0.32",
     "bcryptjs": "^2.4.3",
@@ -22,7 +22,7 @@
     "@boostr/tsconfig": "^1.0.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^8.5.1",
-    "@types/lodash": "^4.14.169",
+    "@types/lodash": "^4.14.170",
     "@types/node": "^14.17.0",
     "@types/rss": "0.0.28"
   }

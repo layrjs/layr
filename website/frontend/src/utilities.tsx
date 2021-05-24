@@ -1,7 +1,26 @@
-import {jsx} from '@emotion/core';
+import {jsx, useTheme} from '@emotion/react';
+import {useWindowHeight} from '@react-hook/window-size';
 import useMetaTags from 'react-metatags-hook';
 
-import {UI} from './components/ui';
+import {InlineMarkdown} from './markdown';
+
+export function FullHeight({
+  id,
+  className,
+  children
+}: {
+  id?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const height = useWindowHeight({initialHeight: 600});
+
+  return (
+    <div id={id} className={className} css={{minHeight: height}}>
+      {children}
+    </div>
+  );
+}
 
 export function FeatureSection({
   title,
@@ -12,11 +31,11 @@ export function FeatureSection({
   description: string;
   children: React.ReactNode;
 }) {
-  const theme = UI.useTheme();
+  const theme = useTheme();
 
   return (
     <div
-      css={UI.responsive({
+      css={theme.responsive({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -25,7 +44,7 @@ export function FeatureSection({
     >
       <div css={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
         <h3
-          css={UI.responsive({
+          css={theme.responsive({
             fontSize: [, , '1.563rem'],
             textAlign: 'center'
           })}
@@ -33,13 +52,13 @@ export function FeatureSection({
           {title}
         </h3>
         <div
-          css={UI.responsive({
+          css={theme.responsive({
             fontSize: ['1.25rem', , '1rem'],
-            color: theme.muted.textColor,
+            color: theme.colors.text.muted,
             textAlign: 'center'
           })}
         >
-          <UI.InlineMarkdown>{description}</UI.InlineMarkdown>
+          <InlineMarkdown>{description}</InlineMarkdown>
         </div>
         {children}
       </div>
