@@ -134,7 +134,7 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
             })}
           >
             <div>
-              <Stack direction="column">
+              <Stack direction="column" css={theme.responsive({textAlign: [, , , 'center']})}>
                 <Docs.MainPage.Link>Docs</Docs.MainPage.Link>
                 <Blog.MainPage.Link>Blog</Blog.MainPage.Link>
                 <a
@@ -148,7 +148,7 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
               </Stack>
             </div>
 
-            <div css={theme.responsive({marginTop: [, , , '1rem']})}>
+            <div css={theme.responsive({marginTop: [, , , '1rem'], textAlign: [, , , 'center']})}>
               <Stack direction="column">
                 <a
                   href="https://github.com/layrjs/layr"
