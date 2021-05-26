@@ -1,16 +1,22 @@
-import React, {useRef, useContext} from 'react';
+import {callRouteByURL, RoutableComponent, assertIsRoutableClass} from '@layr/routable';
+import {Navigator} from '@layr/navigator';
+import {BrowserNavigator} from '@layr/browser-navigator';
+import React, {useRef, useState, useEffect, useContext} from 'react';
 
-export function RootView({
+import {useForceUpdate} from './hooks';
+import {BrowserNavigatorPlugin} from './plugins';
+
+export function BrowserRootView({
   children,
   ...customization
-}: Partial<Customization> & {children: React.ReactNode}) {
+}: {children: React.ReactNode} & Partial<Customization>) {
   const previousCustomization = useContext(CustomizationContext);
 
   if (previousCustomization !== undefined) {
     throw new Error("An application shouldn't have more than one RootView");
   }
 
-  const actionView = useRef<ActionView>(null);
+  const actionView = useRef<BrowserActionView>(null);
 
   return (
     <CustomizationContext.Provider
@@ -34,10 +40,60 @@ export function RootView({
         ...customization
       }}
     >
-      <ActionView ref={actionView} />
+      <BrowserActionView ref={actionView} />
       {children}
     </CustomizationContext.Provider>
   );
+}
+
+export const NavigatorContext = React.createContext<Navigator | undefined>(undefined);
+
+export function BrowserNavigatorView({rootComponent}: {rootComponent: RoutableComponent}) {
+  assertIsRoutableClass(rootComponent);
+
+  const navigatorRef = useRef<BrowserNavigator>();
+
+  if (navigatorRef.current === undefined) {
+    navigatorRef.current = new BrowserNavigator({plugins: [BrowserNavigatorPlugin()]});
+    rootComponent.registerNavigator(navigatorRef.current);
+  }
+
+  const [isReady, setIsReady] = useState(false);
+
+  const forceUpdate = useForceUpdate();
+
+  useEffect(() => {
+    navigatorRef.current!.addObserver(forceUpdate);
+
+    setIsReady(true);
+
+    return function () {
+      navigatorRef.current!.removeObserver(forceUpdate);
+      navigatorRef.current!.unmount();
+    };
+  }, []);
+
+  if (!isReady) {
+    return null;
+  }
+
+  return (
+    <NavigatorContext.Provider value={navigatorRef.current}>
+      {callRouteByURL(rootComponent, navigatorRef.current.getCurrentURL())}
+    </NavigatorContext.Provider>
+  );
+}
+
+export function useNavigator() {
+  const navigator = useContext(NavigatorContext);
+
+  if (navigator === undefined) {
+    throw new Error(
+      "Couldn't get a navigator. Please make sure you have included a NavigatorView at the top of your React component tree."
+    );
+  }
+
+  return navigator;
 }
 
 type Customization = {
@@ -54,7 +110,7 @@ export function useCustomization() {
 
   if (customization === undefined) {
     throw new Error(
-      "Couldn't get the current customization. Please make sure you have included the RootView at the top of your React component tree."
+      "Couldn't get the current customization. Please make sure you have included a RootView at the top of your React component tree."
     );
   }
 
@@ -74,7 +130,10 @@ export function Customizer({
   );
 }
 
-class ActionView extends React.Component<{}, {count: number; activeElement: Element | null}> {
+class BrowserActionView extends React.Component<
+  {},
+  {count: number; activeElement: Element | null}
+> {
   state = {
     count: 0,
     activeElement: null

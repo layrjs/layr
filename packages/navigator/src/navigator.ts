@@ -13,6 +13,7 @@ declare global {
     redirect: (params?: any, options?: URLOptions & NavigationOptions) => Promise<void> | undefined;
     reload: (params?: any, options?: URLOptions) => void;
     isActive: () => boolean;
+    Link: (props: {params?: any; hash?: string; [key: string]: any}) => any;
   }
 }
 

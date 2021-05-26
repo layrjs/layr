@@ -1,12 +1,6 @@
 import {Navigator, NavigatorOptions, normalizeURL, stringifyURL} from '@layr/navigator';
 import debounce from 'lodash/debounce';
 
-declare global {
-  interface Function {
-    Link: (props: {params?: any; hash?: string; [key: string]: any}) => any;
-  }
-}
-
 export type BrowserNavigatorLinkProps = {
   to: string;
   className?: string;
