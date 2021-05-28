@@ -112,10 +112,7 @@ export function route(pattern: Pattern, options: RouteOptions = {}) {
       });
 
       defineMethod(method, 'isActive', function (this: Function) {
-        const currentPath = navigator.getCurrentPath();
-        const routePath = this.generatePath();
-
-        return routePath === currentPath;
+        return this.matchURL(navigator.getCurrentURL()) !== undefined;
       });
 
       navigator.applyCustomRouteDecorators(this, method);
