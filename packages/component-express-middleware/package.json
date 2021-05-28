@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-express-middleware",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "An Express middleware for your Layr components",
   "keywords": [
     "layr",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@layr/component": "^1.1.14",
     "@layr/component-server": "^2.0.6",
-    "@layr/routable": "^2.0.33",
+    "@layr/routable": "^2.0.34",
     "core-helpers": "^1.0.3",
     "http-errors": "^1.8.0",
     "mime-types": "^2.1.30",

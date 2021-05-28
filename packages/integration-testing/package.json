@@ -1,6 +1,6 @@
 {
   "name": "@layr/integration-testing",
-  "version": "2.0.16",
+  "version": "2.0.17",
   "private": true,
   "description": "Tests involving a combination of Layr packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -23,16 +23,16 @@
   "dependencies": {
     "@layr/component": "^1.1.14",
     "@layr/component-client": "^2.0.5",
-    "@layr/component-express-middleware": "^2.0.8",
+    "@layr/component-express-middleware": "^2.0.9",
     "@layr/component-http-client": "^2.0.5",
-    "@layr/component-http-server": "^2.0.8",
-    "@layr/component-koa-middleware": "^2.0.8",
+    "@layr/component-http-server": "^2.0.9",
+    "@layr/component-koa-middleware": "^2.0.9",
     "@layr/component-server": "^2.0.6",
     "@layr/memory-navigator": "^2.0.4",
     "@layr/memory-store": "^1.1.28",
-    "@layr/mongodb-store": "^1.1.44",
+    "@layr/mongodb-store": "^1.1.45",
     "@layr/navigator": "^2.0.3",
-    "@layr/routable": "^2.0.33",
+    "@layr/routable": "^2.0.34",
     "@layr/storable": "^1.1.24",
     "@layr/store": "^1.1.36",
     "cross-fetch": "^3.1.4",
@@ -40,7 +40,7 @@
     "koa": "^2.13.1",
     "koa-mount": "^4.0.0",
     "lodash": "^4.17.21",
-    "mongodb": "^3.6.8",
+    "mongodb": "^3.6.9",
     "mongodb-memory-server": "^6.9.6",
     "tslib": "^2.2.0"
   },
@@ -48,9 +48,9 @@
     "@mvila/dev-tools": "^1.0.28",
     "@mvila/tsconfig": "^1.0.5",
     "@types/jest": "^25.2.3",
-    "@types/koa": "^2.13.1",
+    "@types/koa": "^2.13.3",
     "@types/koa-mount": "^4.0.0",
     "@types/lodash": "^4.14.170",
-    "@types/mongodb": "^3.6.16"
+    "@types/mongodb": "^3.6.17"
   }
 }

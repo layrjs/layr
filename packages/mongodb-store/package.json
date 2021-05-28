@@ -1,6 +1,6 @@
 {
   "name": "@layr/mongodb-store",
-  "version": "1.1.44",
+  "version": "1.1.45",
   "description": "A Layr store for MongoDB",
   "keywords": [
     "layr",
@@ -35,7 +35,7 @@
     "debug": "^4.3.1",
     "lodash": "^4.17.21",
     "microbatcher": "^2.0.1",
-    "mongodb": "^3.6.8",
+    "mongodb": "^3.6.9",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
@@ -44,7 +44,7 @@
     "@types/debug": "^4.1.5",
     "@types/jest": "^26.0.23",
     "@types/lodash": "^4.14.170",
-    "@types/mongodb": "^3.6.16",
+    "@types/mongodb": "^3.6.17",
     "mongodb-memory-server": "^6.9.6"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@layr/react-integration",
-  "version": "2.0.49",
+  "version": "2.0.50",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
@@ -32,7 +32,7 @@
     "@layr/memory-navigator": "^2.0.4",
     "@layr/navigator": "^2.0.3",
     "@layr/observable": "^1.0.8",
-    "@layr/routable": "^2.0.33",
+    "@layr/routable": "^2.0.34",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "tslib": "^2.2.0"
