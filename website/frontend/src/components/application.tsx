@@ -9,7 +9,6 @@ import {EmotionKit, Container, Stack} from '@emotion-kit/react';
 import type {Application as BackendApplication} from '../../../backend/src/components/application';
 import {Home} from './home';
 import {Docs} from './docs';
-import {createSessionComponent} from './session';
 import {createUserComponent} from './user';
 import {Blog} from './blog';
 import {creteArticleComponent} from './article';
@@ -23,10 +22,9 @@ import love from '../assets/f-plus-b-equals-love.svg';
 
 export const createApplicationComponent = (Base: typeof BackendApplication) => {
   class Application extends Routable(Base) {
+    @provide() static User = createUserComponent(Base.User);
     @provide() static Home = Home;
     @provide() static Docs = Docs;
-    @provide() static Session = createSessionComponent(Base.Session);
-    @provide() static User = createUserComponent(Base.User);
     @provide() static Blog = Blog;
     @provide() static Article = creteArticleComponent(Base.Article);
     @provide() static Newsletter = createNewsletterComponent(Base.Newsletter);

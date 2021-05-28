@@ -2,10 +2,10 @@ import {Component, consume, expose, AttributeSelector} from '@layr/component';
 import {Storable, primaryIdentifier, attribute, index} from '@layr/storable';
 import {WithRoles, role} from '@layr/with-roles';
 
-import type {Session} from './session';
+import type {User} from './user';
 
 export class Entity extends WithRoles(Storable(Component)) {
-  @consume() static Session: typeof Session;
+  @consume() static User: typeof User;
 
   @expose({get: true, set: true}) @primaryIdentifier() id!: string;
 
@@ -14,7 +14,7 @@ export class Entity extends WithRoles(Storable(Component)) {
   @attribute('Date?') updatedAt?: Date;
 
   @role('user') static userRoleResolver() {
-    return this.Session.user !== undefined;
+    return this.User.authenticatedUser !== undefined;
   }
 
   @role('guest') static guestRoleResolver() {

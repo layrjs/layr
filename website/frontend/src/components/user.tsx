@@ -1,4 +1,5 @@
 import {consume} from '@layr/component';
+import {attribute} from '@layr/storable';
 import {Routable} from '@layr/routable';
 import {page, view, useData, useAction} from '@layr/react-integration';
 import {useState, useMemo} from 'react';
@@ -7,7 +8,6 @@ import {Input, Button} from '@emotion-starter/react';
 import {Stack} from '@emotion-kit/react';
 
 import type {User as BackendUser} from '../../../backend/src/components/user';
-import type {createSessionComponent} from './session';
 import type {Home} from './home';
 import {useTitle} from '../utilities';
 
@@ -15,13 +15,26 @@ export const createUserComponent = (Base: typeof BackendUser) => {
   class User extends Routable(Base) {
     ['constructor']!: typeof User;
 
-    @consume() static Session: ReturnType<typeof createSessionComponent>;
     @consume() static Home: typeof Home;
 
-    @page('[/]sign-up') static SignUpPage() {
-      const {Session, Home} = this;
+    @attribute('string?', {
+      getter() {
+        return window.localStorage.getItem('token') || undefined;
+      },
+      setter(token) {
+        if (token !== undefined) {
+          window.localStorage.setItem('token', token);
+        } else {
+          window.localStorage.removeItem('token');
+        }
+      }
+    })
+    static token?: string;
 
-      if (Session.user !== undefined) {
+    @page('[/]sign-up') static SignUpPage() {
+      const {Home} = this;
+
+      if (this.authenticatedUser !== undefined) {
         Home.MainPage.redirect();
         return null;
       }
@@ -131,9 +144,9 @@ export const createUserComponent = (Base: typeof BackendUser) => {
     }
 
     @page('[/]sign-in') static SignInPage() {
-      const {Session, Home} = this;
+      const {Home} = this;
 
-      if (Session.user !== undefined) {
+      if (this.authenticatedUser !== undefined) {
         Home.MainPage.redirect();
         return null;
       }
@@ -197,9 +210,9 @@ export const createUserComponent = (Base: typeof BackendUser) => {
     }
 
     @page('/sign-out') static signOutPage() {
-      const {Session, Home} = this;
+      const {Home} = this;
 
-      Session.token = undefined;
+      this.token = undefined;
       Home.MainPage.reload();
 
       return null;

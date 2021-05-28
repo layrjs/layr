@@ -86,9 +86,9 @@ export const creteArticleComponent = (Base: typeof BackendArticle) => {
     }
 
     @page('[/blog]/articles/add') static AddPage() {
-      const {Session, Home} = this;
+      const {User, Home} = this;
 
-      if (Session.user === undefined) {
+      if (User.authenticatedUser === undefined) {
         Home.MainPage.redirect();
         return null;
       }
@@ -104,9 +104,9 @@ export const creteArticleComponent = (Base: typeof BackendArticle) => {
     }
 
     @page('[/blog/articles/:slug]/edit') EditPage() {
-      const {Session, Home} = this.constructor;
+      const {User, Home} = this.constructor;
 
-      if (Session.user === undefined) {
+      if (User.authenticatedUser === undefined) {
         Home.MainPage.redirect();
         return null;
       }

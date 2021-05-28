@@ -11,12 +11,12 @@
     "@emotion/react": "^11.4.0",
     "@layr/component": "^1.1.14",
     "@layr/component-http-client": "^2.0.5",
-    "@layr/react-integration": "^2.0.45",
-    "@layr/routable": "^2.0.32",
+    "@layr/react-integration": "^2.0.49",
+    "@layr/routable": "^2.0.34",
     "@layr/storable": "^1.1.24",
     "@react-hook/window-size": "^3.0.7",
     "cross-fetch": "^3.1.4",
-    "date-fns": "^2.21.3",
+    "date-fns": "^2.22.1",
     "dompurify": "^2.2.8",
     "highlight.js": "^10.7.2",
     "lodash": "^4.17.21",
@@ -31,7 +31,7 @@
     "@types/facepaint": "^1.2.1",
     "@types/lodash": "^4.14.170",
     "@types/marked": "^1.2.2",
-    "@types/react": "^17.0.6",
+    "@types/react": "^17.0.8",
     "@types/react-dom": "^17.0.5"
   }
 }

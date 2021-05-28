@@ -1,22 +1,21 @@
-import {consume, expose, validators} from '@layr/component';
+import {expose, validators, AttributeSelector} from '@layr/component';
 import {secondaryIdentifier, attribute, method, loader} from '@layr/storable';
 import {role} from '@layr/with-roles';
 import bcrypt from 'bcryptjs';
 import compact from 'lodash/compact';
 
 import {Entity} from './entity';
-import type {JWT} from './jwt';
+import {generateJWT, verifyJWT} from '../jwt';
 
-const BCRYPT_SALT_ROUNDS = 5;
+const TOKEN_DURATION = 31536000000; // 1 year
 const INVITE_TOKEN_DURATION = 604800000; // 1 week
+const BCRYPT_SALT_ROUNDS = 5;
 
 const {rangeLength} = validators;
 
 @expose({get: {call: true}, prototype: {load: {call: true}, save: {call: 'self'}}})
 export class User extends Entity {
   ['constructor']!: typeof User;
-
-  @consume() static JWT: typeof JWT;
 
   @expose({get: 'self', set: ['creator', 'self']})
   @secondaryIdentifier('string', {
@@ -69,6 +68,12 @@ export class User extends Entity {
   @attribute('string', {validators: [rangeLength([10, 128])]})
   url = '';
 
+  @expose({get: true, set: true})
+  @attribute('string?')
+  static token?: string;
+
+  static authenticatedUser?: User;
+
   @role('creator') creatorRoleResolver() {
     return this.isNew();
   }
@@ -78,18 +83,66 @@ export class User extends Entity {
       return undefined;
     }
 
-    return this === this.constructor.Session.user;
+    return this === this.constructor.authenticatedUser;
+  }
+
+  static async initialize() {
+    if (this.token !== undefined) {
+      this.authenticatedUser = await this.getAuthenticatedUser({});
+    }
+  }
+
+  @expose({call: true}) @method() static async getAuthenticatedUser(
+    attributeSelector: AttributeSelector
+  ) {
+    if (this.token === undefined) {
+      return;
+    }
+
+    const userId = this.verifyToken(this.token);
+
+    if (userId === undefined) {
+      // The token is invalid or expired
+      this.token = undefined;
+      return;
+    }
+
+    const user = await this.get(userId, attributeSelector, {throwIfMissing: false});
+
+    if (user === undefined) {
+      // The user doesn't exist anymore
+      this.token = undefined;
+      return;
+    }
+
+    return user;
+  }
+
+  static verifyToken(token: string) {
+    const payload = verifyJWT(token) as {sub: string} | undefined;
+    const userId = payload?.sub;
+
+    return userId;
+  }
+
+  static generateToken(userId: string, {expiresIn = TOKEN_DURATION} = {}) {
+    const token = generateJWT({
+      sub: userId,
+      exp: Math.round((Date.now() + expiresIn) / 1000)
+    });
+
+    return token;
   }
 
   @expose({call: 'creator'}) @method() async signUp({inviteToken}: {inviteToken?: string} = {}) {
-    const {Session} = this.constructor;
+    const {User} = this.constructor;
 
     const isAllowed = await (async () => {
       if (inviteToken) {
-        return this.constructor.verifyInviteToken(inviteToken);
+        return User.verifyInviteToken(inviteToken);
       }
 
-      const numberOfUsers = await this.constructor.count();
+      const numberOfUsers = await User.count();
       return numberOfUsers === 0;
     })();
 
@@ -101,16 +154,15 @@ export class User extends Entity {
 
     await this.save();
 
-    Session.token = Session.generateToken(this.id);
+    User.token = User.generateToken(this.id);
   }
 
   @expose({call: 'creator'}) @method() async signIn() {
-    const {Session} = this.constructor;
+    const {User} = this.constructor;
 
     this.validate({email: true, password: true});
 
-    const existingUser = await this.constructor
-      .fork()
+    const existingUser = await User.fork()
       .detach()
       .get({email: this.email}, {password: true}, {throwIfMissing: false});
 
@@ -126,7 +178,7 @@ export class User extends Entity {
       });
     }
 
-    Session.token = Session.generateToken(existingUser.id);
+    User.token = User.generateToken(existingUser.id);
   }
 
   static async hashPassword(password: string) {
@@ -140,14 +192,14 @@ export class User extends Entity {
   @expose({call: 'user'}) @method() static generateInviteToken({
     expiresIn = INVITE_TOKEN_DURATION
   } = {}) {
-    return this.JWT.generate({
+    return generateJWT({
       isInvited: true,
       exp: Math.round((Date.now() + expiresIn) / 1000)
     });
   }
 
   static verifyInviteToken(token: string) {
-    const payload = this.JWT.verify(token) as {isInvited: boolean} | undefined;
+    const payload = verifyJWT(token) as {isInvited: boolean} | undefined;
     return payload?.isInvited === true;
   }
 }

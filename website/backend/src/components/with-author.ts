@@ -8,7 +8,7 @@ export const WithAuthor = (Base: typeof Entity) => {
   class WithAuthor extends Base {
     ['constructor']!: typeof WithAuthor;
 
-    @expose({get: true}) @attribute('User') author = this.constructor.Session.user!;
+    @expose({get: true}) @attribute('User') author = this.constructor.User.authenticatedUser!;
 
     @role('author') async authorRoleResolver() {
       if (this.resolveRole('guest')) {
@@ -21,7 +21,7 @@ export const WithAuthor = (Base: typeof Entity) => {
 
       await this.getGhost().load({author: {}});
 
-      return this.getGhost().author === this.constructor.Session.user!.getGhost();
+      return this.getGhost().author === this.constructor.User.authenticatedUser!.getGhost();
     }
   }
 
