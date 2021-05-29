@@ -13,12 +13,12 @@ export class Entity extends WithRoles(Storable(Component)) {
 
   @attribute('Date?') updatedAt?: Date;
 
-  @role('user') static userRoleResolver() {
-    return this.User.authenticatedUser !== undefined;
+  @role('user') static async userRoleResolver() {
+    return (await this.User.getAuthenticatedUser()) !== undefined;
   }
 
-  @role('guest') static guestRoleResolver() {
-    return !this.resolveRole('user');
+  @role('guest') static async guestRoleResolver() {
+    return !(await this.resolveRole('user'));
   }
 
   async beforeSave(attributeSelector: AttributeSelector) {

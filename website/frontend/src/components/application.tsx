@@ -11,7 +11,7 @@ import {Home} from './home';
 import {Docs} from './docs';
 import {createUserComponent} from './user';
 import {Blog} from './blog';
-import {creteArticleComponent} from './article';
+import {createArticleComponent} from './article';
 import {createNewsletterComponent} from './newsletter';
 import {getGlobalStyles, useStyles} from '../styles';
 import {FullHeight} from '../utilities';
@@ -26,7 +26,7 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
     @provide() static Home = Home;
     @provide() static Docs = Docs;
     @provide() static Blog = Blog;
-    @provide() static Article = creteArticleComponent(Base.Article);
+    @provide() static Article = createArticleComponent(Base.Article);
     @provide() static Newsletter = createNewsletterComponent(Base.Newsletter);
 
     @layout('/') static MainLayout({children}: {children: () => any}) {

@@ -7,15 +7,17 @@ import {Input, TextArea, Button} from '@emotion-starter/react';
 import {Stack} from '@emotion-kit/react';
 import {format} from 'date-fns';
 
+import type {createUserComponent} from './user';
 import type {Article as BackendArticle} from '../../../backend/src/components/article';
 import type {Home} from './home';
 import {Markdown} from '../markdown';
 import {useTitle} from '../utilities';
 
-export const creteArticleComponent = (Base: typeof BackendArticle) => {
+export const createArticleComponent = (Base: typeof BackendArticle) => {
   class Article extends Routable(Base) {
     ['constructor']!: typeof Article;
 
+    @consume() static User: ReturnType<typeof createUserComponent>;
     @consume() static Home: typeof Home;
 
     @layout('[/blog]/articles/:slug') ItemLayout({children}: {children: () => any}) {
@@ -93,7 +95,7 @@ export const creteArticleComponent = (Base: typeof BackendArticle) => {
         return null;
       }
 
-      const article = useMemo(() => new this(), []);
+      const article = useMemo(() => new this({author: User.authenticatedUser}), []);
 
       const save = useAction(async () => {
         await article.save();

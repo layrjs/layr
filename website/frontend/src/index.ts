@@ -16,7 +16,5 @@ export default async () => {
 
   const Application = createApplicationComponent(BackendApplicationProxy);
 
-  Application.User.authenticatedUser = await Application.User.getAuthenticatedUser({});
-
   return Application;
 };

@@ -31,6 +31,12 @@ export const createUserComponent = (Base: typeof BackendUser) => {
     })
     static token?: string;
 
+    static authenticatedUser?: User;
+
+    static async initializer() {
+      this.authenticatedUser = (await this.getAuthenticatedUser()) as User;
+    }
+
     @page('[/]sign-up') static SignUpPage() {
       const {Home} = this;
 

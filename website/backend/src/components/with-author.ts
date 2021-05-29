@@ -3,15 +3,16 @@ import {attribute} from '@layr/storable';
 import {role} from '@layr/with-roles';
 
 import type {Entity} from './entity';
+import type {User} from './user';
 
 export const WithAuthor = (Base: typeof Entity) => {
   class WithAuthor extends Base {
     ['constructor']!: typeof WithAuthor;
 
-    @expose({get: true}) @attribute('User') author = this.constructor.User.authenticatedUser!;
+    @expose({get: true, set: 'author'}) @attribute('User') author!: User;
 
     @role('author') async authorRoleResolver() {
-      if (this.resolveRole('guest')) {
+      if (await this.resolveRole('guest')) {
         return undefined;
       }
 
@@ -21,7 +22,9 @@ export const WithAuthor = (Base: typeof Entity) => {
 
       await this.getGhost().load({author: {}});
 
-      return this.getGhost().author === this.constructor.User.authenticatedUser!.getGhost();
+      return (
+        this.getGhost().author === (await this.constructor.User.getAuthenticatedUser())!.getGhost()
+      );
     }
   }
 

@@ -72,28 +72,20 @@ export class User extends Entity {
   @attribute('string?')
   static token?: string;
 
-  static authenticatedUser?: User;
-
   @role('creator') creatorRoleResolver() {
     return this.isNew();
   }
 
-  @role('self') selfRoleResolver() {
-    if (this.resolveRole('creator') || this.resolveRole('guest')) {
+  @role('self') async selfRoleResolver() {
+    if ((await this.resolveRole('creator')) || (await this.resolveRole('guest'))) {
       return undefined;
     }
 
-    return this === this.constructor.authenticatedUser;
-  }
-
-  static async initialize() {
-    if (this.token !== undefined) {
-      this.authenticatedUser = await this.getAuthenticatedUser({});
-    }
+    return this === (await this.constructor.getAuthenticatedUser());
   }
 
   @expose({call: true}) @method() static async getAuthenticatedUser(
-    attributeSelector: AttributeSelector
+    attributeSelector: AttributeSelector = {}
   ) {
     if (this.token === undefined) {
       return;
