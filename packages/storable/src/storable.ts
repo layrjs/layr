@@ -676,7 +676,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
       let storableHasBeenCreated = false;
 
       if (storable === undefined) {
-        storable = (await this.create(identifierDescriptor, {
+        storable = (await this.instantiate(identifierDescriptor, {
           isNew: false
         })) as InstanceType<T>;
         storableHasBeenCreated = true;

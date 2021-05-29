@@ -1,6 +1,6 @@
 {
   "name": "@layr/browser-navigator",
-  "version": "2.0.5",
+  "version": "2.0.7",
   "description": "Provides a navigation system for a Layr application running in a browser",
   "keywords": [
     "layr",
@@ -26,13 +26,13 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/navigator": "^2.0.3",
+    "@layr/navigator": "^2.0.5",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.28",
+    "@mvila/dev-tools": "^1.0.30",
     "@mvila/tsconfig": "^1.0.5",
     "@types/lodash": "^4.14.170",
     "@types/react": "^16.14.8"
