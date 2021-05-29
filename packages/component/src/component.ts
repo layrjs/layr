@@ -18,7 +18,6 @@ import {
   PropertyOperationSetting,
   PropertyFilter,
   PropertyFilterSync,
-  PropertyFilterAsync,
   IntrospectedProperty,
   Attribute,
   isAttributeClass,
@@ -325,9 +324,8 @@ export class Component extends Observable(Object) {
    * @param [options.source] A number specifying the [source](https://layrjs.com/docs/v1/reference/attribute#value-source-type) of the created instance (default: `0`).
    * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be set (default: `true`, which means that all the attributes will be set).
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.initialize] Whether to call the [`initialize`](https://layrjs.com/docs/v1/reference/component#initialize-instance-method) instance method or not (default: `true`).
    *
-   * @returns An instance of the component class (possibly a promise if `options.attributeFilter` is an async function or `options.initialize` is `true` and the class has an async [`initialize`](https://layrjs.com/docs/v1/reference/component#initialize-instance-method) instance method).
+   * @returns An instance of the component class (possibly a promise if `options.attributeFilter` is an async function).
    *
    * @example
    * ```
@@ -339,42 +337,7 @@ export class Component extends Observable(Object) {
    * @category Creation
    * @possiblyasync
    */
-  static create<T extends typeof Component>(
-    this: T,
-    object: PlainObject | null | undefined,
-    options: {
-      isNew?: boolean;
-      source?: number;
-      attributeSelector?: AttributeSelector;
-      attributeFilter: PropertyFilterAsync;
-      initialize?: boolean;
-    }
-  ): PromiseLike<InstanceType<T>>;
-  static create<T extends typeof Component>(
-    this: T,
-    object: PlainObject | null | undefined,
-    options: {
-      isNew?: boolean;
-      source?: number;
-      attributeSelector?: AttributeSelector;
-      attributeFilter?: PropertyFilter;
-      initialize: false;
-    }
-  ): InstanceType<T>;
-  static create<T extends typeof Component>(
-    this: T,
-    object?: PlainObject | null,
-    options?: {
-      isNew?: boolean;
-      source?: number;
-      attributeSelector?: AttributeSelector;
-      attributeFilter?: PropertyFilter;
-      initialize?: boolean;
-    }
-  ): ReturnType<InstanceType<T>['initialize']> extends PromiseLike<void>
-    ? PromiseLike<InstanceType<T>>
-    : InstanceType<T>;
-  static create<T extends typeof Component>(
+  static instantiate<T extends typeof Component>(
     this: T,
     object: PlainObject = {},
     options: {
@@ -382,18 +345,11 @@ export class Component extends Observable(Object) {
       source?: number;
       attributeSelector?: AttributeSelector;
       attributeFilter?: PropertyFilter;
-      initialize?: boolean;
     } = {}
   ) {
-    const {
-      isNew = true,
-      source,
-      attributeSelector = isNew ? true : {},
-      attributeFilter,
-      initialize = true
-    } = options;
+    const {isNew = true, source, attributeSelector = isNew ? true : {}, attributeFilter} = options;
 
-    const component: Component = Object.create(this.prototype);
+    const component: InstanceType<T> = Object.create(this.prototype);
 
     component.setIsNewMark(isNew);
 
@@ -403,35 +359,28 @@ export class Component extends Observable(Object) {
       createAttributeSelectorFromNames(Object.keys(object))
     );
 
-    return possiblyAsync(
-      possiblyAsync.forEach(
-        component.getAttributes({attributeSelector: fullAttributeSelector}),
-        (attribute) => {
-          return possiblyAsync(
-            attributeFilter !== undefined ? attributeFilter.call(component, attribute) : true,
-            (isNotFilteredOut) => {
-              if (isNotFilteredOut) {
-                const name = attribute.getName();
-                let value;
+    for (const attribute of component.getAttributes({attributeSelector: fullAttributeSelector})) {
+      if (attributeFilter !== undefined && !attributeFilter.call(component, attribute)) {
+        continue;
+      }
 
-                if (hasOwnProperty(object, name)) {
-                  value = object[name];
-                } else {
-                  if (attribute.isControlled()) {
-                    return; // Controlled attributes should not be set
-                  }
+      const name = attribute.getName();
+      let value;
 
-                  value = isNew ? attribute.evaluateDefault() : undefined;
-                }
-
-                attribute.setValue(value, {source});
-              }
-            }
-          );
+      if (hasOwnProperty(object, name)) {
+        value = object[name];
+      } else {
+        if (attribute.isControlled()) {
+          continue; // Controlled attributes should not be set
         }
-      ),
-      () => (initialize ? possiblyAsync(component.initialize(), () => component) : component)
-    );
+
+        value = isNew ? attribute.evaluateDefault() : undefined;
+      }
+
+      attribute.setValue(value, {source});
+    }
+
+    return component;
   }
 
   // === Initialization ===
@@ -440,17 +389,16 @@ export class Component extends Observable(Object) {
    * A (possibly async) method that is called automatically when the component class is deserialized. You can override this method in your component subclasses to implement your initialization logic.
    *
    * @category Initialization
-   * @possiblyasync
    */
-  static initialize() {}
+  static initialize() {
+    return possiblyAsync.forEach(this.traverseComponents(), (component) => {
+      const initializer = (component as any).initializer;
 
-  /**
-   * A (possibly async) method that is called automatically when the component instance is created or deserialized. You can override this method in your component subclasses to implement your initialization logic.
-   *
-   * @category Initialization
-   * @possiblyasync
-   */
-  initialize() {}
+      if (typeof initializer === 'function') {
+        return initializer.call(component);
+      }
+    });
+  }
 
   // === Naming ===
 
@@ -3270,23 +3218,18 @@ export class Component extends Observable(Object) {
    * @category Cloning
    * @possiblyasync
    */
-  clone<
-    T extends Component,
-    R = ReturnType<T['initialize']> extends PromiseLike<void> ? PromiseLike<T> : T
-  >(this: T, options?: CloneOptions): R;
-  clone(options: CloneOptions = {}) {
+  clone<T extends Component>(this: T, options: CloneOptions = {}): T {
     if (this.hasPrimaryIdentifierAttribute()) {
       return this;
     }
 
-    const clonedComponent = this.constructor.create(
+    const clonedComponent = this.constructor.instantiate(
       {},
       {
         isNew: this.getIsNewMark(),
-        attributeSelector: {},
-        initialize: false
+        attributeSelector: {}
       }
-    );
+    ) as T;
 
     for (const attribute of this.getAttributes({setAttributesOnly: true})) {
       const name = attribute.getName();
@@ -3296,7 +3239,7 @@ export class Component extends Observable(Object) {
       clonedComponent.getAttribute(name).setValue(clonedValue, {source});
     }
 
-    return possiblyAsync(clonedComponent.initialize(), () => clonedComponent);
+    return clonedComponent;
   }
 
   // === Forking ===
@@ -3426,12 +3369,6 @@ export class Component extends Observable(Object) {
     assertIsComponentInstance(component);
 
     return isPrototypeOf(component, this);
-  }
-
-  static [Symbol.hasInstance](instance: any) {
-    // Since fork() can change the constructor of the forked instances,
-    // we must change the behavior of 'instanceof' so it can work as expected
-    return instance.constructor === this || isPrototypeOf(this, instance.constructor);
   }
 
   static __ghost: typeof Component;
@@ -3914,13 +3851,12 @@ export class Component extends Observable(Object) {
     }
 
     if (component === undefined) {
-      component = this.create(identifierAttributes, {
+      component = this.instantiate(identifierAttributes, {
         isNew,
         source,
         attributeSelector: {},
-        attributeFilter,
-        initialize: false
-      });
+        attributeFilter
+      }) as InstanceType<T>;
     } else {
       component.setIsNewMark(isNew);
     }
@@ -3939,7 +3875,7 @@ export class Component extends Observable(Object) {
           }
         }
 
-        return possiblyAsync(component.initialize(), () => component);
+        return component;
       })
     );
   }
@@ -3989,9 +3925,7 @@ export class Component extends Observable(Object) {
       deserializedComponents.add(this);
     }
 
-    return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
-      possiblyAsync(this.initialize(), () => this)
-    );
+    return possiblyAsync(this.__deserializeAttributes(attributes, options), () => this);
   }
 
   /**
@@ -4050,9 +3984,7 @@ export class Component extends Observable(Object) {
       deserializedComponents.add(this);
     }
 
-    return possiblyAsync(this.__deserializeAttributes(attributes, options), () =>
-      possiblyAsync(this.initialize(), () => this)
-    );
+    return possiblyAsync(this.__deserializeAttributes(attributes, options), () => this);
   }
 
   static get __deserializeAttributes() {
@@ -4494,6 +4426,16 @@ export class Component extends Observable(Object) {
     return `${this.constructor.getComponentPath()}.prototype.${name}`;
   }
 }
+
+// The following would be better defined inside the Component class
+// but it leads to a TypeScript (4.3) compilation error in transient dependencies
+Object.defineProperty(Component, Symbol.hasInstance, {
+  value: function (instance: any) {
+    // Since fork() can change the constructor of the forked instances,
+    // we must change the behavior of 'instanceof' so it can work as expected
+    return instance.constructor === this || isPrototypeOf(this, instance.constructor);
+  }
+});
 
 type CreatePropertyFilterOptions = {
   attributesOnly?: boolean;

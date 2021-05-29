@@ -125,6 +125,8 @@ export function serveComponent(
     if (routableComponent !== undefined) {
       const routableComponentFork = routableComponent.fork();
 
+      await routableComponentFork.initialize();
+
       const routeResponse: {
         status: number;
         headers?: Record<string, string>;

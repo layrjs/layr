@@ -55,7 +55,7 @@ describe('Component', () => {
       expect(movie.getAttribute('country').isSet()).toBe(false);
     });
 
-    test('create()', async () => {
+    test('instantiate()', async () => {
       class Movie extends Component {
         title!: string;
         country!: string;
@@ -64,44 +64,44 @@ describe('Component', () => {
       Movie.prototype.setAttribute('title', {valueType: 'string', default: ''});
       Movie.prototype.setAttribute('country', {valueType: 'string', default: ''});
 
-      let movie = Movie.create();
+      let movie = Movie.instantiate();
 
       expect(movie.isNew()).toBe(true);
       expect(movie.title).toBe('');
       expect(movie.country).toBe('');
 
-      movie = Movie.create({}, {attributeSelector: {title: true}});
+      movie = Movie.instantiate({}, {attributeSelector: {title: true}});
 
       expect(movie.isNew()).toBe(true);
       expect(movie.title).toBe('');
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
-      movie = Movie.create({title: 'Inception'}, {attributeSelector: {country: true}});
+      movie = Movie.instantiate({title: 'Inception'}, {attributeSelector: {country: true}});
 
       expect(movie.isNew()).toBe(true);
       expect(movie.title).toBe('Inception');
       expect(movie.country).toBe('');
 
-      movie = Movie.create({}, {isNew: false});
+      movie = Movie.instantiate({}, {isNew: false});
 
       expect(movie.isNew()).toBe(false);
       expect(movie.getAttribute('title').isSet()).toBe(false);
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
-      movie = Movie.create({title: 'Inception'}, {isNew: false});
+      movie = Movie.instantiate({title: 'Inception'}, {isNew: false});
 
       expect(movie.title).toBe('Inception');
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
       expect(() =>
-        Movie.create({title: 'Inception'}, {isNew: false, attributeSelector: {country: true}})
+        Movie.instantiate({title: 'Inception'}, {isNew: false, attributeSelector: {country: true}})
       ).toThrow(
         "Cannot assign a value of an unexpected type (attribute: 'Movie.prototype.country', expected type: 'string', received type: 'undefined')"
       );
 
-      movie = await Movie.create(
+      movie = Movie.instantiate(
         {title: 'Inception', country: 'USA'},
-        {isNew: false, attributeFilter: async (attribute) => attribute.getName() !== 'country'}
+        {isNew: false, attributeFilter: (attribute) => attribute.getName() !== 'country'}
       );
 
       expect(movie.title).toBe('Inception');
@@ -117,92 +117,37 @@ describe('Component', () => {
   });
 
   describe('Initialization', () => {
-    test('initialize()', async () => {
+    test('Synchronous initializer', async () => {
       class Movie extends Component {
-        static isInitialized?: boolean;
+        static isInitialized = false;
 
-        static initialize() {
-          this.isInitialized = true;
-        }
-
-        isInitialized?: boolean;
-
-        initialize() {
+        static initializer() {
           this.isInitialized = true;
         }
       }
 
-      expect(Movie.isInitialized).toBeUndefined();
+      expect(Movie.isInitialized).toBe(false);
 
-      Movie.deserialize();
+      Movie.initialize();
 
       expect(Movie.isInitialized).toBe(true);
-
-      let movie = new Movie();
-
-      expect(movie.isInitialized).toBeUndefined();
-
-      movie.initialize();
-
-      expect(movie.isInitialized).toBe(true);
-
-      movie = Movie.create();
-
-      expect(movie.isInitialized).toBe(true);
-
-      movie = Movie.recreate() as Movie;
-
-      expect(movie.isInitialized).toBe(true);
-
-      movie.isInitialized = undefined;
-      movie.deserialize();
-
-      expect(movie.isInitialized).toBe(true);
     });
 
-    test('async initialize()', async () => {
+    test('Asynchronous initializer', async () => {
       class Movie extends Component {
-        static isInitialized?: boolean;
+        static isInitialized = false;
 
-        static async initialize() {
-          await sleep(10);
-          this.isInitialized = true;
-        }
-
-        isInitialized?: boolean;
-
-        async initialize() {
+        static async initializer() {
           await sleep(10);
           this.isInitialized = true;
         }
       }
 
-      expect(Movie.isInitialized).toBeUndefined();
+      expect(Movie.isInitialized).toBe(false);
 
-      await Movie.deserialize();
+      await Movie.initialize();
 
       expect(Movie.isInitialized).toBe(true);
-
-      let movie = new Movie();
-
-      expect(movie.isInitialized).toBeUndefined();
-
-      await movie.initialize();
-
-      expect(movie.isInitialized).toBe(true);
-
-      movie = await Movie.create();
-
-      expect(movie.isInitialized).toBe(true);
-
-      movie = await Movie.recreate();
-
-      expect(movie.isInitialized).toBe(true);
-
-      movie.isInitialized = undefined;
-      await movie.deserialize();
-
-      expect(movie.isInitialized).toBe(true);
     });
   });
 
@@ -623,7 +568,10 @@ describe('Component', () => {
         @attribute() director?: string;
       }
 
-      const film = Film.create({title: 'Inception', director: 'Christopher Nolan'}, {isNew: false});
+      const film = Film.instantiate(
+        {title: 'Inception', director: 'Christopher Nolan'},
+        {isNew: false}
+      );
 
       attributes = film.getAttributes();
 
@@ -700,7 +648,7 @@ describe('Component', () => {
         traverseAttributes(Blog.prototype, {attributeSelector: {articles: {title: true}}})
       ).toEqual([Blog.prototype.getAttribute('articles'), Article.prototype.getAttribute('title')]);
 
-      const blog = Blog.create({}, {isNew: false});
+      const blog = Blog.instantiate({}, {isNew: false});
 
       expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([]);
 
@@ -717,7 +665,7 @@ describe('Component', () => {
         blog.getAttribute('articles')
       ]);
 
-      const article1 = Article.create({}, {isNew: false});
+      const article1 = Article.instantiate({}, {isNew: false});
       blog.articles.push(article1);
 
       expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
@@ -733,7 +681,7 @@ describe('Component', () => {
         article1.getAttribute('title')
       ]);
 
-      const article2 = Article.create({}, {isNew: false});
+      const article2 = Article.instantiate({}, {isNew: false});
       blog.articles.push(article2);
 
       expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
@@ -806,7 +754,7 @@ describe('Component', () => {
         Movie.prototype.resolveAttributeSelector({title: true, actors: true}, {depth: 0})
       ).toStrictEqual({title: true, actors: true});
 
-      const movie = Movie.create({}, {isNew: false});
+      const movie = Movie.instantiate({}, {isNew: false});
 
       expect(movie.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
@@ -846,7 +794,7 @@ describe('Component', () => {
         details: {country: true}
       });
 
-      const user = User.create({}, {isNew: false});
+      const user = User.instantiate({}, {isNew: false});
 
       expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
@@ -856,7 +804,7 @@ describe('Component', () => {
         name: true
       });
 
-      user.details = UserDetails.create({}, {isNew: false});
+      user.details = UserDetails.instantiate({}, {isNew: false});
 
       expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
@@ -898,7 +846,7 @@ describe('Component', () => {
         articles: {title: true}
       });
 
-      const blog = Blog.create({}, {isNew: false});
+      const blog = Blog.instantiate({}, {isNew: false});
 
       expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
@@ -915,7 +863,7 @@ describe('Component', () => {
         articles: {}
       });
 
-      const article1 = Article.create({}, {isNew: false});
+      const article1 = Article.instantiate({}, {isNew: false});
 
       blog.articles.push(article1);
 
@@ -931,7 +879,7 @@ describe('Component', () => {
         articles: {title: true}
       });
 
-      const article2 = Article.create({}, {isNew: false});
+      const article2 = Article.instantiate({}, {isNew: false});
 
       blog.articles.push(article2);
 

@@ -137,23 +137,25 @@ export class ComponentServer {
         {componentGetter, attributeFilter: setFilter}
       ),
       ({deserializedQuery, deserializedComponents}) =>
-        possiblyAsync(
-          invokeQuery(deeprRoot, deserializedQuery, {authorizer, errorHandler}),
-          (result) =>
-            possiblyAsync(
-              this._serializeResponse(
-                {result, components: deserializedComponents},
-                {attributeFilter: getFilter}
-              ),
-              ({serializedResult, serializedComponents}) => {
-                debugResponse({serializedResult, serializedComponents});
+        possiblyAsync(componentFork.initialize(), () =>
+          possiblyAsync(
+            invokeQuery(deeprRoot, deserializedQuery, {authorizer, errorHandler}),
+            (result) =>
+              possiblyAsync(
+                this._serializeResponse(
+                  {result, components: deserializedComponents},
+                  {attributeFilter: getFilter}
+                ),
+                ({serializedResult, serializedComponents}) => {
+                  debugResponse({serializedResult, serializedComponents});
 
-                return {
-                  ...(serializedResult !== undefined && {result: serializedResult}),
-                  ...(serializedComponents !== undefined && {components: serializedComponents})
-                };
-              }
-            )
+                  return {
+                    ...(serializedResult !== undefined && {result: serializedResult}),
+                    ...(serializedComponents !== undefined && {components: serializedComponents})
+                  };
+                }
+              )
+          )
         )
     );
   }

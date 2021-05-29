@@ -299,7 +299,7 @@ describe('AttributeSelector', () => {
       @attribute() country?: string;
     }
 
-    const organization = Organization.create({name: 'Paradise Inc.'}, {isNew: false});
+    const organization = Organization.instantiate({name: 'Paradise Inc.'}, {isNew: false});
 
     const createdOn = new Date();
 
@@ -425,7 +425,7 @@ describe('AttributeSelector', () => {
       @attribute() country?: string;
     }
 
-    const organization = Organization.create({name: 'Paradise Inc.'}, {isNew: false});
+    const organization = Organization.instantiate({name: 'Paradise Inc.'}, {isNew: false});
 
     const createdOn = new Date();
 

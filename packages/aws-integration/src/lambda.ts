@@ -125,6 +125,8 @@ export function createAWSLambdaHandlerForComponentServer(
     if (routableComponent !== undefined) {
       const routableComponentFork = routableComponent.fork();
 
+      await routableComponentFork.initialize();
+
       let url = path;
 
       if (event.rawQueryString) {
