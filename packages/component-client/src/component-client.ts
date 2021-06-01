@@ -1,7 +1,6 @@
 import {
   Component,
   ComponentSet,
-  ComponentGetter,
   Attribute,
   serialize,
   deserialize,
@@ -157,13 +156,9 @@ export class ComponentClient {
         [`${name}=>`]: {'()': args}
       };
 
-      const componentClass = ensureComponentClass(this);
+      const rootComponent = ensureComponentClass(this);
 
-      const componentGetter = (type: string) => {
-        return componentClass.getComponentOfType(type);
-      };
-
-      return componentClient.send(query, {componentGetter});
+      return componentClient.send(query, {rootComponent});
     };
   }
 
@@ -182,7 +177,7 @@ export class ComponentClient {
     return this._introspectedComponentServer;
   }
 
-  send(query: PlainObject, options: {componentGetter?: ComponentGetter} = {}): any {
+  send(query: PlainObject, options: {rootComponent?: typeof Component} = {}): any {
     if (this._sendBatcher !== undefined) {
       return this._sendBatcher.batch(query, options);
     }
@@ -190,7 +185,7 @@ export class ComponentClient {
     return this._sendOne(query, options);
   }
 
-  _sendOne(query: PlainObject, options: {componentGetter?: ComponentGetter}): any {
+  _sendOne(query: PlainObject, options: {rootComponent?: typeof Component}): any {
     const {serializedQuery, serializedComponents} = this._serializeQuery(query);
 
     debugRequest({serializedQuery, serializedComponents});
@@ -204,7 +199,7 @@ export class ComponentClient {
       ({result: serializedResult, components: serializedComponents}) => {
         debugResponse({serializedResult, serializedComponents});
 
-        const {componentGetter} = options;
+        const {rootComponent} = options;
 
         const errorHandler = function (error: Error) {
           throw error;
@@ -212,14 +207,14 @@ export class ComponentClient {
 
         return possiblyAsync(
           deserialize(serializedComponents, {
-            componentGetter,
+            rootComponent,
             deserializeFunctions: true,
             errorHandler,
             source: 1
           }),
           () => {
             return deserialize(serializedResult, {
-              componentGetter,
+              rootComponent,
               deserializeFunctions: true,
               errorHandler,
               source: 1
@@ -264,10 +259,10 @@ export class ComponentClient {
       throw error;
     };
 
-    const firstComponentGetter = operations[0].params[1].componentGetter;
+    const firstRootComponent = operations[0].params[1].rootComponent;
 
     await deserialize(serializedResponse.components, {
-      componentGetter: firstComponentGetter,
+      rootComponent: firstRootComponent,
       deserializeFunctions: true,
       errorHandler,
       source: 1
@@ -279,7 +274,7 @@ export class ComponentClient {
 
       try {
         const result = await deserialize(serializedResult, {
-          componentGetter: operation.params[1].componentGetter,
+          rootComponent: operation.params[1].rootComponent,
           deserializeFunctions: true,
           errorHandler,
           source: 1

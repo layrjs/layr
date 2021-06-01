@@ -6,13 +6,13 @@ import {
 import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
 
-import type {Component, ComponentSet, ComponentGetter} from './component';
+import type {Component, ComponentSet} from './component';
 import type {PropertyFilter} from './properties';
 import {Validator, isSerializedValidator} from './validation/validator';
 import {isComponentClass} from './utilities';
 
 export type DeserializeOptions = SimpleDeserializeOptions & {
-  componentGetter?: ComponentGetter;
+  rootComponent?: typeof Component;
   attributeFilter?: PropertyFilter;
   deserializedComponents?: ComponentSet;
   deserializeFunctions?: boolean;
@@ -98,7 +98,7 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
   const {
     objectDeserializer: originalObjectDeserializer,
     functionDeserializer: originalFunctionDeserializer,
-    componentGetter,
+    rootComponent,
     attributeFilter,
     deserializeFunctions = false,
     ...otherOptions
@@ -123,11 +123,11 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
       return undefined;
     }
 
-    if (componentGetter === undefined) {
-      throw new Error("Cannot deserialize a component without a 'componentGetter'");
+    if (rootComponent === undefined) {
+      throw new Error("Cannot deserialize a component when no 'rootComponent' is provided");
     }
 
-    const component = componentGetter(componentType);
+    const component = rootComponent.getComponentOfType(componentType);
 
     if (isComponentClass(component)) {
       return component.deserialize(attributes, options);

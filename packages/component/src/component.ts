@@ -67,8 +67,6 @@ import {
 
 export type ComponentSet = Set<typeof Component | Component>;
 
-export type ComponentGetter = (type: string) => typeof Component | Component;
-
 export type ComponentMixin = (Base: typeof Component) => typeof Component;
 
 export type TraverseAttributesIteratee = (attribute: Attribute) => void;

@@ -10,18 +10,14 @@ describe('Deserialization', () => {
       @attribute() static offset: number;
     }
 
+    class Application extends Component {
+      @provide() static Movie = Movie;
+    }
+
     expect(Movie.limit).toBe(100);
     expect(Movie.offset).toBeUndefined();
 
     // --- Using the deserialize() function ---
-
-    const componentGetter = function (type: string): any {
-      if (type === 'typeof Movie') {
-        return Movie;
-      }
-
-      throw new Error('Component not found');
-    };
 
     let DeserializedMovie = deserialize(
       {
@@ -29,7 +25,7 @@ describe('Deserialization', () => {
         limit: {__undefined: true},
         offset: 30
       },
-      {componentGetter}
+      {rootComponent: Application}
     );
 
     expect(DeserializedMovie).toBe(Movie);
@@ -38,25 +34,25 @@ describe('Deserialization', () => {
 
     DeserializedMovie = deserialize(
       {__component: 'typeof Movie', limit: 1000, offset: {__undefined: true}},
-      {componentGetter}
+      {rootComponent: Application}
     );
 
     expect(DeserializedMovie).toBe(Movie);
     expect(Movie.limit).toBe(1000);
     expect(Movie.offset).toBeUndefined();
 
-    DeserializedMovie = deserialize({__component: 'typeof Movie'}, {componentGetter});
+    DeserializedMovie = deserialize({__component: 'typeof Movie'}, {rootComponent: Application});
 
     expect(DeserializedMovie).toBe(Movie);
     expect(Movie.limit).toBe(1000);
     expect(Movie.offset).toBeUndefined();
 
-    expect(() => deserialize({__component: 'typeof Film'}, {componentGetter})).toThrow(
-      'Component not found'
+    expect(() => deserialize({__component: 'typeof Film'}, {rootComponent: Application})).toThrow(
+      "Cannot get the component of type 'typeof Film' from the component 'Application'"
     );
 
     expect(() => deserialize({__component: 'typeof Movie'})).toThrow(
-      "Cannot deserialize a component without a 'componentGetter'"
+      "Cannot deserialize a component when no 'rootComponent' is provided"
     );
 
     // --- Using the deserialize() function with the 'source' option ---
@@ -66,13 +62,16 @@ describe('Deserialization', () => {
 
     DeserializedMovie = deserialize(
       {__component: 'typeof Movie', limit: 5000},
-      {source: 1, componentGetter}
+      {source: 1, rootComponent: Application}
     );
 
     expect(Movie.limit).toBe(5000);
     expect(Movie.getAttribute('limit').getValueSource()).toBe(1);
 
-    DeserializedMovie = deserialize({__component: 'typeof Movie', limit: 5000}, {componentGetter});
+    DeserializedMovie = deserialize(
+      {__component: 'typeof Movie', limit: 5000},
+      {rootComponent: Application}
+    );
 
     expect(Movie.limit).toBe(5000);
     expect(Movie.getAttribute('limit').getValueSource()).toBe(0);
@@ -96,17 +95,16 @@ describe('Deserialization', () => {
       @attribute() duration = 0;
     }
 
+    class Application extends Component {
+      @provide() static Movie = Movie;
+    }
+
     // --- Using the deserialize() function ---
 
-    let componentGetter = function (type: string) {
-      if (type === 'Movie') {
-        return Movie.prototype;
-      }
-
-      throw new Error('Component not found');
-    };
-
-    let movie = deserialize({__component: 'Movie', title: 'Inception'}, {componentGetter}) as Movie;
+    let movie = deserialize(
+      {__component: 'Movie', title: 'Inception'},
+      {rootComponent: Application}
+    ) as Movie;
 
     expect(movie).toBeInstanceOf(Movie);
     expect(movie).not.toBe(Movie.prototype);
@@ -116,7 +114,7 @@ describe('Deserialization', () => {
 
     movie = deserialize(
       {__component: 'Movie', __new: true, title: 'Inception'},
-      {componentGetter}
+      {rootComponent: Application}
     ) as Movie;
 
     expect(movie).toBeInstanceOf(Movie);
@@ -127,7 +125,7 @@ describe('Deserialization', () => {
 
     movie = deserialize(
       {__component: 'Movie', __new: true, duration: {__undefined: true}},
-      {componentGetter}
+      {rootComponent: Application}
     ) as Movie;
 
     expect(movie.title).toBeUndefined();
@@ -136,7 +134,7 @@ describe('Deserialization', () => {
     movie = deserialize(
       {__component: 'Movie', __new: true, title: 'Inception', duration: 120},
       {
-        componentGetter,
+        rootComponent: Application,
         attributeFilter(attribute) {
           expect(this).toBeInstanceOf(Movie);
           expect(attribute.getParent()).toBe(this);
@@ -148,13 +146,16 @@ describe('Deserialization', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.duration).toBe(0);
 
-    expect(() => deserialize({__component: 'Film'}, {componentGetter})).toThrow(
-      'Component not found'
+    expect(() => deserialize({__component: 'Film'}, {rootComponent: Application})).toThrow(
+      "Cannot get the component of type 'Film' from the component 'Application'"
     );
 
     // --- Using the deserialize() function with the 'source' option ---
 
-    movie = deserialize({__component: 'Movie', title: 'Inception'}, {componentGetter}) as Movie;
+    movie = deserialize(
+      {__component: 'Movie', title: 'Inception'},
+      {rootComponent: Application}
+    ) as Movie;
 
     expect(movie.title).toBe('Inception');
     expect(movie.getAttribute('title').getValueSource()).toBe(0);
@@ -162,7 +163,7 @@ describe('Deserialization', () => {
 
     movie = deserialize(
       {__component: 'Movie', title: 'Inception'},
-      {source: 1, componentGetter}
+      {source: 1, rootComponent: Application}
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
@@ -171,7 +172,7 @@ describe('Deserialization', () => {
 
     movie = deserialize(
       {__component: 'Movie', __new: true, title: 'Inception'},
-      {source: 1, componentGetter}
+      {source: 1, rootComponent: Application}
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
@@ -234,7 +235,7 @@ describe('Deserialization', () => {
     );
 
     expect(() => movie.deserialize({__new: true})).toThrow(
-      "Cannot mark as new an existing non-new component (component: 'Movie')"
+      "Cannot mark as new an existing non-new component (component: 'Application.Movie')"
     );
   });
 
@@ -251,13 +252,9 @@ describe('Deserialization', () => {
       @attribute('Person[]?') actors?: Person[];
     }
 
-    const componentGetter = function (type: string): any {
-      if (type === 'Movie') {
-        return Movie.prototype;
-      }
-
-      throw new Error('Component not found');
-    };
+    class Application extends Component {
+      @provide() static Movie = Movie;
+    }
 
     const movie1 = deserialize(
       {
@@ -265,7 +262,7 @@ describe('Deserialization', () => {
         title: 'Movie 1',
         director: {__component: 'Person', fullName: 'Person 1'}
       },
-      {componentGetter}
+      {rootComponent: Application}
     ) as Movie;
 
     expect(movie1).toBeInstanceOf(Movie);
@@ -288,7 +285,7 @@ describe('Deserialization', () => {
         title: 'Movie 2',
         actors: [{__component: 'Person', fullName: 'Person 2'}]
       },
-      {componentGetter}
+      {rootComponent: Application}
     ) as Movie;
 
     expect(movie2).toBeInstanceOf(Movie);
@@ -320,13 +317,9 @@ describe('Deserialization', () => {
       @attribute('Person?') director?: Person;
     }
 
-    const componentGetter = function (type: string): any {
-      if (type === 'Movie') {
-        return Movie.prototype;
-      }
-
-      throw new Error('Component not found');
-    };
+    class Application extends Component {
+      @provide() static Movie = Movie;
+    }
 
     const person1 = new Person({id: 'person1', fullName: 'Person 1'});
     const person2 = new Person({id: 'person2', fullName: 'Person 2'});
@@ -341,7 +334,7 @@ describe('Deserialization', () => {
         id: 'movie1',
         director: {__component: 'Person', id: 'person2'}
       },
-      {componentGetter}
+      {rootComponent: Application}
     ) as Movie;
 
     expect(deserializedMovie).toBe(movie1);
@@ -353,7 +346,7 @@ describe('Deserialization', () => {
         id: 'movie1',
         director: {__undefined: true}
       },
-      {componentGetter}
+      {rootComponent: Application}
     ) as Movie;
 
     expect(deserializedMovie).toBe(movie1);

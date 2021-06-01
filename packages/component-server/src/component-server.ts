@@ -2,7 +2,6 @@ import {
   Component,
   ComponentSet,
   IntrospectedComponent,
-  ComponentGetter,
   PropertyFilter,
   Attribute,
   PropertyOperation,
@@ -93,8 +92,6 @@ export class ComponentServer {
     const componentFork = this._component.fork();
     const deeprRoot = this.getDeeprRoot();
 
-    const componentGetter = (type: string) => componentFork.getComponentOfType(type);
-
     const getFilter = function (attribute: Attribute) {
       return attribute.operationIsAllowed('get');
     };
@@ -134,7 +131,7 @@ export class ComponentServer {
     return possiblyAsync(
       this._deserializeRequest(
         {serializedQuery, serializedComponents},
-        {componentGetter, attributeFilter: setFilter}
+        {rootComponent: componentFork, attributeFilter: setFilter}
       ),
       ({deserializedQuery, deserializedComponents}) =>
         possiblyAsync(componentFork.initialize(), () =>
@@ -166,13 +163,13 @@ export class ComponentServer {
       serializedComponents
     }: {serializedQuery: PlainObject; serializedComponents: PlainObject[] | undefined},
     {
-      componentGetter,
+      rootComponent,
       attributeFilter
-    }: {componentGetter: ComponentGetter; attributeFilter: PropertyFilter}
+    }: {rootComponent: typeof Component; attributeFilter: PropertyFilter}
   ) {
     return possiblyAsync(
       deserialize(serializedComponents, {
-        componentGetter,
+        rootComponent,
         attributeFilter,
         source: -1
       }),
@@ -180,7 +177,7 @@ export class ComponentServer {
         const deserializedComponentSet: ComponentSet = new Set(deserializedComponents);
         return possiblyAsync(
           deserialize(serializedQuery, {
-            componentGetter,
+            rootComponent,
             attributeFilter,
             deserializedComponents: deserializedComponentSet,
             source: -1

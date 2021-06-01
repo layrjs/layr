@@ -653,11 +653,10 @@ export class Attribute extends Observable(Property) {
       }
     }
 
-    const componentClass = ensureComponentClass(this.getParent());
-    const componentGetter = (type: string) => componentClass.getComponentOfType(type);
+    const rootComponent = ensureComponentClass(this.getParent());
 
     return possiblyAsync(
-      deserialize(serializedValue, {...options, componentGetter}),
+      deserialize(serializedValue, {...options, rootComponent}),
       (deserializedValue) => {
         this.setValue(deserializedValue, {source: options.source});
       }
