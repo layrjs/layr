@@ -1,5 +1,7 @@
-import type {ComponentServer} from '@layr/component-server';
-import {isComponentServerInstance, assertIsComponentServerInstance} from '@layr/component-server';
+import type {Component} from '@layr/component';
+import {isComponentClass} from '@layr/component';
+import type {ComponentServer, ComponentServerOptions} from '@layr/component-server';
+import {ensureComponentServer, isComponentServerInstance} from '@layr/component-server';
 import type {RoutableComponent} from '@layr/routable';
 import {callRouteByURL, isRoutableClass} from '@layr/routable';
 import type {APIGatewayProxyEventV2, Context, APIGatewayProxyStructuredResultV2} from 'aws-lambda';
@@ -22,7 +24,7 @@ type CustomHandler = (
  * ```
  * import {Component, attribute, expose} from '﹫layr/component';
  * import {ComponentServer} from '﹫layr/component-server';
- * import {createAWSLambdaHandlerForComponentServer} from '@layr/aws-integration';
+ * import {createAWSLambdaHandler} from '@layr/aws-integration';
  *
  * class Movie extends Component {
  *   ﹫expose({get: true, set: true}) ﹫attribute('string') title = '';
@@ -30,17 +32,22 @@ type CustomHandler = (
  *
  * const server = new ComponentServer(Movie);
  *
- * const handler = createAWSLambdaHandlerForComponentServer(server);
+ * const handler = createAWSLambdaHandler(server);
  *
  * export {handler};
  * ```
  *
  * @category Functions
  */
-export function createAWSLambdaHandlerForComponentServer(
-  componentServerOrComponentServerGetter: ComponentServer | (() => Promise<ComponentServer>),
-  {customHandler}: {customHandler?: CustomHandler} = {}
+export function createAWSLambdaHandler(
+  componentServerProvider:
+    | typeof Component
+    | ComponentServer
+    | (() => Promise<typeof Component | ComponentServer>),
+  options: ComponentServerOptions & {customHandler?: CustomHandler} = {}
 ) {
+  const {customHandler, ...componentServerOptions} = options;
+
   let componentServer: ComponentServer;
   let routableComponent: typeof RoutableComponent | undefined;
 
@@ -51,14 +58,19 @@ export function createAWSLambdaHandlerForComponentServer(
     context.callbackWaitsForEmptyEventLoop = false;
 
     if (componentServer === undefined) {
-      if (isComponentServerInstance(componentServerOrComponentServerGetter)) {
-        componentServer = componentServerOrComponentServerGetter;
-      } else if (typeof componentServerOrComponentServerGetter === 'function') {
-        componentServer = await componentServerOrComponentServerGetter();
-        assertIsComponentServerInstance(componentServer);
+      if (
+        isComponentClass(componentServerProvider) ||
+        isComponentServerInstance(componentServerProvider)
+      ) {
+        componentServer = ensureComponentServer(componentServerProvider, componentServerOptions);
+      } else if (typeof componentServerProvider === 'function') {
+        componentServer = ensureComponentServer(
+          await componentServerProvider(),
+          componentServerOptions
+        );
       } else {
         throw new Error(
-          `Expected a componentServer or a function returning a componentServer, but received a value of type '${typeof componentServerOrComponentServerGetter}'`
+          `Expected a component class, a componentServer, or a function returning a component class or componentServer, but received a value of type '${typeof componentServerProvider}'`
         );
       }
 
