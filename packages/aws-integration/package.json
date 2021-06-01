@@ -1,6 +1,6 @@
 {
   "name": "@layr/aws-integration",
-  "version": "2.0.16",
+  "version": "2.0.18",
   "description": "AWS integration for Layr",
   "keywords": [
     "layr",
@@ -27,8 +27,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component-server": "^2.0.9",
-    "@layr/routable": "^2.0.40",
+    "@layr/component-server": "^2.0.11",
+    "@layr/routable": "^2.0.41",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "tslib": "^2.2.0"
