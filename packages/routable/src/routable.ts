@@ -343,7 +343,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       } else {
         component =
           this.constructor.getIdentityMap().getComponent(identifiers) ??
-          this.constructor.instantiate(identifiers, {isNew: false});
+          this.constructor.instantiate(identifiers);
       }
 
       const method = route.transformMethod(component[name], request);
@@ -622,7 +622,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       } else {
         component =
           this.constructor.getIdentityMap().getComponent(identifiers) ??
-          this.constructor.instantiate(identifiers, {isNew: false});
+          this.constructor.instantiate(identifiers);
       }
 
       const method = wrapper.transformMethod(component[name], request);

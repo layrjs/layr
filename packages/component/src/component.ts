@@ -16,7 +16,6 @@ import {
   Property,
   PropertyOptions,
   PropertyOperationSetting,
-  PropertyFilter,
   PropertyFilterSync,
   IntrospectedProperty,
   Attribute,
@@ -32,11 +31,9 @@ import {
   isSecondaryIdentifierAttributeInstance,
   IdentifierValue,
   AttributeSelector,
-  createAttributeSelectorFromNames,
   createAttributeSelectorFromAttributes,
   getFromAttributeSelector,
   setWithinAttributeSelector,
-  mergeAttributeSelectors,
   normalizeAttributeSelector,
   Method,
   isMethodInstance,
@@ -339,43 +336,15 @@ export class Component extends Observable(Object) {
     this: T,
     object: PlainObject = {},
     options: {
-      isNew?: boolean;
       source?: number;
-      attributeSelector?: AttributeSelector;
-      attributeFilter?: PropertyFilter;
     } = {}
   ) {
-    const {isNew = true, source, attributeSelector = isNew ? true : {}, attributeFilter} = options;
+    const {source} = options;
 
     const component: InstanceType<T> = Object.create(this.prototype);
 
-    component.setIsNewMark(isNew);
-
-    // Always include attributes present in the specified object
-    const fullAttributeSelector = mergeAttributeSelectors(
-      attributeSelector,
-      createAttributeSelectorFromNames(Object.keys(object))
-    );
-
-    for (const attribute of component.getAttributes({attributeSelector: fullAttributeSelector})) {
-      if (attributeFilter !== undefined && !attributeFilter.call(component, attribute)) {
-        continue;
-      }
-
-      const name = attribute.getName();
-      let value;
-
-      if (hasOwnProperty(object, name)) {
-        value = object[name];
-      } else {
-        if (attribute.isControlled()) {
-          continue; // Controlled attributes should not be set
-        }
-
-        value = isNew ? attribute.evaluateDefault() : undefined;
-      }
-
-      attribute.setValue(value, {source});
+    for (const [name, value] of Object.entries(object)) {
+      component.getAttribute(name).setValue(value, {source});
     }
 
     return component;
@@ -3221,13 +3190,9 @@ export class Component extends Observable(Object) {
       return this;
     }
 
-    const clonedComponent = this.constructor.instantiate(
-      {},
-      {
-        isNew: this.getIsNewMark(),
-        attributeSelector: {}
-      }
-    ) as T;
+    const clonedComponent = this.constructor.instantiate() as T;
+
+    clonedComponent.setIsNewMark(this.getIsNewMark());
 
     for (const attribute of this.getAttributes({setAttributesOnly: true})) {
       const name = attribute.getName();

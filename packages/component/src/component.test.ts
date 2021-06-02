@@ -66,53 +66,21 @@ describe('Component', () => {
 
       let movie = Movie.instantiate();
 
-      expect(movie.isNew()).toBe(true);
-      expect(movie.title).toBe('');
-      expect(movie.country).toBe('');
-
-      movie = Movie.instantiate({}, {attributeSelector: {title: true}});
-
-      expect(movie.isNew()).toBe(true);
-      expect(movie.title).toBe('');
-      expect(movie.getAttribute('country').isSet()).toBe(false);
-
-      movie = Movie.instantiate({title: 'Inception'}, {attributeSelector: {country: true}});
-
-      expect(movie.isNew()).toBe(true);
-      expect(movie.title).toBe('Inception');
-      expect(movie.country).toBe('');
-
-      movie = Movie.instantiate({}, {isNew: false});
-
       expect(movie.isNew()).toBe(false);
       expect(movie.getAttribute('title').isSet()).toBe(false);
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
-      movie = Movie.instantiate({title: 'Inception'}, {isNew: false});
+      movie = Movie.instantiate({title: 'Inception'});
 
+      expect(movie.isNew()).toBe(false);
       expect(movie.title).toBe('Inception');
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
-      expect(() =>
-        Movie.instantiate({title: 'Inception'}, {isNew: false, attributeSelector: {country: true}})
-      ).toThrow(
-        "Cannot assign a value of an unexpected type (attribute: 'Movie.prototype.country', expected type: 'string', received type: 'undefined')"
-      );
+      movie = Movie.instantiate({title: 'Inception', country: 'USA'});
 
-      movie = Movie.instantiate(
-        {title: 'Inception', country: 'USA'},
-        {isNew: false, attributeFilter: (attribute) => attribute.getName() !== 'country'}
-      );
-
+      expect(movie.isNew()).toBe(false);
       expect(movie.title).toBe('Inception');
-      expect(movie.getAttribute('country').isSet()).toBe(false);
-
-      Movie.prototype.getAttribute('country').markAsControlled();
-
-      movie = new Movie();
-
-      expect(movie.title).toBe('');
-      expect(movie.getAttribute('country').isSet()).toBe(false);
+      expect(movie.country).toBe('USA');
     });
   });
 
@@ -568,10 +536,7 @@ describe('Component', () => {
         @attribute() director?: string;
       }
 
-      const film = Film.instantiate(
-        {title: 'Inception', director: 'Christopher Nolan'},
-        {isNew: false}
-      );
+      const film = Film.instantiate({title: 'Inception', director: 'Christopher Nolan'});
 
       attributes = film.getAttributes();
 
@@ -648,7 +613,7 @@ describe('Component', () => {
         traverseAttributes(Blog.prototype, {attributeSelector: {articles: {title: true}}})
       ).toEqual([Blog.prototype.getAttribute('articles'), Article.prototype.getAttribute('title')]);
 
-      const blog = Blog.instantiate({}, {isNew: false});
+      const blog = Blog.instantiate();
 
       expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([]);
 
@@ -665,7 +630,7 @@ describe('Component', () => {
         blog.getAttribute('articles')
       ]);
 
-      const article1 = Article.instantiate({}, {isNew: false});
+      const article1 = Article.instantiate();
       blog.articles.push(article1);
 
       expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
@@ -681,7 +646,7 @@ describe('Component', () => {
         article1.getAttribute('title')
       ]);
 
-      const article2 = Article.instantiate({}, {isNew: false});
+      const article2 = Article.instantiate();
       blog.articles.push(article2);
 
       expect(traverseAttributes(blog, {setAttributesOnly: true})).toEqual([
@@ -754,7 +719,7 @@ describe('Component', () => {
         Movie.prototype.resolveAttributeSelector({title: true, actors: true}, {depth: 0})
       ).toStrictEqual({title: true, actors: true});
 
-      const movie = Movie.instantiate({}, {isNew: false});
+      const movie = Movie.instantiate();
 
       expect(movie.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
@@ -794,7 +759,7 @@ describe('Component', () => {
         details: {country: true}
       });
 
-      const user = User.instantiate({}, {isNew: false});
+      const user = User.instantiate();
 
       expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
@@ -804,7 +769,7 @@ describe('Component', () => {
         name: true
       });
 
-      user.details = UserDetails.instantiate({}, {isNew: false});
+      user.details = UserDetails.instantiate();
 
       expect(user.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         name: true,
@@ -846,7 +811,7 @@ describe('Component', () => {
         articles: {title: true}
       });
 
-      const blog = Blog.instantiate({}, {isNew: false});
+      const blog = Blog.instantiate();
 
       expect(blog.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
@@ -863,7 +828,7 @@ describe('Component', () => {
         articles: {}
       });
 
-      const article1 = Article.instantiate({}, {isNew: false});
+      const article1 = Article.instantiate();
 
       blog.articles.push(article1);
 
@@ -879,7 +844,7 @@ describe('Component', () => {
         articles: {title: true}
       });
 
-      const article2 = Article.instantiate({}, {isNew: false});
+      const article2 = Article.instantiate();
 
       blog.articles.push(article2);
 

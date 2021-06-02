@@ -153,17 +153,12 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
     }
 
     if (component === undefined) {
-      component = componentClass.instantiate(identifierAttributes, {
-        isNew,
-        source,
-        attributeSelector: {},
-        attributeFilter
-      });
-    } else {
-      component.setIsNewMark(isNew);
+      component = componentClass.instantiate(identifierAttributes, {source});
     }
 
     return possiblyAsync(component, (component) => {
+      component.setIsNewMark(isNew);
+
       if (deserializedComponents !== undefined && !componentClass.isEmbedded()) {
         deserializedComponents.add(component);
       }

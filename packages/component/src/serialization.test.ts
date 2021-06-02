@@ -123,7 +123,7 @@ describe('Serialization', () => {
       actors: []
     });
 
-    movie = Movie.instantiate({}, {isNew: false});
+    movie = Movie.instantiate();
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie'
@@ -144,7 +144,7 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie = Movie.instantiate({title: 'Inception'}, {isNew: false, source: -1});
+    movie = Movie.instantiate({title: 'Inception'}, {source: -1});
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
@@ -219,13 +219,9 @@ describe('Serialization', () => {
 
     movie
       .getAttribute('director')
-      .setValue(
-        Director.instantiate(
-          {name: 'Christopher Nolan', country: 'USA'},
-          {isNew: false, source: -1}
-        ),
-        {source: -1}
-      );
+      .setValue(Director.instantiate({name: 'Christopher Nolan', country: 'USA'}, {source: -1}), {
+        source: -1
+      });
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
@@ -257,14 +253,9 @@ describe('Serialization', () => {
 
     movie
       .getAttribute('actors')
-      .setValue(
-        [
-          Actor.instantiate({name: 'Leonardo DiCaprio', country: 'USA'}, {isNew: false, source: -1})
-        ],
-        {
-          source: -1
-        }
-      );
+      .setValue([Actor.instantiate({name: 'Leonardo DiCaprio', country: 'USA'}, {source: -1})], {
+        source: -1
+      });
 
     expect(movie.serialize({attributeSelector: {actors: true}})).toStrictEqual({
       __component: 'Movie',
@@ -290,7 +281,7 @@ describe('Serialization', () => {
       @attribute('string') title = '';
     }
 
-    let movie = Movie.fork().instantiate({title: 'Inception'}, {isNew: false});
+    let movie = Movie.fork().instantiate({title: 'Inception'});
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
@@ -301,7 +292,7 @@ describe('Serialization', () => {
       "Cannot get an identifier descriptor from a component that has no set identifier (component: 'Movie')"
     );
 
-    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'}, {isNew: false});
+    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'});
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
@@ -314,7 +305,7 @@ describe('Serialization', () => {
       id: 'abc123'
     });
 
-    movie = Movie.fork().instantiate({slug: 'inception', title: 'Inception'}, {isNew: false});
+    movie = Movie.fork().instantiate({slug: 'inception', title: 'Inception'});
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
@@ -327,10 +318,7 @@ describe('Serialization', () => {
       slug: 'inception'
     });
 
-    movie = Movie.fork().instantiate(
-      {id: 'abc123', slug: 'inception', title: 'Inception'},
-      {isNew: false}
-    );
+    movie = Movie.fork().instantiate({id: 'abc123', slug: 'inception', title: 'Inception'});
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
@@ -346,10 +334,7 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie = Movie.fork().instantiate(
-      {id: 'abc123', title: 'Inception'},
-      {isNew: false, source: -1}
-    );
+    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'}, {source: -1});
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
@@ -371,16 +356,13 @@ describe('Serialization', () => {
       @attribute('Movie[]') movies!: Movie[];
     }
 
-    movie = Movie.instantiate({id: 'abc123', title: 'Inception'}, {isNew: false});
+    movie = Movie.instantiate({id: 'abc123', title: 'Inception'});
 
-    const cinema = Cinema.instantiate(
-      {
-        id: 'xyz456',
-        name: 'Paradiso',
-        movies: [movie]
-      },
-      {isNew: false}
-    );
+    const cinema = Cinema.instantiate({
+      id: 'xyz456',
+      name: 'Paradiso',
+      movies: [movie]
+    });
 
     expect(cinema.serialize()).toEqual({
       __component: 'Cinema',

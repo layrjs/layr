@@ -182,7 +182,7 @@ describe('Deserialization', () => {
 
     // --- Using component.deserialize() method ---
 
-    movie = Movie.instantiate();
+    movie = new Movie();
 
     expect(movie.isNew()).toBe(true);
     expect(movie.title).toBeUndefined();

@@ -461,7 +461,7 @@ describe('Storable', () => {
         test('load()', async () => {
           const User = userClassProvider();
 
-          let user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+          let user = User.fork().instantiate({id: 'user1'});
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(user.load()).rejects.toThrow(
@@ -522,7 +522,7 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({id: 'user2'}, {isNew: false});
+          user = User.fork().instantiate({id: 'user2'});
 
           await expect(user.load({})).rejects.toThrow(
             "Cannot load a component that is missing from the store (component: 'User', id: 'user2'"
@@ -531,7 +531,7 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({email: '1@user.com'}, {isNew: false});
+          user = User.fork().instantiate({email: '1@user.com'});
 
           expect(await user.load({})).toBe(user);
           expect(user.serialize()).toStrictEqual({
@@ -553,7 +553,7 @@ describe('Storable', () => {
           if (User.hasStore()) {
             const store = User.getStore() as Store;
 
-            user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+            user = User.fork().instantiate({id: 'user1'});
 
             store.startTrace();
 
@@ -678,7 +678,7 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({fullName: 'User 1'}, {isNew: false});
+          user = User.fork().instantiate({fullName: 'User 1'});
 
           await expect(user.load({})).rejects.toThrow(
             "Cannot get an identifier descriptor from a component that has no set identifier (component: 'User')"
@@ -715,7 +715,7 @@ describe('Storable', () => {
             tags: ['newcomer'],
             location: {country: 'USA', city: 'New York'},
             picture: new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}),
-            organization: ForkedOrganization.instantiate({id: 'org2'}, {isNew: false})
+            organization: ForkedOrganization.instantiate({id: 'org2'})
           });
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
@@ -785,7 +785,7 @@ describe('Storable', () => {
           user.pastPictures.push(
             new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
           );
-          user.organization = ForkedOrganization.instantiate({id: 'org1'}, {isNew: false});
+          user.organization = ForkedOrganization.instantiate({id: 'org1'});
           user.updatedOn = UPDATED_ON;
 
           expect(await user.save()).toBe(user);
@@ -967,7 +967,7 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'}, {isNew: false});
+          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
 
           expect(await user.save(true, {throwIfMissing: false})).toBe(undefined);
           await expect(user.save()).rejects.toThrow(
@@ -990,7 +990,7 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'}, {isNew: false});
+          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
 
           await expect(
             user.save(true, {throwIfMissing: true, throwIfExists: true})
@@ -1011,7 +1011,7 @@ describe('Storable', () => {
               "Cannot save a component with an attribute value that should be unique but already exists in the store (component: 'User', id: 'user3', index: 'email [unique]')"
             );
 
-            user = User.fork().instantiate({id: 'user2', reference: 1}, {isNew: false});
+            user = User.fork().instantiate({id: 'user2', reference: 1});
 
             await expect(user.save()).rejects.toThrow(
               "Cannot save a component with an attribute value that should be unique but already exists in the store (component: 'User', id: 'user2', index: 'reference [unique]')"
@@ -1022,7 +1022,7 @@ describe('Storable', () => {
         test('delete()', async () => {
           const User = userClassProvider();
 
-          let user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+          let user = User.fork().instantiate({id: 'user1'});
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(user.delete()).rejects.toThrow(
@@ -1735,8 +1735,8 @@ describe('Storable', () => {
 
           ForkedUser = User.fork();
 
-          const organization1 = ForkedUser.Organization.instantiate({id: 'org1'}, {isNew: false});
-          const organization2 = ForkedUser.Organization.instantiate({id: 'org2'}, {isNew: false});
+          const organization1 = ForkedUser.Organization.instantiate({id: 'org1'});
+          const organization2 = ForkedUser.Organization.instantiate({id: 'org2'});
 
           users = await ForkedUser.find({organization: {$in: [organization1, organization2]}}, {});
 
@@ -1784,7 +1784,7 @@ describe('Storable', () => {
 
           const ForkedUser = User.fork();
 
-          const user = ForkedUser.instantiate({fullName: 'User 1'}, {isNew: false});
+          const user = ForkedUser.instantiate({fullName: 'User 1'});
 
           expect(await ForkedUser.count(user)).toBe(1);
         });
@@ -1814,17 +1814,17 @@ describe('Storable', () => {
     test('load()', async () => {
       const User = getUserClass();
 
-      let user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+      let user = User.fork().instantiate({id: 'user1'});
       await user.load({});
 
       expect(user.getAttribute('firstName').isSet()).toBe(false);
 
-      user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+      user = User.fork().instantiate({id: 'user1'});
       await user.load({firstName: true});
 
       expect(user.firstName).toBe('User');
 
-      user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+      user = User.fork().instantiate({id: 'user1'});
       await user.load({fullName: true, firstName: true});
 
       expect(user.serialize()).toStrictEqual({
@@ -1961,7 +1961,7 @@ describe('Storable', () => {
 
       expect(getAttributesWithHook(User.prototype, 'beforeLoad')).toEqual(['email', 'fullName']);
 
-      const user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+      const user = User.fork().instantiate({id: 'user1'});
 
       expect(getAttributesWithHook(user, 'beforeLoad', {setAttributesOnly: true})).toEqual([]);
 
@@ -1987,7 +1987,7 @@ describe('Storable', () => {
     test('beforeLoad() and afterLoad()', async () => {
       const User = getUserClass();
 
-      const user = User.fork().instantiate({id: 'user1'}, {isNew: false});
+      const user = User.fork().instantiate({id: 'user1'});
 
       expect(hookTracker.get(user, 'beforeLoadHasBeenCalled')).toBeUndefined();
       expect(hookTracker.get(user, 'afterLoadHasBeenCalled')).toBeUndefined();

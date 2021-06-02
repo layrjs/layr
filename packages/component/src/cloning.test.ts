@@ -30,17 +30,6 @@ describe('Cloning', () => {
 
     expect(clonedMovie).not.toBe(movie);
     expect(clonedMovie.getComponentType()).toBe('Movie');
-    expect(clonedMovie.isNew()).toBe(true);
-    expect(clonedMovie.title).toBe(movie.title);
-    expect(clonedMovie.tags).toBeUndefined();
-    expect(clonedMovie.specs).toBeUndefined();
-
-    movie = Movie.instantiate({title: 'Inception'}, {isNew: false});
-
-    clonedMovie = movie.clone();
-
-    expect(clonedMovie).not.toBe(movie);
-    expect(clonedMovie.getComponentType()).toBe('Movie');
     expect(clonedMovie.isNew()).toBe(false);
     expect(clonedMovie.title).toBe(movie.title);
     expect(clonedMovie.getAttribute('tags').isSet()).toBe(false);

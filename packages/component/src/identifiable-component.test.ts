@@ -38,24 +38,6 @@ describe('Identifiable component', () => {
     );
   });
 
-  test('create()', async () => {
-    class User extends Component {
-      @primaryIdentifier() id!: string;
-    }
-
-    let user = User.instantiate();
-
-    expect(user.id.length >= 25).toBe(true);
-
-    user = User.instantiate({id: 'abc123'});
-
-    expect(user.id).toBe('abc123');
-
-    expect(() => User.instantiate({id: 'abc123'})).toThrow(
-      "A component with the same identifier already exists (attribute: 'User.prototype.id')"
-    );
-  });
-
   test('getIdentifierAttribute()', async () => {
     class User extends Component {
       @primaryIdentifier() id!: string;
@@ -249,38 +231,30 @@ describe('Identifiable component', () => {
       @attribute('string') name = '';
     }
 
-    expect(User.fork().instantiate({id: 'abc123'}, {isNew: false}).getIdentifiers()).toStrictEqual({
+    expect(User.fork().instantiate({id: 'abc123'}).getIdentifiers()).toStrictEqual({
       id: 'abc123'
     });
     expect(
-      User.fork()
-        .instantiate({id: 'abc123', email: 'hi@hello.com'}, {isNew: false})
-        .getIdentifiers()
+      User.fork().instantiate({id: 'abc123', email: 'hi@hello.com'}).getIdentifiers()
     ).toStrictEqual({
       id: 'abc123',
       email: 'hi@hello.com'
     });
-    expect(
-      User.fork().instantiate({email: 'hi@hello.com'}, {isNew: false}).getIdentifiers()
-    ).toStrictEqual({
+    expect(User.fork().instantiate({email: 'hi@hello.com'}).getIdentifiers()).toStrictEqual({
       email: 'hi@hello.com'
     });
     expect(
-      User.fork()
-        .instantiate({email: 'hi@hello.com', reference: 123456}, {isNew: false})
-        .getIdentifiers()
+      User.fork().instantiate({email: 'hi@hello.com', reference: 123456}).getIdentifiers()
     ).toStrictEqual({
       email: 'hi@hello.com',
       reference: 123456
     });
-    expect(
-      User.fork().instantiate({reference: 123456}, {isNew: false}).getIdentifiers()
-    ).toStrictEqual({
+    expect(User.fork().instantiate({reference: 123456}).getIdentifiers()).toStrictEqual({
       reference: 123456
     });
 
-    expect(User.fork().instantiate({name: 'john'}, {isNew: false}).hasIdentifiers()).toBe(false);
-    expect(() => User.fork().instantiate({name: 'john'}, {isNew: false}).getIdentifiers()).toThrow(
+    expect(User.fork().instantiate({name: 'john'}).hasIdentifiers()).toBe(false);
+    expect(() => User.fork().instantiate({name: 'john'}).getIdentifiers()).toThrow(
       "Cannot get the identifiers of a component that has no set identifier (component: 'User')"
     );
   });
@@ -293,42 +267,30 @@ describe('Identifiable component', () => {
       @attribute('string') name = '';
     }
 
+    expect(User.fork().instantiate({id: 'abc123'}).getIdentifierDescriptor()).toStrictEqual({
+      id: 'abc123'
+    });
     expect(
-      User.fork().instantiate({id: 'abc123'}, {isNew: false}).getIdentifierDescriptor()
+      User.fork().instantiate({id: 'abc123', email: 'hi@hello.com'}).getIdentifierDescriptor()
     ).toStrictEqual({
       id: 'abc123'
     });
     expect(
-      User.fork()
-        .instantiate({id: 'abc123', email: 'hi@hello.com'}, {isNew: false})
-        .getIdentifierDescriptor()
-    ).toStrictEqual({
-      id: 'abc123'
-    });
-    expect(
-      User.fork().instantiate({email: 'hi@hello.com'}, {isNew: false}).getIdentifierDescriptor()
+      User.fork().instantiate({email: 'hi@hello.com'}).getIdentifierDescriptor()
     ).toStrictEqual({
       email: 'hi@hello.com'
     });
     expect(
-      User.fork()
-        .instantiate({email: 'hi@hello.com', reference: 123456}, {isNew: false})
-        .getIdentifierDescriptor()
+      User.fork().instantiate({email: 'hi@hello.com', reference: 123456}).getIdentifierDescriptor()
     ).toStrictEqual({
       email: 'hi@hello.com'
     });
-    expect(
-      User.fork().instantiate({reference: 123456}, {isNew: false}).getIdentifierDescriptor()
-    ).toStrictEqual({
+    expect(User.fork().instantiate({reference: 123456}).getIdentifierDescriptor()).toStrictEqual({
       reference: 123456
     });
 
-    expect(User.fork().instantiate({name: 'john'}, {isNew: false}).hasIdentifierDescriptor()).toBe(
-      false
-    );
-    expect(() =>
-      User.fork().instantiate({name: 'john'}, {isNew: false}).getIdentifierDescriptor()
-    ).toThrow(
+    expect(User.fork().instantiate({name: 'john'}).hasIdentifierDescriptor()).toBe(false);
+    expect(() => User.fork().instantiate({name: 'john'}).getIdentifierDescriptor()).toThrow(
       "Cannot get an identifier descriptor from a component that has no set identifier (component: 'User')"
     );
   });
@@ -650,7 +612,7 @@ describe('Identifiable component', () => {
     expect(movie.toObject()).toStrictEqual({id: 'm1', title: 'Inception', director: {id: 'd1'}});
     expect(movie.toObject({minimize: true})).toStrictEqual({id: 'm1'});
 
-    movie = Movie.instantiate({title: 'Inception'}, {isNew: false});
+    movie = Movie.instantiate({title: 'Inception'});
 
     expect(movie.toObject()).toStrictEqual({title: 'Inception'});
     expect(movie.toObject({minimize: true})).toStrictEqual({title: 'Inception'});
