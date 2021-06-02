@@ -1,6 +1,6 @@
 {
   "name": "@layr/with-roles",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Simple role system for Layr",
   "keywords": [
     "layr",
@@ -30,7 +30,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.7",
+    "@layr/component": "^2.0.8",
     "core-helpers": "^1.0.3",
     "possibly-async": "^1.0.4",
     "tslib": "^2.2.0"
