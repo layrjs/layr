@@ -180,28 +180,6 @@ describe('Deserialization', () => {
     expect(movie.duration).toBe(0);
     expect(movie.getAttribute('duration').getValueSource()).toBe(0);
 
-    // --- Using Component.recreate() method ---
-
-    movie = Movie.recreate({__component: 'Movie', title: 'Inception'}) as Movie;
-
-    expect(movie).toBeInstanceOf(Movie);
-    expect(movie).not.toBe(Movie.prototype);
-    expect(movie.isNew()).toBe(false);
-    expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('duration').isSet()).toBe(false);
-
-    movie = Movie.recreate({__new: true, title: 'Inception'}) as Movie;
-
-    expect(movie).toBeInstanceOf(Movie);
-    expect(movie).not.toBe(Movie.prototype);
-    expect(movie.isNew()).toBe(true);
-    expect(movie.title).toBe('Inception');
-    expect(movie.duration).toBe(0);
-
-    expect(() => Movie.recreate({__component: 'Film'})).toThrow(
-      "An unexpected component type was encountered while deserializing an object (encountered type: 'Film', expected type: 'Movie')"
-    );
-
     // --- Using component.deserialize() method ---
 
     movie = Movie.instantiate();

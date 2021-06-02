@@ -100,7 +100,9 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
     functionDeserializer: originalFunctionDeserializer,
     rootComponent,
     attributeFilter,
+    deserializedComponents,
     deserializeFunctions = false,
+    source,
     ...otherOptions
   } = options;
 
@@ -117,7 +119,11 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
       return Validator.recreate(object, deserialize);
     }
 
-    const {__component: componentType, ...attributes} = object;
+    const {
+      __component: componentType,
+      __new: isNew = false,
+      ...attributes
+    }: {__component?: string; __new?: boolean} & Record<string, any> = object;
 
     if (componentType === undefined) {
       return undefined;
@@ -127,13 +133,53 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
       throw new Error("Cannot deserialize a component when no 'rootComponent' is provided");
     }
 
-    const component = rootComponent.getComponentOfType(componentType);
+    const componentClassOrPrototype = rootComponent.getComponentOfType(componentType);
 
-    if (isComponentClass(component)) {
-      return component.deserialize(attributes, options);
+    if (isComponentClass(componentClassOrPrototype)) {
+      const componentClass = componentClassOrPrototype;
+
+      return componentClass.deserialize(attributes, options);
     }
 
-    return (component.constructor as typeof Component).recreate(attributes, options);
+    const componentPrototype = componentClassOrPrototype;
+    const componentClass = componentPrototype.constructor;
+
+    const {identifierAttributes} = componentPrototype.__partitionAttributes(attributes);
+
+    let component: Component | undefined;
+
+    if (componentPrototype.hasPrimaryIdentifierAttribute()) {
+      component = componentClass.getIdentityMap().getComponent(identifierAttributes);
+    }
+
+    if (component === undefined) {
+      component = componentClass.instantiate(identifierAttributes, {
+        isNew,
+        source,
+        attributeSelector: {},
+        attributeFilter
+      });
+    } else {
+      component.setIsNewMark(isNew);
+    }
+
+    return possiblyAsync(component, (component) => {
+      if (deserializedComponents !== undefined && !componentClass.isEmbedded()) {
+        deserializedComponents.add(component);
+      }
+
+      return possiblyAsync(component.__deserializeAttributes(attributes, options), () => {
+        if (isNew) {
+          for (const attribute of component.getAttributes()) {
+            if (!(attribute.isSet() || attribute.isControlled())) {
+              attribute.setValue(attribute.evaluateDefault());
+            }
+          }
+        }
+
+        return component;
+      });
+    });
   };
 
   let functionDeserializer: DeserializeOptions['functionDeserializer'];

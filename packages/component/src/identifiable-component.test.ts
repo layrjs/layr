@@ -5,6 +5,7 @@ import {
   isSecondaryIdentifierAttributeInstance
 } from './properties';
 import {attribute, primaryIdentifier, secondaryIdentifier, provide} from './decorators';
+import {deserialize} from './deserialization';
 
 describe('Identifiable component', () => {
   test('new ()', async () => {
@@ -557,11 +558,15 @@ describe('Identifiable component', () => {
 
     // --- With a serialized referenced identifiable component ---
 
-    const deserializedArticle = ForkedArticle.recreate({
-      id: 'xyz789',
-      title: 'Hello 2',
-      author: {__component: 'User', id: 'abc123'}
-    }) as Article;
+    const deserializedArticle = deserialize(
+      {
+        __component: 'Article',
+        id: 'xyz789',
+        title: 'Hello 2',
+        author: {__component: 'User', id: 'abc123'}
+      },
+      {rootComponent: ForkedArticle}
+    ) as Article;
 
     const deserializedAuthor = deserializedArticle.author;
 
