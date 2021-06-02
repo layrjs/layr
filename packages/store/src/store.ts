@@ -1,5 +1,6 @@
 import {
   Component,
+  deserialize,
   isComponentInstance,
   ensureComponentClass,
   assertIsComponentClass,
@@ -33,7 +34,7 @@ import {
   assertNoUnknownOptions,
   PromiseLikeValue
 } from 'core-helpers';
-import {serialize, deserialize} from 'simple-serialization';
+import {serialize as simpleSerialize, deserialize as simpleDeserialize} from 'simple-serialization';
 import mapKeys from 'lodash/mapKeys';
 
 import {
@@ -547,7 +548,7 @@ export abstract class Store {
 
       const collectionName = this._getCollectionNameFromStorable(storablePrototype);
 
-      const serializedQuery = serialize(query);
+      const serializedQuery = simpleSerialize(query);
       const documentExpressions = this.toDocumentExpressions(storablePrototype, serializedQuery);
 
       const documentSort = this.toDocument(storablePrototype, sort);
@@ -579,7 +580,12 @@ export abstract class Store {
       const foundStorables: StorableComponent[] = [];
 
       for (const serializedStorable of serializedStorables) {
-        foundStorables.push(await storable.recreate(serializedStorable, {source: 1}));
+        foundStorables.push(
+          (await deserialize(serializedStorable, {
+            rootComponent: storable,
+            source: 1
+          })) as StorableComponent
+        );
       }
 
       return foundStorables;
@@ -592,7 +598,7 @@ export abstract class Store {
 
       const collectionName = this._getCollectionNameFromStorable(storablePrototype);
 
-      const serializedQuery = serialize(query);
+      const serializedQuery = simpleSerialize(query);
       const documentExpressions = this.toDocumentExpressions(storablePrototype, serializedQuery);
 
       const documentsCount = await this.countDocuments({
@@ -696,7 +702,7 @@ export abstract class Store {
   // === Serialization ===
 
   toDocument<Value>(_storable: typeof StorableComponent | StorableComponent, value: Value) {
-    return deserialize(value) as Value;
+    return simpleDeserialize(value) as Value;
   }
 
   // {a: 1, b: {c: 2}} => [['a', '$equal', 1], ['b.c', '$equal', 2]]
@@ -827,7 +833,7 @@ export abstract class Store {
     _storable: typeof StorableComponent | StorableComponent,
     document: Document
   ): Document {
-    return serialize(document);
+    return simpleSerialize(document);
   }
 
   // === Migration ===
