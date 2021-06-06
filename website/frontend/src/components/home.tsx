@@ -165,7 +165,7 @@ export class Home extends Routable(Component) {
   @consume() static Docs: typeof Docs;
   @consume() static Newsletter: ReturnType<typeof createNewsletterComponent>;
 
-  @page('[/]', {aliases: ['[/]index.html']}) static MainPage() {
+  @page('[]/', {aliases: ['[]/index.html']}) static MainPage() {
     const {Application, Newsletter} = this;
 
     const theme = useTheme();

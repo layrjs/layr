@@ -29,9 +29,7 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
     @provide() static Article = createArticleComponent(Base.Article);
     @provide() static Newsletter = createNewsletterComponent(Base.Newsletter);
 
-    @layout('/') static MainLayout({children}: {children: () => any}) {
-      const {Home} = this;
-
+    @layout('') static RootLayout({children}: {children: () => any}) {
       return (
         <EmotionStarter
           mode={'dark'}
@@ -40,39 +38,39 @@ export const createApplicationComponent = (Base: typeof BackendApplication) => {
           }}
           globalStylesGetter={getGlobalStyles}
         >
-          {(theme) => (
-            <EmotionKit>
-              {Home.MainPage.isActive() ? (
-                children()
-              ) : (
-                <FullHeight css={{display: 'flex', flexDirection: 'column'}}>
-                  <div>
-                    <Container>
-                      <this.HeaderView />
-                    </Container>
-                  </div>
-
-                  <div
-                    css={theme.responsive({
-                      flexGrow: 1,
-                      display: 'flex',
-                      padding: ['2rem', , '2rem 15px'],
-                      justifyContent: 'center'
-                    })}
-                  >
-                    {children()}
-                  </div>
-
-                  <div css={{backgroundColor: theme.colors.background.highlighted}}>
-                    <Container>
-                      <this.FooterView />
-                    </Container>
-                  </div>
-                </FullHeight>
-              )}
-            </EmotionKit>
-          )}
+          <EmotionKit>{children()}</EmotionKit>
         </EmotionStarter>
+      );
+    }
+
+    @layout('[]/') static MainLayout({children}: {children: () => any}) {
+      const theme = useTheme();
+
+      return (
+        <FullHeight css={{display: 'flex', flexDirection: 'column'}}>
+          <div>
+            <Container>
+              <this.HeaderView />
+            </Container>
+          </div>
+
+          <div
+            css={theme.responsive({
+              flexGrow: 1,
+              display: 'flex',
+              padding: ['2rem', , '2rem 15px'],
+              justifyContent: 'center'
+            })}
+          >
+            {children()}
+          </div>
+
+          <div css={{backgroundColor: theme.colors.background.highlighted}}>
+            <Container>
+              <this.FooterView />
+            </Container>
+          </div>
+        </FullHeight>
       );
     }
 
