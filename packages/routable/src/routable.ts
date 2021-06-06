@@ -329,7 +329,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       route: Route,
       identifiers: any,
       params: any,
-      wrapperPath: string,
+      wrapperPath: string | undefined,
       request: any
     ) {
       const name = route.getName();
@@ -350,8 +350,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       const navigator = this.findNavigator();
 
-      if (wrapperPath !== '') {
-        return callWrapperByURL(
+      if (wrapperPath !== undefined) {
+        return callWrapperByPath(
           rootComponent,
           wrapperPath,
           function () {
@@ -606,14 +606,13 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
       rootComponent: typeof Component,
       wrapper: Wrapper,
       identifiers: any,
-      params: any,
-      wrapperPath: string,
+      wrapperPath: string | undefined,
       children: () => any,
       request: any
     ): any {
       const name = wrapper.getName();
 
-      debug('Calling wrapper %s(%o)', this.describeComponentProperty(name), params);
+      debug('Calling wrapper %s()', this.describeComponentProperty(name));
 
       let component: any;
 
@@ -627,28 +626,26 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       const method = wrapper.transformMethod(component[name], request);
 
-      const paramsWithChildren = {...params, children};
-
       const navigator = this.findNavigator();
 
-      if (wrapperPath !== '') {
-        return callWrapperByURL(
+      if (wrapperPath !== undefined) {
+        return callWrapperByPath(
           rootComponent,
           wrapperPath,
           function () {
             if (navigator !== undefined) {
-              return navigator.callAddressableMethodWrapper(component, method, paramsWithChildren);
+              return navigator.callAddressableMethodWrapper(component, method, {children});
             } else {
-              return method.call(component, paramsWithChildren);
+              return method.call(component, {children});
             }
           },
           request
         );
       } else {
         if (navigator !== undefined) {
-          return navigator.callAddressableMethodWrapper(component, method, paramsWithChildren);
+          return navigator.callAddressableMethodWrapper(component, method, {children});
         } else {
-          return method.call(component, paramsWithChildren);
+          return method.call(component, {children});
         }
       }
     }
@@ -672,8 +669,8 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Wrappers
      */
-    static get findWrapperByURL() {
-      return (this.prototype as Routable).findWrapperByURL;
+    static get findWrapperByPath() {
+      return (this.prototype as Routable).findWrapperByPath;
     }
 
     /**
@@ -695,13 +692,11 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @category Wrappers
      */
-    findWrapperByURL(url: URL | string, request?: any) {
-      const normalizedURL = normalizeURL(url);
-
+    findWrapperByPath(path: string, request?: any) {
       const wrappers = this.__getWrappers();
 
       for (const wrapper of wrappers.values()) {
-        const result = wrapper.matchURL(normalizedURL, request);
+        const result = wrapper.matchPath(path, request);
 
         if (result !== undefined) {
           return {wrapper, ...result};
@@ -807,14 +802,8 @@ export function callRouteByURL(rootComponent: typeof Component, url: URL | strin
   return routable.__callRoute(rootComponent, route, identifiers, params, wrapperPath, request);
 }
 
-export function findWrapperByURL(
-  rootComponent: typeof Component,
-  url: URL | string,
-  request?: any
-) {
+export function findWrapperByPath(rootComponent: typeof Component, path: string, request?: any) {
   assertIsComponentClass(rootComponent);
-
-  const normalizedURL = normalizeURL(url);
 
   for (const component of rootComponent.traverseComponents()) {
     if (!isRoutableClass(component)) {
@@ -823,7 +812,7 @@ export function findWrapperByURL(
 
     let routable: typeof RoutableComponent | RoutableComponent = component;
 
-    let result = routable.findWrapperByURL(normalizedURL, request);
+    let result = routable.findWrapperByPath(path, request);
 
     if (result !== undefined) {
       return {routable, ...result};
@@ -831,7 +820,7 @@ export function findWrapperByURL(
 
     routable = component.prototype;
 
-    result = routable.findWrapperByURL(normalizedURL, request);
+    result = routable.findWrapperByPath(path, request);
 
     if (result !== undefined) {
       return {routable, ...result};
@@ -841,25 +830,24 @@ export function findWrapperByURL(
   return undefined;
 }
 
-export function callWrapperByURL(
+export function callWrapperByPath(
   rootComponent: typeof Component,
-  url: URL | string,
+  path: string,
   children: () => any,
   request?: any
 ) {
-  const result = findWrapperByURL(rootComponent, url, request);
+  const result = findWrapperByPath(rootComponent, path, request);
 
   if (result === undefined) {
-    throw new Error(`Couldn't find a wrapper matching the specified URL (URL: '${url}')`);
+    throw new Error(`Couldn't find a wrapper matching the specified path (path: '${path}')`);
   }
 
-  const {routable, wrapper, identifiers, params, wrapperPath} = result;
+  const {routable, wrapper, identifiers, wrapperPath} = result;
 
   return routable.__callWrapper(
     rootComponent,
     wrapper,
     identifiers,
-    params,
     wrapperPath,
     children,
     request

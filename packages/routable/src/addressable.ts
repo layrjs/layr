@@ -239,6 +239,25 @@ export abstract class Addressable {
   matchURL(url: URL | string, request?: any) {
     const {pathname: path, search: queryString} = normalizeURL(url);
 
+    const result = this.matchPath(path, request);
+
+    if (result !== undefined) {
+      const query: Record<string, string> = parseQuery(queryString);
+      const params: Record<string, any> = {};
+
+      for (const [name, descriptor] of Object.entries(this._params)) {
+        const queryValue = query[name];
+        const paramValue = deserializeParam(name, queryValue, descriptor);
+        params[name] = paramValue;
+      }
+
+      return {params, ...result};
+    }
+
+    return undefined;
+  }
+
+  matchPath(path: string, request?: any) {
     for (const {matcher, wrapperGenerator} of this._patterns) {
       const identifiers = matcher(path);
 
@@ -250,18 +269,9 @@ export abstract class Addressable {
         continue;
       }
 
-      const query: Record<string, string> = parseQuery(queryString);
-      const params: Record<string, any> = {};
-
-      for (const [name, descriptor] of Object.entries(this._params)) {
-        const queryValue = query[name];
-        const paramValue = deserializeParam(name, queryValue, descriptor);
-        params[name] = paramValue;
-      }
-
       const wrapperPath = wrapperGenerator(identifiers);
 
-      return {identifiers, params, wrapperPath};
+      return {identifiers, wrapperPath};
     }
 
     return undefined;

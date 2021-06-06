@@ -93,7 +93,11 @@ describe('Route', () => {
   test('matchURL()', async () => {
     let route = new Route('Main', '/movies');
 
-    expect(route.matchURL('/movies')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
+    expect(route.matchURL('/movies')).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: undefined
+    });
     expect(route.matchURL('/movies/abc123')).toBeUndefined();
     expect(route.matchURL('/films')).toBeUndefined();
     expect(route.matchURL('/')).toBeUndefined();
@@ -102,9 +106,21 @@ describe('Route', () => {
 
     route = new Route('Main', '/movies', {aliases: ['/', '/films']});
 
-    expect(route.matchURL('/movies')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
-    expect(route.matchURL('/')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
-    expect(route.matchURL('/films')).toStrictEqual({identifiers: {}, params: {}, wrapperPath: ''});
+    expect(route.matchURL('/movies')).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: undefined
+    });
+    expect(route.matchURL('/')).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: undefined
+    });
+    expect(route.matchURL('/films')).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: undefined
+    });
     expect(route.matchURL('/motion-pictures')).toBeUndefined();
 
     // -- Using route identifiers ---
@@ -114,17 +130,17 @@ describe('Route', () => {
     expect(route.matchURL('/movies/abc123')).toStrictEqual({
       identifiers: {id: 'abc123'},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/movies/group%2F12345')).toStrictEqual({
       identifiers: {id: 'group/12345'},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/films/abc123')).toStrictEqual({
       identifiers: {id: 'abc123'},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/movies')).toBeUndefined();
     expect(route.matchURL('/movies/')).toBeUndefined();
@@ -136,7 +152,7 @@ describe('Route', () => {
     expect(route.matchURL('/projects/realworld/implementations/abc123')).toStrictEqual({
       identifiers: {id: 'abc123', project: {slug: 'realworld'}},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
 
     // --- Using route identifier prefixes ---
@@ -146,14 +162,31 @@ describe('Route', () => {
     expect(route.matchURL('/@john')).toStrictEqual({
       identifiers: {username: 'john'},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/@')).toBeUndefined();
     expect(route.matchURL('/john')).toBeUndefined();
 
     // -- Using wrappers ---
 
+    route = new Route('Main', '[]/special');
+
+    expect(route.matchURL('/special')).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: ''
+    });
+
+    route = new Route('Main', '[/]about');
+
+    expect(route.matchURL('/about')).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: '/'
+    });
+
     route = new Route('Main', '[/projects/:project.slug]/implementations/:id');
+
     expect(route.matchURL('/projects/realworld/implementations/abc123')).toStrictEqual({
       identifiers: {id: 'abc123', project: {slug: 'realworld'}},
       params: {},
@@ -169,22 +202,22 @@ describe('Route', () => {
     expect(route.matchURL('/movies/abc123')).toStrictEqual({
       identifiers: {id: 'abc123'},
       params: {language: undefined, showDetails: undefined},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/movies/abc123?language=fr')).toStrictEqual({
       identifiers: {id: 'abc123'},
       params: {language: 'fr', showDetails: undefined},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/movies/abc123?language=fr&showDetails=1')).toStrictEqual({
       identifiers: {id: 'abc123'},
       params: {language: 'fr', showDetails: true},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/movies/abc123?unknownParam=abc')).toStrictEqual({
       identifiers: {id: 'abc123'},
       params: {language: undefined, showDetails: undefined},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(() => route.matchURL('/movies/abc123?showDetails=true')).toThrow(
       "Couldn't deserialize a route (or wrapper) parameter (name: 'showDetails', value: 'true', type: 'boolean?'"
@@ -197,7 +230,7 @@ describe('Route', () => {
     expect(route.matchURL('/?language=fr')).toStrictEqual({
       identifiers: {},
       params: {language: 'fr'},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
 
     expect(() => route.matchURL('/')).toThrow(
@@ -215,7 +248,7 @@ describe('Route', () => {
     expect(route.matchURL('/movies', {method: 'GET'})).toStrictEqual({
       identifiers: {},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(route.matchURL('/movies', {method: 'POST'})).toBeUndefined();
     expect(route.matchURL('/movies')).toBeUndefined();

@@ -87,17 +87,17 @@ describe('Routable', () => {
     const listPageRoute = Movie.setRoute('ListPage', '/movies');
     const hotPageRoute = Movie.setRoute('HotPage', '/movies/hot');
 
-    expect(Movie.findRouteByURL('/movies')).toEqual({
+    expect(Movie.findRouteByURL('/movies')).toStrictEqual({
       route: listPageRoute,
       identifiers: {},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
-    expect(Movie.findRouteByURL('/movies/hot')).toEqual({
+    expect(Movie.findRouteByURL('/movies/hot')).toStrictEqual({
       route: hotPageRoute,
       identifiers: {},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(Movie.findRouteByURL('/films')).toBeUndefined();
 
@@ -106,17 +106,17 @@ describe('Routable', () => {
     const itemPageRoute = Movie.prototype.setRoute('ItemPage', '/movies/:id');
     const detailsPageRoute = Movie.prototype.setRoute('DetailsPage', '/movies/:id/details');
 
-    expect(Movie.prototype.findRouteByURL('/movies/abc123')).toEqual({
+    expect(Movie.prototype.findRouteByURL('/movies/abc123')).toStrictEqual({
       route: itemPageRoute,
       identifiers: {id: 'abc123'},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
-    expect(Movie.prototype.findRouteByURL('/movies/abc123/details')).toEqual({
+    expect(Movie.prototype.findRouteByURL('/movies/abc123/details')).toStrictEqual({
       route: detailsPageRoute,
       identifiers: {id: 'abc123'},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
     expect(Movie.prototype.findRouteByURL('/films/abc123')).toBeUndefined();
 
@@ -124,36 +124,36 @@ describe('Routable', () => {
 
     const notFoundPageRoute = Movie.setRoute('NotFoundPage', '/*');
 
-    expect(Movie.findRouteByURL('/movies')).toEqual({
+    expect(Movie.findRouteByURL('/movies')).toStrictEqual({
       route: listPageRoute,
       identifiers: {},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
 
-    expect(Movie.findRouteByURL('/films')).toEqual({
+    expect(Movie.findRouteByURL('/films')).toStrictEqual({
       route: notFoundPageRoute,
       identifiers: {},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
 
     // Let's make sure that a route defined after a catch-all route is working...
     const actorListPageRoute = Movie.setRoute('ActorListPage', '/actors');
 
-    expect(Movie.findRouteByURL('/actors')).toEqual({
+    expect(Movie.findRouteByURL('/actors')).toStrictEqual({
       route: actorListPageRoute,
       identifiers: {},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
 
     // ... and that the catch-all route is working too
-    expect(Movie.findRouteByURL('/films')).toEqual({
+    expect(Movie.findRouteByURL('/films')).toStrictEqual({
       route: notFoundPageRoute,
       identifiers: {},
       params: {},
-      wrapperPath: ''
+      wrapperPath: undefined
     });
   });
 

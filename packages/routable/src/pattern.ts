@@ -5,7 +5,7 @@ import escapeRegExp from 'lodash/escapeRegExp';
 export type Pattern = string;
 
 export type PathMatcher = (path: string) => Record<string, any> | undefined;
-export type PathGenerator = (identifiers?: Record<string, any>) => string;
+export type PathGenerator = (identifiers?: Record<string, any>) => string | undefined;
 
 const PATH_CHARACTER_REGEXP = /[A-Za-z0-9.\-_@/]/;
 const IDENTIFIER_NAME_CHARACTER_REGEXP = /[A-Za-z0-9.]/;
@@ -19,6 +19,10 @@ export function parsePattern(pattern: Pattern) {
   const identifierNames: string[] = [];
 
   for (const part of allParts) {
+    if (part.length === 0) {
+      continue;
+    }
+
     if (part.startsWith(':')) {
       const name = part.slice(1);
       identifierNames.push(name);
@@ -27,8 +31,6 @@ export function parsePattern(pattern: Pattern) {
       regExpParts.push(escapeRegExp(part));
     }
   }
-
-  regExpParts.push('\\/?');
 
   if (isCatchAll) {
     regExpParts.push('.*');
@@ -55,6 +57,10 @@ export function parsePattern(pattern: Pattern) {
   };
 
   const generate = function (parts: string[], identifiers = {}) {
+    if (parts.length === 0) {
+      return undefined;
+    }
+
     let path = '';
 
     for (const part of parts) {
@@ -86,15 +92,8 @@ export function parsePattern(pattern: Pattern) {
   return {matcher, generator, wrapperGenerator, isCatchAll};
 }
 
-// '[/]projects/:slug/edit/' => [['/'], ['projects', ':slug', '/edit']]
 function splitPattern(pattern: Pattern) {
   let normalizedPattern = pattern.trim();
-
-  if (!(normalizedPattern.startsWith('/') || normalizedPattern.startsWith('[/'))) {
-    throw new Error(
-      `Couldn't parse the route (or wrapper) pattern '${pattern}' (a pattern should always start with a '/')`
-    );
-  }
 
   let isCatchAll: boolean;
 
@@ -112,10 +111,6 @@ function splitPattern(pattern: Pattern) {
     isCatchAll = false;
   }
 
-  if (normalizedPattern !== '/' && normalizedPattern.endsWith('/') && !isCatchAll) {
-    normalizedPattern = normalizedPattern.slice(0, -1);
-  }
-
   const wrapperParts: string[] = [];
   const regularParts: string[] = [];
 
@@ -128,20 +123,18 @@ function splitPattern(pattern: Pattern) {
     const parts = partSection === 'wrapper' ? wrapperParts : regularParts;
 
     if (partType === 'path') {
-      if (partContent !== '') {
-        parts.push(partContent);
-        partContent = '';
-      }
+      parts.push(partContent);
     } else {
-      if (partContent !== '') {
-        parts.push(':' + partContent);
-        partContent = '';
-      } else {
+      if (partContent === '') {
         throw new Error(
           `Couldn't parse the route (or wrapper) pattern '${pattern}' (an identifier cannot be empty)`
         );
       }
+
+      parts.push(':' + partContent);
     }
+
+    partContent = '';
   };
 
   while (index <= normalizedPattern.length - 1) {

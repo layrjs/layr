@@ -7,7 +7,7 @@ describe('MemoryNavigator', () => {
 
   const getNavigator = function () {
     class Home extends Routable(Component) {
-      @route('[/]') static HomePage() {
+      @route('[]/') static HomePage() {
         return `Home`;
       }
     }
@@ -36,7 +36,11 @@ describe('MemoryNavigator', () => {
       @provide() static Home = Home;
       @provide() static Movie = Movie;
 
-      @wrapper('/') static MainLayout({children}: {children: () => any}) {
+      @wrapper('') static RootLayout({children}: {children: () => any}) {
+        return `{${children()}}`;
+      }
+
+      @wrapper('[]/') static MainLayout({children}: {children: () => any}) {
         return `[${children()}]`;
       }
     }
@@ -112,25 +116,25 @@ describe('MemoryNavigator', () => {
   test('navigate()', async () => {
     const navigator = getNavigator();
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
     expect(navigator.getHistoryLength()).toBe(3);
 
     navigator.navigate('/movies/abc123/details', {defer: false});
 
-    expect(currentRouteResult).toBe('[Movie #abc123 (details)]');
+    expect(currentRouteResult).toBe('{[Movie #abc123 (details)]}');
     expect(navigator.getHistoryLength()).toBe(4);
 
     navigator.go(-3); // We should be at the first entry of the history
 
     navigator.navigate('/movies/abc123', {defer: false});
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
     expect(navigator.getHistoryLength()).toBe(2);
     expect(navigator.getCurrentQuery()).toEqual({});
 
     navigator.navigate('/movies/abc123?showTrailers=true', {defer: false});
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
     expect(navigator.getHistoryLength()).toBe(3);
     expect(navigator.getCurrentQuery()).toEqual({showTrailers: 'true'});
   });
@@ -138,56 +142,56 @@ describe('MemoryNavigator', () => {
   test('redirect()', async () => {
     const navigator = getNavigator();
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
     expect(navigator.getHistoryLength()).toBe(3);
 
     navigator.redirect('/movies/def456', {defer: false});
 
-    expect(currentRouteResult).toBe('[Movie #def456]');
+    expect(currentRouteResult).toBe('{[Movie #def456]}');
     expect(navigator.getHistoryLength()).toBe(3);
 
     navigator.go(-2); // We should be at the first entry of the history
 
     navigator.redirect('/movies/abc123', {defer: false});
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
     expect(navigator.getHistoryLength()).toBe(1);
   });
 
   test('go()', async () => {
     const navigator = getNavigator();
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
 
     navigator.go(-1, {defer: false});
 
-    expect(currentRouteResult).toBe('[Movies]');
+    expect(currentRouteResult).toBe('{[Movies]}');
 
     navigator.go(-1, {defer: false});
 
-    expect(currentRouteResult).toBe('[Home]');
+    expect(currentRouteResult).toBe('{Home}');
 
     navigator.go(2, {defer: false});
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
 
     expect(() => navigator.go(1, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
 
     expect(() => navigator.go(2, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
 
     expect(() => navigator.go(-3, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
 
     expect(() => navigator.go(-4, {defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
@@ -197,21 +201,21 @@ describe('MemoryNavigator', () => {
   test('goBack()', async () => {
     const navigator = getNavigator();
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
 
     navigator.goBack({defer: false});
 
-    expect(currentRouteResult).toBe('[Movies]');
+    expect(currentRouteResult).toBe('{[Movies]}');
 
     navigator.goBack({defer: false});
 
-    expect(currentRouteResult).toBe('[Home]');
+    expect(currentRouteResult).toBe('{Home}');
 
     expect(() => navigator.goBack({defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
-    expect(currentRouteResult).toBe('[Home]');
+    expect(currentRouteResult).toBe('{Home}');
   });
 
   test('goForward()', async () => {
@@ -219,21 +223,21 @@ describe('MemoryNavigator', () => {
 
     navigator.go(-2, {defer: false});
 
-    expect(currentRouteResult).toBe('[Home]');
+    expect(currentRouteResult).toBe('{Home}');
 
     navigator.goForward({defer: false});
 
-    expect(currentRouteResult).toBe('[Movies]');
+    expect(currentRouteResult).toBe('{[Movies]}');
 
     navigator.goForward({defer: false});
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
 
     expect(() => navigator.goForward({defer: false})).toThrow(
       'Cannot go to an entry that does not exist in the navigator history'
     );
 
-    expect(currentRouteResult).toBe('[Movie #abc123]');
+    expect(currentRouteResult).toBe('{[Movie #abc123]}');
   });
 
   test('getHistoryLength()', async () => {
