@@ -5,7 +5,7 @@ import {layout, page, useData} from '@layr/react-integration';
 import {jsx, useTheme} from '@emotion/react';
 
 import type {createArticleComponent} from './article';
-import {useTitle} from '../utilities';
+import {Title} from '../utilities';
 
 export class Blog extends Routable(Component) {
   ['constructor']!: typeof Blog;
@@ -15,10 +15,9 @@ export class Blog extends Routable(Component) {
   @layout('[/]blog') static MainLayout({children}: {children: () => any}) {
     const theme = useTheme();
 
-    useTitle('Blog');
-
     return (
       <div css={{flexBasis: 650}}>
+        <Title>Blog</Title>
         <h2 css={{marginBottom: '2rem'}}>
           <this.MainPage.Link css={{color: theme.colors.text.muted}}>Blog</this.MainPage.Link>
         </h2>

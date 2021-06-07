@@ -9,7 +9,7 @@ import {Stack} from '@emotion-kit/react';
 
 import type {User as BackendUser} from '../../../backend/src/components/user';
 import type {Home} from './home';
-import {useTitle} from '../utilities';
+import {Title} from '../utilities';
 
 export const createUserComponent = (Base: typeof BackendUser) => {
   class User extends Routable(Base) {
@@ -47,8 +47,6 @@ export const createUserComponent = (Base: typeof BackendUser) => {
 
       const user = useMemo(() => new this(), []);
 
-      useTitle('Sign up');
-
       return <user.SignUpView />;
     }
 
@@ -64,6 +62,8 @@ export const createUserComponent = (Base: typeof BackendUser) => {
 
       return (
         <div css={{flexBasis: 400}}>
+          <Title>Sign up</Title>
+
           <h2>Sign Up</h2>
 
           <form
@@ -159,8 +159,6 @@ export const createUserComponent = (Base: typeof BackendUser) => {
 
       const user = useMemo(() => new this(), []);
 
-      useTitle('Sign in');
-
       return <user.SignInView />;
     }
 
@@ -174,6 +172,8 @@ export const createUserComponent = (Base: typeof BackendUser) => {
 
       return (
         <div css={{flexBasis: 400}}>
+          <Title>Sign in</Title>
+
           <h2>Sign In</h2>
 
           <form

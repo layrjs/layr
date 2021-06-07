@@ -10,7 +10,7 @@ import type {createApplicationComponent} from './application';
 import type {Docs} from './docs';
 import type {createNewsletterComponent} from './newsletter';
 import {Markdown} from '../markdown';
-import {FeatureSection, FullHeight, useTitle} from '../utilities';
+import {FeatureSection, FullHeight, Title} from '../utilities';
 import typicalVsLayr from '../assets/typical-stack-vs-layr-stack.png';
 
 const NO_WEB_API_BACKEND_EXAMPLE = `
@@ -170,10 +170,10 @@ export class Home extends Routable(Component) {
 
     const theme = useTheme();
 
-    useTitle('Dramatically simplify full‑stack development');
-
     return (
       <>
+        <Title>Dramatically simplify full‑stack development</Title>
+
         <FullHeight
           css={{
             display: 'flex',

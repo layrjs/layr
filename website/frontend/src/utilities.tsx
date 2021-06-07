@@ -1,6 +1,6 @@
 import {jsx, useTheme} from '@emotion/react';
 import {useWindowHeight} from '@react-hook/window-size';
-import useMetaTags from 'react-metatags-hook';
+import {Helmet} from 'react-helmet';
 
 import {InlineMarkdown} from './markdown';
 
@@ -66,12 +66,16 @@ export function FeatureSection({
   );
 }
 
-export function useTitle(title?: string) {
+export function Title({children: title}: {children?: string}) {
   if (title === undefined) {
     title = 'Layr';
   } else {
     title = 'Layr – ' + title;
   }
 
-  useMetaTags({title}, [title]);
+  return (
+    <Helmet>
+      <title>{title}</title>
+    </Helmet>
+  );
 }

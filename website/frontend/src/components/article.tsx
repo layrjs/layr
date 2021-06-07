@@ -11,7 +11,7 @@ import type {createUserComponent} from './user';
 import type {Article as BackendArticle} from '../../../backend/src/components/article';
 import type {Home} from './home';
 import {Markdown} from '../markdown';
-import {useTitle} from '../utilities';
+import {Title} from '../utilities';
 
 export const createArticleComponent = (Base: typeof BackendArticle) => {
   class Article extends Routable(Base) {
@@ -38,10 +38,9 @@ export const createArticleComponent = (Base: typeof BackendArticle) => {
     }
 
     @page('[/blog/articles/:slug]') ItemPage() {
-      useTitle(this.title);
-
       return (
         <>
+          <Title>{this.title}</Title>
           <h2>{this.title}</h2>
           <this.MetaView css={{marginTop: '-.75rem', marginBottom: '1.5rem'}} />
           <Markdown>{this.body}</Markdown>

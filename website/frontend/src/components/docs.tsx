@@ -11,7 +11,7 @@ import type {createApplicationComponent} from './application';
 import docs from '../docs.json';
 import {useStyles} from '../styles';
 import {Markdown} from '../markdown';
-import {useTitle} from '../utilities';
+import {Title} from '../utilities';
 
 const VERSIONS = [{name: '1', value: 'v1'}];
 const LANGUAGES = [
@@ -266,36 +266,34 @@ export class Docs extends Routable(Component) {
       async () => await this.getChapter({bookSlug, chapterSlug}),
 
       (chapter) => {
-        return React.createElement(() => {
-          useTitle(chapter.title);
+        const {nextChapter} = chapter;
 
-          const {nextChapter} = chapter;
+        return (
+          <>
+            <Title>{chapter.title}</Title>
 
-          return (
-            <>
-              <Markdown languageFilter={language}>{chapter.content}</Markdown>
+            <Markdown languageFilter={language}>{chapter.content}</Markdown>
 
-              {nextChapter && (
-                <div css={{marginBottom: 15}}>
-                  <hr />
-                  <div>
-                    <span style={{color: theme.colors.text.muted}}>Next:</span>{' '}
-                    <navigator.Link
-                      to={this.generateURL({
-                        version,
-                        bookSlug,
-                        chapterSlug: nextChapter.slug,
-                        language
-                      })}
-                    >
-                      {nextChapter.title} →
-                    </navigator.Link>
-                  </div>
+            {nextChapter && (
+              <div css={{marginBottom: 15}}>
+                <hr />
+                <div>
+                  <span style={{color: theme.colors.text.muted}}>Next:</span>{' '}
+                  <navigator.Link
+                    to={this.generateURL({
+                      version,
+                      bookSlug,
+                      chapterSlug: nextChapter.slug,
+                      language
+                    })}
+                  >
+                    {nextChapter.title} →
+                  </navigator.Link>
                 </div>
-              )}
-            </>
-          );
-        });
+              </div>
+            )}
+          </>
+        );
       },
 
       [bookSlug, chapterSlug]
