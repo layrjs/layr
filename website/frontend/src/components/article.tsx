@@ -33,19 +33,13 @@ export const createArticleComponent = (Base: typeof BackendArticle) => {
           });
         },
 
-        () => {
-          useTitle(this.title);
-
-          return children();
-        },
-
-        [], // Getter deps
-
-        [children] // Renderer deps
+        children
       );
     }
 
     @page('[/blog/articles/:slug]') ItemPage() {
+      useTitle(this.title);
+
       return (
         <>
           <h2>{this.title}</h2>

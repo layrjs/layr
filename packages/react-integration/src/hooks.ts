@@ -1,5 +1,5 @@
 import {ObservableType, isObservable} from '@layr/observable';
-import React, {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
+import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {AsyncFunction, getTypeOf} from 'core-helpers';
 
 import {useCustomization} from './components';
@@ -7,26 +7,21 @@ import {useCustomization} from './components';
 export function useData<Result>(
   getter: () => Promise<Result>,
   renderer: (data: Result) => JSX.Element | null,
-  getterDeps: DependencyList = [],
-  rendererDeps: DependencyList = []
+  deps: DependencyList = []
 ) {
   const {dataPlaceholder, errorRenderer} = useCustomization();
 
-  const [data, isExecuting, error] = useAsyncMemo(getter, getterDeps);
+  const [data, isExecuting, error] = useAsyncMemo(getter, deps);
 
-  return useMemo(() => {
-    if (isExecuting) {
-      return dataPlaceholder();
-    }
+  if (isExecuting) {
+    return dataPlaceholder();
+  }
 
-    if (error) {
-      return errorRenderer(error);
-    }
+  if (error !== undefined) {
+    return errorRenderer(error);
+  }
 
-    return React.createElement(function ViewWithData() {
-      return renderer(data!);
-    });
-  }, [data, isExecuting, error, ...rendererDeps]);
+  return renderer(data!);
 }
 
 export function useAction<Args extends any[] = any[], Result = any>(

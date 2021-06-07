@@ -259,46 +259,46 @@ export class Docs extends Routable(Component) {
   }
 
   @view() static ChapterView({version, bookSlug, chapterSlug, language}: URLParams) {
+    const theme = useTheme();
+    const navigator = this.getNavigator();
+
     return useData(
       async () => await this.getChapter({bookSlug, chapterSlug}),
 
       (chapter) => {
-        const theme = useTheme();
-        const navigator = this.getNavigator();
+        return React.createElement(() => {
+          useTitle(chapter.title);
 
-        useTitle(chapter.title);
+          const {nextChapter} = chapter;
 
-        const {nextChapter} = chapter;
+          return (
+            <>
+              <Markdown languageFilter={language}>{chapter.content}</Markdown>
 
-        return (
-          <>
-            <Markdown languageFilter={language}>{chapter.content}</Markdown>
-
-            {nextChapter && (
-              <div css={{marginBottom: 15}}>
-                <hr />
-                <div>
-                  <span style={{color: theme.colors.text.muted}}>Next:</span>{' '}
-                  <navigator.Link
-                    to={this.generateURL({
-                      version,
-                      bookSlug,
-                      chapterSlug: nextChapter.slug,
-                      language
-                    })}
-                  >
-                    {nextChapter.title} →
-                  </navigator.Link>
+              {nextChapter && (
+                <div css={{marginBottom: 15}}>
+                  <hr />
+                  <div>
+                    <span style={{color: theme.colors.text.muted}}>Next:</span>{' '}
+                    <navigator.Link
+                      to={this.generateURL({
+                        version,
+                        bookSlug,
+                        chapterSlug: nextChapter.slug,
+                        language
+                      })}
+                    >
+                      {nextChapter.title} →
+                    </navigator.Link>
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        );
+              )}
+            </>
+          );
+        });
       },
 
-      [bookSlug, chapterSlug], // getter deps
-
-      [language] // renderer deps
+      [bookSlug, chapterSlug]
     );
   }
 
