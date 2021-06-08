@@ -23,7 +23,7 @@ export type StorableAttributeOptions = StorablePropertyOptions &
 
 export type StorableAttributeLoader = () => PromiseLikeable<unknown>;
 
-export type StorableAttributeHook = () => PromiseLikeable<void>;
+export type StorableAttributeHook = (attribute: StorableAttribute) => PromiseLikeable<void>;
 
 export type StorableAttributeHookName =
   | 'beforeLoad'
@@ -532,7 +532,7 @@ export const StorableAttributeMixin = <T extends Constructor<typeof Attribute>>(
         throw new Error(`Cannot call a hook that is missing (${this.describe()}, hook: '${name}')`);
       }
 
-      await hook.call(this.getParent());
+      await hook.call(this.getParent(), this);
     }
 
     _hooks!: Partial<Record<StorableAttributeHookName, StorableAttributeHook>>;
