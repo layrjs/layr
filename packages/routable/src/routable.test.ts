@@ -1,4 +1,4 @@
-import {Component, provide, primaryIdentifier} from '@layr/component';
+import {Component, provide, primaryIdentifier, attribute} from '@layr/component';
 
 import {Routable, callRouteByURL} from './routable';
 import {isRoutableClass, isRoutableInstance} from './utilities';
@@ -158,8 +158,14 @@ describe('Routable', () => {
   });
 
   test('callRouteByURL()', async () => {
+    class Studio extends Routable(Component) {
+      @primaryIdentifier() id!: string;
+    }
+
     class Movie extends Routable(Component) {
       @primaryIdentifier() id!: string;
+
+      @attribute('Studio') studio!: Studio;
 
       static ListPage() {
         return `All movies`;
@@ -168,9 +174,14 @@ describe('Routable', () => {
       ItemPage({showDetails = false}) {
         return `Movie #${this.id}${showDetails ? ' (with details)' : ''}`;
       }
+
+      ItemWithStudioPage() {
+        return `Studio #${this.studio.id} > Movie #${this.id}`;
+      }
     }
 
     class Application extends Routable(Component) {
+      @provide() static Studio = Studio;
       @provide() static Movie = Movie;
 
       static MainLayout({children}: {children: () => any}) {
@@ -217,6 +228,12 @@ describe('Routable', () => {
 
     expect(() => callRouteByURL(Application, '/movies/abc123/details')).toThrow(
       "Couldn't find a route matching the specified URL (URL: '/movies/abc123/details')"
+    );
+
+    Movie.prototype.setRoute('ItemWithStudioPage', '[/]studios/:studio.id/movies/:id');
+
+    expect(callRouteByURL(Application, '/studios/abc123/movies/def456')).toBe(
+      '[Studio #abc123 > Movie #def456]'
     );
 
     // --- Route transformers ---

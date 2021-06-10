@@ -1,4 +1,9 @@
-import {Component, isComponentClass, assertIsComponentClass} from '@layr/component';
+import {
+  Component,
+  isComponentClass,
+  assertIsComponentClass,
+  isComponentValueTypeInstance
+} from '@layr/component';
 import {Navigator, assertIsNavigatorInstance, normalizeURL} from '@layr/navigator';
 import {hasOwnProperty, getTypeOf, Constructor} from 'core-helpers';
 import debugModule from 'debug';
@@ -336,17 +341,9 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       debug('Calling route %s(%o)', this.describeComponentProperty(name), params);
 
-      let component: any;
+      const component = getOrInstantiateComponent(this, identifiers);
 
-      if (isComponentClass(this)) {
-        component = this;
-      } else {
-        component =
-          this.constructor.getIdentityMap().getComponent(identifiers) ??
-          this.constructor.instantiate(identifiers);
-      }
-
-      const method = route.transformMethod(component[name], request);
+      const method = route.transformMethod((component as any)[name], request);
 
       const navigator = this.findNavigator();
 
@@ -614,17 +611,9 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       debug('Calling wrapper %s()', this.describeComponentProperty(name));
 
-      let component: any;
+      const component = getOrInstantiateComponent(this, identifiers);
 
-      if (isComponentClass(this)) {
-        component = this;
-      } else {
-        component =
-          this.constructor.getIdentityMap().getComponent(identifiers) ??
-          this.constructor.instantiate(identifiers);
-      }
-
-      const method = wrapper.transformMethod(component[name], request);
+      const method = wrapper.transformMethod((component as any)[name], request);
 
       const navigator = this.findNavigator();
 
@@ -852,4 +841,65 @@ export function callWrapperByPath(
     children,
     request
   );
+}
+
+function getOrInstantiateComponent(
+  componentClassOrPrototype: typeof Component | Component,
+  identifiers: any
+) {
+  if (isComponentClass(componentClassOrPrototype)) {
+    return componentClassOrPrototype;
+  }
+
+  let componentIdentifier: any;
+  let referencedComponentIdentifiers: any = {};
+
+  for (const [name, value] of Object.entries(identifiers)) {
+    if (typeof value === 'string' || typeof value === 'number') {
+      if (componentIdentifier !== undefined) {
+        throw new Error(
+          `Cannot get or instantiate a component with more than one identifier (\`${JSON.stringify(
+            componentIdentifier
+          )}\` and \`${JSON.stringify({[name]: value})}\`)`
+        );
+      }
+
+      componentIdentifier = {[name]: value};
+    } else if (typeof value === 'object' && value !== null) {
+      referencedComponentIdentifiers[name] = value;
+    } else {
+      throw new Error(
+        `Unexpected identifier type encountered while getting or instantiating a component (type: '${getTypeOf(
+          value
+        )}')`
+      );
+    }
+  }
+
+  if (componentIdentifier === undefined) {
+    throw new Error(`Cannot get or instantiate a component with no specified identifier`);
+  }
+
+  const component =
+    componentClassOrPrototype.constructor.getIdentityMap().getComponent(componentIdentifier) ??
+    componentClassOrPrototype.constructor.instantiate(componentIdentifier);
+
+  for (const [name, identifiers] of Object.entries(referencedComponentIdentifiers)) {
+    const attribute = component.getAttribute(name);
+    const valueType = attribute.getValueType();
+
+    if (!isComponentValueTypeInstance(valueType)) {
+      throw new Error(
+        `Unexpected attribute type encountered while getting or instantiating a component (name: '${name}', type: '${valueType.toString()}')`
+      );
+    }
+
+    const referencedComponentClassOrPrototype = valueType.getComponent(attribute);
+    attribute.setValue(
+      getOrInstantiateComponent(referencedComponentClassOrPrototype, identifiers),
+      {source: attribute.getValueSource()}
+    );
+  }
+
+  return component;
 }

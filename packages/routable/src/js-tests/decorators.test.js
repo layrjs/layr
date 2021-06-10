@@ -168,7 +168,7 @@ describe('Decorators', () => {
         });
       }
 
-      @httpRoute('*', '/*') routeNotFound() {
+      @httpRoute('*', '/*') static routeNotFound() {
         throw createError(404, 'Route not found');
       }
     }
