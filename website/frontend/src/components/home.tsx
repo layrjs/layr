@@ -6,11 +6,11 @@ import {Button} from '@emotion-starter/react';
 import {Container} from '@emotion-kit/react';
 import {page, view} from '@layr/react-integration';
 
-import type {createApplicationComponent} from './application';
+import type {extendApplication} from './application';
 import type {Docs} from './docs';
-import type {createNewsletterComponent} from './newsletter';
+import type {extendNewsletter} from './newsletter';
 import {Markdown} from '../markdown';
-import {FeatureSection, FullHeight, Title} from '../utilities';
+import {FeatureSection, FullHeight, Title} from '../ui';
 import typicalVsLayr from '../assets/typical-stack-vs-layr-stack.png';
 
 const NO_WEB_API_BACKEND_EXAMPLE = `
@@ -161,9 +161,9 @@ class Movie extends Component {
 `;
 
 export class Home extends Routable(Component) {
-  @consume() static Application: ReturnType<typeof createApplicationComponent>;
+  @consume() static Application: ReturnType<typeof extendApplication>;
   @consume() static Docs: typeof Docs;
-  @consume() static Newsletter: ReturnType<typeof createNewsletterComponent>;
+  @consume() static Newsletter: ReturnType<typeof extendNewsletter>;
 
   @page('[]/', {aliases: ['[]/index.html']}) static MainPage() {
     const {Application, Newsletter} = this;

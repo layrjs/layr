@@ -3,15 +3,15 @@ import {stringifyQuery} from '@layr/navigator';
 import {Routable} from '@layr/routable';
 import React, {Fragment, useCallback} from 'react';
 import {jsx, css, useTheme} from '@emotion/react';
-import {page, view, useData} from '@layr/react-integration';
+import {page, view, useData, useNavigator} from '@layr/react-integration';
 import {Select} from '@emotion-starter/react';
 import isEqual from 'lodash/isEqual';
 
-import type {createApplicationComponent} from './application';
+import type {extendApplication} from './application';
 import docs from '../docs.json';
 import {useStyles} from '../styles';
+import {Title} from '../ui';
 import {Markdown} from '../markdown';
-import {Title} from '../utilities';
 
 const VERSIONS = [{name: '1', value: 'v1'}];
 const LANGUAGES = [
@@ -49,12 +49,13 @@ type Category = {
 export class Docs extends Routable(Component) {
   ['constructor']!: typeof Docs;
 
-  @consume() static Application: ReturnType<typeof createApplicationComponent>;
+  @consume() static Application: ReturnType<typeof extendApplication>;
 
   @page('[/]docs*') static MainPage() {
     const {Application} = this;
 
     const theme = useTheme();
+    const navigator = useNavigator();
 
     const {version, bookSlug, chapterSlug, language} = this.resolveURL();
 
@@ -66,8 +67,6 @@ export class Docs extends Routable(Component) {
     ) {
       return <Application.NotFoundView />;
     }
-
-    const navigator = this.getNavigator();
 
     if (
       navigator.getCurrentPath() !== this.generatePath({version, bookSlug, chapterSlug}) ||
@@ -119,7 +118,7 @@ export class Docs extends Routable(Component) {
   @view() static ContentsView({version, bookSlug, chapterSlug, language}: URLParams) {
     const theme = useTheme();
     const styles = useStyles();
-    const navigator = this.getNavigator();
+    const navigator = useNavigator();
 
     const contents = this.getContents();
 
@@ -208,7 +207,7 @@ export class Docs extends Routable(Component) {
 
   @view() static OptionsView({version, bookSlug, chapterSlug, language}: URLParams) {
     const theme = useTheme();
-    const navigator = this.getNavigator();
+    const navigator = useNavigator();
 
     const hash = navigator.getCurrentHash();
 
@@ -260,7 +259,7 @@ export class Docs extends Routable(Component) {
 
   @view() static ChapterView({version, bookSlug, chapterSlug, language}: URLParams) {
     const theme = useTheme();
-    const navigator = this.getNavigator();
+    const navigator = useNavigator();
 
     return useData(
       async () => await this.getChapter({bookSlug, chapterSlug}),

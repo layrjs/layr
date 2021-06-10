@@ -9,9 +9,9 @@ import {Stack} from '@emotion-kit/react';
 
 import type {User as BackendUser} from '../../../backend/src/components/user';
 import type {Home} from './home';
-import {Title} from '../utilities';
+import {Title} from '../ui';
 
-export const createUserComponent = (Base: typeof BackendUser) => {
+export const extendUser = (Base: typeof BackendUser) => {
   class User extends Routable(Base) {
     ['constructor']!: typeof User;
 

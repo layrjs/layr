@@ -4,13 +4,13 @@ import {Fragment} from 'react';
 import {layout, page, useData} from '@layr/react-integration';
 import {jsx, useTheme} from '@emotion/react';
 
-import type {createArticleComponent} from './article';
-import {Title} from '../utilities';
+import type {extendArticle} from './article';
+import {Title} from '../ui';
 
 export class Blog extends Routable(Component) {
   ['constructor']!: typeof Blog;
 
-  @consume() static Article: ReturnType<typeof createArticleComponent>;
+  @consume() static Article: ReturnType<typeof extendArticle>;
 
   @layout('[/]blog') static MainLayout({children}: {children: () => any}) {
     const theme = useTheme();

@@ -9,25 +9,25 @@ import {EmotionKit, Container, Stack} from '@emotion-kit/react';
 import type {Application as BackendApplication} from '../../../backend/src/components/application';
 import {Home} from './home';
 import {Docs} from './docs';
-import {createUserComponent} from './user';
+import {extendUser} from './user';
 import {Blog} from './blog';
-import {createArticleComponent} from './article';
-import {createNewsletterComponent} from './newsletter';
+import {extendArticle} from './article';
+import {extendNewsletter} from './newsletter';
 import {getGlobalStyles, useStyles} from '../styles';
-import {FullHeight} from '../utilities';
+import {FullHeight} from '../ui';
 
 import layrLogo from '../assets/layr-logo-with-icon-dark-mode.svg';
 import brokenHeart from '../assets/broken-heart.svg';
 import love from '../assets/f-plus-b-equals-love.svg';
 
-export const createApplicationComponent = (Base: typeof BackendApplication) => {
+export const extendApplication = (Base: typeof BackendApplication) => {
   class Application extends Routable(Base) {
-    @provide() static User = createUserComponent(Base.User);
+    @provide() static User = extendUser(Base.User);
     @provide() static Home = Home;
     @provide() static Docs = Docs;
     @provide() static Blog = Blog;
-    @provide() static Article = createArticleComponent(Base.Article);
-    @provide() static Newsletter = createNewsletterComponent(Base.Newsletter);
+    @provide() static Article = extendArticle(Base.Article);
+    @provide() static Newsletter = extendNewsletter(Base.Newsletter);
 
     @layout('') static RootLayout({children}: {children: () => any}) {
       return (

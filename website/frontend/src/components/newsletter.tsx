@@ -4,9 +4,9 @@ import {jsx, useTheme} from '@emotion/react';
 import {Input, Button} from '@emotion-starter/react';
 
 import type {Newsletter as BackendNewsletter} from '../../../backend/src/components/newsletter';
-import {FeatureSection} from '../utilities';
+import {FeatureSection} from '../ui';
 
-export const createNewsletterComponent = (Base: typeof BackendNewsletter) => {
+export const extendNewsletter = (Base: typeof BackendNewsletter) => {
   class Newsletter extends Base {
     @view() static SubscriptionView() {
       const theme = useTheme();

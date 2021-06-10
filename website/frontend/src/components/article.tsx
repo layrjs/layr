@@ -7,17 +7,17 @@ import {Input, TextArea, Button} from '@emotion-starter/react';
 import {Stack} from '@emotion-kit/react';
 import {format} from 'date-fns';
 
-import type {createUserComponent} from './user';
+import type {extendUser} from './user';
 import type {Article as BackendArticle} from '../../../backend/src/components/article';
 import type {Home} from './home';
+import {Title} from '../ui';
 import {Markdown} from '../markdown';
-import {Title} from '../utilities';
 
-export const createArticleComponent = (Base: typeof BackendArticle) => {
+export const extendArticle = (Base: typeof BackendArticle) => {
   class Article extends Routable(Base) {
     ['constructor']!: typeof Article;
 
-    @consume() static User: ReturnType<typeof createUserComponent>;
+    @consume() static User: ReturnType<typeof extendUser>;
     @consume() static Home: typeof Home;
 
     @layout('[/blog]/articles/:slug') ItemLayout({children}: {children: () => any}) {
