@@ -1,59 +1,74 @@
 # Layr Website
 
-## Install
+This directory contains the source code of the [Layr](https://layrjs.com) website.
 
-Install the npm dependencies with:
+## About
+
+The Layr website is a single-page application created with [Layr](https://github.com/layrjs/layr). The frontend is statically hosted in AWS S3 + CloudFront and the backend is serverlessly hosted in AWS Lambda + API Gateway. Regarding the database, it is a free-tier MongoDB Atlas cluster with a daily backup that is handled by a Lambda function.
+
+## Prerequisites
+
+- Make sure your have a [Node.js](https://nodejs.org/) (v14 or newer) installed.
+- Make sure you have [Boostr](https://boostr.dev/) installed as it is used to manage the development environment.
+
+## Installation
+
+Install all the npm dependencies with the following command:
 
 ```sh
-npm install
+boostr install
 ```
 
-Make sure you have [Docker](https://www.docker.com/) installed as it is used to run the database (MongoDB) when running the app in development mode.
+## Development
 
-## Usage
+### Configuration
 
-### Running the app in development mode
-
-Execute the following command:
-
-```sh
-FRONTEND_URL=http://localhost:18887 \
-  BACKEND_URL=http://localhost:18888 \
-  MONGODB_STORE_CONNECTION_STRING=mongodb://test:test@localhost:18889/test \
-  JWT_SECRET=67d86ffae3c048121dd357fa668b576c8f08b4faf08a57405ded5deae9a7e8f1dec98d35f3bbf4284dbab00fe3341dbc45890baa4a7c5dcc83499ffafb8bd6bb \
-  npm run start
-```
-
-The app should then be available at http://localhost:18887.
+- Generate a JWT secret by running the following command in your terminal:
+  - `openssl rand -hex 64`
+- In the `backend` directory, duplicate the `boostr.config.private-template.mjs` file, name it `boostr.config.private.mjs`, and modify it to set all the required private development environment variables.
 
 ### Migrating the database
 
-Navigate to the `./backend` directory and execute the following command while replacing the `"********"` placeholders with the values corresponding to the environment you want to migrate.
+Migrate the database with the following command:
 
 ```sh
-FRONTEND_URL="********" \
-  BACKEND_URL="********" \
-  MONGODB_STORE_CONNECTION_STRING="********" \
-  JWT_SECRET="********" \
-  npm run migrate
+boostr database migrate
 ```
 
-### Debugging
+### Starting the development environment
 
-#### Client
-
-Add the following entry in the local storage of your browser:
+Start the development environment with the following command:
 
 ```
-| Key   | Value     |
-| ----- | --------- |
-| debug | layr:* |
+boostr start
 ```
 
-#### Server
+The website should be available at http://localhost:18887.
 
-Add the following environment variables when starting the app:
+## Production
+
+### Configuration
+
+- Configure a [MailerLite](https://www.mailerlite.com/) domain and visit https://app.mailerlite.com/integrations/api/ to get your API key and your subscriber group ID.
+- Generate a JWT secret by running the following command in your terminal:
+  - `openssl rand -hex 64`
+- In the `backend` directory, duplicate the `boostr.config.private-template.mjs` file, name it `boostr.config.private.mjs`, and modify it to set all the required private production environment variables.
+- In the `database` directory, duplicate the `boostr.config.private-template.mjs` file, name it `boostr.config.private.mjs`, and modify it to set the `stages.production.url` attribute to the URL of your production MongoDB database.
+
+### Migrating the database
+
+Migrate the database with the following command:
 
 ```sh
-DEBUG=layr:* DEBUG_DEPTH=10
+boostr database migrate --production
 ```
+
+### Deployment
+
+Deploy the website to production with the following command:
+
+```
+boostr deploy --production
+```
+
+The website should be available at https://layrjs.com.
