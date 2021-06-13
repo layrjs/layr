@@ -2,14 +2,18 @@ import {ObservableType, isObservable} from '@layr/observable';
 import {useState, useEffect, useCallback, useRef, useMemo, DependencyList} from 'react';
 import {AsyncFunction, getTypeOf} from 'core-helpers';
 
-import {useCustomization} from './components';
+import {useCustomization, Customization} from './components';
 
 export function useData<Result>(
   getter: () => Promise<Result>,
   renderer: (data: Result) => JSX.Element | null,
-  deps: DependencyList = []
+  deps: DependencyList = [],
+  options: {
+    dataPlaceholder?: Customization['dataPlaceholder'];
+    errorRenderer?: Customization['errorRenderer'];
+  } = {}
 ) {
-  const {dataPlaceholder, errorRenderer} = useCustomization();
+  const {dataPlaceholder, errorRenderer} = {...useCustomization(), ...options};
 
   const [data, isExecuting, error] = useAsyncMemo(getter, deps);
 
@@ -26,9 +30,13 @@ export function useData<Result>(
 
 export function useAction<Args extends any[] = any[], Result = any>(
   handler: AsyncFunction<Args, Result>,
-  deps: DependencyList = []
+  deps: DependencyList = [],
+  options: {
+    actionWrapper?: Customization['actionWrapper'];
+    errorNotifier?: Customization['errorNotifier'];
+  } = {}
 ) {
-  const {actionWrapper, errorNotifier} = useCustomization();
+  const {actionWrapper, errorNotifier} = {...useCustomization(), ...options};
 
   const action = useCallback(async (...args: Args) => {
     try {

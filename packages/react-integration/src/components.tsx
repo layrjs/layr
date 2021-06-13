@@ -96,7 +96,7 @@ export function useNavigator() {
   return navigator;
 }
 
-type Customization = {
+export type Customization = {
   dataPlaceholder: () => JSX.Element | null;
   errorRenderer: (error: Error) => JSX.Element | null;
   actionWrapper: (actionHandler: (...args: any[]) => Promise<any>, args: any[]) => Promise<any>;
