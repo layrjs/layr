@@ -1,0 +1,17 @@
+{
+  "name": "@layr/docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Layr documentation",
+  "keywords": [],
+  "author": "Manuel Vila <hi@mvila.me>",
+  "license": "MIT",
+  "repository": "https://github.com/layrjs/layr/tree/master/docs",
+  "scripts": {
+    "build": "node ./build.js"
+  },
+  "dependencies": {
+    "@mvila/simple-doc": "^0.1.131",
+    "fs-extra": "^10.0.0"
+  }
+}

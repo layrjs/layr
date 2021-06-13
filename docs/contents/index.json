@@ -45,14 +45,14 @@
           "slug": "component",
           "file": "reference/component.md",
           "source": [
-            "../packages/component/src/component.ts",
-            "../packages/component/src/cloning.ts",
-            "../packages/component/src/forking.ts",
-            "../packages/component/src/merging.ts",
-            "../packages/component/src/serialization.ts",
-            "../packages/component/src/deserialization.ts",
-            "../packages/component/src/decorators.ts",
-            "../packages/component/src/utilities.ts"
+            "../../packages/component/src/component.ts",
+            "../../packages/component/src/cloning.ts",
+            "../../packages/component/src/forking.ts",
+            "../../packages/component/src/merging.ts",
+            "../../packages/component/src/serialization.ts",
+            "../../packages/component/src/deserialization.ts",
+            "../../packages/component/src/decorators.ts",
+            "../../packages/component/src/utilities.ts"
           ],
           "category": "Basics"
         },
@@ -60,119 +60,119 @@
           "title": "EmbeddedComponent",
           "slug": "embedded-component",
           "file": "reference/embedded-component.md",
-          "source": "../packages/component/src/embedded-component.ts",
+          "source": "../../packages/component/src/embedded-component.ts",
           "category": "Basics"
         },
         {
           "title": "Property",
           "slug": "property",
           "file": "reference/property.md",
-          "source": "../packages/component/src/properties/property.ts",
+          "source": "../../packages/component/src/properties/property.ts",
           "category": "Basics"
         },
         {
           "title": "Attribute",
           "slug": "attribute",
           "file": "reference/attribute.md",
-          "source": "../packages/component/src/properties/attribute.ts",
+          "source": "../../packages/component/src/properties/attribute.ts",
           "category": "Basics"
         },
         {
           "title": "IdentifierAttribute",
           "slug": "identifier-attribute",
           "file": "reference/identifier-attribute.md",
-          "source": "../packages/component/src/properties/identifier-attribute.ts",
+          "source": "../../packages/component/src/properties/identifier-attribute.ts",
           "category": "Basics"
         },
         {
           "title": "PrimaryIdentifierAttribute",
           "slug": "primary-identifier-attribute",
           "file": "reference/primary-identifier-attribute.md",
-          "source": "../packages/component/src/properties/primary-identifier-attribute.ts",
+          "source": "../../packages/component/src/properties/primary-identifier-attribute.ts",
           "category": "Basics"
         },
         {
           "title": "SecondaryIdentifierAttribute",
           "slug": "secondary-identifier-attribute",
           "file": "reference/secondary-identifier-attribute.md",
-          "source": "../packages/component/src/properties/secondary-identifier-attribute.ts",
+          "source": "../../packages/component/src/properties/secondary-identifier-attribute.ts",
           "category": "Basics"
         },
         {
           "title": "Method",
           "slug": "method",
           "file": "reference/method.md",
-          "source": "../packages/component/src/properties/method.ts",
+          "source": "../../packages/component/src/properties/method.ts",
           "category": "Basics"
         },
         {
           "title": "ValueType",
           "slug": "value-type",
           "file": "reference/value-type.md",
-          "source": "../packages/component/src/properties/value-types/value-type.ts",
+          "source": "../../packages/component/src/properties/value-types/value-type.ts",
           "category": "Basics"
         },
         {
           "title": "Validator",
           "slug": "validator",
           "file": "reference/validator.md",
-          "source": "../packages/component/src/validation/validator.ts",
+          "source": "../../packages/component/src/validation/validator.ts",
           "category": "Basics"
         },
         {
           "title": "AttributeSelector",
           "slug": "attribute-selector",
           "file": "reference/attribute-selector.md",
-          "source": "../packages/component/src/properties/attribute-selector.ts",
+          "source": "../../packages/component/src/properties/attribute-selector.ts",
           "category": "Basics"
         },
         {
           "title": "IdentityMap",
           "slug": "identity-map",
           "file": "reference/identity-map.md",
-          "source": "../packages/component/src/identity-map.ts",
+          "source": "../../packages/component/src/identity-map.ts",
           "category": "Basics"
         },
         {
           "title": "ComponentClient",
           "slug": "component-client",
           "file": "reference/component-client.md",
-          "source": "../packages/component-client/src/component-client.ts",
+          "source": "../../packages/component-client/src/component-client.ts",
           "category": "Communication"
         },
         {
           "title": "ComponentServer",
           "slug": "component-server",
           "file": "reference/component-server.md",
-          "source": "../packages/component-server/src/component-server.ts",
+          "source": "../../packages/component-server/src/component-server.ts",
           "category": "Communication"
         },
         {
           "title": "ComponentHTTPClient",
           "slug": "component-http-client",
           "file": "reference/component-http-client.md",
-          "source": "../packages/component-http-client/src/component-http-client.ts",
+          "source": "../../packages/component-http-client/src/component-http-client.ts",
           "category": "Communication"
         },
         {
           "title": "ComponentHTTPServer",
           "slug": "component-http-server",
           "file": "reference/component-http-server.md",
-          "source": "../packages/component-http-server/src/component-http-server.ts",
+          "source": "../../packages/component-http-server/src/component-http-server.ts",
           "category": "Communication"
         },
         {
           "title": "component-express-middleware",
           "slug": "component-express-middleware",
           "file": "reference/component-express-middleware.md",
-          "source": "../packages/component-express-middleware/src/component-express-middleware.ts",
+          "source": "../../packages/component-express-middleware/src/component-express-middleware.ts",
           "category": "Communication"
         },
         {
           "title": "component-koa-middleware",
           "slug": "component-koa-middleware",
           "file": "reference/component-koa-middleware.md",
-          "source": "../packages/component-koa-middleware/src/component-koa-middleware.ts",
+          "source": "../../packages/component-koa-middleware/src/component-koa-middleware.ts",
           "category": "Communication"
         },
         {
@@ -180,9 +180,9 @@
           "slug": "storable",
           "file": "reference/storable.md",
           "source": [
-            "../packages/storable/src/storable.ts",
-            "../packages/storable/src/decorators.ts",
-            "../packages/storable/src/utilities.ts"
+            "../../packages/storable/src/storable.ts",
+            "../../packages/storable/src/decorators.ts",
+            "../../packages/storable/src/utilities.ts"
           ],
           "category": "Storage"
         },
@@ -190,14 +190,14 @@
           "title": "StorableProperty",
           "slug": "storable-property",
           "file": "reference/storable-property.md",
-          "source": ["../packages/storable/src/properties/storable-property.ts"],
+          "source": ["../../packages/storable/src/properties/storable-property.ts"],
           "category": "Storage"
         },
         {
           "title": "StorableAttribute",
           "slug": "storable-attribute",
           "file": "reference/storable-attribute.md",
-          "source": ["../packages/storable/src/properties/storable-attribute.ts"],
+          "source": ["../../packages/storable/src/properties/storable-attribute.ts"],
           "category": "Storage"
         },
         {
@@ -205,7 +205,7 @@
           "slug": "storable-primary-identifier-attribute",
           "file": "reference/storable-primary-identifier-attribute.md",
           "source": [
-            "../packages/storable/src/properties/storable-primary-identifier-attribute.ts"
+            "../../packages/storable/src/properties/storable-primary-identifier-attribute.ts"
           ],
           "category": "Storage"
         },
@@ -214,7 +214,7 @@
           "slug": "storable-secondary-identifier-attribute",
           "file": "reference/storable-secondary-identifier-attribute.md",
           "source": [
-            "../packages/storable/src/properties/storable-secondary-identifier-attribute.ts"
+            "../../packages/storable/src/properties/storable-secondary-identifier-attribute.ts"
           ],
           "category": "Storage"
         },
@@ -222,42 +222,42 @@
           "title": "StorableMethod",
           "slug": "storable-method",
           "file": "reference/storable-method.md",
-          "source": ["../packages/storable/src/properties/storable-method.ts"],
+          "source": ["../../packages/storable/src/properties/storable-method.ts"],
           "category": "Storage"
         },
         {
           "title": "Query",
           "slug": "query",
           "file": "reference/query.md",
-          "source": "../packages/storable/src/query.ts",
+          "source": "../../packages/storable/src/query.ts",
           "category": "Storage"
         },
         {
           "title": "Index",
           "slug": "index",
           "file": "reference/index.md",
-          "source": "../packages/storable/src/index-class.ts",
+          "source": "../../packages/storable/src/index-class.ts",
           "category": "Storage"
         },
         {
           "title": "Store",
           "slug": "store",
           "file": "reference/store.md",
-          "source": "../packages/store/src/store.ts",
+          "source": "../../packages/store/src/store.ts",
           "category": "Storage"
         },
         {
           "title": "MongoDBStore",
           "slug": "mongodb-store",
           "file": "reference/mongodb-store.md",
-          "source": "../packages/mongodb-store/src/mongodb-store.ts",
+          "source": "../../packages/mongodb-store/src/mongodb-store.ts",
           "category": "Storage"
         },
         {
           "title": "MemoryStore",
           "slug": "memory-store",
           "file": "reference/memory-store.md",
-          "source": "../packages/memory-store/src/memory-store.ts",
+          "source": "../../packages/memory-store/src/memory-store.ts",
           "category": "Storage"
         },
         {
@@ -265,9 +265,9 @@
           "slug": "routable",
           "file": "reference/routable.md",
           "source": [
-            "../packages/routable/src/routable.ts",
-            "../packages/routable/src/decorators.ts",
-            "../packages/routable/src/utilities.ts"
+            "../../packages/routable/src/routable.ts",
+            "../../packages/routable/src/decorators.ts",
+            "../../packages/routable/src/utilities.ts"
           ],
           "category": "Routing"
         },
@@ -275,7 +275,7 @@
           "title": "Route",
           "slug": "route",
           "file": "reference/route.md",
-          "source": "../packages/routable/src/route.ts",
+          "source": "../../packages/routable/src/route.ts",
           "category": "Routing"
         },
         {
@@ -283,8 +283,8 @@
           "slug": "navigator",
           "file": "reference/navigator.md",
           "source": [
-            "../packages/navigator/src/navigator.ts",
-            "../packages/navigator/src/utilities.ts"
+            "../../packages/navigator/src/navigator.ts",
+            "../../packages/navigator/src/utilities.ts"
           ],
           "category": "Routing"
         },
@@ -292,14 +292,14 @@
           "title": "BrowserNavigator",
           "slug": "browser-navigator",
           "file": "reference/browser-navigator.md",
-          "source": "../packages/browser-navigator/src/browser-navigator.ts",
+          "source": "../../packages/browser-navigator/src/browser-navigator.ts",
           "category": "Routing"
         },
         {
           "title": "MemoryNavigator",
           "slug": "memory-navigator",
           "file": "reference/memory-navigator.md",
-          "source": "../packages/memory-navigator/src/memory-navigator.ts",
+          "source": "../../packages/memory-navigator/src/memory-navigator.ts",
           "category": "Routing"
         },
         {
@@ -307,9 +307,9 @@
           "slug": "with-roles",
           "file": "reference/with-roles.md",
           "source": [
-            "../packages/with-roles/src/with-roles.ts",
-            "../packages/with-roles/src/decorators.ts",
-            "../packages/with-roles/src/utilities.ts"
+            "../../packages/with-roles/src/with-roles.ts",
+            "../../packages/with-roles/src/decorators.ts",
+            "../../packages/with-roles/src/utilities.ts"
           ],
           "category": "Authorization"
         },
@@ -317,7 +317,7 @@
           "title": "Role",
           "slug": "role",
           "file": "reference/role.md",
-          "source": "../packages/with-roles/src/role.ts",
+          "source": "../../packages/with-roles/src/role.ts",
           "category": "Authorization"
         },
         {
@@ -325,8 +325,8 @@
           "slug": "aws-integration",
           "file": "reference/aws-integration.md",
           "source": [
-            "../packages/aws-integration/src/index.ts",
-            "../packages/aws-integration/src/lambda.ts"
+            "../../packages/aws-integration/src/index.ts",
+            "../../packages/aws-integration/src/lambda.ts"
           ],
           "category": "Integrations"
         },
@@ -335,9 +335,9 @@
           "slug": "react-integration",
           "file": "reference/react-integration.md",
           "source": [
-            "../packages/react-integration/src/index.ts",
-            "../packages/react-integration/src/decorators.tsx",
-            "../packages/react-integration/src/hooks.ts"
+            "../../packages/react-integration/src/index.ts",
+            "../../packages/react-integration/src/decorators.tsx",
+            "../../packages/react-integration/src/hooks.ts"
           ],
           "category": "Integrations"
         },
@@ -345,7 +345,7 @@
           "title": "Observable()",
           "slug": "observable",
           "file": "reference/observable.md",
-          "source": "../packages/observable/src/observable.ts",
+          "source": "../../packages/observable/src/observable.ts",
           "category": "Utilities"
         }
       ]

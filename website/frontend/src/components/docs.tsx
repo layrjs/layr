@@ -14,6 +14,13 @@ import {Title} from '../ui';
 import {Markdown} from '../markdown';
 
 const VERSIONS = [{name: '1', value: 'v1'}];
+
+if (process.env.NODE_ENV === 'development') {
+  VERSIONS.push({name: '2', value: 'v2'});
+}
+
+export const LAST_VERSION = VERSIONS[VERSIONS.length - 1].value;
+
 const LANGUAGES = [
   {name: 'JavaScript', value: 'js'},
   {name: 'TypeScript', value: 'ts'}
@@ -120,7 +127,7 @@ export class Docs extends Routable(Component) {
     const styles = useStyles();
     const navigator = useNavigator();
 
-    const contents = this.getContents();
+    const contents = this.getContents({version});
 
     const bookMenuStyle = css({...styles.unstyledList, margin: 0});
     const bookMenuItemStyle = css({marginTop: '1rem'});
@@ -211,6 +218,14 @@ export class Docs extends Routable(Component) {
 
     const hash = navigator.getCurrentHash();
 
+    const changeVersion = useCallback(
+      (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const version = event.target.value;
+        navigator.redirect(this.generateURL({version, language}));
+      },
+      [language]
+    );
+
     const changeLanguage = useCallback(
       (event: React.ChangeEvent<HTMLSelectElement>) => {
         const language = event.target.value;
@@ -232,8 +247,8 @@ export class Docs extends Routable(Component) {
           <label htmlFor="version-selector" css={labelStyle}>
             Version
           </label>
-          <Select id="version-selector" size="small">
-            {VERSIONS.map(({name, value}) => (
+          <Select id="version-selector" value={version} onChange={changeVersion} size="small">
+            {[...VERSIONS].reverse().map(({name, value}) => (
               <option key={value} value={value}>
                 {name}
               </option>
@@ -262,7 +277,7 @@ export class Docs extends Routable(Component) {
     const navigator = useNavigator();
 
     return useData(
-      async () => await this.getChapter({bookSlug, chapterSlug}),
+      async () => await this.getChapter({version, bookSlug, chapterSlug}),
 
       (chapter) => {
         const {nextChapter} = chapter;
@@ -299,11 +314,11 @@ export class Docs extends Routable(Component) {
     );
   }
 
-  static _contents: Contents;
+  static _contents: Record<string, Contents> = {};
 
-  static getContents() {
-    if (this._contents === undefined) {
-      const contents: Contents = (docs as any).versions.v1;
+  static getContents({version}: {version: string}) {
+    if (this._contents[version] === undefined) {
+      const contents: Contents = (docs as any).versions[version];
 
       for (const book of contents.books) {
         let previousChapter: Chapter | undefined;
@@ -317,14 +332,22 @@ export class Docs extends Routable(Component) {
         }
       }
 
-      this._contents = contents;
+      this._contents[version] = contents;
     }
 
-    return this._contents;
+    return this._contents[version];
   }
 
-  static async getChapter({bookSlug, chapterSlug}: {bookSlug: string; chapterSlug: string}) {
-    const contents = this.getContents();
+  static async getChapter({
+    version,
+    bookSlug,
+    chapterSlug
+  }: {
+    version: string;
+    bookSlug: string;
+    chapterSlug: string;
+  }) {
+    const contents = this.getContents({version});
 
     const book = contents.books.find((book) => book.slug === bookSlug);
 
@@ -340,7 +363,8 @@ export class Docs extends Routable(Component) {
 
     if (chapter.content === undefined) {
       try {
-        const response = await fetch(`${BASE_URL}/v1/${chapter.file}`);
+        const url = `${BASE_URL}/${version}/${chapter.file}`;
+        const response = await fetch(url);
         const content = await response.text();
 
         if (response.status !== 200) {
@@ -371,8 +395,6 @@ export class Docs extends Routable(Component) {
   }
 
   static resolvePath(path: string) {
-    const contents = this.getContents();
-
     const result: {version?: string; bookSlug?: string; chapterSlug?: string} = {};
 
     let [version, bookSlug, chapterSlug, ...otherSegments] = path.slice('/docs/'.length).split('/');
@@ -386,6 +408,8 @@ export class Docs extends Routable(Component) {
     if (result.version === undefined) {
       return result;
     }
+
+    const contents = this.getContents({version: result.version});
 
     if (bookSlug === undefined || bookSlug === '') {
       bookSlug = contents.books[0].slug;
@@ -416,7 +440,7 @@ export class Docs extends Routable(Component) {
 
   static resolveVersion(version: string | undefined) {
     if (version === undefined || version === '') {
-      version = VERSIONS[0].value;
+      version = LAST_VERSION;
     }
 
     if (VERSIONS.find(({value}) => value === version) === undefined) {
@@ -450,7 +474,11 @@ export class Docs extends Routable(Component) {
     chapterSlug,
     language,
     hash
-  }: URLParams & {
+  }: {
+    version: string;
+    bookSlug?: string;
+    chapterSlug?: string;
+    language: string;
     hash?: string;
   }) {
     let url = this.generatePath({version, bookSlug, chapterSlug});
@@ -474,10 +502,20 @@ export class Docs extends Routable(Component) {
     chapterSlug
   }: {
     version: string;
-    bookSlug: string;
-    chapterSlug: string;
+    bookSlug?: string;
+    chapterSlug?: string;
   }) {
-    return `/docs/${version}/${bookSlug}/${chapterSlug}`;
+    let path = `/docs/${version}`;
+
+    if (bookSlug !== undefined) {
+      path += `/${bookSlug}`;
+    }
+
+    if (chapterSlug !== undefined) {
+      path += `/${chapterSlug}`;
+    }
+
+    return path;
   }
 
   static generateQuery({language}: {language: string}) {

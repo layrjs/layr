@@ -8,12 +8,11 @@
   "license": "MIT",
   "repository": "https://github.com/layrjs/layr",
   "scripts": {
-    "build:docs": "simple-doc ./docs ./docs/build --freeze # TODO"
+    "build:docs": "(cd ./docs && npm run build)"
   },
   "prettier": "@mvila/prettierrc",
   "devDependencies": {
     "@mvila/prettierrc": "^1.1.0",
-    "@mvila/simple-doc": "^0.1.130",
     "lerna": "^3.22.1",
     "prettier": "^2.2.1"
   }

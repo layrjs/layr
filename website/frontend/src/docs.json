@@ -279,6 +279,286 @@
           ]
         }
       ]
+    },
+    "v2": {
+      "books": [
+        {
+          "title": "Getting Started",
+          "slug": "introduction",
+          "chapters": [
+            {
+              "title": "Introduction",
+              "slug": "introduction",
+              "file": "introduction/introduction-53VVp2nk9OS4F2OzQYeLJn.immutable.md"
+            },
+            {
+              "title": "Hello, World!",
+              "slug": "hello-world",
+              "file": "introduction/hello-world-2iNBq1rZDXlKpJ9tAPjVeQ.immutable.md"
+            },
+            {
+              "title": "Storing Data",
+              "slug": "data-storage",
+              "file": "introduction/data-storage-7v9mP27peyYHHKQggW35hg.immutable.md"
+            },
+            {
+              "title": "Building a Web App",
+              "slug": "web-app",
+              "file": "introduction/web-app-6YUQUV9kJbaOuvp5mfFRZJ.immutable.md"
+            },
+            {
+              "title": "Bringing Some Routes",
+              "slug": "routing",
+              "file": "introduction/routing-4KkzYllupkC7Kg0RFibQbp.immutable.md"
+            },
+            {
+              "title": "Handling Authorization",
+              "slug": "authorization",
+              "file": "introduction/authorization-2ceAWuIj0HZpXI19cljQW.immutable.md"
+            }
+          ]
+        },
+        {
+          "title": "Reference",
+          "slug": "reference",
+          "chapters": [
+            {
+              "title": "Component",
+              "slug": "component",
+              "file": "reference/component-31FVRcj0doaYiRidTnsNwT.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "EmbeddedComponent",
+              "slug": "embedded-component",
+              "file": "reference/embedded-component-4MiZBzspJQbUshU8Q93aJ8.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "Property",
+              "slug": "property",
+              "file": "reference/property-5bbULbxC52tIPaMAcPEp27.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "Attribute",
+              "slug": "attribute",
+              "file": "reference/attribute-4P9dTivZ9HJ4Flr4Y8cTKv.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "IdentifierAttribute",
+              "slug": "identifier-attribute",
+              "file": "reference/identifier-attribute-6Jgrzmrlv4QJoBZVTYYDb9.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "PrimaryIdentifierAttribute",
+              "slug": "primary-identifier-attribute",
+              "file": "reference/primary-identifier-attribute-6qTkOuHNN4Bq3EjC9JGVqr.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "SecondaryIdentifierAttribute",
+              "slug": "secondary-identifier-attribute",
+              "file": "reference/secondary-identifier-attribute-7BqK9EmnCMCHIAroYiQDth.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "Method",
+              "slug": "method",
+              "file": "reference/method-3mc2TakviGDKFcdpxFaCIu.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "ValueType",
+              "slug": "value-type",
+              "file": "reference/value-type-23f3WjnZNDfFejs5ceJVcY.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "Validator",
+              "slug": "validator",
+              "file": "reference/validator-2strlvnapeTZmbWT3o3VM1.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "AttributeSelector",
+              "slug": "attribute-selector",
+              "file": "reference/attribute-selector-7FZWQpwLR7jpUHoBpvO9Et.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "IdentityMap",
+              "slug": "identity-map",
+              "file": "reference/identity-map-01fsjrVv6cSC6awmnNnn6c.immutable.md",
+              "category": "Basics"
+            },
+            {
+              "title": "ComponentClient",
+              "slug": "component-client",
+              "file": "reference/component-client-1ISSjJNRL12I33addutRh4.immutable.md",
+              "category": "Communication"
+            },
+            {
+              "title": "ComponentServer",
+              "slug": "component-server",
+              "file": "reference/component-server-e5RUuQXVcCIVLxHiNzCDO.immutable.md",
+              "category": "Communication"
+            },
+            {
+              "title": "ComponentHTTPClient",
+              "slug": "component-http-client",
+              "file": "reference/component-http-client-6g8M9kRcBS4AQwFtAp7t9z.immutable.md",
+              "category": "Communication"
+            },
+            {
+              "title": "ComponentHTTPServer",
+              "slug": "component-http-server",
+              "file": "reference/component-http-server-5VDR5fS2uD9iTkuHRSywjz.immutable.md",
+              "category": "Communication"
+            },
+            {
+              "title": "component-express-middleware",
+              "slug": "component-express-middleware",
+              "file": "reference/component-express-middleware-6UieWJkEvLdXLYug4xuM16.immutable.md",
+              "category": "Communication"
+            },
+            {
+              "title": "component-koa-middleware",
+              "slug": "component-koa-middleware",
+              "file": "reference/component-koa-middleware-402oMlpSmEIARQJLzn4qQg.immutable.md",
+              "category": "Communication"
+            },
+            {
+              "title": "Storable()",
+              "slug": "storable",
+              "file": "reference/storable-2maAYPX5kWufBfVolYVgdc.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "StorableProperty",
+              "slug": "storable-property",
+              "file": "reference/storable-property-5LuWR7uuQ1qdebK3iszZJO.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "StorableAttribute",
+              "slug": "storable-attribute",
+              "file": "reference/storable-attribute-7MiyqvA7PUf2E2YeoqA912.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "StorablePrimaryIdentifierAttribute",
+              "slug": "storable-primary-identifier-attribute",
+              "file": "reference/storable-primary-identifier-attribute-74IwGTycdA7NVAybBly3t1.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "StorableSecondaryIdentifierAttribute",
+              "slug": "storable-secondary-identifier-attribute",
+              "file": "reference/storable-secondary-identifier-attribute-6CqhR0kLxoLhtWU85EcsZU.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "StorableMethod",
+              "slug": "storable-method",
+              "file": "reference/storable-method-1rnW3aKFlFYZ3kIJdCGXRv.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "Query",
+              "slug": "query",
+              "file": "reference/query-Q04JuSZAcx8HGvYktmTlI.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "Index",
+              "slug": "index",
+              "file": "reference/index-1KeXILVBQNLQpRzBhIWjqB.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "Store",
+              "slug": "store",
+              "file": "reference/store-6BvlCSWkAb7smHsvoIGjv1.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "MongoDBStore",
+              "slug": "mongodb-store",
+              "file": "reference/mongodb-store-1yTYtEyVy4ZLkF4A2QFaAh.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "MemoryStore",
+              "slug": "memory-store",
+              "file": "reference/memory-store-78uJRKSOEyr1WnXttCnd9u.immutable.md",
+              "category": "Storage"
+            },
+            {
+              "title": "Routable()",
+              "slug": "routable",
+              "file": "reference/routable-1xCyE8k1FdNLN7e6lszr9m.immutable.md",
+              "category": "Routing"
+            },
+            {
+              "title": "Route",
+              "slug": "route",
+              "file": "reference/route-6clDy6CpgOOXdQHU4t96fC.immutable.md",
+              "category": "Routing"
+            },
+            {
+              "title": "Navigator",
+              "slug": "navigator",
+              "file": "reference/navigator-7lqqBMDaTLLcBPEjFJBoPU.immutable.md",
+              "category": "Routing"
+            },
+            {
+              "title": "BrowserNavigator",
+              "slug": "browser-navigator",
+              "file": "reference/browser-navigator-1menlb0pQYMFkvdJKYC291.immutable.md",
+              "category": "Routing"
+            },
+            {
+              "title": "MemoryNavigator",
+              "slug": "memory-navigator",
+              "file": "reference/memory-navigator-4vz1SALE33SrtxPUtpIw2m.immutable.md",
+              "category": "Routing"
+            },
+            {
+              "title": "WithRoles()",
+              "slug": "with-roles",
+              "file": "reference/with-roles-2PYi0037F3Mxg80b5YKb26.immutable.md",
+              "category": "Authorization"
+            },
+            {
+              "title": "Role",
+              "slug": "role",
+              "file": "reference/role-UodTLJi6Lg6UPXOKZdp8K.immutable.md",
+              "category": "Authorization"
+            },
+            {
+              "title": "aws-integration",
+              "slug": "aws-integration",
+              "file": "reference/aws-integration-3EcRJBSabQCK0KFsZzL47E.immutable.md",
+              "category": "Integrations"
+            },
+            {
+              "title": "react-integration",
+              "slug": "react-integration",
+              "file": "reference/react-integration-6unPawTO78e6PMomLDoXLw.immutable.md",
+              "category": "Integrations"
+            },
+            {
+              "title": "Observable()",
+              "slug": "observable",
+              "file": "reference/observable-6JJJVlFHPe2kPQ4NhsJg7O.immutable.md",
+              "category": "Utilities"
+            }
+          ]
+        }
+      ]
     }
   }
 }

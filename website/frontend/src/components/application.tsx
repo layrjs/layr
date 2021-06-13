@@ -8,7 +8,7 @@ import {EmotionKit, Container, Stack} from '@emotion-kit/react';
 
 import type {Application as BackendApplication} from '../../../backend/src/components/application';
 import {Home} from './home';
-import {Docs} from './docs';
+import {Docs, LAST_VERSION} from './docs';
 import {extendUser} from './user';
 import {Blog} from './blog';
 import {extendArticle} from './article';
@@ -87,7 +87,9 @@ export const extendApplication = (Base: typeof BackendApplication) => {
           </Home.MainPage.Link>
 
           <div css={{marginLeft: '0.6rem', marginTop: '7px'}}>
-            <small css={{color: theme.colors.text.muted, letterSpacing: '0.04rem'}}>v1</small>
+            <small css={{color: theme.colors.text.muted, letterSpacing: '0.04rem'}}>
+              {LAST_VERSION}
+            </small>
           </div>
 
           <Stack spacing="1.5rem" css={{marginLeft: 'auto', alignItems: 'center'}}>
