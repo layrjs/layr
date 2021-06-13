@@ -1,6 +1,6 @@
 {
   "name": "@layr/observable",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Observe JavaScript objects, arrays, or your own classes",
   "keywords": [
     "observe",
@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "core-helpers": "^1.0.3",
-    "tslib": "^2.2.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.30",
