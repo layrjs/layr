@@ -1,11 +1,11 @@
 import {useMemo} from 'react';
 import {useDelay} from '@layr/react-integration';
 import {jsx, useTheme} from '@emotion/react';
-import {ErrorIcon} from '@emotion-kit/react';
 import {useWindowHeight} from '@react-hook/window-size';
 import {Helmet} from 'react-helmet';
 
 import {InlineMarkdown} from './markdown';
+import somethingWrong from './assets/something-wrong.png';
 
 export function FullHeight({
   id,
@@ -84,30 +84,26 @@ export function Title({children: title}: {children?: string}) {
 }
 
 export function ErrorMessage({children}: {children: string | (Error & {displayMessage?: string})}) {
-  const theme = useTheme();
-
   const message = typeof children === 'string' ? children : formatError(children);
 
   return (
     <div
       css={{
         width: '100%',
-        padding: '6rem 15px',
+        padding: '3rem 15px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center'
       }}
     >
-      <div>
-        <ErrorIcon size={50} color={theme.colors.negative.normal} />
-      </div>
-      <div css={{marginTop: '1rem'}}>{message}</div>
+      <img src={somethingWrong} alt="Something went wrong" css={{width: 350, maxWidth: '100%'}} />
+      <h4 css={{marginTop: '3rem', textAlign: 'center'}}>{message}</h4>
     </div>
   );
 }
 
 export function formatError(error: Error & {displayMessage?: string}) {
-  return error?.displayMessage ?? 'Sorry, an error occurred.';
+  return error?.displayMessage ?? 'Sorry, something went wrong.';
 }
 
 export function LoadingSpinner({delay}: {delay?: number}) {

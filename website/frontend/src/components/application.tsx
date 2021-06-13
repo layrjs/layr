@@ -17,8 +17,8 @@ import {getGlobalStyles, useStyles} from '../styles';
 import {FullHeight, ErrorMessage, formatError, LoadingSpinner} from '../ui';
 
 import layrLogo from '../assets/layr-logo-with-icon-dark-mode.svg';
-import brokenHeart from '../assets/broken-heart.svg';
 import love from '../assets/f-plus-b-equals-love.svg';
+import pageNotFound from '../assets/page-not-found.png';
 
 export const extendApplication = (Base: typeof BackendApplication) => {
   class Application extends Routable(Base) {
@@ -239,14 +239,14 @@ export const extendApplication = (Base: typeof BackendApplication) => {
         <div
           css={{
             width: '100%',
-            padding: '6rem 15px',
+            padding: '3rem 15px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center'
           }}
         >
-          <img src={brokenHeart} alt="Layr" css={{width: 150}} />
-          <div css={{marginTop: '2rem'}}>Sorry, there is nothing here.</div>
+          <img src={pageNotFound} alt="Page not found" css={{width: 350, maxWidth: '100%'}} />
+          <h4 css={{marginTop: '3rem', textAlign: 'center'}}>Sorry, there is nothing here.</h4>
         </div>
       );
     }
