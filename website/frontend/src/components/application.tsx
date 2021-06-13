@@ -1,7 +1,7 @@
 import {provide} from '@layr/component';
 import {Routable} from '@layr/routable';
 import {useState} from 'react';
-import {layout, page, view} from '@layr/react-integration';
+import {layout, page, view, Customizer} from '@layr/react-integration';
 import {jsx, useTheme} from '@emotion/react';
 import {EmotionStarter} from '@emotion-starter/react';
 import {EmotionKit, Container, Stack} from '@emotion-kit/react';
@@ -14,7 +14,7 @@ import {Blog} from './blog';
 import {extendArticle} from './article';
 import {extendNewsletter} from './newsletter';
 import {getGlobalStyles, useStyles} from '../styles';
-import {FullHeight} from '../ui';
+import {FullHeight, ErrorMessage, formatError, LoadingSpinner} from '../ui';
 
 import layrLogo from '../assets/layr-logo-with-icon-dark-mode.svg';
 import brokenHeart from '../assets/broken-heart.svg';
@@ -38,7 +38,17 @@ export const extendApplication = (Base: typeof BackendApplication) => {
           }}
           globalStylesGetter={getGlobalStyles}
         >
-          <EmotionKit>{children()}</EmotionKit>
+          <EmotionKit>
+            <Customizer
+              dataPlaceholder={() => <LoadingSpinner />}
+              errorRenderer={(error) => <ErrorMessage>{error}</ErrorMessage>}
+              errorNotifier={async (error) => {
+                alert(formatError(error));
+              }}
+            >
+              {children()}
+            </Customizer>
+          </EmotionKit>
         </EmotionStarter>
       );
     }

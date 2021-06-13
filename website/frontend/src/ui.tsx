@@ -1,4 +1,7 @@
+import {useMemo} from 'react';
+import {useDelay} from '@layr/react-integration';
 import {jsx, useTheme} from '@emotion/react';
+import {ErrorIcon} from '@emotion-kit/react';
 import {useWindowHeight} from '@react-hook/window-size';
 import {Helmet} from 'react-helmet';
 
@@ -78,4 +81,81 @@ export function Title({children: title}: {children?: string}) {
       <title>{title}</title>
     </Helmet>
   );
+}
+
+export function ErrorMessage({children}: {children: string | (Error & {displayMessage?: string})}) {
+  const theme = useTheme();
+
+  const message = typeof children === 'string' ? children : formatError(children);
+
+  return (
+    <div
+      css={{
+        width: '100%',
+        padding: '6rem 15px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}
+    >
+      <div>
+        <ErrorIcon size={50} color={theme.colors.negative.normal} />
+      </div>
+      <div css={{marginTop: '1rem'}}>{message}</div>
+    </div>
+  );
+}
+
+export function formatError(error: Error & {displayMessage?: string}) {
+  return error?.displayMessage ?? 'Sorry, an error occurred.';
+}
+
+export function LoadingSpinner({delay}: {delay?: number}) {
+  const style = useMemo(
+    () => ({
+      borderRadius: '50%',
+      width: '40px',
+      height: '40px',
+      margin: '90px auto',
+      position: 'relative' as const,
+      borderTop: '3px solid rgba(0, 0, 0, 0.1)',
+      borderRight: '3px solid rgba(0, 0, 0, 0.1)',
+      borderBottom: '3px solid rgba(0, 0, 0, 0.1)',
+      borderLeft: '3px solid #818a91',
+      transform: 'translateZ(0)',
+      animation: 'loading-spinner 0.5s infinite linear'
+    }),
+    []
+  );
+
+  return (
+    <Delayed duration={delay}>
+      <div className="loading-spinner" style={style}>
+        <style>
+          {`
+        @keyframes loading-spinner {
+          0% {transform: rotate(0deg);}
+          100% {transform: rotate(360deg);}
+        }
+        `}
+        </style>
+      </div>
+    </Delayed>
+  );
+}
+
+export function Delayed({
+  duration = 500,
+  children
+}: {
+  duration?: number;
+  children: React.ReactElement;
+}) {
+  const [isElapsed] = useDelay(duration);
+
+  if (isElapsed) {
+    return children;
+  }
+
+  return null;
 }
