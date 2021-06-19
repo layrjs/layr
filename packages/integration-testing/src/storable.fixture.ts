@@ -85,11 +85,13 @@ export function getInitialCollections() {
       {
         __component: 'Organization',
         id: 'org1',
+        slug: 'organization-1',
         name: 'Organization 1'
       },
       {
         __component: 'Organization',
         id: 'org2',
+        slug: 'organization-2',
         name: 'Organization 2'
       }
     ]

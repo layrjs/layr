@@ -39,6 +39,7 @@ describe('Storable', () => {
 
   class BaseOrganization extends Storable(Component) {
     @primaryIdentifier() id!: string;
+    @secondaryIdentifier() slug!: string;
     @attribute('string') name!: string;
   }
 
@@ -103,7 +104,7 @@ describe('Storable', () => {
         email: '1@user.com',
         reference: 1,
         picture: new Picture({type: 'JPEG', url: 'https://pictures.com/1-1.jpg'}),
-        organization: new Organization({id: 'org1', name: 'Organization 1'})
+        organization: new Organization({id: 'org1', slug: 'organization-1', name: 'Organization 1'})
       });
 
       expect(isStorableInstance(user)).toBe(true);
@@ -222,6 +223,7 @@ describe('Storable', () => {
 
               prototype: {
                 id: {get: true, set: true},
+                slug: {get: true},
                 name: {get: true, set: true},
 
                 load: {call: true}
@@ -344,6 +346,7 @@ describe('Storable', () => {
             organization: {
               __component: 'Organization',
               id: 'org1',
+              slug: 'organization-1',
               name: 'Organization 1'
             },
             emailIsVerified: false,
@@ -461,7 +464,10 @@ describe('Storable', () => {
         test('load()', async () => {
           const User = userClassProvider();
 
-          let user = User.fork().instantiate({id: 'user1'});
+          let user: BaseUser;
+          let organization: BaseOrganization;
+
+          user = User.fork().instantiate({id: 'user1'});
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(user.load()).rejects.toThrow(
@@ -513,6 +519,7 @@ describe('Storable', () => {
             organization: {
               __component: 'Organization',
               id: 'org1',
+              slug: 'organization-1',
               name: 'Organization 1'
             },
             emailIsVerified: false,
@@ -693,11 +700,38 @@ describe('Storable', () => {
           // --- With a referenced identifiable component loaded from a fork ---
 
           const ForkedUser = User.fork();
-          const organization = await ForkedUser.Organization.get('org1');
+          organization = await ForkedUser.Organization.get('org1');
           const ForkedUserFork = ForkedUser.fork();
           user = await ForkedUserFork.get('user1', {organization: {}});
 
           expect(user.organization?.isForkOf(organization));
+
+          // ------
+
+          organization = User.fork().Organization.instantiate(
+            {slug: 'organization-1'},
+            {source: 1}
+          );
+
+          expect(await organization.load({})).toBe(organization);
+          expect(organization.serialize()).toStrictEqual({
+            __component: 'Organization',
+            id: 'org1',
+            slug: 'organization-1'
+          });
+
+          organization = User.fork().Organization.instantiate(
+            {slug: 'organization-1'},
+            {source: 1}
+          );
+
+          expect(await organization.load(true)).toBe(organization);
+          expect(organization.serialize()).toStrictEqual({
+            __component: 'Organization',
+            id: 'org1',
+            slug: 'organization-1',
+            name: 'Organization 1'
+          });
         });
 
         test('save()', async () => {
@@ -767,6 +801,7 @@ describe('Storable', () => {
             organization: {
               __component: 'Organization',
               id: 'org2',
+              slug: 'organization-2',
               name: 'Organization 2'
             },
             emailIsVerified: false,
@@ -825,6 +860,7 @@ describe('Storable', () => {
             organization: {
               __component: 'Organization',
               id: 'org1',
+              slug: 'organization-1',
               name: 'Organization 1'
             },
             updatedOn: {__date: UPDATED_ON.toISOString()}
@@ -1096,6 +1132,7 @@ describe('Storable', () => {
               organization: {
                 __component: 'Organization',
                 id: 'org1',
+                slug: 'organization-1',
                 name: 'Organization 1'
               },
               emailIsVerified: false,
@@ -1127,6 +1164,7 @@ describe('Storable', () => {
               organization: {
                 __component: 'Organization',
                 id: 'org2',
+                slug: 'organization-2',
                 name: 'Organization 2'
               },
               emailIsVerified: true,
@@ -1228,6 +1266,7 @@ describe('Storable', () => {
               organization: {
                 __component: 'Organization',
                 id: 'org2',
+                slug: 'organization-2',
                 name: 'Organization 2'
               },
               emailIsVerified: true,

@@ -829,10 +829,28 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
             throwIfMissing
           })) as T;
         } else if (this.hasRemoteMethod('load')) {
-          loadedStorable = await this.callRemoteMethod('load', nonComputedAttributeSelector, {
-            reload,
-            throwIfMissing
-          });
+          if (this.getPrimaryIdentifierAttribute().isSet()) {
+            loadedStorable = await this.callRemoteMethod('load', nonComputedAttributeSelector, {
+              reload,
+              throwIfMissing
+            });
+          } else if (this.constructor.hasRemoteMethod('get')) {
+            loadedStorable = await this.constructor.callRemoteMethod(
+              'get',
+              this.getIdentifierDescriptor(),
+              nonComputedAttributeSelector,
+              {
+                reload,
+                throwIfMissing
+              }
+            );
+          } else {
+            throw new Error(
+              `To be able to execute the load() method${describeCaller(
+                _callerMethodName
+              )} when no primary identifier is set, a storable component should be registered in a store or have an exposed get() remote method (${this.constructor.describeComponent()})`
+            );
+          }
         } else {
           throw new Error(
             `To be able to execute the load() method${describeCaller(
