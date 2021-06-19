@@ -25,6 +25,7 @@ import {
 } from './value-types';
 import {fork} from '../forking';
 import {AttributeSelector} from './attribute-selector';
+import type {Sanitizer, SanitizerFunction} from '../sanitization';
 import type {Validator, ValidatorFunction} from '../validation';
 import {SerializeOptions} from '../serialization';
 import {deserialize, DeserializeOptions} from '../deserialization';
@@ -34,6 +35,7 @@ export type AttributeOptions = PropertyOptions & {
   valueType?: string;
   value?: unknown;
   default?: unknown;
+  sanitizers?: (Sanitizer | SanitizerFunction)[];
   validators?: (Validator | ValidatorFunction)[];
   items?: AttributeItemsOptions;
   getter?: (this: any) => unknown;
@@ -41,6 +43,7 @@ export type AttributeOptions = PropertyOptions & {
 };
 
 type AttributeItemsOptions = {
+  sanitizers?: (Sanitizer | SanitizerFunction)[];
   validators?: (Validator | ValidatorFunction)[];
   items?: AttributeItemsOptions;
 };
@@ -189,6 +192,7 @@ export class Attribute extends Observable(Property) {
       valueType,
       value: initialValue,
       default: defaultValue,
+      sanitizers,
       validators,
       items,
       getter,
@@ -201,7 +205,7 @@ export class Attribute extends Observable(Property) {
 
     super.setOptions(otherOptions);
 
-    this._valueType = createValueType(valueType, this, {validators, items});
+    this._valueType = createValueType(valueType, this, {sanitizers, validators, items});
 
     if (getter !== undefined || setter !== undefined) {
       if (initialValue !== undefined) {
@@ -369,6 +373,8 @@ export class Attribute extends Observable(Property) {
 
     this.checkValue(value);
 
+    value = this.sanitizeValue(value);
+
     if (this._setter !== undefined) {
       this._setter.call(this.getParent(), value);
       return {previousValue: undefined, newValue: undefined};
@@ -465,6 +471,10 @@ export class Attribute extends Observable(Property) {
 
   checkValue(value: unknown) {
     return this.getValueType().checkValue(value, this);
+  }
+
+  sanitizeValue(value: unknown) {
+    return this.getValueType().sanitizeValue(value);
   }
 
   // === Value source ===

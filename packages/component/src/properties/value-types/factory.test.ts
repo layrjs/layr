@@ -1,6 +1,7 @@
 import {Component} from '../../component';
 import {Attribute} from '../attribute';
 import {createValueType} from './factory';
+import {sanitizers} from '../../sanitization';
 import {validators} from '../../validation';
 import {isAnyValueTypeInstance} from './any-value-type';
 import {isNumberValueTypeInstance} from './number-value-type';
@@ -39,27 +40,38 @@ describe('Factory', () => {
 
     type = createValueType('string', attribute);
 
+    expect(type.getSanitizers()).toEqual([]);
     expect(type.getValidators()).toEqual([]);
 
+    const trim = sanitizers.trim();
     const notEmpty = validators.notEmpty();
-    type = createValueType('string', attribute, {validators: [notEmpty]});
+    type = createValueType('string', attribute, {sanitizers: [trim], validators: [notEmpty]});
 
+    expect(type.getSanitizers()).toEqual([trim]);
     expect(type.getValidators()).toEqual([notEmpty]);
 
-    const integer = validators.integer();
-    type = createValueType('number[]', attribute, {
+    const compact = sanitizers.compact();
+    type = createValueType('string[]', attribute, {
+      sanitizers: [compact],
       validators: [notEmpty],
-      items: {validators: [integer]}
+      items: {sanitizers: [trim], validators: [notEmpty]}
     });
 
+    expect(type.getSanitizers()).toEqual([compact]);
     expect(type.getValidators()).toEqual([notEmpty]);
-    expect((type as ArrayValueType).getItemType().getValidators()).toEqual([integer]);
+    expect((type as ArrayValueType).getItemType().getSanitizers()).toEqual([trim]);
+    expect((type as ArrayValueType).getItemType().getValidators()).toEqual([notEmpty]);
 
-    type = createValueType('number[][]', attribute, {items: {items: {validators: [integer]}}});
+    type = createValueType('string[][]', attribute, {
+      items: {items: {sanitizers: [trim], validators: [notEmpty]}}
+    });
 
     expect(
+      ((type as ArrayValueType).getItemType() as ArrayValueType).getItemType().getSanitizers()
+    ).toEqual([trim]);
+    expect(
       ((type as ArrayValueType).getItemType() as ArrayValueType).getItemType().getValidators()
-    ).toEqual([integer]);
+    ).toEqual([notEmpty]);
 
     type = createValueType(undefined, attribute);
 
@@ -95,6 +107,27 @@ describe('Factory', () => {
     expect(() => createValueType('[movie]', attribute)).toThrow(
       "The specified type is invalid (attribute: 'TestComponent.prototype.testAttribute', type: '[movie]')"
     );
+  });
+
+  test('Sanitization', async () => {
+    const trim = sanitizers.trim();
+    const compact = sanitizers.compact();
+
+    let type = createValueType('string', attribute, {sanitizers: [trim]});
+
+    expect(type.sanitizeValue('hello')).toBe('hello');
+    expect(type.sanitizeValue(' hello ')).toBe('hello');
+    expect(type.sanitizeValue(undefined)).toBe(undefined);
+
+    type = createValueType('string[]', attribute, {
+      sanitizers: [compact],
+      items: {sanitizers: [trim]}
+    });
+
+    expect(type.sanitizeValue(['hello'])).toStrictEqual(['hello']);
+    expect(type.sanitizeValue(['hello', ' '])).toStrictEqual(['hello']);
+    expect(type.sanitizeValue([' '])).toStrictEqual([]);
+    expect(type.sanitizeValue(undefined)).toBe(undefined);
   });
 
   test('Validation', async () => {

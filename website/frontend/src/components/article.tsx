@@ -80,24 +80,6 @@ export const extendArticle = (Base: typeof BackendArticle) => {
       );
     }
 
-    @page('[/blog]/articles/add') static AddPage() {
-      const {User, Home} = this;
-
-      if (User.authenticatedUser === undefined) {
-        Home.MainPage.redirect();
-        return null;
-      }
-
-      const article = useMemo(() => new this({author: User.authenticatedUser}), []);
-
-      const save = useAction(async () => {
-        await article.save();
-        article.ItemPage.navigate();
-      }, [article]);
-
-      return <article.FormView onSubmit={save} />;
-    }
-
     @page('[/blog/articles/:slug]/edit') EditPage() {
       const {User, Home} = this.constructor;
 

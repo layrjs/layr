@@ -126,6 +126,15 @@ export class ArrayValueType extends ValueType {
     return resolvedAttributeSelector!;
   }
 
+  sanitizeValue(values: any[] | undefined) {
+    if (values !== undefined) {
+      const itemType = this.getItemType();
+      values = values.map((value) => itemType.sanitizeValue(value));
+    }
+
+    return super.sanitizeValue(values);
+  }
+
   runValidators(values: unknown[] | undefined, attributeSelector?: AttributeSelector) {
     const failedValidators = super.runValidators(values, attributeSelector);
 

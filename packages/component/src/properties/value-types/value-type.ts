@@ -7,6 +7,7 @@ import type {
 } from '../../component';
 import type {Attribute} from '../attribute';
 import type {AttributeSelector} from '../attribute-selector';
+import {Sanitizer, SanitizerFunction, runSanitizers, normalizeSanitizer} from '../../sanitization';
 import {Validator, ValidatorFunction, runValidators, normalizeValidator} from '../../validation';
 import {serialize, SerializeOptions} from '../../serialization';
 
@@ -18,6 +19,7 @@ export type IntrospectedValueType = {
 
 export type ValueTypeOptions = {
   isOptional?: boolean;
+  sanitizers?: (Sanitizer | SanitizerFunction)[];
   validators?: (Validator | ValidatorFunction)[];
 };
 
@@ -165,16 +167,22 @@ export type ValueTypeOptions = {
  */
 export class ValueType {
   _isOptional: boolean | undefined;
+  _sanitizers: Sanitizer[];
   _validators: Validator[];
 
   constructor(attribute: Attribute, options: ValueTypeOptions = {}) {
-    const {isOptional, validators = []} = options;
+    const {isOptional, sanitizers = [], validators = []} = options;
+
+    const normalizedSanitizers = sanitizers.map((sanitizer) =>
+      normalizeSanitizer(sanitizer, attribute)
+    );
 
     const normalizedValidators = validators.map((validator) =>
       normalizeValidator(validator, attribute)
     );
 
     this._isOptional = isOptional;
+    this._sanitizers = normalizedSanitizers;
     this._validators = normalizedValidators;
   }
 
@@ -196,6 +204,10 @@ export class ValueType {
    */
   isOptional() {
     return this._isOptional === true;
+  }
+
+  getSanitizers() {
+    return this._sanitizers;
   }
 
   /**
@@ -282,6 +294,10 @@ export class ValueType {
     _options: ResolveAttributeSelectorOptions
   ): AttributeSelector {
     return normalizedAttributeSelector !== false;
+  }
+
+  sanitizeValue(value: any) {
+    return runSanitizers(this.getSanitizers(), value);
   }
 
   isValidValue(value: unknown) {

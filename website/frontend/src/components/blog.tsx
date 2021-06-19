@@ -1,15 +1,19 @@
 import {Component, consume} from '@layr/component';
 import {Routable} from '@layr/routable';
-import {Fragment} from 'react';
-import {layout, page, useData} from '@layr/react-integration';
+import {Fragment, useMemo} from 'react';
+import {layout, page, useData, useAction} from '@layr/react-integration';
 import {jsx, useTheme} from '@emotion/react';
 
+import type {extendUser} from './user';
+import type {Home} from './home';
 import type {extendArticle} from './article';
 import {Title} from '../ui';
 
 export class Blog extends Routable(Component) {
   ['constructor']!: typeof Blog;
 
+  @consume() static User: ReturnType<typeof extendUser>;
+  @consume() static Home: typeof Home;
   @consume() static Article: ReturnType<typeof extendArticle>;
 
   @layout('[/]blog') static MainLayout({children}: {children: () => any}) {
@@ -53,5 +57,23 @@ export class Blog extends Routable(Component) {
         </>
       )
     );
+  }
+
+  @page('[/blog]/articles/add') static AddArticlePage() {
+    const {User, Home, Article} = this;
+
+    if (User.authenticatedUser === undefined) {
+      Home.MainPage.redirect();
+      return null;
+    }
+
+    const article = useMemo(() => new Article({author: User.authenticatedUser}), []);
+
+    const save = useAction(async () => {
+      await article.save();
+      article.ItemPage.navigate();
+    }, [article]);
+
+    return <article.FormView onSubmit={save} />;
   }
 }

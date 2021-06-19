@@ -2,6 +2,7 @@ import {Component} from '../component';
 import {EmbeddedComponent} from '../embedded-component';
 import {Attribute} from './attribute';
 import {isNumberValueTypeInstance} from './value-types';
+import {sanitizers} from '../sanitization';
 import {validators} from '../validation';
 
 describe('Attribute', () => {
@@ -183,6 +184,49 @@ describe('Attribute', () => {
     );
 
     expect(attribute.getValue()).toBe('Inception');
+  });
+
+  test('Sanitization', async () => {
+    class Movie extends Component {}
+
+    const movie = new Movie();
+
+    const {trim, compact} = sanitizers;
+
+    const titleAttribute = new Attribute('title', movie, {
+      valueType: 'string',
+      sanitizers: [trim()]
+    });
+
+    titleAttribute.setValue('Inception');
+
+    expect(titleAttribute.getValue()).toBe('Inception');
+
+    titleAttribute.setValue('  Inception ');
+
+    expect(titleAttribute.getValue()).toBe('Inception');
+
+    const genresAttribute = new Attribute('genres', movie, {
+      valueType: 'string[]',
+      sanitizers: [compact()],
+      items: {sanitizers: [trim()]}
+    });
+
+    genresAttribute.setValue(['drama', 'action']);
+
+    expect(genresAttribute.getValue()).toStrictEqual(['drama', 'action']);
+
+    genresAttribute.setValue(['drama ', ' action']);
+
+    expect(genresAttribute.getValue()).toStrictEqual(['drama', 'action']);
+
+    genresAttribute.setValue(['drama ', '']);
+
+    expect(genresAttribute.getValue()).toStrictEqual(['drama']);
+
+    genresAttribute.setValue(['', ' ']);
+
+    expect(genresAttribute.getValue()).toStrictEqual([]);
   });
 
   test('Validation', async () => {

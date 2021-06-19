@@ -7,6 +7,7 @@ export * from './forking';
 export * from './identity-map';
 export * from './merging';
 export * from './properties';
+export * from './sanitization';
 export * from './serialization';
 export * from './utilities';
 export * from './validation';

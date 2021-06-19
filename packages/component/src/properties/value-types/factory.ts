@@ -9,6 +9,7 @@ import {DateValueType} from './date-value-type';
 import {RegExpValueType} from './regexp-value-type';
 import {ArrayValueType} from './array-value-type';
 import {ComponentValueType} from './component-value-type';
+import {Sanitizer, SanitizerFunction} from '../../sanitization';
 import {Validator, ValidatorFunction} from '../../validation';
 import {isComponentType} from '../../utilities';
 
@@ -31,6 +32,7 @@ export type UnintrospectedValueType = {
 };
 
 type CreateValueTypeOptions = {
+  sanitizers?: (Sanitizer | SanitizerFunction)[];
   validators?: (Validator | ValidatorFunction)[];
   items?: CreateValueTypeOptions;
 };
@@ -40,7 +42,7 @@ export function createValueType(
   attribute: Attribute,
   options: CreateValueTypeOptions = {}
 ): ValueType {
-  const {validators = [], items} = options;
+  const {sanitizers, validators = [], items} = options;
 
   let type = specifier ? specifier : 'any';
   let isOptional: boolean;
@@ -59,7 +61,7 @@ export function createValueType(
   if (type.endsWith('[]')) {
     const itemSpecifier = type.slice(0, -2);
     const itemType = createValueType(itemSpecifier, attribute, {...items});
-    return new ArrayValueType(itemType, attribute, {isOptional, validators});
+    return new ArrayValueType(itemType, attribute, {isOptional, sanitizers, validators});
   }
 
   if (items !== undefined) {
@@ -71,7 +73,7 @@ export function createValueType(
   const ValueTypeClass = VALUE_TYPE_MAP.get(type);
 
   if (ValueTypeClass !== undefined) {
-    return new ValueTypeClass(attribute, {isOptional, validators});
+    return new ValueTypeClass(attribute, {isOptional, sanitizers, validators});
   }
 
   if (!isComponentType(type)) {
@@ -80,7 +82,7 @@ export function createValueType(
     );
   }
 
-  return new ComponentValueType(type, attribute, {isOptional, validators});
+  return new ComponentValueType(type, attribute, {isOptional, sanitizers, validators});
 }
 
 export function unintrospectValueType({
