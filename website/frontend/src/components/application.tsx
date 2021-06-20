@@ -14,7 +14,7 @@ import {Blog} from './blog';
 import {extendArticle} from './article';
 import {extendNewsletter} from './newsletter';
 import {getGlobalStyles, useStyles} from '../styles';
-import {FullHeight, ErrorMessage, formatError, LoadingSpinner} from '../ui';
+import {FullHeight, ErrorMessage, LoadingSpinner} from '../ui';
 
 import layrLogo from '../assets/layr-logo-with-icon-dark-mode.svg';
 import love from '../assets/f-plus-b-equals-love.svg';
@@ -42,9 +42,6 @@ export const extendApplication = (Base: typeof BackendApplication) => {
             <Customizer
               dataPlaceholder={() => <LoadingSpinner />}
               errorRenderer={(error) => <ErrorMessage>{error}</ErrorMessage>}
-              errorNotifier={async (error) => {
-                alert(formatError(error));
-              }}
             >
               {children()}
             </Customizer>

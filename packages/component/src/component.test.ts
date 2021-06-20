@@ -1,3 +1,4 @@
+import type {ExtendedError} from '@layr/utilities';
 import sleep from 'sleep-promise';
 
 import {Component} from './component';
@@ -999,7 +1000,7 @@ describe('Component', () => {
 
       cinema.name = '';
 
-      let error: Error & {displayMessage?: string};
+      let error: ExtendedError;
 
       try {
         cinema.validate();

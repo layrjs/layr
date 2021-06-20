@@ -1,4 +1,5 @@
 import {Observable} from '@layr/observable';
+import {throwError} from '@layr/utilities';
 import {
   hasOwnProperty,
   isPrototypeOf,
@@ -2287,16 +2288,12 @@ export class Component extends Observable(Object) {
       }
     }
 
-    const error = Object.assign(
-      new Error(
-        `The following error(s) occurred while validating the component '${ensureComponentClass(
-          this
-        ).getComponentName()}': ${details}`
-      ),
-      {failedValidators, ...(displayMessage !== undefined && {displayMessage})}
+    throwError(
+      `The following error(s) occurred while validating the component '${ensureComponentClass(
+        this
+      ).getComponentName()}': ${details}`,
+      {displayMessage, failedValidators}
     );
-
-    throw error;
   }
 
   /**

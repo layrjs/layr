@@ -3,6 +3,7 @@ import {useDelay} from '@layr/react-integration';
 import {jsx, useTheme} from '@emotion/react';
 import {useWindowHeight} from '@react-hook/window-size';
 import {Helmet} from 'react-helmet';
+import {formatError} from '@layr/utilities';
 
 import {InlineMarkdown} from './markdown';
 import somethingWrong from './assets/something-wrong.png';
@@ -83,7 +84,7 @@ export function Title({children: title}: {children?: string}) {
   );
 }
 
-export function ErrorMessage({children}: {children: string | (Error & {displayMessage?: string})}) {
+export function ErrorMessage({children}: {children: string | Error}) {
   const message = typeof children === 'string' ? children : formatError(children);
 
   return (
@@ -100,10 +101,6 @@ export function ErrorMessage({children}: {children: string | (Error & {displayMe
       <h4 css={{marginTop: '3rem', textAlign: 'center'}}>{message}</h4>
     </div>
   );
-}
-
-export function formatError(error: Error & {displayMessage?: string}) {
-  return error?.displayMessage ?? 'Sorry, something went wrong.';
 }
 
 export function LoadingSpinner({delay}: {delay?: number}) {

@@ -1,16 +1,17 @@
 {
-  "name": "@layr/component",
-  "version": "2.0.13",
-  "description": "The base class of all your components",
+  "name": "@layr/utilities",
+  "version": "1.0.1",
+  "description": "A set of basic utilities used by Layr",
   "keywords": [
     "layr",
-    "component",
-    "base",
-    "class"
+    "utilities",
+    "utility",
+    "tool",
+    "function"
   ],
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "repository": "https://github.com/layrjs/layr/tree/master/packages/component",
+  "repository": "https://github.com/layrjs/layr/tree/master/packages/utilities",
   "files": [
     "dist"
   ],
@@ -27,22 +28,11 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/observable": "^1.0.9",
-    "@layr/utilities": "^1.0.1",
-    "core-helpers": "^1.0.3",
-    "cuid": "^2.1.8",
-    "lodash": "^4.17.21",
-    "possibly-async": "^1.0.4",
-    "simple-cloning": "^1.0.1",
-    "simple-forking": "^1.0.3",
-    "simple-serialization": "^1.0.6",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.30",
     "@mvila/tsconfig": "^1.0.5",
-    "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.170",
-    "sleep-promise": "^8.0.1"
+    "@types/jest": "^25.2.3"
   }
 }

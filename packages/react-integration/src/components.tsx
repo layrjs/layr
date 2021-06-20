@@ -1,6 +1,7 @@
 import {callRouteByURL, RoutableComponent, assertIsRoutableClass} from '@layr/routable';
 import {Navigator} from '@layr/navigator';
 import {BrowserNavigator} from '@layr/browser-navigator';
+import {formatError} from '@layr/utilities';
 import React, {useRef, useState, useEffect, useContext} from 'react';
 
 import {useForceUpdate} from './hooks';
@@ -24,7 +25,7 @@ export function BrowserRootView({
         dataPlaceholder: () => null,
         errorRenderer: (error) => {
           console.error(error);
-          return <div>Sorry, an error occurred.</div>;
+          return <div>{formatError(error)}</div>;
         },
         actionWrapper: async (actionHandler, args) => {
           actionView.current!.open();
@@ -34,8 +35,8 @@ export function BrowserRootView({
             actionView.current!.close();
           }
         },
-        errorNotifier: async (_error) => {
-          alert('Sorry, an error occurred.');
+        errorNotifier: async (error) => {
+          alert(formatError(error));
         },
         ...customization
       }}

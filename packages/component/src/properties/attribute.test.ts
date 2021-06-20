@@ -1,3 +1,5 @@
+import type {ExtendedError} from '@layr/utilities';
+
 import {Component} from '../component';
 import {EmbeddedComponent} from '../embedded-component';
 import {Attribute} from './attribute';
@@ -274,7 +276,7 @@ describe('Attribute', () => {
 
     attribute.setValue('');
 
-    let error: Error & {displayMessage?: string};
+    let error: ExtendedError;
 
     try {
       attribute.validate();

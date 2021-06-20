@@ -7,6 +7,7 @@ import {
   isEmbeddable,
   ObserverPayload
 } from '@layr/observable';
+import {throwError} from '@layr/utilities';
 import {possiblyAsync} from 'possibly-async';
 
 import type {
@@ -746,14 +747,10 @@ export class Attribute extends Observable(Property) {
       }
     }
 
-    const error = Object.assign(
-      new Error(
-        `The following error(s) occurred while validating the attribute '${this.getName()}': ${details}`
-      ),
-      {failedValidators, ...(displayMessage !== undefined && {displayMessage})}
+    throwError(
+      `The following error(s) occurred while validating the attribute '${this.getName()}': ${details}`,
+      {displayMessage, failedValidators}
     );
-
-    throw error;
   }
 
   /**

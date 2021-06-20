@@ -1,6 +1,7 @@
 import {expose, validators, AttributeSelector} from '@layr/component';
 import {secondaryIdentifier, attribute, method, loader} from '@layr/storable';
 import {role} from '@layr/with-roles';
+import {throwError} from '@layr/utilities';
 import bcrypt from 'bcryptjs';
 import compact from 'lodash/compact';
 
@@ -27,7 +28,7 @@ export class User extends Entity {
       const existingUser = await User.get({email: this.email}, {}, {throwIfMissing: false});
 
       if (existingUser !== undefined && existingUser.id !== this.id) {
-        throw Object.assign(new Error('Email already registered'), {
+        throwError('Email already registered', {
           displayMessage: 'This email address is already registered.'
         });
       }
@@ -139,7 +140,7 @@ export class User extends Entity {
     })();
 
     if (!isAllowed) {
-      throw Object.assign(new Error('Signing up is not allowed'), {
+      throwError('Signing up is not allowed', {
         displayMessage: 'Signing up requires a valid invite token.'
       });
     }
@@ -159,15 +160,13 @@ export class User extends Entity {
       .get({email: this.email}, {password: true}, {throwIfMissing: false});
 
     if (existingUser === undefined) {
-      throw Object.assign(new Error('User not found'), {
+      throwError('User not found', {
         displayMessage: 'There is no user registered with that email address.'
       });
     }
 
     if (!(await this.verifyPassword(existingUser))) {
-      throw Object.assign(new Error('Wrong password'), {
-        displayMessage: 'The password you entered is incorrect.'
-      });
+      throwError('Wrong password', {displayMessage: 'The password you entered is incorrect.'});
     }
 
     User.token = User.generateToken(existingUser.id);
