@@ -1,6 +1,6 @@
 {
   "name": "@layr/mongodb-store",
-  "version": "2.0.13",
+  "version": "2.0.15",
   "description": "A Layr store for MongoDB",
   "keywords": [
     "layr",
@@ -28,9 +28,9 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.9",
-    "@layr/storable": "^2.0.18",
-    "@layr/store": "^2.0.17",
+    "@layr/component": "^2.0.13",
+    "@layr/storable": "^2.0.21",
+    "@layr/store": "^2.0.19",
     "core-helpers": "^1.0.3",
     "debug": "^4.3.1",
     "lodash": "^4.17.21",
