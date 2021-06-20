@@ -253,10 +253,14 @@ export class Validator {
    *
    * @category Methods
    */
-  getMessage() {
-    return this._message !== undefined
-      ? this._message
-      : `The validator \`${this.getSignature()}\` failed`;
+  getMessage({generateIfMissing = true}: {generateIfMissing?: boolean} = {}) {
+    let message = this._message;
+
+    if (message === undefined && generateIfMissing) {
+      message = `The validator \`${this.getSignature()}\` failed`;
+    }
+
+    return message;
   }
 
   /**

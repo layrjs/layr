@@ -234,8 +234,8 @@ describe('Attribute', () => {
 
     const movie = new Movie();
 
-    const notEmpty = validators.notEmpty();
-    const attribute = new Attribute('title', movie, {valueType: 'string?', validators: [notEmpty]});
+    let notEmpty = validators.notEmpty();
+    let attribute = new Attribute('title', movie, {valueType: 'string?', validators: [notEmpty]});
 
     expect(() => attribute.runValidators()).toThrow(
       "Cannot run the validators of an unset attribute (attribute: 'Movie.prototype.title')"
@@ -262,6 +262,31 @@ describe('Attribute', () => {
     );
     expect(attribute.isValid()).toBe(false);
     expect(attribute.runValidators()).toEqual([{validator: notEmpty, path: ''}]);
+
+    // --- With a custom message ---
+
+    notEmpty = validators.notEmpty('The title cannot be empty.');
+    attribute = new Attribute('title', movie, {valueType: 'string?', validators: [notEmpty]});
+
+    attribute.setValue('Inception');
+
+    expect(() => attribute.validate()).not.toThrow();
+
+    attribute.setValue('');
+
+    let error: Error & {displayMessage?: string};
+
+    try {
+      attribute.validate();
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error!.message).toBe(
+      "The following error(s) occurred while validating the attribute 'title': The title cannot be empty. (path: '')"
+    );
+
+    expect(error!.displayMessage).toBe('The title cannot be empty.');
   });
 
   test('Observability', async () => {

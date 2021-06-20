@@ -12,6 +12,7 @@ describe('Validator', () => {
     expect(validator.getFunction()).toBe(notEmpty);
     expect(validator.getArguments()).toEqual([]);
     expect(validator.getMessage()).toBe('The validator `notEmpty()` failed');
+    expect(validator.getMessage({generateIfMissing: false})).toBeUndefined();
 
     const greaterThan = (value: number, number: number) => value > number;
     validator = new Validator(greaterThan, {arguments: [5]});
@@ -21,6 +22,7 @@ describe('Validator', () => {
     expect(validator.getFunction()).toBe(greaterThan);
     expect(validator.getArguments()).toEqual([5]);
     expect(validator.getMessage()).toBe('The validator `greaterThan(5)` failed');
+    expect(validator.getMessage({generateIfMissing: false})).toBeUndefined();
 
     const match = (value: string, pattern: RegExp) => pattern.test(value);
     const regExp = /abc/gi;
@@ -31,6 +33,7 @@ describe('Validator', () => {
     expect(validator.getFunction()).toBe(match);
     expect(validator.getArguments()).toEqual([regExp]);
     expect(validator.getMessage()).toBe('The validator `match(/abc/gi)` failed');
+    expect(validator.getMessage({generateIfMissing: false})).toBeUndefined();
 
     const validatorFunction = (value: number, number: number) => value < number;
 
@@ -44,6 +47,7 @@ describe('Validator', () => {
     expect(validator.getFunction()).toBe(validatorFunction);
     expect(validator.getArguments()).toEqual([]);
     expect(validator.getMessage()).toBe('The maximum value is 5');
+    expect(validator.getMessage({generateIfMissing: false})).toBe('The maximum value is 5');
   });
 
   test('Execution', async () => {

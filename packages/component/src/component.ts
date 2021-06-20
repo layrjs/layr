@@ -2276,13 +2276,24 @@ export class Component extends Observable(Object) {
       .map(({validator, path}) => `${validator.getMessage()} (path: '${path}')`)
       .join(', ');
 
+    let displayMessage: string | undefined;
+
+    for (const {validator} of failedValidators) {
+      const message = validator.getMessage({generateIfMissing: false});
+
+      if (message !== undefined) {
+        displayMessage = message;
+        break;
+      }
+    }
+
     const error = Object.assign(
       new Error(
         `The following error(s) occurred while validating the component '${ensureComponentClass(
           this
         ).getComponentName()}': ${details}`
       ),
-      {failedValidators}
+      {failedValidators, ...(displayMessage !== undefined && {displayMessage})}
     );
 
     throw error;

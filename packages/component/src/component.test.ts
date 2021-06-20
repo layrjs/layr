@@ -985,6 +985,33 @@ describe('Component', () => {
       expect(() => movie.validate()).not.toThrow();
       expect(movie.isValid()).toBe(true);
       expect(movie.runValidators()).toEqual([]);
+
+      // --- With a custom message ---
+
+      class Cinema extends Component {
+        @attribute('string', {validators: [validators.notEmpty('The name cannot be empty.')]})
+        name = '';
+      }
+
+      const cinema = new Cinema({name: 'Paradiso'});
+
+      expect(() => cinema.validate()).not.toThrow();
+
+      cinema.name = '';
+
+      let error: Error & {displayMessage?: string};
+
+      try {
+        cinema.validate();
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error!.message).toBe(
+        "The following error(s) occurred while validating the component 'Cinema': The name cannot be empty. (path: 'name')"
+      );
+
+      expect(error!.displayMessage).toBe('The name cannot be empty.');
     });
   });
 
