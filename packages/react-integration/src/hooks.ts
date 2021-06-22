@@ -6,7 +6,7 @@ import {useCustomization, Customization} from './components';
 
 export function useData<Result>(
   getter: () => Promise<Result>,
-  renderer: (data: Result) => JSX.Element | null,
+  renderer: (data: Result, refresh: () => void) => JSX.Element | null,
   deps: DependencyList = [],
   options: {
     dataPlaceholder?: Customization['dataPlaceholder'];
@@ -15,7 +15,7 @@ export function useData<Result>(
 ) {
   const {dataPlaceholder, errorRenderer} = {...useCustomization(), ...options};
 
-  const [data, isExecuting, error] = useAsyncMemo(getter, deps);
+  const [data, isExecuting, error, refresh] = useAsyncMemo(getter, deps);
 
   if (isExecuting) {
     return dataPlaceholder();
@@ -25,7 +25,7 @@ export function useData<Result>(
     return errorRenderer(error);
   }
 
-  return renderer(data!);
+  return renderer(data!, refresh);
 }
 
 export function useAction<Args extends any[] = any[], Result = any>(

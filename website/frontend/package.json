@@ -11,7 +11,7 @@
     "@emotion/react": "^11.4.0",
     "@layr/component": "^2.0.13",
     "@layr/component-http-client": "^2.0.16",
-    "@layr/react-integration": "^2.0.72",
+    "@layr/react-integration": "^2.0.73",
     "@layr/routable": "^2.0.55",
     "@layr/storable": "^2.0.21",
     "@layr/utilities": "^1.0.1",
