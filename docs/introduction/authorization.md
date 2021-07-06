@@ -93,7 +93,7 @@ So now the `save()` method is callable only by a `'creator'` (of a new message) 
 First, install the `@layr/with-roles` package:
 
 ```sh
-npm install @layr/with-roles
+npm install @layr/with-roles@1
 ```
 
 Next, add the following line at the beginning of the <!-- <if language="js"> -->`src/backend.js`<!-- </if> --><!-- <if language="ts"> -->`src/backend.ts`<!-- </if> --> file to import the [`WithRoles()`](https://layrjs.com/docs/v1/reference/with-roles) mixin and the [`@role()`](https://layrjs.com/docs/v1/reference/with-roles#role-decorator) decorator:

@@ -99,7 +99,7 @@ So let's start by implementing the backend.
 First, install the Layr's packages we're going to use:
 
 ```sh
-npm install @layr/component @layr/component-http-server
+npm install @layr/component@1 @layr/component-http-server@1
 ```
 
 We've installed:
@@ -183,7 +183,7 @@ A typical frontend runs in a browser, but to make this guide easier to grasp, we
 First, install `@layr/component-http-client`, which will allow us to communicate with the backend.
 
 ```sh
-npm install @layr/component-http-client
+npm install @layr/component-http-client@1
 ```
 
 Then, create a file named <!-- <if language="js"> -->`frontend.js`<!-- </if> --><!-- <if language="ts"> -->`frontend.ts`<!-- </if> --> in the `src` directory, and write the following code:
