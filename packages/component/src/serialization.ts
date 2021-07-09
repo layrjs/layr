@@ -7,7 +7,7 @@ import {possiblyAsync} from 'possibly-async';
 import {isES2015Class} from 'core-helpers';
 
 import type {ComponentSet} from './component';
-import type {PropertyFilter, AttributeSelector} from './properties';
+import type {PropertyFilter, AttributeSelector, ValueSource} from './properties';
 import {isValidatorInstance} from './validation/validator';
 import {isComponentClassOrInstance} from './utilities';
 
@@ -22,7 +22,7 @@ export type SerializeOptions = SimpleSerializeOptions & {
   includeComponentTypes?: boolean;
   includeIsNewMarks?: boolean;
   includeReferencedComponents?: boolean;
-  target?: number;
+  target?: ValueSource;
 };
 
 /**

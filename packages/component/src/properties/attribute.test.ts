@@ -58,11 +58,11 @@ describe('Attribute', () => {
 
     attribute.setValue('Inception');
 
-    expect(attribute.getValueSource()).toBe(0);
+    expect(attribute.getValueSource()).toBe('self');
 
-    attribute.setValue('Inception', {source: 1});
+    attribute.setValue('Inception', {source: 'backend'});
 
-    expect(attribute.getValueSource()).toBe(1);
+    expect(attribute.getValueSource()).toBe('backend');
   });
 
   test('Accessors', async () => {
@@ -182,7 +182,7 @@ describe('Attribute', () => {
     expect(attribute.isControlled()).toBe(true);
 
     expect(() => attribute.setValue('Inception 2')).toThrow(
-      "Cannot set the value of a controlled attribute when the source is not 1 (attribute: 'Movie.prototype.title', source: 0)"
+      "Cannot set the value of a controlled attribute when the source is different than 'backend' or 'store' (attribute: 'Movie.prototype.title', source: 'self')"
     );
 
     expect(attribute.getValue()).toBe('Inception');

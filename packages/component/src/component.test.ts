@@ -724,8 +724,8 @@ describe('Component', () => {
 
       expect(movie.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({});
 
-      movie.getAttribute('title').setValue('Interception', {source: -1});
-      movie.getAttribute('duration').setValue(120, {source: -1});
+      movie.getAttribute('title').setValue('Interception', {source: 'frontend'});
+      movie.getAttribute('duration').setValue(120, {source: 'frontend'});
 
       expect(movie.resolveAttributeSelector(true, {setAttributesOnly: true})).toStrictEqual({
         title: true,
@@ -733,13 +733,13 @@ describe('Component', () => {
       });
 
       expect(
-        movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: -1})
+        movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: 'frontend'})
       ).toStrictEqual({});
 
-      movie.getAttribute('title').setValue('Interception 2', {source: 0});
+      movie.getAttribute('title').setValue('Interception 2', {source: 'self'});
 
       expect(
-        movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: -1})
+        movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: 'frontend'})
       ).toStrictEqual({title: true});
 
       // --- With an embedded component ---

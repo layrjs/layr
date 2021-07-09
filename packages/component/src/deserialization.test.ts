@@ -58,15 +58,15 @@ describe('Deserialization', () => {
     // --- Using the deserialize() function with the 'source' option ---
 
     expect(Movie.limit).toBe(1000);
-    expect(Movie.getAttribute('limit').getValueSource()).toBe(0);
+    expect(Movie.getAttribute('limit').getValueSource()).toBe('self');
 
     DeserializedMovie = deserialize(
       {__component: 'typeof Movie', limit: 5000},
-      {source: 1, rootComponent: Application}
+      {source: 'backend', rootComponent: Application}
     );
 
     expect(Movie.limit).toBe(5000);
-    expect(Movie.getAttribute('limit').getValueSource()).toBe(1);
+    expect(Movie.getAttribute('limit').getValueSource()).toBe('backend');
 
     DeserializedMovie = deserialize(
       {__component: 'typeof Movie', limit: 5000},
@@ -74,7 +74,7 @@ describe('Deserialization', () => {
     );
 
     expect(Movie.limit).toBe(5000);
-    expect(Movie.getAttribute('limit').getValueSource()).toBe(0);
+    expect(Movie.getAttribute('limit').getValueSource()).toBe('self');
 
     // --- Using Component.deserialize() method ---
 
@@ -158,27 +158,27 @@ describe('Deserialization', () => {
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('title').getValueSource()).toBe(0);
+    expect(movie.getAttribute('title').getValueSource()).toBe('self');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
     movie = deserialize(
       {__component: 'Movie', title: 'Inception'},
-      {source: 1, rootComponent: Application}
+      {source: 'backend', rootComponent: Application}
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('title').getValueSource()).toBe(1);
+    expect(movie.getAttribute('title').getValueSource()).toBe('backend');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
     movie = deserialize(
       {__component: 'Movie', __new: true, title: 'Inception'},
-      {source: 1, rootComponent: Application}
+      {source: 'backend', rootComponent: Application}
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('title').getValueSource()).toBe(1);
+    expect(movie.getAttribute('title').getValueSource()).toBe('backend');
     expect(movie.duration).toBe(0);
-    expect(movie.getAttribute('duration').getValueSource()).toBe(0);
+    expect(movie.getAttribute('duration').getValueSource()).toBe('self');
 
     // --- Using component.deserialize() method ---
 

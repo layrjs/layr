@@ -1,7 +1,7 @@
 import {hasOwnProperty} from 'core-helpers';
 
 import type {Component} from '../component';
-import {Attribute, AttributeOptions} from './attribute';
+import {Attribute, AttributeOptions, ValueSource} from './attribute';
 import {isComponentInstance} from '../utilities';
 
 export type IdentifierValue = string | number;
@@ -52,7 +52,7 @@ export class IdentifierAttribute extends Attribute {
     return super.getValue(options) as IdentifierValue | undefined;
   }
 
-  setValue(value: IdentifierValue, {source = 0} = {}) {
+  setValue(value: IdentifierValue, {source = 'self'}: {source?: ValueSource} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};

@@ -23,6 +23,7 @@ import {
   isAttributeClass,
   isAttributeInstance,
   AttributeOptions,
+  ValueSource,
   IntrospectedAttribute,
   IdentifierAttribute,
   isIdentifierAttributeInstance,
@@ -83,7 +84,7 @@ export type NormalizedIdentifierDescriptor = {[name: string]: IdentifierValue};
 export type ResolveAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
   setAttributesOnly?: boolean;
-  target?: number;
+  target?: ValueSource;
   aggregationMode?: 'union' | 'intersection';
   includeReferencedComponents?: boolean;
   alwaysIncludePrimaryIdentifierAttributes?: boolean;
@@ -337,7 +338,7 @@ export class Component extends Observable(Object) {
     this: T,
     object: PlainObject = {},
     options: {
-      source?: number;
+      source?: ValueSource;
     } = {}
   ) {
     const {source} = options;
@@ -2048,7 +2049,7 @@ export class Component extends Observable(Object) {
     const _skipUnchangedAttributes =
       setAttributesOnly &&
       target !== undefined &&
-      (target === -1 || typeof (this as any).isStorable === 'function');
+      (target === 'frontend' || typeof (this as any).isStorable === 'function');
 
     return this.__resolveAttributeSelector(attributeSelector, {
       filter,

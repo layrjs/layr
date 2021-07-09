@@ -7,7 +7,7 @@ import {possiblyAsync} from 'possibly-async';
 import {PlainObject} from 'core-helpers';
 
 import type {Component, ComponentSet} from './component';
-import type {PropertyFilter} from './properties';
+import type {PropertyFilter, ValueSource} from './properties';
 import {Validator, isSerializedValidator} from './validation/validator';
 import {isComponentClass} from './utilities';
 
@@ -16,7 +16,7 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
   attributeFilter?: PropertyFilter;
   deserializedComponents?: ComponentSet;
   deserializeFunctions?: boolean;
-  source?: number;
+  source?: ValueSource;
 };
 
 /**

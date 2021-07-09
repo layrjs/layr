@@ -49,6 +49,8 @@ type AttributeItemsOptions = {
   items?: AttributeItemsOptions;
 };
 
+export type ValueSource = 'backend' | 'store' | 'self' | 'frontend';
+
 export type IntrospectedAttribute = IntrospectedProperty & {
   value?: unknown;
   default?: unknown;
@@ -360,15 +362,15 @@ export class Attribute extends Observable(Property) {
    *
    * @category Value
    */
-  setValue(value: unknown, {source = 0} = {}) {
+  setValue(value: unknown, {source = 'self'}: {source?: ValueSource} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};
     }
 
-    if (this.isControlled() && source !== 1) {
+    if (this.isControlled() && !(source === 'backend' || source === 'store')) {
       throw new Error(
-        `Cannot set the value of a controlled attribute when the source is not 1 (${this.describe()}, source: ${source})`
+        `Cannot set the value of a controlled attribute when the source is different than 'backend' or 'store' (${this.describe()}, source: '${source}')`
       );
     }
 
@@ -446,7 +448,7 @@ export class Attribute extends Observable(Property) {
       previousValue.removeObserver(this);
     }
 
-    this.callObservers({source: 0});
+    this.callObservers({source: 'self'});
 
     return {previousValue};
   }
@@ -480,7 +482,7 @@ export class Attribute extends Observable(Property) {
 
   // === Value source ===
 
-  _source = 0;
+  _source: ValueSource = 'self';
 
   /**
    * Returns the source of the value of the attribute.
@@ -514,7 +516,7 @@ export class Attribute extends Observable(Property) {
    *
    * @category Value Source
    */
-  setValueSource(source: number) {
+  setValueSource(source: ValueSource) {
     if (source !== this._source) {
       this._source = source;
       this.callObservers({source});
@@ -602,8 +604,8 @@ export class Attribute extends Observable(Property) {
 
   // === Observers ===
 
-  _onChange(payload: ObserverPayload & {source?: number}) {
-    const {source = 0} = payload;
+  _onChange(payload: ObserverPayload & {source?: ValueSource}) {
+    const {source = 'self'} = payload;
 
     if (source !== this._source) {
       this._source = source;

@@ -1,7 +1,7 @@
 import {hasOwnProperty} from 'core-helpers';
 
 import type {Component} from '../component';
-import type {AttributeOptions} from './attribute';
+import type {AttributeOptions, ValueSource} from './attribute';
 import {IdentifierAttribute, IdentifierValue} from './identifier-attribute';
 import {isComponentInstance, ensureComponentClass} from '../utilities';
 
@@ -177,7 +177,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
 
   // === Value ===
 
-  setValue(value: IdentifierValue, {source = 0} = {}) {
+  setValue(value: IdentifierValue, {source = 'self'}: {source?: ValueSource} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};
