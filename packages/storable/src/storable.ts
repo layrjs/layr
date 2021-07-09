@@ -793,7 +793,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         const alreadyLoadedAttributeSelector = this.resolveAttributeSelector(
           resolvedAttributeSelector,
           {
-            filter: (attribute: Attribute) => attribute.getValueSource() === 1,
+            filter: (attribute: Attribute) =>
+              attribute.getValueSource() === 'backend' || attribute.getValueSource() === 'store',
             setAttributesOnly: true,
             aggregationMode: 'intersection'
           }
@@ -872,7 +873,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         attributeSelector: resolvedAttributeSelector
       })) {
         const value = await attribute.callLoader();
-        attribute.setValue(value, {source: 1});
+        attribute.setValue(value, {source: 'store'});
       }
 
       await loadedStorable.__populate(attributeSelector, {
@@ -999,7 +1000,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       let resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
         setAttributesOnly: true,
-        target: 1,
+        target: 'store',
         aggregationMode: 'intersection'
       });
 
@@ -1016,7 +1017,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector, {
         setAttributesOnly: true,
-        target: 1,
+        target: 'store',
         aggregationMode: 'intersection'
       });
 

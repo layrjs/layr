@@ -710,7 +710,7 @@ describe('Storable', () => {
 
           organization = User.fork().Organization.instantiate(
             {slug: 'organization-1'},
-            {source: 1}
+            {source: 'store'}
           );
 
           expect(await organization.load({})).toBe(organization);
@@ -722,7 +722,7 @@ describe('Storable', () => {
 
           organization = User.fork().Organization.instantiate(
             {slug: 'organization-1'},
-            {source: 1}
+            {source: 'store'}
           );
 
           expect(await organization.load(true)).toBe(organization);
@@ -760,21 +760,31 @@ describe('Storable', () => {
 
           expect(user.isNew()).toBe(true);
           expect(user.picture!.isNew()).toBe(true);
-          expect(user.getAttribute('id').getValueSource()).toBe(0);
-          expect(user.getAttribute('fullName').getValueSource()).toBe(0);
-          expect(user.getAttribute('tags').getValueSource()).toBe(0);
-          expect(user.getAttribute('picture').getValueSource()).toBe(0);
-          expect(user.picture!.getAttribute('url').getValueSource()).toBe(0);
+          expect(user.getAttribute('id').getValueSource()).toBe('self');
+          expect(user.getAttribute('fullName').getValueSource()).toBe('self');
+          expect(user.getAttribute('tags').getValueSource()).toBe('self');
+          expect(user.getAttribute('picture').getValueSource()).toBe('self');
+          expect(user.picture!.getAttribute('url').getValueSource()).toBe('self');
 
           expect(await user.save()).toBe(user);
 
           expect(user.isNew()).toBe(false);
           // TODO: expect(user.picture!.isNew()).toBe(false);
-          expect(user.getAttribute('id').getValueSource()).toBe(1);
-          expect(user.getAttribute('fullName').getValueSource()).toBe(1);
-          expect(user.getAttribute('tags').getValueSource()).toBe(1);
-          expect(user.getAttribute('picture').getValueSource()).toBe(1);
-          expect(user.picture!.getAttribute('url').getValueSource()).toBe(1);
+          expect(user.getAttribute('id').getValueSource()).toBe(
+            User.hasStore() ? 'store' : 'backend'
+          );
+          expect(user.getAttribute('fullName').getValueSource()).toBe(
+            User.hasStore() ? 'store' : 'backend'
+          );
+          expect(user.getAttribute('tags').getValueSource()).toBe(
+            User.hasStore() ? 'store' : 'backend'
+          );
+          expect(user.getAttribute('picture').getValueSource()).toBe(
+            User.hasStore() ? 'store' : 'backend'
+          );
+          expect(user.picture!.getAttribute('url').getValueSource()).toBe(
+            User.hasStore() ? 'store' : 'backend'
+          );
 
           ForkedUser = User.fork();
           ForkedPicture = ForkedUser.Picture;

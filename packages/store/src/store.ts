@@ -374,7 +374,7 @@ export abstract class Store {
 
         const serializedStorable = this.fromDocument(storable, document);
 
-        const loadedStorable = storable.deserialize(serializedStorable, {source: 1});
+        const loadedStorable = storable.deserialize(serializedStorable, {source: 'store'});
 
         return loadedStorable;
       }
@@ -494,7 +494,7 @@ export abstract class Store {
 
       storable.traverseAttributes(
         (attribute) => {
-          attribute.setValueSource(1);
+          attribute.setValueSource('store');
         },
         {attributeSelector, setAttributesOnly: true}
       );
@@ -583,7 +583,7 @@ export abstract class Store {
         foundStorables.push(
           (await deserialize(serializedStorable, {
             rootComponent: storable,
-            source: 1
+            source: 'store'
           })) as StorableComponent
         );
       }

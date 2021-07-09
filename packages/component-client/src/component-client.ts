@@ -210,14 +210,14 @@ export class ComponentClient {
             rootComponent,
             deserializeFunctions: true,
             errorHandler,
-            source: 1
+            source: 'backend'
           }),
           () => {
             return deserialize(serializedResult, {
               rootComponent,
               deserializeFunctions: true,
               errorHandler,
-              source: 1
+              source: 'backend'
             });
           }
         );
@@ -265,7 +265,7 @@ export class ComponentClient {
       rootComponent: firstRootComponent,
       deserializeFunctions: true,
       errorHandler,
-      source: 1
+      source: 'backend'
     });
 
     for (let index = 0; index < operations.length; index++) {
@@ -277,7 +277,7 @@ export class ComponentClient {
           rootComponent: operation.params[1].rootComponent,
           deserializeFunctions: true,
           errorHandler,
-          source: 1
+          source: 'backend'
         });
 
         operation.resolve(result);
@@ -314,7 +314,7 @@ export class ComponentClient {
     const serializedQuery: PlainObject = serialize(query, {
       componentDependencies,
       attributeFilter,
-      target: 1
+      target: 'backend'
     });
 
     let serializedComponentDependencies: PlainObject[] | undefined;
@@ -336,7 +336,7 @@ export class ComponentClient {
           componentDependencies: additionalComponentDependency,
           ignoreEmptyComponents: true,
           attributeFilter,
-          target: 1
+          target: 'backend'
         });
 
         if (serializedComponentDependency !== undefined) {
