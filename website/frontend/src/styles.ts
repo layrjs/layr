@@ -213,6 +213,11 @@ const getStyles = memoize(function getStyles(theme: Theme) {
   return {
     unstyledList: {paddingLeft: 0, listStyle: 'none'},
 
+    hiddenLink: {
+      'color': 'inherit',
+      ':hover': {color: 'inherit'}
+    },
+
     menuItemLink: {
       'color': theme.colors.primary.normal,
       'cursor': 'pointer',

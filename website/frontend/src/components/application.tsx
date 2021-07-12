@@ -183,6 +183,16 @@ export const extendApplication = (Base: typeof BackendApplication) => {
             </div>
           </nav>
 
+          <div css={{marginTop: '3rem'}}>
+            <small css={{color: theme.colors.text.muted}}>
+              A{' '}
+              <a href="https://1place.io" target="_blank" css={styles.hiddenLink}>
+                1Place
+              </a>{' '}
+              open source project.
+            </small>
+          </div>
+
           <this.FrontendPlusBackendEqualsLoveView />
         </footer>
       );
