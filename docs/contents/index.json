@@ -113,6 +113,13 @@
           "category": "Basics"
         },
         {
+          "title": "Sanitizer",
+          "slug": "sanitizer",
+          "file": "reference/sanitizer.md",
+          "source": "../../packages/component/src/sanitization/sanitizer.ts",
+          "category": "Basics"
+        },
+        {
           "title": "Validator",
           "slug": "validator",
           "file": "reference/validator.md",

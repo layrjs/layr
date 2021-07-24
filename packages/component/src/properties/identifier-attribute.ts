@@ -7,9 +7,9 @@ import {isComponentInstance} from '../utilities';
 export type IdentifierValue = string | number;
 
 /**
- * *Inherits from [`Attribute`](https://layrjs.com/docs/v1/reference/attribute).*
+ * *Inherits from [`Attribute`](https://layrjs.com/docs/v2/reference/attribute).*
  *
- * A base class from which [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute) and [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) are constructed. Unless you build a custom identifier attribute class, you probably won't have to use this class directly.
+ * A base class from which [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute) and [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) are constructed. Unless you build a custom identifier attribute class, you probably won't have to use this class directly.
  */
 export class IdentifierAttribute extends Attribute {
   constructor(name: string, parent: Component, options: AttributeOptions = {}) {

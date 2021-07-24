@@ -28,7 +28,7 @@ export type ValueTypeOptions = {
  *
  * #### Usage
  *
- * You shouldn't have to create a `ValueType` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator)), you can specify a string representing a type of value, and a `ValueType` will be automatically created for you.
+ * You shouldn't have to create a `ValueType` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator)), you can specify a string representing a type of value, and a `ValueType` will be automatically created for you.
  *
  * **Example:**
  *
@@ -141,12 +141,12 @@ export type ValueTypeOptions = {
  *
  * ##### Components
  *
- * An attribute can hold a reference to a [`Component`](https://layrjs.com/docs/v1/reference/component) instance, or contain an [`EmbeddedComponent`](https://layrjs.com/docs/v1/reference/embedded-component) instance. To specify such a type, just specify the name of the component:
+ * An attribute can hold a reference to a [`Component`](https://layrjs.com/docs/v2/reference/component) instance, or contain an [`EmbeddedComponent`](https://layrjs.com/docs/v2/reference/embedded-component) instance. To specify such a type, just specify the name of the component:
  *
  * * `'Director'`: A reference to a `Director` component instance.
  * * `'MovieDetails'`: A `MovieDetails` embedded component instance.
  *
- * It is also possible to specify a type that represents a reference to a [`Component`](https://layrjs.com/docs/v1/reference/component) class. To do so, add `'typeof '` before the name of the component:
+ * It is also possible to specify a type that represents a reference to a [`Component`](https://layrjs.com/docs/v2/reference/component) class. To do so, add `'typeof '` before the name of the component:
  *
  * * `'typeof Director'`: A reference to the `Director` component class.
  *
@@ -213,7 +213,7 @@ export class ValueType {
   /**
    * Returns the validators associated to the value type.
    *
-   * @returns A array of [`Validator`](https://layrjs.com/docs/v1/reference/component).
+   * @returns A array of [`Validator`](https://layrjs.com/docs/v2/reference/component).
    *
    * @example
    * ```
@@ -232,7 +232,7 @@ export class ValueType {
    *
    * In case the value type is an array, returns the value type of the items it contains.
    *
-   * @returns A [ValueType](https://layrjs.com/docs/v1/reference/value-type).
+   * @returns A [ValueType](https://layrjs.com/docs/v2/reference/value-type).
    *
    * @example
    * ```

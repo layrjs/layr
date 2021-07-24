@@ -6,7 +6,7 @@ import {isComponentClass, isComponentInstance} from './utilities';
 export {MergeOptions};
 
 /**
- * Deeply merge any type of forks including objects, arrays, and components (using Component's `merge()` [class method](https://layrjs.com/docs/v1/reference/component#merge-class-method) and [instance method](https://layrjs.com/docs/v1/reference/component#merge-instance-method)) into their original values.
+ * Deeply merge any type of forks including objects, arrays, and components (using Component's `merge()` [class method](https://layrjs.com/docs/v2/reference/component#merge-class-method) and [instance method](https://layrjs.com/docs/v2/reference/component#merge-instance-method)) into their original values.
  *
  * @param value An original value of any type.
  * @param forkedValue A fork of `value`.

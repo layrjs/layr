@@ -3,17 +3,17 @@ import type {AttributeOptions} from './attribute';
 import {IdentifierAttribute} from './identifier-attribute';
 
 /**
- * *Inherits from [`IdentifierAttribute`](https://layrjs.com/docs/v1/reference/identifier-attribute).*
+ * *Inherits from [`IdentifierAttribute`](https://layrjs.com/docs/v2/reference/identifier-attribute).*
  *
- * A `SecondaryIdentifierAttribute` is a special kind of attribute that uniquely identify a [Component](https://layrjs.com/docs/v1/reference/component) instance.
+ * A `SecondaryIdentifierAttribute` is a special kind of attribute that uniquely identify a [Component](https://layrjs.com/docs/v2/reference/component) instance.
  *
- * Contrary to a [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute), you can define more than one `SecondaryIdentifierAttribute` in a `Component`.
+ * Contrary to a [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute), you can define more than one `SecondaryIdentifierAttribute` in a `Component`.
  *
  * Another difference with a `PrimaryIdentifierAttribute` is that a `SecondaryIdentifierAttribute` value is mutable (i.e., it can change over time).
  *
  * #### Usage
  *
- * Typically, you create a `SecondaryIdentifierAttribute` and associate it to a component prototype using the [`@secondaryIdentifier()`](https://layrjs.com/docs/v1/reference/component#secondary-identifier-decorator) decorator.
+ * Typically, you create a `SecondaryIdentifierAttribute` and associate it to a component prototype using the [`@secondaryIdentifier()`](https://layrjs.com/docs/v2/reference/component#secondary-identifier-decorator) decorator.
  *
  * A common use case is a `User` component with an immutable primary identifier and a secondary identifier for the email address that can change over time:
  *
@@ -85,16 +85,16 @@ export class SecondaryIdentifierAttribute extends IdentifierAttribute {
   _secondaryIdentifierAttributeBrand!: void;
 
   /**
-   * Creates an instance of [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute). Typically, instead of using this constructor, you would rather use the [`@secondaryIdentifier()`](https://layrjs.com/docs/v1/reference/component#secondary-identifier-decorator) decorator.
+   * Creates an instance of [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute). Typically, instead of using this constructor, you would rather use the [`@secondaryIdentifier()`](https://layrjs.com/docs/v2/reference/component#secondary-identifier-decorator) decorator.
    *
    * @param name The name of the attribute.
    * @param parent The component prototype that owns the attribute.
    * @param [options.valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
    * @param [options.default] A function returning the default value of the attribute.
-   * @param [options.validators] An array of [validators](https://layrjs.com/docs/v1/reference/validator) for the value of the attribute.
-   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
+   * @param [options.validators] An array of [validators](https://layrjs.com/docs/v2/reference/validator) for the value of the attribute.
+   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
    *
-   * @returns The [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) instance that was created.
+   * @returns The [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) instance that was created.
    *
    * @example
    * ```
@@ -118,7 +118,7 @@ export class SecondaryIdentifierAttribute extends IdentifierAttribute {
   // === Property Methods ===
 
   /**
-   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
+   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v2/reference/property#basic-methods) class.
    *
    * @category Property Methods
    */
@@ -126,7 +126,7 @@ export class SecondaryIdentifierAttribute extends IdentifierAttribute {
   // === Attribute Methods ===
 
   /**
-   * See the methods that are inherited from the [`Attribute`](https://layrjs.com/docs/v1/reference/attribute#value-type) class.
+   * See the methods that are inherited from the [`Attribute`](https://layrjs.com/docs/v2/reference/attribute#value-type) class.
    *
    * @category Attribute Methods
    */
@@ -134,7 +134,7 @@ export class SecondaryIdentifierAttribute extends IdentifierAttribute {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
    *
    * @category Observability
    */

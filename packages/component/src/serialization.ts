@@ -26,10 +26,10 @@ export type SerializeOptions = SimpleSerializeOptions & {
 };
 
 /**
- * Serializes any type of values including objects, arrays, dates, and components (using Component's `serialize()` [class method](https://layrjs.com/docs/v1/reference/component#serialize-class-method) and [instance method](https://layrjs.com/docs/v1/reference/component#serialize-instance-method)).
+ * Serializes any type of values including objects, arrays, dates, and components (using Component's `serialize()` [class method](https://layrjs.com/docs/v2/reference/component#serialize-class-method) and [instance method](https://layrjs.com/docs/v2/reference/component#serialize-instance-method)).
  *
  * @param value A value of any type.
- * @param [options.attributeFilter] A (possibly async) function used to filter the component attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
+ * @param [options.attributeFilter] A (possibly async) function used to filter the component attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
  * @param [options.target] The target of the serialization (default: `undefined`).
  *
  * @returns The serialized value.

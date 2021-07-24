@@ -64,13 +64,13 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
 };
 
 /**
- * *Inherits from [`Property`](https://layrjs.com/docs/v1/reference/property) and [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class).*
+ * *Inherits from [`Property`](https://layrjs.com/docs/v2/reference/property) and [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class).*
  *
- * An `Attribute` represents an attribute of a [Component](https://layrjs.com/docs/v1/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as runtime type checking, validation, serialization, or observability.
+ * An `Attribute` represents an attribute of a [Component](https://layrjs.com/docs/v2/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript object attribute, but brings some extra features such as runtime type checking, validation, serialization, or observability.
  *
  * #### Usage
  *
- * Typically, you create an `Attribute` and associate it to a component by using the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator.
+ * Typically, you create an `Attribute` and associate it to a component by using the [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) decorator.
  *
  * For example, here is how you would define a `Movie` class with some attributes:
  *
@@ -147,20 +147,22 @@ export type UnintrospectedAttribute = UnintrospectedProperty & {
  */
 export class Attribute extends Observable(Property) {
   /**
-   * Creates an instance of [`Attribute`](https://layrjs.com/docs/v1/reference/attribute). Typically, instead of using this constructor, you would rather use the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator.
+   * Creates an instance of [`Attribute`](https://layrjs.com/docs/v2/reference/attribute). Typically, instead of using this constructor, you would rather use the [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute.
    * @param parent The component class, prototype, or instance that owns the attribute.
-   * @param [options.valueType] A string specifying the [type of values](https://layrjs.com/docs/v1/reference/value-type#supported-types) the attribute can store (default: `'any'`).
+   * @param [options.valueType] A string specifying the [type of values](https://layrjs.com/docs/v2/reference/value-type#supported-types) the attribute can store (default: `'any'`).
    * @param [options.value] The initial value of the attribute (usable for class attributes only).
    * @param [options.default] The default value (or a function returning the default value) of the attribute (usable for instance attributes only).
-   * @param [options.validators] An array of [validators](https://layrjs.com/docs/v1/reference/validator) for the value of the attribute.
-   * @param [options.items.validators] An array of [validators](https://layrjs.com/docs/v1/reference/validator) for the items of an array attribute.
+   * @param [options.sanitizers] An array of [sanitizers](https://layrjs.com/docs/v2/reference/sanitizer) for the value of the attribute.
+   * @param [options.validators] An array of [validators](https://layrjs.com/docs/v2/reference/validator) for the value of the attribute.
+   * @param [options.items.sanitizers] An array of [sanitizers](https://layrjs.com/docs/v2/reference/sanitizer) for the items of an array attribute.
+   * @param [options.items.validators] An array of [validators](https://layrjs.com/docs/v2/reference/validator) for the items of an array attribute.
    * @param [options.getter] A getter function for getting the value of the attribute. Plays the same role as a regular [JavaScript getter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get).
    * @param [options.setter] A setter function for setting the value of the attribute. Plays the same role as a regular [JavaScript setter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set).
-   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
+   * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the attribute should be exposed to remote access.
    *
-   * @returns The [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance that was created.
+   * @returns The [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance that was created.
    *
    * @example
    * ```
@@ -253,7 +255,7 @@ export class Attribute extends Observable(Property) {
   // === Property Methods ===
 
   /**
-   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
+   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v2/reference/property#basic-methods) class.
    *
    * @category Property Methods
    */
@@ -265,7 +267,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Returns the type of values the attribute can store.
    *
-   * @returns A [ValueType](https://layrjs.com/docs/v1/reference/value-type) instance.
+   * @returns A [ValueType](https://layrjs.com/docs/v2/reference/value-type) instance.
    *
    * @example
    * ```
@@ -351,7 +353,7 @@ export class Attribute extends Observable(Property) {
    * When the attribute's value changes, the observers of the attribute are automatically executed, and the observers of the parent component are executed as well.
    *
    * @param value The value to be set.
-   * @param [options.source] A number specifying the [source of the value](https://layrjs.com/docs/v1/reference/attribute#value-source-type) (default: `0`).
+   * @param [options.source] A string specifying the [source of the value](https://layrjs.com/docs/v2/reference/attribute#value-source-type) (default: `'self'`).
    *
    * @example
    * ```
@@ -487,12 +489,12 @@ export class Attribute extends Observable(Property) {
   /**
    * Returns the source of the value of the attribute.
    *
-   * @returns A [`ValueSource`](https://layrjs.com/docs/v1/reference/attribute#value-source-type) number.
+   * @returns A [`ValueSource`](https://layrjs.com/docs/v2/reference/attribute#value-source-type) string.
    *
    * @example
    * ```
    * const title = movie.getAttribute('title');
-   * title.getValueSource(); // => 0 (the value was set locally)
+   * title.getValueSource(); // => 'self' (the value was set locally)
    * ```
    *
    * @category Value Source
@@ -504,14 +506,14 @@ export class Attribute extends Observable(Property) {
   /**
    * Sets the source of the value of the attribute.
    *
-   * @param source A [`ValueSource`](https://layrjs.com/docs/v1/reference/attribute#value-source-type) number.
+   * @param source A [`ValueSource`](https://layrjs.com/docs/v2/reference/attribute#value-source-type) string.
    *
    * @example
    * ```
    * const title = movie.getAttribute('title');
-   * title.setValueSource(0); // The value was set locally
-   * title.setValueSource(1); // The value came from an upper layer (e.g., the backend)
-   * title.setValueSource(-1); // The value came from a lower layer (e.g., the frontend)
+   * title.setValueSource('self'); // The value was set locally
+   * title.setValueSource('backend'); // The value came from an upper layer
+   * title.setValueSource('frontend'); // The value came from a lower layer
    * ```
    *
    * @category Value Source
@@ -526,13 +528,14 @@ export class Attribute extends Observable(Property) {
   /**
    * @typedef ValueSource
    *
-   * A number representing the source of a value.
+   * A string representing the source of a value.
    *
-   * Currently, three values are supported:
+   * Currently, four types of sources are supported:
    *
-   * * `0`: The value comes from the current layer (i.e., the current runtime environment).
-   * * `1`: The value comes from an upper layer (e.g., the backend).
-   * * `-1`: The value comes from a lower layer (e.g., the frontend).
+   * * `'backend'`: The value comes from an upper layer.
+   * * `'store'`: The value comes from a store.
+   * * `'self'`: The value comes from the current layer.
+   * * `'frontend`: The value comes from a lower layer.
    * ```
    *
    * @category Value Source
@@ -679,9 +682,9 @@ export class Attribute extends Observable(Property) {
   // === Validation ===
 
   /**
-   * Validates the value of the attribute. If the value doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://layrjs.com/docs/v1/reference/attribute#run-validators-instance-method) method.
+   * Validates the value of the attribute. If the value doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://layrjs.com/docs/v2/reference/attribute#run-validators-instance-method) method.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
    * @example
    * ```
@@ -758,7 +761,7 @@ export class Attribute extends Observable(Property) {
   /**
    * Returns whether the value of the attribute is valid.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
    * @returns A boolean.
    *
@@ -783,9 +786,9 @@ export class Attribute extends Observable(Property) {
   /**
    * Runs the validators with the value of the attribute.
    *
-   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
+   * @param [attributeSelector] In case the value of the attribute is a component, your can pass an [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the component's attributes to be validated (default: `true`, which means that all the component's attributes will be validated).
    *
-   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://layrjs.com/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://layrjs.com/docs/v2/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
    * @example
    * ```
@@ -812,7 +815,7 @@ export class Attribute extends Observable(Property) {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
    *
    * @category Observability
    */

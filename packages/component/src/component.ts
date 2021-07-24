@@ -113,9 +113,9 @@ export type IntrospectedComponent = {
 type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | undefined>;
 
 /**
- * *Inherits from [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class).*
+ * *Inherits from [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class).*
  *
- * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other by using the [`@provide()`](https://layrjs.com/docs/v1/reference/component#provide-decorator) and [`@consume()`](https://layrjs.com/docs/v1/reference/component#consume-decorator) decorators.
+ * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other by using the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) and [`@consume()`](https://layrjs.com/docs/v2/reference/component#consume-decorator) decorators.
  *
  * #### Usage
  *
@@ -151,9 +151,11 @@ type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | un
  * }
  * ```
  *
- * The [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) and [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorators allows you to get the full power of Layr, such as attribute type checking, or remote method invocation.
+ * The [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) and [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator) decorators allows you to get the full power of Layr, such as attribute validation or remote method invocation.
  *
- * Once you have defined a component, you can use it as any JavaScript class:
+ * > Note that you don't need to use the [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator) decorator for all your methods. Typically, you use this decorator only for some backend methods that you want to expose to the frontend.
+ *
+ * Once you have defined a component, you can use it as any JavaScript/TypeScript class:
  *
  * ```
  * const movie = new Movie({title: 'Inception'});
@@ -161,31 +163,27 @@ type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | un
  * movie.play(); // => 'Playing Inception...'
  * ```
  *
- * #### Nesting Components
+ * #### Embedded Components
  *
- * Components can be nested either by embedding or by referencing.
- *
- * ##### Embedding Components
- *
- * Use the [`EmbeddedComponent`](https://layrjs.com/docs/v1/reference/embedded-component) class to embed a component into another component. An embedded component is strongly attached to the parent component that owns it, and it cannot "live" by itself like a regular component.
+ * Use the [`EmbeddedComponent`](https://layrjs.com/docs/v2/reference/embedded-component) class to embed a component into another component. An embedded component is strongly attached to the parent component that owns it, and it cannot "live" by itself like a regular component.
  *
  * Here are some characteristics of an embedded component:
  *
  * - An embedded component has one parent only, and therefore cannot be embedded in more than one component.
- * - When the parent of an embedded component is [validated](https://layrjs.com/docs/v1/reference/validator), the embedded component is validated as well.
- * - When the parent of an embedded component is loaded, saved, or deleted (using a [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storage-operations) method), the embedded component is loaded, saved, or deleted as well.
+ * - When the parent of an embedded component is [validated](https://layrjs.com/docs/v2/reference/validator), the embedded component is validated as well.
+ * - When the parent of an embedded component is loaded, saved, or deleted (using a [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storage-operations) method), the embedded component is loaded, saved, or deleted as well.
  *
- * See the [`EmbeddedComponent`](https://layrjs.com/docs/v1/reference/embedded-component) class for an example of use.
+ * See the [`EmbeddedComponent`](https://layrjs.com/docs/v2/reference/embedded-component) class for an example of use.
  *
- * ##### Referencing Components
+ * #### Referenced Components
  *
- * Any non-embedded component can be referenced by another component. Contrary to an embedded component, a referenced component is an independent entity that can "live" by itself. So a referenced component behaves like a regular JavaScript object that is referenced by another object.
+ * Any non-embedded component can be referenced by another component. Contrary to an embedded component, a referenced component is an independent entity that can "live" by itself. So a referenced component behaves like a regular JavaScript object that can be referenced by another object.
  *
  * Here are some characteristics of a referenced component:
  *
  * - A referenced component can be referenced by any number of components.
- * - When a component holding a reference to another component is [validated](https://layrjs.com/docs/v1/reference/validator), the referenced component is considered as an independent entity, and is therefore not automatically validated.
- * - When a component holding a reference to another component is loaded, saved, or deleted (using a [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storage-operations) method), the referenced component can be loaded in the same operation, but it has to be saved or deleted independently.
+ * - When a component holding a reference to another component is [validated](https://layrjs.com/docs/v2/reference/validator), the referenced component is considered as an independent entity, and is therefore not validated automatically.
+ * - When a component holding a reference to another component is loaded, saved, or deleted (using a [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storage-operations) method), the referenced component may optionally be loaded in the same operation, but it has to be saved or deleted independently.
  *
  * For example, let's say we have a `Director` component defined as follows:
  *
@@ -231,14 +229,14 @@ type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | un
  * }
  * ```
  *
- * > Note that to be able to specify the `'Director'` type for the `director` attribute, you first have to provide the `Director` component to the `Movie` component by using the [`@provide()`](https://layrjs.com/docs/v1/reference/component#provide-decorator) decorator.
+ * > Note that to be able to specify the `'Director'` type for the `director` attribute, you first have to make the `Movie` component aware of the `Director` component by using the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) decorator.
  *
- *  Then, to create a `Movie` with a `Director`, we can do something like:
+ *  Then, to create a `Movie` with a `Director`, we can do something like the following:
  *
  * ```
  * const movie = new Movie({
  *   title: 'Inception',
- *   director: new Movie.Director({fullName: 'Christopher Nolan'})
+ *   director: new Director({fullName: 'Christopher Nolan'})
  * });
  *
  * movie.title; // => 'Inception'
@@ -313,27 +311,6 @@ export class Component extends Observable(Object) {
     }
   }
 
-  /**
-   * Creates an instance of a component class.
-   *
-   * @param [object] An optional object specifying the value of the component attributes.
-   * @param [options.isNew] Whether the instance should be marked as new or not (default: `true`).
-   * @param [options.source] A number specifying the [source](https://layrjs.com/docs/v1/reference/attribute#value-source-type) of the created instance (default: `0`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be set (default: `true`, which means that all the attributes will be set).
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be set. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
-   *
-   * @returns An instance of the component class (possibly a promise if `options.attributeFilter` is an async function).
-   *
-   * @example
-   * ```
-   * let movie = Movie.create({title: 'Inception'});
-   *
-   * movie.title // => 'Inception'
-   * ```
-   *
-   * @category Creation
-   * @possiblyasync
-   */
   static instantiate<T extends typeof Component>(
     this: T,
     object: PlainObject = {},
@@ -355,9 +332,18 @@ export class Component extends Observable(Object) {
   // === Initialization ===
 
   /**
-   * A (possibly async) method that is called automatically when the component class is deserialized. You can override this method in your component subclasses to implement your initialization logic.
+   * Invoke this method to call any `initializer()` static method defined in your component classes.
+   *
+   * If the current class has an `initializer()` static method, it is invoked, and if the current class has some other components as dependencies, the `initializer()` method is also invoked for those components.
+   *
+   * Note that your `initializer()` methods can be asynchronous, and therefore you should call the `initialize()` method with `await`.
+   *
+   * Typically, you will call the `initialize()` method on the root component of your frontend application when your application starts. Backend applications are usually managed by a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server), which automatically invokes the `initialize()` method on the root component.
+   *
+   * Note that if you use [Boostr](https://boostr.dev) to manage your frontend application, you should not call the `initialize()` method manually.
    *
    * @category Initialization
+   * @possiblyasync
    */
   static initialize() {
     return possiblyAsync.forEach(this.traverseComponents(), (component) => {
@@ -398,7 +384,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Sets the name of the component. As the name of a component is usually inferred from the name of its class, this method should not be used so often.
+   * Sets the name of the component. As the name of a component is usually inferred from the name of its class, this method should rarely be used.
    *
    * @param name The name you wish for the component.
    *
@@ -420,7 +406,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns the path of the component starting from its root component.
    *
-   * For example, if a `Backend` component provides a `Movie` component, this method will return `'Backend.Movie'` when called on the `Movie` component.
+   * For example, if an `Application` component provides a `Movie` component, this method will return `'Application.Movie'` when called on the `Movie` component.
    *
    * @returns A string.
    *
@@ -430,11 +416,11 @@ export class Component extends Observable(Object) {
    *
    * Movie.getComponentPath(); // => 'Movie'
    *
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    * }
    *
-   * Movie.getComponentPath(); // => 'Backend.Movie'
+   * Movie.getComponentPath(); // => 'Application.Movie'
    * ```
    *
    * @category Naming
@@ -495,8 +481,10 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * movie.getComponentType(); // => 'Movie'
    * Movie.prototype.getComponentType(); // => 'Movie'
+   *
+   * const movie = new Movie();
+   * movie.getComponentType(); // => 'Movie'
    * ```
    *
    * @category Typing
@@ -520,9 +508,6 @@ export class Component extends Observable(Object) {
    * ```
    * let movie = new Movie();
    * movie.getIsNewMark(); // => true
-   *
-   * movie = Movie.recreate();
-   * movie.getIsNewMark(); // => false
    * ```
    *
    * @category isNew Mark
@@ -559,9 +544,6 @@ export class Component extends Observable(Object) {
    * ```
    * let movie = new Movie();
    * movie.isNew(); // => true
-   *
-   * movie = Movie.recreate();
-   * movie.isNew(); // => false
    * ```
    *
    * @category isNew Mark
@@ -595,7 +577,7 @@ export class Component extends Observable(Object) {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
    *
    * @category Observability
    */
@@ -603,7 +585,7 @@ export class Component extends Observable(Object) {
   // === Embeddability ===
 
   /**
-   * Returns whether the component is an [`EmbeddedComponent`](https://layrjs.com/docs/v1/reference/embedded-component).
+   * Returns whether the component is an [`EmbeddedComponent`](https://layrjs.com/docs/v2/reference/embedded-component).
    *
    * @returns A boolean.
    *
@@ -644,7 +626,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to get.
    *
-   * @returns An instance of a [`Property`](https://layrjs.com/docs/v1/reference/property) (or a subclass of [`Property`](https://layrjs.com/docs/v1/reference/property) such as [`Attribute`](https://layrjs.com/docs/v1/reference/attribute), [`Method`](https://layrjs.com/docs/v1/reference/method), etc.).
+   * @returns An instance of a [`Property`](https://layrjs.com/docs/v2/reference/property) (or a subclass of [`Property`](https://layrjs.com/docs/v2/reference/property) such as [`Attribute`](https://layrjs.com/docs/v2/reference/attribute), [`Method`](https://layrjs.com/docs/v2/reference/method), etc.).
    *
    * @example
    * ```
@@ -663,7 +645,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the property to get.
    *
-   * @returns An instance of a [`Property`](https://layrjs.com/docs/v1/reference/property) (or a subclass of [`Property`](https://layrjs.com/docs/v1/reference/property) such as [`Attribute`](https://layrjs.com/docs/v1/reference/attribute), [`Method`](https://layrjs.com/docs/v1/reference/method), etc.).
+   * @returns An instance of a [`Property`](https://layrjs.com/docs/v2/reference/property) (or a subclass of [`Property`](https://layrjs.com/docs/v2/reference/property) such as [`Attribute`](https://layrjs.com/docs/v2/reference/attribute), [`Method`](https://layrjs.com/docs/v2/reference/method), etc.).
    *
    * @example
    * ```
@@ -749,10 +731,10 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a property in the component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator).
+   * Defines a property in the component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) or [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator).
    *
    * @param name The name of the property to define.
-   * @param PropertyClass The class of the property (e.g., [`Attribute`](https://layrjs.com/docs/v1/reference/attribute), [`Method`](https://layrjs.com/docs/v1/reference/method)) to use.
+   * @param PropertyClass The class of the property (e.g., [`Attribute`](https://layrjs.com/docs/v2/reference/attribute), [`Method`](https://layrjs.com/docs/v2/reference/method)) to use.
    * @param [propertyOptions] The options to create the `PropertyClass`.
    *
    * @returns The property that was created.
@@ -769,10 +751,10 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a property in the component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) or [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator).
+   * Defines a property in the component. Typically, instead of using this method, you would rather use a decorator such as [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) or [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator).
    *
    * @param name The name of the property to define.
-   * @param PropertyClass The class of the property (e.g., [`Attribute`](https://layrjs.com/docs/v1/reference/attribute), [`Method`](https://layrjs.com/docs/v1/reference/method)) to use.
+   * @param PropertyClass The class of the property (e.g., [`Attribute`](https://layrjs.com/docs/v2/reference/attribute), [`Method`](https://layrjs.com/docs/v2/reference/method)) to use.
    * @param [propertyOptions] The options to create the `PropertyClass`.
    *
    * @returns The property that was created.
@@ -858,13 +840,13 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the properties of the component.
    *
-   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://layrjs.com/docs/v1/reference/property) instance as first argument.
+   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://layrjs.com/docs/v2/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
-   * @returns A [`Property`](https://layrjs.com/docs/v1/reference/property) instance iterator.
+   * @returns A [`Property`](https://layrjs.com/docs/v2/reference/property) instance iterator.
    *
    * @example
    * ```
@@ -886,13 +868,13 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the properties of the component.
    *
-   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://layrjs.com/docs/v1/reference/property) instance as first argument.
+   * @param [options.filter] A function used to filter the properties to be returned. The function is invoked for each property with a [`Property`](https://layrjs.com/docs/v2/reference/property) instance as first argument.
    * @param [options.attributesOnly] A boolean specifying whether only attribute properties should be returned (default: `false`).
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    * @param [options.methodsOnly] A boolean specifying whether only method properties should be returned (default: `false`).
    *
-   * @returns A [`Property`](https://layrjs.com/docs/v1/reference/property) instance iterator.
+   * @returns A [`Property`](https://layrjs.com/docs/v2/reference/property) instance iterator.
    *
    * @example
    * ```
@@ -1051,7 +1033,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the attribute to get.
    *
-   * @returns An instance of [`Attribute`](https://layrjs.com/docs/v1/reference/attribute).
+   * @returns An instance of [`Attribute`](https://layrjs.com/docs/v2/reference/attribute).
    *
    * @example
    * ```
@@ -1070,7 +1052,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the attribute to get.
    *
-   * @returns An instance of [`Attribute`](https://layrjs.com/docs/v1/reference/attribute).
+   * @returns An instance of [`Attribute`](https://layrjs.com/docs/v2/reference/attribute).
    *
    * @example
    * ```
@@ -1155,12 +1137,12 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator.
+   * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
-   * @param [attributeOptions] The options to create the [`Attribute`](https://layrjs.com/docs/v1/reference/attribute#constructor).
+   * @param [attributeOptions] The options to create the [`Attribute`](https://layrjs.com/docs/v2/reference/attribute#constructor).
    *
-   * @returns The [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) that was created.
+   * @returns The [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) that was created.
    *
    * @example
    * ```
@@ -1174,12 +1156,12 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator.
+   * Defines an attribute in the component. Typically, instead of using this method, you would rather use the [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) decorator.
    *
    * @param name The name of the attribute to define.
-   * @param [attributeOptions] The options to create the [`Attribute`](https://layrjs.com/docs/v1/reference/attribute#constructor).
+   * @param [attributeOptions] The options to create the [`Attribute`](https://layrjs.com/docs/v2/reference/attribute#constructor).
    *
-   * @returns The [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) that was created.
+   * @returns The [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) that was created.
    *
    * @example
    * ```
@@ -1195,11 +1177,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the attributes of the component.
    *
-   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
+   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    *
-   * @returns An [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance iterator.
+   * @returns An [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance iterator.
    *
    * @example
    * ```
@@ -1220,11 +1202,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the attributes of the component.
    *
-   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
+   * @param [options.filter] A function used to filter the attributes to be returned. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be returned (default: `true`, which means that all the attributes should be returned).
    *
-   * @returns An [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance iterator.
+   * @returns An [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance iterator.
    *
    * @example
    * ```
@@ -1320,7 +1302,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the identifier attribute to get.
    *
-   * @returns An instance of [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute) or [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute).
+   * @returns An instance of [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute) or [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute).
    *
    * @example
    * ```
@@ -1386,7 +1368,7 @@ export class Component extends Observable(Object) {
   /**
    * Gets the primary identifier attribute of the component.
    *
-   * @returns An instance of [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute).
+   * @returns An instance of [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute).
    *
    * @example
    * ```
@@ -1438,12 +1420,12 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines the primary identifier attribute of the component. Typically, instead of using this method, you would rather use the [`@primaryIdentifier()`](https://layrjs.com/docs/v1/reference/component#primary-identifier-decorator) decorator.
+   * Defines the primary identifier attribute of the component. Typically, instead of using this method, you would rather use the [`@primaryIdentifier()`](https://layrjs.com/docs/v2/reference/component#primary-identifier-decorator) decorator.
    *
    * @param name The name of the primary identifier attribute to define.
-   * @param [attributeOptions] The options to create the [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute).
+   * @param [attributeOptions] The options to create the [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute).
    *
-   * @returns The [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute) that was created.
+   * @returns The [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute) that was created.
    *
    * @example
    * ```
@@ -1466,7 +1448,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the secondary identifier attribute to get.
    *
-   * @returns A [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) instance.
+   * @returns A [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) instance.
    *
    * @example
    * ```
@@ -1529,12 +1511,12 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a secondary identifier attribute in the component. Typically, instead of using this method, you would rather use the [`@secondaryIdentifier()`](https://layrjs.com/docs/v1/reference/component#secondary-identifier-decorator) decorator.
+   * Defines a secondary identifier attribute in the component. Typically, instead of using this method, you would rather use the [`@secondaryIdentifier()`](https://layrjs.com/docs/v2/reference/component#secondary-identifier-decorator) decorator.
    *
    * @param name The name of the secondary identifier attribute to define.
-   * @param [attributeOptions] The options to create the [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute).
+   * @param [attributeOptions] The options to create the [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute).
    *
-   * @returns The [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) that was created.
+   * @returns The [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) that was created.
    *
    * @example
    * ```
@@ -1552,9 +1534,9 @@ export class Component extends Observable(Object) {
    *
    * @param [options.filter] A function used to filter the identifier attributes to be returned. The function is invoked for each identifier attribute with an `IdentifierAttribute` instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set identifier attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the identifier attributes to be returned (default: `true`, which means that all identifier attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the identifier attributes to be returned (default: `true`, which means that all identifier attributes should be returned).
    *
-   * @returns An iterator of [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/primary-identifier-attribute) or [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute).
+   * @returns An iterator of [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute) or [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute).
    *
    * @example
    * ```
@@ -1605,11 +1587,11 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the secondary identifier attributes of the component.
    *
-   * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) instance as first argument.
+   * @param [options.filter] A function used to filter the secondary identifier attributes to be returned. The function is invoked for each identifier attribute with a [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) instance as first argument.
    * @param [options.setAttributesOnly] A boolean specifying whether only set secondary identifier attributes should be returned (default: `false`).
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the secondary identifier attributes to be returned (default: `true`, which means that all secondary identifier attributes should be returned).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the secondary identifier attributes to be returned (default: `true`, which means that all secondary identifier attributes should be returned).
    *
-   * @returns A [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) instance iterator.
+   * @returns A [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) instance iterator.
    *
    * @example
    * ```
@@ -1657,7 +1639,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns an object composed of all the set identifiers of the component. The shape of the returned object is `{[identifierName]: identifierValue}`. Throws an error if the component doesn't have any set identifiers.
+   * Returns an object composed of all the identifiers that are set in the component. The shape of the returned object is `{[identifierName]: identifierValue}`. Throws an error if the component doesn't have any set identifiers.
    *
    * @returns An object.
    *
@@ -1681,7 +1663,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the component has a set identifier or not.
+   * Returns whether the component has an identifier that is set or not.
    *
    * @returns A boolean.
    *
@@ -1760,7 +1742,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns the `IdentifierDescriptor` of the component.
    *
-   * An `IdentifierDescriptor` is a plain object composed of one pair of name/value corresponding to the name and value of the first identifier attribute encountered in a component. Usually it is the primary identifier, but if the latter is not set, it can be a secondary identifier.
+   * An `IdentifierDescriptor` is a plain object composed of one pair of name/value corresponding to the name and value of the first identifier attribute encountered in a component. Usually it is the primary identifier, but if the primary identifier is not set, it can be a secondary identifier.
    *
    * If there is no set identifier in the component, an error is thrown.
    *
@@ -1786,7 +1768,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the component can provide an `IdentifierDescriptor` (using the [`getIdentifierDescriptor()`](https://layrjs.com/docs/v1/reference/component#get-identifier-descriptor-instance-method) method) or not.
+   * Returns whether the component can provide an `IdentifierDescriptor` (using the [`getIdentifierDescriptor()`](https://layrjs.com/docs/v2/reference/component#get-identifier-descriptor-instance-method) method) or not.
    *
    * @returns A boolean.
    *
@@ -1874,9 +1856,9 @@ export class Component extends Observable(Object) {
   static __identityMap: IdentityMap;
 
   /**
-   * Gets the [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map) of the component.
+   * Gets the [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map) of the component.
    *
-   * @returns An [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map) instance.
+   * @returns An [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map) instance.
    *
    * @category Identity Mapping
    */
@@ -1893,7 +1875,7 @@ export class Component extends Observable(Object) {
   static __isAttached: boolean;
 
   /**
-   * Attaches the component class to its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map). By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
+   * Attaches the component class to its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map). By default, all component classes are attached, so unless you have detached a component class earlier, you should not have to use this method.
    *
    * @returns The component class.
    *
@@ -1906,7 +1888,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Detaches the component class from its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map).
+   * Detaches the component class from its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map).
    *
    * @returns The component class.
    *
@@ -1919,7 +1901,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the component class is attached to its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map).
+   * Returns whether the component class is attached to its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1946,7 +1928,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the component class is detached from its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map).
+   * Returns whether the component class is detached from its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -1959,7 +1941,7 @@ export class Component extends Observable(Object) {
   __isAttached?: boolean;
 
   /**
-   * Attaches the component instance to its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map). By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
+   * Attaches the component instance to its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map). By default, all component instances are attached, so unless you have detached a component instance earlier, you should not have to use this method.
    *
    * @returns The component instance.
    *
@@ -1977,7 +1959,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Detaches the component instance from its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map).
+   * Detaches the component instance from its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map).
    *
    * @returns The component instance.
    *
@@ -1995,7 +1977,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the component instance is attached to its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map).
+   * Returns whether the component instance is attached to its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -2010,7 +1992,7 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Returns whether the component instance is detached from its [`IdentityMap`](https://layrjs.com/docs/v1/reference/identity-map).
+   * Returns whether the component instance is detached from its [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map).
    *
    * @returns A boolean.
    *
@@ -2170,9 +2152,9 @@ export class Component extends Observable(Object) {
   // === Validation ===
 
   /**
-   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://layrjs.com/docs/v1/reference/component#run-validators-dual-method) method.
+   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://layrjs.com/docs/v2/reference/component#run-validators-dual-method) method.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
    * @example
    * ```
@@ -2221,9 +2203,9 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://layrjs.com/docs/v1/reference/component#run-validators-dual-method) method.
+   * Validates the attributes of the component. If an attribute doesn't pass the validation, an error is thrown. The error is a JavaScript `Error` instance with a `failedValidators` custom attribute which contains the result of the [`runValidators()`](https://layrjs.com/docs/v2/reference/component#run-validators-dual-method) method.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
    * @example
    * ```
@@ -2300,7 +2282,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true`, which means that all the attributes will be checked).
+   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be checked (default: `true`, which means that all the attributes will be checked).
    *
    * @returns A boolean.
    *
@@ -2323,7 +2305,7 @@ export class Component extends Observable(Object) {
   /**
    * Returns whether the attributes of the component are valid.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be checked (default: `true`, which means that all the attributes will be checked).
+   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be checked (default: `true`, which means that all the attributes will be checked).
    *
    * @returns A boolean.
    *
@@ -2348,9 +2330,9 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of the component.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
-   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://layrjs.com/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://layrjs.com/docs/v2/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
    * @example
    * ```
@@ -2371,9 +2353,9 @@ export class Component extends Observable(Object) {
   /**
    * Runs the validators for all the set attributes of the component.
    *
-   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
+   * @param [attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be validated (default: `true`, which means that all the attributes will be validated).
    *
-   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://layrjs.com/docs/v1/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
+   * @returns An array containing the validators that have failed. Each item is a plain object composed of a `validator` (a [`Validator`](https://layrjs.com/docs/v2/reference/validator) instance) and a `path` (a string representing the path of the attribute containing the validator that has failed).
    *
    * @example
    * ```
@@ -2418,7 +2400,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the method to get.
    *
-   * @returns A [`Method`](https://layrjs.com/docs/v1/reference/method) instance.
+   * @returns A [`Method`](https://layrjs.com/docs/v2/reference/method) instance.
    *
    * @example
    * ```
@@ -2437,7 +2419,7 @@ export class Component extends Observable(Object) {
    *
    * @param name The name of the method to get.
    *
-   * @returns A [`Method`](https://layrjs.com/docs/v1/reference/method) instance.
+   * @returns A [`Method`](https://layrjs.com/docs/v2/reference/method) instance.
    *
    * @example
    * ```
@@ -2522,12 +2504,12 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorator.
+   * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
-   * @param [methodOptions] The options to create the [`Method`](https://layrjs.com/docs/v1/reference/method#constructor).
+   * @param [methodOptions] The options to create the [`Method`](https://layrjs.com/docs/v2/reference/method#constructor).
    *
-   * @returns The [`Method`](https://layrjs.com/docs/v1/reference/method) that was created.
+   * @returns The [`Method`](https://layrjs.com/docs/v2/reference/method) that was created.
    *
    * @example
    * ```
@@ -2541,12 +2523,12 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorator.
+   * Defines a method in the component. Typically, instead of using this method, you would rather use the [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator) decorator.
    *
    * @param name The name of the method to define.
-   * @param [methodOptions] The options to create the [`Method`](https://layrjs.com/docs/v1/reference/method#constructor).
+   * @param [methodOptions] The options to create the [`Method`](https://layrjs.com/docs/v2/reference/method#constructor).
    *
-   * @returns The [`Method`](https://layrjs.com/docs/v1/reference/method) that was created.
+   * @returns The [`Method`](https://layrjs.com/docs/v2/reference/method) that was created.
    *
    * @example
    * ```
@@ -2562,9 +2544,9 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the methods of the component.
    *
-   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://layrjs.com/docs/v1/reference/method) instance as first argument.
+   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://layrjs.com/docs/v2/reference/method) instance as first argument.
    *
-   * @returns A [`Method`](https://layrjs.com/docs/v1/reference/method) instance iterator.
+   * @returns A [`Method`](https://layrjs.com/docs/v2/reference/method) instance iterator.
    *
    * @example
    * ```
@@ -2585,9 +2567,9 @@ export class Component extends Observable(Object) {
   /**
    * Returns an iterator providing the methods of the component.
    *
-   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://layrjs.com/docs/v1/reference/method) instance as first argument.
+   * @param [options.filter] A function used to filter the methods to be returned. The function is invoked for each method with a [`Method`](https://layrjs.com/docs/v2/reference/method) instance as first argument.
    *
-   * @returns A [`Method`](https://layrjs.com/docs/v1/reference/method) instance iterator.
+   * @returns A [`Method`](https://layrjs.com/docs/v2/reference/method) instance iterator.
    *
    * @example
    * ```
@@ -2823,11 +2805,11 @@ export class Component extends Observable(Object) {
   }
 
   /**
-   * Specifies that the current component is providing another component so it can be easily accessed from the current component or from any component that is "consuming" it using the [`consumeComponent()`](https://layrjs.com/docs/v1/reference/component#consume-component-class-method) method or the [`@consume()`](https://layrjs.com/docs/v1/reference/component#consume-decorator) decorator.
+   * Specifies that the current component is providing another component so it can be easily accessed from the current component or from any component that is "consuming" it using the [`consumeComponent()`](https://layrjs.com/docs/v2/reference/component#consume-component-class-method) method or the [`@consume()`](https://layrjs.com/docs/v2/reference/component#consume-decorator) decorator.
    *
    * The provided component can later be accessed using a component accessor that was automatically set on the component provider.
    *
-   * Typically, instead of using this method, you would rather use the [`@provide()`]((https://layrjs.com/docs/v1/reference/component#provide-decorator)) decorator.
+   * Typically, instead of using this method, you would rather use the [`@provide()`]((https://layrjs.com/docs/v2/reference/component#provide-decorator)) decorator.
    *
    * @param component The component class to provide.
    *
@@ -3079,7 +3061,7 @@ export class Component extends Observable(Object) {
   /**
    * Specifies that the current component is consuming another component so it can be easily accessed using a component accessor.
    *
-   * Typically, instead of using this method, you would rather use the [`@consume()`]((https://layrjs.com/docs/v1/reference/component#consume-decorator)) decorator.
+   * Typically, instead of using this method, you would rather use the [`@consume()`]((https://layrjs.com/docs/v2/reference/component#consume-decorator)) decorator.
    *
    * @param name The name of the component to consume.
    *
@@ -3532,9 +3514,9 @@ export class Component extends Observable(Object) {
   /**
    * Serializes the component class to a plain object.
    *
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true`, which means that all the attributes will be serialized).
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.target] A number specifying the [target](https://layrjs.com/docs/v1/reference/attribute#value-source-type) of the serialization (default: `undefined`).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be serialized (default: `true`, which means that all the attributes will be serialized).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
+   * @param [options.target] A string specifying the [target](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component class.
    *
@@ -3627,9 +3609,9 @@ export class Component extends Observable(Object) {
   /**
    * Serializes the component instance to a plain object.
    *
-   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v1/reference/attribute-selector) specifying the attributes to be serialized (default: `true`, which means that all the attributes will be serialized).
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.target] A number specifying the [target](https://layrjs.com/docs/v1/reference/attribute#value-source-type) of the serialization (default: `undefined`).
+   * @param [options.attributeSelector] An [`AttributeSelector`](https://layrjs.com/docs/v2/reference/attribute-selector) specifying the attributes to be serialized (default: `true`, which means that all the attributes will be serialized).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be serialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
+   * @param [options.target] A string specifying the [target](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `undefined`).
    *
    * @returns A plain object representing the serialized component instance.
    *
@@ -3782,8 +3764,8 @@ export class Component extends Observable(Object) {
    * Deserializes the component class from the specified plain object. The deserialization operates "in place", which means that the current component class attributes are mutated.
    *
    * @param [object] The plain object to deserialize from.
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.source] A number specifying the [source](https://layrjs.com/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
+   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'self'`).
    *
    * @returns The component class.
    *
@@ -3830,8 +3812,8 @@ export class Component extends Observable(Object) {
    * Deserializes the component instance from the specified plain object. The deserialization operates "in place", which means that the current component instance attributes are mutated.
    *
    * @param [object] The plain object to deserialize from.
-   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v1/reference/attribute) instance as first argument.
-   * @param [options.source] A number specifying the [source](https://layrjs.com/docs/v1/reference/attribute#value-source-type) of the serialization (default: `0`).
+   * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
+   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'self'`).
    *
    * @returns The current component instance.
    *

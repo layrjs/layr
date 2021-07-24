@@ -13,7 +13,7 @@ type ValidatorOptions = {
  *
  * #### Usage
  *
- * You shouldn't have to create a `Validator` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator)), you can invoke some [built-in validator builders](https://layrjs.com/docs/v1/reference/validator#built-in-validator-builders) or specify your own [custom validation functions](https://layrjs.com/docs/v1/reference/validator#custom-validation-functions) that will be automatically transformed into `Validator` instances.
+ * You shouldn't have to create a `Validator` instance directly. Instead, when you define an attribute (using a decorator such as [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator)), you can invoke some [built-in validator builders](https://layrjs.com/docs/v2/reference/validator#built-in-validator-builders) or specify your own [custom validation functions](https://layrjs.com/docs/v2/reference/validator#custom-validation-functions) that will be automatically transformed into `Validator` instances.
  *
  * **Example:**
  *
@@ -77,7 +77,7 @@ type ValidatorOptions = {
  *
  * #### Built-In Validator Builders
  *
- * Layr provides a number of validator builders that can be used when you define your component attributes. See an [example of use](https://layrjs.com/docs/v1/reference/validator#usage) above.
+ * Layr provides a number of validator builders that can be used when you define your component attributes. See an [example of use](https://layrjs.com/docs/v2/reference/validator#usage) above.
  *
  * ##### Numbers
  *
@@ -141,7 +141,7 @@ type ValidatorOptions = {
  *
  * #### Custom Validation Functions
  *
- * In addition to the [built-in validator builders](https://layrjs.com/docs/v1/reference/validator#built-in-validator-builders), you can validate your component attributes with your own custom validation functions.
+ * In addition to the [built-in validator builders](https://layrjs.com/docs/v2/reference/validator#built-in-validator-builders), you can validate your component attributes with your own custom validation functions.
  *
  * A custom validation function takes a value as first parameter and returns a boolean indicating whether the validation has succeeded or not.
  *
