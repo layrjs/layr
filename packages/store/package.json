@@ -1,6 +1,6 @@
 {
   "name": "@layr/store",
-  "version": "2.0.24",
+  "version": "2.0.27",
   "description": "A base class for implementing Layr stores",
   "keywords": [
     "layr",
@@ -28,8 +28,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.16",
-    "@layr/storable": "^2.0.25",
+    "@layr/component": "^2.0.18",
+    "@layr/storable": "^2.0.28",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "simple-serialization": "^1.0.6",

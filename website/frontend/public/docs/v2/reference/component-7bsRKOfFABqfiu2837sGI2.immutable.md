@@ -1749,7 +1749,7 @@ Deserializes the component class from the specified plain object. The deserializ
 * `object`: The plain object to deserialize from.
 * `options`:
   * `attributeFilter`: A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
-  * `source`: A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'self'`).
+  * `source`: A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'local'`).
 
 **Returns:**
 
@@ -1776,7 +1776,7 @@ Deserializes the component instance from the specified plain object. The deseria
 * `object`: The plain object to deserialize from.
 * `options`:
   * `attributeFilter`: A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
-  * `source`: A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'self'`).
+  * `source`: A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'local'`).
 
 **Returns:**
 
@@ -1806,7 +1806,7 @@ Deserializes any type of serialized values including objects, arrays, dates, and
 * `options`:
   * `rootComponent`: The root component of your application.
   * `attributeFilter`: A (possibly async) function used to filter the component attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
-  * `source`: The source of the serialization (default: `'self'`).
+  * `source`: The source of the serialization (default: `'local'`).
 
 **Returns:**
 

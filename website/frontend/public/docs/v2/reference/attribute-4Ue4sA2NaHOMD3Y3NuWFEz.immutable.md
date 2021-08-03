@@ -180,7 +180,7 @@ When the attribute's value changes, the observers of the attribute are automatic
 
 * `value`: The value to be set.
 * `options`:
-  * `source`: A string specifying the [source of the value](https://layrjs.com/docs/v2/reference/attribute#value-source-type) (default: `'self'`).
+  * `source`: A string specifying the [source of the value](https://layrjs.com/docs/v2/reference/attribute#value-source-type) (default: `'local'`).
 
 **Example:**
 
@@ -234,7 +234,7 @@ A [`ValueSource`](https://layrjs.com/docs/v2/reference/attribute#value-source-ty
 
 ```
 const title = movie.getAttribute('title');
-title.getValueSource(); // => 'self' (the value was set locally)
+title.getValueSource(); // => 'local' (the value was set locally)
 ```
 
 ##### `setValueSource(source)` <badge type="secondary-outline">instance method</badge> {#set-value-source-instance-method}
@@ -249,7 +249,7 @@ Sets the source of the value of the attribute.
 
 ```
 const title = movie.getAttribute('title');
-title.setValueSource('self'); // The value was set locally
+title.setValueSource('local'); // The value was set locally
 title.setValueSource('backend'); // The value came from an upper layer
 title.setValueSource('frontend'); // The value came from a lower layer
 ```
@@ -262,7 +262,7 @@ Currently, four types of sources are supported:
 
 * `'backend'`: The value comes from an upper layer.
 * `'store'`: The value comes from a store.
-* `'self'`: The value comes from the current layer.
+* `'local'`: The value comes from the current layer.
 * `'frontend`: The value comes from a lower layer.
 ```
 

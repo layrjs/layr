@@ -1,6 +1,6 @@
 {
   "name": "@layr/observable",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Observe JavaScript objects, arrays, or your own classes",
   "keywords": [
     "observe",
