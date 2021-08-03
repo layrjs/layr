@@ -32,9 +32,9 @@ export type NavigatorOptions = {
 };
 
 /**
- * *Inherits from [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class).*
+ * *Inherits from [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class).*
  *
- * An abstract class from which classes such as [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) or [`MemoryNavigator`](https://layrjs.com/docs/v1/reference/memory-navigator) are constructed. Unless you build a custom navigator, you probably won't have to use this class directly.
+ * An abstract class from which classes such as [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) or [`MemoryNavigator`](https://layrjs.com/docs/v2/reference/memory-navigator) are constructed. Unless you build a custom navigator, you probably won't have to use this class directly.
  */
 export abstract class Navigator extends Observable(Object) {
   constructor(options: NavigatorOptions = {}) {
@@ -169,7 +169,7 @@ export abstract class Navigator extends Observable(Object) {
    *
    * The observers of the navigator are automatically called.
    *
-   * Note that instead of using this method, you can use the handy `navigate()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `navigate()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
@@ -209,7 +209,7 @@ export abstract class Navigator extends Observable(Object) {
    *
    * The observers of the navigator are automatically called.
    *
-   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `redirect()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
@@ -245,7 +245,7 @@ export abstract class Navigator extends Observable(Object) {
   /**
    * Reloads the execution environment with the specified URL.
    *
-   * Note that instead of using this method, you can use the handy `reload()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `reload()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    *
@@ -354,7 +354,7 @@ export abstract class Navigator extends Observable(Object) {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
    *
    * @category Observability
    */

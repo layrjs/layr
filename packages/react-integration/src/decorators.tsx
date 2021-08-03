@@ -14,7 +14,7 @@ import {useObserve} from './hooks';
 type ViewOption = {observe?: boolean};
 
 /**
- * Decorates a method of a Layr [component](https://layrjs.com/docs/v1/reference/component) so it be can used as a React component.
+ * Decorates a method of a Layr [component](https://layrjs.com/docs/v2/reference/component) so it be can used as a React component.
  *
  * Like any React component, the method can receive some properties as first parameter and return some [React elements](https://reactjs.org/docs/rendering-elements.html) to render (or `null` if it doesn't render anything).
  *

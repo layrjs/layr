@@ -27,19 +27,19 @@ export type Transformers = {
 };
 
 /**
- * Represents a route or a wrapper in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
+ * Represents a route or a wrapper in a [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
  *
  * An addressable is composed of:
  *
- * - A name matching a method of the [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that contains the addressable.
- * - The canonical [URL pattern](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type) of the addressable.
- * - Some [URL pattern](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type) aliases.
+ * - A name matching a method of the [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class) that contains the addressable.
+ * - The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the addressable.
+ * - Some [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) aliases.
  *
  * #### Usage
  *
- * Typically, you create a `Route` (or a `Wrapper`) and associate it to a routable component by using the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator)) decorator.
+ * Typically, you create a `Route` (or a `Wrapper`) and associate it to a routable component by using the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator)) decorator.
  *
- * See an example of use in the [`Routable()`](https://layrjs.com/docs/v1/reference/routable#usage) mixin.
+ * See an example of use in the [`Routable()`](https://layrjs.com/docs/v2/reference/routable#usage) mixin.
  */
 export abstract class Addressable {
   _name: string;
@@ -55,13 +55,13 @@ export abstract class Addressable {
   _transformers: Transformers;
 
   /**
-   * Creates an instance of [`Addressable`](https://layrjs.com/docs/v1/reference/addressable). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator)) decorator.
+   * Creates an instance of [`Addressable`](https://layrjs.com/docs/v2/reference/addressable). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator)) decorator.
    *
    * @param name The name of the addressable.
-   * @param pattern The canonical [URL pattern](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type) of the addressable.
-   * @param [options.aliases] An array of alternate [URL patterns](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type).
+   * @param pattern The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the addressable.
+   * @param [options.aliases] An array of alternate [URL patterns](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type).
    *
-   * @returns The [`Addressable`](https://layrjs.com/docs/v1/reference/addressable) instance that was created.
+   * @returns The [`Addressable`](https://layrjs.com/docs/v2/reference/addressable) instance that was created.
    *
    * @example
    * ```
@@ -128,7 +128,7 @@ export abstract class Addressable {
   /**
    * Returns the canonical URL pattern of the addressable.
    *
-   * @returns An [URL pattern](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type) string.
+   * @returns An [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) string.
    *
    * @example
    * ```
@@ -160,7 +160,7 @@ export abstract class Addressable {
   /**
    * Returns the alternate URL patterns of the addressable.
    *
-   * @returns An array of [URL pattern](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type) strings.
+   * @returns An array of [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) strings.
    *
    * @example
    * ```
@@ -343,7 +343,7 @@ export abstract class Addressable {
    *
    * A *path pattern* represents the path part of an URL and it can include some parameters by prefixing the name of each parameter with a colon sign (`:`). The [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) package is used under the hood to handle the path patterns, so any path pattern that is supported by `path-to-regexp` is supported by Layr as well.
    *
-   * A *query pattern* represents the query part of an URL and it is composed of a list of parameters separated by an ampersand sign (`&`). Just like a path parameter, a query parameter is represented by a name prefixed with a colon sign (`:`). When an URL is matched against an URL pattern with the [`matchURL()`](https://layrjs.com/docs/v1/reference/addressable#match-url-instance-method) method, the [`qs`](https://github.com/ljharb/qs) package is used under the hood to parse the query part of the URL.
+   * A *query pattern* represents the query part of an URL and it is composed of a list of parameters separated by an ampersand sign (`&`). Just like a path parameter, a query parameter is represented by a name prefixed with a colon sign (`:`). When an URL is matched against an URL pattern with the [`matchURL()`](https://layrjs.com/docs/v2/reference/addressable#match-url-instance-method) method, the [`qs`](https://github.com/ljharb/qs) package is used under the hood to parse the query part of the URL.
    *
    * **Examples:**
    *
@@ -368,7 +368,7 @@ export abstract class Addressable {
 }
 
 /**
- * Returns whether the specified value is an [`Addressable`](https://layrjs.com/docs/v1/reference/addressable) class.
+ * Returns whether the specified value is an [`Addressable`](https://layrjs.com/docs/v2/reference/addressable) class.
  *
  * @param value A value of any type.
  *
@@ -381,7 +381,7 @@ export function isAddressableClass(value: any): value is typeof Addressable {
 }
 
 /**
- * Returns whether the specified value is an [`Addressable`](https://layrjs.com/docs/v1/reference/addressable) instance.
+ * Returns whether the specified value is an [`Addressable`](https://layrjs.com/docs/v2/reference/addressable) instance.
  *
  * @param value A value of any type.
  *

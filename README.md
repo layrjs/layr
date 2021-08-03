@@ -16,22 +16,22 @@ Separating the frontend and the backend is a good thing, but the problem is that
 
 Layr removes the need of building a web API and [reunites](https://dev.to/mvila/good-bye-web-apis-2bel) the frontend and the backend in a way that you can experience them as a single entity.
 
-On the frontend side, Layr gives you [routing capabilities](https://layrjs.com/docs/v1/reference/routable) and [object observability](https://layrjs.com/docs/v1/reference/observable) so that in most cases you don't need to add an external router or a state manager.
+On the frontend side, Layr gives you [routing capabilities](https://layrjs.com/docs/v2/reference/routable) and [object observability](https://layrjs.com/docs/v2/reference/observable) so that in most cases you don't need to add an external router or a state manager.
 
-Last but not least, Layr offers an [ORM](https://layrjs.com/docs/v1/reference/storable) to make data storage as easy as possible.
+Last but not least, Layr offers an [ORM](https://layrjs.com/docs/v2/reference/storable) to make data storage as easy as possible.
 
 ## Core Features
 
 Layr provides everything you need to build a full-stack application from start to finish:
 
-- **Cross-layer inheritance:** a frontend class can "inherit" from a backend class so that some [attributes](https://layrjs.com/docs/v1/reference/attribute) can be automatically transported between the frontend and the backend, and some backend's [methods](https://layrjs.com/docs/v1/reference/method) can be easily called from the frontend.
-- **Controlled attributes:** an attribute can be [type-checked](https://layrjs.com/docs/v1/reference/value-type) at runtime, [validated](https://layrjs.com/docs/v1/reference/validator), [serialized](https://layrjs.com/docs/v1/reference/component#serialization), and [observed](https://layrjs.com/docs/v1/reference/observable).
-- **Remote method invocation:** a backend's method can be [exposed](https://layrjs.com/docs/v1/reference/component#expose-decorator) so that the frontend can call it without the need to build a web API.
-- **Storage:** a class instance can be [persisted](https://layrjs.com/docs/v1/reference/storable) in a database. Currently, only [MongoDB](https://www.mongodb.com/) is supported, but more databases will be added soon.
-- **Routing:** a method can be [associated with an URL](https://layrjs.com/docs/v1/reference/routable) and controlled by a [navigator](https://layrjs.com/docs/v1/reference/navigator) so that this method is automatically called when the user navigates.
-- **Authorization:** [role-based](https://layrjs.com/docs/v1/reference/with-roles) authorizations can be set to restrict an attribute or a method for some users.
+- **Cross-layer inheritance:** a frontend class can "inherit" from a backend class so that some [attributes](https://layrjs.com/docs/v2/reference/attribute) can be automatically transported between the frontend and the backend, and some backend's [methods](https://layrjs.com/docs/v2/reference/method) can be easily called from the frontend.
+- **Controlled attributes:** an attribute can be [type-checked](https://layrjs.com/docs/v2/reference/value-type) at runtime, [validated](https://layrjs.com/docs/v2/reference/validator), [serialized](https://layrjs.com/docs/v2/reference/component#serialization), and [observed](https://layrjs.com/docs/v2/reference/observable).
+- **Remote method invocation:** a backend's method can be [exposed](https://layrjs.com/docs/v2/reference/component#expose-decorator) so that the frontend can call it without the need to build a web API.
+- **Storage:** a class instance can be [persisted](https://layrjs.com/docs/v2/reference/storable) in a database. Currently, only [MongoDB](https://www.mongodb.com/) is supported, but more databases will be added soon.
+- **Routing:** a method can be [associated with an URL](https://layrjs.com/docs/v2/reference/routable) and controlled by a [navigator](https://layrjs.com/docs/v2/reference/navigator) so that this method is automatically called when the user navigates.
+- **Authorization:** [role-based](https://layrjs.com/docs/v2/reference/with-roles) authorizations can be set to restrict an attribute or a method for some users.
 - **Interoperability:** the backend is exposed through a [Deepr API](https://deepr.io) so that you can consume it from any frontend even though it's not built with Layr. And if you want to bring a more traditional API (e.g., REST) to your backend, it's very easy to build such an API on top of your Layr backend.
-- **Integrations:** integration helpers are provided to facilitate the integration of the most popular libraries or services. Currently, only two integration helpers are available: [react-integration](https://layrjs.com/docs/v1/reference/react-integration) and [aws-integration](https://layrjs.com/docs/v1/reference/aws-integration). But more should come shortly.
+- **Integrations:** integration helpers are provided to facilitate the integration of the most popular libraries or services. Currently, only two integration helpers are available: [react-integration](https://layrjs.com/docs/v2/reference/react-integration) and [aws-integration](https://layrjs.com/docs/v2/reference/aws-integration). But more should come shortly.
 
 ## Core Principles
 

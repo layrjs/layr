@@ -6,27 +6,27 @@ export type MemoryNavigatorOptions = NavigatorOptions & {
 };
 
 /**
- * *Inherits from [`Navigator`](https://layrjs.com/docs/v1/reference/navigator).*
+ * *Inherits from [`Navigator`](https://layrjs.com/docs/v2/reference/navigator).*
  *
- * A [`Navigator`](https://layrjs.com/docs/v1/reference/navigator) that keeps the navigation history in memory. Useful in tests and non-browser environments like [React Native](https://reactnative.dev/).
+ * A [`Navigator`](https://layrjs.com/docs/v2/reference/navigator) that keeps the navigation history in memory. Useful in tests and non-browser environments like [React Native](https://reactnative.dev/).
  *
  * #### Usage
  *
- * Create a `MemoryNavigator` instance and register some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) into it.
+ * Create a `MemoryNavigator` instance and register some [routable components](https://layrjs.com/docs/v2/reference/routable#routable-component-class) into it.
  *
- * See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) class.
+ * See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
  */
 export class MemoryNavigator extends Navigator {
   _urls: URL[];
   _index: number;
 
   /**
-   * Creates a [`MemoryNavigator`](https://layrjs.com/docs/v1/reference/memory-navigator).
+   * Creates a [`MemoryNavigator`](https://layrjs.com/docs/v2/reference/memory-navigator).
    *
    * @param [options.initialURLs] An array of URLs to populate the initial navigation history (default: `[]`).
    * @param [options.initialIndex] A number specifying the current entry's index in the navigation history (default: the index of the last entry in the navigation history).
    *
-   * @returns The [`MemoryNavigator`](https://layrjs.com/docs/v1/reference/memory-navigator) instance that was created.
+   * @returns The [`MemoryNavigator`](https://layrjs.com/docs/v2/reference/memory-navigator) instance that was created.
    *
    * @category Creation
    */
@@ -42,7 +42,7 @@ export class MemoryNavigator extends Navigator {
   // === Current Location ===
 
   /**
-   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#current-location) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#current-location) class.
    *
    * @category Current Location
    */
@@ -58,7 +58,7 @@ export class MemoryNavigator extends Navigator {
   // === Navigation ===
 
   /**
-   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#navigation) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#navigation) class.
    *
    * @category Navigation
    */
@@ -101,7 +101,7 @@ export class MemoryNavigator extends Navigator {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
    *
    * @category Observability
    */

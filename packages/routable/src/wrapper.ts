@@ -4,19 +4,19 @@ import {Pattern} from './pattern';
 export type WrapperOptions = AddressableOptions;
 
 /**
- * Represents a wrapper in a [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class).
+ * Represents a wrapper in a [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
  *
  * A wrapper is composed of:
  *
- * - A name matching a method of the [routable component](https://layrjs.com/docs/v1/reference/routable#routable-component-class) that contains the wrapper.
- * - The canonical [URL pattern](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type) of the wrapper.
- * - Some [URL pattern](https://layrjs.com/docs/v1/reference/addressable#url-pattern-type) aliases.
+ * - A name matching a method of the [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class) that contains the wrapper.
+ * - The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the wrapper.
+ * - Some [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) aliases.
  *
  * #### Usage
  *
- * Typically, you create a `Wrapper` and associate it to a routable component by using the [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator) decorator.
+ * Typically, you create a `Wrapper` and associate it to a routable component by using the [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorator.
  *
- * See an example of use in the [`Routable()`](https://layrjs.com/docs/v1/reference/routable#usage) mixin.
+ * See an example of use in the [`Routable()`](https://layrjs.com/docs/v2/reference/routable#usage) mixin.
  */
 export class Wrapper extends Addressable {
   constructor(name: string, pattern: Pattern, options: WrapperOptions = {}) {
@@ -33,7 +33,7 @@ export class Wrapper extends Addressable {
 }
 
 /**
- * Returns whether the specified value is a [`Wrapper`](https://layrjs.com/docs/v1/reference/wrapper) class.
+ * Returns whether the specified value is a [`Wrapper`](https://layrjs.com/docs/v2/reference/wrapper) class.
  *
  * @param value A value of any type.
  *
@@ -46,7 +46,7 @@ export function isWrapperClass(value: any): value is typeof Wrapper {
 }
 
 /**
- * Returns whether the specified value is a [`Wrapper`](https://layrjs.com/docs/v1/reference/wrapper) instance.
+ * Returns whether the specified value is a [`Wrapper`](https://layrjs.com/docs/v2/reference/wrapper) instance.
  *
  * @param value A value of any type.
  *

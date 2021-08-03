@@ -12,11 +12,11 @@ type CustomHandler = (
 ) => Promise<APIGatewayProxyStructuredResultV2 | undefined>;
 
 /**
- * Creates an [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html) for the specified [component server](https://layrjs.com/docs/v1/reference/component-server).
+ * Creates an [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html) for the specified [component server](https://layrjs.com/docs/v2/reference/component-server).
  *
  * The created handler can be hosted in [AWS Lambda](https://aws.amazon.com/lambda/) and consumed by [AWS API Gateway](https://aws.amazon.com/api-gateway/) through an [HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html).
  *
- * @param componentServer A [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) instance.
+ * @param componentServer A [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server) instance.
  *
  * @returns An [AWS Lambda function handler](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html).
  *

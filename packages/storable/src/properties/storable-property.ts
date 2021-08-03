@@ -14,9 +14,9 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
   /**
    * @name StorableProperty
    *
-   * *Inherits from [`Property`](https://layrjs.com/docs/v1/reference/property).*
+   * *Inherits from [`Property`](https://layrjs.com/docs/v2/reference/property).*
    *
-   * A base class from which classes such as [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute) or [`StorableMethod`](https://layrjs.com/docs/v1/reference/storable-method) are constructed. Unless you build a custom property class, you probably won't have to use this class directly.
+   * A base class from which classes such as [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute) or [`StorableMethod`](https://layrjs.com/docs/v2/reference/storable-method) are constructed. Unless you build a custom property class, you probably won't have to use this class directly.
    */
   class extends Base {
     /**
@@ -25,11 +25,11 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
      * Creates a storable property.
      *
      * @param name The name of the property.
-     * @param parent The [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) class, prototype, or instance that owns the property.
-     * @param [options.finder] A function specifying a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type) for the property.
-     * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v1/reference/property#property-exposure-type) object specifying how the property should be exposed to remote access.
+     * @param parent The [storable component](https://layrjs.com/docs/v2/reference/storable#storable-component-class) class, prototype, or instance that owns the property.
+     * @param [options.finder] A function specifying a [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type) for the property.
+     * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the property should be exposed to remote access.
      *
-     * @returns The [`StorableProperty`](https://layrjs.com/docs/v1/reference/storable-property) instance that was created.
+     * @returns The [`StorableProperty`](https://layrjs.com/docs/v2/reference/storable-property) instance that was created.
      *
      * @category Creation
      */
@@ -47,7 +47,7 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
     // === Property Methods ===
 
     /**
-     * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
+     * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v2/reference/property#basic-methods) class.
      *
      * @category Property Methods
      */
@@ -57,9 +57,9 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
     _finder: StorablePropertyFinder | undefined;
 
     /**
-     * Returns the [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type)of  the property.
+     * Returns the [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type)of  the property.
      *
-     * @returns A [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type) function (or `undefined` if the property has no associated finder).
+     * @returns A [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type) function (or `undefined` if the property has no associated finder).
      *
      * @category Finder
      */
@@ -68,7 +68,7 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
     }
 
     /**
-     * Returns whether the property has a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type).
+     * Returns whether the property has a [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type).
      *
      * @returns A boolean.
      *
@@ -79,9 +79,9 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
     }
 
     /**
-     * Sets a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type) for the property.
+     * Sets a [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type) for the property.
      *
-     * @param finder The [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type) function to set.
+     * @param finder The [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type) function to set.
      *
      * @category Finder
      */
@@ -104,7 +104,7 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
      *
      * A function representing the "finder" of a property.
      *
-     * The function should return a [`Query`](https://layrjs.com/docs/v1/reference/query) for the property that is queried for.
+     * The function should return a [`Query`](https://layrjs.com/docs/v2/reference/query) for the property that is queried for.
      *
      * The function has the following characteristics:
      *
@@ -112,7 +112,7 @@ export const StorablePropertyMixin = <T extends Constructor<typeof Property>>(Ba
      * - As first parameter, it receives the value that was specified in the user's query.
      * - It is executed with the parent of the property as `this` context.
      *
-     * See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute) and [`StorableMethod`](https://layrjs.com/docs/v1/reference/storable-method) classes.
+     * See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute) and [`StorableMethod`](https://layrjs.com/docs/v2/reference/storable-method) classes.
      *
      * @category Finder
      */

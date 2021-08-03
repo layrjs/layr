@@ -1,11 +1,11 @@
 /**
  * @module component-koa-middleware
  *
- * A [Koa](https://koajs.com/) middleware allowing to serve a root [`Component`](https://layrjs.com/docs/v1/reference/component) so it can be accessed by a [`ComponentHTTPClient`](https://layrjs.com/docs/v1/reference/component-http-client).
+ * A [Koa](https://koajs.com/) middleware allowing to serve a root [`Component`](https://layrjs.com/docs/v2/reference/component) so it can be accessed by a [`ComponentHTTPClient`](https://layrjs.com/docs/v2/reference/component-http-client).
  *
  * #### Usage
  *
- * Call the [`serveComponent()`](https://layrjs.com/docs/v1/reference/component-koa-middleware#serve-component-function) function to create a middleware for your Koa application.
+ * Call the [`serveComponent()`](https://layrjs.com/docs/v2/reference/component-koa-middleware#serve-component-function) function to create a middleware for your Koa application.
  *
  * **Example:**
  *
@@ -54,10 +54,10 @@ export type ServeComponentOptions = ComponentServerOptions & {
 };
 
 /**
- * Creates a [Koa](https://koajs.com/) middleware exposing the specified root [`Component`](https://layrjs.com/docs/v1/reference/component) class.
+ * Creates a [Koa](https://koajs.com/) middleware exposing the specified root [`Component`](https://layrjs.com/docs/v2/reference/component) class.
  *
- * @param componentOrComponentServer The root [`Component`](https://layrjs.com/docs/v1/reference/component) class to serve. An instance of a [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) will be created under the hood. Alternatively, you can pass an existing instance of a [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server).
- * @param [options.version] A number specifying the version of the created [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) (default: `undefined`).
+ * @param componentOrComponentServer The root [`Component`](https://layrjs.com/docs/v2/reference/component) class to serve. An instance of a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server) will be created under the hood. Alternatively, you can pass an existing instance of a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server).
+ * @param [options.version] A number specifying the version of the created [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server) (default: `undefined`).
  *
  * @returns A Koa middleware.
  *

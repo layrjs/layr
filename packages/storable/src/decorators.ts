@@ -26,12 +26,12 @@ import {isStorableClass, isStorableInstance, isStorableClassOrInstance} from './
 type StorableAttributeDecoratorOptions = Omit<StorableAttributeOptions, 'value' | 'default'>;
 
 /**
- * Decorates an attribute of a storable component so it can be combined with a [`Loader`](https://layrjs.com/docs/v1/reference/storable-attribute#loader-type), a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type), or any kind of [`Hook`](https://layrjs.com/docs/v1/reference/storable-attribute#hook-type).
+ * Decorates an attribute of a storable component so it can be combined with a [`Loader`](https://layrjs.com/docs/v2/reference/storable-attribute#loader-type), a [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type), or any kind of [`Hook`](https://layrjs.com/docs/v2/reference/storable-attribute#hook-type).
  *
- * @param [valueType] A string specifying the [type of values](https://layrjs.com/docs/v1/reference/value-type#supported-types) that can be stored in the attribute (default: `'any'`).
- * @param [options] The options to create the [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute#constructor).
+ * @param [valueType] A string specifying the [type of values](https://layrjs.com/docs/v2/reference/value-type#supported-types) that can be stored in the attribute (default: `'any'`).
+ * @param [options] The options to create the [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute#constructor).
  *
- * @examplelink See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute) class.
+ * @examplelink See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute) class.
  *
  * @category Decorators
  * @decorator
@@ -57,10 +57,10 @@ export function attribute(
 }
 
 /**
- * Decorates an attribute of a component as a [storable primary identifier attribute](https://layrjs.com/docs/v1/reference/storable-primary-identifier-attribute).
+ * Decorates an attribute of a component as a [storable primary identifier attribute](https://layrjs.com/docs/v2/reference/storable-primary-identifier-attribute).
  *
  * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
- * @param [options] The options to create the [`StorablePrimaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/storable-primary-identifier-attribute#constructor).
+ * @param [options] The options to create the [`StorablePrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/storable-primary-identifier-attribute#constructor).
  *
  * @category Decorators
  * @decorator
@@ -86,10 +86,10 @@ export function primaryIdentifier(
 }
 
 /**
- * Decorates an attribute of a component as a [storable secondary identifier attribute](https://layrjs.com/docs/v1/reference/storable-secondary-identifier-attribute).
+ * Decorates an attribute of a component as a [storable secondary identifier attribute](https://layrjs.com/docs/v2/reference/storable-secondary-identifier-attribute).
  *
  * @param [valueType] A string specifying the type of values the attribute can store. It can be either `'string'` or `'number'` (default: `'string'`).
- * @param [options] The options to create the [`StorableSecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/storable-secondary-identifier-attribute#constructor).
+ * @param [options] The options to create the [`StorableSecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/storable-secondary-identifier-attribute#constructor).
  *
  * @category Decorators
  * @decorator
@@ -115,11 +115,11 @@ export function secondaryIdentifier(
 }
 
 /**
- * Decorates a method of a storable component so it can be combined with a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type).
+ * Decorates a method of a storable component so it can be combined with a [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type).
  *
- * @param [options] The options to create the [`StorableMethod`](https://layrjs.com/docs/v1/reference/storable-method#constructor).
+ * @param [options] The options to create the [`StorableMethod`](https://layrjs.com/docs/v2/reference/storable-method#constructor).
  *
- * @examplelink See an example of use in the [`StorableMethod`](https://layrjs.com/docs/v1/reference/storable-method) class.
+ * @examplelink See an example of use in the [`StorableMethod`](https://layrjs.com/docs/v2/reference/storable-method) class.
  *
  * @category Decorators
  * @decorator
@@ -136,11 +136,11 @@ export function method(options: StorableMethodOptions = {}) {
 }
 
 /**
- * Decorates a storable attribute with a [`Loader`](https://layrjs.com/docs/v1/reference/storable-attribute#loader-type).
+ * Decorates a storable attribute with a [`Loader`](https://layrjs.com/docs/v2/reference/storable-attribute#loader-type).
  *
- * @param loader A function representing the [`Loader`](https://layrjs.com/docs/v1/reference/storable-attribute#loader-type) of the storable attribute.
+ * @param loader A function representing the [`Loader`](https://layrjs.com/docs/v2/reference/storable-attribute#loader-type) of the storable attribute.
  *
- * @examplelink See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute) class.
+ * @examplelink See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute) class.
  *
  * @category Decorators
  * @decorator
@@ -167,11 +167,11 @@ export function loader(loader: StorableAttributeLoader) {
 }
 
 /**
- * Decorates a storable attribute or method with a [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type).
+ * Decorates a storable attribute or method with a [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type).
  *
- * @param finder A function representing the [`Finder`](https://layrjs.com/docs/v1/reference/storable-property#finder-type) of the storable attribute or method.
+ * @param finder A function representing the [`Finder`](https://layrjs.com/docs/v2/reference/storable-property#finder-type) of the storable attribute or method.
  *
- * @examplelink See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute) and [`StorableMethod`](https://layrjs.com/docs/v1/reference/storable-method) classes.
+ * @examplelink See an example of use in the [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute) and [`StorableMethod`](https://layrjs.com/docs/v2/reference/storable-method) classes.
  *
  * @category Decorators
  * @decorator
@@ -202,9 +202,9 @@ type ClassIndexOptions = {isUnique?: boolean};
 type AttributeIndexParam = {direction?: SortDirection; isUnique?: boolean};
 
 /**
- * Defines an [index](https://layrjs.com/docs/v1/reference/index) for an attribute or a set of attributes.
+ * Defines an [index](https://layrjs.com/docs/v2/reference/index) for an attribute or a set of attributes.
  *
- * This decorator is commonly placed before a storable component attribute to define a [single attribute index](https://layrjs.com/docs/v1/reference/index#single-attribute-indexes), but it can also be placed before a storable component class to define a [compound attribute index](https://layrjs.com/docs/v1/reference/index#compound-attribute-indexes).
+ * This decorator is commonly placed before a storable component attribute to define a [single attribute index](https://layrjs.com/docs/v2/reference/index#single-attribute-indexes), but it can also be placed before a storable component class to define a [compound attribute index](https://layrjs.com/docs/v2/reference/index#compound-attribute-indexes).
  *
  * @param [optionsOrAttributes] Depends on the type of index you want to define (see below).
  * @param [options] An object specifying some options in the case of compound attribute index (see below).

@@ -32,9 +32,9 @@ export type ComponentClientOptions = {
 };
 
 /**
- * A base class allowing to access a root [`Component`](https://layrjs.com/docs/v1/reference/component) that is served by a [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server).
+ * A base class allowing to access a root [`Component`](https://layrjs.com/docs/v2/reference/component) that is served by a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server).
  *
- * Typically, instead of using this class, you would use a subclass such as [`ComponentHTTPClient`](https://layrjs.com/docs/v1/reference/component-http-client).
+ * Typically, instead of using this class, you would use a subclass such as [`ComponentHTTPClient`](https://layrjs.com/docs/v2/reference/component-http-client).
  */
 export class ComponentClient {
   _componentServer: ComponentServerLike;
@@ -45,9 +45,9 @@ export class ComponentClient {
   /**
    * Creates a component client.
    *
-   * @param componentServer The [`ComponentServer`](https://layrjs.com/docs/v1/reference/component-server) to connect to.
+   * @param componentServer The [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server) to connect to.
    * @param [options.version] A number specifying the expected version of the component server (default: `undefined`). If a version is specified, an error is thrown when a request is sent and the component server has a different version. The thrown error is a JavaScript `Error` instance with a `code` attribute set to `'COMPONENT_CLIENT_VERSION_DOES_NOT_MATCH_COMPONENT_SERVER_VERSION'`.
-   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://layrjs.com/docs/v1/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
+   * @param [options.mixins] An array of the component mixins (e.g., [`Storable`](https://layrjs.com/docs/v2/reference/storable)) to use when constructing the components exposed by the component server (default: `[]`).
    *
    * @returns A `ComponentClient` instance.
    *
@@ -118,9 +118,9 @@ export class ComponentClient {
   /**
    * Gets the component that is served by the component server.
    *
-   * @returns A [`Component`](https://layrjs.com/docs/v1/reference/component) class.
+   * @returns A [`Component`](https://layrjs.com/docs/v2/reference/component) class.
    *
-   * @examplelink See [`constructor`'s example](https://layrjs.com/docs/v1/reference/component-client#constructor).
+   * @examplelink See [`constructor`'s example](https://layrjs.com/docs/v2/reference/component-client#constructor).
    *
    * @category Getting the Served Component
    * @possiblyasync

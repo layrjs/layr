@@ -116,7 +116,7 @@ export type TraceEntry = {
 };
 
 /**
- * An abstract class from which classes such as [`MongoDBStore`](https://layrjs.com/docs/v1/reference/mongodb-store) or [`MemoryStore`](https://layrjs.com/docs/v1/reference/memory-store) are constructed. Unless you build a custom store, you probably won't have to use this class directly.
+ * An abstract class from which classes such as [`MongoDBStore`](https://layrjs.com/docs/v2/reference/mongodb-store) or [`MemoryStore`](https://layrjs.com/docs/v2/reference/memory-store) are constructed. Unless you build a custom store, you probably won't have to use this class directly.
  */
 export abstract class Store {
   constructor(options = {}) {
@@ -132,9 +132,9 @@ export abstract class Store {
   _rootComponents = new Set<typeof Component>();
 
   /**
-   * Registers all the [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that are provided (directly or recursively) by the specified root component.
+   * Registers all the [storable components](https://layrjs.com/docs/v2/reference/storable#storable-component-class) that are provided (directly or recursively) by the specified root component.
    *
-   * @param rootComponent A [`Component`](https://layrjs.com/docs/v1/reference/component) class.
+   * @param rootComponent A [`Component`](https://layrjs.com/docs/v2/reference/component) class.
    *
    * @example
    * ```
@@ -177,7 +177,7 @@ export abstract class Store {
   /**
    * Gets all the root components that are registered into the store.
    *
-   * @returns An iterator of [`Component`](https://layrjs.com/docs/v1/reference/component) classes.
+   * @returns An iterator of [`Component`](https://layrjs.com/docs/v2/reference/component) classes.
    *
    * @category Component Registration
    */
@@ -190,11 +190,11 @@ export abstract class Store {
   _storables = new Map<string, typeof StorableComponent>();
 
   /**
-   * Gets a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that is registered into the store. An error is thrown if there is no storable component with the specified name.
+   * Gets a [storable component](https://layrjs.com/docs/v2/reference/storable#storable-component-class) that is registered into the store. An error is thrown if there is no storable component with the specified name.
    *
    * @param name The name of the storable component to get.
    *
-   * @returns A [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) class.
+   * @returns A [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storable-component-class) class.
    *
    * @example
    * ```
@@ -218,7 +218,7 @@ export abstract class Store {
   }
 
   /**
-   * Returns whether a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) is registered into the store.
+   * Returns whether a [storable component](https://layrjs.com/docs/v2/reference/storable#storable-component-class) is registered into the store.
    *
    * @param name The name of the storable component to check.
    *
@@ -270,9 +270,9 @@ export abstract class Store {
   }
 
   /**
-   * Registers a specific [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) into the store. Typically, instead of using this method, you would rather use the [`registerRootComponent()`](https://layrjs.com/docs/v1/reference/store#register-root-component-instance-method) method to register multiple storable components at once.
+   * Registers a specific [storable component](https://layrjs.com/docs/v2/reference/storable#storable-component-class) into the store. Typically, instead of using this method, you would rather use the [`registerRootComponent()`](https://layrjs.com/docs/v2/reference/store#register-root-component-instance-method) method to register multiple storable components at once.
    *
-   * @param storable The [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) class to register.
+   * @param storable The [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storable-component-class) class to register.
    *
    * @example
    * ```
@@ -322,9 +322,9 @@ export abstract class Store {
   }
 
   /**
-   * Gets all the [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that are registered into the store.
+   * Gets all the [storable components](https://layrjs.com/docs/v2/reference/storable#storable-component-class) that are registered into the store.
    *
-   * @returns An iterator of [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) classes.
+   * @returns An iterator of [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storable-component-class) classes.
    *
    * @category Component Registration
    */
@@ -839,13 +839,13 @@ export abstract class Store {
   // === Migration ===
 
   /**
-   * Migrates the database to reflect all the [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) that are registered into the store.
+   * Migrates the database to reflect all the [storable components](https://layrjs.com/docs/v2/reference/storable#storable-component-class) that are registered into the store.
    *
-   * The migration consists in synchronizing the indexes of the database with the indexes that are defined in each storable component (typically using the [`@index()`](https://layrjs.com/docs/v1/reference/storable#index-decorator) decorator).
+   * The migration consists in synchronizing the indexes of the database with the indexes that are defined in each storable component (typically using the [`@index()`](https://layrjs.com/docs/v2/reference/storable#index-decorator) decorator).
    *
    * @param [options.silent] A boolean specifying whether the operation should not produce any output in the console (default: `false`).
    *
-   * @examplelink See an example of use in the [`Index`](https://layrjs.com/docs/v1/reference/index) class.
+   * @examplelink See an example of use in the [`Index`](https://layrjs.com/docs/v2/reference/index) class.
    *
    * @category Migration
    */

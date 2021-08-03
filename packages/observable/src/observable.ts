@@ -16,11 +16,11 @@ export type ObserverPayload = {[key: string]: unknown};
 /**
  * Brings observability to any class.
  *
- * This mixin is used to construct several Layr's classes such as [`Component`](https://layrjs.com/docs/v1/reference/component) or [`Attribute`](https://layrjs.com/docs/v1/reference/attribute). So, in most cases, you'll have the capabilities provided by this mixin without having to call it.
+ * This mixin is used to construct several Layr's classes such as [`Component`](https://layrjs.com/docs/v2/reference/component) or [`Attribute`](https://layrjs.com/docs/v2/reference/attribute). So, in most cases, you'll have the capabilities provided by this mixin without having to call it.
  *
  * #### Usage
  *
- * Call the `Observable()` mixin with any class to construct an [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class. Then, you can add some observers by using the [`addObserver()`](https://layrjs.com/docs/v1/reference/observable#add-observer-dual-method) method, and trigger their execution anytime by using the [`callObservers()`](https://layrjs.com/docs/v1/reference/observable#call-observers-dual-method) method.
+ * Call the `Observable()` mixin with any class to construct an [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class. Then, you can add some observers by using the [`addObserver()`](https://layrjs.com/docs/v2/reference/observable#add-observer-dual-method) method, and trigger their execution anytime by using the [`callObservers()`](https://layrjs.com/docs/v2/reference/observable#call-observers-dual-method) method.
  *
  * For example, let's define a `Movie` class using the `Observable()` mixin:
  *
@@ -79,7 +79,7 @@ export type ObserverPayload = {[key: string]: unknown};
  * // 'The movie's title has changed'
  * ```
  *
- * > Note that the same result could have been achieved by using a Layr [`Component`](https://layrjs.com/docs/v1/reference/component):
+ * > Note that the same result could have been achieved by using a Layr [`Component`](https://layrjs.com/docs/v2/reference/component):
  * >
  * > ```
  * > // JS
@@ -103,7 +103,7 @@ export type ObserverPayload = {[key: string]: unknown};
  *
  * ### Observable <badge type="primary">class</badge> {#observable-class}
  *
- * An `Observable` class is constructed by calling the `Observable()` mixin ([see above](https://layrjs.com/docs/v1/reference/observable#observable-mixin)).
+ * An `Observable` class is constructed by calling the `Observable()` mixin ([see above](https://layrjs.com/docs/v2/reference/observable#observable-mixin)).
  * @mixin
  */
 export function Observable<T extends Constructor>(Base: T) {
@@ -121,7 +121,7 @@ export function Observable<T extends Constructor>(Base: T) {
     /**
      * Adds an observer to the current class or instance.
      *
-     * @param observer A function that will be automatically executed when the [`callObservers()`](https://layrjs.com/docs/v1/reference/observable#call-observers-dual-method) method is called. Alternatively, you can specify an observable for which the observers should be executed, and doing so, you can connect an observable to another observable.
+     * @param observer A function that will be automatically executed when the [`callObservers()`](https://layrjs.com/docs/v2/reference/observable#call-observers-dual-method) method is called. Alternatively, you can specify an observable for which the observers should be executed, and doing so, you can connect an observable to another observable.
      *
      * @example
      * ```
@@ -151,7 +151,7 @@ export function Observable<T extends Constructor>(Base: T) {
     /**
      * Adds an observer to the current class or instance.
      *
-     * @param observer A function that will be automatically executed when the [`callObservers()`](https://layrjs.com/docs/v1/reference/observable#call-observers-dual-method) method is called. Alternatively, you can specify an observable for which the observers should be executed, and doing so, you can connect an observable to another observable.
+     * @param observer A function that will be automatically executed when the [`callObservers()`](https://layrjs.com/docs/v2/reference/observable#call-observers-dual-method) method is called. Alternatively, you can specify an observable for which the observers should be executed, and doing so, you can connect an observable to another observable.
      *
      * @example
      * ```
@@ -337,11 +337,11 @@ export function Observable<T extends Constructor>(Base: T) {
  *
  * The returned observable is observed deeply. So, for example, if an object contains a nested object, modifying the nested object will trigger the execution of the parent's observers.
  *
- * The returned observable provides the same methods as an [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) instance:
+ * The returned observable provides the same methods as an [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) instance:
  *
- * - [`addObserver()`](https://layrjs.com/docs/v1/reference/observable#add-observer-dual-method)
- * - [`removeObserver()`](https://layrjs.com/docs/v1/reference/observable#remove-observer-dual-method)
- * - [`callObservers()`](https://layrjs.com/docs/v1/reference/observable#call-observers-dual-method)
+ * - [`addObserver()`](https://layrjs.com/docs/v2/reference/observable#add-observer-dual-method)
+ * - [`removeObserver()`](https://layrjs.com/docs/v2/reference/observable#remove-observer-dual-method)
+ * - [`callObservers()`](https://layrjs.com/docs/v2/reference/observable#call-observers-dual-method)
  *
  * @param target A JavaScript plain object or array that you want to observe.
  *
@@ -580,7 +580,7 @@ export class ObserverSet {
 }
 
 /**
- * Returns whether the specified value is observable. When a value is observable, you can use any the following methods on it: [`addObserver()`](https://layrjs.com/docs/v1/reference/observable#add-observer-dual-method), [`removeObserver()`](https://layrjs.com/docs/v1/reference/observable#remove-observer-dual-method), and [`callObservers()`](https://layrjs.com/docs/v1/reference/observable#call-observers-dual-method).
+ * Returns whether the specified value is observable. When a value is observable, you can use any the following methods on it: [`addObserver()`](https://layrjs.com/docs/v2/reference/observable#add-observer-dual-method), [`removeObserver()`](https://layrjs.com/docs/v2/reference/observable#remove-observer-dual-method), and [`callObservers()`](https://layrjs.com/docs/v2/reference/observable#call-observers-dual-method).
  *
  * @param value A value of any type.
  *

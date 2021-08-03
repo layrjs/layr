@@ -39,13 +39,13 @@ const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME = '_id_';
 
 /**
- * *Inherits from [`Store`](https://layrjs.com/docs/v1/reference/store).*
+ * *Inherits from [`Store`](https://layrjs.com/docs/v2/reference/store).*
  *
- * A [`Store`](https://layrjs.com/docs/v1/reference/store) that uses a [MongoDB](https://www.mongodb.com/) database to persist its registered [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class).
+ * A [`Store`](https://layrjs.com/docs/v2/reference/store) that uses a [MongoDB](https://www.mongodb.com/) database to persist its registered [storable components](https://layrjs.com/docs/v2/reference/storable#storable-component-class).
  *
  * #### Usage
  *
- * Create a `MongoDBStore` instance, register some [storable components](https://layrjs.com/docs/v1/reference/storable#storable-component-class) into it, and then use any [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class)'s method to load, save, delete, or find components from the store.
+ * Create a `MongoDBStore` instance, register some [storable components](https://layrjs.com/docs/v2/reference/storable#storable-component-class) into it, and then use any [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storable-component-class)'s method to load, save, delete, or find components from the store.
  *
  * For example, let's build a simple `Backend` that provides a `Movie` component.
  *
@@ -95,7 +95,7 @@ const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME = '_id_';
  * store.registerRootComponent(Backend);
  * ```
  *
- * Finally, we can interact with the store by calling some [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) methods:
+ * Finally, we can interact with the store by calling some [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storable-component-class) methods:
  *
  * ```
  * let movie = new Movie({id: 'abc123', title: 'Inception'});
@@ -126,12 +126,12 @@ export class MongoDBStore extends Store {
   private _poolSize: number;
 
   /**
-   * Creates a [`MongoDBStore`](https://layrjs.com/docs/v1/reference/mongodb-store).
+   * Creates a [`MongoDBStore`](https://layrjs.com/docs/v2/reference/mongodb-store).
    *
    * @param connectionString The [connection string](https://docs.mongodb.com/manual/reference/connection-string/) of the MongoDB database to use.
    * @param [options.poolSize] A number specifying the maximum size of the connection pool (default: `1`).
    *
-   * @returns The [`MongoDBStore`](https://layrjs.com/docs/v1/reference/mongodb-store) instance that was created.
+   * @returns The [`MongoDBStore`](https://layrjs.com/docs/v2/reference/mongodb-store) instance that was created.
    *
    * @example
    * ```
@@ -168,7 +168,7 @@ export class MongoDBStore extends Store {
   // === Component Registration ===
 
   /**
-   * See the methods that are inherited from the [`Store`](https://layrjs.com/docs/v1/reference/store#component-registration) class.
+   * See the methods that are inherited from the [`Store`](https://layrjs.com/docs/v2/reference/store#component-registration) class.
    *
    * @category Component Registration
    */
@@ -178,7 +178,7 @@ export class MongoDBStore extends Store {
   /**
    * Initiates a connection to the MongoDB database.
    *
-   * Since this method is called automatically when you interact with the store through any of the [`StorableComponent`](https://layrjs.com/docs/v1/reference/storable#storable-component-class) methods, you shouldn't have to call it manually.
+   * Since this method is called automatically when you interact with the store through any of the [`StorableComponent`](https://layrjs.com/docs/v2/reference/storable#storable-component-class) methods, you shouldn't have to call it manually.
    *
    * @category Connection to MongoDB
    */
@@ -431,7 +431,7 @@ export class MongoDBStore extends Store {
   // === Migration ===
 
   /**
-   * See the methods that are inherited from the [`Store`](https://layrjs.com/docs/v1/reference/store#migration) class.
+   * See the methods that are inherited from the [`Store`](https://layrjs.com/docs/v2/reference/store#migration) class.
    *
    * @category Migration
    */

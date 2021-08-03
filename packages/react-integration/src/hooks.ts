@@ -51,9 +51,9 @@ export function useAction<Args extends any[] = any[], Result = any>(
 }
 
 /**
- * Makes a view dependent of an [observable](https://layrjs.com/docs/v1/reference/observable#observable-type) so the view is automatically re-rendered when the observable changes.
+ * Makes a view dependent of an [observable](https://layrjs.com/docs/v2/reference/observable#observable-type) so the view is automatically re-rendered when the observable changes.
  *
- * @param observable An [observable](https://layrjs.com/docs/v1/reference/observable#observable-type) object.
+ * @param observable An [observable](https://layrjs.com/docs/v2/reference/observable#observable-type) object.
  *
  * @example
  * ```

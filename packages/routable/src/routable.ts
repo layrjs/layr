@@ -18,11 +18,11 @@ const debug = debugModule('layr:routable');
 // DEBUG=layr:routable DEBUG_DEPTH=10
 
 /**
- * Extends a [`Component`](https://layrjs.com/docs/v1/reference/component) class with some routing capabilities.
+ * Extends a [`Component`](https://layrjs.com/docs/v2/reference/component) class with some routing capabilities.
  *
  * #### Usage
  *
- * Call `Routable()` with a [`Component`](https://layrjs.com/docs/v1/reference/component) class to construct a [`RoutableComponent`](https://layrjs.com/docs/v1/reference/routable#routable-component-class) class. Then, you can define some routes into this class by using the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+ * Call `Routable()` with a [`Component`](https://layrjs.com/docs/v2/reference/component) class to construct a [`RoutableComponent`](https://layrjs.com/docs/v2/reference/routable#routable-component-class) class. Then, you can define some routes into this class by using the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
  *
  * **Example:**
  *
@@ -54,7 +54,7 @@ const debug = debugModule('layr:routable');
  *
  * Once you have a routable component, you can use any method provided by the `Routable()` mixin.
  *
- * For example, to call the `upvote()` method by a URL, you can use the [`callRouteByURL()`](https://layrjs.com/docs/v1/reference/routable#call-route-by-url-class-method) method:
+ * For example, to call the `upvote()` method by a URL, you can use the [`callRouteByURL()`](https://layrjs.com/docs/v2/reference/routable#call-route-by-url-class-method) method:
  *
  * ```
  * await Article.callRouteByURL('/articles/abc123/upvote');
@@ -63,7 +63,7 @@ const debug = debugModule('layr:routable');
  * await Article.upvote({id: 'abc123'});
  * ```
  *
- * A routable component can be registered into a navigator such as [BrowserNavigator](https://layrjs.com/docs/v1/reference/browser-navigator) by using the [`registerRoutable()`](https://layrjs.com/docs/v1/reference/navigator#register-routable-instance-method) method (or [`registerRootComponent()`](https://layrjs.com/docs/v1/reference/navigator#register-root-component-instance-method) to register several components at once):
+ * A routable component can be registered into a navigator such as [BrowserNavigator](https://layrjs.com/docs/v2/reference/browser-navigator) by using the [`registerRoutable()`](https://layrjs.com/docs/v2/reference/navigator#register-routable-instance-method) method (or [`registerRootComponent()`](https://layrjs.com/docs/v2/reference/navigator#register-root-component-instance-method) to register several components at once):
  *
  * ```
  * import {BrowserNavigator} from '@layr/browser-navigator';
@@ -79,13 +79,13 @@ const debug = debugModule('layr:routable');
  * await navigator.callRouteByURL('/articles/abc123/upvote');
  * ```
  *
- * See the ["Bringing Some Routes"](https://layrjs.com/docs/v1/introduction/routing) guide for a comprehensive example using the `Routable()` mixin.
+ * See the ["Bringing Some Routes"](https://layrjs.com/docs/v2/introduction/routing) guide for a comprehensive example using the `Routable()` mixin.
  *
  * ### RoutableComponent <badge type="primary">class</badge> {#routable-component-class}
  *
- * *Inherits from [`Component`](https://layrjs.com/docs/v1/reference/component).*
+ * *Inherits from [`Component`](https://layrjs.com/docs/v2/reference/component).*
  *
- * A `RoutableComponent` class is constructed by calling the `Routable()` mixin ([see above](https://layrjs.com/docs/v1/reference/routable#routable-mixin)).
+ * A `RoutableComponent` class is constructed by calling the `Routable()` mixin ([see above](https://layrjs.com/docs/v2/reference/routable#routable-mixin)).
  *
  * @mixin
  */
@@ -106,7 +106,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     // === Component Methods ===
 
     /**
-     * See the methods that are inherited from the [`Component`](https://layrjs.com/docs/v1/reference/component#creation) class.
+     * See the methods that are inherited from the [`Component`](https://layrjs.com/docs/v2/reference/component#creation) class.
      *
      * @category Component Methods
      */
@@ -124,7 +124,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Returns the navigator in which the routable component is registered. If the routable component is not registered in a navigator, an error is thrown.
      *
-     * @returns A [`Navigator`](https://layrjs.com/docs/v1/reference/navigator) instance.
+     * @returns A [`Navigator`](https://layrjs.com/docs/v2/reference/navigator) instance.
      *
      * @example
      * ```
@@ -148,7 +148,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Returns the navigator in which the routable component is registered. If the routable component is not registered in a navigator, an error is thrown.
      *
-     * @returns A [`Navigator`](https://layrjs.com/docs/v1/reference/navigator) instance.
+     * @returns A [`Navigator`](https://layrjs.com/docs/v2/reference/navigator) instance.
      *
      * @example
      * ```
@@ -192,7 +192,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param name The name of the route to get.
      *
-     * @returns A [Route](https://layrjs.com/docs/v1/reference/route) instance.
+     * @returns A [Route](https://layrjs.com/docs/v2/reference/route) instance.
      *
      * @example
      * ```
@@ -210,7 +210,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param name The name of the route to get.
      *
-     * @returns A [Route](https://layrjs.com/docs/v1/reference/route) instance.
+     * @returns A [Route](https://layrjs.com/docs/v2/reference/route) instance.
      *
      * @example
      * ```
@@ -278,13 +278,13 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Sets a route in the storable component.
      *
-     * Typically, instead of using this method, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+     * Typically, instead of using this method, you would rather use the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
      *
      * @param name The name of the route.
-     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) associated with the route.
-     * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v1/reference/route#constructor) when the route is created.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v2/reference/route#url-pattern-type) associated with the route.
+     * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v2/reference/route#constructor) when the route is created.
      *
-     * @returns The [Route](https://layrjs.com/docs/v1/reference/route) instance that was created.
+     * @returns The [Route](https://layrjs.com/docs/v2/reference/route) instance that was created.
      *
      * @example
      * ```
@@ -300,13 +300,13 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Sets a route in the storable component.
      *
-     * Typically, instead of using this method, you would rather use the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+     * Typically, instead of using this method, you would rather use the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
      *
      * @param name The name of the route.
-     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/route#url-pattern-type) associated with the route.
-     * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v1/reference/route#constructor) when the route is created.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v2/reference/route#url-pattern-type) associated with the route.
+     * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v2/reference/route#constructor) when the route is created.
      *
-     * @returns The [Route](https://layrjs.com/docs/v1/reference/route) instance that was created.
+     * @returns The [Route](https://layrjs.com/docs/v2/reference/route) instance that was created.
      *
      * @example
      * ```
@@ -376,7 +376,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
      *
-     * @returns An object of the shape `{route, params}` (or `undefined` if no route was found) where `route` is the [route](https://layrjs.com/docs/v1/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     * @returns An object of the shape `{route, params}` (or `undefined` if no route was found) where `route` is the [route](https://layrjs.com/docs/v2/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
      *
      * @example
      * ```
@@ -399,7 +399,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
      *
-     * @returns An object of the shape `{route, params}` (or `undefined` if no route was found) where `route` is the [route](https://layrjs.com/docs/v1/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     * @returns An object of the shape `{route, params}` (or `undefined` if no route was found) where `route` is the [route](https://layrjs.com/docs/v2/reference/route) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
      *
      * @example
      * ```
@@ -462,7 +462,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param name The name of the wrapper to get.
      *
-     * @returns A [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance.
+     * @returns A [Wrapper](https://layrjs.com/docs/v2/reference/wrapper) instance.
      *
      * @example
      * ```
@@ -480,7 +480,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param name The name of the wrapper to get.
      *
-     * @returns A [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance.
+     * @returns A [Wrapper](https://layrjs.com/docs/v2/reference/wrapper) instance.
      *
      * @example
      * ```
@@ -548,13 +548,13 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Sets a wrapper in the storable component.
      *
-     * Typically, instead of using this method, you would rather use the [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator) decorator.
+     * Typically, instead of using this method, you would rather use the [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorator.
      *
      * @param name The name of the wrapper.
-     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/wrapper#url-pattern-type) associated with the wrapper.
-     * @param [options] An object specifying the options to pass to the `Wrapper`'s [constructor](https://layrjs.com/docs/v1/reference/wrapper#constructor) when the wrapper is created.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v2/reference/wrapper#url-pattern-type) associated with the wrapper.
+     * @param [options] An object specifying the options to pass to the `Wrapper`'s [constructor](https://layrjs.com/docs/v2/reference/wrapper#constructor) when the wrapper is created.
      *
-     * @returns The [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance that was created.
+     * @returns The [Wrapper](https://layrjs.com/docs/v2/reference/wrapper) instance that was created.
      *
      * @example
      * ```
@@ -570,13 +570,13 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     /**
      * Sets a wrapper in the storable component.
      *
-     * Typically, instead of using this method, you would rather use the [`@wrapper()`](https://layrjs.com/docs/v1/reference/routable#wrapper-decorator) decorator.
+     * Typically, instead of using this method, you would rather use the [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorator.
      *
      * @param name The name of the wrapper.
-     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v1/reference/wrapper#url-pattern-type) associated with the wrapper.
-     * @param [options] An object specifying the options to pass to the `Wrapper`'s [constructor](https://layrjs.com/docs/v1/reference/wrapper#constructor) when the wrapper is created.
+     * @param pattern A string specifying the [URL pattern](https://layrjs.com/docs/v2/reference/wrapper#url-pattern-type) associated with the wrapper.
+     * @param [options] An object specifying the options to pass to the `Wrapper`'s [constructor](https://layrjs.com/docs/v2/reference/wrapper#constructor) when the wrapper is created.
      *
-     * @returns The [Wrapper](https://layrjs.com/docs/v1/reference/wrapper) instance that was created.
+     * @returns The [Wrapper](https://layrjs.com/docs/v2/reference/wrapper) instance that was created.
      *
      * @example
      * ```
@@ -646,7 +646,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
      *
-     * @returns An object of the shape `{wrapper, params}` (or `undefined` if no wrapper was found) where `wrapper` is the [wrapper](https://layrjs.com/docs/v1/reference/wrapper) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     * @returns An object of the shape `{wrapper, params}` (or `undefined` if no wrapper was found) where `wrapper` is the [wrapper](https://layrjs.com/docs/v2/reference/wrapper) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
      *
      * @example
      * ```
@@ -669,7 +669,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
      *
      * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
      *
-     * @returns An object of the shape `{wrapper, params}` (or `undefined` if no wrapper was found) where `wrapper` is the [wrapper](https://layrjs.com/docs/v1/reference/wrapper) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
+     * @returns An object of the shape `{wrapper, params}` (or `undefined` if no wrapper was found) where `wrapper` is the [wrapper](https://layrjs.com/docs/v2/reference/wrapper) that was found, and `params` is a plain object representing the parameters that are included in the specified URL.
      *
      * @example
      * ```
@@ -716,7 +716,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
     // === Observability ===
 
     /**
-     * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+     * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
      *
      * @category Observability
      */

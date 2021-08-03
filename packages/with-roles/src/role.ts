@@ -14,19 +14,19 @@ import {assertIsComponentWithRolesClassOrInstance} from './utilities';
 export type RoleResolver = () => PromiseLikeable<boolean | undefined>;
 
 /**
- * Represents a role in a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+ * Represents a role in a [`ComponentWithRoles`](https://layrjs.com/docs/v2/reference/with-roles#component-with-roles-class) class or prototype.
  *
  * A role is composed of:
  *
  * - A name.
- * - A parent which should be a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+ * - A parent which should be a [`ComponentWithRoles`](https://layrjs.com/docs/v2/reference/with-roles#component-with-roles-class) class or prototype.
  * - A resolver which should be a function returning a boolean indicating whether a user has the corresponding role.
  *
  * #### Usage
  *
- * Typically, you create a `Role` by using the [`@role()`](https://layrjs.com/docs/v1/reference/with-roles#role-decorator) decorator.
+ * Typically, you create a `Role` by using the [`@role()`](https://layrjs.com/docs/v2/reference/with-roles#role-decorator) decorator.
  *
- * See an example of use in the [`WithRoles()`](https://layrjs.com/docs/v1/reference/with-roles#with-roles-mixin) mixin.
+ * See an example of use in the [`WithRoles()`](https://layrjs.com/docs/v2/reference/with-roles#with-roles-mixin) mixin.
  */
 export class Role {
   _name: string;
@@ -34,15 +34,15 @@ export class Role {
   _resolver: RoleResolver;
 
   /**
-   * Creates an instance of [`Role`](https://layrjs.com/docs/v1/reference/role).
+   * Creates an instance of [`Role`](https://layrjs.com/docs/v2/reference/role).
    *
-   * Typically, instead of using this constructor, you would rather use the [`@role()`](https://layrjs.com/docs/v1/reference/with-roles#role-decorator) decorator.
+   * Typically, instead of using this constructor, you would rather use the [`@role()`](https://layrjs.com/docs/v2/reference/with-roles#role-decorator) decorator.
    *
    * @param name The name of the role.
-   * @param parent The parent of the role which should be a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or prototype.
+   * @param parent The parent of the role which should be a [`ComponentWithRoles`](https://layrjs.com/docs/v2/reference/with-roles#component-with-roles-class) class or prototype.
    * @param resolver A function that should return a boolean indicating whether a user has the corresponding role. The function can be asynchronous and is called with the current class or instance as `this` context.
    *
-   * @returns The [`Role`](https://layrjs.com/docs/v1/reference/role) instance that was created.
+   * @returns The [`Role`](https://layrjs.com/docs/v2/reference/role) instance that was created.
    *
    * @example
    * ```
@@ -81,7 +81,7 @@ export class Role {
   /**
    * Returns the parent of the role.
    *
-   * @returns A [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or instance.
+   * @returns A [`ComponentWithRoles`](https://layrjs.com/docs/v2/reference/with-roles#component-with-roles-class) class or instance.
    *
    * @category Methods
    */
@@ -151,7 +151,7 @@ export class Role {
 }
 
 /**
- * Returns whether the specified value is a [`Role`](https://layrjs.com/docs/v1/reference/role) instance.
+ * Returns whether the specified value is a [`Role`](https://layrjs.com/docs/v2/reference/role) instance.
  *
  * @param value A value of any type.
  *
@@ -164,7 +164,7 @@ export function isRoleInstance(value: any): value is Role {
 }
 
 /**
- * Throws an error if the specified value is not a [`Role`](https://layrjs.com/docs/v1/reference/role) instance.
+ * Throws an error if the specified value is not a [`Role`](https://layrjs.com/docs/v2/reference/role) instance.
  *
  * @param value A value of any type.
  *

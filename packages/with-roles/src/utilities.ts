@@ -3,7 +3,7 @@ import {getTypeOf} from 'core-helpers';
 import type {ComponentWithRoles} from './with-roles';
 
 /**
- * Returns whether the specified value is a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or instance.
+ * Returns whether the specified value is a [`ComponentWithRoles`](https://layrjs.com/docs/v2/reference/with-roles#component-with-roles-class) class or instance.
  *
  * @param value A value of any type.
  *
@@ -18,7 +18,7 @@ export function isComponentWithRolesClassOrInstance(
 }
 
 /**
- * Throws an error if the specified value is not a [`ComponentWithRoles`](https://layrjs.com/docs/v1/reference/with-roles#component-with-roles-class) class or instance.
+ * Throws an error if the specified value is not a [`ComponentWithRoles`](https://layrjs.com/docs/v2/reference/with-roles#component-with-roles-class) class or instance.
  *
  * @param value A value of any type.
  *

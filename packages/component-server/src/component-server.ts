@@ -35,9 +35,9 @@ export type ComponentServerOptions = {
 };
 
 /**
- * A base class allowing to serve a root [`Component`](https://layrjs.com/docs/v1/reference/component) so it can be accessed by a [`ComponentClient`](https://layrjs.com/docs/v1/reference/component-client).
+ * A base class allowing to serve a root [`Component`](https://layrjs.com/docs/v2/reference/component) so it can be accessed by a [`ComponentClient`](https://layrjs.com/docs/v2/reference/component-client).
  *
- * Typically, instead of using this class, you would use a class such as [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server), or a middleware such as [`component-express-middleware`](https://layrjs.com/docs/v1/reference/component-express-middleware).
+ * Typically, instead of using this class, you would use a class such as [`ComponentHTTPServer`](https://layrjs.com/docs/v2/reference/component-http-server), or a middleware such as [`component-express-middleware`](https://layrjs.com/docs/v2/reference/component-express-middleware).
  */
 export class ComponentServer {
   _component: typeof Component;
@@ -48,12 +48,12 @@ export class ComponentServer {
   /**
    * Creates a component server.
    *
-   * @param component The root [`Component`](https://layrjs.com/docs/v1/reference/component) class to serve.
+   * @param component The root [`Component`](https://layrjs.com/docs/v2/reference/component) class to serve.
    * @param [options.version] A number specifying the version of the returned component server (default: `undefined`).
    *
    * @returns A `ComponentServer` instance.
    *
-   * @examplelink See [`ComponentClient`'s example](https://layrjs.com/docs/v1/reference/component-client#constructor).
+   * @examplelink See [`ComponentClient`'s example](https://layrjs.com/docs/v2/reference/component-client#constructor).
    *
    * @category Creation
    */

@@ -15,15 +15,15 @@ export type IndexAttributes = {[name: string]: SortDirection};
 export type IndexOptions = {isUnique?: boolean};
 
 /**
- * Represents an index for one or several [attributes](https://layrjs.com/docs/v1/reference/attribute) of a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class).
+ * Represents an index for one or several [attributes](https://layrjs.com/docs/v2/reference/attribute) of a [storable component](https://layrjs.com/docs/v2/reference/storable#storable-component-class).
  *
- * Once an index is defined for an attribute, all queries involving this attribute (through the [`find()`](https://layrjs.com/docs/v1/reference/storable#find-class-method) or the [`count()`](https://layrjs.com/docs/v1/reference/storable#count-class-method) methods) can be greatly optimized by the storable component's [store](https://layrjs.com/docs/v1/reference/store) and its underlying database.
+ * Once an index is defined for an attribute, all queries involving this attribute (through the [`find()`](https://layrjs.com/docs/v2/reference/storable#find-class-method) or the [`count()`](https://layrjs.com/docs/v2/reference/storable#count-class-method) methods) can be greatly optimized by the storable component's [store](https://layrjs.com/docs/v2/reference/store) and its underlying database.
  *
  * #### Usage
  *
  * ##### Single Attribute Indexes
  *
- * Typically, you create an `Index` for a storable component's attribute by using the [`@index()`](https://layrjs.com/docs/v1/reference/storable#index-decorator) decorator. Then, you call the [`migrateStorables()`](https://layrjs.com/docs/v1/reference/store#migrate-storables-instance-method) method on the storable component's store to effectively create the index in the underlying database.
+ * Typically, you create an `Index` for a storable component's attribute by using the [`@index()`](https://layrjs.com/docs/v2/reference/storable#index-decorator) decorator. Then, you call the [`migrateStorables()`](https://layrjs.com/docs/v2/reference/store#migrate-storables-instance-method) method on the storable component's store to effectively create the index in the underlying database.
  *
  * For example, here is how you would define a `Movie` class with some indexes:
  *
@@ -69,7 +69,7 @@ export type IndexOptions = {isUnique?: boolean};
  * store.registerStorable(Movie);
  * ```
  *
- * Then you can call the [`migrateStorables()`](https://layrjs.com/docs/v1/reference/store#migrate-storables-instance-method) method on the store to create the indexes in the MongoDB database:
+ * Then you can call the [`migrateStorables()`](https://layrjs.com/docs/v2/reference/store#migrate-storables-instance-method) method on the store to create the indexes in the MongoDB database:
  *
  * ```
  * await store.migrateStorables();
@@ -83,7 +83,7 @@ export type IndexOptions = {isUnique?: boolean};
  *
  * ##### Compound Attribute Indexes
  *
- * You can create a compound attribute index to optimize some queries that involve a combination of attributes. To do so, you use the [`@index()`](https://layrjs.com/docs/v1/reference/storable#index-decorator) decorator on the storable component itself:
+ * You can create a compound attribute index to optimize some queries that involve a combination of attributes. To do so, you use the [`@index()`](https://layrjs.com/docs/v2/reference/storable#index-decorator) decorator on the storable component itself:
  *
  * ```js
  * // JS
@@ -131,7 +131,7 @@ export type IndexOptions = {isUnique?: boolean};
  * store.registerStorable(Movie);
  * ```
  *
- * Then you can call the [`migrateStorables()`](https://layrjs.com/docs/v1/reference/store#migrate-storables-instance-method) method on the store to create the compound attribute index in the MongoDB database:
+ * Then you can call the [`migrateStorables()`](https://layrjs.com/docs/v2/reference/store#migrate-storables-instance-method) method on the store to create the compound attribute index in the MongoDB database:
  *
  * ```
  * await store.migrateStorables();
@@ -153,13 +153,13 @@ export class Index {
   _options!: IndexOptions;
 
   /**
-   * Creates an instance of [`Index`](https://layrjs.com/docs/v1/reference/index).
+   * Creates an instance of [`Index`](https://layrjs.com/docs/v2/reference/index).
    *
    * @param attributes An object specifying the attributes to be indexed. The shape of the object should be `{attributeName: direction, ...}` where `attributeName` is a string representing the name of an attribute and `direction` is a string representing the sort direction (possible values: `'asc'` or `'desc'`).
    * @param parent The storable component prototype that owns the index.
    * @param [options.isUnique] A boolean specifying whether the index should hold unique values or not (default: `false`). When set to `true`, the underlying database will prevent you to store an attribute with the same value in multiple storable components.
    *
-   * @returns The [`Index`](https://layrjs.com/docs/v1/reference/index) instance that was created.
+   * @returns The [`Index`](https://layrjs.com/docs/v2/reference/index) instance that was created.
    *
    * @category Creation
    */

@@ -8,13 +8,13 @@ import type {Property, Attribute} from '@layr/component';
 import {StorableAttributeMixin} from './storable-attribute';
 
 /**
- * *Inherits from [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) and [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute).*
+ * *Inherits from [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) and [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute).*
  *
- * The `StorableSecondaryIdentifierAttribute` class is like the [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute) class but extended with the capabilities of the [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute) class.
+ * The `StorableSecondaryIdentifierAttribute` class is like the [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) class but extended with the capabilities of the [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute) class.
  *
  * #### Usage
  *
- * Typically, you create a `StorableSecondaryIdentifierAttribute` and associate it to a [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) using the [`@secondaryIdentifier()`](https://layrjs.com/docs/v1/reference/storable#secondary-identifier-decorator) decorator.
+ * Typically, you create a `StorableSecondaryIdentifierAttribute` and associate it to a [storable component](https://layrjs.com/docs/v2/reference/storable#storable-component-class) using the [`@secondaryIdentifier()`](https://layrjs.com/docs/v2/reference/storable#secondary-identifier-decorator) decorator.
  *
  * **Example:**
  *
@@ -56,13 +56,13 @@ export class StorableSecondaryIdentifierAttribute extends StorableAttributeMixin
   /**
    * @constructor
    *
-   * Creates a storable secondary identifier attribute. Typically, instead of using this constructor, you would rather use the [`@secondaryIdentifier()`](https://layrjs.com/docs/v1/reference/storable#secondary-identifier-decorator) decorator.
+   * Creates a storable secondary identifier attribute. Typically, instead of using this constructor, you would rather use the [`@secondaryIdentifier()`](https://layrjs.com/docs/v2/reference/storable#secondary-identifier-decorator) decorator.
    *
    * @param name The name of the attribute.
-   * @param parent The [storable component](https://layrjs.com/docs/v1/reference/storable#storable-component-class) prototype that owns the attribute.
-   * @param [options] An object specifying any option supported by the constructor of [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/secondary-identifier-attribute#constructor) and [`StorableAttribute`](https://layrjs.com/docs/v1/reference/storable-attribute#constructor).
+   * @param parent The [storable component](https://layrjs.com/docs/v2/reference/storable#storable-component-class) prototype that owns the attribute.
+   * @param [options] An object specifying any option supported by the constructor of [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute#constructor) and [`StorableAttribute`](https://layrjs.com/docs/v2/reference/storable-attribute#constructor).
    *
-   * @returns The [`StorableSecondaryIdentifierAttribute`](https://layrjs.com/docs/v1/reference/storable-secondary-identifier-attribute) instance that was created.
+   * @returns The [`StorableSecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/storable-secondary-identifier-attribute) instance that was created.
    *
    * @category Creation
    */
@@ -70,7 +70,7 @@ export class StorableSecondaryIdentifierAttribute extends StorableAttributeMixin
   // === Property Methods ===
 
   /**
-   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v1/reference/property#basic-methods) class.
+   * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v2/reference/property#basic-methods) class.
    *
    * @category Property Methods
    */
@@ -78,7 +78,7 @@ export class StorableSecondaryIdentifierAttribute extends StorableAttributeMixin
   // === Attribute Methods ===
 
   /**
-   * See the methods that are inherited from the [`Attribute`](https://layrjs.com/docs/v1/reference/attribute#value-type) class.
+   * See the methods that are inherited from the [`Attribute`](https://layrjs.com/docs/v2/reference/attribute#value-type) class.
    *
    * @category Attribute Methods
    */
@@ -86,7 +86,7 @@ export class StorableSecondaryIdentifierAttribute extends StorableAttributeMixin
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
    *
    * @category Observability
    */

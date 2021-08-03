@@ -12,17 +12,17 @@ export type BrowserNavigatorLinkProps = {
 export type BrowserNavigatorOptions = NavigatorOptions;
 
 /**
- * *Inherits from [`Navigator`](https://layrjs.com/docs/v1/reference/navigator).*
+ * *Inherits from [`Navigator`](https://layrjs.com/docs/v2/reference/navigator).*
  *
- * A [`Navigator`](https://layrjs.com/docs/v1/reference/navigator) relying on the browser's [History API](https://developer.mozilla.org/en-US/docs/Web/API/History) to determine the current [route](https://layrjs.com/docs/v1/reference/route).
+ * A [`Navigator`](https://layrjs.com/docs/v2/reference/navigator) relying on the browser's [History API](https://developer.mozilla.org/en-US/docs/Web/API/History) to determine the current [route](https://layrjs.com/docs/v2/reference/route).
  *
  * #### Usage
  *
- * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserNavigator` in your application is to use the [`useBrowserNavigator()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-navigator-react-hook) hook that is provided by the `@layr/react-integration` package.
+ * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserNavigator` in your application is to use the [`useBrowserNavigator()`](https://layrjs.com/docs/v2/reference/react-integration#use-browser-navigator-react-hook) hook that is provided by the `@layr/react-integration` package.
  *
- * > See the ["Bringing Some Routes"](https://layrjs.com/docs/v1/introduction/routing) guide for a comprehensive example using the `useBrowserNavigator()` hook.
+ * > See the ["Bringing Some Routes"](https://layrjs.com/docs/v2/introduction/routing) guide for a comprehensive example using the `useBrowserNavigator()` hook.
  *
- * Otherwise, you can create a `BrowserNavigator` instance manually, register some [routable components](https://layrjs.com/docs/v1/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
+ * Otherwise, you can create a `BrowserNavigator` instance manually, register some [routable components](https://layrjs.com/docs/v2/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
  *
  * **Example:**
  *
@@ -55,9 +55,9 @@ export type BrowserNavigatorOptions = NavigatorOptions;
  */
 export class BrowserNavigator extends Navigator {
   /**
-   * Creates a [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator).
+   * Creates a [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator).
    *
-   * @returns The [`BrowserNavigator`](https://layrjs.com/docs/v1/reference/browser-navigator) instance that was created.
+   * @returns The [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) instance that was created.
    *
    * @category Creation
    */
@@ -124,7 +124,7 @@ export class BrowserNavigator extends Navigator {
   // === Component Registration ===
 
   /**
-   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#component-registration) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#component-registration) class.
    *
    * @category Component Registration
    */
@@ -132,7 +132,7 @@ export class BrowserNavigator extends Navigator {
   // === Routes ===
 
   /**
-   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#routes) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#routes) class.
    *
    * @category Routes
    */
@@ -140,7 +140,7 @@ export class BrowserNavigator extends Navigator {
   // === Current Location ===
 
   /**
-   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#current-location) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#current-location) class.
    *
    * @category Current Location
    */
@@ -152,7 +152,7 @@ export class BrowserNavigator extends Navigator {
   // === Navigation ===
 
   /**
-   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v1/reference/navigator#navigation) class.
+   * See the methods that are inherited from the [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#navigation) class.
    *
    * @category Navigation
    */
@@ -197,9 +197,9 @@ export class BrowserNavigator extends Navigator {
   /**
    * Renders a link that is managed by the navigator.
    *
-   * This method is only available when you create your navigator by using the [`useBrowserNavigator()`](https://layrjs.com/docs/v1/reference/react-integration#use-browser-navigator-react-hook) React hook.
+   * This method is only available when you create your navigator by using the [`useBrowserNavigator()`](https://layrjs.com/docs/v2/reference/react-integration#use-browser-navigator-react-hook) React hook.
    *
-   * Note that instead of using this method, you can use the handy `Link()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator.
+   * Note that instead of using this method, you can use the handy `Link()` shortcut function that you get when you define a route with the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
    *
    * @param props.to A string representing the target URL of the link.
    * @param props.className A [`className`](https://reactjs.org/docs/dom-elements.html#classname) attribute to apply to the rendered link.
@@ -233,7 +233,7 @@ export class BrowserNavigator extends Navigator {
   // === Observability ===
 
   /**
-   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v1/reference/observable#observable-class) class.
+   * See the methods that are inherited from the [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class) class.
    *
    * @category Observability
    */
