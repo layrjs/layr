@@ -760,11 +760,11 @@ describe('Storable', () => {
 
           expect(user.isNew()).toBe(true);
           expect(user.picture!.isNew()).toBe(true);
-          expect(user.getAttribute('id').getValueSource()).toBe('self');
-          expect(user.getAttribute('fullName').getValueSource()).toBe('self');
-          expect(user.getAttribute('tags').getValueSource()).toBe('self');
-          expect(user.getAttribute('picture').getValueSource()).toBe('self');
-          expect(user.picture!.getAttribute('url').getValueSource()).toBe('self');
+          expect(user.getAttribute('id').getValueSource()).toBe('local');
+          expect(user.getAttribute('fullName').getValueSource()).toBe('local');
+          expect(user.getAttribute('tags').getValueSource()).toBe('local');
+          expect(user.getAttribute('picture').getValueSource()).toBe('local');
+          expect(user.picture!.getAttribute('url').getValueSource()).toBe('local');
 
           expect(await user.save()).toBe(user);
 

@@ -58,7 +58,7 @@ describe('Deserialization', () => {
     // --- Using the deserialize() function with the 'source' option ---
 
     expect(Movie.limit).toBe(1000);
-    expect(Movie.getAttribute('limit').getValueSource()).toBe('self');
+    expect(Movie.getAttribute('limit').getValueSource()).toBe('local');
 
     DeserializedMovie = deserialize(
       {__component: 'typeof Movie', limit: 5000},
@@ -74,7 +74,7 @@ describe('Deserialization', () => {
     );
 
     expect(Movie.limit).toBe(5000);
-    expect(Movie.getAttribute('limit').getValueSource()).toBe('self');
+    expect(Movie.getAttribute('limit').getValueSource()).toBe('local');
 
     // --- Using Component.deserialize() method ---
 
@@ -158,7 +158,7 @@ describe('Deserialization', () => {
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('title').getValueSource()).toBe('self');
+    expect(movie.getAttribute('title').getValueSource()).toBe('local');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
     movie = deserialize(
@@ -178,7 +178,7 @@ describe('Deserialization', () => {
     expect(movie.title).toBe('Inception');
     expect(movie.getAttribute('title').getValueSource()).toBe('backend');
     expect(movie.duration).toBe(0);
-    expect(movie.getAttribute('duration').getValueSource()).toBe('self');
+    expect(movie.getAttribute('duration').getValueSource()).toBe('local');
 
     // --- Using component.deserialize() method ---
 

@@ -3765,7 +3765,7 @@ export class Component extends Observable(Object) {
    *
    * @param [object] The plain object to deserialize from.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
-   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'self'`).
+   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'local'`).
    *
    * @returns The component class.
    *
@@ -3813,7 +3813,7 @@ export class Component extends Observable(Object) {
    *
    * @param [object] The plain object to deserialize from.
    * @param [options.attributeFilter] A (possibly async) function used to filter the attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
-   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'self'`).
+   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the serialization (default: `'local'`).
    *
    * @returns The current component instance.
    *

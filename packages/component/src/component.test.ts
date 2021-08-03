@@ -736,7 +736,7 @@ describe('Component', () => {
         movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: 'frontend'})
       ).toStrictEqual({});
 
-      movie.getAttribute('title').setValue('Interception 2', {source: 'self'});
+      movie.getAttribute('title').setValue('Interception 2', {source: 'local'});
 
       expect(
         movie.resolveAttributeSelector(true, {setAttributesOnly: true, target: 'frontend'})

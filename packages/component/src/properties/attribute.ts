@@ -49,7 +49,7 @@ type AttributeItemsOptions = {
   items?: AttributeItemsOptions;
 };
 
-export type ValueSource = 'backend' | 'store' | 'self' | 'frontend';
+export type ValueSource = 'backend' | 'store' | 'local' | 'frontend';
 
 export type IntrospectedAttribute = IntrospectedProperty & {
   value?: unknown;
@@ -353,7 +353,7 @@ export class Attribute extends Observable(Property) {
    * When the attribute's value changes, the observers of the attribute are automatically executed, and the observers of the parent component are executed as well.
    *
    * @param value The value to be set.
-   * @param [options.source] A string specifying the [source of the value](https://layrjs.com/docs/v2/reference/attribute#value-source-type) (default: `'self'`).
+   * @param [options.source] A string specifying the [source of the value](https://layrjs.com/docs/v2/reference/attribute#value-source-type) (default: `'local'`).
    *
    * @example
    * ```
@@ -364,7 +364,7 @@ export class Attribute extends Observable(Property) {
    *
    * @category Value
    */
-  setValue(value: unknown, {source = 'self'}: {source?: ValueSource} = {}) {
+  setValue(value: unknown, {source = 'local'}: {source?: ValueSource} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};
@@ -450,7 +450,7 @@ export class Attribute extends Observable(Property) {
       previousValue.removeObserver(this);
     }
 
-    this.callObservers({source: 'self'});
+    this.callObservers({source: 'local'});
 
     return {previousValue};
   }
@@ -484,7 +484,7 @@ export class Attribute extends Observable(Property) {
 
   // === Value source ===
 
-  _source: ValueSource = 'self';
+  _source: ValueSource = 'local';
 
   /**
    * Returns the source of the value of the attribute.
@@ -494,7 +494,7 @@ export class Attribute extends Observable(Property) {
    * @example
    * ```
    * const title = movie.getAttribute('title');
-   * title.getValueSource(); // => 'self' (the value was set locally)
+   * title.getValueSource(); // => 'local' (the value was set locally)
    * ```
    *
    * @category Value Source
@@ -511,7 +511,7 @@ export class Attribute extends Observable(Property) {
    * @example
    * ```
    * const title = movie.getAttribute('title');
-   * title.setValueSource('self'); // The value was set locally
+   * title.setValueSource('local'); // The value was set locally
    * title.setValueSource('backend'); // The value came from an upper layer
    * title.setValueSource('frontend'); // The value came from a lower layer
    * ```
@@ -534,7 +534,7 @@ export class Attribute extends Observable(Property) {
    *
    * * `'backend'`: The value comes from an upper layer.
    * * `'store'`: The value comes from a store.
-   * * `'self'`: The value comes from the current layer.
+   * * `'local'`: The value comes from the current layer.
    * * `'frontend`: The value comes from a lower layer.
    * ```
    *
@@ -608,7 +608,7 @@ export class Attribute extends Observable(Property) {
   // === Observers ===
 
   _onChange(payload: ObserverPayload & {source?: ValueSource}) {
-    const {source = 'self'} = payload;
+    const {source = 'local'} = payload;
 
     if (source !== this._source) {
       this._source = source;

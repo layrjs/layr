@@ -177,7 +177,7 @@ export class PrimaryIdentifierAttribute extends IdentifierAttribute {
 
   // === Value ===
 
-  setValue(value: IdentifierValue, {source = 'self'}: {source?: ValueSource} = {}) {
+  setValue(value: IdentifierValue, {source = 'local'}: {source?: ValueSource} = {}) {
     if (hasOwnProperty(this, '_ignoreNextSetValueCall')) {
       delete this._ignoreNextSetValueCall;
       return {previousValue: undefined, newValue: undefined};
