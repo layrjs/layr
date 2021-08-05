@@ -4,6 +4,54 @@ import {AsyncFunction, getTypeOf} from 'core-helpers';
 
 import {useCustomization, Customization} from './components';
 
+/**
+ * A convenient hook for loading data asynchronously and render a React node once the data is loaded.
+ *
+ * The `getter()` asynchronous function is called when the React component is rendered for the first time or when a change is detected in its `dependencies`.
+ *
+ * While the `getter()` function is running, the `useData()` hook returns the result of the nearest `dataPlaceholder()` function.
+ *
+ * Once the `getter()` function is executed, the `useData()` hook returns the result of the `renderer()` function which is called with the result of the `getter()` function as first parameter.
+ *
+ * If an error occurs during the `getter()` function execution, the `useData()` hook returns the result of the nearest `errorRenderer()` function.
+ *
+ * @param getter An asynchronous function for loading data.
+ * @param renderer A function which is called with the result of the `getter()` function as first parameter and a `refresh()` function as second parameter. You can call the `refresh()` function to force the re-execution of the `getter()` function. The `renderer()` function should return a React node.
+ * @param [dependencies] An array of values on which the `getter()` function depends (default: `[]`).
+ * @param [options.dataPlaceholder] A custom `dataPlaceholder()` function.
+ * @param [options.errorRenderer] A custom `errorRenderer()` function.
+ *
+ * @returns A React node.
+ *
+ * @example
+ * ```
+ * import {Component} from '﹫layr/component';
+ * import {Storable} from '﹫layr/storable';
+ * import React from 'react';
+ * import {view, useData} from '﹫layr/react-integration';
+ *
+ * class Article extends Storable(Component) {
+ *   // ...
+ *
+ *   ﹫view() static List() {
+ *     return useData(
+ *       async () => {
+ *         return await this.find();
+ *       },
+ *
+ *       (articles) => {
+ *         return articles.map((article) => (
+ *           <div key={article.id}>{article.title}</div>
+ *         ));
+ *       }
+ *     );
+ *   }
+ * }
+ * ```
+ *
+ * @category High-Level Hooks
+ * @reacthook
+ */
 export function useData<Result>(
   getter: () => Promise<Result>,
   renderer: (data: Result, refresh: () => void) => JSX.Element | null,
@@ -80,7 +128,7 @@ export function useAction<Args extends any[] = any[], Result = any>(
  * observableArray.push('abc');
  * ```
  *
- * @category Hooks
+ * @category High-Level Hooks
  * @reacthook
  */
 export function useObserve(observable: ObservableType) {
@@ -112,7 +160,7 @@ export function useObserve(observable: ObservableType) {
  * Plays the same role as the React built-in [`useCallback()`](https://reactjs.org/docs/hooks-reference.html#usecallback) hook but works with asynchronous callbacks.
  *
  * @param asyncCallback An asynchronous callback.
- * @param dependencies An array of values on which the asynchronous callback depends (default: `[]`).
+ * @param [dependencies] An array of values on which the asynchronous callback depends (default: `[]`).
  *
  * @returns An array of the shape `[trackedCallback, isExecuting, error, result]` where `trackedCallback` is a function that you can call to execute the asynchronous callback, `isExecuting` is a boolean indicating whether the asynchronous callback is being executed, `error` is the error thrown by the asynchronous callback in case of failed execution, and `result` is the value returned by the asynchronous callback in case of succeeded execution.
  *
@@ -138,7 +186,7 @@ export function useObserve(observable: ObservableType) {
  * }
  * ```
  *
- * @category Hooks
+ * @category Low-Level Hooks
  * @reacthook
  */
 export function useAsyncCallback<Args extends any[] = any[], Result = any>(
@@ -183,7 +231,7 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
  * Plays the same role as the React built-in [`useMemo()`](https://reactjs.org/docs/hooks-reference.html#usememo) hook but works with asynchronous functions and allows to recompute the memoized result.
  *
  * @param asyncFunc An asynchronous function to compute the memoized result.
- * @param dependencies An array of values on which the memoized result depends (default: `[]`, which means that the memoized result will be recomputed only when the "recompute function" is called).
+ * @param [dependencies] An array of values on which the memoized result depends (default: `[]`, which means that the memoized result will be recomputed only when the "recompute function" is called).
  *
  * @returns An array of the shape `[memoizedResult, isExecuting, error, recompute]` where `memoizedResult` is the result returned by the asynchronous function in case of succeeded execution, `isExecuting` is a boolean indicating whether the asynchronous function is being executed, `error` is the error thrown by the asynchronous function in case of failed execution, and `recompute` is a function that you can call to recompute the memoized result.
  *
@@ -224,7 +272,7 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
  * }
  * ```
  *
- * @category Hooks
+ * @category Low-Level Hooks
  * @reacthook
  */
 export function useAsyncMemo<Result>(asyncFunc: () => Promise<Result>, deps: DependencyList = []) {
@@ -275,7 +323,7 @@ export function useAsyncMemo<Result>(asyncFunc: () => Promise<Result>, deps: Dep
  * Plays the same role as the React built-in [`useMemo()`](https://reactjs.org/docs/hooks-reference.html#usememo) hook but with the extra ability to recompute the memoized result.
  *
  * @param func A function to compute the memoized result.
- * @param dependencies An array of values on which the memoized result depends (default: `[]`, which means that the memoized result will be recomputed only when the "recompute function" is called).
+ * @param [dependencies] An array of values on which the memoized result depends (default: `[]`, which means that the memoized result will be recomputed only when the "recompute function" is called).
  *
  * @returns An array of the shape `[memoizedResult, recompute]` where `memoizedResult` is the result of the function execution, and `recompute` is a function that you can call to recompute the memoized result.
  *
@@ -310,7 +358,7 @@ export function useAsyncMemo<Result>(asyncFunc: () => Promise<Result>, deps: Dep
  * }
  * ```
  *
- * @category Hooks
+ * @category Low-Level Hooks
  * @reacthook
  */
 export function useRecomputableMemo<Result>(func: () => Result, deps: DependencyList = []) {
@@ -331,7 +379,7 @@ export function useRecomputableMemo<Result>(func: () => Result, deps: Dependency
  * The function is executed one time when the React component is rendered for the first time, and each time a dependency is changed or the "recall function" is called.
  *
  * @param asyncFunc The asynchronous function to call.
- * @param dependencies An array of values on which the asynchronous function depends (default: `[]`, which means that the asynchronous will be recalled only when the "recall function" is called).
+ * @param [dependencies] An array of values on which the asynchronous function depends (default: `[]`, which means that the asynchronous will be recalled only when the "recall function" is called).
  *
  * @returns An array of the shape `[isExecuting, error, recall]` where `isExecuting` is a boolean indicating whether the asynchronous function is being executed, `error` is the error thrown by the asynchronous function in case of failed execution, and `recall` is a function that you can call to recall the asynchronous function.
  *
@@ -425,7 +473,7 @@ export function useRecomputableMemo<Result>(func: () => Result, deps: Dependency
  * }
  * ```
  *
- * @category Hooks
+ * @category Low-Level Hooks
  * @reacthook
  */
 export function useAsyncCall(asyncFunc: () => Promise<void>, deps: DependencyList = []) {

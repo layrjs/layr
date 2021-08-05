@@ -19,7 +19,7 @@ import {Component} from '@layr/component';
 import {Routable, route} from '@layr/routable';
 import {BrowserNavigator} from '@layr/browser-navigator';
 
-class Frontend extends Routable(Component) {
+class Application extends Routable(Component) {
   @route('/') static Home() {
     // Return the content of the home page...
     return 'Home Page';
@@ -33,7 +33,7 @@ class Frontend extends Routable(Component) {
 
 const navigator = new BrowserNavigator();
 
-navigator.registerRoutable(Frontend);
+navigator.registerRoutable(Application);
 
 navigator.addObserver(() => {
   const result = navigator.callCurrentRoute();
@@ -93,7 +93,7 @@ An `<a>` React element.
 **Example:**
 
 ```
-class Frontend extends Routable(Component) {
+class Application extends Routable(Component) {
    @route('/') @view static Home() {
      const navigator = this.getNavigator();
      return <navigator.Link to="/about-us">About Us</navigator.Link>;

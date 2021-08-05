@@ -8,7 +8,7 @@ Provides a decorator and a number of hooks to simplify the use of [React](https:
 
 Decorates a method of a Layr [component](https://layrjs.com/docs/v2/reference/component) so it be can used as a React component.
 
-Like any React component, the method can receive some properties as first parameter and return some [React elements](https://reactjs.org/docs/rendering-elements.html) to render (or `null` if it doesn't render anything).
+Like any React component, the method can receive some properties as first parameter and return some React node to render.
 
 The decorator binds the method to a specific component, so when the method is executed by React (via, for example, a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
 
@@ -37,7 +37,59 @@ const person = new Person({firstName: 'Alan', lastName: 'Turing'});
 ReactDOM.render(<person.FullName />, document.getElementById('root'));
 ```
 
-#### Hooks
+#### High-Level Hooks
+
+##### `useData(getter, renderer, [dependencies], [options])` <badge type="tertiary-outline">react hook</badge> {#use-data-react-hook}
+
+A convenient hook for loading data asynchronously and render a React node once the data is loaded.
+
+The `getter()` asynchronous function is called when the React component is rendered for the first time or when a change is detected in its `dependencies`.
+
+While the `getter()` function is running, the `useData()` hook returns the result of the nearest `dataPlaceholder()` function.
+
+Once the `getter()` function is executed, the `useData()` hook returns the result of the `renderer()` function which is called with the result of the `getter()` function as first parameter.
+
+If an error occurs during the `getter()` function execution, the `useData()` hook returns the result of the nearest `errorRenderer()` function.
+
+**Parameters:**
+
+* `getter`: An asynchronous function for loading data.
+* `renderer`: A function which is called with the result of the `getter()` function as first parameter and a `refresh()` function as second parameter. You can call the `refresh()` function to force the re-execution of the `getter()` function. The `renderer()` function should return a React node.
+* `dependencies`: An array of values on which the `getter()` function depends (default: `[]`).
+* `options`:
+  * `dataPlaceholder`: A custom `dataPlaceholder()` function.
+  * `errorRenderer`: A custom `errorRenderer()` function.
+
+**Returns:**
+
+A React node.
+
+**Example:**
+
+```
+import {Component} from '@layr/component';
+import {Storable} from '@layr/storable';
+import React from 'react';
+import {view, useData} from '@layr/react-integration';
+
+class Article extends Storable(Component) {
+  // ...
+
+  @view() static List() {
+    return useData(
+      async () => {
+        return await this.find();
+      },
+
+      (articles) => {
+        return articles.map((article) => (
+          <div key={article.id}>{article.title}</div>
+        ));
+      }
+    );
+  }
+}
+```
 
 ##### `useObserve(observable)` <badge type="tertiary-outline">react hook</badge> {#use-observe-react-hook}
 
@@ -73,7 +125,9 @@ class MyComponent extends Component {
 observableArray.push('abc');
 ```
 
-##### `useAsyncCallback(asyncCallback, dependencies)` <badge type="tertiary-outline">react hook</badge> {#use-async-callback-react-hook}
+#### Low-Level Hooks
+
+##### `useAsyncCallback(asyncCallback, [dependencies])` <badge type="tertiary-outline">react hook</badge> {#use-async-callback-react-hook}
 
 Allows you to define an asynchronous callback and keep track of its execution.
 
@@ -111,7 +165,7 @@ class Article extends Component {
 }
 ```
 
-##### `useAsyncMemo(asyncFunc, dependencies)` <badge type="tertiary-outline">react hook</badge> {#use-async-memo-react-hook}
+##### `useAsyncMemo(asyncFunc, [dependencies])` <badge type="tertiary-outline">react hook</badge> {#use-async-memo-react-hook}
 
 Memoizes the result of an asynchronous function execution and provides a "recompute function" that you can call to recompute the memoized result.
 
@@ -166,7 +220,7 @@ class Article extends Storable(Component) {
 }
 ```
 
-##### `useRecomputableMemo(func, dependencies)` <badge type="tertiary-outline">react hook</badge> {#use-recomputable-memo-react-hook}
+##### `useRecomputableMemo(func, [dependencies])` <badge type="tertiary-outline">react hook</badge> {#use-recomputable-memo-react-hook}
 
 Memoizes the result of a function execution and provides a "recompute function" that you can call to recompute the memoized result.
 
@@ -215,7 +269,7 @@ class Blog extends Component {
 }
 ```
 
-##### `useAsyncCall(asyncFunc, dependencies)` <badge type="tertiary-outline">react hook</badge> {#use-async-call-react-hook}
+##### `useAsyncCall(asyncFunc, [dependencies])` <badge type="tertiary-outline">react hook</badge> {#use-async-call-react-hook}
 
 Allows you to call an asynchronous function and keep track of its execution.
 
