@@ -794,7 +794,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
           resolvedAttributeSelector,
           {
             filter: (attribute: Attribute) =>
-              attribute.getValueSource() === 'backend' || attribute.getValueSource() === 'store',
+              attribute.getValueSource() === 'server' || attribute.getValueSource() === 'store',
             setAttributesOnly: true,
             aggregationMode: 'intersection'
           }

@@ -771,19 +771,19 @@ describe('Storable', () => {
           expect(user.isNew()).toBe(false);
           // TODO: expect(user.picture!.isNew()).toBe(false);
           expect(user.getAttribute('id').getValueSource()).toBe(
-            User.hasStore() ? 'store' : 'backend'
+            User.hasStore() ? 'store' : 'server'
           );
           expect(user.getAttribute('fullName').getValueSource()).toBe(
-            User.hasStore() ? 'store' : 'backend'
+            User.hasStore() ? 'store' : 'server'
           );
           expect(user.getAttribute('tags').getValueSource()).toBe(
-            User.hasStore() ? 'store' : 'backend'
+            User.hasStore() ? 'store' : 'server'
           );
           expect(user.getAttribute('picture').getValueSource()).toBe(
-            User.hasStore() ? 'store' : 'backend'
+            User.hasStore() ? 'store' : 'server'
           );
           expect(user.picture!.getAttribute('url').getValueSource()).toBe(
-            User.hasStore() ? 'store' : 'backend'
+            User.hasStore() ? 'store' : 'server'
           );
 
           ForkedUser = User.fork();

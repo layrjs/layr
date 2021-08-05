@@ -664,9 +664,9 @@ describe('Observable', () => {
 
       expect(observer).not.toHaveBeenCalled();
 
-      observableObject.callObservers({source: 'backend'});
+      observableObject.callObservers({source: 'server'});
 
-      expect(observer.mock.calls[0][0].source).toBe('backend');
+      expect(observer.mock.calls[0][0].source).toBe('server');
     });
   });
 

@@ -62,11 +62,11 @@ describe('Deserialization', () => {
 
     DeserializedMovie = deserialize(
       {__component: 'typeof Movie', limit: 5000},
-      {source: 'backend', rootComponent: Application}
+      {source: 'server', rootComponent: Application}
     );
 
     expect(Movie.limit).toBe(5000);
-    expect(Movie.getAttribute('limit').getValueSource()).toBe('backend');
+    expect(Movie.getAttribute('limit').getValueSource()).toBe('server');
 
     DeserializedMovie = deserialize(
       {__component: 'typeof Movie', limit: 5000},
@@ -163,20 +163,20 @@ describe('Deserialization', () => {
 
     movie = deserialize(
       {__component: 'Movie', title: 'Inception'},
-      {source: 'backend', rootComponent: Application}
+      {source: 'server', rootComponent: Application}
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('title').getValueSource()).toBe('backend');
+    expect(movie.getAttribute('title').getValueSource()).toBe('server');
     expect(movie.getAttribute('duration').isSet()).toBe(false);
 
     movie = deserialize(
       {__component: 'Movie', __new: true, title: 'Inception'},
-      {source: 'backend', rootComponent: Application}
+      {source: 'server', rootComponent: Application}
     ) as Movie;
 
     expect(movie.title).toBe('Inception');
-    expect(movie.getAttribute('title').getValueSource()).toBe('backend');
+    expect(movie.getAttribute('title').getValueSource()).toBe('server');
     expect(movie.duration).toBe(0);
     expect(movie.getAttribute('duration').getValueSource()).toBe('local');
 

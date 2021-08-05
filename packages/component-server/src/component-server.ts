@@ -171,7 +171,7 @@ export class ComponentServer {
       deserialize(serializedComponents, {
         rootComponent,
         attributeFilter,
-        source: 'frontend'
+        source: 'client'
       }),
       (deserializedComponents: (typeof Component | Component)[] | undefined) => {
         const deserializedComponentSet: ComponentSet = new Set(deserializedComponents);
@@ -180,7 +180,7 @@ export class ComponentServer {
             rootComponent,
             attributeFilter,
             deserializedComponents: deserializedComponentSet,
-            source: 'frontend'
+            source: 'client'
           }),
           (deserializedQuery: PlainObject) => {
             deserializedComponents = Array.from(deserializedComponentSet);
@@ -207,7 +207,7 @@ export class ComponentServer {
             serializedComponents,
             componentDependencies,
             serializeFunctions: true,
-            target: 'frontend'
+            target: 'client'
           })
         : undefined;
 
@@ -238,7 +238,7 @@ export class ComponentServer {
                   componentDependencies: additionalComponentDependencies,
                   ignoreEmptyComponents: true,
                   serializeFunctions: true,
-                  target: 'frontend'
+                  target: 'client'
                 }),
                 (serializedComponentDependency) => {
                   if (serializedComponentDependency !== undefined) {

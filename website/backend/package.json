@@ -6,12 +6,12 @@
   "license": "MIT",
   "main": "./src/index.ts",
   "dependencies": {
-    "@layr/component": "^2.0.18",
-    "@layr/mongodb-store": "^2.0.22",
-    "@layr/routable": "^2.0.62",
-    "@layr/storable": "^2.0.28",
+    "@layr/component": "^2.0.19",
+    "@layr/mongodb-store": "^2.0.24",
+    "@layr/routable": "^2.0.64",
+    "@layr/storable": "^2.0.30",
     "@layr/utilities": "^1.0.1",
-    "@layr/with-roles": "^2.0.19",
+    "@layr/with-roles": "^2.0.20",
     "bcryptjs": "^2.4.3",
     "cross-fetch": "^3.1.4",
     "jsonwebtoken": "^8.5.1",
@@ -23,8 +23,8 @@
     "@boostr/tsconfig": "^1.0.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^8.5.4",
-    "@types/lodash": "^4.14.171",
-    "@types/node": "^14.17.7",
+    "@types/lodash": "^4.14.172",
+    "@types/node": "^14.17.9",
     "@types/rss": "0.0.28"
   }
 }

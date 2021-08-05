@@ -2031,7 +2031,7 @@ export class Component extends Observable(Object) {
     const _skipUnchangedAttributes =
       setAttributesOnly &&
       target !== undefined &&
-      (target === 'frontend' || typeof (this as any).isStorable === 'function');
+      (target === 'client' || typeof (this as any).isStorable === 'function');
 
     return this.__resolveAttributeSelector(attributeSelector, {
       filter,
@@ -2602,12 +2602,12 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    * }
    *
-   * Backend.getComponent('Movie'); // => Movie
-   * Backend.getComponent('Backend'); // => Backend
+   * Application.getComponent('Movie'); // => Movie
+   * Application.getComponent('Application'); // => Application
    * ```
    *
    * @category Dependency Management
@@ -2633,13 +2633,13 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    * }
    *
-   * Backend.hasComponent('Movie'); // => true
-   * Backend.hasComponent('Backend'); // => true
-   * Backend.hasComponent('Film'); // => false
+   * Application.hasComponent('Movie'); // => true
+   * Application.hasComponent('Application'); // => true
+   * Application.hasComponent('Film'); // => false
    * ```
    *
    * @category Dependency Management
@@ -2679,14 +2679,14 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    * }
    *
-   * Backend.getComponentOfType('typeof Movie'); // => Movie
-   * Backend.getComponentOfType('Movie'); // => Movie.prototype
-   * Backend.getComponentOfType('typeof Backend'); // => Backend
-   * Backend.getComponentOfType('Backend'); // => Backend.prototype
+   * Application.getComponentOfType('typeof Movie'); // => Movie
+   * Application.getComponentOfType('Movie'); // => Movie.prototype
+   * Application.getComponentOfType('typeof Application'); // => Application
+   * Application.getComponentOfType('Application'); // => Application.prototype
    * ```
    *
    * @category Dependency Management
@@ -2712,16 +2712,16 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    * }
    *
-   * Backend.hasComponentOfType('typeof Movie'); // => true
-   * Backend.hasComponentOfType('Movie'); // => true
-   * Backend.hasComponentOfType('typeof Backend'); // => true
-   * Backend.hasComponentOfType('Backend'); // => true
-   * Backend.hasComponentOfType('typeof Film'); // => false
-   * Backend.hasComponentOfType('Film'); // => false
+   * Application.hasComponentOfType('typeof Movie'); // => true
+   * Application.hasComponentOfType('Movie'); // => true
+   * Application.hasComponentOfType('typeof Application'); // => true
+   * Application.hasComponentOfType('Application'); // => true
+   * Application.hasComponentOfType('typeof Film'); // => false
+   * Application.hasComponentOfType('Film'); // => false
    * ```
    *
    * @category Dependency Management
@@ -2775,11 +2775,11 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    * }
    *
-   * Backend.getProvidedComponent('Movie'); // => Movie
+   * Application.getProvidedComponent('Movie'); // => Movie
    * ```
    *
    * @category Dependency Management
@@ -2815,11 +2815,11 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {}
+   * class Application extends Component {}
    * class Movie extends Component {}
-   * Backend.provideComponent(Movie);
+   * Application.provideComponent(Movie);
    *
-   * Backend.Movie; // => `Movie` class
+   * Application.Movie; // => `Movie` class
    * ```
    *
    * @category Dependency Management
@@ -2929,12 +2929,12 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {}
+   * class Application extends Component {}
    * class Movie extends Component {}
-   * Backend.provideComponent(Movie);
+   * Application.provideComponent(Movie);
    *
-   * Movie.getComponentProvider(); // => `Backend` class
-   * Backend.getComponentProvider(); // => `Backend` class
+   * Movie.getComponentProvider(); // => `Application` class
+   * Application.getComponentProvider(); // => `Application` class
    * ```
    *
    * @category Dependency Management
@@ -3006,7 +3006,7 @@ export class Component extends Observable(Object) {
    *
    * class Actor extends Component {}
    *
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    *   ﹫provide() static Actor = Actor;
    * }
@@ -3027,7 +3027,7 @@ export class Component extends Observable(Object) {
    *
    * class Actor extends Component {}
    *
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static Movie = Movie;
    *   ﹫provide() static Actor = Actor;
    * }
@@ -3067,12 +3067,12 @@ export class Component extends Observable(Object) {
    *
    * @example
    * ```
-   * class Backend extends Component {}
+   * class Application extends Component {}
    * class Movie extends Component {}
-   * Backend.provideComponent(Movie);
-   * Movie.consumeComponent('Backend');
+   * Application.provideComponent(Movie);
+   * Movie.consumeComponent('Application');
    *
-   * Movie.Backend; // => `Backend` class
+   * Movie.Application; // => `Application` class
    * ```
    *
    * @category Dependency Management

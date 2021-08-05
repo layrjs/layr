@@ -250,8 +250,8 @@ Sets the source of the value of the attribute.
 ```
 const title = movie.getAttribute('title');
 title.setValueSource('local'); // The value was set locally
-title.setValueSource('backend'); // The value came from an upper layer
-title.setValueSource('frontend'); // The value came from a lower layer
+title.setValueSource('server'); // The value came from an upper layer
+title.setValueSource('client'); // The value came from a lower layer
 ```
 
 ##### `ValueSource` <badge type="primary-outline">type</badge> {#value-source-type}
@@ -260,10 +260,10 @@ A string representing the source of a value.
 
 Currently, four types of sources are supported:
 
-* `'backend'`: The value comes from an upper layer.
+* `'server'`: The value comes from an upper layer.
 * `'store'`: The value comes from a store.
 * `'local'`: The value comes from the current layer.
-* `'frontend`: The value comes from a lower layer.
+* `'client'`: The value comes from a lower layer.
 ```
 
 #### Default Value

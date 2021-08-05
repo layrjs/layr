@@ -1110,12 +1110,12 @@ A component class.
 **Example:**
 
 ```
-class Backend extends Component {
+class Application extends Component {
   @provide() static Movie = Movie;
 }
 
-Backend.getComponent('Movie'); // => Movie
-Backend.getComponent('Backend'); // => Backend
+Application.getComponent('Movie'); // => Movie
+Application.getComponent('Application'); // => Application
 ```
 
 ##### `hasComponent(name)` <badge type="secondary">class method</badge> {#has-component-class-method}
@@ -1133,13 +1133,13 @@ A boolean.
 **Example:**
 
 ```
-class Backend extends Component {
+class Application extends Component {
   @provide() static Movie = Movie;
 }
 
-Backend.hasComponent('Movie'); // => true
-Backend.hasComponent('Backend'); // => true
-Backend.hasComponent('Film'); // => false
+Application.hasComponent('Movie'); // => true
+Application.hasComponent('Application'); // => true
+Application.hasComponent('Film'); // => false
 ```
 
 ##### `getComponentOfType(type)` <badge type="secondary">class method</badge> {#get-component-of-type-class-method}
@@ -1157,14 +1157,14 @@ A component class or prototype.
 **Example:**
 
 ```
-class Backend extends Component {
+class Application extends Component {
   @provide() static Movie = Movie;
 }
 
-Backend.getComponentOfType('typeof Movie'); // => Movie
-Backend.getComponentOfType('Movie'); // => Movie.prototype
-Backend.getComponentOfType('typeof Backend'); // => Backend
-Backend.getComponentOfType('Backend'); // => Backend.prototype
+Application.getComponentOfType('typeof Movie'); // => Movie
+Application.getComponentOfType('Movie'); // => Movie.prototype
+Application.getComponentOfType('typeof Application'); // => Application
+Application.getComponentOfType('Application'); // => Application.prototype
 ```
 
 ##### `hasComponentOfType(type)` <badge type="secondary">class method</badge> {#has-component-of-type-class-method}
@@ -1182,16 +1182,16 @@ A boolean.
 **Example:**
 
 ```
-class Backend extends Component {
+class Application extends Component {
   @provide() static Movie = Movie;
 }
 
-Backend.hasComponentOfType('typeof Movie'); // => true
-Backend.hasComponentOfType('Movie'); // => true
-Backend.hasComponentOfType('typeof Backend'); // => true
-Backend.hasComponentOfType('Backend'); // => true
-Backend.hasComponentOfType('typeof Film'); // => false
-Backend.hasComponentOfType('Film'); // => false
+Application.hasComponentOfType('typeof Movie'); // => true
+Application.hasComponentOfType('Movie'); // => true
+Application.hasComponentOfType('typeof Application'); // => true
+Application.hasComponentOfType('Application'); // => true
+Application.hasComponentOfType('typeof Film'); // => false
+Application.hasComponentOfType('Film'); // => false
 ```
 
 ##### `getProvidedComponent(name)` <badge type="secondary">class method</badge> {#get-provided-component-class-method}
@@ -1209,11 +1209,11 @@ A component class.
 **Example:**
 
 ```
-class Backend extends Component {
+class Application extends Component {
   @provide() static Movie = Movie;
 }
 
-Backend.getProvidedComponent('Movie'); // => Movie
+Application.getProvidedComponent('Movie'); // => Movie
 ```
 
 ##### `provideComponent(component)` <badge type="secondary">class method</badge> {#provide-component-class-method}
@@ -1231,11 +1231,11 @@ Typically, instead of using this method, you would rather use the [`@provide()`]
 **Example:**
 
 ```
-class Backend extends Component {}
+class Application extends Component {}
 class Movie extends Component {}
-Backend.provideComponent(Movie);
+Application.provideComponent(Movie);
 
-Backend.Movie; // => `Movie` class
+Application.Movie; // => `Movie` class
 ```
 
 ##### `getProvidedComponents([options])` <badge type="secondary">class method</badge> {#get-provided-components-class-method}
@@ -1263,12 +1263,12 @@ A component provider.
 **Example:**
 
 ```
-class Backend extends Component {}
+class Application extends Component {}
 class Movie extends Component {}
-Backend.provideComponent(Movie);
+Application.provideComponent(Movie);
 
-Movie.getComponentProvider(); // => `Backend` class
-Backend.getComponentProvider(); // => `Backend` class
+Movie.getComponentProvider(); // => `Application` class
+Application.getComponentProvider(); // => `Application` class
 ```
 
 ##### `getConsumedComponent(name)` <badge type="secondary">class method</badge> {#get-consumed-component-class-method}
@@ -1294,7 +1294,7 @@ class Movie extends Component {
 
 class Actor extends Component {}
 
-class Backend extends Component {
+class Application extends Component {
   @provide() static Movie = Movie;
   @provide() static Actor = Actor;
 }
@@ -1313,7 +1313,7 @@ class Movie extends Component {
 
 class Actor extends Component {}
 
-class Backend extends Component {
+class Application extends Component {
   @provide() static Movie = Movie;
   @provide() static Actor = Actor;
 }
@@ -1337,12 +1337,12 @@ Typically, instead of using this method, you would rather use the [`@consume()`]
 **Example:**
 
 ```
-class Backend extends Component {}
+class Application extends Component {}
 class Movie extends Component {}
-Backend.provideComponent(Movie);
-Movie.consumeComponent('Backend');
+Application.provideComponent(Movie);
+Movie.consumeComponent('Application');
 
-Movie.Backend; // => `Backend` class
+Movie.Application; // => `Application` class
 ```
 
 ##### `getConsumedComponents([options])` <badge type="secondary">class method</badge> {#get-consumed-components-class-method}

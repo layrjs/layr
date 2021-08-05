@@ -31,21 +31,21 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    Movie.getAttribute('limit').setValueSource('frontend');
+    Movie.getAttribute('limit').setValueSource('client');
 
     expect(Movie.serialize()).toStrictEqual({
       __component: 'typeof Movie',
       limit: 100,
       offset: {__undefined: true}
     });
-    expect(Movie.serialize({target: 'frontend'})).toStrictEqual({
+    expect(Movie.serialize({target: 'client'})).toStrictEqual({
       __component: 'typeof Movie',
       offset: {__undefined: true}
     });
 
-    Movie.getAttribute('offset').setValueSource('frontend');
+    Movie.getAttribute('offset').setValueSource('client');
 
-    expect(Movie.serialize({target: 'frontend'})).toStrictEqual({
+    expect(Movie.serialize({target: 'client'})).toStrictEqual({
       __component: 'typeof Movie'
     });
 
@@ -144,13 +144,13 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie = Movie.instantiate({title: 'Inception'}, {source: 'frontend'});
+    movie = Movie.instantiate({title: 'Inception'}, {source: 'client'});
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
       title: 'Inception'
     });
-    expect(movie.serialize({target: 'frontend'})).toStrictEqual({
+    expect(movie.serialize({target: 'client'})).toStrictEqual({
       __component: 'Movie'
     });
 
@@ -220,9 +220,9 @@ describe('Serialization', () => {
     movie
       .getAttribute('director')
       .setValue(
-        Director.instantiate({name: 'Christopher Nolan', country: 'USA'}, {source: 'frontend'}),
+        Director.instantiate({name: 'Christopher Nolan', country: 'USA'}, {source: 'client'}),
         {
-          source: 'frontend'
+          source: 'client'
         }
       );
 
@@ -232,11 +232,11 @@ describe('Serialization', () => {
       director: {__component: 'Director', name: 'Christopher Nolan', country: 'USA'}
     });
 
-    expect(movie.serialize({target: 'frontend'})).toStrictEqual({__component: 'Movie'});
+    expect(movie.serialize({target: 'client'})).toStrictEqual({__component: 'Movie'});
 
     movie.director.country = 'US';
 
-    expect(movie.serialize({target: 'frontend'})).toStrictEqual({
+    expect(movie.serialize({target: 'client'})).toStrictEqual({
       __component: 'Movie',
       director: {__component: 'Director', country: 'US'}
     });
@@ -257,9 +257,9 @@ describe('Serialization', () => {
     movie
       .getAttribute('actors')
       .setValue(
-        [Actor.instantiate({name: 'Leonardo DiCaprio', country: 'USA'}, {source: 'frontend'})],
+        [Actor.instantiate({name: 'Leonardo DiCaprio', country: 'USA'}, {source: 'client'})],
         {
-          source: 'frontend'
+          source: 'client'
         }
       );
 
@@ -268,13 +268,13 @@ describe('Serialization', () => {
       actors: [{__component: 'Actor', name: 'Leonardo DiCaprio', country: 'USA'}]
     });
 
-    expect(movie.serialize({attributeSelector: {actors: true}, target: 'frontend'})).toStrictEqual({
+    expect(movie.serialize({attributeSelector: {actors: true}, target: 'client'})).toStrictEqual({
       __component: 'Movie'
     });
 
     movie.actors[0].country = 'US';
 
-    expect(movie.serialize({attributeSelector: {actors: true}, target: 'frontend'})).toStrictEqual({
+    expect(movie.serialize({attributeSelector: {actors: true}, target: 'client'})).toStrictEqual({
       __component: 'Movie',
       actors: [{__component: 'Actor', name: 'Leonardo DiCaprio', country: 'US'}]
     });
@@ -340,14 +340,14 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'}, {source: 'frontend'});
+    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'}, {source: 'client'});
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
       id: 'abc123',
       title: 'Inception'
     });
-    expect(movie.serialize({target: 'frontend'})).toStrictEqual({
+    expect(movie.serialize({target: 'client'})).toStrictEqual({
       __component: 'Movie',
       id: 'abc123'
     });

@@ -49,7 +49,7 @@ type AttributeItemsOptions = {
   items?: AttributeItemsOptions;
 };
 
-export type ValueSource = 'backend' | 'store' | 'local' | 'frontend';
+export type ValueSource = 'server' | 'store' | 'local' | 'client';
 
 export type IntrospectedAttribute = IntrospectedProperty & {
   value?: unknown;
@@ -370,9 +370,9 @@ export class Attribute extends Observable(Property) {
       return {previousValue: undefined, newValue: undefined};
     }
 
-    if (this.isControlled() && !(source === 'backend' || source === 'store')) {
+    if (this.isControlled() && !(source === 'server' || source === 'store')) {
       throw new Error(
-        `Cannot set the value of a controlled attribute when the source is different than 'backend' or 'store' (${this.describe()}, source: '${source}')`
+        `Cannot set the value of a controlled attribute when the source is different than 'server' or 'store' (${this.describe()}, source: '${source}')`
       );
     }
 
@@ -512,8 +512,8 @@ export class Attribute extends Observable(Property) {
    * ```
    * const title = movie.getAttribute('title');
    * title.setValueSource('local'); // The value was set locally
-   * title.setValueSource('backend'); // The value came from an upper layer
-   * title.setValueSource('frontend'); // The value came from a lower layer
+   * title.setValueSource('server'); // The value came from an upper layer
+   * title.setValueSource('client'); // The value came from a lower layer
    * ```
    *
    * @category Value Source
@@ -532,10 +532,10 @@ export class Attribute extends Observable(Property) {
    *
    * Currently, four types of sources are supported:
    *
-   * * `'backend'`: The value comes from an upper layer.
+   * * `'server'`: The value comes from an upper layer.
    * * `'store'`: The value comes from a store.
    * * `'local'`: The value comes from the current layer.
-   * * `'frontend`: The value comes from a lower layer.
+   * * `'client'`: The value comes from a lower layer.
    * ```
    *
    * @category Value Source

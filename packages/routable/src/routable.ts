@@ -882,7 +882,7 @@ function getOrInstantiateComponent(
 
   const component =
     componentClassOrPrototype.constructor.getIdentityMap().getComponent(componentIdentifier) ??
-    componentClassOrPrototype.constructor.instantiate(componentIdentifier, {source: 'backend'});
+    componentClassOrPrototype.constructor.instantiate(componentIdentifier, {source: 'server'});
 
   for (const [name, identifiers] of Object.entries(referencedComponentIdentifiers)) {
     const attribute = component.getAttribute(name);
@@ -897,7 +897,7 @@ function getOrInstantiateComponent(
     const referencedComponentClassOrPrototype = valueType.getComponent(attribute);
     attribute.setValue(
       getOrInstantiateComponent(referencedComponentClassOrPrototype, identifiers),
-      {source: 'backend'}
+      {source: 'server'}
     );
   }
 
