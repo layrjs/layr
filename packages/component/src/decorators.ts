@@ -523,12 +523,12 @@ export function expose(exposure: ClassExposure | PropertyExposure = {}) {
  *
  * class Actor extends Component {}
  *
- * class Backend extends Component {
+ * class Application extends Component {
  *   ﹫provide() static Movie = Movie;
  *   ﹫provide() static Actor = Actor;
  * }
  *
- * // Since `Actor` is provided by `Backend`, it can be accessed from `Movie`
+ * // Since `Actor` is provided by `Application`, it can be accessed from `Movie`
  * Movie.Actor; // => Actor
  * ```
  *
@@ -544,12 +544,12 @@ export function expose(exposure: ClassExposure | PropertyExposure = {}) {
  *
  * class Actor extends Component {}
  *
- * class Backend extends Component {
+ * class Application extends Component {
  *   ﹫provide() static Movie = Movie;
  *   ﹫provide() static Actor = Actor;
  * }
  *
- * // Since `Actor` is provided by `Backend`, it can be accessed from `Movie`
+ * // Since `Actor` is provided by `Application`, it can be accessed from `Movie`
  * Movie.Actor; // => Actor
  * ```
  *

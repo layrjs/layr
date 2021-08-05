@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-http-client",
-  "version": "2.0.24",
+  "version": "2.0.25",
   "description": "An HTTP client for your Layr components",
   "keywords": [
     "layr",
@@ -27,14 +27,14 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component-client": "^2.0.27",
+    "@layr/component-client": "^2.0.28",
     "core-helpers": "^1.0.3",
     "cross-fetch": "^3.1.4",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@koa/cors": "^3.1.0",
-    "@layr/component": "^2.0.19",
+    "@layr/component": "^2.0.20",
     "@mvila/dev-tools": "^1.0.30",
     "@mvila/tsconfig": "^1.0.5",
     "@types/co-body": "^5.1.1",

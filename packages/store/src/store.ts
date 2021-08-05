@@ -150,14 +150,14 @@ export abstract class Store {
    *   // ...
    * }
    *
-   * class Backend extends Component {
+   * class Application extends Component {
    *   ﹫provide() static User = User;
    *   ﹫provide() static Movie = Movie;
    * }
    *
    * const store = new MongoDBStore('mongodb://user:pass@host:port/db');
    *
-   * store.registerRootComponent(Backend); // User and Movie will be registered
+   * store.registerRootComponent(Application); // User and Movie will be registered
    * ```
    *
    * @category Component Registration
