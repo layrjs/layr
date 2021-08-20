@@ -3681,8 +3681,6 @@ export class Component extends Observable(Object) {
       const hasAlreadyBeenSerialized = serializedComponents!.has(this);
 
       if (!hasAlreadyBeenSerialized) {
-        serializedComponents!.add(this);
-
         if (componentDependencies !== undefined) {
           componentDependencies.add(this.constructor);
 
@@ -3701,6 +3699,8 @@ export class Component extends Observable(Object) {
 
         return serializedComponent;
       }
+
+      serializedComponents!.add(this);
     }
 
     const isNew = this.getIsNewMark();

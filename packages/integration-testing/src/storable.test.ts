@@ -208,7 +208,7 @@ describe('Storable', () => {
 
     if (true) {
       describe('With a remote memory store', () => {
-        testOperations(() => {
+        testOperations(async () => {
           const server = (() => {
             @expose({
               prototype: {
@@ -269,8 +269,8 @@ describe('Storable', () => {
             return new ComponentServer(User);
           })();
 
-          const client = new ComponentClient(server, {mixins: [Storable]});
-          const User = client.getComponent() as typeof BaseUser;
+          const client = new ComponentClient(server, {mixins: [Storable], batchable: true});
+          const User = (await client.getComponent()) as typeof BaseUser;
 
           return User;
         });
@@ -294,10 +294,10 @@ describe('Storable', () => {
       });
     }
 
-    function testOperations(userClassProvider: () => typeof BaseUser) {
+    function testOperations(userClassProvider: () => typeof BaseUser | Promise<typeof BaseUser>) {
       describe('Storable instances', () => {
         test('get()', async () => {
-          const User = userClassProvider();
+          const User = await userClassProvider();
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             await expect(User.fork().get({id: 'user1'})).rejects.toThrow(
@@ -434,7 +434,7 @@ describe('Storable', () => {
         });
 
         test('has()', async () => {
-          const User = userClassProvider();
+          const User = await userClassProvider();
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             await expect(User.fork().has('user1')).rejects.toThrow(
@@ -462,8 +462,9 @@ describe('Storable', () => {
         });
 
         test('load()', async () => {
-          const User = userClassProvider();
+          const User = await userClassProvider();
 
+          let ForkedUser: typeof BaseUser;
           let user: BaseUser;
           let organization: BaseOrganization;
 
@@ -699,7 +700,7 @@ describe('Storable', () => {
 
           // --- With a referenced identifiable component loaded from a fork ---
 
-          const ForkedUser = User.fork();
+          ForkedUser = User.fork();
           organization = await ForkedUser.Organization.get('org1');
           const ForkedUserFork = ForkedUser.fork();
           user = await ForkedUserFork.get('user1', {organization: {}});
@@ -732,10 +733,36 @@ describe('Storable', () => {
             slug: 'organization-1',
             name: 'Organization 1'
           });
+
+          // ------
+
+          ForkedUser = User.fork();
+          user = ForkedUser.instantiate({id: 'user1'});
+          organization = ForkedUser.Organization.instantiate({id: 'org1'});
+
+          await Promise.all([
+            user.load({fullName: true, organization: {}}),
+            organization.load({name: true})
+          ]);
+
+          expect(user.serialize()).toStrictEqual({
+            __component: 'User',
+            id: 'user1',
+            fullName: 'User 1',
+            organization: {
+              __component: 'Organization',
+              id: 'org1'
+            }
+          });
+          expect(organization.serialize()).toStrictEqual({
+            __component: 'Organization',
+            id: 'org1',
+            name: 'Organization 1'
+          });
         });
 
         test('save()', async () => {
-          const User = userClassProvider();
+          const User = await userClassProvider();
 
           let ForkedUser = User.fork();
           let ForkedPicture = ForkedUser.Picture;
@@ -1066,7 +1093,7 @@ describe('Storable', () => {
         });
 
         test('delete()', async () => {
-          const User = userClassProvider();
+          const User = await userClassProvider();
 
           let user = User.fork().instantiate({id: 'user1'});
 
@@ -1094,7 +1121,7 @@ describe('Storable', () => {
         });
 
         test('find()', async () => {
-          const User = userClassProvider();
+          const User = await userClassProvider();
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(User.fork().find()).rejects.toThrow(
@@ -1797,7 +1824,7 @@ describe('Storable', () => {
         });
 
         test('count()', async () => {
-          const User = userClassProvider();
+          const User = await userClassProvider();
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
             return await expect(User.fork().count()).rejects.toThrow(

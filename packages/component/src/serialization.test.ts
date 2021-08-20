@@ -394,6 +394,26 @@ describe('Serialization', () => {
       id: 'xyz456'
     });
     expect(Array.from(componentDependencies)).toEqual([Cinema, Movie]);
+
+    // - With an array of components -
+
+    const serializedComponents: ComponentSet = new Set();
+    componentDependencies = new Set();
+
+    expect(
+      serialize([cinema, movie, movie], {serializedComponents, componentDependencies})
+    ).toEqual([
+      {
+        __component: 'Cinema',
+        id: 'xyz456',
+        name: 'Paradiso',
+        movies: [{__component: 'Movie', id: 'abc123'}]
+      },
+      {__component: 'Movie', id: 'abc123', title: 'Inception'},
+      {__component: 'Movie', id: 'abc123'}
+    ]);
+    expect(Array.from(serializedComponents)).toEqual([cinema, movie]);
+    expect(Array.from(componentDependencies)).toEqual([Cinema, Movie]);
   });
 
   test('Functions', async () => {
