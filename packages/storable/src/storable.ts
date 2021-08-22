@@ -1462,7 +1462,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
               isPlainObject(normalizedQuery) &&
               ('$some' in normalizedQuery ||
                 '$every' in normalizedQuery ||
-                '$length' in normalizedQuery)
+                '$length' in normalizedQuery ||
+                '$not' in normalizedQuery)
             )
           ) {
             // Make '$some' implicit

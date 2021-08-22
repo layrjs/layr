@@ -1576,6 +1576,17 @@ describe('Storable', () => {
             {__component: 'User', id: 'user13'}
           ]);
 
+          if (User.hasStore() && User.getStore() instanceof MongoDBStore) {
+            // TODO: Make the following test passes with a MemoryStore
+
+            users = await User.fork().find({tags: {$not: {$in: ['admin']}}}, {});
+
+            expect(serialize(users)).toStrictEqual([
+              {__component: 'User', id: 'user1'},
+              {__component: 'User', id: 'user12'}
+            ]);
+          }
+
           // - '$and' -
 
           users = await User.fork().find({$and: [{tags: 'owner'}, {emailIsVerified: false}]}, {});

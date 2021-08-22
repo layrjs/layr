@@ -164,7 +164,8 @@ describe('MongoDBStore', () => {
             {attributes: {slug: 'asc'}, isPrimary: false, isUnique: true},
             {attributes: {title: 'asc'}, isPrimary: false, isUnique: false},
             {attributes: {year: 'desc'}, isPrimary: false, isUnique: false},
-            {attributes: {year: 'desc', title: 'asc'}, isPrimary: false, isUnique: true}
+            {attributes: {year: 'desc', title: 'asc'}, isPrimary: false, isUnique: true},
+            {attributes: {tags: 'asc'}, isPrimary: false, isUnique: false}
           ]
         },
         silent: true
@@ -187,7 +188,8 @@ describe('MongoDBStore', () => {
             _id: 'movie1',
             slug: 'inception',
             title: 'Inception',
-            year: 2010
+            year: 2010,
+            tags: ['action', 'drama']
           }
         })
       ).toBe(true);
@@ -201,7 +203,8 @@ describe('MongoDBStore', () => {
             _id: 'movie1',
             slug: 'inception-2',
             title: 'Inception 2',
-            year: 2010
+            year: 2010,
+            tags: ['action', 'drama']
           }
         })
       ).toBe(false);
@@ -215,7 +218,8 @@ describe('MongoDBStore', () => {
             _id: 'movie2',
             slug: 'inception',
             title: 'Inception',
-            year: 2010
+            year: 2010,
+            tags: ['action', 'drama']
           }
         })
       ).rejects.toThrow(
@@ -231,7 +235,8 @@ describe('MongoDBStore', () => {
             _id: 'movie2',
             slug: 'inception-2',
             title: 'Inception',
-            year: 2010
+            year: 2010,
+            tags: ['action', 'drama']
           }
         })
       ).rejects.toThrow(
@@ -248,7 +253,8 @@ describe('MongoDBStore', () => {
           _id: 'movie1',
           slug: 'inception',
           title: 'Inception',
-          year: 2010
+          year: 2010,
+          tags: ['action', 'drama']
         }
       });
 
@@ -260,7 +266,8 @@ describe('MongoDBStore', () => {
           _id: 'movie2',
           slug: 'inception-2',
           title: 'Inception 2',
-          year: 2020
+          year: 2020,
+          tags: ['action', 'drama']
         }
       });
 
@@ -299,6 +306,113 @@ describe('MongoDBStore', () => {
       ).rejects.toThrow(
         "A duplicate key error occurred while updating a MongoDB document (collection: 'Movie', index: 'year (desc) + title [unique]')"
       );
+    });
+
+    test('findDocuments()', async () => {
+      await store.createDocument({
+        collectionName: 'Movie',
+        identifierDescriptor: {_id: 'movie1'},
+        document: {
+          __component: 'Movie',
+          _id: 'movie1',
+          slug: 'inception',
+          title: 'Inception',
+          year: 2010,
+          tags: ['action', 'adventure', 'sci-fi']
+        }
+      });
+
+      await store.createDocument({
+        collectionName: 'Movie',
+        identifierDescriptor: {_id: 'movie2'},
+        document: {
+          __component: 'Movie',
+          _id: 'movie2',
+          slug: 'forrest-gump',
+          title: 'Forrest Gump',
+          year: 1994,
+          tags: ['drama', 'romance']
+        }
+      });
+
+      await store.createDocument({
+        collectionName: 'Movie',
+        identifierDescriptor: {_id: 'movie3'},
+        document: {
+          __component: 'Movie',
+          _id: 'movie3',
+          slug: 'leon',
+          title: 'Léon',
+          year: 1994,
+          tags: ['action', 'crime', 'drama']
+        }
+      });
+
+      await store.createDocument({
+        collectionName: 'Movie',
+        identifierDescriptor: {_id: 'movie4'},
+        document: {
+          __component: 'Movie',
+          _id: 'movie4',
+          slug: 'unknown',
+          title: 'Unknown',
+          year: 0,
+          tags: []
+        }
+      });
+
+      expect(
+        await store.findDocuments({
+          collectionName: 'Movie',
+          expressions: [],
+          projection: {_id: 1},
+          sort: {_id: 'asc'}
+        })
+      ).toStrictEqual([{_id: 'movie1'}, {_id: 'movie2'}, {_id: 'movie3'}, {_id: 'movie4'}]);
+
+      // --- $in ---
+
+      expect(
+        await store.findDocuments({
+          collectionName: 'Movie',
+          // @ts-ignore
+          expressions: [['tags', '$in', ['romance']]],
+          projection: {_id: 1},
+          sort: {_id: 'asc'}
+        })
+      ).toStrictEqual([{_id: 'movie2'}]);
+
+      expect(
+        await store.findDocuments({
+          collectionName: 'Movie',
+          // @ts-ignore
+          expressions: [['tags', '$in', ['action']]],
+          projection: {_id: 1},
+          sort: {_id: 'asc'}
+        })
+      ).toStrictEqual([{_id: 'movie1'}, {_id: 'movie3'}]);
+
+      // --- $not $in ---
+
+      expect(
+        await store.findDocuments({
+          collectionName: 'Movie',
+          // @ts-ignore
+          expressions: [['tags', '$not', [['', '$in', ['action']]]]],
+          projection: {_id: 1},
+          sort: {_id: 'asc'}
+        })
+      ).toStrictEqual([{_id: 'movie2'}, {_id: 'movie4'}]);
+
+      expect(
+        await store.findDocuments({
+          collectionName: 'Movie',
+          // @ts-ignore
+          expressions: [['tags', '$not', [['', '$in', ['action', 'drama']]]]],
+          projection: {_id: 1},
+          sort: {_id: 'asc'}
+        })
+      ).toStrictEqual([{_id: 'movie4'}]);
     });
   });
 });
