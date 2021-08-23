@@ -212,13 +212,13 @@ First, install the required packages:
 ```sh
 // JS
 
-npm install react react-dom @layr/react-integration
+npm install react react-dom @layr/react-integration@1
 ```
 
 ```sh
 // TS
 
-npm install react react-dom @layr/react-integration
+npm install react react-dom @layr/react-integration@1
 npm install --save-dev @types/react @types/react-dom
 ```
 

@@ -34,8 +34,8 @@ Repeat the same operations as in the ["Hello, World!"](https://layrjs.com/docs/v
 First, install the Layr's packages we're going to use:
 
 ```sh
-npm install @layr/component @layr/component-http-server \
-  @layr/storable @layr/memory-store
+npm install @layr/component@1 @layr/component-http-server@1 \
+  @layr/storable@1 @layr/memory-store@1
 ```
 
 In addition to `@layr/component` and `@layr/component-http-server` that we [already encountered](https://layrjs.com/docs/v1/introduction/hello-world#implementing-the-backend), we've installed:
@@ -164,7 +164,7 @@ If nothing happens on the screen, it's all good. The backend is running and wait
 First, install `@layr/component-http-client`, which will allow us to communicate with the backend.
 
 ```sh
-npm install @layr/component-http-client
+npm install @layr/component-http-client@1
 ```
 
 <!-- <if language="ts"> -->

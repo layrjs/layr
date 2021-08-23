@@ -28,7 +28,7 @@ To associate a URL with a method of the `Guestbook` [component](https://layrjs.c
 First, install the `@layr/routable` package:
 
 ```sh
-npm install @layr/routable
+npm install @layr/routable@1
 ```
 
 Next, add the following line at the beginning of the <!-- <if language="js"> -->`src/frontend.js`<!-- </if> --><!-- <if language="ts"> -->`src/frontend.tsx`<!-- </if> --> file to import the [`Routable()`](https://layrjs.com/docs/v1/reference/routable) mixin and the [`@route()`](https://layrjs.com/docs/v1/reference/routable#route-decorator) decorator:
