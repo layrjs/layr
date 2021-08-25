@@ -3437,7 +3437,7 @@ export class Component extends Observable(Object) {
   static merge<T extends typeof Component>(
     this: T,
     forkedComponent: typeof Component,
-    options: MergeOptions = {}
+    options: MergeOptions & {attributeSelector?: AttributeSelector} = {}
   ) {
     assertIsComponentClass(forkedComponent);
 
@@ -3470,7 +3470,10 @@ export class Component extends Observable(Object) {
    *
    * @category Merging
    */
-  merge(forkedComponent: Component, options: MergeOptions = {}) {
+  merge(
+    forkedComponent: Component,
+    options: MergeOptions & {attributeSelector?: AttributeSelector} = {}
+  ) {
     assertIsComponentInstance(forkedComponent);
 
     if (!isPrototypeOf(this, forkedComponent)) {
@@ -3486,8 +3489,11 @@ export class Component extends Observable(Object) {
     return this.prototype.__mergeAttributes;
   }
 
-  __mergeAttributes(forkedComponent: typeof Component | Component, options: MergeOptions) {
-    for (const forkedAttribute of forkedComponent.getAttributes()) {
+  __mergeAttributes(
+    forkedComponent: typeof Component | Component,
+    {attributeSelector, ...otherOptions}: MergeOptions & {attributeSelector?: AttributeSelector}
+  ) {
+    for (const forkedAttribute of forkedComponent.getAttributes({attributeSelector})) {
       const name = forkedAttribute.getName();
 
       const attribute = this.getAttribute(name);
@@ -3503,7 +3509,7 @@ export class Component extends Observable(Object) {
       const forkedValue = forkedAttribute.getValue();
       const value = attribute.getValue({throwIfUnset: false});
 
-      const mergedValue = merge(value, forkedValue, options);
+      const mergedValue = merge(value, forkedValue, otherOptions);
 
       attribute.setValue(mergedValue, {source: forkedAttribute.getValueSource()});
     }

@@ -48,6 +48,14 @@ describe('Merging', () => {
     movie.merge(forkedMovie);
 
     expect(movie.getAttribute('title').isSet()).toBe(false);
+
+    forkedMovie.title = 'Inception 3';
+    forkedMovie.tags = ['action', 'adventure', 'sci-fi'];
+
+    movie.merge(forkedMovie, {attributeSelector: {title: true}});
+
+    expect(movie.title).toBe('Inception 3');
+    expect(movie.tags).toEqual(['drama', 'action']);
   });
 
   test('Referenced component', async () => {
