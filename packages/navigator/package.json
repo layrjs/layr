@@ -1,6 +1,6 @@
 {
   "name": "@layr/navigator",
-  "version": "2.0.22",
+  "version": "2.0.23",
   "description": "A base class for implementing Layr navigators",
   "keywords": [
     "layr",
@@ -28,7 +28,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.22",
+    "@layr/component": "^2.0.23",
     "@layr/observable": "^1.0.11",
     "core-helpers": "^1.0.3",
     "qs": "^6.10.1",
