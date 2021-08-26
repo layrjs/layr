@@ -41,7 +41,7 @@ export function assertIsNavigatorInstance(value: any): asserts value is Navigato
 
 export function normalizeURL(url: URL | string) {
   if (url instanceof URL) {
-    return url;
+    return fixCapacitorURL(url);
   }
 
   if (typeof url !== 'string') {
@@ -51,10 +51,21 @@ export function normalizeURL(url: URL | string) {
   }
 
   try {
-    return new URL(url, `${INTERNAL_LAYR_BASE_URL}/`);
+    return fixCapacitorURL(new URL(url, `${INTERNAL_LAYR_BASE_URL}/`));
   } catch (error) {
     throw new Error(`The specified URL is invalid (URL: '${url}')`);
   }
+}
+
+function fixCapacitorURL(url: URL) {
+  if (url.protocol === 'capacitor:' && url.pathname === '') {
+    // Fix an issue where to root URL of a Capacitor app is 'capacitor://localhost'
+    // and `pathname` is an empty string
+    url = new URL(url.toString());
+    url.pathname = '/';
+  }
+
+  return url;
 }
 
 export function stringifyURL(url: URL) {

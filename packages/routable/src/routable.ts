@@ -423,10 +423,10 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
         | undefined;
 
       for (const route of routes.values()) {
-        const navigatoresult = route.matchURL(normalizedURL, request);
+        const routeResult = route.matchURL(normalizedURL, request);
 
-        if (navigatoresult !== undefined) {
-          result = {route, ...navigatoresult};
+        if (routeResult !== undefined) {
+          result = {route, ...routeResult};
 
           if (!result.route.isCatchAll()) {
             break;

@@ -2,8 +2,8 @@ import {normalizeURL, stringifyURL, parseQuery, stringifyQuery} from './utilitie
 
 describe('Utilities', () => {
   test('normalizeURL() and stringifyURL()', async () => {
-    const url = 'https://username:password@domain.com:80/path?query=1#fragment';
-    const normalizedURL = normalizeURL(url);
+    let url = 'https://username:password@domain.com:80/path?query=1#fragment';
+    let normalizedURL = normalizeURL(url);
 
     expect(normalizedURL).toBeInstanceOf(URL);
     expect(stringifyURL(normalizedURL)).toBe(url);
@@ -11,6 +11,11 @@ describe('Utilities', () => {
 
     expect(stringifyURL(normalizeURL('/movies'))).toBe('/movies');
     expect(stringifyURL(normalizeURL('movies'))).toBe('/movies');
+
+    expect(normalizeURL('https://localhost').pathname).toBe('/');
+    expect(normalizeURL('https://localhost/').pathname).toBe('/');
+    expect(normalizeURL('capacitor://localhost').pathname).toBe('/');
+    expect(normalizeURL('capacitor://localhost/').pathname).toBe('/');
 
     // @ts-expect-error
     expect(() => normalizeURL(123)).toThrow(
