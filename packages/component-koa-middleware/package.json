@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-koa-middleware",
-  "version": "2.0.42",
+  "version": "2.0.43",
   "description": "A Koa middleware for your Layr components",
   "keywords": [
     "layr",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@layr/component": "^2.0.23",
     "@layr/component-server": "^2.0.30",
-    "@layr/routable": "^2.0.69",
+    "@layr/routable": "^2.0.72",
     "core-helpers": "^1.0.3",
     "mime-types": "^2.1.32",
     "raw-body": "^2.4.1",
