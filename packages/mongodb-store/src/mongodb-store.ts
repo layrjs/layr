@@ -21,7 +21,7 @@ import type {
   Operator
 } from '@layr/storable';
 import {ensureComponentInstance} from '@layr/component';
-import {MongoClient, Db, Collection, FilterQuery, FindOneOptions} from 'mongodb';
+import {MongoClient, Db, Collection, Filter, FindOptions} from 'mongodb';
 import {Microbatcher, Operation} from 'microbatcher';
 import {hasOwnProperty, assertIsObjectLike} from 'core-helpers';
 import isEmpty from 'lodash/isEmpty';
@@ -201,20 +201,20 @@ export class MongoDBStore extends Store {
     const collection = await this._getCollection(collectionName);
 
     try {
-      const {insertedCount} = await debugCall(
+      const {acknowledged} = await debugCall(
         async () => {
-          const {insertedCount} = await collection.insertOne(document);
+          const {acknowledged} = await collection.insertOne(document);
 
-          return {insertedCount};
+          return {acknowledged};
         },
         'db.%s.insertOne(%o)',
         collectionName,
         document
       );
 
-      return insertedCount === 1;
+      return acknowledged;
     } catch (error) {
-      if (error.name === 'MongoError' && error.code === 11000) {
+      if (error.name === 'MongoServerError' && error.code === 11000) {
         const matches = error.message.match(/ index: (.*) dup key/);
 
         if (matches === null) {
@@ -280,7 +280,7 @@ export class MongoDBStore extends Store {
 
           return {matchedCount, modifiedCount};
         } catch (error) {
-          if (error.name === 'MongoError' && error.code === 11000) {
+          if (error.name === 'MongoServerError' && error.code === 11000) {
             const matches = error.message.match(/ index: (.*) dup key/);
 
             if (matches === null) {
@@ -569,9 +569,7 @@ export class MongoDBStore extends Store {
           debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
 
           this._client = await MongoClient.connect(this._connectionString, {
-            poolSize: this._poolSize,
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+            maxPoolSize: this._poolSize
           });
 
           debug(`Connected to MongoDB Server (connectionString: ${this._connectionString})`);
@@ -806,13 +804,13 @@ async function debugCall<Result>(
 const findOneBatcher = Symbol('batcher');
 
 interface FindOneOperation extends Operation {
-  params: [filter: FilterQuery<any>, options: FindOneOptions<any>];
+  params: [filter: Filter<any>, options: FindOptions<any>];
 }
 
 function batchableFindOne(
   collection: Collection & {[findOneBatcher]?: Microbatcher<FindOneOperation>},
-  query: FilterQuery<any>,
-  options: FindOneOptions<any>
+  query: Filter<any>,
+  options: FindOptions<any>
 ) {
   assertIsObjectLike(query);
 
