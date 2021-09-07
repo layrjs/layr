@@ -131,8 +131,8 @@ export function Customizer({
   );
 }
 
-class BrowserActionView extends React.Component<
-  {},
+export class BrowserActionView extends React.Component<
+  {children?: React.ReactNode},
   {count: number; activeElement: Element | null}
 > {
   state = {
@@ -179,10 +179,17 @@ class BrowserActionView extends React.Component<
   }
 
   render() {
+    if (this.state.count === 0) {
+      return null;
+    }
+
+    if (this.props.children !== undefined) {
+      return this.props.children;
+    }
+
     return (
       <div
         style={{
-          display: this.state.count > 0 ? 'block' : 'none',
           position: 'fixed',
           top: 0,
           left: 0,
