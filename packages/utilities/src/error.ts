@@ -23,6 +23,9 @@ export function throwError(message?: string, attributes: ExtendedErrorAttributes
   throw createError(message, attributes);
 }
 
-export function formatError(error?: ExtendedError) {
-  return error?.displayMessage ?? DEFAULT_DISPLAY_MESSAGE;
+export function formatError(
+  error?: ExtendedError,
+  {defaultDisplayMessage = DEFAULT_DISPLAY_MESSAGE} = {}
+) {
+  return error?.displayMessage ?? defaultDisplayMessage;
 }
