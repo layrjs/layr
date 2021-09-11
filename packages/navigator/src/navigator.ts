@@ -1,5 +1,6 @@
 import {Observable} from '@layr/observable';
 import {assertNoUnknownOptions} from 'core-helpers';
+import {possiblyAsync} from 'possibly-async';
 
 import {isNavigatorInstance, normalizeURL, stringifyURL, parseQuery} from './utilities';
 
@@ -293,14 +294,14 @@ export abstract class Navigator extends Observable(Object) {
   go(delta: number, options: NavigationOptions = {}) {
     const {silent = false, defer = true} = options;
 
-    this._go(delta);
+    return possiblyAsync(this._go(delta), () => {
+      if (silent) {
+        return;
+      }
 
-    if (silent) {
-      return;
-    }
-
-    return possiblyDeferred(defer, () => {
-      this.callObservers();
+      return possiblyDeferred(defer, () => {
+        this.callObservers();
+      });
     });
   }
 
@@ -321,6 +322,27 @@ export abstract class Navigator extends Observable(Object) {
    */
   goBack(options: NavigationOptions = {}) {
     return this.go(-1, options);
+  }
+
+  /**
+   * Go back to the first entry in the navigator's history.
+   *
+   * The observers of the navigator are automatically called.
+   *
+   * @param [options.silent] A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
+   * @param [options.defer] A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
+   *
+   * @category Navigation
+   * @possiblyasync
+   */
+  goBackToRoot(options: NavigationOptions = {}) {
+    const index = this.getHistoryIndex();
+
+    if (index < 1) {
+      return undefined;
+    }
+
+    return this.go(-index, options);
   }
 
   /**
@@ -350,6 +372,17 @@ export abstract class Navigator extends Observable(Object) {
   }
 
   abstract _getHistoryLength(): number;
+
+  /**
+   * Returns the current index in the navigator's history.
+   *
+   * @category Navigation
+   */
+  getHistoryIndex() {
+    return this._getHistoryIndex();
+  }
+
+  abstract _getHistoryIndex(): number;
 
   // === Observability ===
 

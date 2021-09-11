@@ -19,6 +19,10 @@ describe('Navigator', () => {
     _getHistoryLength(): number {
       return 1;
     }
+
+    _getHistoryIndex(): number {
+      return 0;
+    }
   }
 
   test('Creation', async () => {

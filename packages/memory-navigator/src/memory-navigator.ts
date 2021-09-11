@@ -98,6 +98,10 @@ export class MemoryNavigator extends Navigator {
     return this._urls.length;
   }
 
+  _getHistoryIndex() {
+    return this._index;
+  }
+
   // === Observability ===
 
   /**

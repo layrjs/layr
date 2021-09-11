@@ -66,6 +66,7 @@ export class BrowserNavigator extends Navigator {
   }
 
   _popStateHandler!: (event: PopStateEvent) => void;
+  _ignorePopStateHandler!: boolean;
   _navigateHandler!: (event: Event) => void;
   _mutationObserver!: MutationObserver;
   _expectedHash: string | undefined;
@@ -75,8 +76,12 @@ export class BrowserNavigator extends Navigator {
     // --- Back/forward navigation ---
 
     this._popStateHandler = () => {
-      this.callObservers();
+      if (!this._ignorePopStateHandler) {
+        this.callObservers();
+      }
     };
+
+    this._ignorePopStateHandler = false;
 
     window.addEventListener('popstate', this._popStateHandler);
 
@@ -158,12 +163,12 @@ export class BrowserNavigator extends Navigator {
    */
 
   _navigate(url: URL) {
-    window.history.pushState(null, '', stringifyURL(url));
+    window.history.pushState({index: this._getHistoryIndex() + 1}, '', stringifyURL(url));
     this._fixScrollPosition();
   }
 
   _redirect(url: URL) {
-    window.history.replaceState(null, '', stringifyURL(url));
+    window.history.replaceState({index: this._getHistoryIndex()}, '', stringifyURL(url));
     this._fixScrollPosition();
   }
 
@@ -180,18 +185,35 @@ export class BrowserNavigator extends Navigator {
 
   _reload(url: URL | undefined) {
     if (url !== undefined) {
-      window.location.assign(stringifyURL(url));
+      window.location.replace(stringifyURL(url));
     } else {
       window.location.reload();
     }
   }
 
   _go(delta: number) {
-    window.history.go(delta);
+    return new Promise<void>((resolve) => {
+      this._ignorePopStateHandler = true;
+
+      window.addEventListener(
+        'popstate',
+        () => {
+          this._ignorePopStateHandler = false;
+          resolve();
+        },
+        {once: true}
+      );
+
+      window.history.go(delta);
+    });
   }
 
   _getHistoryLength() {
     return window.history.length;
+  }
+
+  _getHistoryIndex() {
+    return (window.history.state?.index ?? 0) as number;
   }
 
   /**
