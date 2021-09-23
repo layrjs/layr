@@ -1,5 +1,5 @@
 import type {Component} from '@layr/component';
-import {isComponentClass} from '@layr/component';
+import {deserialize, isComponentClass} from '@layr/component';
 import type {ComponentServer, ComponentServerOptions} from '@layr/component-server';
 import {ensureComponentServer, isComponentServerInstance} from '@layr/component-server';
 import type {RoutableComponent} from '@layr/routable';
@@ -56,7 +56,7 @@ export function createAWSLambdaHandler(
   const handler = async (
     event: APIGatewayProxyEventV2,
     context: Context
-  ): Promise<APIGatewayProxyStructuredResultV2> => {
+  ): Promise<APIGatewayProxyStructuredResultV2 | undefined> => {
     context.callbackWaitsForEmptyEventLoop = false;
 
     if (componentServer === undefined) {
@@ -87,12 +87,26 @@ export function createAWSLambdaHandler(
         event.requestContext !== undefined
       )
     ) {
-      // Direct invocation
+      // === Scheduled invocation via EventBridge ===
 
-      return (await componentServer.receive(event as any)) as any;
+      const {result: serializedResult} = await componentServer.receive(event as any);
+
+      deserialize(serializedResult, {
+        rootComponent: componentServer.getComponent().fork(),
+        errorHandler(error) {
+          console.error(
+            `An error occurred while running a scheduled method (${JSON.stringify(event)}): ${
+              error.message
+            }`
+          );
+        },
+        source: 'server'
+      });
+
+      return;
     }
 
-    // Invocation via API Gateway HTTP API v2
+    // === Invocation via API Gateway HTTP API v2 ===
 
     if (customHandler !== undefined) {
       const result = await customHandler(event, context);

@@ -1,5 +1,5 @@
-import type {Component, AttributeOptions} from '@layr/component';
 import {Attribute} from '@layr/component';
+import type {Component, AttributeOptions} from '@layr/component';
 import {PromiseLikeable, hasOwnProperty, Constructor} from 'core-helpers';
 
 // TODO: Find a way to remove this useless import

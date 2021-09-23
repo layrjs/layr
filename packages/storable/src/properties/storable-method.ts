@@ -1,4 +1,5 @@
-import {Component, Method} from '@layr/component';
+import {Method} from '@layr/component';
+import type {Component, MethodOptions} from '@layr/component';
 import {Constructor} from 'core-helpers';
 
 // TODO: Find a way to remove this useless import
@@ -9,7 +10,7 @@ import type {Property} from '@layr/component';
 import {StorablePropertyMixin, StorablePropertyOptions} from './storable-property';
 import {assertIsStorableClassOrInstance} from '../utilities';
 
-export type StorableMethodOptions = StorablePropertyOptions;
+export type StorableMethodOptions = StorablePropertyOptions & MethodOptions;
 
 export const StorableMethodMixin = <T extends Constructor<typeof Method>>(Base: T) =>
   /**

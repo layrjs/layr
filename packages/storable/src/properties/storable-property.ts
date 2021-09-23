@@ -1,7 +1,8 @@
-import {Component, Property, PropertyOptions} from '@layr/component';
+import {Property} from '@layr/component';
+import type {Component, PropertyOptions} from '@layr/component';
 import {PromiseLikeable, Constructor} from 'core-helpers';
 
-import {Query} from '../query';
+import type {Query} from '../query';
 import {assertIsStorableClassOrInstance} from '../utilities';
 
 export type StorablePropertyOptions = PropertyOptions & {

@@ -1,9 +1,14 @@
 import type {Component} from '../component';
 import {Property, PropertyOptions, IntrospectedProperty} from './property';
+import {isComponentClass} from '../utilities';
 
 export type IntrospectedMethod = IntrospectedProperty;
 
-export type MethodOptions = PropertyOptions;
+export type MethodOptions = PropertyOptions & {
+  schedule?: MethodSchedule;
+};
+
+export type MethodSchedule = {rate: number};
 
 /**
  * *Inherits from [`Property`](https://layrjs.com/docs/v2/reference/property).*
@@ -103,13 +108,41 @@ export class Method extends Property {
     super(name, parent, options);
   }
 
-  // === Methods ===
+  // === Options ===
+
+  setOptions(options: MethodOptions = {}) {
+    const {schedule, ...otherOptions} = options;
+
+    super.setOptions(otherOptions);
+
+    if (schedule !== undefined) {
+      this.setSchedule(schedule);
+    }
+  }
+
+  // === Property Methods ===
 
   /**
    * See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v2/reference/property#basic-methods) class.
    *
    * @category Methods
    */
+
+  // === Schedule ===
+
+  _schedule?: MethodSchedule;
+
+  getSchedule() {
+    return this._schedule;
+  }
+
+  setSchedule(schedule: MethodSchedule | undefined) {
+    if (!isComponentClass(this.getParent())) {
+      throw new Error(`Only static methods can be scheduled (${this.describe()})`);
+    }
+
+    this._schedule = schedule;
+  }
 
   // === Utilities ===
 
