@@ -1,5 +1,6 @@
 import {ComponentClient, ComponentClientOptions} from '@layr/component-client';
 import fetch from 'cross-fetch';
+import {sleep} from '@layr/utilities';
 import type {PlainObject} from 'core-helpers';
 
 const DEFAULT_MAXIMUM_REQUEST_RETRIES = 10;
@@ -221,10 +222,4 @@ function createComponentServer(
       }
     }
   };
-}
-
-function sleep(duration: number) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, duration);
-  });
 }
