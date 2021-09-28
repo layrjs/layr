@@ -1487,6 +1487,28 @@ describe('Component', () => {
     });
   });
 
+  describe('Execution mode', () => {
+    test('getExecutionMode() and setExecutionMode()', async () => {
+      class Movie extends Component {}
+
+      class App extends Component {
+        @provide() static Movie = Movie;
+      }
+
+      expect(App.getExecutionMode()).toBe('foreground');
+      expect(Movie.getExecutionMode()).toBe('foreground');
+
+      App.setExecutionMode('background');
+
+      expect(App.getExecutionMode()).toBe('background');
+      expect(Movie.getExecutionMode()).toBe('background');
+
+      expect(() => {
+        App.setExecutionMode('foreground');
+      }).toThrow();
+    });
+  });
+
   describe('Introspection', () => {
     test('introspect()', async () => {
       class Movie extends EmbeddedComponent {

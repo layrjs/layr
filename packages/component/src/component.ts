@@ -98,6 +98,8 @@ export type ResolveAttributeSelectorOptions = {
 
 type MethodBuilder = (name: string) => Function;
 
+export type ExecutionMode = 'foreground' | 'background';
+
 export type IntrospectedComponent = {
   name: string;
   isEmbedded?: boolean;
@@ -3898,6 +3900,34 @@ export class Component extends Observable(Object) {
         );
       }
     );
+  }
+
+  // === Execution mode ===
+
+  static __executionMode: ExecutionMode;
+
+  static getExecutionMode() {
+    let currentComponent = this;
+
+    while (true) {
+      const executionMode = currentComponent.__executionMode;
+
+      if (executionMode !== undefined) {
+        return executionMode;
+      }
+
+      const componentProvider = currentComponent.getComponentProvider();
+
+      if (componentProvider === currentComponent) {
+        return 'foreground';
+      }
+
+      currentComponent = componentProvider;
+    }
+  }
+
+  static setExecutionMode(executionMode: ExecutionMode) {
+    Object.defineProperty(this, '__executionMode', {value: executionMode});
   }
 
   // === Introspection ===

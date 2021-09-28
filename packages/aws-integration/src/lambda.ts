@@ -1,5 +1,5 @@
 import type {Component} from '@layr/component';
-import {deserialize, isComponentClass} from '@layr/component';
+import {isComponentClass} from '@layr/component';
 import type {ComponentServer, ComponentServerOptions} from '@layr/component-server';
 import {ensureComponentServer, isComponentServerInstance} from '@layr/component-server';
 import type {RoutableComponent} from '@layr/routable';
@@ -87,21 +87,9 @@ export function createAWSLambdaHandler(
         event.requestContext !== undefined
       )
     ) {
-      // === Scheduled invocation via EventBridge ===
+      // === Scheduled or queued invocation ===
 
-      const {result: serializedResult} = await componentServer.receive(event as any);
-
-      deserialize(serializedResult, {
-        rootComponent: componentServer.getComponent().fork(),
-        errorHandler(error) {
-          console.error(
-            `An error occurred while running a scheduled method (${JSON.stringify(event)}): ${
-              error.message
-            }`
-          );
-        },
-        source: 'server'
-      });
+      await componentServer.receive(event as any, {executionMode: 'background'});
 
       return;
     }

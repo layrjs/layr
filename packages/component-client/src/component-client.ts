@@ -186,6 +186,8 @@ export class ComponentClient {
   }
 
   _sendOne(query: PlainObject, options: {rootComponent?: typeof Component}): any {
+    const {rootComponent} = options;
+
     const {serializedQuery, serializedComponents} = this._serializeQuery(query);
 
     debugRequest({serializedQuery, serializedComponents});
@@ -198,8 +200,6 @@ export class ComponentClient {
       }),
       ({result: serializedResult, components: serializedComponents}) => {
         debugResponse({serializedResult, serializedComponents});
-
-        const {rootComponent} = options;
 
         const errorHandler = function (error: Error) {
           throw error;

@@ -5,6 +5,7 @@ import {
   PropertyFilter,
   Attribute,
   PropertyOperation,
+  ExecutionMode,
   isComponentClassOrInstance,
   assertIsComponentClass,
   serialize,
@@ -80,16 +81,30 @@ export class ComponentServer {
     return this._component;
   }
 
-  receive(request: {query: PlainObject; components?: PlainObject[]; version?: number}) {
+  receive(
+    request: {
+      query: PlainObject;
+      components?: PlainObject[];
+      version?: number;
+    },
+    options: {executionMode?: ExecutionMode} = {}
+  ) {
     const {
       query: serializedQuery,
       components: serializedComponents,
       version: clientVersion
     } = request;
 
+    const {executionMode} = options;
+
     this.validateVersion(clientVersion);
 
     const componentFork = this._component.fork();
+
+    if (executionMode !== undefined) {
+      componentFork.setExecutionMode(executionMode);
+    }
+
     const deeprRoot = this.getDeeprRoot();
 
     const getFilter = function (attribute: Attribute) {
@@ -123,6 +138,15 @@ export class ComponentServer {
         serializedComponents,
         error.stack
       );
+
+      if (executionMode === 'background') {
+        console.error(
+          `An error occurred while invoking a background query (query: ${JSON.stringify(
+            serializedQuery
+          )}): ${error.message}`
+        );
+      }
+
       return error;
     };
 
@@ -137,8 +161,12 @@ export class ComponentServer {
         possiblyAsync(componentFork.initialize(), () =>
           possiblyAsync(
             invokeQuery(deeprRoot, deserializedQuery, {authorizer, errorHandler}),
-            (result) =>
-              possiblyAsync(
+            (result) => {
+              if (executionMode === 'background') {
+                return {};
+              }
+
+              return possiblyAsync(
                 this._serializeResponse(
                   {result, components: deserializedComponents},
                   {attributeFilter: getFilter}
@@ -151,7 +179,8 @@ export class ComponentServer {
                     ...(serializedComponents !== undefined && {components: serializedComponents})
                   };
                 }
-              )
+              );
+            }
           )
         )
     );

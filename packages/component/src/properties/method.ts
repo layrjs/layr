@@ -5,10 +5,14 @@ import {isComponentClass} from '../utilities';
 export type IntrospectedMethod = IntrospectedProperty;
 
 export type MethodOptions = PropertyOptions & {
-  schedule?: MethodSchedule;
+  schedule?: MethodScheduling;
+  queue?: MethodQueueing;
+  maximumDuration?: number;
 };
 
-export type MethodSchedule = {rate: number};
+export type MethodScheduling = {rate: number} | false;
+
+export type MethodQueueing = boolean;
 
 /**
  * *Inherits from [`Property`](https://layrjs.com/docs/v2/reference/property).*
@@ -111,12 +115,20 @@ export class Method extends Property {
   // === Options ===
 
   setOptions(options: MethodOptions = {}) {
-    const {schedule, ...otherOptions} = options;
+    const {schedule, queue, maximumDuration, ...otherOptions} = options;
 
     super.setOptions(otherOptions);
 
     if (schedule !== undefined) {
-      this.setSchedule(schedule);
+      this.setScheduling(schedule);
+    }
+
+    if (queue !== undefined) {
+      this.setQueueing(queue);
+    }
+
+    if (maximumDuration !== undefined) {
+      this.setMaximumDuration(maximumDuration);
     }
   }
 
@@ -128,20 +140,44 @@ export class Method extends Property {
    * @category Methods
    */
 
-  // === Schedule ===
+  // === Scheduling ===
 
-  _schedule?: MethodSchedule;
+  _scheduling?: MethodScheduling;
 
-  getSchedule() {
-    return this._schedule;
+  getScheduling() {
+    return this._scheduling;
   }
 
-  setSchedule(schedule: MethodSchedule | undefined) {
+  setScheduling(scheduling: MethodScheduling | undefined) {
     if (!isComponentClass(this.getParent())) {
       throw new Error(`Only static methods can be scheduled (${this.describe()})`);
     }
 
-    this._schedule = schedule;
+    this._scheduling = scheduling;
+  }
+
+  // === Queueing ===
+
+  _queueing?: MethodQueueing;
+
+  getQueueing() {
+    return this._queueing;
+  }
+
+  setQueueing(queueing: MethodQueueing | undefined) {
+    this._queueing = queueing;
+  }
+
+  // === Maximum duration ===
+
+  _maximumDuration?: number;
+
+  getMaximumDuration() {
+    return this._maximumDuration;
+  }
+
+  setMaximumDuration(maximumDuration: number | undefined) {
+    this._maximumDuration = maximumDuration;
   }
 
   // === Utilities ===
