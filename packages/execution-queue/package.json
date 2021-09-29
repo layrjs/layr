@@ -1,6 +1,6 @@
 {
   "name": "@layr/execution-queue",
-  "version": "2.0.12",
+  "version": "2.0.14",
   "description": "A class for queueing method executions",
   "keywords": [
     "layr",

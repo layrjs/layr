@@ -1,6 +1,6 @@
 import {Component, assertIsComponentClass, ensureComponentClass} from '@layr/component';
 import type {ComponentClient} from '@layr/component-client';
-import {hasOwnProperty, PlainObject} from 'core-helpers';
+import {hasOwnProperty, isPlainObject, PlainObject} from 'core-helpers';
 
 export class ExecutionQueue {
   _componentClient: ComponentClient;
@@ -21,38 +21,41 @@ export class ExecutionQueue {
           continue;
         }
 
-        const orignalFunction: (...args: any[]) => any = (component as any)[name];
+        const orignalMethod: (...args: any[]) => any = (component as any)[name];
 
-        if (hasOwnProperty(orignalFunction, '__queued')) {
-          throw new Error(
-            `Component already registered to an execution queue (${component.describeComponent()})`
-          );
+        if (hasOwnProperty(orignalMethod, '__queued')) {
+          throw new Error(`Method already registered to an execution queue (${method.describe()})`);
         }
 
         const executionQueue = this;
 
-        const backgroundFunction = async function (
+        const backgroundMethod = async function (
           this: typeof Component | Component,
           ...args: any[]
         ) {
-          const rootComponent = ensureComponentClass(this);
+          const [firstArgument, ...otherArguments] = args;
 
-          if (rootComponent.getExecutionMode() === 'background') {
-            await orignalFunction.call(this, ...args);
+          if (
+            isPlainObject(firstArgument) &&
+            hasOwnProperty(firstArgument, '__callOriginalMethod')
+          ) {
+            await orignalMethod.call(this, ...otherArguments);
             return;
           }
 
           const query = {
             '<=': this,
-            [`${name}=>`]: {'()': args}
+            [`${name}=>`]: {'()': [{__callOriginalMethod: true}, ...args]}
           };
+
+          const rootComponent = ensureComponentClass(this);
 
           await executionQueue.send(query, {rootComponent});
         };
 
-        Object.defineProperty(backgroundFunction, '__queued', {value: true});
+        Object.defineProperty(backgroundMethod, '__queued', {value: true});
 
-        (component as any)[name] = backgroundFunction;
+        (component as any)[name] = backgroundMethod;
       }
     };
 
