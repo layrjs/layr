@@ -1,6 +1,6 @@
 {
   "name": "@layr/execution-queue",
-  "version": "2.0.14",
+  "version": "2.0.15",
   "description": "A class for queueing method executions",
   "keywords": [
     "layr",
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@layr/component": "^2.0.31",
-    "@layr/component-client": "^2.0.51",
+    "@layr/component-client": "^2.0.52",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "tslib": "^2.3.1"

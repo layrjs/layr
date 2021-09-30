@@ -5,6 +5,8 @@ import type {PlainObject} from 'core-helpers';
 const lambdaClient = new AWS.Lambda({apiVersion: '2015-03-31'});
 
 export class ComponentAWSLambdaClient extends ComponentClient {
+  static _isBackgroundClient = true;
+
   constructor(functionName: string) {
     const componentServer = createComponentServer(functionName);
 

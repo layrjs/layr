@@ -4,6 +4,8 @@ import type {PlainObject} from 'core-helpers';
 import {ComponentClient} from './component-client';
 
 export class ComponentBackgroundClient extends ComponentClient {
+  static _isBackgroundClient = true;
+
   constructor(componentServer: ComponentServerLike) {
     const componentBackgroundServer = createComponentBackgroundServer(componentServer);
 
