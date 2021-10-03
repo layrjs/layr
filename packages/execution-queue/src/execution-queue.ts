@@ -1,12 +1,13 @@
-import {Component, assertIsComponentClass, ensureComponentClass} from '@layr/component';
-import type {ComponentClient} from '@layr/component-client';
+import {Component, serialize, assertIsComponentClass} from '@layr/component';
 import {hasOwnProperty, isPlainObject, PlainObject} from 'core-helpers';
 
-export class ExecutionQueue {
-  _componentClient: ComponentClient;
+type ExecutionQueueSender = (query: PlainObject) => Promise<any>;
 
-  constructor(componentClient: ComponentClient) {
-    this._componentClient = componentClient;
+export class ExecutionQueue {
+  _sender: ExecutionQueueSender;
+
+  constructor(sender: ExecutionQueueSender) {
+    this._sender = sender;
   }
 
   registerRootComponent(rootComponent: typeof Component) {
@@ -48,9 +49,9 @@ export class ExecutionQueue {
             [`${name}=>`]: {'()': [{__callOriginalMethod: true}, ...args]}
           };
 
-          const rootComponent = ensureComponentClass(this);
+          const serializedQuery = serialize(query, {returnComponentReferences: true});
 
-          await executionQueue.send(query, {rootComponent});
+          await executionQueue._sender(serializedQuery);
         };
 
         Object.defineProperty(backgroundMethod, '__queued', {value: true});
@@ -65,11 +66,5 @@ export class ExecutionQueue {
         register(component.prototype);
       }
     }
-  }
-
-  async send(query: PlainObject, options: {rootComponent?: typeof Component} = {}) {
-    const {rootComponent} = options;
-
-    await this._componentClient.send(query, {rootComponent});
   }
 }

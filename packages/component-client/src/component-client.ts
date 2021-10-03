@@ -37,10 +37,6 @@ export type ComponentClientOptions = {
  * Typically, instead of using this class, you would use a subclass such as [`ComponentHTTPClient`](https://layrjs.com/docs/v2/reference/component-http-client).
  */
 export class ComponentClient {
-  ['constructor']!: typeof ComponentClient;
-
-  static _isBackgroundClient: boolean;
-
   _componentServer: ComponentServerLike;
   _version: number | undefined;
   _mixins: ComponentMixin[] | undefined;
@@ -292,15 +288,9 @@ export class ComponentClient {
   }
 
   _serializeQuery(query: PlainObject) {
-    const componentClient = this;
-
     const componentDependencies: ComponentSet = new Set();
 
     const attributeFilter = function (this: typeof Component | Component, attribute: Attribute) {
-      if (componentClient.constructor._isBackgroundClient) {
-        return true;
-      }
-
       // Exclude properties that cannot be set in the remote components
 
       const remoteComponent = this.getRemoteComponent();

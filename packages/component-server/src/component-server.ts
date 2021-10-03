@@ -42,7 +42,7 @@ export type ComponentServerOptions = {
  */
 export class ComponentServer {
   _component: typeof Component;
-  _introspectedComponent: IntrospectedComponent;
+  _introspectedComponent: IntrospectedComponent | undefined;
   _name: string | undefined;
   _version: number | undefined;
 
@@ -64,12 +64,6 @@ export class ComponentServer {
     assertIsComponentClass(component);
 
     const introspectedComponent = component.introspect();
-
-    if (introspectedComponent === undefined) {
-      throw new Error(
-        `Cannot serve a component that has no exposed properties or doesn't provide any exposed components (${component.describeComponent()})`
-      );
-    }
 
     this._component = component;
     this._introspectedComponent = introspectedComponent;
@@ -112,10 +106,14 @@ export class ComponentServer {
     };
 
     const setFilter = function (attribute: Attribute) {
-      return attribute.operationIsAllowed('set');
+      return executionMode === 'background' || attribute.operationIsAllowed('set');
     };
 
     const authorizer = function (this: any, name: string, operation: string, _params?: any[]) {
+      if (executionMode === 'background') {
+        return true;
+      }
+
       if (this === deeprRoot && name === 'introspect' && operation === 'call') {
         return true;
       }

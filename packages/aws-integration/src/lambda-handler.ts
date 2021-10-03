@@ -87,14 +87,14 @@ export function createAWSLambdaHandler(
         event.requestContext !== undefined
       )
     ) {
-      // === Scheduled or queued invocation ===
+      // === Background invocation via an EventBridge rule or a Lambda asynchronous call ===
 
       await componentServer.receive(event as any, {executionMode: 'background'});
 
       return;
     }
 
-    // === Invocation via API Gateway HTTP API v2 ===
+    // === Foreground invocation via an API Gateway HTTP API v2 request ===
 
     if (customHandler !== undefined) {
       const result = await customHandler(event, context);

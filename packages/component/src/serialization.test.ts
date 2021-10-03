@@ -414,6 +414,21 @@ describe('Serialization', () => {
     ]);
     expect(Array.from(serializedComponents)).toEqual([cinema, movie]);
     expect(Array.from(componentDependencies)).toEqual([Cinema, Movie]);
+
+    // - Using 'returnComponentReferences' option -
+
+    expect(
+      serialize(
+        {
+          '<=': cinema,
+          'play=>': {'()': [movie]}
+        },
+        {returnComponentReferences: true}
+      )
+    ).toEqual({
+      '<=': {__component: 'Cinema', id: 'xyz456'},
+      'play=>': {'()': [{__component: 'Movie', id: 'abc123'}]}
+    });
   });
 
   test('Functions', async () => {
