@@ -5,6 +5,6 @@
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
   "devDependencies": {
-    "boostr": "^2.0.62"
+    "boostr": "^2.0.135"
   }
 }
