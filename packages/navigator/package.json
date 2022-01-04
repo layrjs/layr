@@ -1,6 +1,6 @@
 {
   "name": "@layr/navigator",
-  "version": "2.0.34",
+  "version": "2.0.35",
   "description": "A base class for implementing Layr navigators",
   "keywords": [
     "layr",
@@ -32,7 +32,7 @@
     "@layr/observable": "^1.0.11",
     "core-helpers": "^1.0.3",
     "possibly-async": "^1.0.4",
-    "qs": "^6.10.1",
+    "qs": "^6.10.2",
     "tslib": "^2.3.1"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-server",
-  "version": "2.0.45",
+  "version": "2.0.46",
   "description": "Serves your Layr components",
   "keywords": [
     "layr",
@@ -29,7 +29,7 @@
     "@deepr/runtime": "^1.0.6",
     "@layr/component": "^2.0.31",
     "core-helpers": "^1.0.3",
-    "debug": "^4.3.2",
+    "debug": "^4.3.3",
     "lodash": "^4.17.21",
     "possibly-async": "^1.0.4",
     "tslib": "^2.3.1"
@@ -39,6 +39,6 @@
     "@mvila/tsconfig": "^1.0.5",
     "@types/debug": "^4.1.7",
     "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.175"
+    "@types/lodash": "^4.14.178"
   }
 }
