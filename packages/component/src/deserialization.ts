@@ -132,17 +132,9 @@ export function deserialize(value: any, options: DeserializeOptions = {}) {
     const componentPrototype = componentClassOrPrototype;
     const componentClass = componentPrototype.constructor;
 
-    const {identifierAttributes} = componentPrototype.__partitionAttributes(attributes);
+    const identifiers = componentPrototype.__createIdentifierSelectorFromObject(attributes);
 
-    let component: Component | undefined;
-
-    if (componentPrototype.hasPrimaryIdentifierAttribute()) {
-      component = componentClass.getIdentityMap().getComponent(identifierAttributes);
-    }
-
-    if (component === undefined) {
-      component = componentClass.instantiate(identifierAttributes, {source});
-    }
+    const component = componentClass.instantiate(identifiers, {source});
 
     return possiblyAsync(component, (component) => {
       component.setIsNewMark(isNew);

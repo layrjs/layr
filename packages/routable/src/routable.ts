@@ -341,7 +341,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       debug('Calling route %s(%o)', this.describeComponentProperty(name), params);
 
-      const component = getOrInstantiateComponent(this, identifiers);
+      const component = instantiateComponent(this, identifiers);
 
       const method = route.transformMethod((component as any)[name], request);
 
@@ -611,7 +611,7 @@ export function Routable<T extends Constructor<typeof Component>>(Base: T) {
 
       debug('Calling wrapper %s()', this.describeComponentProperty(name));
 
-      const component = getOrInstantiateComponent(this, identifiers);
+      const component = instantiateComponent(this, identifiers);
 
       const method = wrapper.transformMethod((component as any)[name], request);
 
@@ -843,13 +843,15 @@ export function callWrapperByPath(
   );
 }
 
-function getOrInstantiateComponent(
+function instantiateComponent(
   componentClassOrPrototype: typeof Component | Component,
   identifiers: any
 ) {
   if (isComponentClass(componentClassOrPrototype)) {
     return componentClassOrPrototype;
   }
+
+  const componentClass = componentClassOrPrototype.constructor;
 
   let componentIdentifier: any;
   let referencedComponentIdentifiers: any = {};
@@ -880,9 +882,7 @@ function getOrInstantiateComponent(
     throw new Error(`Cannot get or instantiate a component with no specified identifier`);
   }
 
-  const component =
-    componentClassOrPrototype.constructor.getIdentityMap().getComponent(componentIdentifier) ??
-    componentClassOrPrototype.constructor.instantiate(componentIdentifier, {source: 'server'});
+  const component = componentClass.instantiate(componentIdentifier, {source: 'server'});
 
   for (const [name, identifiers] of Object.entries(referencedComponentIdentifiers)) {
     const attribute = component.getAttribute(name);
@@ -895,10 +895,10 @@ function getOrInstantiateComponent(
     }
 
     const referencedComponentClassOrPrototype = valueType.getComponent(attribute);
-    attribute.setValue(
-      getOrInstantiateComponent(referencedComponentClassOrPrototype, identifiers),
-      {source: 'server'}
-    );
+
+    attribute.setValue(instantiateComponent(referencedComponentClassOrPrototype, identifiers), {
+      source: 'server'
+    });
   }
 
   return component;

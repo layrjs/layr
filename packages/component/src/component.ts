@@ -12,6 +12,7 @@ import {
 } from 'core-helpers';
 import {possiblyAsync} from 'possibly-async';
 import cuid from 'cuid';
+import isEmpty from 'lodash/isEmpty';
 
 import {
   Property,
@@ -33,7 +34,6 @@ import {
   isSecondaryIdentifierAttributeInstance,
   IdentifierValue,
   AttributeSelector,
-  createAttributeSelectorFromAttributes,
   getFromAttributeSelector,
   setWithinAttributeSelector,
   normalizeAttributeSelector,
@@ -75,11 +75,13 @@ export type TraverseAttributesOptions = {
   setAttributesOnly: boolean;
 };
 
-export type IdentifierObject = {[name: string]: IdentifierValue};
-
-export type IdentifierDescriptor = NormalizedIdentifierDescriptor | string | number;
+export type IdentifierDescriptor = NormalizedIdentifierDescriptor | IdentifierValue;
 
 export type NormalizedIdentifierDescriptor = {[name: string]: IdentifierValue};
+
+export type IdentifierSelector = NormalizedIdentifierSelector | IdentifierValue;
+
+export type NormalizedIdentifierSelector = {[name: string]: IdentifierValue};
 
 export type ResolveAttributeSelectorOptions = {
   filter?: PropertyFilterSync;
@@ -315,20 +317,48 @@ export class Component extends Observable(Object) {
 
   static instantiate<T extends typeof Component>(
     this: T,
-    object: PlainObject = {},
+    identifiers?: IdentifierSelector,
     options: {
       source?: ValueSource;
     } = {}
-  ) {
+  ): InstanceType<T> {
     const {source} = options;
 
-    const component: InstanceType<T> = Object.create(this.prototype);
+    let component: InstanceType<T> | undefined;
 
-    for (const [name, value] of Object.entries(object)) {
-      component.getAttribute(name).setValue(value, {source});
+    if (this.prototype.hasPrimaryIdentifierAttribute()) {
+      if (identifiers === undefined) {
+        throw new Error(
+          `An identifier is required to instantiate an identifiable component, but received a value of type '${getTypeOf(
+            identifiers
+          )}' (${this.describeComponent()})`
+        );
+      }
+
+      identifiers = this.normalizeIdentifierSelector(identifiers);
+
+      component = this.getIdentityMap().getComponent(identifiers) as InstanceType<T> | undefined;
+
+      if (component === undefined) {
+        component = Object.create(this.prototype);
+
+        for (const [name, value] of Object.entries(identifiers)) {
+          component!.getAttribute(name).setValue(value, {source});
+        }
+      }
+    } else {
+      // The component does not have an identifier attribute
+
+      if (!(identifiers === undefined || (isPlainObject(identifiers) && isEmpty(identifiers)))) {
+        throw new Error(
+          `Cannot instantiate an unidentifiable component with an identifier (${this.describeComponent()})`
+        );
+      }
+
+      component = Object.create(this.prototype);
     }
 
-    return component;
+    return component!;
   }
 
   // === Initialization ===
@@ -1681,7 +1711,7 @@ export class Component extends Observable(Object) {
   }
 
   __getIdentifiers() {
-    let identifiers: IdentifierObject | undefined;
+    let identifiers: NormalizedIdentifierDescriptor | undefined;
 
     for (const identifierAttribute of this.getIdentifierAttributes({
       setAttributesOnly: true,
@@ -1714,25 +1744,6 @@ export class Component extends Observable(Object) {
    */
   static generateId() {
     return cuid();
-  }
-
-  __partitionAttributes(object: PlainObject) {
-    const identifierAttributes: PlainObject = {};
-    const otherAttributes: PlainObject = {};
-
-    const identifierAttributeSelector = createAttributeSelectorFromAttributes(
-      this.getIdentifierAttributes()
-    );
-
-    for (const [name, value] of Object.entries(object)) {
-      if (getFromAttributeSelector(identifierAttributeSelector, name) === true) {
-        identifierAttributes[name] = value;
-      } else {
-        otherAttributes[name] = value;
-      }
-    }
-
-    return {identifierAttributes, otherAttributes};
   }
 
   __getMinimumAttributeCount() {
@@ -1851,6 +1862,61 @@ export class Component extends Observable(Object) {
     const valueString = typeof value === 'string' ? `'${value}'` : value.toString();
 
     return `${name}: ${valueString}`;
+  }
+
+  // === Identifier Selector ====
+
+  static normalizeIdentifierSelector(
+    identifierSelector: IdentifierSelector
+  ): NormalizedIdentifierSelector {
+    if (typeof identifierSelector === 'string' || typeof identifierSelector === 'number') {
+      const primaryIdentifierAttribute = this.prototype.getPrimaryIdentifierAttribute();
+      const name = primaryIdentifierAttribute.getName();
+      primaryIdentifierAttribute.checkValue(identifierSelector);
+
+      return {[name]: identifierSelector};
+    }
+
+    if (!isPlainObject(identifierSelector)) {
+      throw new Error(
+        `An identifier selector should be a string, a number, or an object, but received a value of type '${getTypeOf(
+          identifierSelector
+        )}' (${this.describeComponent()})`
+      );
+    }
+
+    const attributes = Object.entries(identifierSelector);
+
+    if (attributes.length === 0) {
+      throw new Error(
+        `An identifier selector should be a string, a number, or a non-empty object, but received an empty object (${this.describeComponent()})`
+      );
+    }
+
+    const normalizedIdentifierSelector: NormalizedIdentifierSelector = {};
+
+    for (const [name, value] of attributes) {
+      const identifierAttribute = this.prototype.getIdentifierAttribute(name);
+      identifierAttribute.checkValue(value);
+      normalizedIdentifierSelector[name] = value;
+    }
+
+    return normalizedIdentifierSelector;
+  }
+
+  __createIdentifierSelectorFromObject(object: PlainObject) {
+    const identifierSelector: NormalizedIdentifierSelector = {};
+
+    for (const identifierAttribute of this.getIdentifierAttributes({autoFork: false})) {
+      const name = identifierAttribute.getName();
+      const value: IdentifierValue | undefined = object[name];
+
+      if (value !== undefined) {
+        identifierSelector[name] = value;
+      }
+    }
+
+    return identifierSelector;
   }
 
   // === Identity Mapping ===

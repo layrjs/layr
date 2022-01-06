@@ -1,15 +1,14 @@
-import {hasOwnProperty, PlainObject} from 'core-helpers';
+import {hasOwnProperty} from 'core-helpers';
 
-import type {Component} from './component';
-
-type IdentifierValue = string | number;
+import type {Component, IdentifierSelector} from './component';
+import type {IdentifierValue} from './properties';
 
 /**
  * A class to manage the instances of the [`Component`](https://layrjs.com/docs/v2/reference/component) classes that are identifiable.
  *
  * A component class is identifiable when its prototype has a [`PrimaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/primary-identifier-attribute).
  *
- * When a component class is identifiable, the `IdentityMap` ensures that there can only be one component instance with a specific identifier. So if you try to create two components with the same identifer, you will get an error.
+ * When a component class is identifiable, the `IdentityMap` ensures that there can only be one component instance with a specific identifier. So if you try to create two components with the same identifier, you will get an error.
  *
  * #### Usage
  *
@@ -121,16 +120,10 @@ export class IdentityMap {
    *
    * @category Methods
    */
-  getComponent(identifiers: PlainObject | string | number = {}) {
+  getComponent(identifiers: IdentifierSelector = {}) {
     const parent = this.getParent();
 
-    let normalizedIdentifiers: PlainObject;
-
-    if (typeof identifiers === 'string' || typeof identifiers === 'number') {
-      normalizedIdentifiers = parent.normalizeIdentifierDescriptor(identifiers);
-    } else {
-      normalizedIdentifiers = identifiers;
-    }
+    const normalizedIdentifiers = parent.normalizeIdentifierSelector(identifiers);
 
     if (parent.isDetached()) {
       return undefined;

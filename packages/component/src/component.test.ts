@@ -71,17 +71,9 @@ describe('Component', () => {
       expect(movie.getAttribute('title').isSet()).toBe(false);
       expect(movie.getAttribute('country').isSet()).toBe(false);
 
-      movie = Movie.instantiate({title: 'Inception'});
-
-      expect(movie.isNew()).toBe(false);
-      expect(movie.title).toBe('Inception');
-      expect(movie.getAttribute('country').isSet()).toBe(false);
-
-      movie = Movie.instantiate({title: 'Inception', country: 'USA'});
-
-      expect(movie.isNew()).toBe(false);
-      expect(movie.title).toBe('Inception');
-      expect(movie.country).toBe('USA');
+      expect(() => Movie.instantiate({title: 'Inception'})).toThrow(
+        "Cannot instantiate an unidentifiable component with an identifier (component: 'Movie')"
+      );
     });
   });
 
@@ -537,7 +529,9 @@ describe('Component', () => {
         @attribute() director?: string;
       }
 
-      const film = Film.instantiate({title: 'Inception', director: 'Christopher Nolan'});
+      const film = Film.instantiate();
+      film.title = 'Inception';
+      film.director = 'Christopher Nolan';
 
       attributes = film.getAttributes();
 

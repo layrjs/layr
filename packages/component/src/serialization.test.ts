@@ -144,7 +144,8 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie = Movie.instantiate({title: 'Inception'}, {source: 'client'});
+    movie = Movie.instantiate();
+    movie.getAttribute('title').setValue('Inception', {source: 'client'});
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
@@ -217,14 +218,11 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie
-      .getAttribute('director')
-      .setValue(
-        Director.instantiate({name: 'Christopher Nolan', country: 'USA'}, {source: 'client'}),
-        {
-          source: 'client'
-        }
-      );
+    const director = Director.instantiate();
+    director.getAttribute('name').setValue('Christopher Nolan', {source: 'client'});
+    director.getAttribute('country').setValue('USA', {source: 'client'});
+
+    movie.getAttribute('director').setValue(director, {source: 'client'});
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
@@ -254,14 +252,11 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie
-      .getAttribute('actors')
-      .setValue(
-        [Actor.instantiate({name: 'Leonardo DiCaprio', country: 'USA'}, {source: 'client'})],
-        {
-          source: 'client'
-        }
-      );
+    const actor = Actor.instantiate();
+    actor.getAttribute('name').setValue('Leonardo DiCaprio', {source: 'client'});
+    actor.getAttribute('country').setValue('USA', {source: 'client'});
+
+    movie.getAttribute('actors').setValue([actor], {source: 'client'});
 
     expect(movie.serialize({attributeSelector: {actors: true}})).toStrictEqual({
       __component: 'Movie',
@@ -287,18 +282,8 @@ describe('Serialization', () => {
       @attribute('string') title = '';
     }
 
-    let movie = Movie.fork().instantiate({title: 'Inception'});
-
-    expect(movie.serialize()).toEqual({
-      __component: 'Movie',
-      title: 'Inception'
-    });
-
-    expect(() => movie.serialize({returnComponentReferences: true})).toThrow(
-      "Cannot get an identifier descriptor from a component that has no set identifier (component: 'Movie')"
-    );
-
-    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'});
+    let movie = Movie.fork().instantiate({id: 'abc123'});
+    movie.title = 'Inception';
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
@@ -311,7 +296,8 @@ describe('Serialization', () => {
       id: 'abc123'
     });
 
-    movie = Movie.fork().instantiate({slug: 'inception', title: 'Inception'});
+    movie = Movie.fork().instantiate({slug: 'inception'});
+    movie.title = 'Inception';
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
@@ -324,7 +310,9 @@ describe('Serialization', () => {
       slug: 'inception'
     });
 
-    movie = Movie.fork().instantiate({id: 'abc123', slug: 'inception', title: 'Inception'});
+    movie = Movie.fork().instantiate({id: 'abc123'});
+    movie.slug = 'inception';
+    movie.title = 'Inception';
 
     expect(movie.serialize()).toEqual({
       __component: 'Movie',
@@ -340,7 +328,8 @@ describe('Serialization', () => {
 
     // - Value sourcing -
 
-    movie = Movie.fork().instantiate({id: 'abc123', title: 'Inception'}, {source: 'client'});
+    movie = Movie.fork().instantiate({id: 'abc123'}, {source: 'client'});
+    movie.getAttribute('title').setValue('Inception', {source: 'client'});
 
     expect(movie.serialize()).toStrictEqual({
       __component: 'Movie',
@@ -362,13 +351,12 @@ describe('Serialization', () => {
       @attribute('Movie[]') movies!: Movie[];
     }
 
-    movie = Movie.instantiate({id: 'abc123', title: 'Inception'});
+    movie = Movie.instantiate({id: 'abc123'});
+    movie.title = 'Inception';
 
-    const cinema = Cinema.instantiate({
-      id: 'xyz456',
-      name: 'Paradiso',
-      movies: [movie]
-    });
+    const cinema = Cinema.instantiate({id: 'xyz456'});
+    cinema.name = 'Paradiso';
+    cinema.movies = [movie];
 
     expect(cinema.serialize()).toEqual({
       __component: 'Cinema',

@@ -686,12 +686,6 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({fullName: 'User 1'});
-
-          await expect(user.load({})).rejects.toThrow(
-            "Cannot get an identifier descriptor from a component that has no set identifier (component: 'User')"
-          );
-
           user = new (User.fork())({id: 'user1', email: '1@user.com', reference: 1});
 
           await expect(user.load({})).rejects.toThrow(
@@ -1040,7 +1034,8 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
+          user = User.fork().instantiate({id: 'user3'});
+          user.fullName = 'User 3';
 
           expect(await user.save(true, {throwIfMissing: false})).toBe(undefined);
           await expect(user.save()).rejects.toThrow(
@@ -1063,7 +1058,8 @@ describe('Storable', () => {
 
           // ------
 
-          user = User.fork().instantiate({id: 'user3', fullName: 'User 3'});
+          user = User.fork().instantiate({id: 'user3'});
+          user.fullName = 'User 3';
 
           await expect(
             user.save(true, {throwIfMissing: true, throwIfExists: true})
@@ -1084,7 +1080,8 @@ describe('Storable', () => {
               "Cannot save a component with an attribute value that should be unique but already exists in the store (component: 'User', id: 'user3', index: 'email [unique]')"
             );
 
-            user = User.fork().instantiate({id: 'user2', reference: 1});
+            user = User.fork().instantiate({id: 'user2'});
+            user.reference = 1;
 
             await expect(user.save()).rejects.toThrow(
               "Cannot save a component with an attribute value that should be unique but already exists in the store (component: 'User', id: 'user2', index: 'reference [unique]')"
@@ -1871,7 +1868,7 @@ describe('Storable', () => {
 
           const ForkedUser = User.fork();
 
-          const user = ForkedUser.instantiate({fullName: 'User 1'});
+          const user = ForkedUser.instantiate({reference: 1});
 
           expect(await ForkedUser.count(user)).toBe(1);
         });
