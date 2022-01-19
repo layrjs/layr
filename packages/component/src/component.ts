@@ -40,7 +40,8 @@ import {
   Method,
   isMethodInstance,
   MethodOptions,
-  IntrospectedMethod
+  IntrospectedMethod,
+  isComponentValueTypeInstance
 } from './properties';
 import {IdentityMap} from './identity-map';
 import {clone, CloneOptions} from './cloning';
@@ -2169,7 +2170,15 @@ export class Component extends Observable(Object) {
         }
 
         if (_skipUnchangedAttributes && attribute.getValueSource() === target) {
-          continue;
+          const valueType = attribute.getValueType();
+
+          const attributeIsReferencedComponent =
+            isComponentValueTypeInstance(valueType) &&
+            !ensureComponentClass(valueType.getComponent(attribute)).isEmbedded();
+
+          if (!attributeIsReferencedComponent) {
+            continue;
+          }
         }
 
         if (_attributeStack!.has(attribute)) {
