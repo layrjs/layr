@@ -1,6 +1,6 @@
 import {isInternalURL} from '@layr/browser-navigator';
 import {jsx} from '@emotion/react';
-import marked from 'marked';
+import {marked} from 'marked';
 // @ts-ignore
 import highlightJS from 'highlight.js/lib/core';
 // @ts-ignore
@@ -104,7 +104,7 @@ export function Markdown({languageFilter, children}: {languageFilter?: string; c
 export function InlineMarkdown({children: markdown}: {children: string}) {
   markdown = markdown.replace(/\n/g, '  \n');
 
-  let html = (marked as any).parseInline(markdown);
+  let html = marked.parseInline(markdown);
 
   html = DOMPurify.sanitize(html);
 
