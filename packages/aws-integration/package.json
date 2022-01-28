@@ -1,6 +1,6 @@
 {
   "name": "@layr/aws-integration",
-  "version": "2.0.70",
+  "version": "2.0.72",
   "description": "AWS integration for Layr",
   "keywords": [
     "layr",
@@ -27,9 +27,9 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.35",
-    "@layr/component-server": "^2.0.48",
-    "@layr/routable": "^2.0.88",
+    "@layr/component": "^2.0.36",
+    "@layr/component-server": "^2.0.49",
+    "@layr/routable": "^2.0.90",
     "core-helpers": "^1.0.3",
     "lodash": "^4.17.21",
     "tslib": "^2.3.1"
@@ -37,8 +37,8 @@
   "devDependencies": {
     "@mvila/dev-tools": "^1.0.30",
     "@mvila/tsconfig": "^1.0.5",
-    "@types/aws-lambda": "^8.10.89",
+    "@types/aws-lambda": "^8.10.92",
     "@types/lodash": "^4.14.178",
-    "aws-sdk": "^2.1058.0"
+    "aws-sdk": "^2.1065.0"
   }
 }

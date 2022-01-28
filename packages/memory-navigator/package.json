@@ -1,6 +1,6 @@
 {
   "name": "@layr/memory-navigator",
-  "version": "2.0.39",
+  "version": "2.0.40",
   "description": "Provides a navigation system for a Layr application that is not running in a browser (e.g., an Electron app or a React Native app)",
   "keywords": [
     "layr",
@@ -26,7 +26,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/navigator": "^2.0.37",
+    "@layr/navigator": "^2.0.38",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
