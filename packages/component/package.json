@@ -1,6 +1,6 @@
 {
   "name": "@layr/component",
-  "version": "2.0.35",
+  "version": "2.0.36",
   "description": "The base class of all your components",
   "keywords": [
     "layr",

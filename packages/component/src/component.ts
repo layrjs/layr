@@ -1920,6 +1920,46 @@ export class Component extends Observable(Object) {
     return identifierSelector;
   }
 
+  // === Attribute value assignment ===
+
+  static assign<T extends typeof Component>(
+    this: T,
+    object: PlainObject = {},
+    options: {
+      source?: ValueSource;
+    } = {}
+  ): T {
+    const {source} = options;
+
+    this.__assignAttributes(object, {source});
+
+    return this;
+  }
+
+  assign<T extends Component>(
+    this: T,
+    object: PlainObject = {},
+    options: {
+      source?: ValueSource;
+    } = {}
+  ): T {
+    const {source} = options;
+
+    this.__assignAttributes(object, {source});
+
+    return this;
+  }
+
+  static get __assignAttributes() {
+    return this.prototype.__assignAttributes;
+  }
+
+  __assignAttributes(object: PlainObject, {source}: {source: ValueSource | undefined}) {
+    for (const [name, value] of Object.entries(object)) {
+      this.getAttribute(name).setValue(value, {source});
+    }
+  }
+
   // === Identity Mapping ===
 
   static __identityMap: IdentityMap;
