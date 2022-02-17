@@ -6,7 +6,8 @@ import {
   deserialize,
   ensureComponentClass,
   ComponentMixin,
-  assertIsComponentMixin
+  assertIsComponentMixin,
+  IntrospectedComponent
 } from '@layr/component';
 import type {ComponentServerLike} from '@layr/component-server';
 import {Microbatcher, Operation} from 'microbatcher';
@@ -28,6 +29,7 @@ interface SendOperation extends Operation {
 export type ComponentClientOptions = {
   version?: number;
   mixins?: ComponentMixin[];
+  introspection?: IntrospectedComponent;
   batchable?: boolean;
 };
 
@@ -40,6 +42,7 @@ export class ComponentClient {
   _componentServer: ComponentServerLike;
   _version: number | undefined;
   _mixins: ComponentMixin[] | undefined;
+  _introspection: IntrospectedComponent | undefined;
   _sendBatcher: Microbatcher<SendOperation> | undefined;
 
   /**
@@ -90,7 +93,7 @@ export class ComponentClient {
    * @category Creation
    */
   constructor(componentServer: ComponentServerLike, options: ComponentClientOptions = {}) {
-    const {version, mixins, batchable = false} = options;
+    const {version, mixins, introspection, batchable = false} = options;
 
     if (typeof componentServer?.receive !== 'function') {
       throw new Error(
@@ -107,6 +110,7 @@ export class ComponentClient {
     this._componentServer = componentServer;
     this._version = version;
     this._mixins = mixins;
+    this._introspection = introspection;
 
     if (batchable) {
       this._sendBatcher = new Microbatcher(this._sendMany.bind(this));
@@ -165,16 +169,21 @@ export class ComponentClient {
   _introspectedComponentServer!: PlainObject;
 
   _introspectComponentServer() {
-    if (this._introspectedComponentServer === undefined) {
-      const query = {'introspect=>': {'()': []}};
-
-      return possiblyAsync(this.send(query), (introspectedComponentServer) => {
-        this._introspectedComponentServer = introspectedComponentServer;
-        return introspectedComponentServer;
-      });
+    if (this._introspectedComponentServer !== undefined) {
+      return this._introspectedComponentServer;
     }
 
-    return this._introspectedComponentServer;
+    if (this._introspection !== undefined) {
+      this._introspectedComponentServer = {component: this._introspection};
+      return this._introspectedComponentServer;
+    }
+
+    const query = {'introspect=>': {'()': []}};
+
+    return possiblyAsync(this.send(query), (introspectedComponentServer) => {
+      this._introspectedComponentServer = introspectedComponentServer;
+      return introspectedComponentServer;
+    });
   }
 
   send(query: PlainObject, options: {rootComponent?: typeof Component} = {}): any {
