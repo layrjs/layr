@@ -39,6 +39,6 @@
     "@mvila/tsconfig": "^1.0.5",
     "@types/aws-lambda": "^8.10.92",
     "@types/lodash": "^4.14.178",
-    "aws-sdk": "^2.1065.0"
+    "aws-sdk": "^2.1075.0"
   }
 }
