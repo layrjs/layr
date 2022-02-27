@@ -91,11 +91,11 @@ export type MethodQueueing = boolean;
  * }
  * ```
  *
- * And here is how you would define a method that will be executed in background:
+ * And here is how you would define a method that will be executed in background with a maximum duration of 5 minutes:
  *
  * ```
  * class Email extends Component {
- *   ﹫method({queue: true}) async send() {
+ *   ﹫method({queue: true, maximumDuration: 5 * 60 * 1000}) async send() {
  *     // Do something in background
  *   }
  * }
@@ -111,7 +111,8 @@ export class Method extends Property {
    * @param parent The component class, prototype, or instance that owns the method.
    * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the method should be exposed to remote calls.
    * @param [options.schedule] A [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object specifying how the method should be scheduled for automatic execution. Note that only static methods can be scheduled.
-   * @param [options.queue] A boolean specifying whether a method should be executed in background.
+   * @param [options.queue] A boolean specifying whether the method should be executed in background.
+   * @param [options.maximumDuration] A number specifying the maximum duration of the method in milliseconds. Note that the actual duration of the method execution is not currently enforced. The purpose of this option is to help configuring the deployment of serverless functions. For example, in case of deployment to [AWS Lambda](https://aws.amazon.com/lambda/), this option will affect the `timeout` property of the generated Lambda function.
    *
    * @returns The [`Method`](https://layrjs.com/docs/v2/reference/method) instance that was created.
    *
@@ -255,14 +256,39 @@ export class Method extends Property {
     this._queueing = queueing;
   }
 
-  // === Maximum duration ===
+  // === Maximum Duration ===
 
   _maximumDuration?: number;
 
+  /**
+   * Returns a number representing the maximum duration of the method in milliseconds or `undefined` if the method has no maximum duration.
+   *
+   * @returns A number or `undefined`.
+   *
+   * @example
+   * ```
+   * backgroundMethod.getMaximumDuration(); // => 5 * 60 * 1000 (5 minutes)
+   * regularMethod.getMaximumDuration(); // => undefined
+   * ```
+   *
+   * @category Maximum Duration
+   */
   getMaximumDuration() {
     return this._maximumDuration;
   }
 
+  /**
+   * Sets the maximum duration of the method in milliseconds. Alternatively, you can pass `undefined` to indicate that the method has no maximum duration.
+   *
+   * @param maximumDuration A number or `undefined`.
+   *
+   * @example
+   * ```
+   * backgroundMethod.setMaximumDuration(5 * 60 * 1000); // 5 minutes
+   * ```
+   *
+   * @category Maximum Duration
+   */
   setMaximumDuration(maximumDuration: number | undefined) {
     this._maximumDuration = maximumDuration;
   }

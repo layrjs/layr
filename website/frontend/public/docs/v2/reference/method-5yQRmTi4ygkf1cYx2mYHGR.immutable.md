@@ -76,11 +76,11 @@ class Application extends Component {
 }
 ```
 
-And here is how you would define a method that will be executed in background:
+And here is how you would define a method that will be executed in background with a maximum duration of 5 minutes:
 
 ```
 class Email extends Component {
-  @method({queue: true}) async send() {
+  @method({queue: true, maximumDuration: 5 * 60 * 1000}) async send() {
     // Do something in background
   }
 }
@@ -99,7 +99,8 @@ Creates an instance of [`Method`](https://layrjs.com/docs/v2/reference/method). 
 * `options`:
   * `exposure`: A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the method should be exposed to remote calls.
   * `schedule`: A [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object specifying how the method should be scheduled for automatic execution. Note that only static methods can be scheduled.
-  * `queue`: A boolean specifying whether a method should be executed in background.
+  * `queue`: A boolean specifying whether the method should be executed in background.
+  * `maximumDuration`: A number specifying the maximum duration of the method in milliseconds. Note that the actual duration of the method execution is not currently enforced. The purpose of this option is to help configuring the deployment of serverless functions. For example, in case of deployment to [AWS Lambda](https://aws.amazon.com/lambda/), this option will affect the `timeout` property of the generated Lambda function.
 
 **Returns:**
 
@@ -195,6 +196,37 @@ Sets whether the method should be executed in background.
 
 ```
 backgroundMethod.setQueueing(true);
+```
+
+#### Maximum Duration
+
+##### `getMaximumDuration()` <badge type="secondary-outline">instance method</badge> {#get-maximum-duration-instance-method}
+
+Returns a number representing the maximum duration of the method in milliseconds or `undefined` if the method has no maximum duration.
+
+**Returns:**
+
+A number or `undefined`.
+
+**Example:**
+
+```
+backgroundMethod.getMaximumDuration(); // => 5 * 60 * 1000 (5 minutes)
+regularMethod.getMaximumDuration(); // => undefined
+```
+
+##### `setMaximumDuration(maximumDuration)` <badge type="secondary-outline">instance method</badge> {#set-maximum-duration-instance-method}
+
+Sets the maximum duration of the method in milliseconds. Alternatively, you can pass `undefined` to indicate that the method has no maximum duration.
+
+**Parameters:**
+
+* `maximumDuration`: A number or `undefined`.
+
+**Example:**
+
+```
+backgroundMethod.setMaximumDuration(5 * 60 * 1000); // 5 minutes
 ```
 
 #### Utilities
