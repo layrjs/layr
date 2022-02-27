@@ -239,13 +239,13 @@ export class Property {
   // === Forking ===
 
   fork<T extends Property>(this: T, parent: typeof Component | Component) {
-    const forkedProperty = Object.create(this) as T;
+    const propertyFork = Object.create(this) as T;
 
-    forkedProperty._parent = parent;
+    propertyFork._parent = parent;
 
-    forkedProperty._initialize();
+    propertyFork._initialize();
 
-    return forkedProperty;
+    return propertyFork;
   }
 
   // === Introspection ===

@@ -11,18 +11,18 @@ describe('Forking', () => {
       @attribute() specs!: {duration?: number};
     }
 
-    const ForkedMovie = Movie.fork();
+    const MovieFork = Movie.fork();
 
-    expect(ForkedMovie.getComponentType()).toBe('typeof Movie');
-    expect(ForkedMovie.limit).toBe(100);
+    expect(MovieFork.getComponentType()).toBe('typeof Movie');
+    expect(MovieFork.limit).toBe(100);
 
-    expect(ForkedMovie.isForkOf(Movie)).toBe(true);
-    expect(ForkedMovie.isForkOf(ForkedMovie)).toBe(false);
-    expect(Movie.isForkOf(ForkedMovie)).toBe(false);
+    expect(MovieFork.isForkOf(Movie)).toBe(true);
+    expect(MovieFork.isForkOf(MovieFork)).toBe(false);
+    expect(Movie.isForkOf(MovieFork)).toBe(false);
 
-    ForkedMovie.limit = 500;
+    MovieFork.limit = 500;
 
-    expect(ForkedMovie.limit).toBe(500);
+    expect(MovieFork.limit).toBe(500);
     expect(Movie.limit).toBe(100);
 
     const GhostMovie = Movie.getGhost();
@@ -36,36 +36,36 @@ describe('Forking', () => {
     expect(movie).toBeInstanceOf(Component);
     expect(movie).toBeInstanceOf(Movie);
 
-    let forkedMovie = movie.fork();
+    let movieFork = movie.fork();
 
-    expect(forkedMovie).toBeInstanceOf(Component);
-    expect(forkedMovie).toBeInstanceOf(Movie);
+    expect(movieFork).toBeInstanceOf(Component);
+    expect(movieFork).toBeInstanceOf(Movie);
 
-    expect(forkedMovie.getComponentType()).toBe('Movie');
-    expect(forkedMovie.title).toBe('Inception');
-    expect(forkedMovie.tags).toEqual(['drama']);
-    expect(forkedMovie.specs).toEqual({duration: 120});
+    expect(movieFork.getComponentType()).toBe('Movie');
+    expect(movieFork.title).toBe('Inception');
+    expect(movieFork.tags).toEqual(['drama']);
+    expect(movieFork.specs).toEqual({duration: 120});
 
-    expect(forkedMovie.isForkOf(movie)).toBe(true);
-    expect(forkedMovie.isForkOf(forkedMovie)).toBe(false);
-    expect(movie.isForkOf(forkedMovie)).toBe(false);
+    expect(movieFork.isForkOf(movie)).toBe(true);
+    expect(movieFork.isForkOf(movieFork)).toBe(false);
+    expect(movie.isForkOf(movieFork)).toBe(false);
 
-    forkedMovie.title = 'Inception 2';
-    forkedMovie.tags.push('action');
-    forkedMovie.specs.duration = 125;
+    movieFork.title = 'Inception 2';
+    movieFork.tags.push('action');
+    movieFork.specs.duration = 125;
 
-    expect(forkedMovie.title).toBe('Inception 2');
-    expect(forkedMovie.tags).toEqual(['drama', 'action']);
-    expect(forkedMovie.specs).toEqual({duration: 125});
+    expect(movieFork.title).toBe('Inception 2');
+    expect(movieFork.tags).toEqual(['drama', 'action']);
+    expect(movieFork.specs).toEqual({duration: 125});
     expect(movie.title).toBe('Inception');
     expect(movie.tags).toEqual(['drama']);
     expect(movie.specs).toEqual({duration: 120});
 
-    forkedMovie = movie.fork({componentClass: ForkedMovie});
+    movieFork = movie.fork({componentClass: MovieFork});
 
-    expect(forkedMovie).toBeInstanceOf(Component);
-    expect(forkedMovie).toBeInstanceOf(Movie);
-    expect(forkedMovie).toBeInstanceOf(ForkedMovie);
+    expect(movieFork).toBeInstanceOf(Component);
+    expect(movieFork).toBeInstanceOf(Movie);
+    expect(movieFork).toBeInstanceOf(MovieFork);
 
     expect(() => movie.getGhost()).toThrow(
       "Cannot get the identifiers of a component that has no set identifier (component: 'Movie')"
@@ -118,16 +118,16 @@ describe('Forking', () => {
 
     const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
 
-    const forkedMovie = movie.fork();
+    const movieFork = movie.fork();
 
-    expect(forkedMovie.director).not.toBe(movie.director);
-    expect(forkedMovie.director.name).toBe('Christopher Nolan');
-    expect(forkedMovie.director.constructor.isForkOf(Director)).toBe(true);
-    expect(forkedMovie.director.isForkOf(movie.director)).toBe(true);
+    expect(movieFork.director).not.toBe(movie.director);
+    expect(movieFork.director.name).toBe('Christopher Nolan');
+    expect(movieFork.director.constructor.isForkOf(Director)).toBe(true);
+    expect(movieFork.director.isForkOf(movie.director)).toBe(true);
 
-    forkedMovie.director.name = 'Christopher Nolan 2';
+    movieFork.director.name = 'Christopher Nolan 2';
 
-    expect(forkedMovie.director.name).toBe('Christopher Nolan 2');
+    expect(movieFork.director.name).toBe('Christopher Nolan 2');
     expect(movie.director.name).toBe('Christopher Nolan');
   });
 });

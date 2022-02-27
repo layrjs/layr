@@ -54,16 +54,16 @@ describe('Role', () => {
     expect(role.getParent()).toBe(Movie);
     expect(role.getResolver()).toBe(resolver);
 
-    const ForkedMovie = Movie.fork();
+    const MovieFork = Movie.fork();
 
-    const forkedRole = role.fork(ForkedMovie);
+    const roleFork = role.fork(MovieFork);
 
-    expect(forkedRole).not.toBe(role);
-    expect(forkedRole.getName()).toBe('anyone');
-    expect(forkedRole.getParent()).toBe(ForkedMovie);
-    expect(forkedRole.getResolver()).toBe(resolver);
+    expect(roleFork).not.toBe(role);
+    expect(roleFork.getName()).toBe('anyone');
+    expect(roleFork.getParent()).toBe(MovieFork);
+    expect(roleFork.getResolver()).toBe(resolver);
 
-    expect(forkedRole.isForkOf(role)).toBe(true);
-    expect(role.isForkOf(forkedRole)).toBe(false);
+    expect(roleFork.isForkOf(role)).toBe(true);
+    expect(role.isForkOf(roleFork)).toBe(false);
   });
 });

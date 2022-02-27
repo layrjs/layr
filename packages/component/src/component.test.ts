@@ -1255,18 +1255,18 @@ describe('Component', () => {
       expect(Director.getComponentProvider()).toBe(Movie);
       expect(Actor.getComponentProvider()).toBe(Movie);
 
-      const ForkedMovie = Movie.fork();
+      const MovieFork = Movie.fork();
 
-      const ForkedDirector = ForkedMovie.Director;
+      const DirectorFork = MovieFork.Director;
 
-      expect(ForkedDirector?.isForkOf(Director)).toBe(true);
-      expect(ForkedDirector).not.toBe(Director);
+      expect(DirectorFork?.isForkOf(Director)).toBe(true);
+      expect(DirectorFork).not.toBe(Director);
 
-      const SameForkedDirector = ForkedMovie.Director;
+      const SameDirectorFork = MovieFork.Director;
 
-      expect(SameForkedDirector).toBe(ForkedDirector);
+      expect(SameDirectorFork).toBe(DirectorFork);
 
-      expect(ForkedDirector.getComponentProvider()).toBe(ForkedMovie);
+      expect(DirectorFork.getComponentProvider()).toBe(MovieFork);
 
       class Root extends Component {}
 
@@ -1350,27 +1350,27 @@ describe('Component', () => {
       expect(Array.from(Movie.getConsumedComponents())).toEqual([Director]);
       expect(Array.from(Director.getConsumedComponents())).toEqual([Movie]);
 
-      const ForkedApp = App.fork();
+      const AppFork = App.fork();
 
-      const ForkedMovie = ForkedApp.Movie;
-      const ForkedDirector = ForkedApp.Director;
+      const MovieFork = AppFork.Movie;
+      const DirectorFork = AppFork.Director;
 
-      expect(ForkedMovie?.isForkOf(Movie)).toBe(true);
-      expect(ForkedMovie).not.toBe(Movie);
-      expect(ForkedDirector?.isForkOf(Director)).toBe(true);
-      expect(ForkedDirector).not.toBe(Director);
+      expect(MovieFork?.isForkOf(Movie)).toBe(true);
+      expect(MovieFork).not.toBe(Movie);
+      expect(DirectorFork?.isForkOf(Director)).toBe(true);
+      expect(DirectorFork).not.toBe(Director);
 
-      const SameForkedMovie = ForkedApp.Movie;
-      const SameForkedDirector = ForkedApp.Director;
+      const SameMovieFork = AppFork.Movie;
+      const SameDirectorFork = AppFork.Director;
 
-      expect(SameForkedMovie).toBe(ForkedMovie);
-      expect(SameForkedDirector).toBe(ForkedDirector);
+      expect(SameMovieFork).toBe(MovieFork);
+      expect(SameDirectorFork).toBe(DirectorFork);
 
-      expect(ForkedMovie.Director).toBe(ForkedDirector);
-      expect(ForkedDirector.Movie).toBe(ForkedMovie);
+      expect(MovieFork.Director).toBe(DirectorFork);
+      expect(DirectorFork.Movie).toBe(MovieFork);
 
-      expect(ForkedMovie.getComponentProvider()).toBe(ForkedApp);
-      expect(ForkedDirector.getComponentProvider()).toBe(ForkedApp);
+      expect(MovieFork.getComponentProvider()).toBe(AppFork);
+      expect(DirectorFork.getComponentProvider()).toBe(AppFork);
 
       (Movie as any).Producer = Producer;
 

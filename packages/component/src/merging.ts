@@ -9,7 +9,7 @@ export {MergeOptions};
  * Deeply merge any type of forks including objects, arrays, and components (using Component's `merge()` [class method](https://layrjs.com/docs/v2/reference/component#merge-class-method) and [instance method](https://layrjs.com/docs/v2/reference/component#merge-instance-method)) into their original values.
  *
  * @param value An original value of any type.
- * @param forkedValue A fork of `value`.
+ * @param valueFork A fork of `value`.
  *
  * @returns The original value.
  *
@@ -36,16 +36,16 @@ export {MergeOptions};
  *
  * @category Merging
  */
-export function merge(value: any, forkedValue: any, options: MergeOptions = {}) {
+export function merge(value: any, valueFork: any, options: MergeOptions = {}) {
   const {
     objectMerger: originalObjectMerger,
     objectCloner: originalObjectCloner,
     ...otherOptions
   } = options;
 
-  const objectMerger = function (object: object, forkedObject: object): object | void {
+  const objectMerger = function (object: object, objectFork: object): object | void {
     if (originalObjectMerger !== undefined) {
-      const mergedObject = originalObjectMerger(object, forkedObject);
+      const mergedObject = originalObjectMerger(object, objectFork);
 
       if (mergedObject !== undefined) {
         return mergedObject;
@@ -53,11 +53,11 @@ export function merge(value: any, forkedValue: any, options: MergeOptions = {}) 
     }
 
     if (isComponentClass(object)) {
-      return object.merge(forkedObject as typeof Component, options);
+      return object.merge(objectFork as typeof Component, options);
     }
 
     if (isComponentInstance(object)) {
-      return object.merge(forkedObject as Component, options);
+      return object.merge(objectFork as Component, options);
     }
   };
 
@@ -79,5 +79,5 @@ export function merge(value: any, forkedValue: any, options: MergeOptions = {}) 
     }
   };
 
-  return simpleMerge(value, forkedValue, {...otherOptions, objectMerger, objectCloner});
+  return simpleMerge(value, valueFork, {...otherOptions, objectMerger, objectCloner});
 }

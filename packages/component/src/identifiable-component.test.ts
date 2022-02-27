@@ -475,17 +475,17 @@ describe('Identifiable component', () => {
     expect(user.id).toBe('abc123');
     expect(user.email).toBe('hi@hello.com');
 
-    let ForkedUser = User.fork();
+    let UserFork = User.fork();
 
-    const forkedUser = ForkedUser.getIdentityMap().getComponent({id: 'abc123'}) as User;
+    const userFork = UserFork.getIdentityMap().getComponent({id: 'abc123'}) as User;
 
-    expect(forkedUser.constructor).toBe(ForkedUser);
-    expect(forkedUser).toBeInstanceOf(ForkedUser);
+    expect(userFork.constructor).toBe(UserFork);
+    expect(userFork).toBeInstanceOf(UserFork);
 
-    expect(forkedUser.isForkOf(user)).toBe(true);
-    expect(forkedUser).not.toBe(user);
-    expect(forkedUser.id).toBe('abc123');
-    expect(forkedUser.email).toBe('hi@hello.com');
+    expect(userFork.isForkOf(user)).toBe(true);
+    expect(userFork).not.toBe(user);
+    expect(userFork.id).toBe('abc123');
+    expect(userFork.email).toBe('hi@hello.com');
 
     // --- With a referenced identifiable component ---
 
@@ -506,31 +506,31 @@ describe('Identifiable component', () => {
 
     expect(author).toBe(user);
 
-    const ForkedArticle = Article.fork();
+    const ArticleFork = Article.fork();
 
-    const forkedArticle = ForkedArticle.getIdentityMap().getComponent({id: 'xyz456'}) as Article;
+    const articleFork = ArticleFork.getIdentityMap().getComponent({id: 'xyz456'}) as Article;
 
-    expect(forkedArticle.constructor).toBe(ForkedArticle);
-    expect(forkedArticle).toBeInstanceOf(ForkedArticle);
+    expect(articleFork.constructor).toBe(ArticleFork);
+    expect(articleFork).toBeInstanceOf(ArticleFork);
 
-    expect(forkedArticle.isForkOf(article)).toBe(true);
-    expect(forkedArticle).not.toBe(article);
-    expect(forkedArticle.id).toBe('xyz456');
-    expect(forkedArticle.title).toBe('Hello');
+    expect(articleFork.isForkOf(article)).toBe(true);
+    expect(articleFork).not.toBe(article);
+    expect(articleFork.id).toBe('xyz456');
+    expect(articleFork.title).toBe('Hello');
 
-    const forkedAuthor = forkedArticle.author;
+    const authorFork = articleFork.author;
 
-    ForkedUser = ForkedArticle.User;
+    UserFork = ArticleFork.User;
 
-    expect(forkedAuthor.constructor).toBe(ForkedUser);
-    expect(forkedAuthor).toBeInstanceOf(ForkedUser);
+    expect(authorFork.constructor).toBe(UserFork);
+    expect(authorFork).toBeInstanceOf(UserFork);
 
-    expect(forkedAuthor.isForkOf(author)).toBe(true);
-    expect(forkedAuthor).not.toBe(author);
-    expect(forkedAuthor.id).toBe('abc123');
-    expect(forkedAuthor.email).toBe('hi@hello.com');
+    expect(authorFork.isForkOf(author)).toBe(true);
+    expect(authorFork).not.toBe(author);
+    expect(authorFork.id).toBe('abc123');
+    expect(authorFork.email).toBe('hi@hello.com');
 
-    expect(ForkedUser.getIdentityMap().getComponent({id: 'abc123'})).toBe(forkedAuthor);
+    expect(UserFork.getIdentityMap().getComponent({id: 'abc123'})).toBe(authorFork);
 
     // --- With a serialized referenced identifiable component ---
 
@@ -541,20 +541,20 @@ describe('Identifiable component', () => {
         title: 'Hello 2',
         author: {__component: 'User', id: 'abc123'}
       },
-      {rootComponent: ForkedArticle}
+      {rootComponent: ArticleFork}
     ) as Article;
 
     const deserializedAuthor = deserializedArticle.author;
 
-    expect(deserializedAuthor.constructor).toBe(ForkedUser);
-    expect(deserializedAuthor).toBeInstanceOf(ForkedUser);
+    expect(deserializedAuthor.constructor).toBe(UserFork);
+    expect(deserializedAuthor).toBeInstanceOf(UserFork);
 
     expect(deserializedAuthor.isForkOf(author)).toBe(true);
     expect(deserializedAuthor).not.toBe(author);
     expect(deserializedAuthor.id).toBe('abc123');
     expect(deserializedAuthor.email).toBe('hi@hello.com');
 
-    expect(deserializedAuthor).toBe(forkedAuthor);
+    expect(deserializedAuthor).toBe(authorFork);
   });
 
   test('getGhost()', async () => {

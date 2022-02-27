@@ -429,26 +429,26 @@ describe('Observable', () => {
     });
 
     describe('Forked observable object', () => {
-      let forkedObservableObject: {[key: string]: any} & ObservableType;
+      let observableObjectFork: {[key: string]: any} & ObservableType;
 
       beforeEach(() => {
-        forkedObservableObject = Object.create(observableObject);
+        observableObjectFork = Object.create(observableObject);
       });
 
       it('Should not be an observable', () => {
-        expect(isObservable(forkedObservableObject)).toBe(false);
+        expect(isObservable(observableObjectFork)).toBe(false);
       });
 
       it('Should not have a method such as addObserver()', () => {
-        expect(forkedObservableObject.addObserver).toBeUndefined();
-        expect(forkedObservableObject.removeObserver).toBeUndefined();
-        expect(forkedObservableObject.callObservers).toBeUndefined();
-        expect(forkedObservableObject.isObservable).toBeUndefined();
+        expect(observableObjectFork.addObserver).toBeUndefined();
+        expect(observableObjectFork.removeObserver).toBeUndefined();
+        expect(observableObjectFork.callObservers).toBeUndefined();
+        expect(observableObjectFork.isObservable).toBeUndefined();
       });
 
       it('Should allow changing an attribute without changing the original observable', () => {
-        forkedObservableObject.id = 2;
-        expect(forkedObservableObject.id).toBe(2);
+        observableObjectFork.id = 2;
+        expect(observableObjectFork.id).toBe(2);
         expect(observableObject.id).toBe(1);
       });
 
@@ -456,23 +456,23 @@ describe('Observable', () => {
         const observer = jest.fn();
         observableObject.addObserver(observer);
         expect(observer).not.toHaveBeenCalled();
-        forkedObservableObject.id = 2;
+        observableObjectFork.id = 2;
         expect(observer).not.toHaveBeenCalled();
       });
 
       it('Should be able to become an observable', () => {
-        expect(isObservable(forkedObservableObject)).toBe(false);
-        const observableForkedObservableObject = createObservable(forkedObservableObject);
-        expect(isObservable(observableForkedObservableObject)).toBe(true);
+        expect(isObservable(observableObjectFork)).toBe(false);
+        const observableObservableObjectFork = createObservable(observableObjectFork);
+        expect(isObservable(observableObservableObjectFork)).toBe(true);
 
         const objectObserver = jest.fn();
         observableObject.addObserver(objectObserver);
-        const forkedObjectObserver = jest.fn();
-        observableForkedObservableObject.addObserver(forkedObjectObserver);
+        const objectForkObserver = jest.fn();
+        observableObservableObjectFork.addObserver(objectForkObserver);
         expect(objectObserver).not.toHaveBeenCalled();
-        expect(forkedObjectObserver).not.toHaveBeenCalled();
-        observableForkedObservableObject.id = 2;
-        expect(forkedObjectObserver).toHaveBeenCalled();
+        expect(objectForkObserver).not.toHaveBeenCalled();
+        observableObservableObjectFork.id = 2;
+        expect(objectForkObserver).toHaveBeenCalled();
         expect(objectObserver).not.toHaveBeenCalled();
       });
     });

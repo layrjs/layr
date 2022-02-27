@@ -66,9 +66,9 @@ export class IdentityMap {
   }
 
   fork(newParent: typeof Component) {
-    const forkedIdentityMap = Object.create(this) as IdentityMap;
-    forkedIdentityMap._parent = newParent;
-    return forkedIdentityMap;
+    const identityMapFork = Object.create(this) as IdentityMap;
+    identityMapFork._parent = newParent;
+    return identityMapFork;
   }
 
   // === Entities ===

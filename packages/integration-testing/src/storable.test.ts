@@ -424,11 +424,11 @@ describe('Storable', () => {
             "The identifier attribute 'name' is missing (component: 'User')"
           );
 
-          const ForkedUser = User.fork();
+          const UserFork = User.fork();
 
-          user = new ForkedUser({id: 'user1', email: '1@user.com', reference: 1});
+          user = new UserFork({id: 'user1', email: '1@user.com', reference: 1});
 
-          await expect(ForkedUser.get({id: 'user1'})).rejects.toThrow(
+          await expect(UserFork.get({id: 'user1'})).rejects.toThrow(
             "Cannot load a storable component that is marked as new (component: 'User')"
           );
         });
@@ -464,7 +464,7 @@ describe('Storable', () => {
         test('load()', async () => {
           const User = await userClassProvider();
 
-          let ForkedUser: typeof BaseUser;
+          let UserFork: typeof BaseUser;
           let user: BaseUser;
           let organization: BaseOrganization;
 
@@ -694,10 +694,10 @@ describe('Storable', () => {
 
           // --- With a referenced identifiable component loaded from a fork ---
 
-          ForkedUser = User.fork();
-          organization = await ForkedUser.Organization.get('org1');
-          const ForkedUserFork = ForkedUser.fork();
-          user = await ForkedUserFork.get('user1', {organization: {}});
+          UserFork = User.fork();
+          organization = await UserFork.Organization.get('org1');
+          const UserForkFork = UserFork.fork();
+          user = await UserForkFork.get('user1', {organization: {}});
 
           expect(user.organization?.isForkOf(organization));
 
@@ -730,9 +730,9 @@ describe('Storable', () => {
 
           // ------
 
-          ForkedUser = User.fork();
-          user = ForkedUser.instantiate({id: 'user1'});
-          organization = ForkedUser.Organization.instantiate({id: 'org1'});
+          UserFork = User.fork();
+          user = UserFork.instantiate({id: 'user1'});
+          organization = UserFork.Organization.instantiate({id: 'org1'});
 
           await Promise.all([
             user.load({fullName: true, organization: {}}),
@@ -758,19 +758,19 @@ describe('Storable', () => {
         test('save()', async () => {
           const User = await userClassProvider();
 
-          let ForkedUser = User.fork();
-          let ForkedPicture = ForkedUser.Picture;
-          let ForkedOrganization = ForkedUser.Organization;
+          let UserFork = User.fork();
+          let PictureFork = UserFork.Picture;
+          let OrganizationFork = UserFork.Organization;
 
-          let user = new ForkedUser({
+          let user = new UserFork({
             id: 'user2',
             email: '2@user.com',
             reference: 2,
             fullName: 'User 2',
             tags: ['newcomer'],
             location: {country: 'USA', city: 'New York'},
-            picture: new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}),
-            organization: ForkedOrganization.instantiate({id: 'org2'})
+            picture: new PictureFork({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'}),
+            organization: OrganizationFork.instantiate({id: 'org2'})
           });
 
           if (!(User.hasStore() || User.getRemoteComponent() !== undefined)) {
@@ -807,11 +807,11 @@ describe('Storable', () => {
             User.hasStore() ? 'store' : 'server'
           );
 
-          ForkedUser = User.fork();
-          ForkedPicture = ForkedUser.Picture;
-          ForkedOrganization = ForkedUser.Organization;
+          UserFork = User.fork();
+          PictureFork = UserFork.Picture;
+          OrganizationFork = UserFork.Organization;
 
-          user = await ForkedUser.get('user2');
+          user = await UserFork.get('user2');
 
           expect(user.serialize({includeReferencedComponents: true})).toStrictEqual({
             __component: 'User',
@@ -849,9 +849,9 @@ describe('Storable', () => {
           user.pastLocations.push({country: 'USA', city: 'San Francisco'});
           user.picture!.url = 'https://pictures.com/2-2.jpg';
           user.pastPictures.push(
-            new ForkedPicture({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
+            new PictureFork({type: 'JPEG', url: 'https://pictures.com/2-1.jpg'})
           );
-          user.organization = ForkedOrganization.instantiate({id: 'org1'});
+          user.organization = OrganizationFork.instantiate({id: 'org1'});
           user.updatedOn = UPDATED_ON;
 
           expect(await user.save()).toBe(user);
@@ -1781,11 +1781,11 @@ describe('Storable', () => {
 
           // --- With a component specified as query ---
 
-          let ForkedUser = User.fork();
+          let UserFork = User.fork();
 
-          const user = await ForkedUser.get('user1', {email: true});
+          const user = await UserFork.get('user1', {email: true});
 
-          users = await ForkedUser.find(user, {fullName: true});
+          users = await UserFork.find(user, {fullName: true});
 
           expect(users).toHaveLength(1);
           expect(users[0]).toBe(user);
@@ -1798,11 +1798,11 @@ describe('Storable', () => {
 
           // --- With an a referenced component specified in a query ---
 
-          ForkedUser = User.fork();
+          UserFork = User.fork();
 
-          const organization = await ForkedUser.Organization.get('org2');
+          const organization = await UserFork.Organization.get('org2');
 
-          users = await ForkedUser.find({organization}, {});
+          users = await UserFork.find({organization}, {});
 
           expect(serialize(users)).toStrictEqual([
             {
@@ -1817,12 +1817,12 @@ describe('Storable', () => {
 
           // --- With an array of referenced components specified in a query (using '$in') ---
 
-          ForkedUser = User.fork();
+          UserFork = User.fork();
 
-          const organization1 = ForkedUser.Organization.instantiate({id: 'org1'});
-          const organization2 = ForkedUser.Organization.instantiate({id: 'org2'});
+          const organization1 = UserFork.Organization.instantiate({id: 'org1'});
+          const organization2 = UserFork.Organization.instantiate({id: 'org2'});
 
-          users = await ForkedUser.find({organization: {$in: [organization1, organization2]}}, {});
+          users = await UserFork.find({organization: {$in: [organization1, organization2]}}, {});
 
           expect(serialize(users)).toStrictEqual([
             {__component: 'User', id: 'user1'},
@@ -1866,11 +1866,11 @@ describe('Storable', () => {
 
           // --- With a component specified as query ---
 
-          const ForkedUser = User.fork();
+          const UserFork = User.fork();
 
-          const user = ForkedUser.instantiate({reference: 1});
+          const user = UserFork.instantiate({reference: 1});
 
-          expect(await ForkedUser.count(user)).toBe(1);
+          expect(await UserFork.count(user)).toBe(1);
         });
       });
     }

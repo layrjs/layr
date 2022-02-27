@@ -549,14 +549,14 @@ describe('Attribute', () => {
 
     expect(attribute.getValue()).toBe('Inception');
 
-    const forkedMovie = Object.create(movie);
-    const forkedAttribute = attribute.fork(forkedMovie);
+    const movieFork = Object.create(movie);
+    const attributeFork = attribute.fork(movieFork);
 
-    expect(forkedAttribute.getValue()).toBe('Inception');
+    expect(attributeFork.getValue()).toBe('Inception');
 
-    forkedAttribute.setValue('Inception 2');
+    attributeFork.setValue('Inception 2');
 
-    expect(forkedAttribute.getValue()).toBe('Inception 2');
+    expect(attributeFork.getValue()).toBe('Inception 2');
     expect(attribute.getValue()).toBe('Inception');
   });
 

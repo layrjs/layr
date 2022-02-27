@@ -3337,19 +3337,19 @@ export class Component extends Observable(Object) {
     // Use a little trick to make sure the generated subclass
     // has the 'name' attribute set properly
     // @ts-ignore
-    const {[name]: forkedComponent} = {[name]: class extends this {}};
+    const {[name]: componentFork} = {[name]: class extends this {}};
 
-    if (forkedComponent.name !== name) {
+    if (componentFork.name !== name) {
       // In case the code has been transpiled by Babel with @babel/plugin-transform-classes,
       // the above trick doesn't work, so let's set the class name manually
-      Object.defineProperty(forkedComponent, 'name', {value: name});
+      Object.defineProperty(componentFork, 'name', {value: name});
     }
 
     if (componentProvider !== undefined) {
-      forkedComponent.__setComponentProvider(componentProvider);
+      componentFork.__setComponentProvider(componentProvider);
     }
 
-    return forkedComponent;
+    return componentFork;
   }
 
   /**
@@ -3377,24 +3377,24 @@ export class Component extends Observable(Object) {
       assertIsComponentClass(componentClass);
     }
 
-    const forkedComponent = Object.create(this) as T;
+    const componentFork = Object.create(this) as T;
 
     if (this.constructor !== componentClass) {
-      // Make 'forkedComponent' believe that it is an instance of 'Component'
+      // Make 'componentFork' believe that it is an instance of 'Component'
       // It can happen when a referenced component is forked
-      Object.defineProperty(forkedComponent, 'constructor', {
+      Object.defineProperty(componentFork, 'constructor', {
         value: componentClass,
         writable: true,
         enumerable: false,
         configurable: true
       });
 
-      if (forkedComponent.hasPrimaryIdentifierAttribute() && forkedComponent.isAttached()) {
-        componentClass.getIdentityMap().addComponent(forkedComponent);
+      if (componentFork.hasPrimaryIdentifierAttribute() && componentFork.isAttached()) {
+        componentClass.getIdentityMap().addComponent(componentFork);
       }
     }
 
-    return forkedComponent;
+    return componentFork;
   }
 
   /**
@@ -3531,7 +3531,7 @@ export class Component extends Observable(Object) {
   /**
    * Merges the attributes of a component class fork into the current component class.
    *
-   * @param forkedComponent The component class fork to merge.
+   * @param componentFork The component class fork to merge.
    *
    * @returns The current component class.
    *
@@ -3553,16 +3553,16 @@ export class Component extends Observable(Object) {
    */
   static merge<T extends typeof Component>(
     this: T,
-    forkedComponent: typeof Component,
+    componentFork: typeof Component,
     options: MergeOptions & {attributeSelector?: AttributeSelector} = {}
   ) {
-    assertIsComponentClass(forkedComponent);
+    assertIsComponentClass(componentFork);
 
-    if (!isPrototypeOf(this, forkedComponent)) {
+    if (!isPrototypeOf(this, componentFork)) {
       throw new Error('Cannot merge a component that is not a fork of the target component');
     }
 
-    this.__mergeAttributes(forkedComponent, options);
+    this.__mergeAttributes(componentFork, options);
 
     return this;
   }
@@ -3570,7 +3570,7 @@ export class Component extends Observable(Object) {
   /**
    * Merges the attributes of a component instance fork into the current component instance.
    *
-   * @param forkedComponent The component instance fork to merge.
+   * @param componentFork The component instance fork to merge.
    *
    * @returns The current component instance.
    *
@@ -3588,16 +3588,16 @@ export class Component extends Observable(Object) {
    * @category Merging
    */
   merge(
-    forkedComponent: Component,
+    componentFork: Component,
     options: MergeOptions & {attributeSelector?: AttributeSelector} = {}
   ) {
-    assertIsComponentInstance(forkedComponent);
+    assertIsComponentInstance(componentFork);
 
-    if (!isPrototypeOf(this, forkedComponent)) {
+    if (!isPrototypeOf(this, componentFork)) {
       throw new Error('Cannot merge a component that is not a fork of the target component');
     }
 
-    this.__mergeAttributes(forkedComponent, options);
+    this.__mergeAttributes(componentFork, options);
 
     return this;
   }
@@ -3607,15 +3607,15 @@ export class Component extends Observable(Object) {
   }
 
   __mergeAttributes(
-    forkedComponent: typeof Component | Component,
+    componentFork: typeof Component | Component,
     {attributeSelector, ...otherOptions}: MergeOptions & {attributeSelector?: AttributeSelector}
   ) {
-    for (const forkedAttribute of forkedComponent.getAttributes({attributeSelector})) {
-      const name = forkedAttribute.getName();
+    for (const attributeFork of componentFork.getAttributes({attributeSelector})) {
+      const name = attributeFork.getName();
 
       const attribute = this.getAttribute(name);
 
-      if (!forkedAttribute.isSet()) {
+      if (!attributeFork.isSet()) {
         if (attribute.isSet()) {
           attribute.unsetValue();
         }
@@ -3623,12 +3623,12 @@ export class Component extends Observable(Object) {
         continue;
       }
 
-      const forkedValue = forkedAttribute.getValue();
+      const valueFork = attributeFork.getValue();
       const value = attribute.getValue({throwIfUnset: false});
 
-      const mergedValue = merge(value, forkedValue, otherOptions);
+      const mergedValue = merge(value, valueFork, otherOptions);
 
-      attribute.setValue(mergedValue, {source: forkedAttribute.getValueSource()});
+      attribute.setValue(mergedValue, {source: attributeFork.getValueSource()});
     }
   }
 
@@ -4462,7 +4462,7 @@ export class Component extends Observable(Object) {
 // but it leads to a TypeScript (4.3) compilation error in transient dependencies
 Object.defineProperty(Component, Symbol.hasInstance, {
   value: function (instance: any) {
-    // Since fork() can change the constructor of the forked instances,
+    // Since fork() can change the constructor of the instance forks,
     // we must change the behavior of 'instanceof' so it can work as expected
     return instance.constructor === this || isPrototypeOf(this, instance.constructor);
   }

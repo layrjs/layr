@@ -273,11 +273,11 @@ export class Index {
   // === Forking ===
 
   fork(parent: StorableComponent) {
-    const forkedIndex = Object.create(this) as Index;
+    const indexFork = Object.create(this) as Index;
 
-    forkedIndex._parent = parent;
+    indexFork._parent = parent;
 
-    return forkedIndex;
+    return indexFork;
   }
 
   // === Utilities ===

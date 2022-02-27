@@ -327,19 +327,19 @@ export class Attribute extends Observable(Property) {
         ? ensureComponentClass(parent).getComponent(value.constructor.getComponentName())
         : undefined;
 
-      let forkedValue = fork(value, {componentClass});
+      let valueFork = fork(value, {componentClass});
 
-      if (canBeObserved(forkedValue)) {
-        if (!isObservable(forkedValue)) {
-          forkedValue = createObservable(forkedValue);
+      if (canBeObserved(valueFork)) {
+        if (!isObservable(valueFork)) {
+          valueFork = createObservable(valueFork);
         }
 
-        if (isEmbeddable(forkedValue)) {
-          forkedValue.addObserver(this);
+        if (isEmbeddable(valueFork)) {
+          valueFork.addObserver(this);
         }
       }
 
-      this._value = forkedValue;
+      this._value = valueFork;
     }
 
     return this._value;

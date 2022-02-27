@@ -95,24 +95,24 @@ describe('Identity map', () => {
 
     // --- Forking ---
 
-    const ForkedUser = User.fork();
+    const UserFork = User.fork();
 
-    const forkedIdentityMap = identityMap.fork(ForkedUser);
+    const identityMapFork = identityMap.fork(UserFork);
 
-    const forkedUser = forkedIdentityMap.getComponent({email: 'salut@bonjour.com'}) as User;
+    const userFork = identityMapFork.getComponent({email: 'salut@bonjour.com'}) as User;
 
-    expect(forkedUser.isForkOf(user)).toBe(true);
+    expect(userFork.isForkOf(user)).toBe(true);
 
-    forkedUser.email = 'hi@hello.com';
+    userFork.email = 'hi@hello.com';
 
-    forkedIdentityMap.updateComponent(forkedUser, 'email', {
+    identityMapFork.updateComponent(userFork, 'email', {
       previousValue: 'salut@bonjour.com',
       newValue: 'hi@hello.com'
     });
 
-    expect(forkedIdentityMap.getComponent({email: 'hi@hello.com'})).toBe(forkedUser);
+    expect(identityMapFork.getComponent({email: 'hi@hello.com'})).toBe(userFork);
 
-    expect(() => forkedIdentityMap.getComponent({email: 'salut@bonjour.com'})).toThrow(
+    expect(() => identityMapFork.getComponent({email: 'salut@bonjour.com'})).toThrow(
       "A component with the same identifier already exists (attribute: 'User.prototype.id')"
     );
   });

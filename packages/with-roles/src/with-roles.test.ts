@@ -73,12 +73,12 @@ describe('WithRoles', () => {
     expect(Movie.prototype.hasRole('anyone')).toBe(false);
     expect(Movie.prototype.getRole('anyone', {fallbackToClass: true})).toBe(role);
 
-    const ForkedMovie = Movie.fork();
+    const MovieFork = Movie.fork();
 
-    const forkedRole = ForkedMovie.getRole('anyone');
+    const roleFork = MovieFork.getRole('anyone');
 
-    expect(forkedRole).not.toBe(role);
-    expect(forkedRole.isForkOf(role)).toBe(true);
+    expect(roleFork).not.toBe(role);
+    expect(roleFork.isForkOf(role)).toBe(true);
   });
 
   test('setRole()', async () => {

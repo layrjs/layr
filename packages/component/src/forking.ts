@@ -39,10 +39,10 @@ export function fork(value: any, options: ForkOptions = {}) {
 
   const objectForker = function (object: object): object | void {
     if (originalObjectForker !== undefined) {
-      const forkedObject = originalObjectForker(object);
+      const objectFork = originalObjectForker(object);
 
-      if (forkedObject !== undefined) {
-        return forkedObject;
+      if (objectFork !== undefined) {
+        return objectFork;
       }
     }
 

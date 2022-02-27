@@ -11,48 +11,48 @@ describe('Merging', () => {
       @attribute() specs!: {duration?: number};
     }
 
-    const ForkedMovie = Movie.fork();
+    const MovieFork = Movie.fork();
 
-    ForkedMovie.limit = 500;
+    MovieFork.limit = 500;
 
     expect(Movie.limit).toBe(100);
 
-    Movie.merge(ForkedMovie);
+    Movie.merge(MovieFork);
 
     expect(Movie.limit).toBe(500);
 
     const movie = new Movie({title: 'Inception', tags: ['drama'], specs: {duration: 120}});
 
-    const forkedMovie = movie.fork();
+    const movieFork = movie.fork();
 
-    forkedMovie.title = 'Inception 2';
-    forkedMovie.tags.push('action');
-    forkedMovie.specs.duration = 125;
+    movieFork.title = 'Inception 2';
+    movieFork.tags.push('action');
+    movieFork.specs.duration = 125;
 
     expect(movie.title).toBe('Inception');
     expect(movie.tags).toEqual(['drama']);
     expect(movie.specs).toEqual({duration: 120});
 
-    movie.merge(forkedMovie);
+    movie.merge(movieFork);
 
     expect(movie.title).toBe('Inception 2');
-    expect(movie.tags).not.toBe(forkedMovie.tags);
+    expect(movie.tags).not.toBe(movieFork.tags);
     expect(movie.tags).toEqual(['drama', 'action']);
-    expect(movie.specs).not.toBe(forkedMovie.specs);
+    expect(movie.specs).not.toBe(movieFork.specs);
     expect(movie.specs).toEqual({duration: 125});
 
-    forkedMovie.getAttribute('title').unsetValue();
+    movieFork.getAttribute('title').unsetValue();
 
     expect(movie.getAttribute('title').isSet()).toBe(true);
 
-    movie.merge(forkedMovie);
+    movie.merge(movieFork);
 
     expect(movie.getAttribute('title').isSet()).toBe(false);
 
-    forkedMovie.title = 'Inception 3';
-    forkedMovie.tags = ['action', 'adventure', 'sci-fi'];
+    movieFork.title = 'Inception 3';
+    movieFork.tags = ['action', 'adventure', 'sci-fi'];
 
-    movie.merge(forkedMovie, {attributeSelector: {title: true}});
+    movie.merge(movieFork, {attributeSelector: {title: true}});
 
     expect(movie.title).toBe('Inception 3');
     expect(movie.tags).toEqual(['drama', 'action']);
@@ -73,13 +73,13 @@ describe('Merging', () => {
 
     const director = movie.director;
 
-    const forkedMovie = movie.fork();
+    const movieFork = movie.fork();
 
-    forkedMovie.director.name = 'Christopher Nolan 2';
+    movieFork.director.name = 'Christopher Nolan 2';
 
     expect(movie.director.name).toBe('Christopher Nolan');
 
-    movie.merge(forkedMovie);
+    movie.merge(movieFork);
 
     expect(movie.director.name).toBe('Christopher Nolan 2');
 

@@ -104,10 +104,10 @@ describe('Property', () => {
     expect(property.getParent()).toBe(Movie.prototype);
 
     const movie = Object.create(Movie.prototype);
-    const forkedProperty = property.fork(movie);
+    const propertyFork = property.fork(movie);
 
-    expect(forkedProperty.getName()).toBe('title');
-    expect(forkedProperty.getParent()).toBe(movie);
+    expect(propertyFork.getName()).toBe('title');
+    expect(propertyFork.getParent()).toBe(movie);
   });
 
   test('Introspection', async () => {

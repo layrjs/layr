@@ -128,11 +128,11 @@ export class Role {
   }
 
   fork(parent: typeof ComponentWithRoles | ComponentWithRoles) {
-    const forkedRole = Object.create(this) as Role;
+    const roleFork = Object.create(this) as Role;
 
-    forkedRole._parent = parent;
+    roleFork._parent = parent;
 
-    return forkedRole;
+    return roleFork;
   }
 
   isForkOf(role: Role) {
