@@ -2,7 +2,7 @@
 
 *Inherits from [`Property`](https://layrjs.com/docs/v2/reference/property).*
 
-A `Method` represents a method of a [Component](https://layrjs.com/docs/v2/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript method, but brings the ability to be exposed to remote calls.
+A `Method` represents a method of a [Component](https://layrjs.com/docs/v2/reference/component) class, prototype, or instance. It plays the role of a regular JavaScript method, but brings some extra features such as remote invocation, scheduled execution, or queuing.
 
 #### Usage
 
@@ -66,6 +66,16 @@ const movie = new Movie({title: 'Inception'});
 movie.play();  // Executed remotely
 ```
 
+In addition, you can easily take advantage of some powerful features offered by [`Methods`](https://layrjs.com/docs/v2/reference/method). For example, here is how you would define a method that is automatically executed every hour:
+
+```
+class Application extends Component {
+  @method({schedule: {rate: 60 * 60 * 1000}}) static async runHourlyTask() {
+    // Do something every hour...
+  }
+}
+```
+
 #### Creation
 
 ##### `new Method(name, parent, [options])` <badge type="secondary">constructor</badge> {#constructor}
@@ -78,6 +88,7 @@ Creates an instance of [`Method`](https://layrjs.com/docs/v2/reference/method). 
 * `parent`: The component class, prototype, or instance that owns the method.
 * `options`:
   * `exposure`: A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the method should be exposed to remote calls.
+  * `schedule`: A [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object specifying how the method should be scheduled for automatic execution. Note that only static methods can be scheduled.
 
 **Returns:**
 
@@ -100,6 +111,49 @@ play.getExposure(); // => {call: true}
 #### Methods
 
 See the methods that are inherited from the [`Property`](https://layrjs.com/docs/v2/reference/property#basic-methods) class.
+
+#### Scheduling
+
+##### `getScheduling()` <badge type="secondary-outline">instance method</badge> {#get-scheduling-instance-method}
+
+If the method is scheduled for automatic execution, returns a [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object. Otherwise, returns `undefined`.
+
+**Returns:**
+
+A [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object or `undefined`.
+
+**Example:**
+
+```
+runHourlyTaskMethod.getScheduling(); // => {rate: 60 * 60 * 1000}
+regularMethod.getScheduling(); // => undefined
+```
+
+##### `setScheduling(scheduling)` <badge type="secondary-outline">instance method</badge> {#set-scheduling-instance-method}
+
+Sets how the method should be scheduled for automatic execution. Note that only static methods can be scheduled.
+
+**Parameters:**
+
+* `scheduling`: A [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object.
+
+**Example:**
+
+```
+runHourlyTaskMethod.setScheduling({rate: 60 * 60 * 1000});
+```
+
+##### `MethodScheduling` <badge type="primary-outline">type</badge> {#method-scheduling-type}
+
+A `MethodScheduling` is a plain object specifying how a method is scheduled for automatic execution. The shape of the object is `{rate: number}` where `rate` is the execution frequency expressed in milliseconds.
+
+**Example:**
+
+```
+{rate: 60 * 1000} // Every minute
+{rate: 60 * 60 * 1000} // Every hour
+{rate: 24 * 60 * 60 * 1000} // Every day
+```
 
 #### Utilities
 
