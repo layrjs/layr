@@ -536,7 +536,6 @@ export class Attribute extends Observable(Property) {
    * * `'store'`: The value comes from a store.
    * * `'local'`: The value comes from the current layer.
    * * `'client'`: The value comes from a lower layer.
-   * ```
    *
    * @category Value Source
    */

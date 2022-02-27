@@ -264,7 +264,6 @@ Currently, four types of sources are supported:
 * `'store'`: The value comes from a store.
 * `'local'`: The value comes from the current layer.
 * `'client'`: The value comes from a lower layer.
-```
 
 #### Default Value
 

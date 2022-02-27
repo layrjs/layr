@@ -840,6 +840,94 @@ A boolean.
 movie.hasIdentifierDescriptor(); // => true
 ```
 
+#### Attribute Value Assignment
+
+##### `assign(object, [options])` <badge type="secondary">class method</badge> {#assign-class-method}
+
+Assigns the specified attribute values to the current component class.
+
+**Parameters:**
+
+* `object`: An object specifying the attribute values to assign.
+* `options`:
+  * `source`: A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the attribute values (default: `'local'`).
+
+**Returns:**
+
+The current component class.
+
+**Example:**
+
+```
+import {Component, attribute} from '@layr/component';
+
+class Application extends Component {
+  @attribute('string') static language = 'en';
+}
+
+Application.language // => 'en'
+
+Application.assign({language: 'fr'});
+
+Application.language // => 'fr'
+```
+
+##### `assign(object, [options])` <badge type="secondary-outline">instance method</badge> {#assign-instance-method}
+
+Assigns the specified attribute values to the current component instance.
+
+**Parameters:**
+
+* `object`: An object specifying the attribute values to assign.
+* `options`:
+  * `source`: A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the attribute values (default: `'local'`).
+
+**Returns:**
+
+The current component instance.
+
+**Example:**
+
+```
+// JS
+
+import {Component, attribute} from '@layr/component';
+
+class Movie extends Component {
+  @attribute('string') title;
+  @attribute('number') rating;
+}
+
+const movie = new Movie({title: 'Inception', rating: 8.7});
+
+movie.title // => 'Inception'
+movie.rating // => 8.7
+
+movie.assign({rating: 8.8});
+
+movie.title // => 'Inception'
+movie.rating // => 8.8
+```
+```
+// TS
+
+import {Component, attribute} from '@layr/component';
+
+class Movie extends Component {
+  @attribute('string') title!: string;
+  @attribute('number') rating!: number;
+}
+
+const movie = new Movie({title: 'Inception', rating: 8.7});
+
+movie.title // => 'Inception'
+movie.rating // => 8.7
+
+movie.assign({rating: 8.8});
+
+movie.rating // => 8.8
+```
+
 #### Identity Mapping
 
 ##### `getIdentityMap()` <badge type="secondary">class method</badge> {#get-identity-map-class-method}
@@ -1566,13 +1654,13 @@ dataFork.movie.isForkOf(data.movie); // => true
 
 #### Merging
 
-##### `merge(forkedComponent)` <badge type="secondary">class method</badge> {#merge-class-method}
+##### `merge(componentFork)` <badge type="secondary">class method</badge> {#merge-class-method}
 
 Merges the attributes of a component class fork into the current component class.
 
 **Parameters:**
 
-* `forkedComponent`: The component class fork to merge.
+* `componentFork`: The component class fork to merge.
 
 **Returns:**
 
@@ -1593,13 +1681,13 @@ Movie.merge(MovieFork);
 Movie.customName; // => 'Film'
 ```
 
-##### `merge(forkedComponent)` <badge type="secondary-outline">instance method</badge> {#merge-instance-method}
+##### `merge(componentFork)` <badge type="secondary-outline">instance method</badge> {#merge-instance-method}
 
 Merges the attributes of a component instance fork into the current component instance.
 
 **Parameters:**
 
-* `forkedComponent`: The component instance fork to merge.
+* `componentFork`: The component instance fork to merge.
 
 **Returns:**
 
@@ -1617,14 +1705,14 @@ movie.merge(movieFork);
 movie.title; // => 'Inception 2'
 ```
 
-##### `merge(value, forkedValue)` <badge type="tertiary-outline">function</badge> {#merge-function}
+##### `merge(value, valueFork)` <badge type="tertiary-outline">function</badge> {#merge-function}
 
 Deeply merge any type of forks including objects, arrays, and components (using Component's `merge()` [class method](https://layrjs.com/docs/v2/reference/component#merge-class-method) and [instance method](https://layrjs.com/docs/v2/reference/component#merge-instance-method)) into their original values.
 
 **Parameters:**
 
 * `value`: An original value of any type.
-* `forkedValue`: A fork of `value`.
+* `valueFork`: A fork of `value`.
 
 **Returns:**
 

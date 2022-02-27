@@ -1920,8 +1920,33 @@ export class Component extends Observable(Object) {
     return identifierSelector;
   }
 
-  // === Attribute value assignment ===
+  // === Attribute Value Assignment ===
 
+  /**
+   * Assigns the specified attribute values to the current component class.
+   *
+   * @param object An object specifying the attribute values to assign.
+   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the attribute values (default: `'local'`).
+   *
+   * @returns The current component class.
+   *
+   * @example
+   * ```
+   * import {Component, attribute} from '﹫layr/component';
+   *
+   * class Application extends Component {
+   *   ﹫attribute('string') static language = 'en';
+   * }
+   *
+   * Application.language // => 'en'
+   *
+   * Application.assign({language: 'fr'});
+   *
+   * Application.language // => 'fr'
+   * ```
+   *
+   * @category Attribute Value Assignment
+   */
   static assign<T extends typeof Component>(
     this: T,
     object: PlainObject = {},
@@ -1936,6 +1961,59 @@ export class Component extends Observable(Object) {
     return this;
   }
 
+  /**
+   * Assigns the specified attribute values to the current component instance.
+   *
+   * @param object An object specifying the attribute values to assign.
+   * @param [options.source] A string specifying the [source](https://layrjs.com/docs/v2/reference/attribute#value-source-type) of the attribute values (default: `'local'`).
+   *
+   * @returns The current component instance.
+   *
+   * @example
+   * ```
+   * // JS
+   *
+   * import {Component, attribute} from '﹫layr/component';
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string') title;
+   *   ﹫attribute('number') rating;
+   * }
+   *
+   * const movie = new Movie({title: 'Inception', rating: 8.7});
+   *
+   * movie.title // => 'Inception'
+   * movie.rating // => 8.7
+   *
+   * movie.assign({rating: 8.8});
+   *
+   * movie.title // => 'Inception'
+   * movie.rating // => 8.8
+   * ```
+   *
+   * @example
+   * ```
+   * // TS
+   *
+   * import {Component, attribute} from '﹫layr/component';
+   *
+   * class Movie extends Component {
+   *   ﹫attribute('string') title!: string;
+   *   ﹫attribute('number') rating!: number;
+   * }
+   *
+   * const movie = new Movie({title: 'Inception', rating: 8.7});
+   *
+   * movie.title // => 'Inception'
+   * movie.rating // => 8.7
+   *
+   * movie.assign({rating: 8.8});
+   *
+   * movie.rating // => 8.8
+   * ```
+   *
+   * @category Attribute Value Assignment
+   */
   assign<T extends Component>(
     this: T,
     object: PlainObject = {},

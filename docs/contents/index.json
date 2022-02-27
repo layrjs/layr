@@ -333,7 +333,7 @@
           "file": "reference/aws-integration.md",
           "source": [
             "../../packages/aws-integration/src/index.ts",
-            "../../packages/aws-integration/src/lambda.ts"
+            "../../packages/aws-integration/src/lambda-handler.ts"
           ],
           "category": "Integrations"
         },

@@ -197,6 +197,18 @@ The observers of the navigator are automatically called.
   * `silent`: A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
   * `defer`: A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
 
+##### `goBackToRoot([options])` <badge type="secondary-outline">instance method</badge> <badge type="outline">possibly async</badge> {#go-back-to-root-instance-method}
+
+Go back to the first entry in the navigator's history.
+
+The observers of the navigator are automatically called.
+
+**Parameters:**
+
+* `options`:
+  * `silent`: A boolean specifying whether the navigator's observers should *not* be called (default: `false`).
+  * `defer`: A boolean specifying whether the calling of the navigator's observers should be deferred to the next tick (default: `true`).
+
 ##### `goForward([options])` <badge type="secondary-outline">instance method</badge> <badge type="outline">possibly async</badge> {#go-forward-instance-method}
 
 Go forward to the next entry in the navigator's history.
@@ -214,6 +226,10 @@ The observers of the navigator are automatically called.
 ##### `getHistoryLength()` <badge type="secondary-outline">instance method</badge> {#get-history-length-instance-method}
 
 Returns the number of entries in the navigator's history.
+
+##### `getHistoryIndex()` <badge type="secondary-outline">instance method</badge> {#get-history-index-instance-method}
+
+Returns the current index in the navigator's history.
 
 #### Observability
 
