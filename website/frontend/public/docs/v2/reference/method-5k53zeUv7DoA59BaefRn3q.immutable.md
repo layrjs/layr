@@ -66,12 +66,22 @@ const movie = new Movie({title: 'Inception'});
 movie.play();  // Executed remotely
 ```
 
-In addition, you can easily take advantage of some powerful features offered by [`Methods`](https://layrjs.com/docs/v2/reference/method). For example, here is how you would define a method that is automatically executed every hour:
+In addition, you can easily take advantage of some powerful features offered by [`Methods`](https://layrjs.com/docs/v2/reference/method). For example, here is how you would define a method that will be automatically executed every hour:
 
 ```
 class Application extends Component {
   @method({schedule: {rate: 60 * 60 * 1000}}) static async runHourlyTask() {
     // Do something every hour...
+  }
+}
+```
+
+And here is how you would define a method that will be executed in background:
+
+```
+class Email extends Component {
+  @method({queue: true}) async send() {
+    // Do something in background
   }
 }
 ```
@@ -89,6 +99,7 @@ Creates an instance of [`Method`](https://layrjs.com/docs/v2/reference/method). 
 * `options`:
   * `exposure`: A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the method should be exposed to remote calls.
   * `schedule`: A [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object specifying how the method should be scheduled for automatic execution. Note that only static methods can be scheduled.
+  * `queue`: A boolean specifying whether a method should be executed in background.
 
 **Returns:**
 
@@ -153,6 +164,37 @@ A `MethodScheduling` is a plain object specifying how a method is scheduled for 
 {rate: 60 * 1000} // Every minute
 {rate: 60 * 60 * 1000} // Every hour
 {rate: 24 * 60 * 60 * 1000} // Every day
+```
+
+#### Queueing
+
+##### `getQueueing()` <badge type="secondary-outline">instance method</badge> {#get-queueing-instance-method}
+
+Returns a boolean indicating whether the method should be executed in background.
+
+**Returns:**
+
+A boolean.
+
+**Example:**
+
+```
+backgroundMethod.getQueueing(); // => true
+regularMethod.getQueueing(); // => false
+```
+
+##### `setQueueing(queueing)` <badge type="secondary-outline">instance method</badge> {#set-queueing-instance-method}
+
+Sets whether the method should be executed in background.
+
+**Parameters:**
+
+* `queueing`: A boolean.
+
+**Example:**
+
+```
+backgroundMethod.setQueueing(true);
 ```
 
 #### Utilities

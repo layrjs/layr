@@ -81,12 +81,22 @@ export type MethodQueueing = boolean;
  * movie.play();  // Executed remotely
  * ```
  *
- * In addition, you can easily take advantage of some powerful features offered by [`Methods`](https://layrjs.com/docs/v2/reference/method). For example, here is how you would define a method that is automatically executed every hour:
+ * In addition, you can easily take advantage of some powerful features offered by [`Methods`](https://layrjs.com/docs/v2/reference/method). For example, here is how you would define a method that will be automatically executed every hour:
  *
  * ```
  * class Application extends Component {
  *   ﹫method({schedule: {rate: 60 * 60 * 1000}}) static async runHourlyTask() {
  *     // Do something every hour...
+ *   }
+ * }
+ * ```
+ *
+ * And here is how you would define a method that will be executed in background:
+ *
+ * ```
+ * class Email extends Component {
+ *   ﹫method({queue: true}) async send() {
+ *     // Do something in background
  *   }
  * }
  * ```
@@ -101,6 +111,7 @@ export class Method extends Property {
    * @param parent The component class, prototype, or instance that owns the method.
    * @param [options.exposure] A [`PropertyExposure`](https://layrjs.com/docs/v2/reference/property#property-exposure-type) object specifying how the method should be exposed to remote calls.
    * @param [options.schedule] A [`MethodScheduling`](https://layrjs.com/docs/v2/reference/method#method-scheduling-type) object specifying how the method should be scheduled for automatic execution. Note that only static methods can be scheduled.
+   * @param [options.queue] A boolean specifying whether a method should be executed in background.
    *
    * @returns The [`Method`](https://layrjs.com/docs/v2/reference/method) instance that was created.
    *
@@ -211,10 +222,35 @@ export class Method extends Property {
 
   _queueing?: MethodQueueing;
 
+  /**
+   * Returns a boolean indicating whether the method should be executed in background.
+   *
+   * @returns A boolean.
+   *
+   * @example
+   * ```
+   * backgroundMethod.getQueueing(); // => true
+   * regularMethod.getQueueing(); // => false
+   * ```
+   *
+   * @category Queueing
+   */
   getQueueing() {
-    return this._queueing;
+    return this._queueing ?? false;
   }
 
+  /**
+   * Sets whether the method should be executed in background.
+   *
+   * @param queueing A boolean.
+   *
+   * @example
+   * ```
+   * backgroundMethod.setQueueing(true);
+   * ```
+   *
+   * @category Queueing
+   */
   setQueueing(queueing: MethodQueueing | undefined) {
     this._queueing = queueing;
   }
