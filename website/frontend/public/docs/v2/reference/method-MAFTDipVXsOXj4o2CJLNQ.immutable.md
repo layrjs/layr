@@ -171,17 +171,17 @@ A `MethodScheduling` is a plain object specifying how a method is scheduled for 
 
 ##### `getQueueing()` <badge type="secondary-outline">instance method</badge> {#get-queueing-instance-method}
 
-Returns a boolean indicating whether the method should be executed in background.
+Returns `true` if the method should be executed in background. Otherwise, returns `undefined`.
 
 **Returns:**
 
-A boolean.
+A boolean or `undefined`.
 
 **Example:**
 
 ```
 backgroundMethod.getQueueing(); // => true
-regularMethod.getQueueing(); // => false
+regularMethod.getQueueing(); // => undefined
 ```
 
 ##### `setQueueing(queueing)` <badge type="secondary-outline">instance method</badge> {#set-queueing-instance-method}
@@ -190,7 +190,7 @@ Sets whether the method should be executed in background.
 
 **Parameters:**
 
-* `queueing`: A boolean.
+* `queueing`: Pass `true` to specify that the method should be executed in background. Otherwise, you can pass `false` or `undefined`.
 
 **Example:**
 

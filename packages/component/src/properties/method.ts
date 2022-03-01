@@ -224,26 +224,26 @@ export class Method extends Property {
   _queueing?: MethodQueueing;
 
   /**
-   * Returns a boolean indicating whether the method should be executed in background.
+   * Returns `true` if the method should be executed in background. Otherwise, returns `undefined`.
    *
-   * @returns A boolean.
+   * @returns A boolean or `undefined`.
    *
    * @example
    * ```
    * backgroundMethod.getQueueing(); // => true
-   * regularMethod.getQueueing(); // => false
+   * regularMethod.getQueueing(); // => undefined
    * ```
    *
    * @category Queueing
    */
   getQueueing() {
-    return this._queueing ?? false;
+    return this._queueing;
   }
 
   /**
    * Sets whether the method should be executed in background.
    *
-   * @param queueing A boolean.
+   * @param queueing Pass `true` to specify that the method should be executed in background. Otherwise, you can pass `false` or `undefined`.
    *
    * @example
    * ```
