@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-http-client",
-  "version": "2.0.52",
+  "version": "2.0.63",
   "description": "An HTTP client for your Layr components",
   "keywords": [
     "layr",
@@ -17,7 +17,7 @@
   "main": "dist/node-cjs/index.js",
   "module": "dist/node-esm/index.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
@@ -27,23 +27,23 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component-client": "^2.0.62",
-    "@layr/utilities": "^1.0.5",
-    "core-helpers": "^1.0.3",
+    "@layr/component-client": "^2.0.73",
+    "@layr/utilities": "^1.0.7",
+    "core-helpers": "^1.0.5",
     "cross-fetch": "^3.1.5",
-    "tslib": "^2.3.1"
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@koa/cors": "^3.1.0",
-    "@layr/component": "^2.0.39",
-    "@mvila/dev-tools": "^1.0.30",
-    "@mvila/tsconfig": "^1.0.5",
+    "@koa/cors": "^3.4.3",
+    "@layr/component": "^2.0.44",
+    "@mvila/dev-tools": "^1.2.1",
+    "@mvila/tsconfig": "^1.0.6",
     "@types/co-body": "^5.1.1",
-    "@types/jest": "^25.2.3",
-    "@types/koa": "^2.13.4",
+    "@types/jest": "^29.2.0",
+    "@types/koa": "^2.13.5",
+    "@types/koa__cors": "^3.3.0",
     "@types/koa-json-error": "^3.1.4",
-    "@types/koa__cors": "^3.1.1",
-    "@types/lodash": "^4.14.179",
+    "@types/lodash": "^4.14.186",
     "co-body": "^6.1.0",
     "koa": "^2.13.4",
     "koa-json-error": "^3.1.2",

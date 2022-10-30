@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-koa-middleware",
-  "version": "2.0.68",
+  "version": "2.0.79",
   "description": "A Koa middleware for your Layr components",
   "keywords": [
     "layr",
@@ -17,7 +17,7 @@
   "main": "dist/node-cjs/index.js",
   "module": "dist/node-esm/index.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
@@ -26,19 +26,19 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.39",
-    "@layr/component-server": "^2.0.52",
-    "@layr/routable": "^2.0.94",
-    "core-helpers": "^1.0.3",
-    "mime-types": "^2.1.34",
+    "@layr/component": "^2.0.44",
+    "@layr/component-server": "^2.0.60",
+    "@layr/routable": "^2.0.102",
+    "core-helpers": "^1.0.5",
+    "mime-types": "^2.1.35",
     "raw-body": "^2.5.1",
-    "sleep-promise": "^8.0.1",
-    "tslib": "^2.3.1"
+    "sleep-promise": "^9.1.0",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.30",
-    "@mvila/tsconfig": "^1.0.5",
-    "@types/koa": "^2.13.4",
+    "@mvila/dev-tools": "^1.2.1",
+    "@mvila/tsconfig": "^1.0.6",
+    "@types/koa": "^2.13.5",
     "@types/mime-types": "^2.1.1"
   }
 }

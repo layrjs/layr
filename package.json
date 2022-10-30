@@ -1,6 +1,6 @@
 {
   "name": "layr",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "Dramatically simplify full‑stack development",
   "keywords": [],
@@ -12,8 +12,8 @@
   },
   "prettier": "@mvila/prettierrc",
   "devDependencies": {
-    "@mvila/prettierrc": "^1.1.0",
-    "lerna": "^3.22.1",
-    "prettier": "^2.2.1"
+    "@mvila/prettierrc": "^1.1.1",
+    "lerna": "^6.0.1",
+    "prettier": "^2.7.1"
   }
 }

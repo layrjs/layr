@@ -445,7 +445,7 @@ export abstract class Store {
             documentPatch
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         const {code, indexName} = error;
 
         if (code === 'DUPLICATE_KEY_ERROR') {

@@ -179,9 +179,9 @@ describe('Storable', () => {
 
           userClass = User;
 
-          server = new MongoMemoryServer({instance: {storageEngine: 'wiredTiger'}});
+          server = await MongoMemoryServer.create({instance: {storageEngine: 'wiredTiger'}});
 
-          const connectionString = await server.getUri();
+          const connectionString = server.getUri();
 
           await seedMongoDB(connectionString);
 

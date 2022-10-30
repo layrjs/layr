@@ -164,7 +164,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
   }
 
   class Storable extends Base {
-    ['constructor']: typeof StorableComponent;
+    declare ['constructor']: typeof StorableComponent;
 
     // === Component Methods ===
 

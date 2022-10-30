@@ -9,10 +9,6 @@ export default ({services}) => ({
     DATABASE_URL: services.database.url
   },
 
-  build: {
-    external: ['mongodb']
-  },
-
   stages: {
     development: {
       url: 'http://localhost:18888/',

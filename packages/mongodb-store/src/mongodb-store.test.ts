@@ -39,9 +39,9 @@ describe('MongoDBStore', () => {
 
       movieClass = Movie;
 
-      server = new MongoMemoryServer();
+      server = await MongoMemoryServer.create();
 
-      const connectionString = await server.getUri();
+      const connectionString = server.getUri();
 
       store = new MongoDBStore(connectionString);
 
@@ -148,9 +148,9 @@ describe('MongoDBStore', () => {
     let store: MongoDBStore;
 
     beforeEach(async () => {
-      server = new MongoMemoryServer({instance: {storageEngine: 'wiredTiger'}});
+      server = await MongoMemoryServer.create({instance: {storageEngine: 'wiredTiger'}});
 
-      const connectionString = await server.getUri();
+      const connectionString = server.getUri();
 
       store = new MongoDBStore(connectionString);
 

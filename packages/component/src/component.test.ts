@@ -998,7 +998,7 @@ describe('Component', () => {
 
       try {
         cinema.validate();
-      } catch (err) {
+      } catch (err: any) {
         error = err;
       }
 

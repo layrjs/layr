@@ -1,6 +1,6 @@
 {
   "name": "@layr/routable",
-  "version": "2.0.94",
+  "version": "2.0.102",
   "description": "Makes the methods of your Layr components callable by URL",
   "keywords": [
     "layr",
@@ -19,7 +19,7 @@
   "main": "dist/node-cjs/index.js",
   "module": "dist/node-esm/index.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
@@ -29,21 +29,21 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.39",
-    "@layr/navigator": "^2.0.41",
-    "core-helpers": "^1.0.3",
-    "debug": "^4.3.3",
+    "@layr/component": "^2.0.44",
+    "@layr/navigator": "^2.0.47",
+    "core-helpers": "^1.0.5",
+    "debug": "^4.3.4",
     "lodash": "^4.17.21",
-    "possibly-async": "^1.0.4",
-    "tslib": "^2.3.1"
+    "possibly-async": "^1.0.6",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.30",
-    "@mvila/tsconfig": "^1.0.5",
+    "@mvila/dev-tools": "^1.2.1",
+    "@mvila/tsconfig": "^1.0.6",
     "@types/debug": "^4.1.7",
     "@types/http-errors": "^1.8.2",
-    "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.179",
+    "@types/jest": "^29.2.0",
+    "@types/lodash": "^4.14.186",
     "http-errors": "^1.8.1"
   }
 }

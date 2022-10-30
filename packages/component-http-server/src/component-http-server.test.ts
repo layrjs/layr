@@ -3,7 +3,7 @@ import fetch from 'cross-fetch';
 
 import {ComponentHTTPServer} from './component-http-server';
 
-const SERVER_PORT = 4444;
+const SERVER_PORT = Math.floor(Math.random() * (60000 - 50000 + 1) + 50000);
 
 describe('ComponentHTTPServer', () => {
   let server: ComponentHTTPServer;

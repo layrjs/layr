@@ -3,7 +3,7 @@ import {ComponentHTTPServer} from '@layr/component-http-server';
 
 import {Counter as BackendCounter} from './counter.fixture';
 
-const SERVER_PORT = 4444;
+const SERVER_PORT = Math.floor(Math.random() * (60000 - 50000 + 1) + 50000);
 
 describe('HTTP client/server', () => {
   let server: ComponentHTTPServer;

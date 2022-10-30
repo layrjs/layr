@@ -185,7 +185,7 @@ function createComponentServer(
           });
 
           jsonResponse = await fetchResponse.json();
-        } catch (error) {
+        } catch (error: any) {
           if (numberOfRetries < maximumRequestRetries) {
             const startTime = Date.now();
 

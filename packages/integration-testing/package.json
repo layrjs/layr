@@ -1,6 +1,6 @@
 {
   "name": "@layr/integration-testing",
-  "version": "2.0.92",
+  "version": "2.0.107",
   "private": true,
   "description": "Tests involving a combination of Layr packages",
   "author": "Manuel Vila <hi@mvila.me>",
@@ -12,7 +12,7 @@
   "main": "dist/node-cjs/index.js",
   "module": "dist/node-esm/index.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "prepare": "npm run test",
@@ -21,36 +21,36 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.39",
-    "@layr/component-client": "^2.0.62",
-    "@layr/component-express-middleware": "^2.0.68",
-    "@layr/component-http-client": "^2.0.52",
-    "@layr/component-http-server": "^2.0.67",
-    "@layr/component-koa-middleware": "^2.0.68",
-    "@layr/component-server": "^2.0.52",
-    "@layr/memory-navigator": "^2.0.43",
-    "@layr/memory-store": "^2.0.56",
-    "@layr/mongodb-store": "^2.0.57",
-    "@layr/navigator": "^2.0.41",
-    "@layr/routable": "^2.0.94",
-    "@layr/storable": "^2.0.61",
-    "@layr/store": "^2.0.60",
+    "@layr/component": "^2.0.44",
+    "@layr/component-client": "^2.0.73",
+    "@layr/component-express-middleware": "^2.0.79",
+    "@layr/component-http-client": "^2.0.63",
+    "@layr/component-http-server": "^2.0.81",
+    "@layr/component-koa-middleware": "^2.0.79",
+    "@layr/component-server": "^2.0.60",
+    "@layr/memory-navigator": "^2.0.50",
+    "@layr/memory-store": "^2.0.65",
+    "@layr/mongodb-store": "^2.0.66",
+    "@layr/navigator": "^2.0.47",
+    "@layr/routable": "^2.0.102",
+    "@layr/storable": "^2.0.66",
+    "@layr/store": "^2.0.68",
     "cross-fetch": "^3.1.5",
-    "express": "^4.17.3",
+    "express": "^4.18.2",
     "koa": "^2.13.4",
     "koa-mount": "^4.0.0",
     "lodash": "^4.17.21",
     "mongodb": "^3.7.3",
-    "mongodb-memory-server": "^6.9.6",
-    "tslib": "^2.3.1"
+    "mongodb-memory-server": "^8.9.4",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.30",
-    "@mvila/tsconfig": "^1.0.5",
-    "@types/jest": "^25.2.3",
-    "@types/koa": "^2.13.4",
-    "@types/koa-mount": "^4.0.1",
-    "@types/lodash": "^4.14.179",
+    "@mvila/dev-tools": "^1.2.1",
+    "@mvila/tsconfig": "^1.0.6",
+    "@types/jest": "^29.2.0",
+    "@types/koa": "^2.13.5",
+    "@types/koa-mount": "^4.0.2",
+    "@types/lodash": "^4.14.186",
     "@types/mongodb": "^3.6.20"
   }
 }

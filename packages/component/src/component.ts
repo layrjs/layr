@@ -249,7 +249,7 @@ type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | un
  * ```
  */
 export class Component extends Observable(Object) {
-  ['constructor']: typeof Component;
+  declare ['constructor']: typeof Component;
 
   // === Creation ===
 

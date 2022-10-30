@@ -173,8 +173,10 @@ export class ComponentServer {
                   debugResponse({serializedResult, serializedComponents});
 
                   return {
-                    ...(serializedResult !== undefined && {result: serializedResult}),
-                    ...(serializedComponents !== undefined && {components: serializedComponents})
+                    ...(typeof serializedResult !== 'undefined' && {result: serializedResult}),
+                    ...(typeof serializedComponents !== 'undefined' && {
+                      components: serializedComponents
+                    })
                   };
                 }
               );
@@ -228,7 +230,7 @@ export class ComponentServer {
     const serializedComponents: ComponentSet = new Set();
     const componentDependencies: ComponentSet = new Set(components);
     const possiblyAsyncSerializedResult =
-      result !== undefined
+      typeof result !== 'undefined'
         ? serialize(result, {
             attributeFilter,
             serializedComponents,

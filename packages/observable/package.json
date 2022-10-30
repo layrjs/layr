@@ -1,6 +1,6 @@
 {
   "name": "@layr/observable",
-  "version": "1.0.11",
+  "version": "1.0.13",
   "description": "Observe JavaScript objects, arrays, or your own classes",
   "keywords": [
     "observe",
@@ -20,7 +20,7 @@
   "main": "dist/node-cjs/index.js",
   "module": "dist/node-esm/index.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
@@ -30,12 +30,12 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "core-helpers": "^1.0.3",
-    "tslib": "^2.3.1"
+    "core-helpers": "^1.0.5",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.30",
-    "@mvila/tsconfig": "^1.0.5",
-    "@types/jest": "^25.2.3"
+    "@mvila/dev-tools": "^1.2.1",
+    "@mvila/tsconfig": "^1.0.6",
+    "@types/jest": "^29.2.0"
   }
 }

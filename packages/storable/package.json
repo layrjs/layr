@@ -1,6 +1,6 @@
 {
   "name": "@layr/storable",
-  "version": "2.0.61",
+  "version": "2.0.66",
   "description": "A mixin providing persistence capabilities to Layr components",
   "keywords": [
     "layr",
@@ -21,7 +21,7 @@
   "main": "dist/node-cjs/index.js",
   "module": "dist/node-esm/index.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
@@ -31,15 +31,15 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.39",
-    "core-helpers": "^1.0.3",
+    "@layr/component": "^2.0.44",
+    "core-helpers": "^1.0.5",
     "lodash": "^4.17.21",
-    "tslib": "^2.3.1"
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.0.30",
-    "@mvila/tsconfig": "^1.0.5",
-    "@types/jest": "^25.2.3",
-    "@types/lodash": "^4.14.179"
+    "@mvila/dev-tools": "^1.2.1",
+    "@mvila/tsconfig": "^1.0.6",
+    "@types/jest": "^29.2.0",
+    "@types/lodash": "^4.14.186"
   }
 }

@@ -280,7 +280,7 @@ describe('Attribute', () => {
 
     try {
       attribute.validate();
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
 

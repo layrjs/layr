@@ -213,7 +213,7 @@ export class MongoDBStore extends Store {
       );
 
       return acknowledged;
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'MongoServerError' && error.code === 11000) {
         const matches = error.message.match(/ index: (.*) dup key/);
 
@@ -279,7 +279,7 @@ export class MongoDBStore extends Store {
           const {matchedCount, modifiedCount} = await collection.updateOne(filter, documentPatch);
 
           return {matchedCount, modifiedCount};
-        } catch (error) {
+        } catch (error: any) {
           if (error.name === 'MongoServerError' && error.code === 11000) {
             const matches = error.message.match(/ index: (.*) dup key/);
 

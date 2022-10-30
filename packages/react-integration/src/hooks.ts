@@ -89,7 +89,7 @@ export function useAction<Args extends any[] = any[], Result = any>(
   const action = useCallback(async (...args: Args) => {
     try {
       return (await actionWrapper(handler as (...args: any[]) => Promise<any>, args)) as Result;
-    } catch (error) {
+    } catch (error: any) {
       await errorNotifier(error);
       throw error;
     }

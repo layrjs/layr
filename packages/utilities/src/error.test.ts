@@ -50,7 +50,7 @@ describe('Error', () => {
 
     try {
       throwError('Movie not found', {displayMessage: 'Sorry, the specified was not found.'});
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
 

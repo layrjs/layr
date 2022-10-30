@@ -372,7 +372,7 @@ export class Docs extends Routable(Component) {
         }
 
         chapter.content = content;
-      } catch (error) {
+      } catch (error: any) {
         error.displayMessage =
           'Sorry, something went wrong while loading the documentation chapter.';
         throw error;
