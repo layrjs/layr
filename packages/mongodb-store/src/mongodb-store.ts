@@ -568,9 +568,12 @@ export class MongoDBStore extends Store {
         if (this._client === undefined) {
           debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
 
-          this._client = await MongoClient.connect(this._connectionString, {
-            maxPoolSize: this._poolSize
-          });
+          this._client = await MongoClient.connect(
+            this._fixConnectionString(this._connectionString),
+            {
+              maxPoolSize: this._poolSize
+            }
+          );
 
           debug(`Connected to MongoDB Server (connectionString: ${this._connectionString})`);
         }
@@ -580,6 +583,25 @@ export class MongoDBStore extends Store {
     })();
 
     return this._connectClientPromise;
+  }
+
+  /**
+   * Fix an issue when localhost resolves to an IPv6 loopback address (::1).
+   *
+   * It happens in the following environment:
+   * - macOS v13.0.1
+   * - Node.js v18.12.1
+   */
+  private _fixConnectionString(connectionString: string) {
+    const connectionStringURL = new URL(connectionString);
+
+    if (connectionStringURL.hostname !== 'localhost') {
+      return connectionString;
+    }
+
+    connectionStringURL.hostname = '127.0.0.1';
+
+    return connectionStringURL.toString();
   }
 
   private async _disconnectClient() {
