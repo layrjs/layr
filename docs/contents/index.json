@@ -279,10 +279,24 @@
           "category": "Routing"
         },
         {
+          "title": "Addressable",
+          "slug": "addressable",
+          "file": "reference/addressable.md",
+          "source": "../../packages/routable/src/addressable.ts",
+          "category": "Routing"
+        },
+        {
           "title": "Route",
           "slug": "route",
           "file": "reference/route.md",
           "source": "../../packages/routable/src/route.ts",
+          "category": "Routing"
+        },
+        {
+          "title": "Wrapper",
+          "slug": "wrapper",
+          "file": "reference/wrapper.md",
+          "source": "../../packages/routable/src/wrapper.ts",
           "category": "Routing"
         },
         {
@@ -343,6 +357,7 @@
           "file": "reference/react-integration.md",
           "source": [
             "../../packages/react-integration/src/index.ts",
+            "../../packages/react-integration/src/components.tsx",
             "../../packages/react-integration/src/decorators.tsx",
             "../../packages/react-integration/src/hooks.ts"
           ],

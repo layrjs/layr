@@ -11,7 +11,7 @@
     "build": "node ./build.js"
   },
   "dependencies": {
-    "@mvila/simple-doc": "^0.1.131",
+    "@mvila/simple-doc": "^0.1.135",
     "fs-extra": "^10.0.0"
   }
 }
