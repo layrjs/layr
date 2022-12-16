@@ -3,21 +3,41 @@ import {Addressable, AddressableOptions} from './addressable';
 export type RouteOptions = AddressableOptions;
 
 /**
+ * *Inherits from [`Addressable`](https://layrjs.com/docs/v2/reference/addressable).*
+ *
  * Represents a route in a [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
- *
- * A route is composed of:
- *
- * - A name matching a method of the [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class) that contains the route.
- * - The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the route.
- * - Some [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) aliases.
  *
  * #### Usage
  *
  * Typically, you create a `Route` and associate it to a routable component by using the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) decorator.
  *
- * See an example of use in the [`Routable()`](https://layrjs.com/docs/v2/reference/routable#usage) mixin.
+ * See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
  */
 export class Route extends Addressable {
+  // === Creation ===
+
+  /**
+   * See the constructor that is inherited from the [`Addressable`](https://layrjs.com/docs/v2/reference/addressable#constructor) class.
+   *
+   * @category Creation
+   */
+
+  // === Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Addressable`](https://layrjs.com/docs/v2/reference/addressable#basic-methods) class.
+   *
+   * @category Methods
+   */
+
+  // === Types ===
+
+  /**
+   * See the types that are related to the [`Addressable`](https://layrjs.com/docs/v2/reference/addressable#types) class.
+   *
+   * @category Types
+   */
+
   static isRoute(value: any): value is Route {
     return isRouteInstance(value);
   }

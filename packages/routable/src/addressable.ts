@@ -27,19 +27,20 @@ export type Transformers = {
 };
 
 /**
- * Represents a route or a wrapper in a [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
+ * An abstract class from which the classes [`Route`](https://layrjs.com/docs/v2/reference/route) and [`Wrapper`](https://layrjs.com/docs/v2/reference/wrapper) are constructed.
  *
  * An addressable is composed of:
  *
- * - A name matching a method of the [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class) that contains the addressable.
+ * - A name matching a method of a [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
  * - The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the addressable.
- * - Some [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) aliases.
+ * - Some optional [URL parameters](https://layrjs.com/docs/v2/reference/addressable#url-parameters-type) associated with the addressable.
+ * - Some optional [URL pattern aliases](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) associated with the addressable.
  *
  * #### Usage
  *
- * Typically, you create a `Route` (or a `Wrapper`) and associate it to a routable component by using the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator)) decorator.
+ * Typically, you create a `Route` or a `Wrapper` and associate it to a routable component by using the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorators.
  *
- * See an example of use in the [`Routable()`](https://layrjs.com/docs/v2/reference/routable#usage) mixin.
+ * See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
  */
 export abstract class Addressable {
   _name: string;
@@ -55,17 +56,20 @@ export abstract class Addressable {
   _transformers: Transformers;
 
   /**
-   * Creates an instance of [`Addressable`](https://layrjs.com/docs/v2/reference/addressable). Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) (or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator)) decorator.
+   * Creates an instance of [`Addressable`](https://layrjs.com/docs/v2/reference/addressable), which can represent a [`Route`](https://layrjs.com/docs/v2/reference/route) or a [`Wrapper`](https://layrjs.com/docs/v2/reference/wrapper).
+   *
+   * Typically, instead of using this constructor, you would rather use the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorators.
    *
    * @param name The name of the addressable.
    * @param pattern The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the addressable.
-   * @param [options.aliases] An array of alternate [URL patterns](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type).
+   * @param [options.parameters] An optional object containing some [URL parameters](https://layrjs.com/docs/v2/reference/addressable#url-parameters-type).
+   * @param [options.aliases] An optional array containing some [URL pattern aliases](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type).
    *
    * @returns The [`Addressable`](https://layrjs.com/docs/v2/reference/addressable) instance that was created.
    *
    * @example
    * ```
-   * const addressable = new Addressable('Home', '/', {aliases: ['/home']});
+   * const addressable = new Addressable('View', '/', {aliases: ['/home']});
    * ```
    *
    * @category Creation
@@ -114,9 +118,9 @@ export abstract class Addressable {
    *
    * @example
    * ```
-   * const addressable = new Addressable('Home', '/');
+   * const addressable = new Addressable('View', '/');
    *
-   * addressable.getName(); // => 'Home'
+   * addressable.getName(); // => 'View'
    * ```
    *
    * @category Basic Methods
@@ -132,9 +136,9 @@ export abstract class Addressable {
    *
    * @example
    * ```
-   * const addressable = new Addressable('Viewer', '/movies/:slug\\?:showDetails');
+   * const addressable = new Addressable('View', '/movies/:slug', {aliases: ['/films/:slug']});
    *
-   * addressable.getPattern(); // => '/movies/:slug\\?:showDetails'
+   * addressable.getPattern(); // => '/movies/:slug'
    * ```
    *
    * @category Basic Methods
@@ -158,13 +162,13 @@ export abstract class Addressable {
   }
 
   /**
-   * Returns the alternate URL patterns of the addressable.
+   * Returns the URL pattern aliases of the addressable.
    *
    * @returns An array of [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) strings.
    *
    * @example
    * ```
-   * const addressable = new Addressable('Home', '/', {aliases: ['/home']});
+   * const addressable = new Addressable('View', '/', {aliases: ['/home']});
    *
    * addressable.getAliases(); // => ['/home']
    * ```
@@ -221,15 +225,19 @@ export abstract class Addressable {
    *
    * @param url A string or a [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object.
    *
-   * @returns If the addressable matches the specified URL, a plain object representing the parameters that are included in the URL (or an empty object if there is no parameters) is returned. Otherwise, `undefined` is returned.
+   * @returns If the addressable matches the specified URL, a plain object containing the identifiers and parameters included in the URL is returned. Otherwise, `undefined` is returned.
    *
    * @example
    * ```
-   * const addressable = new Addressable('Viewer', '/movies/:slug\\?:showDetails');
+   * const addressable = new Addressable('View', '/movies/:slug', {
+   *  params: {showDetails: 'boolean?'}
+   * });
    *
-   * addressable.matchURL('/movies/abc123'); // => {slug: 'abc123'}
+   * addressable.matchURL('/movies/abc123');
+   * // => {identifiers: {slug: 'abc123'}, parameters: {showDetails: undefined}}
    *
-   * addressable.matchURL('/movies/abc123?showDetails=1'); // => {slug: 'abc123', showDetails: '1'}
+   * addressable.matchURL('/movies/abc123?showDetails=1');
+   * // => {identifiers: {slug: 'abc123'}, parameters: {showDetails: true}}
    *
    * addressable.matchURL('/films'); // => undefined
    * ```
@@ -280,18 +288,25 @@ export abstract class Addressable {
   /**
    * Generates an URL for the addressable.
    *
-   * @param [params] An optional object representing the parameters to include in the generated URL.
-   * @param [options.hash] A string representing an hash (i.e., a [fragment identifier](https://en.wikipedia.org/wiki/URI_fragment)) to include in the generated URL.
+   * @param [identifiers] An optional object containing the identifiers to include in the generated URL.
+   * @param [params] An optional object containing the parameters to include in the generated URL.
+   * @param [options.hash] An optional string specifying a hash (i.e., a [fragment identifier](https://en.wikipedia.org/wiki/URI_fragment)) to include in the generated URL.
    *
    * @returns A string.
    *
    * @example
    * ```
-   * const addressable = new Addressable('Viewer', '/movies/:slug\\?:showDetails');
+   * const addressable = new Addressable('View', '/movies/:slug', {
+   *  params: {showDetails: 'boolean?'}
+   * });
    *
    * addressable.generateURL({slug: 'abc123'}); // => '/movies/abc123'
    *
-   * addressable.generateURL({slug: 'abc123', showDetails: '1'}); // => '/movies/abc123?showDetails=1'
+   * addressable.generateURL({slug: 'abc123'}, {showDetails: true});
+   * // => '/movies/abc123?showDetails=1'
+   *
+   * addressable.generateURL({slug: 'abc123'}, {showDetails: true}, {hash: 'actors'});
+   * // => '/movies/abc123?showDetails=1#actors'
    *
    * addressable.generateURL({}); // => Error (the slug parameter is mandatory)
    * ```
@@ -337,27 +352,50 @@ export abstract class Addressable {
   /**
    * @typedef URLPattern
    *
-   * A string representing the canonical URL pattern (or an alternate URL pattern) of an addressable.
+   * A string defining the canonical URL pattern (or an URL pattern alias) of an addressable.
    *
-   * An URL pattern is composed of a *path pattern* and an optional *query pattern* that are separated by an escaped question mark (`\\?`).
+   * An URL pattern is composed of a *route pattern* (e.g., `'/movies'`) and can be prefixed with a *wrapper pattern*, which should be enclosed with square brackets (e.g., `'[/admin]'`).
    *
-   * A *path pattern* represents the path part of an URL and it can include some parameters by prefixing the name of each parameter with a colon sign (`:`). The [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) package is used under the hood to handle the path patterns, so any path pattern that is supported by `path-to-regexp` is supported by Layr as well.
+   * *Route patterns* and *wrapper patterns* can be composed of several *segments* separated by slashes (e.g., `'/movies/top-50'` or `'[/admin/movies]'`).
    *
-   * A *query pattern* represents the query part of an URL and it is composed of a list of parameters separated by an ampersand sign (`&`). Just like a path parameter, a query parameter is represented by a name prefixed with a colon sign (`:`). When an URL is matched against an URL pattern with the [`matchURL()`](https://layrjs.com/docs/v2/reference/addressable#match-url-instance-method) method, the [`qs`](https://github.com/ljharb/qs) package is used under the hood to parse the query part of the URL.
+   * A *segment* can be an arbitrary string (e.g., `'movies'`) or the name of a [component identifier attribute](https://layrjs.com/docs/v2/reference/identifier-attribute) (e.g., `'id'`) prefixed with a colon sign (`':'`). Note that a component identifier attribute can reference an identifier attribute of a related component (e.g., `'collection.id'`).
+   *
+   * Optionally, an URL pattern can be suffixed with wildcard character (`'*'`) to represent a catch-all URL.
    *
    * **Examples:**
    *
    * - `'/'`: Root URL pattern.
-   * - `'/movies'`: URL pattern without parameters.
-   * - `'/movies/:id'`: URL pattern with one path parameter (`id`).
-   * - `'/movies/:movieId/actors/:actorId'`: URL pattern with two path parameter (`movieId` and `actorId`).
-   * - `'/movies\\?:sortBy'`: URL pattern with one query parameter (`sortBy`).
-   * - `'/movies\\?:sortBy&:offset'`: URL pattern with two query parameters (`sortBy` and `offset`).
-   * - `'/movies/:id\\?:showDetails'`: URL pattern with one path parameter (`id`) and one query parameter (`showDetails`).
-   * - `'/movies/:genre?'`: URL pattern with an [optional](https://github.com/pillarjs/path-to-regexp#optional) path parameter (`genre`).
-   * - `'/:slugs*'`: URL pattern with [zero or more](https://github.com/pillarjs/path-to-regexp#zero-or-more) path parameters (`slugs`).
-   * - `'/:slugs+'`: URL pattern with [one or more](https://github.com/pillarjs/path-to-regexp#one-or-more) path parameters (`slugs`).
-   * - `'/movies/:id(\\d+)'`: URL pattern with one path parameter (`id`) restricted to digits.
+   * - `'/movies'`: URL pattern without identifier attributes.
+   * - `'/movies/:id'`: URL pattern with one identifier attribute (`id`).
+   * - `'/collections/:collection.id/movies/:id'`: URL pattern with two identifier attributes (`collection.id` and `id`).
+   * - `[/]movies`: URL pattern composed of a wrapper pattern (`'[/]'`) and a route pattern (`'movies'`).
+   * - `'[/collections/:collection.id]/movies/:id'`: URL pattern composed of a wrapper pattern (`'[/collections/:collection.id]'`), a route pattern (`'/movies/:id'`), and two identifier attributes (`collection.id` and `id`).
+   * - `'/*'`: URL pattern that can match any URL. It can be helpful to display, for example, a "Not Found" page.
+   *
+   * @category Types
+   */
+
+  /**
+   * @typedef URLParameters
+   *
+   * An object defining the URL parameters of an addressable.
+   *
+   * The object can contain some pairs of `name` and `type` where `name` should be an arbitrary string representing the name of an URL parameter and `type` should be a string representing its type.
+   *
+   * Currently, `type` can be one of the following strings:
+   *
+   * - `'boolean'`
+   * - `'number'`
+   * - `'string'`
+   * - `'Date'`
+   *
+   * Optionally, `type` can be suffixed with a question mark (`'?'`) to specify an optional URL parameter.
+   *
+   * **Examples:**
+   *
+   * - `{step: 'number'}
+   * - `{showDetails: 'boolean?'}`
+   * - `{page: 'number?', orderBy: 'string?'}`
    *
    * @category Types
    */

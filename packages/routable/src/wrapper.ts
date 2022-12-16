@@ -4,28 +4,48 @@ import {Pattern} from './pattern';
 export type WrapperOptions = AddressableOptions;
 
 /**
+ * *Inherits from [`Addressable`](https://layrjs.com/docs/v2/reference/addressable).*
+ *
  * Represents a wrapper in a [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
- *
- * A wrapper is composed of:
- *
- * - A name matching a method of the [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class) that contains the wrapper.
- * - The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the wrapper.
- * - Some [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) aliases.
  *
  * #### Usage
  *
  * Typically, you create a `Wrapper` and associate it to a routable component by using the [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorator.
  *
- * See an example of use in the [`Routable()`](https://layrjs.com/docs/v2/reference/routable#usage) mixin.
+ * See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
  */
 export class Wrapper extends Addressable {
+  // === Creation ===
+
+  /**
+   * See the constructor that is inherited from the [`Addressable`](https://layrjs.com/docs/v2/reference/addressable#constructor) class.
+   *
+   * @category Creation
+   */
+
   constructor(name: string, pattern: Pattern, options: WrapperOptions = {}) {
     super(name, pattern, options);
 
     if (this.isCatchAll()) {
-      throw new Error(`Couldn't create the wrapper '${name}' (cath-all wrappers are not allowed)`);
+      throw new Error(`Couldn't create the wrapper '${name}' (catch-all wrappers are not allowed)`);
     }
   }
+
+  // === Methods ===
+
+  /**
+   * See the methods that are inherited from the [`Addressable`](https://layrjs.com/docs/v2/reference/addressable#basic-methods) class.
+   *
+   * @category Methods
+   */
+
+  // === Types ===
+
+  /**
+   * See the types that are related to the [`Addressable`](https://layrjs.com/docs/v2/reference/addressable#types) class.
+   *
+   * @category Types
+   */
 
   static isWrapper(value: any): value is Wrapper {
     return isWrapperInstance(value);
