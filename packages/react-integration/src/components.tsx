@@ -7,6 +7,21 @@ import React, {useRef, useState, useEffect, useContext} from 'react';
 import {useForceUpdate} from './hooks';
 import {BrowserNavigatorPlugin} from './plugins';
 
+/**
+ * A React component providing sensible defaults for a web app.
+ *
+ * You should use this component once at the top of your app.
+ *
+ * Note that if you use [Boostr](https://boostr.dev/) to manage your app development, this component will be automatically mounted, so you don't have to use it explicitly in your code.
+ *
+ * The main point of this component is to provide the default behavior of high-level hooks such as [`useData()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) or [`useAction()`](https://layrjs.com/docs/v2/reference/react-integration#use-action-react-hook):
+ *
+ * - `useData()` will render `null` while the `getter()` function is running, and, in the case an error is thrown, a `<div>` containing an error message will be rendered.
+ * - `useAction()` will prevent the user from interacting with any UI element in the browser page while the `handler()` function is running, and, in the case an error is thrown, the browser's `alert()` function will be called to display the error message.
+ *
+ * @category React Components
+ * @reactcomponent
+ */
 export function BrowserRootView({
   children,
   ...customization
@@ -49,6 +64,20 @@ export function BrowserRootView({
 
 export const NavigatorContext = React.createContext<Navigator | undefined>(undefined);
 
+/**
+ * A React component providing a [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator#browser-navigator-class) to your app.
+ *
+ * You should use this component once at the top of your app after the [`BrowserRootView`](https://layrjs.com/docs/v2/reference/react-integration#browser-root-view-react-component) component.
+ *
+ * Note that if you use [Boostr](https://boostr.dev/) to manage your app development, this component will be automatically mounted, so you don't have to use it explicitly in your code.
+ *
+ * @param props.rootComponent The root Layr component of your app. Note that this Layr component should be [`Routable`](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
+ *
+ * @examplelink See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+ *
+ * @category React Components
+ * @reactcomponent
+ */
 export function BrowserNavigatorView({rootComponent}: {rootComponent: RoutableComponent}) {
   assertIsRoutableClass(rootComponent);
 
@@ -85,6 +114,34 @@ export function BrowserNavigatorView({rootComponent}: {rootComponent: RoutableCo
   );
 }
 
+/**
+ * A hook allowing you to get the [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#navigator-class) used in your app.
+ *
+ * @returns A [`Navigator`](https://layrjs.com/docs/v2/reference/navigator#navigator-class) instance.
+ *
+ * @example
+ * ```
+ * import {Component} from '﹫layr/component';
+ * import {Routable} from '﹫layr/routable';
+ * import React from 'react';
+ * import {view, useNavigator} from '﹫layr/react-integration';
+ *
+ * import logo from '../assets/app-logo.svg';
+ *
+ * class Application extends Routable(Component) {
+ *   // ...
+ *
+ *   ﹫view() static LogoView() {
+ *     const navigator = useNavigator();
+ *
+ *     return <img src={logo} onClick={() => { navigator.navigate('/); }} />;
+ *   }
+ * }
+ * ```
+ *
+ * @category High-Level Hooks
+ * @reacthook
+ */
 export function useNavigator() {
   const navigator = useContext(NavigatorContext);
 
@@ -118,6 +175,45 @@ export function useCustomization() {
   return customization;
 }
 
+/**
+ * A React component allowing you to customize the behavior of high-level hooks such as [`useData()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) or [`useAction()`](https://layrjs.com/docs/v2/reference/react-integration#use-action-react-hook).
+ *
+ * @param [props.dataPlaceholder] A function returning a React element (or `null`) that is rendered while the `getter()` function of the [`useData()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) hook is running. A typical use case is to render a spinner.
+ * @param [props.errorRenderer] A function returning a React element (or `null`) that is rendered when the `getter()` function of the [`useData()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) hook throws an error. The `errorRenderer()` function receives the error as first parameter. A typical use case is to render an error message.
+ * @param [props.actionWrapper] An asynchronous function allowing you to wrap the `handler()` function of the [`useAction()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) hook. The `actionWrapper()` function receives the `handler()` function as first parameter, should execute it, and return its result. A typical use case is to lock the screen while the `handler()` function is running so the user cannot interact with any UI element.
+ * @param [props.errorNotifier] An asynchronous function that is executed when the `handler()` function of the [`useAction()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) hook throws an error. The `errorNotifier()` function receives the error as first parameter. A typical use case is to display an error alert dialog.
+ *
+ * @example
+ * ```
+ * <Customizer
+ *   dataPlaceholder={() => {
+ *     // Renders a custom `LoadingSpinner` component
+ *     return <LoadingSpinner />;
+ *   }}
+ *   errorRenderer={(error) => {
+ *     // Renders a custom `ErrorMessage` component
+ *     return <ErrorMessage>{error}</ErrorMessage>;
+ *   }}
+ *   actionWrapper={async (actionHandler, args) => {
+ *     // Do whatever you want here (e.g., custom screen locking)
+ *     try {
+ *       return await actionHandler(...args);
+ *     } finally {
+ *       // Do whatever you want here (e.g., custom screen unlocking)
+ *     }
+ *   }}
+ *   errorNotifier={async (error) => {
+ *     // Calls a custom `alert()` asynchronous function
+ *     await alert(error.message);
+ *   }}
+ * >
+ *   <YourChildComponent />
+ * </Customizer>
+ * ```
+ *
+ * @category React Components
+ * @reactcomponent
+ */
 export function Customizer({
   children,
   ...customization

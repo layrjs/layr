@@ -16,7 +16,7 @@ type ViewOption = {observe?: boolean};
 /**
  * Decorates a method of a Layr [component](https://layrjs.com/docs/v2/reference/component) so it be can used as a React component.
  *
- * Like any React component, the method can receive some properties as first parameter and return some React node to render.
+ * Like any React component, the method can receive some properties as first parameter and return some React elements to render.
  *
  * The decorator binds the method to a specific component, so when the method is executed by React (via, for example, a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
  *
@@ -101,6 +101,19 @@ export function view(options: ViewOption = {}) {
   };
 }
 
+/**
+ * A convenience decorator that combines the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) and [`@view()`](https://layrjs.com/docs/v2/reference/react-integration#view-decorator) decorators.
+ *
+ * Typically, you should use this decorator to implement the pages of your app.
+ *
+ * @param pattern The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the route.
+ * @param [options] An object specifying the options to pass to the `Route`'s [constructor](https://layrjs.com/docs/v2/reference/addressable#constructor) when the route is created.
+ *
+ * @examplelink See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function page(pattern: Pattern, options: ViewOption & RouteOptions = {}) {
   return function (
     target: typeof RoutableComponent | RoutableComponent,
@@ -113,6 +126,19 @@ export function page(pattern: Pattern, options: ViewOption & RouteOptions = {}) 
   };
 }
 
+/**
+ * A convenience decorator that combines the [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) and [`@view()`](https://layrjs.com/docs/v2/reference/react-integration#view-decorator) decorators.
+ *
+ * Typically, you should use this decorator to implement the layouts of your app.
+ *
+ * @param pattern The canonical [URL pattern](https://layrjs.com/docs/v2/reference/addressable#url-pattern-type) of the wrapper.
+ * @param [options] An object specifying the options to pass to the `Wrapper`'s [constructor](https://layrjs.com/docs/v2/reference/addressable#constructor) when the wrapper is created.
+ *
+ * @examplelink See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+ *
+ * @category Decorators
+ * @decorator
+ */
 export function layout(pattern: Pattern, options: ViewOption & WrapperOptions = {}) {
   return function (
     target: typeof RoutableComponent | RoutableComponent,

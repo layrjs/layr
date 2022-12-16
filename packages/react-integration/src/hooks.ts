@@ -5,23 +5,23 @@ import {AsyncFunction, getTypeOf} from 'core-helpers';
 import {useCustomization, Customization} from './components';
 
 /**
- * A convenient hook for loading data asynchronously and render a React node once the data is loaded.
+ * A convenience hook for loading data asynchronously and render a React element (or `null`) once the data is loaded.
  *
- * The `getter()` asynchronous function is called when the React component is rendered for the first time or when a change is detected in its `dependencies`.
+ * The `getter()` asynchronous function is called when the React component is rendered for the first time and when a change is detected in its `dependencies`.
  *
- * While the `getter()` function is running, the `useData()` hook returns the result of the nearest `dataPlaceholder()` function.
+ * While the `getter()` function is running, the `useData()` hook returns the result of the nearest `dataPlaceholder()` function, which can be defined in any parent component thanks to the [`Customizer`](https://layrjs.com/docs/v2/reference/react-integration#customizer-react-component) component.
  *
  * Once the `getter()` function is executed, the `useData()` hook returns the result of the `renderer()` function which is called with the result of the `getter()` function as first parameter.
  *
- * If an error occurs during the `getter()` function execution, the `useData()` hook returns the result of the nearest `errorRenderer()` function.
+ * If an error occurs during the `getter()` function execution, the `useData()` hook returns the result of the nearest `errorRenderer()` function, which can be defined in any parent component thanks to the [`Customizer`](https://layrjs.com/docs/v2/reference/react-integration#customizer-react-component) component.
  *
  * @param getter An asynchronous function for loading data.
- * @param renderer A function which is called with the result of the `getter()` function as first parameter and a `refresh()` function as second parameter. You can call the `refresh()` function to force the re-execution of the `getter()` function. The `renderer()` function should return a React node.
+ * @param renderer A function which is called with the result of the `getter()` function as first parameter and a `refresh()` function as second parameter. You can call the `refresh()` function to force the re-execution of the `getter()` function. The `renderer()` function should return a React element (or `null`).
  * @param [dependencies] An array of values on which the `getter()` function depends (default: `[]`).
  * @param [options.dataPlaceholder] A custom `dataPlaceholder()` function.
  * @param [options.errorRenderer] A custom `errorRenderer()` function.
  *
- * @returns A React node.
+ * @returns A React element (or `null`).
  *
  * @example
  * ```
@@ -76,6 +76,59 @@ export function useData<Result>(
   return renderer(data!, refresh);
 }
 
+/**
+ * A convenience hook for executing some asynchronous actions.
+ *
+ * The specified `handler()` asynchronous function is wrapped so that:
+ *
+ * - When running, the screen is locked to prevent the user from interacting with any UI element. You can customize the screen locking mechanism in any parent component thanks to the [Customizer's `actionWrapper()`](https://layrjs.com/docs/v2/reference/react-integration#customizer-react-component) prop.
+ * - In case an error is thrown, an error alert dialog is displayed. You can customize the error alert dialog in any parent component thanks to the [Customizer's `errorNotifier()`](https://layrjs.com/docs/v2/reference/react-integration#customizer-react-component) prop.
+ *
+ * @param handler An asynchronous function implementing the action.
+ * @param [dependencies] An array of values on which the `handler()` function depends (default: `[]`).
+ * @param [options.actionWrapper] A custom `actionWrapper()` function.
+ * @param [options.errorNotifier] A custom `errorNotifier()` function.
+ *
+ * @returns An asynchronous function wrapping the specified `handler()`.
+ *
+ * @example
+ * ```
+ * import {Component} from '﹫layr/component';
+ * import {Storable} from '﹫layr/storable';
+ * import React from 'react';
+ * import {view, useAction} from '﹫layr/react-integration';
+ *
+ * class Article extends Storable(Component) {
+ *   // ...
+ *
+ *   ﹫view() EditView() {
+ *     const save = useAction(async () => {
+ *       await this.save();
+ *     });
+ *
+ *     return (
+ *       <form
+ *         onSubmit={(event) => {
+ *           event.preventDefault();
+ *           save();
+ *         }}
+ *       >
+ *         <div>
+ *           Implement your form fields here.
+ *         </div>
+ *
+ *         <div>
+ *           <button type="submit">Save</button>
+ *         </div>
+ *       </form>
+ *     );
+ *   }
+ * }
+ * ```
+ *
+ * @category High-Level Hooks
+ * @reacthook
+ */
 export function useAction<Args extends any[] = any[], Result = any>(
   handler: AsyncFunction<Args, Result>,
   deps: DependencyList = [],
@@ -124,7 +177,7 @@ export function useAction<Args extends any[] = any[], Result = any>(
  *   }
  * }
  *
- * // Changing `observableArray` will re-render `MyComponent.View()`
+ * // Changing `observableArray` will re-render `MyComponent.View`
  * observableArray.push('abc');
  * ```
  *

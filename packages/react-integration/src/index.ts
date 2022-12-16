@@ -1,7 +1,7 @@
 /**
  * @module react-integration
  *
- * Provides a decorator and a number of hooks to simplify the use of [React](https://reactjs.org/) inside a Layr [component](https://layrjs.com/docs/v2/reference/component).
+ * Provides some React components, decorators, and hooks to simplify the use of [React](https://reactjs.org/) inside a Layr app.
  */
 
 export * from './components';
