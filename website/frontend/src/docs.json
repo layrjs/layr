@@ -493,7 +493,7 @@
             {
               "title": "MongoDBStore",
               "slug": "mongodb-store",
-              "file": "reference/mongodb-store-XO1mKO8gzHi5AvOasN87a.immutable.md",
+              "file": "reference/mongodb-store-4ayEsF9JnGi6ClJCdj43jl.immutable.md",
               "category": "Storage"
             },
             {
@@ -505,13 +505,25 @@
             {
               "title": "Routable()",
               "slug": "routable",
-              "file": "reference/routable-13oWAZA0ey892cxIWok6UT.immutable.md",
+              "file": "reference/routable-4o7O6FITbKrHjA82kwn0vR.immutable.md",
+              "category": "Routing"
+            },
+            {
+              "title": "Addressable",
+              "slug": "addressable",
+              "file": "reference/addressable-zmY3mPGCPqkb4VuYgLVxG.immutable.md",
               "category": "Routing"
             },
             {
               "title": "Route",
               "slug": "route",
-              "file": "reference/route-5ibzKxSGEQOosbJss2FmQG.immutable.md",
+              "file": "reference/route-2aYvZRybmhQSOBBvrxjYDo.immutable.md",
+              "category": "Routing"
+            },
+            {
+              "title": "Wrapper",
+              "slug": "wrapper",
+              "file": "reference/wrapper-vHqLhbZbmnLGl0KfdXm2K.immutable.md",
               "category": "Routing"
             },
             {
@@ -553,7 +565,7 @@
             {
               "title": "react-integration",
               "slug": "react-integration",
-              "file": "reference/react-integration-47GjiAvh04T4wV6vVAy4QY.immutable.md",
+              "file": "reference/react-integration-59kOmjPl2PMYGetQdevRkJ.immutable.md",
               "category": "Integrations"
             },
             {

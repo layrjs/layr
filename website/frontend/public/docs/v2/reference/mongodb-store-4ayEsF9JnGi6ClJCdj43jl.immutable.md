@@ -82,6 +82,14 @@ movies[0] === movie; // true (thanks to the identity mapping)
 await movie.delete();
 ```
 
+##### `private()` <badge type="secondary-outline">instance method</badge> {#private-instance-method}
+
+Fix an issue when localhost resolves to an IPv6 loopback address (::1).
+
+It happens in the following environment:
+- macOS v13.0.1
+- Node.js v18.12.1
+
 #### Creation
 
 ##### `new MongoDBStore(connectionString, [options])` <badge type="secondary">constructor</badge> {#constructor}
