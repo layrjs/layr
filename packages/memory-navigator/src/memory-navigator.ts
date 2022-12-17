@@ -13,8 +13,6 @@ export type MemoryNavigatorOptions = NavigatorOptions & {
  * #### Usage
  *
  * Create a `MemoryNavigator` instance and register some [routable components](https://layrjs.com/docs/v2/reference/routable#routable-component-class) into it.
- *
- * See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
  */
 export class MemoryNavigator extends Navigator {
   _urls: URL[];

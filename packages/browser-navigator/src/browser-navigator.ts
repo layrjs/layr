@@ -18,40 +18,9 @@ export type BrowserNavigatorOptions = NavigatorOptions;
  *
  * #### Usage
  *
- * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserNavigator` in your application is to use the [`useBrowserNavigator()`](https://layrjs.com/docs/v2/reference/react-integration#use-browser-navigator-react-hook) hook that is provided by the `@layr/react-integration` package.
+ * If you are using [React](https://reactjs.org/), the easiest way to set up a `BrowserNavigator` in your app is to use the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component that is provided by the `@layr/react-integration` package.
  *
- * > See the ["Bringing Some Routes"](https://layrjs.com/docs/v2/introduction/routing) guide for a comprehensive example using the `useBrowserNavigator()` hook.
- *
- * Otherwise, you can create a `BrowserNavigator` instance manually, register some [routable components](https://layrjs.com/docs/v2/reference/routable#routable-component-class) into it, and observe it to automatically display the current route when the user navigates.
- *
- * **Example:**
- *
- * ```
- * import {Component} from '@layr/component';
- * import {Routable, route} from '@layr/routable';
- * import {BrowserNavigator} from '@layr/browser-navigator';
- *
- * class Application extends Routable(Component) {
- *   ﹫route('/') static Home() {
- *     // Return the content of the home page...
- *     return 'Home Page';
- *   }
- *
- *   ﹫route('/about') static About() {
- *     // Return the content of the about page...
- *     return 'About Page';
- *   }
- * }
- *
- * const navigator = new BrowserNavigator();
- *
- * navigator.registerRoutable(Application);
- *
- * navigator.addObserver(() => {
- *   const result = navigator.callCurrentRoute();
- *   // Display the result in the browser...
- * });
- * ```
+ * See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
  */
 export class BrowserNavigator extends Navigator {
   /**

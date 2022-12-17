@@ -26,17 +26,16 @@ import {useCustomization, Customization} from './components';
  * @example
  * ```
  * import {Component} from '﹫layr/component';
- * import {Storable} from '﹫layr/storable';
  * import React from 'react';
  * import {view, useData} from '﹫layr/react-integration';
  *
- * class Article extends Storable(Component) {
+ * class Article extends Component {
  *   // ...
  *
  *   ﹫view() static List() {
  *     return useData(
  *       async () => {
- *         return await this.find();
+ *         // Return some articles from the backend
  *       },
  *
  *       (articles) => {
@@ -94,16 +93,15 @@ export function useData<Result>(
  * @example
  * ```
  * import {Component} from '﹫layr/component';
- * import {Storable} from '﹫layr/storable';
  * import React from 'react';
  * import {view, useAction} from '﹫layr/react-integration';
  *
- * class Article extends Storable(Component) {
+ * class Article extends Component {
  *   // ...
  *
  *   ﹫view() EditView() {
  *     const save = useAction(async () => {
- *       await this.save();
+ *       // Save the edited article to the backend
  *     });
  *
  *     return (
@@ -291,17 +289,16 @@ export function useAsyncCallback<Args extends any[] = any[], Result = any>(
  * @example
  * ```
  * import {Component} from '﹫layr/component';
- * import {Storable} from '﹫layr/storable';
  * import React from 'react';
  * import {view, useAsyncMemo} from '﹫layr/react-integration';
  *
- * class Article extends Storable(Component) {
+ * class Article extends Component {
  *   // ...
  *
  *   ﹫view() static List() {
  *     const [articles, isLoading, loadingError, retryLoading] = useAsyncMemo(
  *       async () => {
- *         return await this.find();
+ *         // Return some articles from the backend
  *       }
  *     );
  *
@@ -383,22 +380,21 @@ export function useAsyncMemo<Result>(asyncFunc: () => Promise<Result>, deps: Dep
  * @example
  * ```
  * import {Component, provide} from '﹫layr/component';
- * import {Storable} from '﹫layr/storable';
  * import React, {useCallback} from 'react';
  * import {view, useRecomputableMemo} from '﹫layr/react-integration';
  *
- * class Article extends Storable(Component) {
+ * class Article extends Component {
  *   // ...
  * }
  *
  * class Blog extends Component {
  *   ﹫provide() static Article = Article;
  *
- *   ﹫view() static ArticleCreator() {
+ *   ﹫view() static CreateArticleView() {
  *     const [article, resetArticle] = useRecomputableMemo(() => new Article());
  *
  *     const createArticle = useCallback(async () => {
- *       await article.save();
+ *       // Save the created article to the backend
  *       resetArticle();
  *     }, [article]);
  *
@@ -441,11 +437,10 @@ export function useRecomputableMemo<Result>(func: () => Result, deps: Dependency
  * // JS
  *
  * import {Component, provide, attribute} from '﹫layr/component';
- * import {Storable} from '﹫layr/storable';
  * import React from 'react';
  * import {view, useAsyncCall} from '﹫layr/react-integration';
  *
- * class Article extends Storable(Component) {
+ * class Article extends Component {
  *   // ...
  * }
  *
@@ -486,11 +481,10 @@ export function useRecomputableMemo<Result>(func: () => Result, deps: Dependency
  * // TS
  *
  * import {Component, provide, attribute} from '﹫layr/component';
- * import {Storable} from '﹫layr/storable';
  * import React from 'react';
  * import {view, useAsyncCall} from '﹫layr/react-integration';
  *
- * class Article extends Storable(Component) {
+ * class Article extends Component {
  *   // ...
  * }
  *

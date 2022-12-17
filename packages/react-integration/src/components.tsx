@@ -19,6 +19,8 @@ import {BrowserNavigatorPlugin} from './plugins';
  * - `useData()` will render `null` while the `getter()` function is running, and, in the case an error is thrown, a `<div>` containing an error message will be rendered.
  * - `useAction()` will prevent the user from interacting with any UI element in the browser page while the `handler()` function is running, and, in the case an error is thrown, the browser's `alert()` function will be called to display the error message.
  *
+ * @examplelink See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
+ *
  * @category React Components
  * @reactcomponent
  */
@@ -73,7 +75,85 @@ export const NavigatorContext = React.createContext<Navigator | undefined>(undef
  *
  * @param props.rootComponent The root Layr component of your app. Note that this Layr component should be [`Routable`](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
  *
- * @examplelink See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+ * @example
+ * ```
+ * // JS
+ *
+ * import React, {Fragment} from 'react';
+ * import ReactDOM from 'react-dom';
+ * import {Component} from '@layr/component';
+ * import {Routable} from '@layr/routable';
+ * import {BrowserRootView, BrowserNavigatorView, layout, page} from '@layr/react-integration';
+ *
+ * class Application extends Routable(Component) {
+ *   // `@layout('/')` is a shortcut for `@wrapper('/') @view()`
+ *   ﹫layout('/') static MainLayout({children}) {
+ *     return (
+ *       <>
+ *         <this.HomePage.Link>
+ *           <h1>My App</h1>
+ *         </this.HomePage.Link>
+ *
+ *         {children()} // Renders the subcomponents using this layout
+ *       </>
+ *     );
+ *   }
+ *
+ *   // `@page('[/]')` is a shortcut for `@route('[/]') @view()`
+ *   ﹫page('[/]') static HomePage() {
+ *     return <p>Hello, World!</p>;
+ *   }
+ * }
+ *
+ * // Note that you don't need the following code when you use Boostr
+ * ReactDOM.render(
+ *   <BrowserRootView>
+ *     <BrowserNavigatorView rootComponent={Application} />
+ *   </BrowserRootView>,
+ *   // Your `index.html` page should contain `<div id="root"></div>`
+ *   document.getElementById('root')
+ * );
+ * ```
+ *
+ * @example
+ * ```
+ * // TS
+ *
+ * import React, {Fragment} from 'react';
+ * import ReactDOM from 'react-dom';
+ * import {Component} from '@layr/component';
+ * import {Routable} from '@layr/routable';
+ * import {BrowserRootView, BrowserNavigatorView, layout, page} from '@layr/react-integration';
+ *
+ * class Application extends Routable(Component) {
+ *   // `@layout('/')` is a shortcut for `@wrapper('/') @view()`
+ *   ﹫layout('/') static MainLayout({children}: {children: () => any}) {
+ *     return (
+ *       <>
+ *         <this.HomePage.Link>
+ *           <h1>My App</h1>
+ *         </this.HomePage.Link>
+ *
+ *         {children()} // Renders the subcomponents using this layout
+ *       </>
+ *     );
+ *   }
+ *
+ *   // `@page('[/]')` is a shortcut for `@route('[/]') @view()`
+ *   ﹫page('[/]') static HomePage() {
+ *     return <p>Hello, World!</p>;
+ *   }
+ * }
+ *
+ * // Note that you don't need the following code when you use Boostr
+ * ReactDOM.render(
+ *   <BrowserRootView>
+ *     <BrowserNavigatorView rootComponent={Application} />
+ *   </BrowserRootView>,
+ *   // Your `index.html` page should contain `<div id="root"></div>`
+ *   document.getElementById('root')
+ * );
+ * ```
  *
  * @category React Components
  * @reactcomponent
