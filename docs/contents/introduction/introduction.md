@@ -68,6 +68,7 @@ Any environment running [Node.js](https://nodejs.org/) v16 or later is supported
 
 Here are some examples of simple full-stack apps that you can check out:
 
+- [CRUD Example App (JS)](https://github.com/layrjs/crud-example-app-js-boostr)
 - [CRUD Example App (TS)](https://github.com/layrjs/crud-example-app-ts-boostr)
 - [Layr Website (TS)](https://github.com/layrjs/layr/tree/master/website)
 - [CodebaseShow (TS)](https://github.com/codebaseshow/codebaseshow)
