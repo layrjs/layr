@@ -7,6 +7,8 @@ export default ({application, services}) => ({
     BACKEND_URL: services.backend.url
   },
 
+  rootComponent: './src/index.ts',
+
   html: {
     language: 'en',
     head: {
@@ -27,8 +29,7 @@ export default ({application, services}) => ({
         },
         {
           rel: 'stylesheet',
-          href:
-            'https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap'
+          href: 'https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap'
         }
       ],
       style: `

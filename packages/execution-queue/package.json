@@ -1,6 +1,6 @@
 {
   "name": "@layr/execution-queue",
-  "version": "2.0.28",
+  "version": "2.0.34",
   "description": "A class for queueing method executions",
   "keywords": [
     "layr",
@@ -28,17 +28,17 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.44",
+    "@layr/component": "^2.0.48",
     "core-helpers": "^1.0.5",
     "lodash": "^4.17.21",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@layr/component-server": "^2.0.60",
-    "@layr/utilities": "^1.0.7",
+    "@layr/component-server": "^2.0.66",
+    "@layr/utilities": "^1.0.9",
     "@mvila/dev-tools": "^1.2.1",
     "@mvila/tsconfig": "^1.0.6",
-    "@types/jest": "^29.2.0",
-    "@types/lodash": "^4.14.186"
+    "@types/jest": "^29.2.4",
+    "@types/lodash": "^4.14.191"
   }
 }

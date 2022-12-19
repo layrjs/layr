@@ -4,7 +4,6 @@
   "private": true,
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "main": "./src/index.ts",
   "dependencies": {
     "@layr/component": "^2.0.31",
     "@layr/mongodb-store": "^2.0.45",

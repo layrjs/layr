@@ -4,7 +4,6 @@
   "private": true,
   "author": "Manuel Vila <hi@mvila.me>",
   "license": "MIT",
-  "main": "./src/index.ts",
   "dependencies": {
     "@emotion-kit/react": "^1.0.59",
     "@emotion-starter/react": "^1.0.70",
