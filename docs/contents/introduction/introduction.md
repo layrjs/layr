@@ -1,5 +1,7 @@
 ### Introduction
 
+> **Note:** Layr v2 is published on NPM, but the documentation is still a work in progress.
+
 Layr is a set of JavaScript/TypeScript libraries that dramatically simplify the development of full-stack apps.
 
 Typically, a full-stack app comprises a frontend and a backend running in two different environments connected through a web API (REST, GraphQL, etc.)

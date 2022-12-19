@@ -13,13 +13,13 @@ import {useStyles} from '../styles';
 import {Title} from '../ui';
 import {Markdown} from '../markdown';
 
-const VERSIONS = [{name: '1', value: 'v1'}];
+const VERSIONS = [
+  {name: '1', value: 'v1'},
+  {name: '2', value: 'v2'}
+];
 
-if (process.env.NODE_ENV === 'development') {
-  VERSIONS.push({name: '2', value: 'v2'});
-}
-
-export const LAST_VERSION = VERSIONS[VERSIONS.length - 1].value;
+// export const LAST_VERSION = VERSIONS[VERSIONS.length - 1].value;
+export const LAST_VERSION = VERSIONS[0].value;
 
 const LANGUAGES = [
   {name: 'JavaScript', value: 'js'},
