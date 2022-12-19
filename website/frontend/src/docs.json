@@ -9,32 +9,32 @@
             {
               "title": "Introduction",
               "slug": "introduction",
-              "file": "introduction/introduction-1NNtkbXN0zHvG6VR0jvPRK.immutable.md"
+              "file": "introduction/introduction-1NNtkbXN0zHvG6VR0jvPRK-edited.immutable.md"
             },
             {
               "title": "Hello, World!",
               "slug": "hello-world",
-              "file": "introduction/hello-world-7F76XnjXXBB7eeZTpEZwEX.immutable.md"
+              "file": "introduction/hello-world-7F76XnjXXBB7eeZTpEZwEX-edited.immutable.md"
             },
             {
               "title": "Storing Data",
               "slug": "data-storage",
-              "file": "introduction/data-storage-1YDg3LGZPF09H3opJUEDSp.immutable.md"
+              "file": "introduction/data-storage-1YDg3LGZPF09H3opJUEDSp-edited.immutable.md"
             },
             {
               "title": "Building a Web App",
               "slug": "web-app",
-              "file": "introduction/web-app-5okryUyuriFFHXtFK9uZNY.immutable.md"
+              "file": "introduction/web-app-5okryUyuriFFHXtFK9uZNY-edited.immutable.md"
             },
             {
               "title": "Bringing Some Routes",
               "slug": "routing",
-              "file": "introduction/routing-4ubaWloMHuNNs0foagYUwi.immutable.md"
+              "file": "introduction/routing-4ubaWloMHuNNs0foagYUwi-edited.immutable.md"
             },
             {
               "title": "Handling Authorization",
               "slug": "authorization",
-              "file": "introduction/authorization-6eooNLZnaLZk4eJNHNGwUp.immutable.md"
+              "file": "introduction/authorization-6eooNLZnaLZk4eJNHNGwUp-edited.immutable.md"
             }
           ]
         },
@@ -289,32 +289,12 @@
             {
               "title": "Introduction",
               "slug": "introduction",
-              "file": "introduction/introduction-7etqcdW1YWt4ESDzwD5aEM.immutable.md"
+              "file": "introduction/introduction-1yofNAvMA79fXmKcGmOqK3.immutable.md"
             },
             {
               "title": "Hello, World!",
               "slug": "hello-world",
-              "file": "introduction/hello-world-42PJgXz3eo7NJtvBskxExv.immutable.md"
-            },
-            {
-              "title": "Storing Data",
-              "slug": "data-storage",
-              "file": "introduction/data-storage-1Mmp3xy3WCj9EkFZulLRHr.immutable.md"
-            },
-            {
-              "title": "Building a Web App",
-              "slug": "web-app",
-              "file": "introduction/web-app-3whfx1SYjjParT7KWIN0K6.immutable.md"
-            },
-            {
-              "title": "Bringing Some Routes",
-              "slug": "routing",
-              "file": "introduction/routing-3TxBstBUqgVYGdTxVgfrIn.immutable.md"
-            },
-            {
-              "title": "Handling Authorization",
-              "slug": "authorization",
-              "file": "introduction/authorization-7JpAShT1RKPKqPfCApf6Ld.immutable.md"
+              "file": "introduction/hello-world-MVHS9o4wjiI7pHeSOQ0zz.immutable.md"
             }
           ]
         },
@@ -565,7 +545,7 @@
             {
               "title": "react-integration",
               "slug": "react-integration",
-              "file": "reference/react-integration-2XWfb8OjfAIpyG9zfKA7HG.immutable.md",
+              "file": "reference/react-integration-7Gvyz3Po7CCcGAXUDAAFg5.immutable.md",
               "category": "Integrations"
             },
             {

@@ -4,7 +4,7 @@ Let's start our journey into Layr by implementing the mandatory ["Hello, World!"
 
 > Layr supports both [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) and [TypeScript](https://www.typescriptlang.org/). To select your language of choice, use the drop-down menu on the left.
 
-> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/hello-world-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/hello-world-ts)<!-- </if> -->.
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/hello-world-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/hello-world-ts)<!-- </if> -->.
 
 #### Creating the Project
 
@@ -99,13 +99,13 @@ So let's start by implementing the backend.
 First, install the Layr's packages we're going to use:
 
 ```sh
-npm install @layr/component @layr/component-http-server
+npm install @layr/component@1 @layr/component-http-server@1
 ```
 
 We've installed:
 
-- `@layr/component` that provides the [`Component`](https://layrjs.com/docs/v2/reference/component) class, which can be conceptualized as the basic JavaScript [`Object`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) class, but with superpowers.
-- `@layr/component-http-server` that provides the [`ComponentHTTPServer`](https://layrjs.com/docs/v2/reference/component-http-server) class, which allows to serve a `Component` class over HTTP.
+- `@layr/component` that provides the [`Component`](https://layrjs.com/docs/v1/reference/component) class, which can be conceptualized as the basic JavaScript [`Object`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) class, but with superpowers.
+- `@layr/component-http-server` that provides the [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server) class, which allows to serve a `Component` class over HTTP.
 
 Now, let's write some actual code. With your favorite code editor, create a file named <!-- <if language="js"> -->`backend.js`<!-- </if> --><!-- <if language="ts"> -->`backend.ts`<!-- </if> --> in an `src` directory, and write the following code:
 
@@ -130,21 +130,21 @@ Oh my! All that code just for a simple "Hello, World!"? Sure, it sounds overkill
 
 Let's decompose the code to understand what we've accomplished.
 
-First, we've defined a `Greeter` class that inherits from [`Component`](https://layrjs.com/docs/v2/reference/component). In a nutshell, by inheriting a class from `Component`, you get most of the goodness provided by Layr, such as attribute type checking, validation, serialization, or remote method invocation.
+First, we've defined a `Greeter` class that inherits from [`Component`](https://layrjs.com/docs/v1/reference/component). In a nutshell, by inheriting a class from `Component`, you get most of the goodness provided by Layr, such as attribute type checking, validation, serialization, or remote method invocation.
 
 Our `Greeter` class is composed of two properties:
 
-- The `name` attribute prefixed with the [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) decorator. This decorator enables (among other things) to specify the type of values an attribute can store (`'string'` in our case). Notice that the `name` attribute also specifies a default value (`'World'`).
-- The `hello()` method prefixed with the [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator) decorator.
+- The `name` attribute prefixed with the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator. This decorator enables (among other things) to specify the type of values an attribute can store (`'string'` in our case). Notice that the `name` attribute also specifies a default value (`'World'`).
+- The `hello()` method prefixed with the [`@method()`](https://layrjs.com/docs/v1/reference/component#method-decorator) decorator.
 
-Both properties are exposed to remote access thanks to the [`@expose()`](https://layrjs.com/docs/v2/reference/component#expose-decorator) decorator:
+Both properties are exposed to remote access thanks to the [`@expose()`](https://layrjs.com/docs/v1/reference/component#expose-decorator) decorator:
 
 - The `name` attribute can be remotely set (`{set: true}`).
 - The `hello()` method can be remotely called (`{call: true}`).
 
 > Note that you don't need to prefix all your attributes and methods with a decorator. Typically, you only use a decorator when you want to take profit of a Layr feature.
 
-After the class definition, a [`ComponentHTTPServer`](https://layrjs.com/docs/v2/reference/component-http-server) is created and then started with [`server.start()`](https://layrjs.com/docs/v2/reference/component-http-server#start-instance-method).
+After the class definition, a [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server) is created and then started with [`server.start()`](https://layrjs.com/docs/v1/reference/component-http-server#start-instance-method).
 
 This is it! Our backend is completed and ready to be executed with:
 
@@ -183,7 +183,7 @@ A typical frontend runs in a browser, but to make this guide easier to grasp, we
 First, install `@layr/component-http-client`, which will allow us to communicate with the backend.
 
 ```sh
-npm install @layr/component-http-client
+npm install @layr/component-http-client@1
 ```
 
 Then, create a file named <!-- <if language="js"> -->`frontend.js`<!-- </if> --><!-- <if language="ts"> -->`frontend.ts`<!-- </if> --> in the `src` directory, and write the following code:
@@ -224,9 +224,9 @@ import type {Greeter as GreeterType} from './backend';
 
 That wasn't too difficult, was it? Well, actually, with these few lines of code, there's quite a lot going on.
 
-First, a [`ComponentHTTPClient`](https://layrjs.com/docs/v2/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://layrjs.com/docs/v2/reference/component-http-server) that was created in the backend.
+First, a [`ComponentHTTPClient`](https://layrjs.com/docs/v1/reference/component-http-client) is created so we can communicate with the [`ComponentHTTPServer`](https://layrjs.com/docs/v1/reference/component-http-server) that was created in the backend.
 
-Then, the [`getComponent()`](https://layrjs.com/docs/v2/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we're getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their [types](https://layrjs.com/docs/v2/reference/value-type), [validators](https://layrjs.com/docs/v2/reference/validator), default values, etc.), and all the backend's exposed methods are callable from the frontend.
+Then, the [`getComponent()`](https://layrjs.com/docs/v1/reference/component-http-client#get-component-instance-method) method is called to get the `Greeter` class from the backend. Well, sort of. In reality, what we're getting is a proxy to the `Greeter` class that is running in the backend. All the exposed attributes of the backend's `Greeter` class become available from the frontend (with their [types](https://layrjs.com/docs/v1/reference/value-type), [validators](https://layrjs.com/docs/v1/reference/validator), default values, etc.), and all the backend's exposed methods are callable from the frontend.
 
 <!-- <if language="ts"> -->
 

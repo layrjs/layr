@@ -1,12 +1,12 @@
 ### Building a Web App
 
-In the [previous guide](https://layrjs.com/docs/v2/introduction/data-storage), we saw how to implement a simple "Guestbook" application with a CLI frontend, a backend, and a database. Now we're going to improve the user experience by replacing the CLI frontend with a web frontend.
+In the [previous guide](https://layrjs.com/docs/v1/introduction/data-storage), we saw how to implement a simple "Guestbook" application with a CLI frontend, a backend, and a database. Now we're going to improve the user experience by replacing the CLI frontend with a web frontend.
 
-> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-ts)<!-- </if> -->.
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-web-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-web-ts)<!-- </if> -->.
 
 #### Preparing the Project
 
-Since we're going to use the same backend as before, you can duplicate the [previous project](https://layrjs.com/docs/v2/introduction/data-storage) or simply modify it in place.
+Since we're going to use the same backend as before, you can duplicate the [previous project](https://layrjs.com/docs/v1/introduction/data-storage) or simply modify it in place.
 
 #### Setting Up Your Development Environment
 
@@ -189,7 +189,7 @@ module.exports = (env, argv) => {
 
 #### Starting the Backend
 
-The [backend](https://layrjs.com/docs/v2/introduction/data-storage#implementing-the-backend) is fine as it is, so all you need to do is to start it if it isn't already running:
+The [backend](https://layrjs.com/docs/v1/introduction/data-storage#implementing-the-backend) is fine as it is, so all you need to do is to start it if it isn't already running:
 
 ```sh
 // JS
@@ -205,24 +205,24 @@ npx ts-node ./src/backend.ts
 
 #### Reimplementing the Frontend
 
-We're going to transform the previous [CLI frontend](https://layrjs.com/docs/v2/introduction/data-storage#implementing-the-frontend) into a web frontend, and we'll use [React](https://reactjs.org/) to take care of the UI rendering.
+We're going to transform the previous [CLI frontend](https://layrjs.com/docs/v1/introduction/data-storage#implementing-the-frontend) into a web frontend, and we'll use [React](https://reactjs.org/) to take care of the UI rendering.
 
 First, install the required packages:
 
 ```sh
 // JS
 
-npm install react react-dom @layr/react-integration
+npm install react react-dom @layr/react-integration@1
 ```
 
 ```sh
 // TS
 
-npm install react react-dom @layr/react-integration
+npm install react react-dom @layr/react-integration@1
 npm install --save-dev @types/react @types/react-dom
 ```
 
-Note that in addition to React, we've also installed [`@layr/react-integration`](https://layrjs.com/docs/v2/reference/react-integration) to simplify the use of React inside Layr components.
+Note that in addition to React, we've also installed [`@layr/react-integration`](https://layrjs.com/docs/v1/reference/react-integration) to simplify the use of React inside Layr components.
 
 Next, create an `index.html` file in the `src` directory, and write the following content:
 
@@ -569,7 +569,7 @@ main().catch((error) => console.error(error));
 
 > Note that in a real application, we'd spread the code into multiple files. For example, we'd have one file for each class and one more file for the `main()` function. But to keep this guide simple, we've put everything in a single file. See the <!-- <if language="js"> -->["CRUD Example App"](https://github.com/layrjs/crud-example-app-js-webpack)<!-- </if> --><!-- <if language="ts"> -->["CRUD Example App"](https://github.com/layrjs/crud-example-app-ts-webpack)<!-- </if> --> repository for an example of a codebase that is organized into multiple files.
 
-There is a bunch of code, but if you know a bit of React, it should be pretty easy to read. Compared to the previous [CLI frontend](https://layrjs.com/docs/v2/introduction/data-storage#implementing-the-frontend), we've introduced a few new Layr concepts, and we're going to explore them. But before that, let's start the frontend so you can see how it looks like.
+There is a bunch of code, but if you know a bit of React, it should be pretty easy to read. Compared to the previous [CLI frontend](https://layrjs.com/docs/v1/introduction/data-storage#implementing-the-frontend), we've introduced a few new Layr concepts, and we're going to explore them. But before that, let's start the frontend so you can see how it looks like.
 
 #### Starting the Frontend
 
@@ -598,18 +598,18 @@ Just to make sure that your message is stored into the backend, refresh the brow
 The frontend is made of two components:
 
 - `Message` inherits from the backend's `Message` component thanks to the cross-layer component inheritance ability.
-- `Guestbook` defines a new [`Component`](https://layrjs.com/docs/v2/reference/component).
+- `Guestbook` defines a new [`Component`](https://layrjs.com/docs/v1/reference/component).
 
 ##### `Message` Component
 
-Layr embraces the object-oriented approach in all aspects of an application and allows you to organize your code in a way that is as cohesive as possible. Traditionally, domain models and UI views are completely separated, but we think that [another way is possible](https://layrjs.com/blog/articles/Do-We-Really-Need-to-Separate-the-Model-from-the-UI-9wogqr). So, the "Layr way" is to co-locate a model and its views in the same place — a Layr [`Component`](https://layrjs.com/docs/v2/reference/component).
+Layr embraces the object-oriented approach in all aspects of an application and allows you to organize your code in a way that is as cohesive as possible. Traditionally, domain models and UI views are completely separated, but we think that [another way is possible](https://layrjs.com/blog/articles/Do-We-Really-Need-to-Separate-the-Model-from-the-UI-9wogqr). So, the "Layr way" is to co-locate a model and its views in the same place — a Layr [`Component`](https://layrjs.com/docs/v1/reference/component).
 
 The `Message` component is composed (besides the attributes and methods that are inherited from the backend) of two views:
 
 - `Viewer()` represents a view to display a message.
 - `Form()` represents a form to edit a message.
 
-Both views are just methods that return some [React elements](https://reactjs.org/docs/rendering-elements.html) and they are prefixed with the [`@view()`](https://layrjs.com/docs/v2/reference/react-integration#view-decorator) decorator that essentially does two things:
+Both views are just methods that return some [React elements](https://reactjs.org/docs/rendering-elements.html) and they are prefixed with the [`@view()`](https://layrjs.com/docs/v1/reference/react-integration#view-decorator) decorator that essentially does two things:
 
 - First, it binds a "view method" to a specific component, so when the method is executed by React (via, for example, a reference included in a [JSX expression](https://reactjs.org/docs/introducing-jsx.html)), it has access to the bound component through `this`.
 - Second, it observes the attributes of the bound component, so when the value of an attribute changes, the view is automatically re-rendered.
@@ -622,7 +622,7 @@ The `Viewer()` view is quite self-explanatory. It just wraps some message's attr
 
 The `Form()` view returns a `form` element and implements a bit of logic so the user can interact with to form.
 
-We use the [`useAsyncCallback()`](https://layrjs.com/docs/v2/reference/react-integration#use-async-callback-react-hook) hook, which is a handy way to track the execution of an asynchronous function. In our case, it is used to track the form submission. So when the form is being submitted, the "Submit" button is disabled, and if the submission fails, an error is displayed.
+We use the [`useAsyncCallback()`](https://layrjs.com/docs/v1/reference/react-integration#use-async-callback-react-hook) hook, which is a handy way to track the execution of an asynchronous function. In our case, it is used to track the form submission. So when the form is being submitted, the "Submit" button is disabled, and if the submission fails, an error is displayed.
 
 The rest of the method is just regular React code.
 
@@ -630,9 +630,9 @@ The rest of the method is just regular React code.
 
 The `Guestbook` component is the core of the application. It contains an attribute (`existingMessages`) to keep track of the displayed messages, and it provides a couple of views (`Home()`, `MessageList()`, and `MessageCreator()`) to display the whole application.
 
-At the very beginning of the class, the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) decorator is used to make the `Guestbook` component aware of the `Message` component. Doing so allows us to specify the `'Message'` type as a parameter of the [`@attribute()`](https://layrjs.com/docs/v2/reference/component#attribute-decorator) decorator to define the `existingMessages` attribute.
+At the very beginning of the class, the [`@provide()`](https://layrjs.com/docs/v1/reference/component#provide-decorator) decorator is used to make the `Guestbook` component aware of the `Message` component. Doing so allows us to specify the `'Message'` type as a parameter of the [`@attribute()`](https://layrjs.com/docs/v1/reference/component#attribute-decorator) decorator to define the `existingMessages` attribute.
 
-Another benefit of using the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) decorator is that we can access the `Message` component through `this.Message` from any `Guestbook`'s class method (or through `this.constructor.Message` from any instance method), and doing so brings a lot of advantages. First, it is a good practice to reduce the direct references to an external component as much as possible. Second, accessing a component through a reference that is managed by the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) decorator enables some unique Layr's features such as [component forking](https://layrjs.com/docs/v2/reference/component?language=js#forking).
+Another benefit of using the [`@provide()`](https://layrjs.com/docs/v1/reference/component#provide-decorator) decorator is that we can access the `Message` component through `this.Message` from any `Guestbook`'s class method (or through `this.constructor.Message` from any instance method), and doing so brings a lot of advantages. First, it is a good practice to reduce the direct references to an external component as much as possible. Second, accessing a component through a reference that is managed by the [`@provide()`](https://layrjs.com/docs/v1/reference/component#provide-decorator) decorator enables some unique Layr's features such as [component forking](https://layrjs.com/docs/v1/reference/component?language=js#forking).
 
 ###### `Home()` View
 
@@ -642,13 +642,13 @@ The `Home()` view is pretty straightforward. It just renders other views (`Messa
 
 The `MessageList()` view is in charge of loading some messages from the backend and rendering them.
 
-We use the [`useAsyncCall()`](https://layrjs.com/docs/v2/reference/react-integration#use-async-call-react-hook) hook to track the loading of the messages. When the messages are being loaded, we return `null`, and if the loading fails we render an error message. Otherwise, we render the loaded messages using their `Viewer()` view.
+We use the [`useAsyncCall()`](https://layrjs.com/docs/v1/reference/react-integration#use-async-call-react-hook) hook to track the loading of the messages. When the messages are being loaded, we return `null`, and if the loading fails we render an error message. Otherwise, we render the loaded messages using their `Viewer()` view.
 
 ###### `MessageCreator()` View
 
 The `MessageCreator()` view allows the user to create a new message and save it into the backend.
 
-The `createdMessage` variable is initialized using the [`useRecomputableMemo()`](https://layrjs.com/docs/v2/reference/react-integration#use-recomputable-memo-react-hook) hook, which plays the same role as the React [useMemo()](https://reactjs.org/docs/hooks-reference.html#usememo) hook, but in addition to a memoized value, we get a function that we can call anytime to recompute the memoized value.
+The `createdMessage` variable is initialized using the [`useRecomputableMemo()`](https://layrjs.com/docs/v1/reference/react-integration#use-recomputable-memo-react-hook) hook, which plays the same role as the React [useMemo()](https://reactjs.org/docs/hooks-reference.html#usememo) hook, but in addition to a memoized value, we get a function that we can call anytime to recompute the memoized value.
 
 The `saveMessage()` callback is simply defined using the React [useCallback()](https://reactjs.org/docs/hooks-reference.html#usecallback) hook, and it is later passed to the `createdMessage`'s `Form()` view so the message can be saved when the user clicks the "Submit" button.
 

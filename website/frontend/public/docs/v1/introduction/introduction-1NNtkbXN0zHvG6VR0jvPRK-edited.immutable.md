@@ -63,15 +63,3 @@ Any mobile or desktop application framework using JavaScript (such as [React Nat
 ##### Backend
 
 Any environment running [Node.js](https://nodejs.org/) v10 or later is supported.
-
-#### Examples
-
-All the examples provided in the documentation are available in the [Layr repository](https://github.com/layrjs/layr/tree/master/examples).
-
-Also, here are some more advanced examples that you can check out:
-
-- [CRUD Example App (JS)](https://github.com/layrjs/crud-example-app-js-webpack)
-- [CRUD Example App (TS)](https://github.com/layrjs/crud-example-app-ts-webpack)
-- [CRUD Example App (React Native)](https://github.com/layrjs/crud-example-app-react-native-js)
-- [RealWorld Example App (JS)](https://github.com/layrjs/react-layr-realworld-example-app)
-- [Layr Website (TS)](https://github.com/layrjs/layr/tree/master/website)

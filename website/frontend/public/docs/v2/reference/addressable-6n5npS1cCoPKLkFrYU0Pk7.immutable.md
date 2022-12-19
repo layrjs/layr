@@ -13,7 +13,7 @@ An addressable is composed of:
 
 Typically, you create a `Route` or a `Wrapper` and associate it to a routable component by using the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorators.
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
 
 #### Creation
 

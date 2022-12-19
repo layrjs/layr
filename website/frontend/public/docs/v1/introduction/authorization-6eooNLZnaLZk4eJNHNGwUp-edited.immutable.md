@@ -2,7 +2,7 @@
 
 In the [previous guide](https://layrjs.com/docs/v1/introduction/routing), we added a feature to our "Guestbook" application so that the user can edit an existing message. We have a problem though. Currently, anyone can edit any message of the guestbook, and that's certainly not what we want. The ability to edit any message should be restricted to the administrator of the guestbook. So, how can we implement this restriction?
 
-> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-with-authorization-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-with-authorization-ts)<!-- </if> -->.
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-web-with-authorization-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-web-with-authorization-ts)<!-- </if> -->.
 
 #### Preparing the Project
 

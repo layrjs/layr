@@ -8,8 +8,6 @@ A [`Navigator`](https://layrjs.com/docs/v2/reference/navigator) that keeps the n
 
 Create a `MemoryNavigator` instance and register some [routable components](https://layrjs.com/docs/v2/reference/routable#routable-component-class) into it.
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
-
 #### Creation
 
 ##### `new MemoryNavigator([options])` <badge type="secondary">constructor</badge> {#constructor}

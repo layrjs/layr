@@ -13,26 +13,6 @@
           "title": "Hello, World!",
           "slug": "hello-world",
           "file": "introduction/hello-world.md"
-        },
-        {
-          "title": "Storing Data",
-          "slug": "data-storage",
-          "file": "introduction/data-storage.md"
-        },
-        {
-          "title": "Building a Web App",
-          "slug": "web-app",
-          "file": "introduction/web-app.md"
-        },
-        {
-          "title": "Bringing Some Routes",
-          "slug": "routing",
-          "file": "introduction/routing.md"
-        },
-        {
-          "title": "Handling Authorization",
-          "slug": "authorization",
-          "file": "introduction/authorization.md"
         }
       ]
     },

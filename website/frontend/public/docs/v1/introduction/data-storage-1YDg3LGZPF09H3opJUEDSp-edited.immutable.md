@@ -6,7 +6,7 @@ This time we're going to build a simple "Guestbook" application, which allows to
 
 As with the ["Hello, World!"](https://layrjs.com/docs/v1/introduction/hello-world) application, we will implement a CLI frontend to make things easier. You'll see in the [next guide](https://layrjs.com/docs/v1/introduction/web-app) how to implement a web frontend.
 
-> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-cli-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-cli-ts)<!-- </if> -->.
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-cli-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-cli-ts)<!-- </if> -->.
 
 #### Creating the Project
 

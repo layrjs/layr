@@ -8,7 +8,7 @@ Call `Routable()` with a [`Component`](https://layrjs.com/docs/v2/reference/comp
 
 Then, you can define some routes or wrappers into this class by using the [`@route()`](https://layrjs.com/docs/v2/reference/routable#route-decorator) or [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) decorators.
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
 
 ### RoutableComponent <badge type="primary">class</badge> {#routable-component-class}
 
@@ -240,7 +240,7 @@ Lastly, if the defined `route` is controlled by a [`navigator`](https://layrjs.c
 
 **Example:**
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
 ##### `@wrapper(pattern, [options])` <badge type="tertiary">decorator</badge> {#wrapper-decorator}
 
 Defines a [wrapper](https://layrjs.com/docs/v2/reference/wrapper) for a static or instance method in a [routable component](https://layrjs.com/docs/v2/reference/routable#routable-component-class).
@@ -252,7 +252,7 @@ Defines a [wrapper](https://layrjs.com/docs/v2/reference/wrapper) for a static o
 
 **Example:**
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
 #### Utilities
 
 ##### `isRoutableClass(value)` <badge type="tertiary-outline">function</badge> {#is-routable-class-function}

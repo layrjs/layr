@@ -9,7 +9,7 @@ But now, we're going to add a new page that will allow the user to edit an exist
 
 Let's see how to achieve that with Layr.
 
-> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-with-routes-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/guestbook-web-with-routes-ts)<!-- </if> -->.
+> TLDR: The completed project is available in the <!-- <if language="js"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-web-with-routes-js)<!-- </if> --><!-- <if language="ts"> -->[Layr repository](https://github.com/layrjs/layr/tree/master/examples/v1/guestbook-web-with-routes-ts)<!-- </if> -->.
 
 #### Preparing the Project
 

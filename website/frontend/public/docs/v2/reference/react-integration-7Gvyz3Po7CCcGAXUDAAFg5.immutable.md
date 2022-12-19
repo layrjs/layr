@@ -1,6 +1,6 @@
 ### react-integration <badge type="primary">module</badge> {#react-integration-module}
 
-Provides some React components, decorators, and hooks to simplify the use of [React](https://reactjs.org/) inside a Layr app.
+Provides some React components, hooks, and decorators to simplify the use of [React](https://reactjs.org/) inside a Layr app.
 
 #### React Components
 
@@ -17,6 +17,9 @@ The main point of this component is to provide the default behavior of high-leve
 - `useData()` will render `null` while the `getter()` function is running, and, in the case an error is thrown, a `<div>` containing an error message will be rendered.
 - `useAction()` will prevent the user from interacting with any UI element in the browser page while the `handler()` function is running, and, in the case an error is thrown, the browser's `alert()` function will be called to display the error message.
 
+**Example:**
+
+See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
 ##### `BrowserNavigatorView(props)` <badge type="tertiary-outline">react component</badge> {#browser-navigator-view-react-component}
 
 A React component providing a [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator#browser-navigator-class) to your app.
@@ -32,7 +35,83 @@ Note that if you use [Boostr](https://boostr.dev/) to manage your app developmen
 
 **Example:**
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+```
+// JS
+
+import React, {Fragment} from 'react';
+import ReactDOM from 'react-dom';
+import {Component} from '@layr/component';
+import {Routable} from '@layr/routable';
+import {BrowserRootView, BrowserNavigatorView, layout, page} from '@layr/react-integration';
+
+class Application extends Routable(Component) {
+  // `@layout('/')` is a shortcut for `@wrapper('/') @view()`
+  @layout('/') static MainLayout({children}) {
+    return (
+      <>
+        <this.HomePage.Link>
+          <h1>My App</h1>
+        </this.HomePage.Link>
+
+        {children()} // Renders the subcomponents using this layout
+      </>
+    );
+  }
+
+  // `@page('[/]')` is a shortcut for `@route('[/]') @view()`
+  @page('[/]') static HomePage() {
+    return <p>Hello, World!</p>;
+  }
+}
+
+// Note that you don't need the following code when you use Boostr
+ReactDOM.render(
+  <BrowserRootView>
+    <BrowserNavigatorView rootComponent={Application} />
+  </BrowserRootView>,
+  // Your `index.html` page should contain `<div id="root"></div>`
+  document.getElementById('root')
+);
+```
+```
+// TS
+
+import React, {Fragment} from 'react';
+import ReactDOM from 'react-dom';
+import {Component} from '@layr/component';
+import {Routable} from '@layr/routable';
+import {BrowserRootView, BrowserNavigatorView, layout, page} from '@layr/react-integration';
+
+class Application extends Routable(Component) {
+  // `@layout('/')` is a shortcut for `@wrapper('/') @view()`
+  @layout('/') static MainLayout({children}: {children: () => any}) {
+    return (
+      <>
+        <this.HomePage.Link>
+          <h1>My App</h1>
+        </this.HomePage.Link>
+
+        {children()} // Renders the subcomponents using this layout
+      </>
+    );
+  }
+
+  // `@page('[/]')` is a shortcut for `@route('[/]') @view()`
+  @page('[/]') static HomePage() {
+    return <p>Hello, World!</p>;
+  }
+}
+
+// Note that you don't need the following code when you use Boostr
+ReactDOM.render(
+  <BrowserRootView>
+    <BrowserNavigatorView rootComponent={Application} />
+  </BrowserRootView>,
+  // Your `index.html` page should contain `<div id="root"></div>`
+  document.getElementById('root')
+);
+```
+
 ##### `Customizer([props])` <badge type="tertiary-outline">react component</badge> {#customizer-react-component}
 
 A React component allowing you to customize the behavior of high-level hooks such as [`useData()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) or [`useAction()`](https://layrjs.com/docs/v2/reference/react-integration#use-action-react-hook).
@@ -134,17 +213,16 @@ A React element (or `null`).
 
 ```
 import {Component} from '@layr/component';
-import {Storable} from '@layr/storable';
 import React from 'react';
 import {view, useData} from '@layr/react-integration';
 
-class Article extends Storable(Component) {
+class Article extends Component {
   // ...
 
   @view() static List() {
     return useData(
       async () => {
-        return await this.find();
+        // Return some articles from the backend
       },
 
       (articles) => {
@@ -182,16 +260,15 @@ An asynchronous function wrapping the specified `handler()`.
 
 ```
 import {Component} from '@layr/component';
-import {Storable} from '@layr/storable';
 import React from 'react';
 import {view, useAction} from '@layr/react-integration';
 
-class Article extends Storable(Component) {
+class Article extends Component {
   // ...
 
   @view() EditView() {
     const save = useAction(async () => {
-      await this.save();
+      // Save the edited article to the backend
     });
 
     return (
@@ -296,7 +373,7 @@ Typically, you should use this decorator to implement the pages of your app.
 
 **Example:**
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
 ##### `@layout(pattern, [options])` <badge type="tertiary">decorator</badge> {#layout-decorator}
 
 A convenience decorator that combines the [`@wrapper()`](https://layrjs.com/docs/v2/reference/routable#wrapper-decorator) and [`@view()`](https://layrjs.com/docs/v2/reference/react-integration#view-decorator) decorators.
@@ -310,7 +387,7 @@ Typically, you should use this decorator to implement the layouts of your app.
 
 **Example:**
 
-See an example of use in the [`BrowserNavigator`](https://layrjs.com/docs/v2/reference/browser-navigator) class.
+See an example of use in the [`BrowserNavigatorView`](https://layrjs.com/docs/v2/reference/react-integration#browser-navigator-view-react-component) React component.
 #### Low-Level Hooks
 
 ##### `useAsyncCallback(asyncCallback, [dependencies])` <badge type="tertiary-outline">react hook</badge> {#use-async-callback-react-hook}
@@ -372,17 +449,16 @@ An array of the shape `[memoizedResult, isExecuting, error, recompute]` where `m
 
 ```
 import {Component} from '@layr/component';
-import {Storable} from '@layr/storable';
 import React from 'react';
 import {view, useAsyncMemo} from '@layr/react-integration';
 
-class Article extends Storable(Component) {
+class Article extends Component {
   // ...
 
   @view() static List() {
     const [articles, isLoading, loadingError, retryLoading] = useAsyncMemo(
       async () => {
-        return await this.find();
+        // Return some articles from the backend
       }
     );
 
@@ -427,22 +503,21 @@ An array of the shape `[memoizedResult, recompute]` where `memoizedResult` is th
 
 ```
 import {Component, provide} from '@layr/component';
-import {Storable} from '@layr/storable';
 import React, {useCallback} from 'react';
 import {view, useRecomputableMemo} from '@layr/react-integration';
 
-class Article extends Storable(Component) {
+class Article extends Component {
   // ...
 }
 
 class Blog extends Component {
   @provide() static Article = Article;
 
-  @view() static ArticleCreator() {
+  @view() static CreateArticleView() {
     const [article, resetArticle] = useRecomputableMemo(() => new Article());
 
     const createArticle = useCallback(async () => {
-      await article.save();
+      // Save the created article to the backend
       resetArticle();
     }, [article]);
 
@@ -476,11 +551,10 @@ An array of the shape `[isExecuting, error, recall]` where `isExecuting` is a bo
 // JS
 
 import {Component, provide, attribute} from '@layr/component';
-import {Storable} from '@layr/storable';
 import React from 'react';
 import {view, useAsyncCall} from '@layr/react-integration';
 
-class Article extends Storable(Component) {
+class Article extends Component {
   // ...
 }
 
@@ -519,11 +593,10 @@ class Blog extends Component {
 // TS
 
 import {Component, provide, attribute} from '@layr/component';
-import {Storable} from '@layr/storable';
 import React from 'react';
 import {view, useAsyncCall} from '@layr/react-integration';
 
-class Article extends Storable(Component) {
+class Article extends Component {
   // ...
 }
 
