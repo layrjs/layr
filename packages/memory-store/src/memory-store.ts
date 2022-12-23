@@ -27,7 +27,7 @@ type CollectionMap = {[name: string]: Collection};
 /**
  * *Inherits from [`Store`](https://layrjs.com/docs/v2/reference/store).*
  *
- * A [`Store`](https://layrjs.com/docs/v2/reference/store) that uses the memory to "persist" its registered [storable components](https://layrjs.com/docs/v2/reference/storable#storable-component-class). Since the stored data is wiped off every time the execution environment is restarted, a `MemoryStore` shouldn't be used for a real application.
+ * A [`Store`](https://layrjs.com/docs/v2/reference/store) that uses the memory to "persist" its registered [storable components](https://layrjs.com/docs/v2/reference/storable#storable-component-class). Since the stored data is wiped off every time the execution environment is restarted, a `MemoryStore` shouldn't be used for a real app.
  *
  * #### Usage
  *

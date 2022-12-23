@@ -2,11 +2,11 @@
 
 *Inherits from [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class).*
 
-A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other by using the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) and [`@consume()`](https://layrjs.com/docs/v2/reference/component#consume-decorator) decorators.
+A component is an elementary building block allowing you to define your data models and implement the business logic of your app. Typically, an app is composed of several components that are connected to each other by using the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) and [`@consume()`](https://layrjs.com/docs/v2/reference/component#consume-decorator) decorators.
 
 #### Usage
 
-Just extend the `Component` class to define a component with some attributes and methods that are specific to your application.
+Just extend the `Component` class to define a component with some attributes and methods that are specific to your app.
 
 For example, a `Movie` component with a `title` attribute and a `play()` method could be defined as follows:
 
@@ -183,9 +183,9 @@ If the current class has an `initializer()` static method, it is invoked, and if
 
 Note that your `initializer()` methods can be asynchronous, and therefore you should call the `initialize()` method with `await`.
 
-Typically, you will call the `initialize()` method on the root component of your frontend application when your application starts. Backend applications are usually managed by a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server), which automatically invokes the `initialize()` method on the root component.
+Typically, you will call the `initialize()` method on the root component of your frontend service when your app starts. Backend services are usually managed by a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server), which automatically invokes the `initialize()` method on the root component.
 
-Note that if you use [Boostr](https://boostr.dev) to manage your frontend application, you should not call the `initialize()` method manually.
+Note that if you use [Boostr](https://boostr.dev) to manage your frontend service, you should not call the `initialize()` method manually.
 
 #### Naming
 
@@ -1892,7 +1892,7 @@ Deserializes any type of serialized values including objects, arrays, dates, and
 
 * `value`: A serialized value.
 * `options`:
-  * `rootComponent`: The root component of your application.
+  * `rootComponent`: The root component of your app.
   * `attributeFilter`: A (possibly async) function used to filter the component attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
   * `source`: The source of the serialization (default: `'local'`).
 

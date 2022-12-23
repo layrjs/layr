@@ -1,6 +1,6 @@
 {
   "name": "@layr/storable",
-  "version": "2.0.71",
+  "version": "2.0.72",
   "description": "A mixin providing persistence capabilities to Layr components",
   "keywords": [
     "layr",
@@ -31,7 +31,7 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.48",
+    "@layr/component": "^2.0.49",
     "core-helpers": "^1.0.5",
     "lodash": "^4.17.21",
     "tslib": "^2.4.1"

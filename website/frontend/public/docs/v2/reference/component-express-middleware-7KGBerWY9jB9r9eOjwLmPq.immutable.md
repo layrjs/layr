@@ -4,7 +4,7 @@ An [Express](https://expressjs.com/) middleware allowing to serve a root [`Compo
 
 #### Usage
 
-Call the [`serveComponent()`](https://layrjs.com/docs/v2/reference/component-express-middleware#serve-component-function) function to create a middleware for your Express application.
+Call the [`serveComponent()`](https://layrjs.com/docs/v2/reference/component-express-middleware#serve-component-function) function to create a middleware for your Express app.
 
 **Example:**
 

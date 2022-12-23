@@ -4,7 +4,7 @@ A [Koa](https://koajs.com/) middleware allowing to serve a root [`Component`](ht
 
 #### Usage
 
-Call the [`serveComponent()`](https://layrjs.com/docs/v2/reference/component-koa-middleware#serve-component-function) function to create a middleware for your Koa application.
+Call the [`serveComponent()`](https://layrjs.com/docs/v2/reference/component-koa-middleware#serve-component-function) function to create a middleware for your Koa app.
 
 **Example:**
 

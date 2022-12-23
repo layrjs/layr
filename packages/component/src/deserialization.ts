@@ -23,7 +23,7 @@ export type DeserializeOptions = SimpleDeserializeOptions & {
  * Deserializes any type of serialized values including objects, arrays, dates, and components.
  *
  * @param value A serialized value.
- * @param [options.rootComponent] The root component of your application.
+ * @param [options.rootComponent] The root component of your app.
  * @param [options.attributeFilter] A (possibly async) function used to filter the component attributes to be deserialized. The function is invoked for each attribute with an [`Attribute`](https://layrjs.com/docs/v2/reference/attribute) instance as first argument.
  * @param [options.source] The source of the serialization (default: `'local'`).
  *

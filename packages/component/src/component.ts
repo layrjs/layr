@@ -120,11 +120,11 @@ type IntrospectedComponentMap = Map<typeof Component, IntrospectedComponent | un
 /**
  * *Inherits from [`Observable`](https://layrjs.com/docs/v2/reference/observable#observable-class).*
  *
- * A component is an elementary building block allowing you to define your data models and implement the business logic of your application. Typically, an application is composed of several components that are connected to each other by using the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) and [`@consume()`](https://layrjs.com/docs/v2/reference/component#consume-decorator) decorators.
+ * A component is an elementary building block allowing you to define your data models and implement the business logic of your app. Typically, an app is composed of several components that are connected to each other by using the [`@provide()`](https://layrjs.com/docs/v2/reference/component#provide-decorator) and [`@consume()`](https://layrjs.com/docs/v2/reference/component#consume-decorator) decorators.
  *
  * #### Usage
  *
- * Just extend the `Component` class to define a component with some attributes and methods that are specific to your application.
+ * Just extend the `Component` class to define a component with some attributes and methods that are specific to your app.
  *
  * For example, a `Movie` component with a `title` attribute and a `play()` method could be defined as follows:
  *
@@ -371,9 +371,9 @@ export class Component extends Observable(Object) {
    *
    * Note that your `initializer()` methods can be asynchronous, and therefore you should call the `initialize()` method with `await`.
    *
-   * Typically, you will call the `initialize()` method on the root component of your frontend application when your application starts. Backend applications are usually managed by a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server), which automatically invokes the `initialize()` method on the root component.
+   * Typically, you will call the `initialize()` method on the root component of your frontend service when your app starts. Backend services are usually managed by a [`ComponentServer`](https://layrjs.com/docs/v2/reference/component-server), which automatically invokes the `initialize()` method on the root component.
    *
-   * Note that if you use [Boostr](https://boostr.dev) to manage your frontend application, you should not call the `initialize()` method manually.
+   * Note that if you use [Boostr](https://boostr.dev) to manage your frontend service, you should not call the `initialize()` method manually.
    *
    * @category Initialization
    * @possiblyasync
@@ -994,7 +994,7 @@ export class Component extends Observable(Object) {
   getPropertyNames() {
     const names = [];
 
-    let currentObject: {__properties: any} = (this as unknown) as {__properties: any};
+    let currentObject: {__properties: any} = this as unknown as {__properties: any};
     while ('__properties' in currentObject) {
       if (hasOwnProperty(currentObject, '__properties')) {
         const currentNames = Object.getOwnPropertyNames(currentObject.__properties);

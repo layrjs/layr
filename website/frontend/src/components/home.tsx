@@ -245,8 +245,8 @@ export class Home extends Routable(Component) {
                 color: theme.colors.text.muted
               })}
             >
-              Inherit your frontend from your backend and build an application as if it were made of
-              a single layer.
+              Inherit your frontend from your backend and build an app as if it were made of
+              a single layer.
             </div>
             <Button
               onClick={() => {
@@ -316,7 +316,7 @@ export class Home extends Routable(Component) {
       <FeatureSection
         title="Abstracted Away Database"
         description={
-          "Extend your classes with the [`Storable()`](/docs/v1/reference/storable) mixin, register them into a [store](/docs/v1/reference/store), and you're ready to build your application without having to worry about the database."
+          "Extend your classes with the [`Storable()`](/docs/v1/reference/storable) mixin, register them into a [store](/docs/v1/reference/store), and you're ready to build your app without having to worry about the database."
         }
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
@@ -338,7 +338,7 @@ export class Home extends Routable(Component) {
       <FeatureSection
         title="Encapsulated User Interface"
         description={
-          'Implement your [routes](/docs/v1/reference/routable) and [views](/docs/v1/reference/react-integration#view-decorator) as methods of your models, and keep your application as cohesive as possible.'
+          'Implement your [routes](/docs/v1/reference/routable) and [views](/docs/v1/reference/react-integration#view-decorator) as methods of your models, and keep your app as cohesive as possible.'
         }
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
@@ -356,7 +356,7 @@ export class Home extends Routable(Component) {
       <FeatureSection
         title="Delightful Developer Experience"
         description={
-          'Layr strives to find the right balance between powerful abstractions and ease of use so that you can build an application in the most enjoyable way possible.'
+          'Layr strives to find the right balance between powerful abstractions and ease of use so that you can build an app in the most enjoyable way possible.'
         }
       >
         <Button

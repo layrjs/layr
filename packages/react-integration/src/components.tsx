@@ -31,7 +31,7 @@ export function BrowserRootView({
   const previousCustomization = useContext(CustomizationContext);
 
   if (previousCustomization !== undefined) {
-    throw new Error("An application shouldn't have more than one RootView");
+    throw new Error("An app shouldn't have more than one RootView");
   }
 
   const actionView = useRef<BrowserActionView>(null);

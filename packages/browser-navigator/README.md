@@ -1,6 +1,6 @@
 # @layr/browser-navigator
 
-Provides a navigation system for a Layr application running in a browser.
+Provides a navigation system for a Layr app running in a browser.
 
 ## Installation
 

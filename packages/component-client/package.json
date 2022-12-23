@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-client",
-  "version": "2.0.81",
+  "version": "2.0.83",
   "description": "Consumes Layr components served by @layr/component-server",
   "keywords": [
     "layr",
@@ -26,8 +26,8 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.48",
-    "@layr/component-server": "^2.0.66",
+    "@layr/component": "^2.0.49",
+    "@layr/component-server": "^2.0.67",
     "core-helpers": "^1.0.5",
     "debug": "^4.3.4",
     "lodash": "^4.17.21",

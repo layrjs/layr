@@ -12,7 +12,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  *
  * A `Component` can have only one `PrimaryIdentifierAttribute`. To define a `Component` with more than one identifier, you can add some [`SecondaryIdentifierAttribute`](https://layrjs.com/docs/v2/reference/secondary-identifier-attribute) in addition to the `PrimaryIdentifierAttribute`.
  *
- * Another characteristic of a `PrimaryIdentifierAttribute` is that its value is immutable (i.e., once set it cannot change). This ensures a stable identity of the components across the different layers of an application (e.g., frontend, backend, and database).
+ * Another characteristic of a `PrimaryIdentifierAttribute` is that its value is immutable (i.e., once set it cannot change). This ensures a stable identity of the components across the different layers of an app (e.g., frontend, backend, and database).
  *
  * When a `Component` has a `PrimaryIdentifierAttribute`, its instances are managed by an [`IdentityMap`](https://layrjs.com/docs/v2/reference/identity-map) ensuring that there can only be one instance with a specific identifier.
  *
@@ -20,7 +20,7 @@ import {isComponentInstance, ensureComponentClass} from '../utilities';
  *
  * Typically, you create a `PrimaryIdentifierAttribute` and associate it to a component prototype using the [`@primaryIdentifier()`](https://layrjs.com/docs/v2/reference/component#primary-identifier-decorator) decorator.
  *
- * For example, here is how you would define a `Movie` class with an `id` primary identifer attribute:
+ * For example, here is how you would define a `Movie` class with an `id` primary identifier attribute:
  *
  * ```
  * // JS
