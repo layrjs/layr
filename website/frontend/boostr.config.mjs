@@ -1,4 +1,4 @@
-export default ({application, services}) => ({
+export default ({services}) => ({
   type: 'web-frontend',
 
   dependsOn: 'backend',
@@ -12,9 +12,9 @@ export default ({application, services}) => ({
   html: {
     language: 'en',
     head: {
-      title: application.name,
+      title: services.frontend.environment.APPLICATION_NAME,
       metas: [
-        {name: 'description', content: application.description},
+        {name: 'description', content: services.frontend.environment.APPLICATION_DESCRIPTION},
         {charset: 'utf-8'},
         {name: 'viewport', content: 'width=device-width, initial-scale=1'},
         {'http-equiv': 'x-ua-compatible', 'content': 'ie=edge'}
