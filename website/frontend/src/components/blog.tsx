@@ -10,7 +10,7 @@ import type {extendArticle} from './article';
 import {Title} from '../ui';
 
 export class Blog extends Routable(Component) {
-  ['constructor']!: typeof Blog;
+  declare ['constructor']: typeof Blog;
 
   @consume() static User: ReturnType<typeof extendUser>;
   @consume() static Home: typeof Home;

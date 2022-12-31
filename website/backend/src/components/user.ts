@@ -16,7 +16,7 @@ const {rangeLength} = validators;
 
 @expose({get: {call: true}, prototype: {load: {call: true}, save: {call: 'self'}}})
 export class User extends Entity {
-  ['constructor']!: typeof User;
+  declare ['constructor']: typeof User;
 
   @expose({get: 'self', set: ['creator', 'self']})
   @secondaryIdentifier('string', {

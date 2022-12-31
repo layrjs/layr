@@ -15,7 +15,7 @@ import {Markdown} from '../markdown';
 
 export const extendArticle = (Base: typeof BackendArticle) => {
   class Article extends Routable(Base) {
-    ['constructor']!: typeof Article;
+    declare ['constructor']: typeof Article;
 
     @consume() static User: ReturnType<typeof extendUser>;
     @consume() static Home: typeof Home;

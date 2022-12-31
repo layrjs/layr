@@ -13,7 +13,7 @@ import {Title} from '../ui';
 
 export const extendUser = (Base: typeof BackendUser) => {
   class User extends Routable(Base) {
-    ['constructor']!: typeof User;
+    declare ['constructor']: typeof User;
 
     @consume() static Home: typeof Home;
 

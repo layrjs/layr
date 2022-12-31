@@ -54,7 +54,7 @@ type Category = {
 };
 
 export class Docs extends Routable(Component) {
-  ['constructor']!: typeof Docs;
+  declare ['constructor']: typeof Docs;
 
   @consume() static Application: ReturnType<typeof extendApplication>;
 

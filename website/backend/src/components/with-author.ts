@@ -7,7 +7,7 @@ import type {User} from './user';
 
 export const WithAuthor = (Base: typeof Entity) => {
   class WithAuthor extends Base {
-    ['constructor']!: typeof WithAuthor;
+    declare ['constructor']: typeof WithAuthor;
 
     @expose({get: true, set: 'author'}) @attribute('User') author!: User;
 
