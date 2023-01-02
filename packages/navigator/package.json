@@ -1,6 +1,6 @@
 {
   "name": "@layr/navigator",
-  "version": "2.0.52",
+  "version": "2.0.55",
   "description": "A base class for implementing Layr navigators",
   "keywords": [
     "layr",
@@ -28,17 +28,17 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.49",
-    "@layr/observable": "^1.0.15",
-    "core-helpers": "^1.0.5",
-    "possibly-async": "^1.0.6",
+    "@layr/component": "^2.0.51",
+    "@layr/observable": "^1.0.16",
+    "core-helpers": "^1.0.8",
+    "possibly-async": "^1.0.7",
     "qs": "^6.11.0",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.2.1",
+    "@mvila/dev-tools": "^1.3.1",
     "@mvila/tsconfig": "^1.0.6",
-    "@types/jest": "^29.2.4",
+    "@types/jest": "^29.2.5",
     "@types/qs": "^6.9.7"
   }
 }
