@@ -294,7 +294,18 @@
             {
               "title": "Hello, World!",
               "slug": "hello-world",
-              "file": "introduction/hello-world-MVHS9o4wjiI7pHeSOQ0zz.immutable.md"
+              "file": "introduction/hello-world-1SUYiTzJLhwdD69Pd3iAuG.immutable.md"
+            }
+          ]
+        },
+        {
+          "title": "Guides",
+          "slug": "guides",
+          "chapters": [
+            {
+              "title": "Coming Soon",
+              "slug": "coming-soon",
+              "file": "guides/coming-soon-4oktisepDsJpcIFZ0umYpz.immutable.md"
             }
           ]
         },

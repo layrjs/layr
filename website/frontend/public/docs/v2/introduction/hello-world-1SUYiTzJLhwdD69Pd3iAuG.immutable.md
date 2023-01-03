@@ -1,6 +1,6 @@
 ### Hello, World!
 
-Let's start our journey into Layr by implementing the mandatory ["Hello, World!"](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) program, and let's make it object-oriented and full-stack!
+Let's start our journey into Layr by implementing the mandatory ["Hello, World!"](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) app, and let's make it object-oriented and full-stack!
 
 > Layr supports both [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) and [TypeScript](https://www.typescriptlang.org/). To select your language of choice, use the drop-down menu on the left.
 
