@@ -2,6 +2,7 @@
 *.log
 node_modules
 .npmrc
+package-lock.json
 dist
 build
 _private
