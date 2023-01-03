@@ -17,6 +17,17 @@
       ]
     },
     {
+      "title": "Concepts",
+      "slug": "concepts",
+      "chapters": [
+        {
+          "title": "Coming Soon",
+          "slug": "coming-soon",
+          "file": "concepts/coming-soon.md"
+        }
+      ]
+    },
+    {
       "title": "Guides",
       "slug": "guides",
       "chapters": [

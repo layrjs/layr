@@ -299,6 +299,17 @@
           ]
         },
         {
+          "title": "Concepts",
+          "slug": "concepts",
+          "chapters": [
+            {
+              "title": "Coming Soon",
+              "slug": "coming-soon",
+              "file": "concepts/coming-soon-2g2TLLaMm4NCbL1qxcLnOD.immutable.md"
+            }
+          ]
+        },
+        {
           "title": "Guides",
           "slug": "guides",
           "chapters": [
