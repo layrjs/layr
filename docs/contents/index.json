@@ -13,6 +13,11 @@
           "title": "Hello, World!",
           "slug": "hello-world",
           "file": "introduction/hello-world.md"
+        },
+        {
+          "title": "CRUD App",
+          "slug": "crud-app",
+          "file": "introduction/crud-app.md"
         }
       ]
     },

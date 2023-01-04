@@ -1,14 +1,8 @@
-### Concepts
+### CRUD App
 
 #### Coming Soon
 
-This section will introduce the basic concepts of Layr, such as:
-
-- Components
-- Controlled attributes and methods
-- Cross-layer inheritance
-- Storage
-- Routes and wrappers
+This page will document how to build a simple CRUD app with Layr.
 
 Unfortunately, writing documentation takes a lot of time, and the Layr project is currently handled by a [single person](https://mvila.me) who has to work for customers to make a living and is also starting a new ambitious project, which will be based on Layr.
 
@@ -18,4 +12,4 @@ If you cannot wait and feel adventurous, you can figure out how to build an app 
 
 - The ["Hello, World!"](https://layrjs.com/docs/v2/introduction/hello-world) introductory app.
 - The pretty exhaustive ["Reference"](https://layrjs.com/docs/v2/reference) section.
-- Some [examples](https://layrjs.com/docs/v2/introduction/introduction#examples) of simple full-stack apps built with Layr.
+- Some [examples](https://layrjs.com/docs/v2/introduction/introduction#examples) of simple full-stack apps _(including a CRUD app)_ built with Layr.

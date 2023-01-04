@@ -1,4 +1,6 @@
-### Coming Soon
+### Concepts
+
+#### Coming Soon
 
 This section will introduce the basic concepts of Layr, such as:
 
@@ -8,9 +10,9 @@ This section will introduce the basic concepts of Layr, such as:
 - Storage
 - Routes and wrappers
 
-However, writing documentation takes time, and the Layr project is currently developed by a [single person](https://mvila.me) who has to work for customers to make a living and is also starting a new ambitious project, which will be based on Layr.
+Unfortunately, writing documentation takes a lot of time, and the Layr project is currently handled by a [single person](https://mvila.me) who has to work for customers to make a living and is also starting a new ambitious project, which will be based on Layr.
 
-So, more documentation will come for sure, but please be patient.
+More documentation will come for sure, but please be patient.
 
 If you cannot wait and feel adventurous, you can figure out how to build an app with Layr by checking out:
 

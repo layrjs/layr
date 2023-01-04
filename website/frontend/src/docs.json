@@ -295,6 +295,11 @@
               "title": "Hello, World!",
               "slug": "hello-world",
               "file": "introduction/hello-world-1SUYiTzJLhwdD69Pd3iAuG.immutable.md"
+            },
+            {
+              "title": "CRUD App",
+              "slug": "crud-app",
+              "file": "introduction/crud-app-16TEU3YROuIbeRH9iOHHTc.immutable.md"
             }
           ]
         },
@@ -305,7 +310,7 @@
             {
               "title": "Coming Soon",
               "slug": "coming-soon",
-              "file": "concepts/coming-soon-2g2TLLaMm4NCbL1qxcLnOD.immutable.md"
+              "file": "concepts/coming-soon-59Ph8DxvBwkp9tgnMTuAXC.immutable.md"
             }
           ]
         },
@@ -316,7 +321,7 @@
             {
               "title": "Coming Soon",
               "slug": "coming-soon",
-              "file": "guides/coming-soon-4oktisepDsJpcIFZ0umYpz.immutable.md"
+              "file": "guides/coming-soon-1t0j15b6vxyzJ7zm1DuopC.immutable.md"
             }
           ]
         },
