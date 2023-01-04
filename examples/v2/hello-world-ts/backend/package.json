@@ -1,0 +1,14 @@
+{
+  "name": "hello-world-ts-backend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@layr/component": "^2.0.0",
+    "@layr/mongodb-store": "^2.0.0",
+    "@layr/storable": "^2.0.0"
+  },
+  "devDependencies": {
+    "@boostr/tsconfig": "^1.0.0",
+    "@types/node": "^18.0.0"
+  }
+}

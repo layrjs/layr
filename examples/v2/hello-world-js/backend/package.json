@@ -1,0 +1,10 @@
+{
+  "name": "hello-world-js-backend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@layr/component": "^2.0.0",
+    "@layr/mongodb-store": "^2.0.0",
+    "@layr/storable": "^2.0.0"
+  }
+}

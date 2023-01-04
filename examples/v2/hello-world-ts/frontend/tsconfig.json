@@ -1,0 +1,4 @@
+{
+  "extends": "@boostr/tsconfig",
+  "include": ["src/**/*"]
+}

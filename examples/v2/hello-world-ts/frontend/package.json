@@ -1,0 +1,20 @@
+{
+  "name": "hello-world-ts-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@layr/component": "^2.0.0",
+    "@layr/component-http-client": "^2.0.0",
+    "@layr/react-integration": "^2.0.0",
+    "@layr/routable": "^2.0.0",
+    "@layr/storable": "^2.0.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  },
+  "devDependencies": {
+    "@boostr/tsconfig": "^1.0.0",
+    "@types/node": "^18.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0"
+  }
+}
