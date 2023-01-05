@@ -12,7 +12,8 @@
         {
           "title": "Hello, World!",
           "slug": "hello-world",
-          "file": "introduction/hello-world.md"
+          "file": "introduction/hello-world/hello-world.md",
+          "assets": "introduction/hello-world/assets"
         },
         {
           "title": "CRUD App",
