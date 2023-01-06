@@ -2,11 +2,11 @@
 
 #### Coming Soon
 
-This page will document how to build a simple CRUD app with Layr.
+This page will explain how to build a simple CRUD app with Layr.
 
-Unfortunately, writing documentation takes a lot of time, and the Layr project is currently handled by a [single person](https://mvila.me) who has to work for customers to make a living and is also starting a new ambitious project, which will be based on Layr.
+Unfortunately, writing tutorials takes a lot of time, and the Layr project is currently handled by a [single person](https://mvila.me) who has to work for customers to make a living and is also starting a new ambitious project, which will be based on Layr.
 
-More documentation will come for sure, but please be patient.
+This tutorial will come for sure, but please be patient.
 
 If you cannot wait and feel adventurous, you can figure out how to build an app with Layr by checking out:
 

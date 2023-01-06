@@ -211,7 +211,7 @@ If we put aside the [mixin mechanism](https://www.typescriptlang.org/docs/handbo
 
 `MainLayout()` implements a layout for all the pages of the app:
 
-- It is decorated with [`@layout('/')`](https://layrjs.com/docs/v2/reference/react-integration#layout-decorator), which makes the method acts as a layout and defines a path (`'/'`) for it.
+- It is decorated with [`@layout('/')`](https://layrjs.com/docs/v2/reference/react-integration#layout-decorator), which makes the method acts as a layout and defines an URL path (`'/'`) for it.
 - It renders the name of the app (using the `APPLICATION_NAME` [environment variable](https://github.com/boostrjs/boostr#environment-variables)) in an `<h1>` HTML tag, which is nested into a link pointing to the app's main page (using the [`<this.MainPage.Link>`](https://layrjs.com/docs/v2/reference/routable#route-decorator) React element).
 - It calls the `children` prop to render the content of the pages using this layout.
 
