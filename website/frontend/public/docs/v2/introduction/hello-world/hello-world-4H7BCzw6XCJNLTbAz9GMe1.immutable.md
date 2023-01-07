@@ -58,15 +58,15 @@ So, we will only focus on two files:
 
 <!-- <if language="js"> -->
 
-- `frontend/src/components/application.jsx`: The root component of the app frontend.
-- `backend/src/components/application.js`: The root component of the app backend.
+- `frontend/src/components/application.jsx`: The root [component](https://layrjs.com/docs/v2/reference/component) of the app frontend.
+- `backend/src/components/application.js`: The root [component](https://layrjs.com/docs/v2/reference/component) of the app backend.
 
 <!-- </if> -->
 
 <!-- <if language="ts"> -->
 
-- `frontend/src/components/application.tsx`: The root component of the app frontend.
-- `backend/src/components/application.ts`: The root component of the app backend.
+- `frontend/src/components/application.tsx`: The root [component](https://layrjs.com/docs/v2/reference/component) of the app frontend.
+- `backend/src/components/application.ts`: The root [component](https://layrjs.com/docs/v2/reference/component) of the app backend.
 
 <!-- </if> -->
 
@@ -109,7 +109,7 @@ When we bootstrapped the app with the Boostr `initialize` command, we got a mini
 
 ##### Frontend
 
-Here's what the initial frontend root component (`Application`) looks like:
+Here's what the initial frontend root [component](https://layrjs.com/docs/v2/reference/component) (`Application`) looks like:
 
 ```js
 // JS
@@ -207,7 +207,7 @@ export declare const Application: ReturnType<typeof extendApplication>;
 export type Application = InstanceType<typeof Application>;
 ```
 
-If we put aside the [mixin mechanism](https://www.typescriptlang.org/docs/handbook/mixins.html) that allows the frontend `Application` class to inherit from the backend `Application` class, we can see three class methods.
+If we put aside the [mixin mechanism](https://www.typescriptlang.org/docs/handbook/mixins.html) that allows the frontend `Application` component to "inherit" from the backend `Application` component, we can see three class methods.
 
 `MainLayout()` implements a layout for all the pages of the app:
 
@@ -217,15 +217,151 @@ If we put aside the [mixin mechanism](https://www.typescriptlang.org/docs/handbo
 
 `MainPage()` implements the main page of the app:
 
-- It is decorated with [`@page('[/]')`](https://layrjs.com/docs/v2/reference/react-integration#page-decorator), which makes the method acts as a page associated with the `'/'` URL path and specifies that the main layout (`'/'` encapsulated into square brackets `'[]'`) should be used.
+- It is decorated with [`@page('[/]')`](https://layrjs.com/docs/v2/reference/react-integration#page-decorator), which makes the method acts as a page associated with the `'/'` URL path and specifies that the main layout (`'/'` enclosed in square brackets `'[]'`) should be used.
 - It returns the result of the [`useData()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) React hook, which calls a backend method (with `await this.isHealthy()`) and renders its result (with `<p>The app is {isHealthy ? 'healthy' : 'unhealthy'}.</p>`).
 
 `NotFoundPage()` implements a page that is displayed when a user goes to an URL that is not handled by the app:
 
-- It is decorated with [`@page('[/]*')`](https://layrjs.com/docs/v2/reference/react-integration#page-decorator), which makes the method acts as a page associated with any unhandled URL path starting with `'/'` and specifies that the main layout (`'/'` encapsulated into square brackets `'[]'`) should be used.
-- It renders some simple HTML tags expressing that the page could not be found.
+- It is decorated with [`@page('[/]*')`](https://layrjs.com/docs/v2/reference/react-integration#page-decorator), which makes the method acts as a page associated with any unhandled URL path starting with `'/'` and specifies that the main layout (`'/'` enclosed in square brackets `'[]'`) should be used.
+- It renders some simple HTML tags and texts indicating that the page cannot be found.
 
 ##### Backend
+
+Here's what the initial backend root [component](https://layrjs.com/docs/v2/reference/component) (`Application`) looks like:
+
+```js
+// JS
+
+// backend/src/components/application.js
+
+import {Component, method, expose} from '@layr/component';
+
+export class Application extends Component {
+  @expose({call: true}) @method() static async isHealthy() {
+    return true;
+  }
+}
+```
+
+```ts
+// TS
+
+// backend/src/components/application.ts
+
+import {Component, method, expose} from '@layr/component';
+
+export class Application extends Component {
+  @expose({call: true}) @method() static async isHealthy() {
+    return true;
+  }
+}
+```
+
+This component is straightforward.
+
+`isHealthy()` implements a class method that the frontend can call to check whether the app is healthy:
+
+- It is decorated with [`@expose({call: true})`](https://layrjs.com/docs/v2/reference/component#expose-decorator), which exposes the method to the frontend.
+- It is also decorated with [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator), which is required so that the `@expose()` decorator can be used.
+- It always returns `true`, which is rather pointless. An actual `isHealthy()` method would, for example, check whether a database is accessible.
+
+#### Displaying "Hello, World!" in the Frontend
+
+It's about time to write some code.
+
+We'll start gently by modifying the frontend to display "Hello, World!" instead of "The app is healthy.".
+
+Modify the `MainPage()` class method in the <!-- <if language="js"> -->`frontend/src/components/application.jsx`<!-- </if> --><!-- <if language="ts"> -->`frontend/src/components/application.tsx`<!-- </if> --> file as follows:
+
+```ts
+@page('[/]') static MainPage() {
+  return <p>Hello, World!</p>;
+}
+```
+
+Save the file, and your browser should automatically refresh the page with the following contents:
+
+<p>
+	<img src="https://layrjs.com/docs/v2/introduction/hello-world/assets/screenshot-002.immutable.png" alt="Screenshot of the app displaying 'Hello, World!'" style="width: 100%; margin-top: .5rem">
+</p>
+
+#### Adding a Page in the Frontend
+
+So the frontend is now displaying "Hello, World!" and we could call it a day.
+
+But that was a bit too easy, don't you think?
+
+Let's spice this tutorial a little by adding a page in charge of displaying the "Hello, World!" message.
+
+Add the following class method in the <!-- <if language="js"> -->`frontend/src/components/application.jsx`<!-- </if> --><!-- <if language="ts"> -->`frontend/src/components/application.tsx`<!-- </if> --> file:
+
+```ts
+@page('[/]hello-world') static HelloWorldPage() {
+  return <p>Hello, World!</p>;
+}
+```
+
+That's it. The app just got a new page. You could view it by changing the URL path to `/hello-world` in your browser, but adding a link to the new page inside the main page would be better in terms of user experience.
+
+Let's do so by modifying the `MainPage()` class method as follows:
+
+```ts
+@page('[/]') static MainPage() {
+  return (
+    <p>
+      <this.HelloWorldPage.Link>
+        See the "Hello, World!" page
+      </this.HelloWorldPage.Link>
+    </p>
+  );
+}
+```
+
+Hold on. What's going on here? Is it how we create links with Layr? Where is the URL path (`'/hello-world'`) of the "Hello, World!" page? Well, in a Layr app, except in the `@page()` decorators, you should never encounter any URL path.
+
+We hope it doesn't sound too magical because it is not. Any method decorated with [`@page()`](https://layrjs.com/docs/v2/reference/react-integration#page-decorator) automatically gets some attached [shortcut functions](https://layrjs.com/docs/v2/reference/routable#route-decorator), such as `Link()`, which implements a React component rendering a `<a>` tag referencing the URL path of the page.
+
+Your browser should now display the following page:
+
+<p>
+	<img src="https://layrjs.com/docs/v2/introduction/hello-world/assets/screenshot-003.immutable.png" alt="Screenshot of the app displaying a link to the 'Hello, World!' page" style="width: 100%; margin-top: .5rem">
+</p>
+
+#### Getting the "Hello, World" Message from the Backend
+
+At the beginning of this tutorial, we promised to create a full-stack app, but currently, the backend is not involved, and everything happens in the frontend.
+
+Let's fix that by moving the "business logic" generating the "Hello, World!" message to the backend.
+
+First, add the following class method in the <!-- <if language="js"> -->`backend/src/components/application.js`<!-- </if> --><!-- <if language="ts"> -->`backend/src/components/application.ts`<!-- </if> --> file:
+
+```ts
+@expose({call: true}) @method() static async getHelloWorld() {
+  return 'Hello, World!';
+}
+```
+
+This method will be callable from the frontend (thanks to the [`@expose()`](https://layrjs.com/docs/v2/reference/component#expose-decorator) and [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator) decorators) and will return the `'Hello, World!'` string.
+
+> **Note**: Since the `isHealthy()` class method is not used anymore, you can remove it if you want.
+
+Then, modify the `HelloWorldPage()` class method in the <!-- <if language="js"> -->`frontend/src/components/application.jsx`<!-- </if> --><!-- <if language="ts"> -->`frontend/src/components/application.tsx`<!-- </if> --> file as follows:
+
+```ts
+@page('[/]hello-world') static HelloWorldPage() {
+  return useData(
+    async () => await this.getHelloWorld(),
+
+    (helloWorld) => <p>{helloWorld}</p>
+  );
+}
+```
+
+As seen in the initial [`MainPage()`](https://layrjs.com/docs/v2/introduction/hello-world#frontend) method, we use the [`useData()`](https://layrjs.com/docs/v2/reference/react-integration#use-data-react-hook) React hook to call a backend method (with `await this.getHelloWorld()`) and render its result (with `<p>{helloWorld}</p>`).
+
+If you refresh the "Hello, World!" page in your browser, you should not see any difference. However, if you inspect the network requests via the browser's developer tools, you should see that the `'Hello, World'` string displayed in the frontend comes from the backend.
+
+#### One Last Thing
 
 ```
 WIP

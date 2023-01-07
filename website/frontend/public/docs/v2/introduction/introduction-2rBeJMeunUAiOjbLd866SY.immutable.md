@@ -24,16 +24,18 @@ Layr provides everything you need to build a full-stack app from start to finish
 - **Routing**: A method can be [associated with an URL](https://layrjs.com/docs/v2/reference/routable) and controlled by a [navigator](https://layrjs.com/docs/v2/reference/navigator) so that this method is automatically called when the user navigates.
 - **Layouts**: A method can act as a [wrapper](https://layrjs.com/docs/v2/reference/wrapper) for other methods with a shared URL path prefix. This way, you can easily create [layouts](https://layrjs.com/docs/v2/reference/react-integration#layout-decorator) for your [pages](https://layrjs.com/docs/v2/reference/react-integration#page-decorator).
 - **Authorization**: [User-role-based](https://layrjs.com/docs/v2/reference/with-roles) authorizations can be set to restrict some attributes or methods.
-- **Interoperability**: The backend is automatically exposed through a [Deepr API](https://deepr.io), so you can consume it from any frontend even though it's not built with Layr. And if you want to bring a more standard API (e.g., REST) to your backend, it's straightforward to add such an API in your Layr backend.
 - **Integrations**: Integration helpers are provided to facilitate the integration of the most popular libraries or services. Currently, two integration helpers are available: [react-integration](https://layrjs.com/docs/v2/reference/react-integration) and [aws-integration](https://layrjs.com/docs/v2/reference/aws-integration). But more should come shortly.
+- **Interoperability**: The backend is automatically exposed through a [Deepr API](https://deepr.io), so you can consume it from any frontend even though it's not built with Layr. And if you want to bring a more standard API (e.g., REST) to your backend, it's straightforward to add such an API in your Layr backend.
 
 #### Core Principles
 
 Here's a quick taste of the core principles upon which Layr is built:
 
-- **Object-oriented**: Layr embraces the object-oriented approach in all aspects of an app and allows you to organize your code in a way that is as cohesive as possible.
-- **Low-level**: Layr is designed to be as closest as possible to the language, and it can be seen as a [language extension](https://layrjs.com/blog/articles/Getting-the-Right-Level-of-Generalization-7xpk37) in many ways.
-- **Unopinionated**: Layr has strong opinions about itself but doesn't force you to use external libraries, services, or tools.
+- **Object-oriented**: Layr embraces the object-oriented paradigm in all aspects of an app and allows you to organize your code in a way that is as cohesive as possible.
+- **End-to-end type safety**: When you use TypeScript, from the frontend to the database (which goes through the backend), every single piece of a Layr app can be type-safe.
+- **100% DRY**: A Layr app can be fully [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) (i.e., zero knowledge duplication).
+- **Low-level**: Layr is designed to be as closest to the language as possible and can be seen as a [language extension](https://layrjs.com/blog/articles/Getting-the-Right-Level-of-Generalization-7xpk37) in many ways.
+- **Unopinionated**: Layr has strong opinions about itself but doesn't force you to use any external library, service, or tool.
 
 #### Command-Line Interface
 
