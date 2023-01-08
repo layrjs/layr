@@ -294,12 +294,17 @@
             {
               "title": "Hello, World!",
               "slug": "hello-world",
-              "file": "introduction/hello-world/hello-world-4H7BCzw6XCJNLTbAz9GMe1.immutable.md"
+              "file": "introduction/hello-world/hello-world-7oxPP0zONRGlt1Xgj9SCEd.immutable.md"
             },
             {
-              "title": "CRUD App",
-              "slug": "crud-app",
-              "file": "introduction/crud-app-5Dtuv2zJ9aHA9LMg9FuZgd.immutable.md"
+              "title": "Storing Data",
+              "slug": "storing-data",
+              "file": "introduction/storing-data-3JFg43BUwTnSis5GUdlLiz.immutable.md"
+            },
+            {
+              "title": "Handling Authorization",
+              "slug": "handling-authorization",
+              "file": "introduction/handling-authorization-2vgdRKqoHne6hjT8FYteKN.immutable.md"
             }
           ]
         },
@@ -446,7 +451,7 @@
             {
               "title": "Storable()",
               "slug": "storable",
-              "file": "reference/storable-5NyULYdKuoCUkx8OFuLzrD.immutable.md",
+              "file": "reference/storable-3UMrfeCfFVaVttjxtmCvVy.immutable.md",
               "category": "Storage"
             },
             {
@@ -554,7 +559,7 @@
             {
               "title": "WithRoles()",
               "slug": "with-roles",
-              "file": "reference/with-roles-2wgKzaZnZ1M0LQJej4Nx0F.immutable.md",
+              "file": "reference/with-roles-CcLPnrWKVYxnZXgNTqVYi.immutable.md",
               "category": "Authorization"
             },
             {

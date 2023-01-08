@@ -345,7 +345,7 @@ This method will be callable from the frontend (thanks to the [`@expose()`](http
 
 > **Note**: Since the `isHealthy()` class method is not used anymore, you can remove it if you want.
 
-Then, modify the `HelloWorldPage()` class method in the <!-- <if language="js"> -->`frontend/src/components/application.jsx`<!-- </if> --><!-- <if language="ts"> -->`frontend/src/components/application.tsx`<!-- </if> --> file as follows:
+Save the file to restart the backend, and then modify the `HelloWorldPage()` class method in the <!-- <if language="js"> -->`frontend/src/components/application.jsx`<!-- </if> --><!-- <if language="ts"> -->`frontend/src/components/application.tsx`<!-- </if> --> file as follows:
 
 ```ts
 @page('[/]hello-world') static HelloWorldPage() {
@@ -362,6 +362,34 @@ As seen in the initial [`MainPage()`](https://layrjs.com/docs/v2/introduction/he
 If you refresh the "Hello, World!" page in your browser, you should not see any difference. However, if you inspect the network requests via the browser's developer tools, you should see that the `'Hello, World'` string displayed in the frontend comes from the backend.
 
 #### One Last Thing
+
+Technically, we now have a full-stack app involving a frontend and a backend.
+
+But the app is a bit static. The backend always returns the same `'Hello, World'` string, which is rather boring.
+
+Let's make the app more dynamic by modifying the `getHelloWorld()` class method in the <!-- <if language="js"> -->`backend/src/components/application.js`<!-- </if> --><!-- <if language="ts"> -->`backend/src/components/application.ts`<!-- </if> --> file as follows:
+
+```ts
+@expose({call: true}) @method() static async getHelloWorld() {
+  const translations = ['Hello, World!', 'Bonjour le monde !', 'こんにちは世界！'];
+
+  const translation = translations[Math.round(Math.random() * (translations.length - 1))];
+
+  return translation;
+}
+```
+
+Save the file to restart the backend, and now, when you refresh the "Hello, World!" page several times in your browser, you should see some translations randomly picked up.
+
+Here's an example showing the Japanese translation:
+
+<p>
+	<img src="https://layrjs.com/docs/v2/introduction/hello-world/assets/screenshot-004.immutable.png" alt="Screenshot of the app displaying 'Hello, World!' in Japanese" style="width: 100%; margin-top: .5rem">
+</p>
+
+We hardcoded the translations in the `getHelloWorld()` class method, which is OK for this tutorial. But in a real-world app, storing the translations in a database would be better so an admin can edit them. We'll see how to achieve that in [another tutorial](https://layrjs.com/docs/v2/introduction/storing-data) that remains to be written.
+
+#### Wrapping Up
 
 ```
 WIP

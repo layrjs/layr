@@ -33,7 +33,7 @@ Once you have a [`ComponentWithRoles`](https://layrjs.com/docs/v2/reference/with
 Article.resolveRole('admin'); // `true` or `false` depending on the current user
 ```
 
-See the ["Handling Authorization"](https://layrjs.com/docs/v2/introduction/authorization) guide for a comprehensive example using the `WithRoles()` mixin.
+See the ["Handling Authorization"](https://layrjs.com/docs/v2/introduction/handling-authorization) tutorial for a comprehensive example using the `WithRoles()` mixin.
 
 ### ComponentWithRoles <badge type="primary">class</badge> {#component-with-roles-class}
 
