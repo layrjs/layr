@@ -391,6 +391,8 @@ We hardcoded the translations in the `getHelloWorld()` class method, which is OK
 
 #### Wrapping Up
 
-```
-WIP
-```
+In this first tutorial, we saw how to build a basic full-stack app with Layr:
+
+- We [created an app](https://layrjs.com/docs/v2/introduction/hello-world#creating-the-app) and [started it](https://layrjs.com/docs/v2/introduction/hello-world#starting-the-app) in development mode with a few [Boostr](https://boostr.dev) commands.
+- We discovered how to implement [layouts](https://layrjs.com/docs/v2/introduction/hello-world#taking-a-look-at-the-initial-app), [pages](https://layrjs.com/docs/v2/introduction/hello-world#adding-a-page-in-the-frontend), and [links](https://layrjs.com/docs/v2/introduction/hello-world#adding-a-page-in-the-frontend) encapsulated in a Layr [component](https://layrjs.com/docs/v2/reference/component).
+- We found out how [a backend method could be called from the frontend](https://layrjs.com/docs/v2/introduction/hello-world#getting-the-hello-world-message-from-the-backend) thanks to the cross-layer class inheritance ability of Layr.
