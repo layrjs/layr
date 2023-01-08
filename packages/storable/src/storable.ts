@@ -140,7 +140,7 @@ export type SortDirection = 'asc' | 'desc';
  * await movie.save();
  * ```
  *
- * See the ["Storing Data"](https://layrjs.com/docs/v2/introduction/data-storage) guide for a comprehensive example using the `Storable()` mixin.
+ * See the ["Storing Data"](https://layrjs.com/docs/v2/introduction/storing-data) tutorial for a comprehensive example using the `Storable()` mixin.
  *
  * ### StorableComponent <badge type="primary">class</badge> {#storable-component-class}
  *

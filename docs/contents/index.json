@@ -16,9 +16,9 @@
           "assets": "introduction/hello-world/assets"
         },
         {
-          "title": "CRUD App",
-          "slug": "crud-app",
-          "file": "introduction/crud-app.md"
+          "title": "Storing Data",
+          "slug": "storing-data",
+          "file": "introduction/storing-data.md"
         }
       ]
     },
