@@ -19,6 +19,11 @@
           "title": "Storing Data",
           "slug": "storing-data",
           "file": "introduction/storing-data.md"
+        },
+        {
+          "title": "Handling Authorization",
+          "slug": "handling-authorization",
+          "file": "introduction/handling-authorization.md"
         }
       ]
     },
