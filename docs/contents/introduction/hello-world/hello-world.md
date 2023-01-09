@@ -16,15 +16,18 @@ Let's start our journey into Layr by implementing the mandatory ["Hello, World!"
 
 To make things easier, we'll use [Boostr](https://boostr.dev) to create the app and manage the local development environment.
 
-Boostr is a companion tool for Layr that takes care of everything we need to build and deploy a Layr app so we can focus on what really matters — the app's code.
+Boostr is a companion tool for Layr that takes care of everything you need to build and deploy a Layr app so you can focus on what really matters — the app's code.
 
-So, first of all, we need to install Boostr. To do so, run the following command in your terminal:
+So, first of all, we have to install Boostr. Run the following command in your terminal:
 
 ```sh
 npm install --global boostr
 ```
 
-> **Note**: Installing an NPM package globally is usually not recommended. But it's not a problem in this case because each app managed by Boostr uses a local Boostr package which is automatically installed. So the global Boostr package can be seen as a shortcut to the local Boostr packages installed in your apps, and, therefore, you can have different apps using different versions of Boostr.
+> **Notes**:
+>
+> - Depending on your Node.js installation, you may have to prefix the command with `sudo` so the package can be installed globally.
+> - Installing an NPM package globally is usually not recommended. But it's not a problem in this case because each app managed by Boostr uses a local Boostr package which is automatically installed. So the global Boostr package can be seen as a shortcut to the local Boostr packages installed in your apps, and, therefore, you can have different apps using different versions of Boostr.
 
 Then, run the following commands to create a directory for the app and initialize it:
 
@@ -52,7 +55,7 @@ Finally, you can open the `hello-world` directory in your favorite [IDE](https:/
 
 > **Note**: You can use any IDE you want, but if you use [Visual Studio Code](https://code.visualstudio.com/), you can profit from the VS Code configuration included in the [Boostr app templates](https://boostr.dev/docs#boostr-initialize-template-options). Otherwise, you may have to set up your IDE to get a suitable configuration.
 
-We will not detail all directories and files created by Boostr because it would be out of the scope of this tutorial. If you are the kind of person that needs to understand everything, please check out the [Boostr documentation](https://boostr.dev/docs) to find out more.
+We will not detail all directories and files created by Boostr because it would be out of the scope of this tutorial. If you are the kind of person who needs to understand everything, please check out the [Boostr documentation](https://boostr.dev/docs) to find out more.
 
 So, we will only focus on two files:
 
@@ -80,7 +83,7 @@ boostr start
 
 The terminal should output something like this:
 
-```
+```txt
 [database] MongoDB server started at mongodb://localhost:18160/
 [backend] Build succeeded (bundle size: 2.06MB)
 [backend] Component HTTP server started at http://localhost:18159/
@@ -90,7 +93,7 @@ The terminal should output something like this:
 
 > **Notes**:
 >
-> - The TCP ports used for each [local development URL](https://boostr.dev/docs#local-development-urls) were randomly set when the Boostr `initialize` command was executed to create the app in the [previous section](https://layrjs.com/docs/v2/introduction/hello-world#creating-the-app). So, it's normal if they are different for you.
+> - The TCP ports used for each [local development URL](https://boostr.dev/docs#local-development-urls) were randomly set when the Boostr `initialize` command was executed to create the app in the [previous section](https://layrjs.com/docs/v2/introduction/hello-world#creating-the-app). So, it's normal if the TCP ports are different for you.
 > - Don't be freaked out by the size of the generated bundles in development mode. When you deploy your apps, the generated bundles are a lot smaller.
 
 The last line in the terminal output should include an URL you can open in a browser to display the app.
@@ -263,7 +266,7 @@ This component is straightforward.
 
 - It is decorated with [`@expose({call: true})`](https://layrjs.com/docs/v2/reference/component#expose-decorator), which exposes the method to the frontend.
 - It is also decorated with [`@method()`](https://layrjs.com/docs/v2/reference/component#method-decorator), which is required so that the `@expose()` decorator can be used.
-- It always returns `true`, which is rather pointless. An actual `isHealthy()` method would, for example, check whether a database is accessible.
+- It always returns `true`, which is rather pointless. An actual `isHealthy()` method would, for example, check whether a database responds correctly.
 
 #### Displaying "Hello, World!" in the Frontend
 
