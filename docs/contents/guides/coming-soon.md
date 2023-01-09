@@ -11,7 +11,7 @@ This section will contain some guides explaining how to achieve the most common 
 - Testing
 - Deployment
 
-Unfortunately, writing documentation takes a lot of time, and the Layr project is currently handled by a [single person](https://mvila.me) who has to work for customers to make a living and is also starting a new ambitious project, which will be based on Layr.
+Unfortunately, writing documentation takes a lot of time, and the Layr project is currently handled by a [single person](https://mvila.me) who has to work for customers to make a living and is also starting a new [ambitious project](https://1place.app), which will be based on Layr.
 
 More documentation will come for sure, but please be patient.
 
