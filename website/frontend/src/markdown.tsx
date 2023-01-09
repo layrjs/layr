@@ -11,12 +11,15 @@ import json from 'highlight.js/lib/languages/json';
 import xml from 'highlight.js/lib/languages/xml';
 // @ts-ignore
 import bash from 'highlight.js/lib/languages/bash';
+// @ts-ignore
+import plainText from 'highlight.js/lib/languages/plaintext';
 import DOMPurify from 'dompurify';
 
 highlightJS.registerLanguage('typescript', typescript);
 highlightJS.registerLanguage('json', json);
 highlightJS.registerLanguage('html', xml);
 highlightJS.registerLanguage('bash', bash);
+highlightJS.registerLanguage('plainText', plainText);
 
 export function Markdown({languageFilter, children}: {languageFilter?: string; children: string}) {
   let html = marked(children, {
