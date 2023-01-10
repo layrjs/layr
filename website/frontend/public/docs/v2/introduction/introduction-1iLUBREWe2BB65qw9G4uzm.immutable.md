@@ -2,21 +2,52 @@
 
 > **Note**: Layr v2 is published on NPM, but the documentation is still a work in progress.
 
-Layr is a set of JavaScript/TypeScript libraries that dramatically simplify the development of full-stack apps.
+#### Overview
 
-Typically, a full-stack app comprises a frontend and a backend running in two different environments connected through a web API (REST, GraphQL, etc.)
+Layr is a set of JavaScript/TypeScript libraries that dramatically simplify the development of highly dynamic full-stack apps.
 
-Separating the frontend and the backend is a good thing. Still, the problem is that building a web API usually leads to a lot of code scattering, duplication of knowledge, boilerplate, and accidental complexity.
+Typically, a highly dynamic full-stack app comprises a frontend and a backend running in two different environments connected through a web API (REST, GraphQL, etc.)
+
+Separating the frontend and the backend is a good thing. Still, the problem is that building a web API usually leads to a lot of code scattering, knowledge duplication, boilerplate, and accidental complexity.
 
 Layr removes the need to build a web API and [reunites the frontend and backend](https://dev.to/mvila/good-bye-web-apis-2bel) so that you can experience them as a single entity.
 
-On the frontend side, Layr gives you [routing capabilities](https://layrjs.com/docs/v2/reference/routable) and [object observability](https://layrjs.com/docs/v2/reference/observable) so that you don't need to add an external router or a state manager in most cases.
+On the frontend side, Layr gives you [routing capabilities](https://layrjs.com/docs/v2/reference/routable) and [object observability](https://layrjs.com/docs/v2/reference/observable) so that you don't need to add an external router or a state manager.
 
-Lastly, Layr offers an [ORM](https://layrjs.com/docs/v2/reference/storable) to make data storage as easy as possible.
+On the backend side, Layr offers an [ORM](https://layrjs.com/docs/v2/reference/storable) (which can be exposed to the frontend) to make data storage as easy as possible.
+
+#### Made for Highly Dynamic Apps
+
+Layr stands out for building apps that offer rich user interfaces, such as the good old desktop apps.
+
+Even if they both run in a browser, we should clearly differentiate "websites" and "web apps".
+
+##### Websites
+
+Websites provide fast load time, good [SEO](https://en.wikipedia.org/wiki/Search_engine_optimization), and a few dynamic parts.
+
+Some examples fitting in this category are e-commerce websites (e.g., [Amazon](https://www.amazon.com/)), marketplace platforms (e.g., [Airbnb](https://www.airbnb.com/)), or online newspapers (e.g., [The New York Times](https://www.nytimes.com/)).
+
+Layr is inappropriate for building these kinds of websites because it relies on a [Single-page application](https://en.wikipedia.org/wiki/Single-page_application) architecture and doesn't provide server-side rendering.
+
+So, instead of Layr, you should use some frameworks such as [Next.js](https://nextjs.org/), [Nuxt.js](https://nextjs.org/), or [Remix](https://remix.run/).
+
+##### Web Apps
+
+Web apps provide rich user interfaces and are all made of dynamic parts.
+
+Some examples fitting in this category are productivity apps (e.g., [Notion](https://www.notion.so/)), communication apps (e.g., [Slack](https://slack.com/)), or design apps (e.g., [Figma](https://www.figma.com/)).
+
+Layr is made for building these kinds of apps with a straightforward architecture:
+
+- The frontend exposes an interface for _humans_.
+- The backend exposes an interface for _computers_.
+
+Note that the frontend can obviously run in a browser, but it can also run on mobile and desktop with the help of frameworks such as [React Native](https://reactnative.dev/) or [Electron](https://www.electronjs.org/).
 
 #### Core Features
 
-Layr provides everything you need to build a full-stack app from start to finish:
+Layr provides everything you need to build an app from start to finish:
 
 - **Cross-layer inheritance**: A frontend class can "inherit" from a backend class, so some exposed [attributes](https://layrjs.com/docs/v2/reference/attribute) are automatically transported between the frontend and the backend. Also, you can call some exposed backend [methods](https://layrjs.com/docs/v2/reference/method) directly from the frontend.
 - **Controlled attributes**: An attribute can be [type-checked](https://layrjs.com/docs/v2/reference/value-type), [sanitized](https://layrjs.com/docs/v2/reference/sanitizer), [validated](https://layrjs.com/docs/v2/reference/validator), [serialized](https://layrjs.com/docs/v2/reference/component#serialization), and [observed](https://layrjs.com/docs/v2/reference/observable) at runtime.
@@ -57,7 +88,7 @@ If you are using JavaScript, you'll need to compile your code with [Babel](https
 
 If you are using TypeScript, all you need is the TypeScript compiler ([`tsc`](https://www.typescriptlang.org/docs/handbook/compiler-options.html)).
 
-> **Note**: If you use [Boostr](https://boostr.dev) to manage your app's development, you don't have to worry about compiling your code because it is automatically handled for you.
+> **Note**: If you use [Boostr](https://boostr.dev) to manage your app's development and deployment, you don't have to worry about compiling your code because it is automatically handled.
 
 To run your app, you'll need a JavaScript runtime for both the frontend and the backend.
 
