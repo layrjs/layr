@@ -18,8 +18,7 @@ const VERSIONS = [
   {name: '2', value: 'v2'}
 ];
 
-// export const LAST_VERSION = VERSIONS[VERSIONS.length - 1].value;
-export const LAST_VERSION = VERSIONS[0].value;
+export const LAST_VERSION = VERSIONS[VERSIONS.length - 1].value;
 
 const LANGUAGES = [
   {name: 'JavaScript', value: 'js'},
