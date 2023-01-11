@@ -112,49 +112,47 @@ const movies = await Movie.find({country: 'Japan', year: 2010});
 \`\`\`
 `;
 
-const USER_INTERFACE_ROUTES_EXAMPLE = `
+const ENCAPSULATED_USER_INTERFACE_EXAMPLE = `
 \`\`\`
-import {Component} from '@layr/component';
-import {Routable, route} from '@layr/routable';
+import {Component, primaryIdentifier, attribute} from '@layr/component';
+import {Routable} from '@layr/routable';
+import React from 'react';
+import {layout, page, view} from '@layr/react-integration';
 
 class Movie extends Routable(Component) {
-  @route('/movies') static List() {
-    // Display all the movies...
-  }
-
-  @route('/movies/:id') static Item({id}) {
-    // Display a specific movie...
-  }
-}
-\`\`\`
-`;
-
-const USER_INTERFACE_VIEWS_EXAMPLE = `
-\`\`\`
-import {Component, attribute} from '@layr/component';
-import React from 'react';
-import {view} from '@layr/react-integration';
-
-class Movie extends Component {
+  @primaryIdentifier() id;
   @attribute() title;
   @attribute() year;
   @attribute() country;
 
-  @view() Home() {
+  @layout('/movies') static Layout({children}) {
     return (
-      <div>
+      <>
+        <h1>Movies</h1>
+        {children()}
+      </>
+    );
+  }
+
+  @page('[/movies]/:id') Page() {
+    return (
+      <>
         <this.Heading />
         <this.Details />
-      </div>
+      </>
     );
   }
 
   @view() Heading() {
-    return <h3>{this.title} ({this.year})</h3>;
+    return (
+      <h2>
+        {this.title} ({this.year})
+      </h2>
+    );
   }
 
   @view() Details() {
-    return <div>Country: {this.country}</div>;
+    return <p>Country: {this.country}</p>;
   }
 }
 \`\`\`
@@ -196,6 +194,8 @@ export class Home extends Routable(Component) {
           <this.ORMView />
           <hr css={{margin: 0}} />
           <this.UserInterfaceView />
+          <hr css={{margin: 0}} />
+          <this.FindOutMoreView />
           <hr css={{margin: 0}} />
           <Newsletter.SubscriptionView />
         </div>
@@ -245,8 +245,8 @@ export class Home extends Routable(Component) {
                 color: theme.colors.text.muted
               })}
             >
-              Inherit your frontend from your backend and build an app as if it were made of
-              a single layer.
+              Inherit your frontend from your backend and build a highly dynamic app as if it were
+              made of a single layer.
             </div>
             <Button
               onClick={() => {
@@ -256,7 +256,7 @@ export class Home extends Routable(Component) {
               color="secondary"
               css={{marginTop: '2rem'}}
             >
-              Get started
+              Read the Docs
             </Button>
           </div>
 
@@ -299,7 +299,7 @@ export class Home extends Routable(Component) {
     return (
       <FeatureSection
         title="Look Ma, No Web API"
-        description="Stop wasting your time building a web API. With Layr, the frontend and the backend can [communicate directly](/blog/articles/Do-We-Really-Need-A-Web-API-yq12wz) as if they were not separated."
+        description="Stop wasting your time building a web API. With Layr, the frontend and the backend can [communicate directly](https://dev.to/mvila/good-bye-web-apis-2bel) as if they were not separated."
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
           <h5 css={{marginTop: '2rem'}}>Backend</h5>
@@ -316,7 +316,7 @@ export class Home extends Routable(Component) {
       <FeatureSection
         title="Abstracted Away Database"
         description={
-          "Extend your classes with the [`Storable()`](/docs/v1/reference/storable) mixin, register them into a [store](/docs/v1/reference/store), and you're ready to build your app without having to worry about the database."
+          "Extend your classes with the [`Storable()`](/docs/v2/reference/storable) mixin, register them into a [store](/docs/v2/reference/store), and you're ready to build an app without having to worry about the database."
         }
       >
         <div css={{marginTop: '3rem', maxWidth: 640}}>
@@ -338,25 +338,22 @@ export class Home extends Routable(Component) {
       <FeatureSection
         title="Encapsulated User Interface"
         description={
-          'Implement your [routes](/docs/v1/reference/routable) and [views](/docs/v1/reference/react-integration#view-decorator) as methods of your models, and keep your app as cohesive as possible.'
+          'Implement your [layouts](/docs/v2/reference/react-integration#layout-decorator), [pages](/docs/v2/reference/react-integration#page-decorator), and [views](/docs/v2/reference/react-integration#view-decorator) as methods of your models, and keep your app as cohesive as possible.'
         }
       >
-        <div css={{marginTop: '3rem', maxWidth: 640}}>
-          <h5 css={{marginTop: '2rem'}}>Routes</h5>
-          <Markdown>{USER_INTERFACE_ROUTES_EXAMPLE}</Markdown>
-          <h5 css={{marginTop: '2rem'}}>Views</h5>
-          <Markdown>{USER_INTERFACE_VIEWS_EXAMPLE}</Markdown>
+        <div css={{marginTop: '2.25rem', maxWidth: 640}}>
+          <Markdown>{ENCAPSULATED_USER_INTERFACE_EXAMPLE}</Markdown>
         </div>
       </FeatureSection>
     );
   }
 
-  @view() static DeveloperExperienceView() {
+  @view() static FindOutMoreView() {
     return (
       <FeatureSection
-        title="Delightful Developer Experience"
+        title="Find Out More"
         description={
-          'Layr strives to find the right balance between powerful abstractions and ease of use so that you can build an app in the most enjoyable way possible.'
+          'Layr provides everything you need to build a highly dynamic app from start to finish. Find out more by checking out the documentation.'
         }
       >
         <Button
@@ -365,9 +362,9 @@ export class Home extends Routable(Component) {
           }}
           size="large"
           color="secondary"
-          css={{marginTop: '2rem'}}
+          css={{marginTop: '2rem', marginBottom: '.5rem'}}
         >
-          Read the docs
+          Read the Docs
         </Button>
       </FeatureSection>
     );

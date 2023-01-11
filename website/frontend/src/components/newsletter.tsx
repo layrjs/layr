@@ -58,8 +58,8 @@ export const extendNewsletter = (Base: typeof BackendNewsletter) => {
               />
               <Button
                 type="submit"
-                color="primary"
                 size="large"
+                color="primary"
                 css={theme.responsive({width: ['auto', , '100%']})}
               >
                 Subscribe
