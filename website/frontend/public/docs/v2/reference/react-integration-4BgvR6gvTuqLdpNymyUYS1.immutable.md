@@ -186,7 +186,7 @@ class Application extends Routable(Component) {
 
 ##### `useData(getter, renderer, [dependencies], [options])` <badge type="tertiary-outline">react hook</badge> {#use-data-react-hook}
 
-A convenience hook for loading data asynchronously and render a React element (or `null`) once the data is loaded.
+A convenience hook for loading data asynchronously and rendering a React element using the loaded data.
 
 The `getter()` asynchronous function is called when the React component is rendered for the first time and when a change is detected in its `dependencies`.
 
