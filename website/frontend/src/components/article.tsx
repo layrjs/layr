@@ -67,7 +67,7 @@ export const extendArticle = (Base: typeof BackendArticle) => {
       return (
         <p css={{color: theme.colors.text.muted}} {...props}>
           <span>{format(this.createdAt, 'MMMM do, y')}</span>
-          {' by '}
+          {', by '}
           <a
             href={this.author.url}
             target="_blank"
