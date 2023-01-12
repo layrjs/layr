@@ -39,10 +39,11 @@ Check out the [documentation](https://layrjs.com/docs) for a quick introduction 
   - [ ] Renamed components
   - [ ] Renamed attributes
 - [ ] Custom migrations
+- [ ] Polymorphism
 - [ ] Transactions
 - [ ] Sugar to query reverse relationships
-- [ ] Support for more databases (PostgreSQL, MySQL, DynamoDB,...)
 - [ ] Query subscriptions (realtime updates)
+- [ ] Support for more databases (PostgreSQL, MySQL, DynamoDB,...)
 
 ### Routing
 
