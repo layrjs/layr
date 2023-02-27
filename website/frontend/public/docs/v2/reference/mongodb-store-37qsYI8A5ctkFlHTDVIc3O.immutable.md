@@ -76,19 +76,11 @@ await movie.save();
 const movies = await Movie.find({title: {$startsWith: 'Inception'}});
 movies.length; // => 1 (one movie found)
 movies[0].title; // => 'Inception 2'
-movies[0] === movie; // true (thanks to the identity mapping)
+movies[0] === movie; // => true (thanks to the identity mapping)
 
 // Delete the movie from the store
 await movie.delete();
 ```
-
-##### `private()` <badge type="secondary-outline">instance method</badge> {#private-instance-method}
-
-Fix an issue when localhost resolves to an IPv6 loopback address (::1).
-
-It happens in the following environment:
-- macOS v13.0.1
-- Node.js v18.12.1
 
 #### Creation
 

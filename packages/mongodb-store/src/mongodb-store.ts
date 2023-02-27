@@ -115,7 +115,7 @@ const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME = '_id_';
  * const movies = await Movie.find({title: {$startsWith: 'Inception'}});
  * movies.length; // => 1 (one movie found)
  * movies[0].title; // => 'Inception 2'
- * movies[0] === movie; // true (thanks to the identity mapping)
+ * movies[0] === movie; // => true (thanks to the identity mapping)
  *
  * // Delete the movie from the store
  * await movie.delete();
@@ -585,14 +585,13 @@ export class MongoDBStore extends Store {
     return this._connectClientPromise;
   }
 
-  /**
-   * Fix an issue when localhost resolves to an IPv6 loopback address (::1).
-   *
-   * It happens in the following environment:
-   * - macOS v13.0.1
-   * - Node.js v18.12.1
-   */
   private _fixConnectionString(connectionString: string) {
+    // Fix an issue when localhost resolves to an IPv6 loopback address (::1)
+    //
+    // It happens in the following environment:
+    // - macOS v13.0.1
+    // - Node.js v18.12.1
+
     const connectionStringURL = new URL(connectionString);
 
     if (connectionStringURL.hostname !== 'localhost') {
