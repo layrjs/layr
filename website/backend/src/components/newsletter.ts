@@ -1,7 +1,7 @@
 import {Component, method, expose} from '@layr/component';
 import fetch from 'cross-fetch';
 
-const MAILER_LITE_API_URL = 'https://api.mailerlite.com/api/v2';
+const MAILER_LITE_API_URL = 'https://connect.mailerlite.com/api/';
 
 const mailerLiteAPIKey = process.env.MAILER_LITE_API_KEY;
 
@@ -14,25 +14,28 @@ export class Newsletter extends Component {
       throw new Error('MailerLite configuration is missing');
     }
 
-    const response = await fetch(
-      `${MAILER_LITE_API_URL}/groups/${mailerLiteNewsletterSubscriptionsGroupId}/subscribers`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-MailerLite-ApiKey': mailerLiteAPIKey
-        },
-        body: JSON.stringify({email, resubscribe: true, type: 'active'})
-      }
-    );
+    const response = await fetch(`${MAILER_LITE_API_URL}subscribers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${mailerLiteAPIKey}`,
+        'X-Version': '2023-10-02'
+      },
+      body: JSON.stringify({
+        email,
+        groups: [mailerLiteNewsletterSubscriptionsGroupId],
+        status: 'active'
+      })
+    });
 
-    if (response.status !== 200) {
+    if (!(response.status === 201 || response.status === 200)) {
       throw new Error('An error occurred while adding a subscriber to MailerLite');
     }
 
     const result = await response.json();
 
-    if (!result.id) {
+    if (!result?.data?.id) {
       throw new Error('An error occurred while adding a subscriber to MailerLite');
     }
 
