@@ -1,20 +1,22 @@
-import type AWS from 'aws-sdk';
+import type {LambdaClient, InvokeCommand} from '@aws-sdk/client-lambda';
 import type {PlainObject} from 'core-helpers';
 
 export function createAWSLambdaExecutionQueueSender({
   lambdaClient,
+  InvokeCommandClass,
   functionName
 }: {
-  lambdaClient: AWS.Lambda;
+  lambdaClient: LambdaClient;
+  InvokeCommandClass: typeof InvokeCommand;
   functionName: string;
 }) {
   return async (query: PlainObject) => {
-    await lambdaClient
-      .invoke({
+    await lambdaClient.send(
+      new InvokeCommandClass({
         FunctionName: functionName,
         InvocationType: 'Event',
         Payload: JSON.stringify({query})
       })
-      .promise();
+    );
   };
 }

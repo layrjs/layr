@@ -1,6 +1,6 @@
 {
   "name": "@layr/aws-integration",
-  "version": "2.0.101",
+  "version": "3.0.1",
   "description": "AWS integration for Layr",
   "keywords": [
     "layr",
@@ -18,12 +18,12 @@
   "main": "dist/node-cjs/index.js",
   "module": "dist/node-esm/index.js",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "build": "dev-tools build:ts-library",
     "prepare": "npm run build",
-    "publish:package": "dev-tools publish:package",
+    "publish:package": "dev-tools publish:package --tag=next",
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
@@ -35,10 +35,10 @@
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@mvila/dev-tools": "^1.3.1",
+    "@aws-sdk/client-lambda": "^3.540.0",
+    "@mvila/dev-tools": "^1.4.0",
     "@mvila/tsconfig": "^1.0.6",
-    "@types/aws-lambda": "^8.10.109",
-    "@types/lodash": "^4.14.191",
-    "aws-sdk": "^2.1290.0"
+    "@types/aws-lambda": "^8.10.136",
+    "@types/lodash": "^4.14.191"
   }
 }
