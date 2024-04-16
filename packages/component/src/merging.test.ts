@@ -86,4 +86,29 @@ describe('Merging', () => {
     // Although merged, the director should have kept its identity
     expect(movie.director).toBe(director);
   });
+
+  test('Circular references', async () => {
+    class User extends Component {
+      @provide() static User = User;
+
+      @attribute() name!: string;
+      @attribute() createdBy?: User;
+    }
+
+    const user = new User({name: 'John'});
+
+    user.createdBy = user;
+
+    const userFork = user.fork();
+
+    userFork.name = 'John 2';
+
+    expect(user.name).toBe('John');
+    expect(user.createdBy).toBe(user);
+
+    user.merge(userFork);
+
+    expect(user.name).toBe('John 2');
+    expect(user.createdBy).toBe(user);
+  });
 });

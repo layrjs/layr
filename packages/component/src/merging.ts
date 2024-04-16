@@ -1,9 +1,9 @@
-import {merge as simpleMerge, MergeOptions} from 'simple-forking';
+import {merge as simpleMerge, MergeOptions as SimpleMergeOptions} from 'simple-forking';
 
-import type {Component} from './component';
+import type {Component, ComponentSet} from './component';
 import {isComponentClass, isComponentInstance} from './utilities';
 
-export {MergeOptions};
+export type MergeOptions = SimpleMergeOptions & {mergedComponents?: ComponentSet};
 
 /**
  * Deeply merge any type of forks including objects, arrays, and components (using Component's `merge()` [class method](https://layrjs.com/docs/v2/reference/component#merge-class-method) and [instance method](https://layrjs.com/docs/v2/reference/component#merge-instance-method)) into their original values.
@@ -38,6 +38,7 @@ export {MergeOptions};
  */
 export function merge(value: any, valueFork: any, options: MergeOptions = {}) {
   const {
+    mergedComponents = new Set(),
     objectMerger: originalObjectMerger,
     objectCloner: originalObjectCloner,
     ...otherOptions
@@ -53,11 +54,11 @@ export function merge(value: any, valueFork: any, options: MergeOptions = {}) {
     }
 
     if (isComponentClass(object)) {
-      return object.merge(objectFork as typeof Component, options);
+      return object.merge(objectFork as typeof Component, {...options, mergedComponents});
     }
 
     if (isComponentInstance(object)) {
-      return object.merge(objectFork as Component, options);
+      return object.merge(objectFork as Component, {...options, mergedComponents});
     }
   };
 

@@ -3686,8 +3686,20 @@ export class Component extends Observable(Object) {
 
   __mergeAttributes(
     componentFork: typeof Component | Component,
-    {attributeSelector, ...otherOptions}: MergeOptions & {attributeSelector?: AttributeSelector}
+    {
+      attributeSelector,
+      mergedComponents = new Set(),
+      ...otherOptions
+    }: MergeOptions & {attributeSelector?: AttributeSelector}
   ) {
+    const hasAlreadyBeenMerged = mergedComponents.has(this);
+
+    if (hasAlreadyBeenMerged) {
+      return;
+    }
+
+    mergedComponents.add(this);
+
     for (const attributeFork of componentFork.getAttributes({attributeSelector})) {
       const name = attributeFork.getName();
 
@@ -3704,7 +3716,7 @@ export class Component extends Observable(Object) {
       const valueFork = attributeFork.getValue();
       const value = attribute.getValue({throwIfUnset: false});
 
-      const mergedValue = merge(value, valueFork, otherOptions);
+      const mergedValue = merge(value, valueFork, {...otherOptions, mergedComponents});
 
       attribute.setValue(mergedValue, {source: attributeFork.getValueSource()});
     }
@@ -4357,7 +4369,7 @@ export class Component extends Observable(Object) {
 
   __unintrospectProperties(
     introspectedProperties: IntrospectedProperty[],
-    propertyClassGetter: typeof Component['getPropertyClass'],
+    propertyClassGetter: (typeof Component)['getPropertyClass'],
     {methodBuilder}: {methodBuilder: MethodBuilder | undefined}
   ) {
     for (const introspectedProperty of introspectedProperties) {
