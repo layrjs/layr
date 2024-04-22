@@ -30,6 +30,7 @@ type CustomRouteDecorator = (method: Function) => void;
 
 export type NavigatorOptions = {
   plugins?: NavigatorPlugin[];
+  confirmNavigationHandler?: () => boolean | Promise<boolean>;
 };
 
 /**
@@ -41,7 +42,7 @@ export abstract class Navigator extends Observable(Object) {
   constructor(options: NavigatorOptions = {}) {
     super();
 
-    const {plugins, ...otherOptions} = options;
+    const {plugins, confirmNavigationHandler, ...otherOptions} = options;
 
     assertNoUnknownOptions(otherOptions);
 
@@ -49,7 +50,16 @@ export abstract class Navigator extends Observable(Object) {
       this.applyPlugins(plugins);
     }
 
+    if (confirmNavigationHandler) {
+      this.setConfirmNavigationHandler(confirmNavigationHandler);
+    }
+
     this.mount();
+  }
+
+  afterConstruct() {
+    // This method is called at the end of the concrete class constructors
+    this.setInternalHistoryIndex(this.getHistoryIndex());
   }
 
   mount() {
@@ -190,14 +200,22 @@ export abstract class Navigator extends Observable(Object) {
   navigate(url: string | URL, options: NavigationOptions = {}) {
     const {silent = false, defer = true} = options;
 
-    this._navigate(normalizeURL(url));
+    return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
+      if (!canNavigate) {
+        return;
+      }
 
-    if (silent) {
-      return;
-    }
+      this._navigate(normalizeURL(url));
 
-    return possiblyDeferred(defer, () => {
-      this.callObservers();
+      this.setInternalHistoryIndex(this.getHistoryIndex());
+
+      if (silent) {
+        return;
+      }
+
+      return possiblyDeferred(defer, () => {
+        this.callObservers();
+      });
     });
   }
 
@@ -294,13 +312,21 @@ export abstract class Navigator extends Observable(Object) {
   go(delta: number, options: NavigationOptions = {}) {
     const {silent = false, defer = true} = options;
 
-    return possiblyAsync(this._go(delta), () => {
-      if (silent) {
+    return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
+      if (!canNavigate) {
         return;
       }
 
-      return possiblyDeferred(defer, () => {
-        this.callObservers();
+      return possiblyAsync(this._go(delta), () => {
+        this.setInternalHistoryIndex(this.getHistoryIndex());
+
+        if (silent) {
+          return;
+        }
+
+        return possiblyDeferred(defer, () => {
+          this.callObservers();
+        });
       });
     });
   }
@@ -383,6 +409,54 @@ export abstract class Navigator extends Observable(Object) {
   }
 
   abstract _getHistoryIndex(): number;
+
+  _internalHistoryIndex!: number;
+
+  getInternalHistoryIndex() {
+    return this._internalHistoryIndex;
+  }
+
+  setInternalHistoryIndex(internalHistoryIndex: number) {
+    this._internalHistoryIndex = internalHistoryIndex;
+  }
+
+  // === Blocker ===
+
+  _isBlocked = false;
+
+  getIsBlocked() {
+    return this._isBlocked;
+  }
+
+  setIsBlocked(isBlocked: boolean) {
+    this._isBlocked = isBlocked;
+  }
+
+  block() {
+    this.setIsBlocked(true);
+  }
+
+  unblock() {
+    this.setIsBlocked(false);
+  }
+
+  _confirmNavigationHandler: () => boolean | Promise<boolean> = () => {
+    return confirm('Are you sure you want to leave this page? Changes you made may not be saved.');
+  };
+
+  getConfirmNavigationHandler() {
+    return this._confirmNavigationHandler;
+  }
+
+  setConfirmNavigationHandler(confirmNavigationHandler: () => boolean | Promise<boolean>) {
+    this._confirmNavigationHandler = confirmNavigationHandler;
+  }
+
+  confirmNavigation() {
+    return this.getConfirmNavigationHandler()();
+  }
+
+  useBlocker!: (isBlocked: boolean) => void;
 
   // === Observability ===
 

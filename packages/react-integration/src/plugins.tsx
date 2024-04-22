@@ -1,6 +1,6 @@
 import {Navigator, normalizeURL} from '@layr/navigator';
 import {BrowserNavigatorLinkProps} from '@layr/browser-navigator';
-import React, {useMemo, useCallback, FunctionComponent} from 'react';
+import React, {useMemo, useCallback, FunctionComponent, useEffect} from 'react';
 import {hasOwnProperty} from 'core-helpers';
 
 export function BrowserNavigatorPlugin() {
@@ -72,6 +72,18 @@ export function BrowserNavigatorPlugin() {
             {...otherProps}
           />
         );
+      },
+
+      useBlocker(isBlocked: boolean) {
+        useEffect(
+          () => () => {
+            // Always unblock the navigator when the associated React component unmounts
+            navigator.unblock();
+          },
+          []
+        );
+
+        navigator.setIsBlocked(isBlocked);
       }
     });
   };

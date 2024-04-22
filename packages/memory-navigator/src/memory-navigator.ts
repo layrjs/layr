@@ -35,6 +35,8 @@ export class MemoryNavigator extends Navigator {
 
     this._urls = initialURLs.map(normalizeURL);
     this._index = initialIndex;
+
+    this.afterConstruct();
   }
 
   // === Current Location ===

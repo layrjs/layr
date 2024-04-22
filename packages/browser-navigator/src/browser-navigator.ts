@@ -1,5 +1,6 @@
 import {Navigator, NavigatorOptions, normalizeURL, stringifyURL} from '@layr/navigator';
 import debounce from 'lodash/debounce';
+import {possiblyAsync} from 'possibly-async';
 
 export type BrowserNavigatorLinkProps = {
   to: string;
@@ -32,21 +33,38 @@ export class BrowserNavigator extends Navigator {
    */
   constructor(options: BrowserNavigatorOptions = {}) {
     super(options);
+
+    this.afterConstruct();
   }
 
   _popStateHandler!: (event: PopStateEvent) => void;
   _ignorePopStateHandler!: boolean;
+  _beforeUnloadHandler!: (event: BeforeUnloadEvent) => void;
   _navigateHandler!: (event: Event) => void;
   _mutationObserver!: MutationObserver;
   _expectedHash: string | undefined;
   _scrollToHash!: () => void;
 
   mount() {
-    // --- Back/forward navigation ---
+    // --- 'popstate' event ---
 
     this._popStateHandler = () => {
       if (!this._ignorePopStateHandler) {
-        this.callObservers();
+        return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
+          if (!canNavigate) {
+            // Cancel navigation
+            return possiblyAsync(
+              this._go(this.getInternalHistoryIndex() - this.getHistoryIndex()),
+              () => {
+                this.setInternalHistoryIndex(this.getHistoryIndex());
+              }
+            );
+          }
+
+          this.setInternalHistoryIndex(this.getHistoryIndex());
+          this.callObservers();
+          return;
+        });
       }
     };
 
@@ -54,11 +72,30 @@ export class BrowserNavigator extends Navigator {
 
     window.addEventListener('popstate', this._popStateHandler);
 
+    // --- 'beforeunload' event ---
+
+    this._beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+      if (this.getIsBlocked()) {
+        // Navigation is blocked
+
+        event.preventDefault(); // Not supported in all browsers
+
+        // The following message will not be be displayed in modern browsers,
+        // but it is required to set it so Chrome can prevent navigation
+        event.returnValue =
+          'Are you sure you want to leave this page? Changes you made may not be saved.';
+
+        return event.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', this._beforeUnloadHandler, {capture: true});
+
+    // --- 'layrNavigatorNavigate' event ---
+
     this._navigateHandler = (event: Event) => {
       this.navigate((event as CustomEvent).detail.url);
     };
-
-    // --- 'layrNavigatorNavigate' event ---
 
     document.body.addEventListener('layrNavigatorNavigate', this._navigateHandler);
 
@@ -91,7 +128,8 @@ export class BrowserNavigator extends Navigator {
 
   unmount() {
     window.removeEventListener('popstate', this._popStateHandler);
-    window.removeEventListener('popstate', this._navigateHandler);
+    window.removeEventListener('beforeunload', this._beforeUnloadHandler, {capture: true});
+    document.body.removeEventListener('layrNavigatorNavigate', this._navigateHandler);
     this._mutationObserver.disconnect();
   }
 
