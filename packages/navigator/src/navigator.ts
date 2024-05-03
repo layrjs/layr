@@ -20,7 +20,7 @@ declare global {
 
 export type URLOptions = {hash?: string};
 
-export type NavigationOptions = {silent?: boolean; defer?: boolean};
+export type NavigationOptions = {silent?: boolean; defer?: boolean; ignoreHooks?: boolean};
 
 type NavigatorPlugin = (navigator: Navigator) => void;
 
@@ -198,23 +198,25 @@ export abstract class Navigator extends Observable(Object) {
    * @possiblyasync
    */
   navigate(url: string | URL, options: NavigationOptions = {}) {
-    const {silent = false, defer = true} = options;
+    const {silent = false, defer = true, ignoreHooks = false} = options;
 
     return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
       if (!canNavigate) {
         return;
       }
 
-      this._navigate(normalizeURL(url));
+      return possiblyAsync(!ignoreHooks && this.callBeforeNavigate(), () => {
+        this._navigate(normalizeURL(url));
 
-      this.setInternalHistoryIndex(this.getHistoryIndex());
+        this.setInternalHistoryIndex(this.getHistoryIndex());
 
-      if (silent) {
-        return;
-      }
+        if (silent) {
+          return;
+        }
 
-      return possiblyDeferred(defer, () => {
-        this.callObservers();
+        return possiblyDeferred(defer, () => {
+          this.callObservers();
+        });
       });
     });
   }
@@ -310,22 +312,24 @@ export abstract class Navigator extends Observable(Object) {
    * @possiblyasync
    */
   go(delta: number, options: NavigationOptions = {}) {
-    const {silent = false, defer = true} = options;
+    const {silent = false, defer = true, ignoreHooks = false} = options;
 
     return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
       if (!canNavigate) {
         return;
       }
 
-      return possiblyAsync(this._go(delta), () => {
-        this.setInternalHistoryIndex(this.getHistoryIndex());
+      return possiblyAsync(!ignoreHooks && this.callBeforeNavigate(), () => {
+        return possiblyAsync(this._go(delta), () => {
+          this.setInternalHistoryIndex(this.getHistoryIndex());
 
-        if (silent) {
-          return;
-        }
+          if (silent) {
+            return;
+          }
 
-        return possiblyDeferred(defer, () => {
-          this.callObservers();
+          return possiblyDeferred(defer, () => {
+            this.callObservers();
+          });
         });
       });
     });
@@ -457,6 +461,24 @@ export abstract class Navigator extends Observable(Object) {
   }
 
   useBlocker!: (isBlocked: boolean) => void;
+
+  // === Hooks ===
+
+  _beforeNavigate: (() => void | Promise<void>) | undefined = undefined;
+
+  getBeforeNavigate() {
+    return this._beforeNavigate;
+  }
+
+  setBeforeNavigate(beforeNavigate: (() => void | Promise<void>) | undefined) {
+    this._beforeNavigate = beforeNavigate;
+  }
+
+  callBeforeNavigate() {
+    return this._beforeNavigate?.();
+  }
+
+  useBeforeNavigate!: (beforeNavigate: (() => void | Promise<void>) | undefined) => void;
 
   // === Observability ===
 

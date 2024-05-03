@@ -51,19 +51,32 @@ export class BrowserNavigator extends Navigator {
     this._popStateHandler = () => {
       if (!this._ignorePopStateHandler) {
         return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
-          if (!canNavigate) {
-            // Cancel navigation
+          const cancelNavigation = (error?: unknown) => {
             return possiblyAsync(
               this._go(this.getInternalHistoryIndex() - this.getHistoryIndex()),
               () => {
                 this.setInternalHistoryIndex(this.getHistoryIndex());
+                if (error) {
+                  throw error;
+                }
               }
             );
+          };
+
+          if (!canNavigate) {
+            return cancelNavigation();
           }
 
-          this.setInternalHistoryIndex(this.getHistoryIndex());
-          this.callObservers();
-          return;
+          return possiblyAsync(
+            this.callBeforeNavigate(),
+            () => {
+              this.setInternalHistoryIndex(this.getHistoryIndex());
+              this.callObservers();
+            },
+            (error) => {
+              return cancelNavigation(error);
+            }
+          );
         });
       }
     };
@@ -75,8 +88,8 @@ export class BrowserNavigator extends Navigator {
     // --- 'beforeunload' event ---
 
     this._beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-      if (this.getIsBlocked()) {
-        // Navigation is blocked
+      if (this.getIsBlocked() || this.getBeforeNavigate() !== undefined) {
+        // Navigation is blocked or a `beforeNavigate` hook is set
 
         event.preventDefault(); // Not supported in all browsers
 

@@ -84,6 +84,19 @@ export function BrowserNavigatorPlugin() {
         );
 
         navigator.setIsBlocked(isBlocked);
+      },
+
+      useBeforeNavigate(beforeNavigate: (() => void | Promise<void>) | undefined) {
+        useEffect(
+          () => () => {
+            // Always remove the navigator `beforeNavigate` hook when the associated
+            // React component unmounts
+            navigator.setBeforeNavigate(undefined);
+          },
+          []
+        );
+
+        navigator.setBeforeNavigate(beforeNavigate);
       }
     });
   };
