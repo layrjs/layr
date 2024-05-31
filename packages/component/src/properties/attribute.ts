@@ -323,9 +323,40 @@ export class Attribute extends Observable(Property) {
     if (autoFork && !hasOwnProperty(this, '_value')) {
       const parent = this.getParent();
       const value = this._value;
-      const componentClass = isComponentInstance(value)
-        ? ensureComponentClass(parent).getComponent(value.constructor.getComponentName())
-        : undefined;
+
+      let componentClass: typeof Component | undefined;
+
+      if (isComponentInstance(value)) {
+        // If the value is a component instance, we need to determine the component class
+        // of the instance
+        componentClass = ensureComponentClass(parent).getComponent(
+          value.constructor.getComponentName()
+        );
+      } else if (Array.isArray(value)) {
+        // If the value is an array, we need to determine the component class of the array items
+        const values = value as unknown[];
+        const componentClasses: (typeof Component)[] = [];
+
+        for (const value of values) {
+          if (isComponentInstance(value)) {
+            const componentClass = ensureComponentClass(parent).getComponent(
+              value.constructor.getComponentName()
+            );
+
+            if (!componentClasses.includes(componentClass)) {
+              componentClasses.push(componentClass);
+            }
+          }
+        }
+
+        if (componentClasses.length === 1) {
+          componentClass = componentClasses[0];
+        } else if (componentClasses.length > 1) {
+          throw new Error(
+            `Cannot auto-fork an array attribute containing instances of multiple component classes (${this.describe()})`
+          );
+        }
+      }
 
       let valueFork = fork(value, {componentClass});
 

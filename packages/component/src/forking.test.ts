@@ -111,6 +111,8 @@ describe('Forking', () => {
     }
 
     class Movie extends Component {
+      declare ['constructor']: typeof Movie;
+
       @provide() static Director = Director;
 
       @attribute() director!: Director;
@@ -123,11 +125,54 @@ describe('Forking', () => {
     expect(movieFork.director).not.toBe(movie.director);
     expect(movieFork.director.name).toBe('Christopher Nolan');
     expect(movieFork.director.constructor.isForkOf(Director)).toBe(true);
+    expect(movieFork.director.constructor).toBe(movieFork.constructor.Director);
     expect(movieFork.director.isForkOf(movie.director)).toBe(true);
 
     movieFork.director.name = 'Christopher Nolan 2';
 
     expect(movieFork.director.name).toBe('Christopher Nolan 2');
     expect(movie.director.name).toBe('Christopher Nolan');
+  });
+
+  test('Array of referenced components', async () => {
+    class Actor extends Component {
+      @attribute() name!: string;
+    }
+
+    class Movie extends Component {
+      declare ['constructor']: typeof Movie;
+
+      @provide() static Actor = Actor;
+
+      @attribute() actors!: Actor[];
+    }
+
+    const movie = new Movie({
+      actors: [new Actor({name: 'Leonardo DiCaprio'}), new Actor({name: 'Joseph Gordon-Levitt'})]
+    });
+
+    expect(movie.actors[0].constructor).toBe(movie.actors[1].constructor);
+
+    const movieFork = movie.fork();
+
+    expect(movieFork.actors[0]).not.toBe(movie.actors[0]);
+    expect(movieFork.actors[0].name).toBe('Leonardo DiCaprio');
+    expect(movieFork.actors[0].constructor.isForkOf(Actor)).toBe(true);
+    expect(movieFork.actors[0].constructor).toBe(movieFork.constructor.Actor);
+    expect(movieFork.actors[0].isForkOf(movie.actors[0])).toBe(true);
+    movieFork.actors[0].name = 'Leonardo DiCaprio 2';
+    expect(movieFork.actors[0].name).toBe('Leonardo DiCaprio 2');
+    expect(movie.actors[0].name).toBe('Leonardo DiCaprio');
+
+    expect(movieFork.actors[1]).not.toBe(movie.actors[1]);
+    expect(movieFork.actors[1].name).toBe('Joseph Gordon-Levitt');
+    expect(movieFork.actors[1].constructor.isForkOf(Actor)).toBe(true);
+    expect(movieFork.actors[1].constructor).toBe(movieFork.constructor.Actor);
+    expect(movieFork.actors[1].isForkOf(movie.actors[1])).toBe(true);
+    movieFork.actors[1].name = 'Joseph Gordon-Levitt 2';
+    expect(movieFork.actors[1].name).toBe('Joseph Gordon-Levitt 2');
+    expect(movie.actors[1].name).toBe('Joseph Gordon-Levitt');
+
+    expect(movieFork.actors[0].constructor).toBe(movieFork.actors[1].constructor);
   });
 });
