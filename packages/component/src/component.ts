@@ -3022,6 +3022,14 @@ export class Component extends Observable(Object) {
   static provideComponent(component: typeof Component) {
     assertIsComponentClass(component);
 
+    const componentName = component.getComponentName();
+
+    if (componentName === this.getComponentName()) {
+      throw new Error(
+        `Cannot provide the component '${component.getComponentName()}' from '${this.getComponentName()}' because a component cannot provide itself`
+      );
+    }
+
     const providedComponents = this.__getProvidedComponents();
 
     const existingProvider = component.__getComponentProvider();
@@ -3035,8 +3043,6 @@ export class Component extends Observable(Object) {
         `Cannot provide the component '${component.getComponentName()}' from '${this.getComponentName()}' because '${component.getComponentName()}' is already provided by '${existingProvider.getComponentName()}'`
       );
     }
-
-    const componentName = component.getComponentName();
 
     const existingComponent = providedComponents[componentName];
 
@@ -3135,25 +3141,9 @@ export class Component extends Observable(Object) {
    * @category Dependency Management
    */
   static getComponentProvider() {
-    const componentName = this.getComponentName();
+    const componentProvider = this.__getComponentProvider();
 
-    let currentComponent = this;
-
-    while (true) {
-      const componentProvider = currentComponent.__getComponentProvider();
-
-      if (componentProvider === undefined) {
-        return currentComponent;
-      }
-
-      const providedComponent = componentProvider.getProvidedComponent(componentName);
-
-      if (providedComponent !== undefined) {
-        return componentProvider;
-      }
-
-      currentComponent = componentProvider;
-    }
+    return componentProvider !== undefined ? componentProvider : this;
   }
 
   static __componentProvider?: typeof Component;
@@ -3408,8 +3398,37 @@ export class Component extends Observable(Object) {
    * @category Forking
    */
   static fork<T extends typeof Component>(this: T, options: ForkOptions = {}): T {
-    const {componentProvider = this.__getComponentProvider()} = options;
+    let {componentProvider} = options;
 
+    if (componentProvider !== undefined) {
+      // The component class should be forked and attached to the specified component provider
+      const componentFork = this.__fork();
+      componentFork.__setComponentProvider(componentProvider);
+      return componentFork;
+    }
+
+    componentProvider = this.__getComponentProvider();
+
+    if (componentProvider === undefined) {
+      // The component class is not provided by another component, so it can be forked as is
+      return this.__fork();
+    }
+
+    // The component class is provided by another component, so we need to fork the component provider and get the fork of the component class from it
+    const name = this.getComponentName();
+    const componentProviderFork = componentProvider.fork(options);
+    const componentFork = componentProviderFork.getProvidedComponent(name) as T | undefined;
+
+    if (componentFork === undefined) {
+      throw new Error(
+        `Cannot get the component '${name}' from the component '${componentProviderFork.getComponentPath()}'`
+      );
+    }
+
+    return componentFork;
+  }
+
+  static __fork<T extends typeof Component>(this: T): T {
     const name = this.getComponentName();
 
     // Use a little trick to make sure the generated subclass
@@ -3421,10 +3440,6 @@ export class Component extends Observable(Object) {
       // In case the code has been transpiled by Babel with @babel/plugin-transform-classes,
       // the above trick doesn't work, so let's set the class name manually
       Object.defineProperty(componentFork, 'name', {value: name});
-    }
-
-    if (componentProvider !== undefined) {
-      componentFork.__setComponentProvider(componentProvider);
     }
 
     return componentFork;

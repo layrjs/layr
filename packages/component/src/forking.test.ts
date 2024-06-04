@@ -1,5 +1,5 @@
 import {Component} from './component';
-import {attribute, provide} from './decorators';
+import {attribute, consume, provide} from './decorators';
 
 describe('Forking', () => {
   test('Simple component', async () => {
@@ -73,15 +73,42 @@ describe('Forking', () => {
   });
 
   test('Component provision', async () => {
-    class MovieDetails extends Component {}
+    class MovieDetails extends Component {
+      @consume() static App: typeof App;
+      @consume() static Movie: typeof Movie;
+    }
 
     class Movie extends Component {
-      @provide() static MovieDetails = MovieDetails;
+      @consume() static App: typeof App;
+      @consume() static MovieDetails: typeof MovieDetails;
     }
 
     class App extends Component {
       @provide() static Movie = Movie;
+      @provide() static MovieDetails = MovieDetails;
     }
+
+    // ---
+
+    const AppFork = App.fork();
+
+    expect(AppFork.Movie).not.toBe(App.Movie);
+    expect(AppFork.Movie.isForkOf(App.Movie)).toBe(true);
+    expect(AppFork.MovieDetails).not.toBe(App.MovieDetails);
+    expect(AppFork.MovieDetails.isForkOf(App.MovieDetails)).toBe(true);
+    expect(AppFork.Movie.App).toBe(AppFork);
+    expect(AppFork.Movie.MovieDetails.App).toBe(AppFork);
+
+    // ---
+
+    const MovieFork = App.Movie.fork();
+
+    expect(MovieFork.App).not.toBe(App);
+    expect(MovieFork.App.isForkOf(App)).toBe(true);
+    expect(MovieFork.App.Movie).toBe(MovieFork);
+    expect(MovieFork.MovieDetails.Movie).toBe(MovieFork);
+
+    // ---
 
     const GhostApp = App.getGhost();
     const SameGhostApp = App.getGhost();
@@ -89,15 +116,16 @@ describe('Forking', () => {
     expect(GhostApp.isForkOf(App)).toBe(true);
     expect(SameGhostApp).toBe(GhostApp);
 
-    const GhostMovie = Movie.getGhost();
-    const SameGhostMovie = Movie.getGhost();
+    const GhostMovie = App.Movie.getGhost();
+    const SameGhostMovie = GhostApp.Movie.getGhost();
 
     expect(GhostMovie.isForkOf(Movie)).toBe(true);
     expect(SameGhostMovie).toBe(GhostMovie);
     expect(GhostApp.Movie).toBe(GhostMovie);
+    expect(SameGhostApp.Movie).toBe(GhostMovie);
 
-    const GhostMovieDetails = MovieDetails.getGhost();
-    const SameGhostMovieDetails = MovieDetails.getGhost();
+    const GhostMovieDetails = App.Movie.MovieDetails.getGhost();
+    const SameGhostMovieDetails = GhostApp.Movie.MovieDetails.getGhost();
 
     expect(GhostMovieDetails.isForkOf(MovieDetails)).toBe(true);
     expect(SameGhostMovieDetails).toBe(GhostMovieDetails);
@@ -113,18 +141,25 @@ describe('Forking', () => {
     class Movie extends Component {
       declare ['constructor']: typeof Movie;
 
-      @provide() static Director = Director;
+      @consume() static Director: typeof Director;
 
       @attribute() director!: Director;
     }
 
-    const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
+    class App extends Component {
+      @provide() static Movie = Movie;
+      @provide() static Director = Director;
+    }
+
+    const movie = new App.Movie({director: new App.Movie.Director({name: 'Christopher Nolan'})});
 
     const movieFork = movie.fork();
 
+    expect(movieFork.constructor).not.toBe(movie.constructor);
+    expect(movieFork.constructor.Director).not.toBe(movie.constructor.Director);
     expect(movieFork.director).not.toBe(movie.director);
     expect(movieFork.director.name).toBe('Christopher Nolan');
-    expect(movieFork.director.constructor.isForkOf(Director)).toBe(true);
+    expect(movieFork.director.constructor.isForkOf(App.Movie.Director)).toBe(true);
     expect(movieFork.director.constructor).toBe(movieFork.constructor.Director);
     expect(movieFork.director.isForkOf(movie.director)).toBe(true);
 

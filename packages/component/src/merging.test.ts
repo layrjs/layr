@@ -89,8 +89,6 @@ describe('Merging', () => {
 
   test('Circular references', async () => {
     class User extends Component {
-      @provide() static User = User;
-
       @attribute() name!: string;
       @attribute() createdBy?: User;
     }
