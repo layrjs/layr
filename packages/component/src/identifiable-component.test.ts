@@ -217,9 +217,8 @@ describe('Identifiable component', () => {
 
     expect(User.prototype.hasSecondaryIdentifierAttribute('email')).toBe(false);
 
-    const setSecondaryIdentifierAttributeResult = User.prototype.setSecondaryIdentifierAttribute(
-      'email'
-    );
+    const setSecondaryIdentifierAttributeResult =
+      User.prototype.setSecondaryIdentifierAttribute('email');
 
     expect(User.prototype.hasSecondaryIdentifierAttribute('email')).toBe(true);
 
@@ -262,9 +261,9 @@ describe('Identifiable component', () => {
     const secondaryIdentifierAttributes = User.prototype.getSecondaryIdentifierAttributes();
 
     expect(typeof secondaryIdentifierAttributes[Symbol.iterator]).toBe('function');
-    expect(
-      Array.from(secondaryIdentifierAttributes).map((property) => property.getName())
-    ).toEqual(['email', 'username']);
+    expect(Array.from(secondaryIdentifierAttributes).map((property) => property.getName())).toEqual(
+      ['email', 'username']
+    );
   });
 
   test('getIdentifiers()', async () => {
@@ -494,17 +493,21 @@ describe('Identifiable component', () => {
 
       @primaryIdentifier() id!: string;
       @attribute('string') title = '';
-      @attribute('User') author!: User;
+      @attribute('User') createdBy!: User;
+      @attribute('User') updatedBy!: User;
     }
 
-    const article = new Article({id: 'xyz456', title: 'Hello', author: user});
+    const article = new Article({id: 'xyz456', title: 'Hello', createdBy: user, updatedBy: user});
 
     expect(article.id).toBe('xyz456');
     expect(article.title).toBe('Hello');
 
-    const author = article.author;
+    const createdBy = article.createdBy;
+    const updatedBy = article.updatedBy;
 
-    expect(author).toBe(user);
+    expect(createdBy).toBe(user);
+    expect(updatedBy).toBe(user);
+    expect(updatedBy).toBe(createdBy);
 
     const ArticleFork = Article.fork();
 
@@ -518,19 +521,23 @@ describe('Identifiable component', () => {
     expect(articleFork.id).toBe('xyz456');
     expect(articleFork.title).toBe('Hello');
 
-    const authorFork = articleFork.author;
-
     UserFork = ArticleFork.User;
 
-    expect(authorFork.constructor).toBe(UserFork);
-    expect(authorFork).toBeInstanceOf(UserFork);
+    const createdByFork = articleFork.createdBy;
 
-    expect(authorFork.isForkOf(author)).toBe(true);
-    expect(authorFork).not.toBe(author);
-    expect(authorFork.id).toBe('abc123');
-    expect(authorFork.email).toBe('hi@hello.com');
+    expect(createdByFork.constructor).toBe(UserFork);
+    expect(createdByFork).toBeInstanceOf(UserFork);
 
-    expect(UserFork.getIdentityMap().getComponent({id: 'abc123'})).toBe(authorFork);
+    expect(createdByFork.isForkOf(createdBy)).toBe(true);
+    expect(createdByFork).not.toBe(createdBy);
+    expect(createdByFork.id).toBe('abc123');
+    expect(createdByFork.email).toBe('hi@hello.com');
+
+    expect(UserFork.getIdentityMap().getComponent({id: 'abc123'})).toBe(createdByFork);
+
+    const updatedByFork = articleFork.updatedBy;
+
+    expect(updatedByFork).toBe(createdByFork);
 
     // --- With a serialized referenced identifiable component ---
 
@@ -539,22 +546,23 @@ describe('Identifiable component', () => {
         __component: 'Article',
         id: 'xyz789',
         title: 'Hello 2',
-        author: {__component: 'User', id: 'abc123'}
+        createdBy: {__component: 'User', id: 'abc123'},
+        updatedBy: {__component: 'User', id: 'abc123'}
       },
       {rootComponent: ArticleFork}
     ) as Article;
 
-    const deserializedAuthor = deserializedArticle.author;
+    const deserializedCreatedBy = deserializedArticle.createdBy;
 
-    expect(deserializedAuthor.constructor).toBe(UserFork);
-    expect(deserializedAuthor).toBeInstanceOf(UserFork);
+    expect(deserializedCreatedBy.constructor).toBe(UserFork);
+    expect(deserializedCreatedBy).toBeInstanceOf(UserFork);
 
-    expect(deserializedAuthor.isForkOf(author)).toBe(true);
-    expect(deserializedAuthor).not.toBe(author);
-    expect(deserializedAuthor.id).toBe('abc123');
-    expect(deserializedAuthor.email).toBe('hi@hello.com');
+    expect(deserializedCreatedBy.isForkOf(createdBy)).toBe(true);
+    expect(deserializedCreatedBy).not.toBe(createdBy);
+    expect(deserializedCreatedBy.id).toBe('abc123');
+    expect(deserializedCreatedBy.email).toBe('hi@hello.com');
 
-    expect(deserializedAuthor).toBe(authorFork);
+    expect(deserializedCreatedBy).toBe(createdByFork);
   });
 
   test('getGhost()', async () => {

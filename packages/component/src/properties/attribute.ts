@@ -358,7 +358,23 @@ export class Attribute extends Observable(Property) {
         }
       }
 
-      let valueFork = fork(value, {componentClass});
+      let valueFork: any;
+
+      if (
+        isComponentInstance(value) &&
+        value.hasPrimaryIdentifierAttribute() &&
+        value.isAttached()
+      ) {
+        valueFork = componentClass!.getIdentityMap().getComponent(value.getIdentifiers());
+
+        if (valueFork === undefined) {
+          throw new Error(
+            `Cannot auto-fork an attribute with a component instance that is not in the identity map (${this.describe()})`
+          );
+        }
+      } else {
+        valueFork = fork(value, {componentClass});
+      }
 
       if (canBeObserved(valueFork)) {
         if (!isObservable(valueFork)) {
