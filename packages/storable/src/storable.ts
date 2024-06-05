@@ -1308,7 +1308,11 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         component: typeof Component | Component
       ) {
         if (isComponentClassOrInstance(query)) {
-          if (component === query || isPrototypeOf(component, query)) {
+          if (
+            component === query ||
+            component.constructor === query.constructor ||
+            isPrototypeOf(component, query)
+          ) {
             return query.toObject({minimize: true});
           }
 
@@ -1386,7 +1390,12 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
                   );
                 }
 
-                if (!isPrototypeOf(component, nestedComponent)) {
+                if (
+                  !(
+                    component.constructor === nestedComponent.constructor ||
+                    isPrototypeOf(component, nestedComponent)
+                  )
+                ) {
                   throw new Error(
                     `An unexpected item was specified for the operator '${name}' (${component.describeComponent(
                       {
