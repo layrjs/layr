@@ -3462,12 +3462,26 @@ export class Component extends Observable(Object) {
    * @category Forking
    */
   fork<T extends Component>(this: T, options: ForkOptions = {}) {
-    let {componentClass} = options;
+    let {componentClass, ignoreIdentityMap} = options;
 
     if (componentClass === undefined) {
       componentClass = this.constructor.fork();
     } else {
       assertIsComponentClass(componentClass);
+    }
+
+    if (!ignoreIdentityMap && this.hasPrimaryIdentifierAttribute() && this.isAttached()) {
+      // If the component is identifiable and attached, we need to check if a fork of the component already exists in the identity map
+
+      const componentFork = componentClass.getIdentityMap().getComponent(this.getIdentifiers()) as
+        | T
+        | undefined;
+
+      if (componentFork === undefined) {
+        throw new Error(`Component not found in the identity map (${this.describeComponent()})`);
+      }
+
+      return componentFork;
     }
 
     const componentFork = Object.create(this) as T;
@@ -3481,10 +3495,6 @@ export class Component extends Observable(Object) {
         enumerable: false,
         configurable: true
       });
-
-      if (componentFork.hasPrimaryIdentifierAttribute() && componentFork.isAttached()) {
-        componentClass.getIdentityMap().addComponent(componentFork);
-      }
     }
 
     return componentFork;

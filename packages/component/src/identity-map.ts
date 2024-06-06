@@ -147,7 +147,8 @@ export class IdentityMap {
 
       if (!hasOwnProperty(index, value)) {
         // The component's class has been forked
-        component = component.fork({componentClass: parent});
+        component = component.fork({componentClass: parent, ignoreIdentityMap: true});
+        index[value] = component;
       }
 
       return component;

@@ -563,6 +563,37 @@ describe('Identifiable component', () => {
     expect(deserializedCreatedBy.email).toBe('hi@hello.com');
 
     expect(deserializedCreatedBy).toBe(createdByFork);
+
+    // --- With an array of identifiable components ---
+
+    class Blog extends Component {
+      declare ['constructor']: typeof Blog;
+
+      @provide() static Article = Article;
+
+      @primaryIdentifier() id!: string;
+      @attribute('Article[]') articles: Article[] = [];
+    }
+
+    const article1 = new Article({title: 'Hello 1', createdBy: user, updatedBy: user});
+    const article2 = new Article({title: 'Hello 2', createdBy: user, updatedBy: user});
+
+    const blog1 = new Blog({articles: [article1, article2]});
+
+    const blog1Fork = blog1.fork();
+    const article1Fork = blog1Fork.articles[0];
+    const article2Fork = blog1Fork.articles[1];
+
+    expect(article1Fork.constructor).toBe(blog1Fork.constructor.Article);
+    expect(article1Fork.isForkOf(article1)).toBe(true);
+    expect(article2Fork.constructor).toBe(blog1Fork.constructor.Article);
+    expect(article2Fork.isForkOf(article2)).toBe(true);
+
+    const blog2 = new Blog({articles: [article1, article1]});
+
+    const blog2Fork = blog2.fork();
+
+    expect(blog2Fork.articles[0]).toBe(blog2Fork.articles[1]);
   });
 
   test('getGhost()', async () => {

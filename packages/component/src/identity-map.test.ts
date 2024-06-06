@@ -111,10 +111,7 @@ describe('Identity map', () => {
     });
 
     expect(identityMapFork.getComponent({email: 'hi@hello.com'})).toBe(userFork);
-
-    expect(() => identityMapFork.getComponent({email: 'salut@bonjour.com'})).toThrow(
-      "A component with the same identifier already exists (attribute: 'User.prototype.id')"
-    );
+    expect(identityMapFork.getComponent({email: 'salut@hello.com'})).toBeUndefined();
   });
 
   test('removeComponent()', async () => {

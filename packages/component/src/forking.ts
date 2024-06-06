@@ -6,6 +6,7 @@ import {isComponentClass, isComponentInstance} from './utilities';
 export type ForkOptions = SimpleForkOptions & {
   componentProvider?: typeof Component;
   componentClass?: typeof Component;
+  ignoreIdentityMap?: boolean;
 };
 
 /**
