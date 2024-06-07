@@ -616,6 +616,51 @@ describe('Identifiable component', () => {
     expect(sameGhostUser).toBe(ghostUser);
   });
 
+  test('merge()', async () => {
+    class Director extends Component {
+      @primaryIdentifier() id!: string;
+      @attribute() name!: string;
+    }
+
+    class Movie extends Component {
+      declare ['constructor']: typeof Movie;
+
+      @provide() static Director = Director;
+
+      @primaryIdentifier() id!: string;
+      @attribute('Director') director!: Director;
+    }
+
+    const movie = new Movie({director: new Director({name: 'Christopher Nolan'})});
+    const director = movie.director;
+
+    const movieFork = movie.fork();
+
+    expect(movieFork.director).not.toBe(director);
+
+    movieFork.director.name = 'Christopher Nolan 2';
+
+    expect(movie.director.name).toBe('Christopher Nolan');
+
+    movie.merge(movieFork);
+
+    expect(movie.director.name).toBe('Christopher Nolan 2');
+    expect(movie.director).toBe(director);
+
+    movieFork.director = new movieFork.constructor.Director({name: 'Christopher Nolan 3'});
+
+    expect(movie.director).toBe(director);
+
+    movie.merge(movieFork);
+
+    expect(movie.director.name).toBe('Christopher Nolan 3');
+    expect(movie.director).not.toBe(director);
+
+    // TODO:
+    // expect(movie.director).not.toBe(movieFork.director);
+    // expect(movie.director.constructor).toBe(movie.constructor.Director);
+  });
+
   test('detach()', async () => {
     class User extends Component {
       @primaryIdentifier() id!: string;

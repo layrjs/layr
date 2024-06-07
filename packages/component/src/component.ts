@@ -3738,8 +3738,12 @@ export class Component extends Observable(Object) {
         continue;
       }
 
-      const valueFork = attributeFork.getValue();
       const value = attribute.getValue({throwIfUnset: false});
+      const valueFork = attributeFork.getValue();
+
+      // TODO:
+      // Consider implementing a way to merge components that are not forks of each other
+      // Currently, we just clone `valueFork` if it is not a fork of `value`
 
       const mergedValue = merge(value, valueFork, {...otherOptions, mergedComponents});
 
