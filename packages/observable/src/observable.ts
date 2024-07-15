@@ -510,7 +510,7 @@ export function createObservable<T extends object>(target: T) {
       (target as any)[key] = value;
     }
 
-    if (isObservable(value)) {
+    if (isObservable(value) && isEmbeddable(value)) {
       value.addObserver(observable);
     }
   };
