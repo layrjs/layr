@@ -518,25 +518,33 @@ describe('Attribute', () => {
 
     expect(articleObserver).toHaveBeenCalledTimes(0);
 
-    commentsAttribute.setValue([]);
+    commentsAttribute.setValue([comment]);
 
     expect(articleObserver).toHaveBeenCalledTimes(1);
 
-    (commentsAttribute.getValue() as Comment[]).push(comment);
+    commentTextAttribute.setValue('Hello');
+
+    expect(articleObserver).toHaveBeenCalledTimes(1);
+
+    commentsAttribute.setValue([]);
 
     expect(articleObserver).toHaveBeenCalledTimes(2);
+
+    (commentsAttribute.getValue() as Comment[]).push(comment);
+
+    expect(articleObserver).toHaveBeenCalledTimes(3);
 
     commentTextAttribute.setValue('Hello');
 
-    expect(articleObserver).toHaveBeenCalledTimes(2);
+    expect(articleObserver).toHaveBeenCalledTimes(3);
 
     (commentsAttribute.getValue() as Comment[]).pop();
 
-    expect(articleObserver).toHaveBeenCalledTimes(4);
+    expect(articleObserver).toHaveBeenCalledTimes(5);
 
     commentTextAttribute.setValue('Hey');
 
-    expect(articleObserver).toHaveBeenCalledTimes(4);
+    expect(articleObserver).toHaveBeenCalledTimes(5);
   });
 
   test('Forking', async () => {

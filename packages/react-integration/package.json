@@ -1,6 +1,6 @@
 {
   "name": "@layr/react-integration",
-  "version": "2.0.158",
+  "version": "2.0.162",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
@@ -27,16 +27,16 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/browser-navigator": "^2.0.79",
-    "@layr/component": "^2.0.52",
-    "@layr/memory-navigator": "^2.0.65",
-    "@layr/navigator": "^2.0.62",
-    "@layr/observable": "^1.0.16",
-    "@layr/routable": "^2.0.113",
-    "@layr/utilities": "^1.0.9",
+    "@layr/browser-navigator": "^2.0.82",
+    "@layr/component": "^2.0.61",
+    "@layr/memory-navigator": "^2.0.68",
+    "@layr/navigator": "^2.0.65",
+    "@layr/observable": "^1.0.18",
+    "@layr/routable": "^2.0.118",
+    "@layr/utilities": "^1.0.10",
     "core-helpers": "^1.0.8",
     "lodash": "^4.17.21",
-    "tslib": "^2.6.2"
+    "tslib": "^2.6.3"
   },
   "peerDependencies": {
     "react": ">=16.13.1"
@@ -44,7 +44,7 @@
   "devDependencies": {
     "@mvila/dev-tools": "^1.4.0",
     "@mvila/tsconfig": "^1.0.6",
-    "@types/lodash": "^4.17.0",
+    "@types/lodash": "^4.17.6",
     "@types/react": "^16.14.60"
   }
 }
