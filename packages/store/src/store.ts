@@ -709,7 +709,7 @@ export abstract class Store {
   toDocumentExpressions(storable: typeof StorableComponent | StorableComponent, query: Query) {
     const documentQuery = this.toDocument(storable, query);
 
-    const build = function (query: Query, expressions: Expression[], path: Path) {
+    const build = (query: Query, expressions: Expression[], path: Path) => {
       for (const [name, value] of Object.entries(query)) {
         if (looksLikeOperator(name)) {
           const operator = name;
@@ -732,12 +732,12 @@ export abstract class Store {
       }
     };
 
-    const handleValue = function (
+    const handleValue = (
       value: AttributeValue | object,
       expressions: Expression[],
       subpath: Path,
       {query}: {query: Query}
-    ) {
+    ) => {
       if (!isPlainObject(value)) {
         // Make '$equal' the default operator for non object values
         expressions.push([subpath, '$equal', value]);
@@ -780,13 +780,13 @@ export abstract class Store {
       }
     };
 
-    const handleOperator = function (
+    const handleOperator = (
       operator: Operator,
       value: AttributeValue | object,
       expressions: Expression[],
       path: Path,
       {query}: {query: Query}
-    ) {
+    ) => {
       const normalizedOperator = normalizeOperatorForValue(operator, value, {query});
 
       if (
@@ -807,8 +807,10 @@ export abstract class Store {
       ) {
         const values = value as (AttributeValue | object)[];
         const operatorExpressions = values.map((value) => {
+          // TODO: We call `toDocument()` here so that we can transform the primary identifier attribute name (e.g., 'id') into the actual primary identifier attribute name (e.g., '_id'). This is a bit hacky and should be improved.
+          const documentValue = this.toDocument(storable, value);
           const subexpressions: Expression[] = [];
-          handleValue(value, subexpressions, '', {query});
+          handleValue(documentValue, subexpressions, '', {query});
           return subexpressions;
         });
         expressions.push([path, normalizedOperator, operatorExpressions]);

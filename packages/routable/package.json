@@ -43,7 +43,7 @@
     "@types/debug": "^4.1.12",
     "@types/http-errors": "^1.8.2",
     "@types/jest": "^29.5.12",
-    "@types/lodash": "^4.17.6",
+    "@types/lodash": "^4.17.7",
     "http-errors": "^1.8.1"
   }
 }

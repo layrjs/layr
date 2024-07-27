@@ -1610,6 +1610,17 @@ describe('Storable', () => {
             {__component: 'User', id: 'user12'}
           ]);
 
+          users = await User.fork().find(
+            {$or: [{id: {$in: ['user11', 'user12']}}, {accessLevel: 0}]},
+            {}
+          );
+
+          expect(serialize(users)).toStrictEqual([
+            {__component: 'User', id: 'user1'},
+            {__component: 'User', id: 'user11'},
+            {__component: 'User', id: 'user12'}
+          ]);
+
           // - '$nor' -
 
           users = await User.fork().find(

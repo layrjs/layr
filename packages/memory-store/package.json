@@ -1,6 +1,6 @@
 {
   "name": "@layr/memory-store",
-  "version": "2.0.86",
+  "version": "2.0.87",
   "description": "A Layr store using memory (useful for testing)",
   "keywords": [
     "layr",
@@ -27,7 +27,7 @@
   "dependencies": {
     "@layr/component": "^2.0.61",
     "@layr/storable": "^2.0.80",
-    "@layr/store": "^2.0.85",
+    "@layr/store": "^2.0.86",
     "core-helpers": "^1.0.8",
     "lodash": "^4.17.21",
     "sort-on": "^4.1.1",
@@ -36,6 +36,6 @@
   "devDependencies": {
     "@mvila/dev-tools": "^1.4.0",
     "@mvila/tsconfig": "^1.0.6",
-    "@types/lodash": "^4.17.6"
+    "@types/lodash": "^4.17.7"
   }
 }
