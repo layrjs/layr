@@ -34,7 +34,7 @@
     "tslib": "^2.6.3"
   },
   "devDependencies": {
-    "@layr/component-server": "^2.0.72",
+    "@layr/component-server": "^2.0.73",
     "@layr/utilities": "^1.0.10",
     "@mvila/dev-tools": "^1.4.0",
     "@mvila/tsconfig": "^1.0.6",
