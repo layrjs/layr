@@ -20,7 +20,12 @@ declare global {
 
 export type URLOptions = {hash?: string};
 
-export type NavigationOptions = {silent?: boolean; defer?: boolean; ignoreHooks?: boolean};
+export type NavigationOptions = {
+  silent?: boolean;
+  defer?: boolean;
+  ignoreBlocking?: boolean;
+  ignoreHooks?: boolean;
+};
 
 type NavigatorPlugin = (navigator: Navigator) => void;
 
@@ -198,27 +203,30 @@ export abstract class Navigator extends Observable(Object) {
    * @possiblyasync
    */
   navigate(url: string | URL, options: NavigationOptions = {}) {
-    const {silent = false, defer = true, ignoreHooks = false} = options;
+    const {silent = false, defer = true, ignoreBlocking = false, ignoreHooks = false} = options;
 
-    return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
-      if (!canNavigate) {
-        return;
-      }
-
-      return possiblyAsync(!ignoreHooks && this.callBeforeNavigate(), () => {
-        this._navigate(normalizeURL(url));
-
-        this.setInternalHistoryIndex(this.getHistoryIndex());
-
-        if (silent) {
+    return possiblyAsync(
+      ignoreBlocking || !this.getIsBlocked() || this.confirmNavigation(),
+      (canNavigate) => {
+        if (!canNavigate) {
           return;
         }
 
-        return possiblyDeferred(defer, () => {
-          this.callObservers();
+        return possiblyAsync(!ignoreHooks && this.callBeforeNavigate(), () => {
+          this._navigate(normalizeURL(url));
+
+          this.setInternalHistoryIndex(this.getHistoryIndex());
+
+          if (silent) {
+            return;
+          }
+
+          return possiblyDeferred(defer, () => {
+            this.callObservers();
+          });
         });
-      });
-    });
+      }
+    );
   }
 
   abstract _navigate(url: URL): void;
@@ -312,27 +320,30 @@ export abstract class Navigator extends Observable(Object) {
    * @possiblyasync
    */
   go(delta: number, options: NavigationOptions = {}) {
-    const {silent = false, defer = true, ignoreHooks = false} = options;
+    const {silent = false, defer = true, ignoreBlocking = false, ignoreHooks = false} = options;
 
-    return possiblyAsync(!this.getIsBlocked() || this.confirmNavigation(), (canNavigate) => {
-      if (!canNavigate) {
-        return;
-      }
+    return possiblyAsync(
+      ignoreBlocking || !this.getIsBlocked() || this.confirmNavigation(),
+      (canNavigate) => {
+        if (!canNavigate) {
+          return;
+        }
 
-      return possiblyAsync(!ignoreHooks && this.callBeforeNavigate(), () => {
-        return possiblyAsync(this._go(delta), () => {
-          this.setInternalHistoryIndex(this.getHistoryIndex());
+        return possiblyAsync(!ignoreHooks && this.callBeforeNavigate(), () => {
+          return possiblyAsync(this._go(delta), () => {
+            this.setInternalHistoryIndex(this.getHistoryIndex());
 
-          if (silent) {
-            return;
-          }
+            if (silent) {
+              return;
+            }
 
-          return possiblyDeferred(defer, () => {
-            this.callObservers();
+            return possiblyDeferred(defer, () => {
+              this.callObservers();
+            });
           });
         });
-      });
-    });
+      }
+    );
   }
 
   abstract _go(delta: number): void;
