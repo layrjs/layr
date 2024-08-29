@@ -178,8 +178,120 @@ describe('MongoDBStore', () => {
       await server?.stop();
     });
 
-    test('createDocument()', async () => {
-      expect(
+    describe('createDocument()', () => {
+      test('sequentially', async () => {
+        expect(
+          await store.createDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie1'},
+            document: {
+              __component: 'Movie',
+              _id: 'movie1',
+              slug: 'inception',
+              title: 'Inception',
+              year: 2010,
+              tags: ['action', 'drama']
+            }
+          })
+        ).toBe(true);
+
+        expect(
+          await store.createDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie1'},
+            document: {
+              __component: 'Movie',
+              _id: 'movie1',
+              slug: 'inception-2',
+              title: 'Inception 2',
+              year: 2010,
+              tags: ['action', 'drama']
+            }
+          })
+        ).toBe(false);
+
+        await expect(
+          store.createDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie1'},
+            document: {
+              __component: 'Movie',
+              _id: 'movie2',
+              slug: 'inception',
+              title: 'Inception',
+              year: 2010,
+              tags: ['action', 'drama']
+            }
+          })
+        ).rejects.toThrow(
+          "A duplicate key error occurred while creating a MongoDB document (collection: 'Movie', index: 'slug [unique]')"
+        );
+
+        await expect(
+          store.createDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie1'},
+            document: {
+              __component: 'Movie',
+              _id: 'movie2',
+              slug: 'inception-2',
+              title: 'Inception',
+              year: 2010,
+              tags: ['action', 'drama']
+            }
+          })
+        ).rejects.toThrow(
+          "A duplicate key error occurred while creating a MongoDB document (collection: 'Movie', index: 'year (desc) + title [unique]')"
+        );
+      });
+
+      test('in parallel', async () => {
+        // To make batching work, we need to get the collection first
+        // @ts-ignore
+        await store._getCollection('Movie');
+
+        expect(
+          await Promise.all([
+            store.createDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie1'},
+              document: {
+                __component: 'Movie',
+                _id: 'movie1',
+                slug: 'inception',
+                title: 'Inception',
+                year: 2010,
+                tags: ['action', 'drama']
+              }
+            }),
+            store.createDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie2'},
+              document: {
+                __component: 'Movie',
+                _id: 'movie2',
+                slug: 'forrest-gump',
+                title: 'Forrest Gump',
+                year: 1994,
+                tags: ['drama', 'romance']
+              }
+            })
+          ])
+        ).toStrictEqual([true, true]);
+
+        expect(
+          await store.findDocuments({
+            collectionName: 'Movie',
+            expressions: [],
+            projection: {_id: 1},
+            sort: {_id: 'asc'}
+          })
+        ).toStrictEqual([{_id: 'movie1'}, {_id: 'movie2'}]);
+      });
+    });
+
+    describe('readDocument()', () => {
+      test('sequentially', async () => {
         await store.createDocument({
           collectionName: 'Movie',
           identifierDescriptor: {_id: 'movie1'},
@@ -189,59 +301,82 @@ describe('MongoDBStore', () => {
             slug: 'inception',
             title: 'Inception',
             year: 2010,
-            tags: ['action', 'drama']
+            tags: ['action', 'adventure', 'sci-fi']
           }
-        })
-      ).toBe(true);
+        });
 
-      expect(
+        await store.createDocument({
+          collectionName: 'Movie',
+          identifierDescriptor: {_id: 'movie2'},
+          document: {
+            __component: 'Movie',
+            _id: 'movie2',
+            slug: 'forrest-gump',
+            title: 'Forrest Gump',
+            year: 1994,
+            tags: ['drama', 'romance']
+          }
+        });
+
+        expect(
+          await store.readDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie1'},
+            projection: {_id: 1}
+          })
+        ).toStrictEqual({_id: 'movie1'});
+
+        expect(
+          await store.readDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie2'},
+            projection: {_id: 1}
+          })
+        ).toStrictEqual({_id: 'movie2'});
+      });
+
+      test('in parallel', async () => {
         await store.createDocument({
           collectionName: 'Movie',
           identifierDescriptor: {_id: 'movie1'},
           document: {
             __component: 'Movie',
             _id: 'movie1',
-            slug: 'inception-2',
-            title: 'Inception 2',
-            year: 2010,
-            tags: ['action', 'drama']
-          }
-        })
-      ).toBe(false);
-
-      await expect(
-        store.createDocument({
-          collectionName: 'Movie',
-          identifierDescriptor: {_id: 'movie1'},
-          document: {
-            __component: 'Movie',
-            _id: 'movie2',
             slug: 'inception',
             title: 'Inception',
             year: 2010,
-            tags: ['action', 'drama']
+            tags: ['action', 'adventure', 'sci-fi']
           }
-        })
-      ).rejects.toThrow(
-        "A duplicate key error occurred while creating a MongoDB document (collection: 'Movie', index: 'slug [unique]')"
-      );
+        });
 
-      await expect(
-        store.createDocument({
+        await store.createDocument({
           collectionName: 'Movie',
-          identifierDescriptor: {_id: 'movie1'},
+          identifierDescriptor: {_id: 'movie2'},
           document: {
             __component: 'Movie',
             _id: 'movie2',
-            slug: 'inception-2',
-            title: 'Inception',
-            year: 2010,
-            tags: ['action', 'drama']
+            slug: 'forrest-gump',
+            title: 'Forrest Gump',
+            year: 1994,
+            tags: ['drama', 'romance']
           }
-        })
-      ).rejects.toThrow(
-        "A duplicate key error occurred while creating a MongoDB document (collection: 'Movie', index: 'year (desc) + title [unique]')"
-      );
+        });
+
+        expect(
+          await Promise.all([
+            store.readDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie1'},
+              projection: {_id: 1}
+            }),
+            store.readDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie2'},
+              projection: {_id: 1}
+            })
+          ])
+        ).toStrictEqual([{_id: 'movie1'}, {_id: 'movie2'}]);
+      });
     });
 
     test('updateDocument()', async () => {
@@ -306,6 +441,153 @@ describe('MongoDBStore', () => {
       ).rejects.toThrow(
         "A duplicate key error occurred while updating a MongoDB document (collection: 'Movie', index: 'year (desc) + title [unique]')"
       );
+    });
+
+    describe('deleteDocument()', () => {
+      test('sequentially', async () => {
+        await store.createDocument({
+          collectionName: 'Movie',
+          identifierDescriptor: {_id: 'movie1'},
+          document: {
+            __component: 'Movie',
+            _id: 'movie1',
+            slug: 'inception',
+            title: 'Inception',
+            year: 2010,
+            tags: ['action', 'adventure', 'sci-fi']
+          }
+        });
+
+        await store.createDocument({
+          collectionName: 'Movie',
+          identifierDescriptor: {_id: 'movie2'},
+          document: {
+            __component: 'Movie',
+            _id: 'movie2',
+            slug: 'forrest-gump',
+            title: 'Forrest Gump',
+            year: 1994,
+            tags: ['drama', 'romance']
+          }
+        });
+
+        expect(
+          await store.countDocuments({
+            collectionName: 'Movie',
+            expressions: []
+          })
+        ).toBe(2);
+
+        expect(
+          await store.deleteDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie1'}
+          })
+        ).toBe(true);
+
+        expect(
+          await store.deleteDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie1'}
+          })
+        ).toBe(false);
+
+        expect(
+          await store.countDocuments({
+            collectionName: 'Movie',
+            expressions: []
+          })
+        ).toBe(1);
+
+        expect(
+          await store.deleteDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie2'}
+          })
+        ).toBe(true);
+
+        expect(
+          await store.deleteDocument({
+            collectionName: 'Movie',
+            identifierDescriptor: {_id: 'movie2'}
+          })
+        ).toBe(false);
+
+        expect(
+          await store.countDocuments({
+            collectionName: 'Movie',
+            expressions: []
+          })
+        ).toBe(0);
+      });
+
+      test('in parallel', async () => {
+        await store.createDocument({
+          collectionName: 'Movie',
+          identifierDescriptor: {_id: 'movie1'},
+          document: {
+            __component: 'Movie',
+            _id: 'movie1',
+            slug: 'inception',
+            title: 'Inception',
+            year: 2010,
+            tags: ['action', 'adventure', 'sci-fi']
+          }
+        });
+
+        await store.createDocument({
+          collectionName: 'Movie',
+          identifierDescriptor: {_id: 'movie2'},
+          document: {
+            __component: 'Movie',
+            _id: 'movie2',
+            slug: 'forrest-gump',
+            title: 'Forrest Gump',
+            year: 1994,
+            tags: ['drama', 'romance']
+          }
+        });
+
+        expect(
+          await store.countDocuments({
+            collectionName: 'Movie',
+            expressions: []
+          })
+        ).toBe(2);
+
+        expect(
+          await Promise.all([
+            store.deleteDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie1'}
+            }),
+            store.deleteDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie2'}
+            })
+          ])
+        ).toStrictEqual([true, true]);
+
+        expect(
+          await Promise.all([
+            store.deleteDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie1'}
+            }),
+            store.deleteDocument({
+              collectionName: 'Movie',
+              identifierDescriptor: {_id: 'movie2'}
+            })
+          ])
+        ).toStrictEqual([false, false]);
+
+        expect(
+          await store.countDocuments({
+            collectionName: 'Movie',
+            expressions: []
+          })
+        ).toBe(0);
+      });
     });
 
     test('findDocuments()', async () => {
