@@ -1,6 +1,6 @@
 {
   "name": "@layr/routable",
-  "version": "2.0.120",
+  "version": "2.0.124",
   "description": "Makes the methods of your Layr components callable by URL",
   "keywords": [
     "layr",
@@ -29,13 +29,13 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/component": "^2.0.61",
-    "@layr/navigator": "^2.0.67",
+    "@layr/component": "^2.0.63",
+    "@layr/navigator": "^2.0.70",
     "core-helpers": "^1.0.8",
     "debug": "^4.3.6",
     "lodash": "^4.17.21",
     "possibly-async": "^1.0.7",
-    "tslib": "^2.6.3"
+    "tslib": "^2.7.0"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.4.0",
