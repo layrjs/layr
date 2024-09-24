@@ -1997,6 +1997,13 @@ describe('Storable', () => {
         {__component: 'User', id: 'user11'},
         {__component: 'User', id: 'user13'}
       ]);
+
+      users = await User.fork().find({$and: [{hasAccessLevel: 3}]}, {});
+
+      expect(serialize(users)).toStrictEqual([
+        {__component: 'User', id: 'user11'},
+        {__component: 'User', id: 'user13'}
+      ]);
     });
 
     function getUserClass() {

@@ -1285,18 +1285,48 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
     }
 
     static async __callStorablePropertyFindersForQuery(query: Query) {
-      for (const property of this.prototype.getStorablePropertiesWithFinder()) {
-        const name = property.getName();
+      const storablePropertiesWithFinder = this.prototype.getStorablePropertiesWithFinder();
 
-        if (!hasOwnProperty(query, name)) {
-          continue; // The property finder is not used in the query
+      const replaceFinders = async (query: Query) => {
+        for (const property of storablePropertiesWithFinder) {
+          const name = property.getName();
+
+          if (!hasOwnProperty(query, name)) {
+            continue; // The property finder is not used in the query
+          }
+
+          const {[name]: value, ...remainingQuery} = query;
+
+          const finderQuery = await property.callFinder(value);
+
+          query = {...remainingQuery, ...finderQuery};
         }
 
-        const {[name]: value, ...remainingQuery} = query;
+        return query;
+      };
 
-        const finderQuery = await property.callFinder(value);
+      query = await replaceFinders(query);
 
-        query = {...remainingQuery, ...finderQuery};
+      for (const operator of ['$and', '$or', '$nor']) {
+        if (hasOwnProperty(query, operator)) {
+          const subqueries = query[operator];
+
+          if (!Array.isArray(subqueries)) {
+            throw new Error(
+              `Expected an array as value of the operator '${operator}', but received a value of type '${getTypeOf(
+                subqueries
+              )}'`
+            );
+          }
+
+          const replacedSubqueries: Query[] = [];
+
+          for (const subquery of subqueries) {
+            replacedSubqueries.push(await replaceFinders(subquery));
+          }
+
+          query = {...query, [operator]: replacedSubqueries};
+        }
       }
 
       return query;
