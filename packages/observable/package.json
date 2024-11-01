@@ -1,6 +1,6 @@
 {
   "name": "@layr/observable",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Observe JavaScript objects, arrays, or your own classes",
   "keywords": [
     "observe",
@@ -31,11 +31,11 @@
   },
   "dependencies": {
     "core-helpers": "^1.0.8",
-    "tslib": "^2.7.0"
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@mvila/dev-tools": "^1.4.0",
     "@mvila/tsconfig": "^1.0.6",
-    "@types/jest": "^29.5.12"
+    "@types/jest": "^29.5.14"
   }
 }
