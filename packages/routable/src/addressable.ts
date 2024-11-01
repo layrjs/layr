@@ -10,6 +10,7 @@ import {
   Params,
   ParamTypeDescriptor
 } from './param';
+import {hasOwnProperty} from 'core-helpers';
 
 export type AddressableOptions = {
   params?: Params;
@@ -86,6 +87,12 @@ export abstract class Addressable {
         ...parseParamTypeSpecifier(typeSpecifier),
         specifier: typeSpecifier
       };
+    }
+
+    if (hasOwnProperty(this._params, '*') && Object.keys(this._params).length > 1) {
+      throw new Error(
+        `Couldn't create the addressable '${name}' (a catch-all parameter cannot be combined with regular parameters)`
+      );
     }
 
     this._patterns = [];
@@ -253,10 +260,20 @@ export abstract class Addressable {
       const query: Record<string, string> = parseQuery(queryString);
       const params: Record<string, any> = {};
 
-      for (const [name, descriptor] of Object.entries(this._params)) {
-        const queryValue = query[name];
-        const paramValue = deserializeParam(name, queryValue, descriptor);
-        params[name] = paramValue;
+      if (hasOwnProperty(this._params, '*')) {
+        // Catch-all parameter
+        const descriptor = this._params['*'];
+        for (const [name, queryValue] of Object.entries(query)) {
+          const paramValue = deserializeParam(name, queryValue, descriptor);
+          params[name] = paramValue;
+        }
+      } else {
+        // Regular parameters
+        for (const [name, descriptor] of Object.entries(this._params)) {
+          const queryValue = query[name];
+          const paramValue = deserializeParam(name, queryValue, descriptor);
+          params[name] = paramValue;
+        }
       }
 
       return {params, ...result};
@@ -340,10 +357,20 @@ export abstract class Addressable {
   generateQueryString(params: Record<string, any> = {}) {
     const query: Record<string, string | undefined> = {};
 
-    for (const [name, descriptor] of Object.entries(this._params)) {
-      const paramValue = params[name];
-      const queryValue = serializeParam(name, paramValue, descriptor);
-      query[name] = queryValue;
+    if (hasOwnProperty(this._params, '*')) {
+      // Catch-all parameter
+      const descriptor = this._params['*'];
+      for (const [name, paramValue] of Object.entries(params)) {
+        const queryValue = serializeParam(name, paramValue, descriptor);
+        query[name] = queryValue;
+      }
+    } else {
+      // Regular parameters
+      for (const [name, descriptor] of Object.entries(this._params)) {
+        const paramValue = params[name];
+        const queryValue = serializeParam(name, paramValue, descriptor);
+        query[name] = queryValue;
+      }
     }
 
     return stringifyQuery(query);

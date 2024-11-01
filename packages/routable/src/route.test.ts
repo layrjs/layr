@@ -51,6 +51,23 @@ describe('Route', () => {
       "Couldn't parse a route (or wrapper) parameter type ('any' is not a supported type)"
     );
 
+    // -- Using a 'catch-all' route parameter ---
+
+    route = new Route('Main', '/movies', {params: {'*': 'string'}});
+
+    expect(route.getName()).toBe('Main');
+    expect(route.getPattern()).toBe('/movies');
+    expect(route.getParams()).toStrictEqual({'*': 'string'});
+    expect(route.getAliases()).toStrictEqual([]);
+    expect(route.getFilter()).toBeUndefined();
+    expect(route.getTransformers()).toStrictEqual({});
+
+    expect(
+      () => new Route('Main', '/movies', {params: {'showDetails': 'boolean?', '*': 'string'}})
+    ).toThrow(
+      "Couldn't create the addressable 'Main' (a catch-all parameter cannot be combined with regular parameters)"
+    );
+
     // -- Using route filters ---
 
     const filter = function (request: any) {
@@ -123,7 +140,7 @@ describe('Route', () => {
     });
     expect(route.matchURL('/motion-pictures')).toBeUndefined();
 
-    // -- Using route identifiers ---
+    // --- Using route identifiers ---
 
     route = new Route('Main', '/movies/:id', {aliases: ['/films/:id']});
 
@@ -146,7 +163,7 @@ describe('Route', () => {
     expect(route.matchURL('/movies/')).toBeUndefined();
     expect(route.matchURL('/movies/abc123/about')).toBeUndefined();
 
-    // -- Using route nested identifiers ---
+    // --- Using route nested identifiers ---
 
     route = new Route('Main', '/projects/:project.slug/implementations/:id');
     expect(route.matchURL('/projects/realworld/implementations/abc123')).toStrictEqual({
@@ -167,7 +184,7 @@ describe('Route', () => {
     expect(route.matchURL('/@')).toBeUndefined();
     expect(route.matchURL('/john')).toBeUndefined();
 
-    // -- Using wrappers ---
+    // --- Using wrappers ---
 
     route = new Route('Main', '[]/special');
 
@@ -237,7 +254,29 @@ describe('Route', () => {
       "A required route (or wrapper) parameter is missing (name: 'language', type: 'string')"
     );
 
-    // -- Using route filters ---
+    // --- Using a catch-all route parameter ---
+
+    route = new Route('Main', '/', {params: {'*': 'string'}});
+
+    expect(route.matchURL('/')).toStrictEqual({
+      identifiers: {},
+      params: {},
+      wrapperPath: undefined
+    });
+
+    expect(route.matchURL('/?country=France')).toStrictEqual({
+      identifiers: {},
+      params: {country: 'France'},
+      wrapperPath: undefined
+    });
+
+    expect(route.matchURL('/?country=France&language=fr')).toStrictEqual({
+      identifiers: {},
+      params: {country: 'France', language: 'fr'},
+      wrapperPath: undefined
+    });
+
+    // --- Using route filters ---
 
     route = new Route('Main', '/movies', {
       filter(request: any) {
@@ -319,6 +358,16 @@ describe('Route', () => {
       "Couldn't serialize a route (or wrapper) parameter (name: 'language', value: '123', expected type: 'string?', received type: 'number')"
     );
 
+    // --- Using a catch-all route parameter ---
+
+    route = new Route('Main', '/movies', {params: {'*': 'string'}});
+
+    expect(route.generateURL({}, {})).toBe('/movies');
+    expect(route.generateURL({}, {language: 'fr'})).toBe('/movies?language=fr');
+    expect(route.generateURL({}, {country: 'France', language: 'fr'})).toBe(
+      '/movies?country=France&language=fr'
+    );
+
     // --- Using the 'hash' option ---
 
     route = new Route('Main', '/movies/:id');
@@ -333,9 +382,17 @@ describe('Route', () => {
   });
 
   test('generateQueryString()', async () => {
-    const route = new Route('Main', '/movies/:id', {params: {language: 'string?'}});
+    let route = new Route('Main', '/movies', {params: {language: 'string?'}});
 
     expect(route.generateQueryString({})).toBe('');
     expect(route.generateQueryString({language: 'fr'})).toBe('language=fr');
+
+    route = new Route('Main', '/movies', {params: {'*': 'string'}});
+
+    expect(route.generateQueryString({})).toBe('');
+    expect(route.generateQueryString({country: 'France'})).toBe('country=France');
+    expect(route.generateQueryString({country: 'France', language: 'fr'})).toBe(
+      'country=France&language=fr'
+    );
   });
 });
