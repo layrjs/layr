@@ -808,7 +808,7 @@ export abstract class Store {
         const values = value as (AttributeValue | object)[];
         const operatorExpressions = values.map((value) => {
           // TODO: We call `toDocument()` here so that we can transform the primary identifier attribute name (e.g., 'id') into the actual primary identifier attribute name (e.g., '_id'). This is a bit hacky and should be improved.
-          const documentValue = this.toDocument(storable, value);
+          const documentValue = this.toDocument(storable, simpleSerialize(value));
           const subexpressions: Expression[] = [];
           handleValue(documentValue, subexpressions, '', {query});
           return subexpressions;
