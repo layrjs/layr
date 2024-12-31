@@ -29,6 +29,7 @@ import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import escapeRegExp from 'lodash/escapeRegExp';
 import groupBy from 'lodash/groupBy';
+import uniq from 'lodash/uniq';
 import debugModule from 'debug';
 
 const debug = debugModule('layr:mongodb-store');
@@ -198,13 +199,9 @@ export class MongoDBStore extends Store {
   // === Documents ===
 
   async createDocument({collectionName, document}: CreateDocumentParams) {
-    // TODO: Move collection getting inside the batchable function to ensure
-    // that batching works even if the collection is not available yet
-    const collection = await this._getCollection(collectionName);
-
     try {
       const {acknowledged} = await debugCall(
-        async () => await batchableInsertOne(collection, document),
+        async () => await this.batchableInsertOne(collectionName, document),
         'db.%s.batchableInsertOne(%o)',
         collectionName,
         document
@@ -242,15 +239,11 @@ export class MongoDBStore extends Store {
     identifierDescriptor,
     projection
   }: ReadDocumentParams): Promise<Document | undefined> {
-    // TODO: Move collection getting inside the batchable function to ensure
-    // that batching works even if the collection is not available yet
-    const collection = await this._getCollection(collectionName);
-
     const query = identifierDescriptor;
     const options = {projection};
 
     const document: Document | null = await debugCall(
-      async () => await batchableFindOne(collection, query, options),
+      async () => await this._batchableFindOne(collectionName, query, options),
       'db.%s.batchableFindOne(%o, %o)',
       collectionName,
       query,
@@ -310,14 +303,10 @@ export class MongoDBStore extends Store {
   }
 
   async deleteDocument({collectionName, identifierDescriptor}: DeleteDocumentParams) {
-    // TODO: Move collection getting inside the batchable function to ensure
-    // that batching works even if the collection is not available yet
-    const collection = await this._getCollection(collectionName);
-
     const filter = identifierDescriptor;
 
     const {deletedCount} = await debugCall(
-      async () => await batchableDeleteOne(collection, filter),
+      async () => await this.batchableDeleteOne(collectionName, filter),
       'db.%s.batchableDeleteOne(%o)',
       collectionName,
       filter
@@ -387,6 +376,237 @@ export class MongoDBStore extends Store {
     );
 
     return documentsCount;
+  }
+
+  // === Batching ===
+
+  private _collectionBatchers = new Map<
+    string, // Collection name
+    {
+      insertOneBatcher?: Microbatcher<Operation & {params: [document: Document]}>;
+      findOneBatcher?: Microbatcher<
+        Operation & {params: [filter: Filter<any>, options: FindOptions<any>]}
+      >;
+      deleteOneBatcher?: Microbatcher<
+        Operation & {params: [filter: DeleteDocumentParams['identifierDescriptor']]}
+      >;
+    }
+  >();
+
+  private _getCollectionBatcher(collectionName: string) {
+    let batcher = this._collectionBatchers.get(collectionName);
+
+    if (batcher === undefined) {
+      batcher = {};
+      this._collectionBatchers.set(collectionName, batcher);
+    }
+
+    return batcher;
+  }
+
+  batchableInsertOne(collectionName: string, document: Document) {
+    const collectionBatcher = this._getCollectionBatcher(collectionName);
+
+    if (collectionBatcher.insertOneBatcher === undefined) {
+      collectionBatcher.insertOneBatcher = new Microbatcher((operations) => {
+        if (operations.length > 1) {
+          // Multiple `insertOne()` that can be transformed into a single `insertMany()`
+
+          debug(
+            `Batching ${operations.length} insertOne() operations on collection '${collectionName}'`
+          );
+
+          const documents = operations.map((operation) => operation.params[0]);
+
+          this._getCollection(collectionName)
+            .then((collection) => collection.insertMany(documents))
+            .then(({acknowledged, insertedCount}) => {
+              for (const {resolve, reject} of operations) {
+                if (acknowledged) {
+                  if (insertedCount === operations.length) {
+                    resolve({acknowledged: true});
+                  } else if (insertedCount === 0) {
+                    resolve({acknowledged: false});
+                  } else {
+                    reject(new Error('Could not determine results in a batched insert operation'));
+                  }
+                } else {
+                  resolve({acknowledged: false});
+                }
+              }
+            })
+            .catch((error: any) => {
+              // TODO: Improve error handling
+              for (const {reject} of operations) {
+                reject(error);
+              }
+            });
+        } else {
+          // Single `insertOne()`
+
+          const {
+            params: [document],
+            resolve,
+            reject
+          } = operations[0];
+
+          this._getCollection(collectionName)
+            .then((collection) => collection.insertOne(document))
+            .then(resolve)
+            .catch(reject);
+        }
+      });
+    }
+
+    return collectionBatcher.insertOneBatcher.batch(document);
+  }
+
+  private _batchableFindOne(collectionName: string, query: Filter<any>, options: FindOptions<any>) {
+    assertIsObjectLike(query);
+
+    const collectionBatcher = this._getCollectionBatcher(collectionName);
+
+    if (collectionBatcher.findOneBatcher === undefined) {
+      collectionBatcher.findOneBatcher = new Microbatcher((operations) => {
+        const operationGroups = groupBy(operations, ({params: [query, options]}) => {
+          if (
+            hasOwnProperty(query, MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME) &&
+            Object.keys(query).length === 1
+          ) {
+            // 'query' has a single '_id' attribute
+            query = {[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: '___???___'};
+          }
+
+          return JSON.stringify([query, options]);
+        });
+
+        for (const operations of Object.values(operationGroups)) {
+          if (operations.length > 1) {
+            // Multiple `findOne()` that can be transformed into a single `find()`
+
+            debug(
+              `Batching ${operations.length} findOne() operations on collection '${collectionName}'`
+            );
+
+            const ids = uniq(
+              operations.map(
+                (operation) => operation.params[0][MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]
+              )
+            );
+
+            const options = operations[0].params[1]; // All 'options' objects should be identical
+
+            this._getCollection(collectionName)
+              .then((collection) =>
+                collection
+                  .find({[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: {$in: ids}}, options)
+                  .toArray()
+              )
+              .then((documents) => {
+                for (const {
+                  params: [query],
+                  resolve
+                } of operations) {
+                  const document = documents.find(
+                    (document) =>
+                      document[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME] ===
+                      query[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]
+                  );
+                  resolve(document !== undefined ? document : null);
+                }
+              })
+              .catch((error) => {
+                for (const {reject} of operations) {
+                  reject(error);
+                }
+              });
+          } else {
+            // Single `findOne()`
+
+            const {
+              params: [query, options],
+              resolve,
+              reject
+            } = operations[0];
+
+            this._getCollection(collectionName)
+              .then((collection) => collection.findOne(query, options))
+              .then(resolve)
+              .catch(reject);
+          }
+        }
+      });
+    }
+
+    return collectionBatcher.findOneBatcher.batch(query, options);
+  }
+
+  batchableDeleteOne(collectionName: string, filter: DeleteDocumentParams['identifierDescriptor']) {
+    const collectionBatcher = this._getCollectionBatcher(collectionName);
+
+    if (collectionBatcher.deleteOneBatcher === undefined) {
+      collectionBatcher.deleteOneBatcher = new Microbatcher((operations) => {
+        if (operations.length > 1) {
+          // Multiple `deleteOne()` that can be transformed into a single `deleteMany()`
+
+          debug(
+            `Batching ${operations.length} deleteOne() operations on collection '${collectionName}'`
+          );
+
+          const ids = uniq(
+            operations.map((operation) => {
+              const filter = operation.params[0];
+
+              if (
+                hasOwnProperty(filter, MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME) &&
+                Object.keys(filter).length === 1
+              ) {
+                // 'filter' has a single '_id' attribute
+                return filter[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME];
+              } else {
+                throw new Error('A delete operation with a complex filter cannot be batched');
+              }
+            })
+          );
+
+          this._getCollection(collectionName)
+            .then((collection) =>
+              collection.deleteMany({[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: {$in: ids}})
+            )
+            .then(({deletedCount}) => {
+              for (const {resolve, reject} of operations) {
+                if (deletedCount === operations.length) {
+                  resolve({deletedCount: 1});
+                } else if (deletedCount === 0) {
+                  resolve({deletedCount: 0});
+                } else {
+                  reject(new Error('Could not determine results in a batched delete operation'));
+                }
+              }
+            })
+            .catch((error: any) => {
+              for (const {reject} of operations) {
+                reject(error);
+              }
+            });
+        } else {
+          // Single `deleteOne()`
+
+          const {
+            params: [filter],
+            resolve,
+            reject
+          } = operations[0];
+
+          this._getCollection(collectionName)
+            .then((collection) => collection.deleteOne(filter))
+            .then(resolve)
+            .catch(reject);
+        }
+      });
+    }
+
+    return collectionBatcher.deleteOneBatcher.batch(filter);
   }
 
   // === Serialization ===
@@ -822,216 +1042,4 @@ async function debugCall<Result>(
   debug(`${message} => %o`, ...params, result);
 
   return result as Result;
-}
-
-// === Batching ===
-
-// --- insertOne ---
-
-const insertOneBatcher = Symbol('insertOneBatcher');
-
-interface InsertOneOperation extends Operation {
-  params: [document: Document];
-}
-
-function batchableInsertOne(
-  collection: Collection & {[insertOneBatcher]?: Microbatcher<InsertOneOperation>},
-  document: Document
-) {
-  if (collection[insertOneBatcher] === undefined) {
-    collection[insertOneBatcher] = new Microbatcher(function (operations) {
-      if (operations.length > 1) {
-        // Multiple `insertOne()` that can be transformed into a single `insertMany()`
-
-        debug(`Batching ${operations.length} insertOne() operations`);
-
-        const documents = operations.map((operation) => operation.params[0]);
-
-        collection.insertMany(documents).then(
-          ({acknowledged, insertedCount}) => {
-            for (const {resolve, reject} of operations) {
-              if (acknowledged) {
-                if (insertedCount === operations.length) {
-                  resolve({acknowledged: true});
-                } else if (insertedCount === 0) {
-                  resolve({acknowledged: false});
-                } else {
-                  reject(new Error('Could not determine results in a batched insert operation'));
-                }
-              } else {
-                resolve({acknowledged: false});
-              }
-            }
-          },
-          (error: any) => {
-            // TODO: Improve error handling
-            for (const {reject} of operations) {
-              reject(error);
-            }
-          }
-        );
-      } else {
-        // Single `insertOne()`
-
-        const {
-          params: [document],
-          resolve,
-          reject
-        } = operations[0];
-
-        collection.insertOne(document).then(resolve, reject);
-      }
-    });
-  }
-
-  return collection[insertOneBatcher]!.batch(document);
-}
-
-// --- findOne ---
-
-const findOneBatcher = Symbol('findOneBatcher');
-
-interface FindOneOperation extends Operation {
-  params: [filter: Filter<any>, options: FindOptions<any>];
-}
-
-function batchableFindOne(
-  collection: Collection & {[findOneBatcher]?: Microbatcher<FindOneOperation>},
-  query: Filter<any>,
-  options: FindOptions<any>
-) {
-  assertIsObjectLike(query);
-
-  if (collection[findOneBatcher] === undefined) {
-    collection[findOneBatcher] = new Microbatcher(function (operations) {
-      const operationGroups = groupBy(operations, ({params: [query, options]}) => {
-        if (
-          hasOwnProperty(query, MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME) &&
-          Object.keys(query).length === 1
-        ) {
-          // 'query' has a single '_id' attribute
-          query = {[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: '___???___'};
-        }
-
-        return JSON.stringify([query, options]);
-      });
-
-      for (const operations of Object.values(operationGroups)) {
-        if (operations.length > 1) {
-          // Multiple `findOne()` that can be transformed into a single `find()`
-
-          debug(`Batching ${operations.length} findOne() operations`);
-
-          const ids = operations.map(
-            (operation) => operation.params[0][MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]
-          );
-          const options = operations[0].params[1]; // All 'options' objects should be identical
-
-          collection
-            .find({[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: {$in: ids}}, options)
-            .toArray()
-            .then(
-              (documents) => {
-                for (const {
-                  params: [query],
-                  resolve
-                } of operations) {
-                  const document = documents.find(
-                    (document) =>
-                      document[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME] ===
-                      query[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]
-                  );
-                  resolve(document !== undefined ? document : null);
-                }
-              },
-              (error) => {
-                for (const {reject} of operations) {
-                  reject(error);
-                }
-              }
-            );
-        } else {
-          // Single `findOne()`
-
-          const {
-            params: [query, options],
-            resolve,
-            reject
-          } = operations[0];
-
-          collection.findOne(query, options).then(resolve, reject);
-        }
-      }
-    });
-  }
-
-  return collection[findOneBatcher]!.batch(query, options);
-}
-
-// --- deleteOne ---
-
-const deleteOneBatcher = Symbol('deleteOneBatcher');
-
-interface DeleteOneOperation extends Operation {
-  params: [filter: DeleteDocumentParams['identifierDescriptor']];
-}
-
-function batchableDeleteOne(
-  collection: Collection & {[deleteOneBatcher]?: Microbatcher<DeleteOneOperation>},
-  filter: DeleteDocumentParams['identifierDescriptor']
-) {
-  if (collection[deleteOneBatcher] === undefined) {
-    collection[deleteOneBatcher] = new Microbatcher(function (operations) {
-      if (operations.length > 1) {
-        // Multiple `deleteOne()` that can be transformed into a single `deleteMany()`
-
-        debug(`Batching ${operations.length} deleteOne() operations`);
-
-        const ids = operations.map((operation) => {
-          const filter = operation.params[0];
-
-          if (
-            hasOwnProperty(filter, MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME) &&
-            Object.keys(filter).length === 1
-          ) {
-            // 'filter' has a single '_id' attribute
-            return filter[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME];
-          } else {
-            throw new Error('A delete operation with a complex filter cannot be batched');
-          }
-        });
-
-        collection.deleteMany({[MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME]: {$in: ids}}).then(
-          ({deletedCount}) => {
-            for (const {resolve, reject} of operations) {
-              if (deletedCount === operations.length) {
-                resolve({deletedCount: 1});
-              } else if (deletedCount === 0) {
-                resolve({deletedCount: 0});
-              } else {
-                reject(new Error('Could not determine results in a batched delete operation'));
-              }
-            }
-          },
-          (error: any) => {
-            for (const {reject} of operations) {
-              reject(error);
-            }
-          }
-        );
-      } else {
-        // Single `deleteOne()`
-
-        const {
-          params: [filter],
-          resolve,
-          reject
-        } = operations[0];
-
-        collection.deleteOne(filter).then(resolve, reject);
-      }
-    });
-  }
-
-  return collection[deleteOneBatcher]!.batch(filter);
 }

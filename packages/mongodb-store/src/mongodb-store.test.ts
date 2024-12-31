@@ -246,10 +246,6 @@ describe('MongoDBStore', () => {
       });
 
       test('in parallel', async () => {
-        // To make batching work, we need to get the collection first
-        // @ts-ignore
-        await store._getCollection('Movie');
-
         expect(
           await Promise.all([
             store.createDocument({
