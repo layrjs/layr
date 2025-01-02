@@ -1,6 +1,6 @@
 {
   "name": "@layr/store",
-  "version": "2.0.95",
+  "version": "2.0.96",
   "description": "A base class for implementing Layr stores",
   "keywords": [
     "layr",

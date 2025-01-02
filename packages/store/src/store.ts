@@ -26,7 +26,8 @@ import {
   SortDirection,
   Operator,
   looksLikeOperator,
-  normalizeOperatorForValue
+  normalizeOperatorForValue,
+  isStorableAttributeInstance
 } from '@layr/storable';
 import {
   isPlainObject,
@@ -890,7 +891,7 @@ export abstract class Store {
   }
 
   _getCollectionIndexes(storable: StorableComponent) {
-    // TODO: Reimplement this method from scratch make it more maintainable
+    // TODO: Reimplement this method from scratch to make it more maintainable
 
     const indexes: CollectionIndex[] = [];
 
@@ -918,6 +919,11 @@ export abstract class Store {
     };
 
     for (const attribute of storable.getAttributes()) {
+      if (isStorableAttributeInstance(attribute) && attribute.isComputed()) {
+        // Computed attributes are not stored in the database
+        continue;
+      }
+
       if (isIdentifierAttributeInstance(attribute)) {
         const isEmbedded = storable.constructor.isEmbedded();
 
