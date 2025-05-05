@@ -16,7 +16,7 @@ describe('Express middleware', () => {
 
     app.use('/api', serveComponent(BackendCounter));
 
-    return new Promise<void>((resolve) => {
+    return new Promise<Error | undefined>((resolve) => {
       server = app.listen(SERVER_PORT, resolve);
     });
   });

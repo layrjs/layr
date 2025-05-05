@@ -40,6 +40,9 @@ export class BrowserNavigator extends Navigator {
   _popStateHandler!: (event: PopStateEvent) => void;
   _ignorePopStateHandler!: boolean;
   _beforeUnloadHandler!: (event: BeforeUnloadEvent) => void;
+  _mouseUpHandler!: (event: MouseEvent) => void;
+  _openNewWindowUntil: number | undefined;
+  _openNewWindowPopup: boolean | undefined;
   _navigateHandler!: (event: Event) => void;
   _mutationObserver!: MutationObserver;
   _expectedHash: string | undefined;
@@ -104,6 +107,21 @@ export class BrowserNavigator extends Navigator {
 
     window.addEventListener('beforeunload', this._beforeUnloadHandler, {capture: true});
 
+    // --- 'mouseup' event ---
+
+    this._mouseUpHandler = (event: MouseEvent) => {
+      // Detect Ctrl+Click (Windows/Linux), Cmd+Click (Mac), Shift+Click (Popup) or Middle-Click
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1) {
+        this._openNewWindowUntil = Date.now() + 500; // 500ms
+        this._openNewWindowPopup = event.shiftKey;
+      } else {
+        this._openNewWindowUntil = undefined;
+        this._openNewWindowPopup = undefined;
+      }
+    };
+
+    window.addEventListener('mouseup', this._mouseUpHandler, {capture: true});
+
     // --- 'layrNavigatorNavigate' event ---
 
     this._navigateHandler = (event: Event) => {
@@ -142,6 +160,7 @@ export class BrowserNavigator extends Navigator {
   unmount() {
     window.removeEventListener('popstate', this._popStateHandler);
     window.removeEventListener('beforeunload', this._beforeUnloadHandler, {capture: true});
+    window.removeEventListener('mouseup', this._mouseUpHandler, {capture: true});
     document.body.removeEventListener('layrNavigatorNavigate', this._navigateHandler);
     this._mutationObserver.disconnect();
   }
@@ -183,13 +202,31 @@ export class BrowserNavigator extends Navigator {
    */
 
   _navigate(url: URL) {
-    window.history.pushState({index: this._getHistoryIndex() + 1}, '', stringifyURL(url));
-    this._fixScrollPosition();
+    if (!this._possiblyOpenNewWindow(url)) {
+      window.history.pushState({index: this._getHistoryIndex() + 1}, '', stringifyURL(url));
+      this._fixScrollPosition();
+    }
   }
 
   _redirect(url: URL) {
-    window.history.replaceState({index: this._getHistoryIndex()}, '', stringifyURL(url));
-    this._fixScrollPosition();
+    if (!this._possiblyOpenNewWindow(url)) {
+      window.history.replaceState({index: this._getHistoryIndex()}, '', stringifyURL(url));
+      this._fixScrollPosition();
+    }
+  }
+
+  _possiblyOpenNewWindow(url: URL) {
+    if (this._openNewWindowUntil !== undefined && Date.now() < this._openNewWindowUntil) {
+      const isPopup = this._openNewWindowPopup === true;
+      this._openNewWindowUntil = undefined;
+      this._openNewWindowPopup = undefined;
+      // Try to open the URL in a new window
+      if (window.open(stringifyURL(url), '_blank', isPopup ? 'popup' : undefined)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   _fixScrollPosition() {
