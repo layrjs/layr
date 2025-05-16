@@ -215,8 +215,12 @@ export class BrowserNavigator extends Navigator {
     }
   }
 
+  shouldOpenNewWindow() {
+    return this._openNewWindowUntil !== undefined && Date.now() < this._openNewWindowUntil;
+  }
+
   _possiblyOpenNewWindow(url: URL) {
-    if (this._openNewWindowUntil !== undefined && Date.now() < this._openNewWindowUntil) {
+    if (this.shouldOpenNewWindow()) {
       const isPopup = this._openNewWindowPopup === true;
       this._openNewWindowUntil = undefined;
       this._openNewWindowPopup = undefined;

@@ -78,6 +78,10 @@ export class MemoryNavigator extends Navigator {
     this._urls.push(url);
   }
 
+  shouldOpenNewWindow() {
+    return false;
+  }
+
   _reload(_url: URL | undefined): void {
     throw new Error(`The method 'reload() is not available in a memory navigator`);
   }

@@ -1,6 +1,6 @@
 {
   "name": "@layr/react-integration",
-  "version": "2.0.180",
+  "version": "2.0.181",
   "description": "React integration for Layr",
   "keywords": [
     "layr",
@@ -27,12 +27,12 @@
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
-    "@layr/browser-navigator": "^2.0.95",
+    "@layr/browser-navigator": "^2.0.97",
     "@layr/component": "^2.0.65",
-    "@layr/memory-navigator": "^2.0.77",
-    "@layr/navigator": "^2.0.75",
+    "@layr/memory-navigator": "^2.0.79",
+    "@layr/navigator": "^2.0.76",
     "@layr/observable": "^1.0.20",
-    "@layr/routable": "^2.0.132",
+    "@layr/routable": "^2.0.133",
     "@layr/utilities": "^1.0.12",
     "core-helpers": "^1.0.8",
     "lodash": "^4.17.21",

@@ -271,6 +271,8 @@ export abstract class Navigator extends Observable(Object) {
 
   abstract _redirect(url: URL): void;
 
+  abstract shouldOpenNewWindow(): boolean;
+
   /**
    * Reloads the execution environment with the specified URL.
    *

@@ -12,6 +12,10 @@ describe('Navigator', () => {
 
     _redirect(_url: URL) {}
 
+    shouldOpenNewWindow(): boolean {
+      return false;
+    }
+
     _reload(_url: URL | undefined) {}
 
     _go(_delta: number) {}
