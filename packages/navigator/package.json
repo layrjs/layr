@@ -39,6 +39,6 @@
     "@mvila/dev-tools": "^1.4.0",
     "@mvila/tsconfig": "^1.0.6",
     "@types/jest": "^29.5.14",
-    "@types/qs": "^6.9.18"
+    "@types/qs": "^6.14.0"
   }
 }

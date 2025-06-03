@@ -1,4 +1,5 @@
 import {Navigator, NavigatorOptions, normalizeURL, stringifyURL} from '@layr/navigator';
+import {SECOND} from '@layr/utilities';
 import debounce from 'lodash/debounce';
 import {possiblyAsync} from 'possibly-async';
 
@@ -112,7 +113,7 @@ export class BrowserNavigator extends Navigator {
     this._mouseUpHandler = (event: MouseEvent) => {
       // Detect Ctrl+Click (Windows/Linux), Cmd+Click (Mac), Shift+Click (Popup) or Middle-Click
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1) {
-        this._openNewWindowUntil = Date.now() + 500; // 500ms
+        this._openNewWindowUntil = Date.now() + 3 * SECOND;
         this._openNewWindowPopup = event.shiftKey;
       } else {
         this._openNewWindowUntil = undefined;

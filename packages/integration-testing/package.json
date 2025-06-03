@@ -50,7 +50,7 @@
     "@types/jest": "^29.5.14",
     "@types/koa": "^2.15.0",
     "@types/koa-mount": "^4.0.5",
-    "@types/lodash": "^4.17.16",
+    "@types/lodash": "^4.17.17",
     "@types/mongodb": "^3.6.20"
   }
 }
