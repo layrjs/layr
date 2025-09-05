@@ -36,6 +36,9 @@ const debug = debugModule('layr:mongodb-store');
 // To display the debug log, set this environment:
 // DEBUG=layr:mongodb-store DEBUG_DEPTH=10
 
+// To monitor MongoDB commands, set this environment:
+// MONITOR_MONGODB_COMMANDS=true
+
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_NAME = '_id';
 const MONGODB_PRIMARY_IDENTIFIER_ATTRIBUTE_INDEX_NAME = '_id_';
 
@@ -786,14 +789,23 @@ export class MongoDBStore extends Store {
         if (this._client === undefined) {
           debug(`Connecting to MongoDB Server (connectionString: ${this._connectionString})...`);
 
+          const monitorCommands = process.env.MONITOR_MONGODB_COMMANDS === 'true';
+
           this._client = await MongoClient.connect(
             this._fixConnectionString(this._connectionString),
             {
-              maxPoolSize: this._poolSize
+              maxPoolSize: this._poolSize,
+              monitorCommands
             }
           );
 
           debug(`Connected to MongoDB Server (connectionString: ${this._connectionString})`);
+
+          if (monitorCommands) {
+            this._client.on('commandStarted', (event) => {
+              console.log(JSON.stringify(event.command));
+            });
+          }
         }
       } finally {
         this._connectClientPromise = undefined;

@@ -1,6 +1,6 @@
 {
   "name": "@layr/mongodb-store",
-  "version": "2.0.107",
+  "version": "2.0.108",
   "description": "A Layr store for MongoDB",
   "keywords": [
     "layr",
