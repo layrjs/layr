@@ -789,7 +789,7 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
 
       let resolvedAttributeSelector = this.resolveAttributeSelector(attributeSelector);
 
-      if (!reload) {
+      if (!reload && !this.__cacheIsExpired()) {
         const alreadyLoadedAttributeSelector = this.resolveAttributeSelector(
           resolvedAttributeSelector,
           {
@@ -863,6 +863,8 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
         if (loadedStorable === undefined) {
           return undefined;
         }
+
+        loadedStorable.__setCacheTimestamp(Date.now());
 
         await loadedStorable.afterLoad(nonComputedAttributeSelector);
       } else {
@@ -1556,6 +1558,44 @@ export function Storable<T extends Constructor<typeof Component>>(Base: T) {
      */
     setIsDeletedMark(isDeleted: boolean) {
       Object.defineProperty(this, '__isDeleted', {value: isDeleted, configurable: true});
+    }
+
+    // === Caching ===
+
+    static __cacheDuration: number | undefined;
+
+    static getCacheDuration() {
+      return this.__cacheDuration;
+    }
+
+    static setCacheDuration(duration: number | undefined) {
+      Object.defineProperty(this, '__cacheDuration', {value: duration, configurable: true});
+    }
+
+    __cacheTimestamp: number | undefined;
+
+    __getCacheTimestamp() {
+      return this.__cacheTimestamp;
+    }
+
+    __setCacheTimestamp(timestamp: number | undefined) {
+      Object.defineProperty(this, '__cacheTimestamp', {value: timestamp, configurable: true});
+    }
+
+    __cacheIsExpired() {
+      const duration = this.constructor.getCacheDuration();
+
+      if (duration === undefined) {
+        return false;
+      }
+
+      const timestamp = this.__getCacheTimestamp();
+
+      if (timestamp === undefined) {
+        return true;
+      }
+
+      return Date.now() - timestamp > duration;
     }
 
     // === Hooks ===
