@@ -1,6 +1,6 @@
 {
   "name": "@layr/component-http-server",
-  "version": "2.0.119",
+  "version": "2.0.121",
   "description": "A basic HTTP server for your Layr components",
   "keywords": [
     "layr",
@@ -28,11 +28,11 @@
   },
   "dependencies": {
     "@koa/cors": "^3.4.3",
-    "@layr/component-koa-middleware": "^2.0.112",
-    "@layr/component-server": "^2.0.81",
+    "@layr/component-koa-middleware": "^2.0.113",
+    "@layr/component-server": "^2.0.82",
     "core-helpers": "^1.0.8",
-    "debug": "^4.4.1",
-    "koa": "^2.16.1",
+    "debug": "^4.4.3",
+    "koa": "^2.16.3",
     "koa-json-error": "^3.1.2",
     "koa-logger": "^3.2.1",
     "tslib": "^2.8.1"
@@ -45,7 +45,7 @@
     "@types/jest": "^29.5.14",
     "@types/koa": "^2.15.0",
     "@types/koa__cors": "^3.3.1",
-    "@types/koa-json-error": "^3.1.6",
+    "@types/koa-json-error": "^3.1.7",
     "@types/koa-logger": "^3.1.5",
     "cross-fetch": "^3.2.0"
   }
