@@ -23,7 +23,7 @@
   "scripts": {
     "build": "dev-tools build:ts-library",
     "prepare": "npm run build",
-    "publish:package": "dev-tools publish:package --tag=next",
+    "publish:package": "dev-tools publish:package",
     "update": "dev-tools update:dependencies"
   },
   "dependencies": {
